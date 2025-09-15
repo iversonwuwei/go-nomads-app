@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import 'controllers/auth_controller.dart';
@@ -18,14 +19,21 @@ class MyApp extends StatelessWidget {
     Get.put(AuthController());
     Get.put(ShoppingController());
 
-    return GetMaterialApp(
-      title: 'Flutter Getx Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      initialRoute: AppRoutes.home,
-      getPages: AppRoutes.getPages,
+    return ScreenUtilInit(
+      designSize: const Size(390, 844), // iPhone 14 Pro 的设计尺寸
+      minTextAdapt: true,
+      splitScreenMode: true,
+      builder: (context, child) {
+        return GetMaterialApp(
+          title: 'Flutter Getx Demo',
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+            useMaterial3: true,
+          ),
+          initialRoute: AppRoutes.home,
+          getPages: AppRoutes.getPages,
+        );
+      },
     );
   }
 }

@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import '../controllers/shopping_controller.dart';
 import '../models/api_interface_model.dart';
 import '../models/product_model.dart';
+import '../routes/app_routes.dart';
 
 class MyHomePage extends StatelessWidget {
   final String title;
@@ -117,7 +118,7 @@ class MyHomePage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.3),
+                      color: Colors.grey.withValues(alpha: 0.3),
                       spreadRadius: 2,
                       blurRadius: 8,
                       offset: const Offset(0, 3),
@@ -178,10 +179,30 @@ class MyHomePage extends StatelessWidget {
 
   Widget _buildQuickActions() {
     final List<Map<String, dynamic>> actions = [
-      {'icon': Icons.api, 'title': 'API市场', 'color': Colors.blue},
-      {'icon': Icons.data_usage, 'title': '数据服务', 'color': Colors.green},
-      {'icon': Icons.security, 'title': '验证接口', 'color': Colors.orange},
-      {'icon': Icons.analytics, 'title': '分析工具', 'color': Colors.purple},
+      {
+        'icon': Icons.api,
+        'title': 'API市场',
+        'color': Colors.blue,
+        'route': AppRoutes.apiMarketplace
+      },
+      {
+        'icon': Icons.data_usage,
+        'title': '数据服务',
+        'color': Colors.green,
+        'route': null
+      },
+      {
+        'icon': Icons.security,
+        'title': '验证接口',
+        'color': Colors.orange,
+        'route': null
+      },
+      {
+        'icon': Icons.analytics,
+        'title': '分析工具',
+        'color': Colors.purple,
+        'route': null
+      },
     ];
 
     return Container(
@@ -192,7 +213,7 @@ class MyHomePage extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             spreadRadius: 1,
             blurRadius: 10,
             offset: const Offset(0, 2),
@@ -204,7 +225,11 @@ class MyHomePage extends StatelessWidget {
         children: actions.map((action) {
           return GestureDetector(
             onTap: () {
-              Get.snackbar('功能', '${action['title']}功能开发中...');
+              if (action['route'] != null) {
+                Get.toNamed(action['route']);
+              } else {
+                Get.snackbar('功能', '${action['title']}功能开发中...');
+              }
             },
             child: Column(
               children: [
@@ -212,7 +237,7 @@ class MyHomePage extends StatelessWidget {
                   width: 50,
                   height: 50,
                   decoration: BoxDecoration(
-                    color: action['color'].withOpacity(0.1),
+                    color: action['color'].withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -284,7 +309,7 @@ class MyHomePage extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
+              color: Colors.grey.withValues(alpha: 0.1),
               spreadRadius: 1,
               blurRadius: 8,
               offset: const Offset(0, 2),
@@ -438,14 +463,14 @@ class MyHomePage extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              apiInterface.tileColor.withOpacity(0.8),
-              apiInterface.tileColor.withOpacity(0.6),
+              apiInterface.tileColor.withValues(alpha: 0.8),
+              apiInterface.tileColor.withValues(alpha: 0.6),
             ],
           ),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: apiInterface.tileColor.withOpacity(0.3),
+              color: apiInterface.tileColor.withValues(alpha: 0.3),
               spreadRadius: 1,
               blurRadius: 8,
               offset: const Offset(0, 4),
@@ -463,7 +488,7 @@ class MyHomePage extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
@@ -531,7 +556,7 @@ class MyHomePage extends StatelessWidget {
                 apiInterface.category,
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                 ),
               ),
 
@@ -542,7 +567,7 @@ class MyHomePage extends StatelessWidget {
                 apiInterface.description,
                 style: TextStyle(
                   fontSize: 11,
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                   height: 1.3,
                 ),
                 maxLines: 2,
@@ -577,7 +602,7 @@ class MyHomePage extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
@@ -678,13 +703,13 @@ class MyHomePage extends StatelessWidget {
             end: Alignment.bottomRight,
             colors: [
               category['color'],
-              category['color'].withOpacity(0.8),
+              category['color'].withValues(alpha: 0.8),
             ],
           ),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: category['color'].withOpacity(0.3),
+              color: category['color'].withValues(alpha: 0.3),
               spreadRadius: 0,
               blurRadius: 8,
               offset: const Offset(0, 3),
