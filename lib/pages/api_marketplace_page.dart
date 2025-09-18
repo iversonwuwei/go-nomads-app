@@ -17,8 +17,8 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
   final ShoppingController _shoppingController = Get.find<ShoppingController>();
   
   String _selectedCategory = 'All';
-  String _selectedPricing = 'All';
-  String _sortBy = 'popularity';
+  final String _selectedPricing = 'All';
+  final String _sortBy = 'popularity';
   
   final List<String> _categories = [
     'All', 'Data Analytics', 'Payment', 'AI/ML', 'Weather', 
@@ -246,8 +246,8 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
       [const Color(0xFF06B6D4), const Color(0xFF3B82F6)], // 蓝青渐变
       [const Color(0xFF10B981), const Color(0xFF059669)], // 绿色渐变
       [const Color(0xFFF59E0B), const Color(0xFFEF4444)], // 橙红渐变
-      [const Color(0xFFEC4899), const Color(0xBE185D)], // 粉红渐变
-      [const Color(0xFF8B5CF6), const Color(0xBB7C2E)], // 紫橙渐变
+      [const Color(0xFFEC4899), const Color(0x00be185d)], // 粉红渐变
+      [const Color(0xFF8B5CF6), const Color(0x00bb7c2e)], // 紫橙渐变
     ];
     
     final gradientIndex = api.name.hashCode.abs() % gradientColors.length;
