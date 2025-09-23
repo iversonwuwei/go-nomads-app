@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 
 import '../pages/ai_chat_page.dart';
+import '../pages/analytics_tool_page.dart';
 import '../pages/api_marketplace_page.dart';
 import '../pages/login_page.dart';
 import '../pages/main_page.dart';
@@ -14,6 +15,7 @@ class AppRoutes {
   static const String aiChat = '/ai-chat';
   static const String snakeGame = '/snake-game';
   static const String apiMarketplace = '/api-marketplace';
+  static const String analyticsTool = '/analytics-tool';
 
   static List<GetPage> getPages = [
     GetPage(
@@ -39,6 +41,10 @@ class AppRoutes {
     GetPage(
       name: apiMarketplace,
       page: () => const ApiMarketplacePage(),
+    ),
+    GetPage(
+      name: analyticsTool,
+      page: () => const AnalyticsToolPage(),
     ),
   ];
 }

@@ -201,7 +201,7 @@ class MyHomePage extends StatelessWidget {
         'icon': Icons.analytics,
         'title': '分析工具',
         'color': Colors.purple,
-        'route': null
+        'route': AppRoutes.analyticsTool
       },
     ];
 
