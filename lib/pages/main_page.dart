@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../controllers/shopping_controller.dart';
 import '../routes/app_routes.dart';
 import 'home_page.dart';
+import 'profile_page.dart';
 
 class MainPage extends StatelessWidget {
   const MainPage({super.key});
@@ -26,13 +27,7 @@ class MainPage extends StatelessWidget {
             });
             return const MyHomePage(title: '数金数据');
           case 2:
-            // 我的页面 - 跳转到登录页面
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              Get.toNamed(AppRoutes.login);
-              // 重置导航栏到首页
-              controller.changeTab(0);
-            });
-            return const MyHomePage(title: '数金数据');
+            return const ProfilePage();
           default:
             return const MyHomePage(title: '数金数据');
         }
