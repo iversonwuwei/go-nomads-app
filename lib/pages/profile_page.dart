@@ -251,8 +251,18 @@ class ProfilePage extends StatelessWidget {
                           ),
                           TextButton(
                             onPressed: () {
-                              Get.back();
-                              Get.snackbar('提示', '已退出登录');
+                              Get.back(); // 关闭对话框
+                              Get.snackbar(
+                                '提示',
+                                '已退出登录',
+                                duration: const Duration(seconds: 2),
+                              );
+                              // 延迟一下再跳转，让用户看到提示信息
+                              Future.delayed(const Duration(milliseconds: 500),
+                                  () {
+                                Get.offAllNamed(
+                                    AppRoutes.login); // 跳转到登录页面并清除所有路由栈
+                              });
                             },
                             child: const Text('确定'),
                           ),

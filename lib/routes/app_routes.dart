@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import '../pages/ai_chat_page.dart';
 import '../pages/analytics_tool_page.dart';
 import '../pages/api_marketplace_page.dart';
-import '../pages/login_page.dart';
+import '../pages/login_page_optimized.dart';
 import '../pages/main_page.dart';
 import '../pages/second_page.dart';
 import '../pages/snake_game_page.dart';
@@ -28,7 +28,7 @@ class AppRoutes {
     ),
     GetPage(
       name: login,
-      page: () => const LoginPage(),
+      page: () => const LoginPageOptimized(),
     ),
     GetPage(
       name: aiChat,
