@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../config/app_colors.dart';
 import '../routes/app_routes.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -9,7 +10,7 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -17,44 +18,40 @@ class ProfilePage extends StatelessWidget {
               // 用户信息卡片 - API开发者身份
               Container(
                 margin: const EdgeInsets.all(16),
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF667eea),
-                      Color(0xFF764ba2),
-                    ],
+                  color: AppColors.containerBlueGrey,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: AppColors.border,
+                    width: 0.5,
                   ),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF667eea).withOpacity(0.3),
-                      spreadRadius: 2,
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
                 ),
                 child: Column(
                   children: [
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(4),
+                          width: 68,
+                          height: 68,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-                          child: CircleAvatar(
-                            radius: 32,
-                            backgroundColor: Colors.white,
-                            child: Icon(
-                              Icons.code,
-                              size: 36,
-                              color: Colors.blue[700],
+                            color: AppColors.containerWhite15,
+                            borderRadius: BorderRadius.circular(4),
+                            border: const Border(
+                              top: BorderSide(
+                                  color: AppColors.borderWhite30, width: 1),
+                              left: BorderSide(
+                                  color: AppColors.borderWhite30, width: 1),
+                              right: BorderSide(
+                                  color: AppColors.borderWhite30, width: 1),
+                              bottom: BorderSide(
+                                  color: AppColors.borderWhite30, width: 1),
                             ),
+                          ),
+                          child: Icon(
+                            Icons.code,
+                            size: 32,
+                            color: Colors.white,
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -63,27 +60,31 @@ class ProfilePage extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'API开发者',
+                                'API DEVELOPER',
                                 style: TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w400,
                                   color: Colors.white,
+                                  letterSpacing: 2,
                                 ),
                               ),
                               SizedBox(height: 4),
                               Text(
                                 'developer@sjsj.com',
                                 style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 14,
+                                  color: AppColors.textWhite70,
+                                  fontSize: 12,
+                                  letterSpacing: 0.5,
                                 ),
                               ),
                               SizedBox(height: 4),
                               Text(
-                                '认证开发者 • VIP会员',
+                                'VERIFIED DEVELOPER • VIP',
                                 style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 12,
+                                  color: AppColors.textWhite60,
+                                  fontSize: 10,
+                                  letterSpacing: 1.5,
+                                  fontWeight: FontWeight.w300,
                                 ),
                               ),
                             ],
@@ -271,15 +272,25 @@ class ProfilePage extends StatelessWidget {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red[50],
-                    foregroundColor: Colors.red,
+                    backgroundColor: Colors.white,
+                    foregroundColor: AppColors.containerDark,
                     elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.zero,
+                      side: BorderSide(
+                        color: AppColors.containerDark,
+                        width: 1,
+                      ),
                     ),
                   ),
-                  child: const Text('退出登录'),
+                  child: const Text(
+                    'SIGN OUT',
+                    style: TextStyle(
+                      letterSpacing: 2,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
                 ),
               ),
 
@@ -323,28 +334,40 @@ class ProfilePage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 8),
-            child: Text(
-              title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
+            padding: const EdgeInsets.only(left: 4, bottom: 12),
+            child: Container(
+              padding: const EdgeInsets.only(bottom: 8),
+              decoration: const BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: Color(0xFF9E9E9E),
+                    width: 2,
+                  ),
+                ),
+              ),
+              child: Text(
+                title
+                    .replaceAll(RegExp(r'[\p{Emoji}\s]+', unicode: true), '')
+                    .trim()
+                    .toUpperCase(),
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.textPrimary,
+                  letterSpacing: 2,
+                ),
               ),
             ),
           ),
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
-                  spreadRadius: 1,
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              border: Border(
+                top: BorderSide(color: AppColors.border, width: 1),
+                left: BorderSide(color: AppColors.border, width: 1),
+                right: BorderSide(color: AppColors.border, width: 1),
+                bottom: BorderSide(color: AppColors.border, width: 1),
+              ),
             ),
             child: Column(
               children: _buildMenuItems(items),
@@ -372,28 +395,23 @@ class ProfilePage extends StatelessWidget {
       IconData icon, String title, Color iconColor, VoidCallback onTap) {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: iconColor.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Icon(
-          icon,
-          color: iconColor,
-          size: 20,
-        ),
+      leading: Icon(
+        icon,
+        color: AppColors.containerDark,
+        size: 24,
       ),
       title: Text(
         title,
         style: const TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w500,
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          color: AppColors.textPrimary,
+          letterSpacing: 0.5,
         ),
       ),
-      trailing: Icon(
+      trailing: const Icon(
         Icons.arrow_forward_ios,
-        color: Colors.grey[400],
+        color: AppColors.iconLight,
         size: 14,
       ),
       onTap: onTap,
@@ -402,9 +420,9 @@ class ProfilePage extends StatelessWidget {
 
   // 分割线构建方法
   Widget _buildDivider() {
-    return Divider(
+    return const Divider(
       height: 1,
-      color: Colors.grey[200],
+      color: AppColors.borderLight,
       indent: 20,
       endIndent: 20,
     );

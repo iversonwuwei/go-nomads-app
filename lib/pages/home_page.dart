@@ -4,6 +4,7 @@ import 'package:dots_indicator/dots_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../config/app_colors.dart';
 import '../controllers/shopping_controller.dart';
 import '../models/api_interface_model.dart';
 import '../models/product_model.dart';
@@ -18,32 +19,42 @@ class MyHomePage extends StatelessWidget {
     final ShoppingController controller = Get.find<ShoppingController>();
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.background,
         elevation: 0,
         title: Text(
-          title,
-          style: TextStyle(
-            color: Colors.grey[800],
-            fontWeight: FontWeight.bold,
+          title.toUpperCase(),
+          style: const TextStyle(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w300,
+            fontSize: 16,
+            letterSpacing: 2,
           ),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.search, color: Colors.grey[700]),
+            icon: const Icon(Icons.search, color: AppColors.textTertiary),
             onPressed: () {
               Get.snackbar('搜索', '搜索API接口功能开发中...');
             },
           ),
           IconButton(
-            icon: Icon(Icons.shopping_cart, color: Colors.grey[700]),
+            icon: const Icon(Icons.shopping_cart_outlined,
+                color: AppColors.textTertiary),
             onPressed: () {
               Get.snackbar('购买清单', 'API购买清单功能开发中...');
             },
           ),
           const SizedBox(width: 8),
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(
+            height: 1,
+            color: AppColors.borderLight,
+          ),
+        ),
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
@@ -115,61 +126,57 @@ class MyHomePage extends StatelessWidget {
                 width: double.infinity,
                 margin: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withValues(alpha: 0.3),
-                      spreadRadius: 2,
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
+                  border: Border.all(
+                    color: AppColors.border,
+                    width: 1,
+                  ),
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: CachedNetworkImage(
-                    imageUrl: banner.imageUrl,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      color: Colors.grey[300],
-                      child: const Center(
-                        child: CircularProgressIndicator(),
+                child: CachedNetworkImage(
+                  imageUrl: banner.imageUrl,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    color: AppColors.background,
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.accent,
+                        strokeWidth: 2,
                       ),
                     ),
-                    errorWidget: (context, url, error) => Container(
-                      color: Colors.grey[300],
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.image, size: 40, color: Colors.grey[600]),
-                          const SizedBox(height: 8),
-                          Text(
-                            banner.title,
-                            style: TextStyle(
-                              color: Colors.grey[700],
-                              fontWeight: FontWeight.bold,
-                            ),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    color: AppColors.background,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.image_outlined,
+                            size: 36, color: AppColors.textTertiary),
+                        const SizedBox(height: 12),
+                        Text(
+                          banner.title.toUpperCase(),
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w300,
+                            fontSize: 12,
+                            letterSpacing: 2,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
               );
             }).toList(),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           Obx(() => DotsIndicator(
                 dotsCount: controller.bannerList.length,
                 position: controller.currentBannerIndex.value.toDouble(),
-                decorator: DotsDecorator(
-                  activeColor: Colors.blue[700]!,
-                  color: Colors.grey[400]!,
-                  size: const Size.square(8.0),
-                  activeSize: const Size(16.0, 8.0),
-                  activeShape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
-                  ),
+                decorator: const DotsDecorator(
+                  activeColor: AppColors.textPrimary,
+                  color: AppColors.border,
+                  size: Size.square(6.0),
+                  activeSize: Size(24.0, 6.0),
+                  activeShape: RoundedRectangleBorder(),
                 ),
               )),
         ],
@@ -207,18 +214,13 @@ class MyHomePage extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.1),
-            spreadRadius: 1,
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(
+          color: AppColors.border,
+          width: 1,
+        ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -234,25 +236,29 @@ class MyHomePage extends StatelessWidget {
             child: Column(
               children: [
                 Container(
-                  width: 50,
-                  height: 50,
+                  width: 56,
+                  height: 56,
                   decoration: BoxDecoration(
-                    color: action['color'].withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    color: AppColors.textSecondary,
+                    border: Border.all(
+                      color: AppColors.border,
+                      width: 1,
+                    ),
                   ),
                   child: Icon(
                     action['icon'],
-                    color: action['color'],
-                    size: 28,
+                    color: Colors.white,
+                    size: 24,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Text(
-                  action['title'],
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[700],
-                    fontWeight: FontWeight.w500,
+                  action['title'].toUpperCase(),
+                  style: const TextStyle(
+                    fontSize: 9,
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w400,
+                    letterSpacing: 1.2,
                   ),
                 ),
               ],
@@ -264,14 +270,27 @@ class MyHomePage extends StatelessWidget {
   }
 
   Widget _buildSectionTitle(String title) {
+    // 移除 emoji,只保留文字
+    final cleanTitle =
+        title.replaceAll(RegExp(r'[\p{Emoji}\s]+', unicode: true), '').trim();
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.only(bottom: 8),
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: AppColors.textTertiary,
+            width: 2,
+          ),
+        ),
+      ),
       child: Text(
-        title,
+        cleanTitle.toUpperCase(),
         style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: Colors.black87,
+          fontSize: 12,
+          fontWeight: FontWeight.w400,
+          color: AppColors.textPrimary,
+          letterSpacing: 3,
         ),
       ),
     );
@@ -455,27 +474,17 @@ class MyHomePage extends StatelessWidget {
   Widget _buildApiInterfaceCard(ApiInterfaceModel apiInterface) {
     final ShoppingController controller = Get.find<ShoppingController>();
 
+    // 为每个API定义单色方案 - 性冷淡风格(浅色系)
+    final colorIndex =
+        apiInterface.name.hashCode.abs() % AppColors.apiCardColors.length;
+    final cardColor = AppColors.apiCardColors[colorIndex];
+
     return GestureDetector(
       onTap: () => controller.onApiInterfaceTap(apiInterface),
       child: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              apiInterface.tileColor.withValues(alpha: 0.8),
-              apiInterface.tileColor.withValues(alpha: 0.6),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: apiInterface.tileColor.withValues(alpha: 0.3),
-              spreadRadius: 1,
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          color: cardColor,
+          border: Border.all(color: AppColors.border, width: 0.5),
         ),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -484,132 +493,118 @@ class MyHomePage extends StatelessWidget {
             children: [
               // 顶部: 图标和标签
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    width: 36,
+                    height: 36,
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.white.withValues(alpha: 0.15),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.3),
+                        width: 1,
+                      ),
                     ),
                     child: Icon(
                       apiInterface.icon,
                       color: Colors.white,
-                      size: 24,
+                      size: 18,
                     ),
                   ),
                   const Spacer(),
                   if (apiInterface.isHot)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text(
-                        'HOT',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  if (apiInterface.isFree)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.green,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text(
-                        'FREE',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
+                    _buildMinimalTag('HOT', Colors.white)
+                  else if (apiInterface.isFree)
+                    _buildMinimalTag('FREE', Colors.white),
                 ],
               ),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
 
               // API名称
               Text(
-                apiInterface.name,
+                apiInterface.name.toUpperCase(),
                 style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
                   color: Colors.white,
+                  letterSpacing: 2,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
 
-              const SizedBox(height: 4),
+              const SizedBox(height: 6),
 
               // 分类
               Text(
-                apiInterface.category,
+                apiInterface.category.toUpperCase(),
                 style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.white.withValues(alpha: 0.8),
+                  fontSize: 9,
+                  color: Colors.white.withValues(alpha: 0.6),
+                  fontWeight: FontWeight.w300,
+                  letterSpacing: 1.5,
                 ),
               ),
 
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
 
               // 描述
-              Text(
-                apiInterface.description,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Colors.white.withValues(alpha: 0.9),
-                  height: 1.3,
+              Expanded(
+                child: Text(
+                  apiInterface.description,
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Colors.white.withValues(alpha: 0.8),
+                    height: 1.4,
+                    fontWeight: FontWeight.w300,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
 
-              const Spacer(),
+              const SizedBox(height: 12),
 
               // 底部信息
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   if (apiInterface.isFree)
                     const Text(
                       'FREE',
                       style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
                         color: Colors.white,
+                        letterSpacing: 1.5,
                       ),
                     )
                   else
                     Text(
-                      '¥${apiInterface.price.toStringAsFixed(3)}/次',
+                      '¥${apiInterface.price.toStringAsFixed(3)}',
                       style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
                         color: Colors.white,
+                        letterSpacing: 0.5,
                       ),
                     ),
-                  const Spacer(),
                   Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(6),
+                      color: Colors.white,
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.2)),
                     ),
                     child: Text(
-                      '${(apiInterface.responseTime).toInt()}ms',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
+                      '${(apiInterface.responseTime).toInt()}MS',
+                      style: TextStyle(
+                        color: cardColor,
+                        fontSize: 8,
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 1,
                       ),
                     ),
                   ),
@@ -617,6 +612,27 @@ class MyHomePage extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMinimalTag(String text, Color textColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: textColor.withValues(alpha: 0.4),
+          width: 0.5,
+        ),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: textColor,
+          fontSize: 7,
+          fontWeight: FontWeight.w400,
+          letterSpacing: 1.5,
         ),
       ),
     );
@@ -692,58 +708,43 @@ class MyHomePage extends StatelessWidget {
   }
 
   Widget _buildDataCategoryCard(Map<String, dynamic> category) {
+    // 使用性冷淡风格的单色方案(浅色系)
+    final index =
+        category['title'].hashCode.abs() % AppColors.dataCategoryColors.length;
+    final iconColor = AppColors.dataCategoryColors[index];
+
     return GestureDetector(
       onTap: () {
         Get.snackbar('数据分类', '${category['title']}功能开发中...');
       },
       child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              category['color'],
-              category['color'].withValues(alpha: 0.8),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: category['color'].withValues(alpha: 0.3),
-              spreadRadius: 0,
-              blurRadius: 8,
-              offset: const Offset(0, 3),
+        color: Colors.transparent,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // 纯图标 - 无边框无背景
+            Icon(
+              category['icon'],
+              color: iconColor,
+              size: 32,
+            ),
+
+            const SizedBox(height: 8),
+
+            // 分类名称 - 深灰色文字
+            Text(
+              category['title'],
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w400,
+                color: AppColors.textPrimary,
+                letterSpacing: 0.5,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // 图标
-              Icon(
-                category['icon'],
-                color: Colors.white,
-                size: 32,
-              ),
-
-              const SizedBox(height: 8),
-
-              // 分类名称
-              Text(
-                category['title'],
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
         ),
       ),
     );

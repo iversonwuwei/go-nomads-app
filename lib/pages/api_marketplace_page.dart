@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+import '../config/app_colors.dart';
 import '../controllers/shopping_controller.dart';
 import '../models/api_interface_model.dart';
 
@@ -30,7 +31,7 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.background,
       appBar: _buildAppBar(),
       body: Column(
         children: [
@@ -46,63 +47,83 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0.5,
+      backgroundColor: AppColors.background,
+      elevation: 0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Color(0xFF1F2937)),
+        icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
         onPressed: () => Get.back(),
       ),
       title: const Text(
-        'API Marketplace',
+        'API MARKETPLACE',
         style: TextStyle(
-          color: Color(0xFF1F2937),
-          fontWeight: FontWeight.w600,
-          fontSize: 20,
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w300,
+          fontSize: 16,
+          letterSpacing: 2,
         ),
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.bookmark_border, color: Color(0xFF6B7280)),
+          icon:
+              const Icon(Icons.bookmark_border, color: AppColors.textTertiary),
           onPressed: () => _showBookmarks(),
         ),
         IconButton(
-          icon: const Icon(Icons.shopping_cart_outlined, color: Color(0xFF6B7280)),
+          icon: const Icon(Icons.shopping_cart_outlined,
+              color: AppColors.textTertiary),
           onPressed: () => _showCart(),
         ),
         const SizedBox(width: 8),
       ],
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(
+          height: 1,
+          color: AppColors.borderLight,
+        ),
+      ),
     );
   }
 
   Widget _buildSearchAndFilters() {
     return Container(
       color: Colors.white,
-      padding: EdgeInsets.all(16.w),
+      padding: EdgeInsets.all(20.w),
       child: Column(
         children: [
           // Search Bar
           Container(
             decoration: BoxDecoration(
-              color: const Color(0xFFF3F4F6),
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: const Color(0xFFE5E7EB)),
+              color: Colors.white,
+              border: Border.all(color: AppColors.textTertiary, width: 1),
             ),
             child: TextField(
               controller: _searchController,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 14,
+                letterSpacing: 0.5,
+              ),
               decoration: InputDecoration(
-                hintText: 'Search APIs, providers, or keywords...',
-                hintStyle: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
-                prefixIcon: const Icon(Icons.search, color: Color(0xFF6B7280)),
+                hintText: 'SEARCH',
+                hintStyle: TextStyle(
+                  color: AppColors.iconLight,
+                  fontSize: 12.sp,
+                  letterSpacing: 2,
+                ),
+                prefixIcon: const Icon(Icons.search,
+                    color: AppColors.textTertiary, size: 20),
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
               ),
               onChanged: (value) => _filterApis(),
             ),
           ),
           
-          SizedBox(height: 12.h),
+          SizedBox(height: 16.h),
           
-          // Filter Row
+          // Filter Row - Minimalist
           Row(
             children: [
               Expanded(child: _buildFilterChip('Category', _selectedCategory, _categories)),
@@ -121,11 +142,10 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
     return GestureDetector(
       onTap: () => _showFilterDialog(label, options),
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border.all(color: const Color(0xFFE5E7EB)),
-          borderRadius: BorderRadius.circular(6.r),
+          border: Border.all(color: AppColors.border, width: 1),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -135,13 +155,15 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
                 value,
                 style: TextStyle(
                   fontSize: 11.sp,
-                  color: const Color(0xFF374151),
-                  fontWeight: FontWeight.w500,
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w400,
+                  letterSpacing: 1,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            Icon(Icons.keyboard_arrow_down, size: 14.sp, color: const Color(0xFF9CA3AF)),
+            Icon(Icons.keyboard_arrow_down,
+                size: 14.sp, color: AppColors.textTertiary),
           ],
         ),
       ),
@@ -152,24 +174,24 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
     return GestureDetector(
       onTap: () => _showSortDialog(),
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border.all(color: const Color(0xFFE5E7EB)),
-          borderRadius: BorderRadius.circular(6.r),
+          border: Border.all(color: AppColors.border, width: 1),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Icon(Icons.sort, size: 14.sp, color: const Color(0xFF6B7280)),
+            Icon(Icons.sort, size: 14.sp, color: AppColors.textTertiary),
             SizedBox(width: 4.w),
             Expanded(
               child: Text(
-                _sortBy.capitalize!,
+                _sortBy.toUpperCase(),
                 style: TextStyle(
                   fontSize: 11.sp,
-                  color: const Color(0xFF374151),
-                  fontWeight: FontWeight.w500,
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w400,
+                  letterSpacing: 1,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -182,11 +204,12 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
 
   Widget _buildCategoryTabs() {
     return Container(
-      height: 44.h,
+      height: 48.h,
       color: Colors.white,
+      padding: EdgeInsets.symmetric(vertical: 8.h),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.symmetric(horizontal: 16.w),
+        padding: EdgeInsets.symmetric(horizontal: 20.w),
         itemCount: _categories.length,
         itemBuilder: (context, index) {
           final category = _categories[index];
@@ -195,21 +218,26 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
           return GestureDetector(
             onTap: () => setState(() => _selectedCategory = category),
             child: Container(
-              margin: EdgeInsets.only(right: 8.w, top: 6.h, bottom: 6.h),
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+              margin: EdgeInsets.only(right: 12.w),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
               decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFF3B82F6) : Colors.transparent,
-                borderRadius: BorderRadius.circular(16.r),
-                border: Border.all(
-                  color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFFE5E7EB),
+                color: Colors.white,
+                border: Border(
+                  bottom: BorderSide(
+                    color:
+                        isSelected ? AppColors.textPrimary : Colors.transparent,
+                    width: 2,
+                  ),
                 ),
               ),
               child: Text(
-                category,
+                category.toUpperCase(),
                 style: TextStyle(
-                  color: isSelected ? Colors.white : const Color(0xFF6B7280),
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  fontSize: 12.sp,
+                  color:
+                      isSelected ? AppColors.textPrimary : AppColors.iconLight,
+                  fontWeight: isSelected ? FontWeight.w500 : FontWeight.w300,
+                  fontSize: 11.sp,
+                  letterSpacing: 1.5,
                 ),
               ),
             ),
@@ -240,245 +268,194 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
   }
 
   Widget _buildApiCard(ApiInterfaceModel api) {
-    // 为每个API定义鲜艳的渐变色彩
-    final List<List<Color>> gradientColors = [
-      [const Color(0xFF6366F1), const Color(0xFF8B5CF6)], // 紫蓝渐变
-      [const Color(0xFF06B6D4), const Color(0xFF3B82F6)], // 蓝青渐变
-      [const Color(0xFF10B981), const Color(0xFF059669)], // 绿色渐变
-      [const Color(0xFFF59E0B), const Color(0xFFEF4444)], // 橙红渐变
-      [const Color(0xFFEC4899), const Color(0x00be185d)], // 粉红渐变
-      [const Color(0xFF8B5CF6), const Color(0x00bb7c2e)], // 紫橙渐变
-    ];
-    
-    final gradientIndex = api.name.hashCode.abs() % gradientColors.length;
-    final currentGradient = gradientColors[gradientIndex];
+    // 为每个API定义简洁的单色方案 - 性冷淡风格(浅色系)
+    final colorIndex = api.name.hashCode.abs() % AppColors.apiCardColors.length;
+    final cardColor = AppColors.apiCardColors[colorIndex];
     
     return GestureDetector(
       onTap: () => _showApiDetails(api),
       child: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: currentGradient,
-          ),
-          borderRadius: BorderRadius.circular(16.r),
-          boxShadow: [
-            BoxShadow(
-              color: currentGradient[0].withOpacity(0.3),
-              blurRadius: 12.r,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          color: cardColor,
+          border: Border.all(color: AppColors.border, width: 0.5),
         ),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16.r),
-            // 添加一个微妙的白色遮罩让内容更清晰
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.white.withOpacity(0.1),
-                Colors.transparent,
-              ],
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Header with icon and tags
-              Flexible(
-                flex: 4, // 增加顶部内容区域
-                child: Padding(
-                  padding: EdgeInsets.all(12.w),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 36.w,
-                            height: 36.h,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(10.r),
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.3),
-                                width: 1,
-                              ),
-                            ),
-                            child: Icon(
-                              api.icon,
-                              color: Colors.white,
-                              size: 18.sp,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header区域
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.all(16.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Icon和Tag
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 32.w,
+                          height: 32.w,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.15),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.3),
+                              width: 1,
                             ),
                           ),
-                          const Spacer(),
-                          if (api.isFree)
-                            _buildModernTag('FREE', Colors.white, currentGradient[1])
-                          else if (api.isHot)
-                            _buildModernTag('HOT', Colors.white, const Color(0xFFFF6B6B)),
-                        ],
-                      ),
-                      
-                      SizedBox(height: 8.h),
-                      
-                      // API Name
-                      Text(
-                        api.name,
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                          shadows: [
-                            Shadow(
-                              offset: const Offset(0, 1),
-                              blurRadius: 2,
-                              color: Colors.black.withOpacity(0.3),
-                            ),
-                          ],
+                          child: Icon(
+                            api.icon,
+                            color: Colors.white,
+                            size: 16.sp,
+                          ),
                         ),
-                        maxLines: 1,
+                        const Spacer(),
+                        if (api.isFree)
+                          _buildMinimalTag('FREE', Colors.white)
+                        else if (api.isHot)
+                          _buildMinimalTag('HOT', Colors.white),
+                      ],
+                    ),
+                    
+                    SizedBox(height: 16.h),
+
+                    // API Name
+                    Text(
+                      api.name.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.white,
+                        letterSpacing: 2,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    
+                    SizedBox(height: 6.h),
+
+                    // Category
+                    Text(
+                      api.category.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 9.sp,
+                        color: Colors.white.withOpacity(0.6),
+                        fontWeight: FontWeight.w300,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                    
+                    SizedBox(height: 12.h),
+
+                    // Description
+                    Expanded(
+                      child: Text(
+                        api.description,
+                        style: TextStyle(
+                          fontSize: 10.sp,
+                          color: Colors.white.withOpacity(0.8),
+                          height: 1.4,
+                          fontWeight: FontWeight.w300,
+                        ),
+                        maxLines: 3,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      
-                      SizedBox(height: 3.h),
-                      
-                      // Category
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                        child: Text(
-                          api.category,
-                          style: TextStyle(
-                            fontSize: 9.sp,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Bottom stats section
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.15),
+                border: Border(
+                  top: BorderSide(
+                    color: Colors.white.withOpacity(0.1),
+                    width: 0.5,
+                  ),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // 可靠性
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.circle,
+                        size: 6.sp,
+                        color: const Color(0xFF10B981),
                       ),
-                      
-                      SizedBox(height: 6.h),
-                      
-                      // Description
-                      Expanded(
-                        child: Text(
-                          api.description,
-                          style: TextStyle(
-                            fontSize: 10.sp,
-                            color: Colors.white.withOpacity(0.9),
-                            height: 1.3,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                      SizedBox(width: 4.w),
+                      Text(
+                        '${api.reliability.toStringAsFixed(1)}%',
+                        style: TextStyle(
+                          fontSize: 9.sp,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.white.withOpacity(0.9),
+                          letterSpacing: 0.5,
                         ),
                       ),
                     ],
                   ),
-                ),
-              ),
-              
-              // Bottom stats section
-              Flexible(
-                flex: 1, // 减少底部区域，只占1/5空间
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h), // 减少垂直内边距
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
-                    borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(16.r),
-                      bottomRight: Radius.circular(16.r),
+                  
+                  // 响应时间
+                  Text(
+                    '${api.responseTime}MS',
+                    style: TextStyle(
+                      fontSize: 8.sp,
+                      color: Colors.white.withOpacity(0.6),
+                      fontWeight: FontWeight.w300,
+                      letterSpacing: 1,
                     ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // 左侧：可靠性和响应时间
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.verified_rounded,
-                                size: 10.sp,
-                                color: const Color(0xFF10B981),
-                              ),
-                              SizedBox(width: 2.w),
-                              Text(
-                                '${api.reliability.toStringAsFixed(1)}%',
-                                style: TextStyle(
-                                  fontSize: 9.sp,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Text(
-                            '${api.responseTime}ms',
-                            style: TextStyle(
-                              fontSize: 7.sp,
-                              color: Colors.white.withOpacity(0.8),
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
+                  
+                  // 价格
+                  Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: Colors.white.withOpacity(0.2)),
+                    ),
+                    child: Text(
+                      api.isFree ? 'FREE' : '\$${api.price}',
+                      style: TextStyle(
+                        fontSize: 9.sp,
+                        fontWeight: FontWeight.w500,
+                        color: cardColor,
+                        letterSpacing: 1,
                       ),
-                      
-                      // 右侧：价格标签
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8.r),
-                        ),
-                        child: Text(
-                          api.isFree ? 'FREE' : '\$${api.price}',
-                          style: TextStyle(
-                            fontSize: 8.sp,
-                            fontWeight: FontWeight.w700,
-                            color: currentGradient[0],
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildModernTag(String text, Color textColor, Color backgroundColor) {
+  Widget _buildMinimalTag(String text, Color textColor) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
       decoration: BoxDecoration(
-        color: backgroundColor.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(8.r),
         border: Border.all(
-          color: backgroundColor.withOpacity(0.4),
-          width: 1,
+          color: textColor.withOpacity(0.4),
+          width: 0.5,
         ),
       ),
       child: Text(
         text,
         style: TextStyle(
           color: textColor,
-          fontSize: 8.sp,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.5,
+          fontSize: 7.sp,
+          fontWeight: FontWeight.w400,
+          letterSpacing: 1.5,
         ),
       ),
     );
@@ -493,26 +470,39 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.search_off,
-            size: 48.sp,
-            color: Colors.grey[400],
-          ),
-          SizedBox(height: 12.h),
-          Text(
-            'No APIs found',
-            style: TextStyle(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[600],
+          Container(
+            width: 80.w,
+            height: 80.w,
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: AppColors.border,
+                width: 2,
+              ),
+            ),
+            child: Icon(
+              Icons.search_off,
+              size: 36.sp,
+              color: AppColors.textTertiary,
             ),
           ),
-          SizedBox(height: 6.h),
+          SizedBox(height: 24.h),
           Text(
-            'Try adjusting your search or filters',
+            'NO RESULTS',
             style: TextStyle(
-              fontSize: 12.sp,
-              color: Colors.grey[500],
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w400,
+              color: AppColors.textSecondary,
+              letterSpacing: 3,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            'Try different keywords',
+            style: TextStyle(
+              fontSize: 11.sp,
+              color: AppColors.textTertiary,
+              fontWeight: FontWeight.w300,
+              letterSpacing: 0.5,
             ),
           ),
         ],
