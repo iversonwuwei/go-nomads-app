@@ -15,7 +15,7 @@ class LoginPageOptimized extends StatelessWidget {
     final isLargeScreen = screenWidth > 800;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFFAFAFA),
       body: SafeArea(
         child: isLargeScreen
             ? _buildDesktopLayout(controller)
@@ -48,53 +48,56 @@ class LoginPageOptimized extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 32.h),
+            SizedBox(height: 40.h),
             // Logo 区域
             Center(
               child: Container(
-                width: 48.w,
-                height: 48.w,
+                width: 64.w,
+                height: 64.w,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1976D2),
-                  borderRadius: BorderRadius.circular(12.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF1976D2).withOpacity(0.25),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+                  border: Border.all(
+                    color: const Color(0xFF1976D2),
+                    width: 2.5,
+                  ),
+                  borderRadius: BorderRadius.circular(2.r),
                 ),
                 child: Center(
                   child: Text(
                     'API',
                     style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF1976D2),
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 2,
                     ),
                   ),
                 ),
               ),
             ),
-            SizedBox(height: 24.h),
+            SizedBox(height: 40.h),
             // 欢迎文字
             Text(
-              '欢迎回来',
+              '登录',
               style: TextStyle(
-                fontSize: 26.sp,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-                letterSpacing: -0.5,
+                fontSize: 32.sp,
+                fontWeight: FontWeight.w300,
+                color: const Color(0xFF212121),
+                letterSpacing: 2,
               ),
             ),
-            SizedBox(height: 6.h),
+            SizedBox(height: 8.h),
+            Container(
+              width: 40.w,
+              height: 2.h,
+              color: const Color(0xFF1976D2),
+            ),
+            SizedBox(height: 32.h),
             Text(
-              '登录您的账号以继续使用',
+              'Sign in to continue',
               style: TextStyle(
-                fontSize: 14.sp,
-                color: Colors.black54,
-                height: 1.5,
+                fontSize: 13.sp,
+                color: const Color(0xFF9E9E9E),
+                letterSpacing: 1,
               ),
             ),
             SizedBox(height: 28.h),
@@ -108,61 +111,29 @@ class LoginPageOptimized extends StatelessWidget {
             _buildLoginButton(controller),
             SizedBox(height: 20.h),
             // 分隔线
-            Row(
-              children: [
-                Expanded(
-                  child: Divider(color: Colors.grey[300], height: 1),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w),
-                  child: Text(
-                    '或使用其他方式登录',
-                    style: TextStyle(
-                      color: Colors.black45,
-                      fontSize: 14.sp,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Divider(color: Colors.grey[300], height: 1),
-                ),
-              ],
+            Container(
+              height: 1.h,
+              color: const Color(0xFFE0E0E0),
             ),
-            SizedBox(height: 20.h),
+            SizedBox(height: 24.h),
             // 第三方登录按钮
             _buildThirdPartyButtons(controller),
-            SizedBox(height: 16.h),
+            SizedBox(height: 24.h),
             // 注册提示
             Center(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    '还没有账号？',
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      color: Colors.black54,
-                    ),
+              child: GestureDetector(
+                onTap: () {
+                  Get.snackbar('提示', '立即注册功能开发中');
+                },
+                child: Text(
+                  'CREATE ACCOUNT',
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    color: const Color(0xFF9E9E9E),
+                    letterSpacing: 2,
+                    decoration: TextDecoration.underline,
                   ),
-                  TextButton(
-                    onPressed: () {
-                      Get.snackbar('提示', '立即注册功能开发中');
-                    },
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.symmetric(horizontal: 6.w),
-                      minimumSize: Size(0, 28.h),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: Text(
-                      '立即注册',
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF1976D2),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
             SizedBox(height: 24.h),
@@ -415,34 +386,26 @@ class LoginPageOptimized extends StatelessWidget {
   }
 
   Widget _buildLoginTypeTabs(AuthController controller) {
-    return Obx(() => Container(
-          decoration: BoxDecoration(
-            color: Colors.grey[100],
-            borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(color: Colors.grey[200]!, width: 1),
-          ),
-          padding: EdgeInsets.all(6.w),
-          child: Row(
-            children: [
-              Expanded(
-                child: _buildLoginTypeTab(
-                  '密码登录',
-                  Icons.lock_outline,
-                  controller.loginType.value == LoginType.phonePassword,
-                  () => controller.switchLoginType(LoginType.phonePassword),
-                ),
+    return Obx(() => Row(
+          children: [
+            Expanded(
+              child: _buildLoginTypeTab(
+                '密码',
+                Icons.lock_outline,
+                controller.loginType.value == LoginType.phonePassword,
+                () => controller.switchLoginType(LoginType.phonePassword),
               ),
-              SizedBox(width: 8.w),
-              Expanded(
-                child: _buildLoginTypeTab(
-                  '验证码登录',
-                  Icons.message_outlined,
-                  controller.loginType.value == LoginType.phoneCode,
-                  () => controller.switchLoginType(LoginType.phoneCode),
-                ),
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: _buildLoginTypeTab(
+                '验证码',
+                Icons.message_outlined,
+                controller.loginType.value == LoginType.phoneCode,
+                () => controller.switchLoginType(LoginType.phoneCode),
               ),
-            ],
-          ),
+            ),
+          ],
         ));
   }
 
@@ -454,43 +417,36 @@ class LoginPageOptimized extends StatelessWidget {
   ) {
     return GestureDetector(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeInOut,
-        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 8.w),
+      child: Container(
+        padding: EdgeInsets.only(bottom: 12.h),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF1976D2) : Colors.transparent,
-          borderRadius: BorderRadius.circular(12.r),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: const Color(0xFF1976D2).withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
-              : null,
+          border: Border(
+            bottom: BorderSide(
+              color: isSelected ? const Color(0xFF1976D2) : Colors.transparent,
+              width: 2,
+            ),
+          ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               icon,
-              size: 18.sp,
-              color: isSelected ? Colors.white : Colors.grey[600],
+              size: 16.sp,
+              color: isSelected
+                  ? const Color(0xFF1976D2)
+                  : const Color(0xFFBDBDBD),
             ),
             SizedBox(width: 6.w),
-            Flexible(
-              child: Text(
-                text,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected ? Colors.white : Colors.grey[600],
-                  fontSize: 14.sp,
-                  letterSpacing: 0.3,
-                ),
-                overflow: TextOverflow.ellipsis,
+            Text(
+              text,
+              style: TextStyle(
+                fontWeight: isSelected ? FontWeight.w500 : FontWeight.w300,
+                color: isSelected
+                    ? const Color(0xFF212121)
+                    : const Color(0xFFBDBDBD),
+                fontSize: 14.sp,
+                letterSpacing: 1,
               ),
             ),
           ],
@@ -508,37 +464,53 @@ class LoginPageOptimized extends StatelessWidget {
           TextFormField(
             controller: controller.phoneController,
             keyboardType: TextInputType.phone,
-            style: TextStyle(fontSize: 16.sp),
+            style: TextStyle(
+              fontSize: 15.sp,
+              color: const Color(0xFF212121),
+              letterSpacing: 0.5,
+            ),
             decoration: InputDecoration(
               labelText: '手机号码',
+              labelStyle: TextStyle(
+                fontSize: 12.sp,
+                color: const Color(0xFF9E9E9E),
+                letterSpacing: 1,
+              ),
               hintText: '请输入手机号',
-              prefixIcon: Icon(Icons.phone_android, size: 22.sp),
+              hintStyle: TextStyle(
+                fontSize: 15.sp,
+                color: const Color(0xFFE0E0E0),
+              ),
               filled: true,
-              fillColor: Colors.grey[50],
+              fillColor: Colors.white,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide.none,
+                borderRadius: BorderRadius.circular(0),
+                borderSide:
+                    const BorderSide(color: Color(0xFFE0E0E0), width: 1),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide(color: Colors.grey[200]!, width: 1),
+                borderRadius: BorderRadius.circular(0),
+                borderSide:
+                    const BorderSide(color: Color(0xFFE0E0E0), width: 1),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(0),
                 borderSide:
-                    const BorderSide(color: Color(0xFF1976D2), width: 2),
+                    const BorderSide(color: Color(0xFF212121), width: 1.5),
               ),
               errorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide(color: Colors.red[300]!, width: 1),
+                borderRadius: BorderRadius.circular(0),
+                borderSide:
+                    const BorderSide(color: Color(0xFF212121), width: 1),
               ),
               focusedErrorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                borderSide: const BorderSide(color: Colors.red, width: 2),
+                borderRadius: BorderRadius.circular(0),
+                borderSide:
+                    const BorderSide(color: Color(0xFF212121), width: 1.5),
               ),
               contentPadding: EdgeInsets.symmetric(
                 horizontal: 16.w,
-                vertical: 16.h,
+                vertical: 18.h,
               ),
             ),
             validator: controller.phoneValidator,
@@ -554,14 +526,19 @@ class LoginPageOptimized extends StatelessWidget {
               Obx(() => Row(
                     children: [
                       SizedBox(
-                        width: 20.w,
-                        height: 20.w,
+                        width: 18.w,
+                        height: 18.w,
                         child: Checkbox(
                           value: controller.agreeToTerms.value,
                           onChanged: (value) => controller.toggleAgreement(),
                           activeColor: const Color(0xFF1976D2),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4.r),
+                          checkColor: Colors.white,
+                          side: const BorderSide(
+                            color: Color(0xFFE0E0E0),
+                            width: 1,
+                          ),
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.zero,
                           ),
                         ),
                       ),
@@ -569,29 +546,26 @@ class LoginPageOptimized extends StatelessWidget {
                       Text(
                         '记住我',
                         style: TextStyle(
-                          fontSize: 14.sp,
-                          color: Colors.black54,
+                          fontSize: 12.sp,
+                          color: const Color(0xFF9E9E9E),
+                          letterSpacing: 0.5,
                         ),
                       ),
                     ],
                   )),
               const Spacer(),
               if (controller.loginType.value == LoginType.phonePassword)
-                TextButton(
-                  onPressed: () {
+                GestureDetector(
+                  onTap: () {
                     Get.snackbar('提示', '忘记密码功能开发中');
                   },
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero,
-                    minimumSize: Size(0, 32.h),
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
                   child: Text(
                     '忘记密码?',
                     style: TextStyle(
-                      fontSize: 14.sp,
-                      color: const Color(0xFF1976D2),
-                      fontWeight: FontWeight.w500,
+                      fontSize: 12.sp,
+                      color: const Color(0xFF9E9E9E),
+                      decoration: TextDecoration.underline,
+                      letterSpacing: 0.5,
                     ),
                   ),
                 ),
@@ -606,46 +580,60 @@ class LoginPageOptimized extends StatelessWidget {
     return Obx(() => TextFormField(
           controller: controller.passwordController,
           obscureText: !controller.isPasswordVisible.value,
-          style: TextStyle(fontSize: 16.sp),
+          style: TextStyle(
+            fontSize: 15.sp,
+            color: const Color(0xFF212121),
+            letterSpacing: 0.5,
+          ),
           decoration: InputDecoration(
             labelText: '密码',
+            labelStyle: TextStyle(
+              fontSize: 12.sp,
+              color: const Color(0xFF9E9E9E),
+              letterSpacing: 1,
+            ),
             hintText: '请输入密码',
-            prefixIcon: Icon(Icons.lock_outline, size: 22.sp),
+            hintStyle: TextStyle(
+              fontSize: 15.sp,
+              color: const Color(0xFFE0E0E0),
+            ),
             suffixIcon: IconButton(
               icon: Icon(
                 controller.isPasswordVisible.value
                     ? Icons.visibility_outlined
                     : Icons.visibility_off_outlined,
-                size: 22.sp,
-                color: Colors.black38,
+                size: 18.sp,
+                color: const Color(0xFF9E9E9E),
               ),
               onPressed: controller.togglePasswordVisibility,
             ),
             filled: true,
-            fillColor: Colors.grey[50],
+            fillColor: Colors.white,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(0),
+              borderSide: const BorderSide(color: Color(0xFFE0E0E0), width: 1),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(color: Colors.grey[200]!, width: 1),
+              borderRadius: BorderRadius.circular(0),
+              borderSide: const BorderSide(color: Color(0xFFE0E0E0), width: 1),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: const BorderSide(color: Color(0xFF1976D2), width: 2),
+              borderRadius: BorderRadius.circular(0),
+              borderSide:
+                  const BorderSide(color: Color(0xFF1976D2), width: 1.5),
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(color: Colors.red[300]!, width: 1),
+              borderRadius: BorderRadius.circular(0),
+              borderSide: const BorderSide(color: Color(0xFF212121), width: 1),
             ),
             focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: const BorderSide(color: Colors.red, width: 2),
+              borderRadius: BorderRadius.circular(0),
+              borderSide:
+                  const BorderSide(color: Color(0xFF212121), width: 1.5),
             ),
             contentPadding: EdgeInsets.symmetric(
               horizontal: 16.w,
-              vertical: 16.h,
+              vertical: 18.h,
             ),
           ),
           validator: controller.passwordValidator,
@@ -659,77 +647,91 @@ class LoginPageOptimized extends StatelessWidget {
           child: TextFormField(
             controller: controller.codeController,
             keyboardType: TextInputType.number,
-            style: TextStyle(fontSize: 16.sp),
+            style: TextStyle(
+              fontSize: 15.sp,
+              color: const Color(0xFF212121),
+              letterSpacing: 0.5,
+            ),
             inputFormatters: [
               FilteringTextInputFormatter.digitsOnly,
               LengthLimitingTextInputFormatter(6),
             ],
             decoration: InputDecoration(
               labelText: '验证码',
+              labelStyle: TextStyle(
+                fontSize: 12.sp,
+                color: const Color(0xFF9E9E9E),
+                letterSpacing: 1,
+              ),
               hintText: '请输入验证码',
-              prefixIcon: Icon(Icons.sms_outlined, size: 22.sp),
+              hintStyle: TextStyle(
+                fontSize: 15.sp,
+                color: const Color(0xFFE0E0E0),
+              ),
               filled: true,
-              fillColor: Colors.grey[50],
+              fillColor: Colors.white,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide.none,
+                borderRadius: BorderRadius.circular(0),
+                borderSide:
+                    const BorderSide(color: Color(0xFFE0E0E0), width: 1),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide(color: Colors.grey[200]!, width: 1),
+                borderRadius: BorderRadius.circular(0),
+                borderSide:
+                    const BorderSide(color: Color(0xFFE0E0E0), width: 1),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(0),
                 borderSide:
-                    const BorderSide(color: Color(0xFF1976D2), width: 2),
+                    const BorderSide(color: Color(0xFF212121), width: 1.5),
               ),
               errorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide(color: Colors.red[300]!, width: 1),
+                borderRadius: BorderRadius.circular(0),
+                borderSide:
+                    const BorderSide(color: Color(0xFF212121), width: 1),
               ),
               focusedErrorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                borderSide: const BorderSide(color: Colors.red, width: 2),
+                borderRadius: BorderRadius.circular(0),
+                borderSide:
+                    const BorderSide(color: Color(0xFF212121), width: 1.5),
               ),
               contentPadding: EdgeInsets.symmetric(
                 horizontal: 16.w,
-                vertical: 16.h,
+                vertical: 18.h,
               ),
             ),
             validator: controller.codeValidator,
           ),
         ),
-        SizedBox(width: 12.w),
+        SizedBox(width: 1.w),
         Obx(() => SizedBox(
-              width: 110.w,
-              height: 52.h,
-              child: ElevatedButton(
+              width: 100.w,
+              height: 56.h,
+              child: OutlinedButton(
                 onPressed: controller.canSendCode.value
                     ? controller.sendVerificationCode
                     : null,
-                style: ElevatedButton.styleFrom(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: controller.canSendCode.value
+                      ? const Color(0xFF212121)
+                      : const Color(0xFFBDBDBD),
                   backgroundColor: Colors.white,
-                  foregroundColor: const Color(0xFF1976D2),
-                  elevation: 0,
-                  side: BorderSide(
-                    color: controller.canSendCode.value
-                        ? const Color(0xFF1976D2)
-                        : Colors.grey[300]!,
+                  side: const BorderSide(
+                    color: Color(0xFFE0E0E0),
                     width: 1,
                   ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.zero,
                   ),
-                  disabledBackgroundColor: Colors.grey[100],
-                  disabledForegroundColor: Colors.grey[400],
                 ),
                 child: Text(
                   controller.canSendCode.value
-                      ? '点击获取'
+                      ? '获取'
                       : '${controller.codeCountdown.value}s',
                   style: TextStyle(
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w400,
+                    letterSpacing: 1,
                   ),
                 ),
               ),
@@ -741,34 +743,34 @@ class LoginPageOptimized extends StatelessWidget {
   Widget _buildLoginButton(AuthController controller) {
     return Obx(() => SizedBox(
           width: double.infinity,
-          height: 52.h,
+          height: 54.h,
           child: ElevatedButton(
             onPressed: controller.isLoading.value ? null : controller.login,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF1976D2),
               foregroundColor: Colors.white,
               elevation: 0,
-              shadowColor: const Color(0xFF1976D2).withOpacity(0.5),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.zero,
               ),
-              disabledBackgroundColor: Colors.grey[300],
+              disabledBackgroundColor: const Color(0xFFE0E0E0),
+              disabledForegroundColor: const Color(0xFF9E9E9E),
             ),
             child: controller.isLoading.value
                 ? SizedBox(
-                    height: 22.w,
-                    width: 22.w,
+                    height: 20.w,
+                    width: 20.w,
                     child: const CircularProgressIndicator(
-                      strokeWidth: 2.5,
+                      strokeWidth: 2,
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
                   )
                 : Text(
-                    '登录',
+                    'LOGIN',
                     style: TextStyle(
-                      fontSize: 17.sp,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.5,
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: 3,
                     ),
                   ),
           ),
@@ -807,19 +809,17 @@ class LoginPageOptimized extends StatelessWidget {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12.r),
       child: Container(
-        width: 52.w,
-        height: 52.w,
+        width: 48.w,
+        height: 48.w,
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: color.withOpacity(0.2)),
+          color: Colors.white,
+          border: Border.all(color: const Color(0xFFE0E0E0), width: 1),
         ),
         child: Icon(
           icon,
           color: color,
-          size: 28.sp,
+          size: 20.sp,
         ),
       ),
     );
