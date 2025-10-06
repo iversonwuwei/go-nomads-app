@@ -138,6 +138,18 @@ class LoginPageOptimized extends StatelessWidget {
               ),
             ),
             SizedBox(height: 24.h),
+            // 版权信息
+            Center(
+              child: Text(
+                'All Rights Reserved by Walden',
+                style: TextStyle(
+                  fontSize: 10.sp,
+                  color: AppColors.textTertiary,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+            SizedBox(height: 20.h),
           ],
         ),
       ),
@@ -378,6 +390,17 @@ class LoginPageOptimized extends StatelessWidget {
               style: TextStyle(
                 color: Colors.grey[400],
                 fontSize: 11.sp,
+              ),
+            ),
+          ),
+          SizedBox(height: 16.h),
+          Center(
+            child: Text(
+              'All Rights Reserved by Walden',
+              style: TextStyle(
+                color: Colors.grey[400],
+                fontSize: 10.sp,
+                letterSpacing: 0.5,
               ),
             ),
           ),

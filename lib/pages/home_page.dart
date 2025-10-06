@@ -9,6 +9,7 @@ import '../controllers/shopping_controller.dart';
 import '../models/api_interface_model.dart';
 import '../models/product_model.dart';
 import '../routes/app_routes.dart';
+import '../widgets/copyright_widget.dart';
 
 class MyHomePage extends StatelessWidget {
   final String title;
@@ -98,6 +99,9 @@ class MyHomePage extends StatelessWidget {
               _buildApiInterfaceGrid(controller.selectedApiInterfaces),
 
               const SizedBox(height: 20),
+
+              // 版权信息
+              const CopyrightWidget(useTopMargin: true),
             ],
           ),
         );

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../routes/app_routes.dart';
+import '../widgets/copyright_widget.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -294,7 +295,8 @@ class ProfilePage extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: 32),
+              // 版权信息
+              const CopyrightWidget(useTopMargin: true),
             ],
           ),
         ),

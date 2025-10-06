@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import '../config/app_colors.dart';
 import '../controllers/shopping_controller.dart';
 import '../models/api_interface_model.dart';
+import '../widgets/copyright_widget.dart';
 
 class ApiMarketplacePage extends StatefulWidget {
   const ApiMarketplacePage({super.key});
@@ -254,16 +255,28 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
       return _buildEmptyState();
     }
     
-    return GridView.builder(
-      padding: EdgeInsets.all(16.w),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 0.85, // 调整比例，减少卡片高度
-        crossAxisSpacing: 12.w,
-        mainAxisSpacing: 12.h,
-      ),
-      itemCount: filteredApis.length,
-      itemBuilder: (context, index) => _buildApiCard(filteredApis[index]),
+    return CustomScrollView(
+      slivers: [
+        SliverPadding(
+          padding: EdgeInsets.all(16.w),
+          sliver: SliverGrid(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.85, // 调整比例，减少卡片高度
+              crossAxisSpacing: 12.w,
+              mainAxisSpacing: 12.h,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) => _buildApiCard(filteredApis[index]),
+              childCount: filteredApis.length,
+            ),
+          ),
+        ),
+        // 版权信息
+        const SliverToBoxAdapter(
+          child: CopyrightWidget(useTopMargin: true),
+        ),
+      ],
     );
   }
 
