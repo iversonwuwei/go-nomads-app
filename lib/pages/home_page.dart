@@ -7,7 +7,6 @@ import 'package:get/get.dart';
 import '../config/app_colors.dart';
 import '../controllers/shopping_controller.dart';
 import '../models/api_interface_model.dart';
-import '../models/product_model.dart';
 import '../routes/app_routes.dart';
 import '../widgets/copyright_widget.dart';
 
@@ -191,38 +190,34 @@ class MyHomePage extends StatelessWidget {
   Widget _buildQuickActions() {
     final List<Map<String, dynamic>> actions = [
       {
-        'icon': Icons.api,
+        'icon': Icons.api_outlined,
         'title': 'API市场',
-        'color': Colors.blue,
         'route': AppRoutes.apiMarketplace
       },
       {
-        'icon': Icons.data_usage,
+        'icon': Icons.dns_outlined,
         'title': '数据服务',
-        'color': Colors.green,
         'route': null
       },
       {
-        'icon': Icons.security,
+        'icon': Icons.verified_user_outlined,
         'title': '验证接口',
-        'color': Colors.orange,
         'route': null
       },
       {
-        'icon': Icons.analytics,
+        'icon': Icons.analytics_outlined,
         'title': '分析工具',
-        'color': Colors.purple,
         'route': AppRoutes.analyticsTool
       },
     ];
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(
-          color: AppColors.border,
+          color: AppColors.borderLight,
           width: 1,
         ),
       ),
@@ -238,31 +233,32 @@ class MyHomePage extends StatelessWidget {
               }
             },
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 56,
-                  height: 56,
+                  width: 64,
+                  height: 64,
                   decoration: BoxDecoration(
-                    color: AppColors.textSecondary,
+                    color: AppColors.containerLight,
                     border: Border.all(
-                      color: AppColors.border,
+                      color: AppColors.borderLight,
                       width: 1,
                     ),
                   ),
                   child: Icon(
                     action['icon'],
-                    color: Colors.white,
-                    size: 24,
+                    color: AppColors.textPrimary,
+                    size: 28,
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 Text(
-                  action['title'].toUpperCase(),
+                  action['title'],
                   style: const TextStyle(
-                    fontSize: 9,
+                    fontSize: 11,
                     color: AppColors.textSecondary,
                     fontWeight: FontWeight.w400,
-                    letterSpacing: 1.2,
+                    letterSpacing: 0.5,
                   ),
                 ),
               ],
@@ -295,160 +291,6 @@ class MyHomePage extends StatelessWidget {
           fontWeight: FontWeight.w400,
           color: AppColors.textPrimary,
           letterSpacing: 3,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProductGrid(RxList<ProductModel> products) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.75,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-        ),
-        itemCount: products.length,
-        itemBuilder: (context, index) {
-          final product = products[index];
-          return _buildProductCard(product);
-        },
-      ),
-    );
-  }
-
-  Widget _buildProductCard(ProductModel product) {
-    final ShoppingController controller = Get.find<ShoppingController>();
-
-    return GestureDetector(
-      onTap: () => controller.onProductTap(product),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.1),
-              spreadRadius: 1,
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 商品图片
-            Expanded(
-              flex: 3,
-              child: Stack(
-                children: [
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(8),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: CachedNetworkImage(
-                        imageUrl: product.imageUrl,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(
-                          color: Colors.grey[200],
-                          child: const Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                        ),
-                        errorWidget: (context, url, error) => Container(
-                          color: Colors.grey[200],
-                          child: Icon(
-                            Icons.image,
-                            size: 40,
-                            color: Colors.grey[500],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  if (product.isHot)
-                    Positioned(
-                      top: 8,
-                      left: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Text(
-                          'HOT',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-
-            // 商品信息
-            Expanded(
-              flex: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 商品名称
-                    Text(
-                      product.name,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const Spacer(),
-
-                    // 价格信息
-                    Row(
-                      children: [
-                        Text(
-                          '¥${product.price.toStringAsFixed(0)}',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.red[600],
-                          ),
-                        ),
-                        if (product.originalPrice != null) ...[
-                          const SizedBox(width: 8),
-                          Text(
-                            '¥${product.originalPrice!.toStringAsFixed(0)}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                              decoration: TextDecoration.lineThrough,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
         ),
       ),
     );
