@@ -41,15 +41,28 @@ class AnalyticsController extends GetxController {
     final random = math.Random();
     final List<Map<String, dynamic>> data = [];
     
-    for (int i = 0; i < 30; i++) {
-      final basePrice = 100 + random.nextDouble() * 50;
+    // 为每个大类商品生成趋势数据
+    final categories = [
+      '电子产品',
+      '服装纺织',
+      '食品饮料',
+      '化工原料',
+      '机械设备',
+    ];
+
+    for (String category in categories) {
+      List<double> points = [];
+      double baseValue = 80 + random.nextDouble() * 40;
+
+      for (int i = 0; i < 20; i++) {
+        baseValue += (random.nextDouble() - 0.5) * 10;
+        baseValue = baseValue.clamp(60.0, 140.0);
+        points.add(baseValue);
+      }
+      
       data.add({
-        'date': DateTime.now().subtract(Duration(days: 30 - i)),
-        'open': basePrice,
-        'high': basePrice + random.nextDouble() * 10,
-        'low': basePrice - random.nextDouble() * 10,
-        'close': basePrice + (random.nextDouble() - 0.5) * 8,
-        'volume': random.nextInt(1000) + 500,
+        'category': category,
+        'points': points,
       });
     }
     

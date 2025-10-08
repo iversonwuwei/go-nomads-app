@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../config/app_colors.dart';
 import '../controllers/ai_chat_controller.dart';
 
 class AiChatPage extends StatelessWidget {
@@ -38,8 +39,8 @@ class AiChatPage extends StatelessWidget {
                         ],
                       ),
                       child: const Icon(
-                        Icons.arrow_back_ios_new,
-                        color: Colors.black87,
+                        Icons.arrow_back_outlined,
+                        color: AppColors.backButtonDark,
                         size: 20,
                       ),
                     ),

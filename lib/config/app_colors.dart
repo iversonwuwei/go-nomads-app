@@ -83,28 +83,36 @@ class AppColors {
   
   /// 浅图标颜色
   static const Color iconLight = Color(0xFFBDBDBD);
+  
+  /// 返回按钮颜色 - 深色背景用
+  static const Color backButtonLight = Colors.white70;
 
-  // ============ API卡片颜色 - 统一中蓝灰色(加深) ============
+  /// 返回按钮颜色 - 浅色背景用
+  static const Color backButtonDark = Colors.black87;
+
+  // ============ API卡片颜色 - 低饱和度多色方案 ============
+  // 参考 Notion/Linear 的柔和色彩系统
   static const List<Color> apiCardColors = [
-    Color(0xFF90A4AE), // 统一中蓝灰(加深)
-    Color(0xFF90A4AE), // 统一中蓝灰(加深)
-    Color(0xFF90A4AE), // 统一中蓝灰(加深)
-    Color(0xFF90A4AE), // 统一中蓝灰(加深)
-    Color(0xFF90A4AE), // 统一中蓝灰(加深)
-    Color(0xFF90A4AE), // 统一中蓝灰(加深)
+    Color(0xFF90A4AE), // 蓝灰 - 沉稳
+    Color(0xFFA1887F), // 棕灰 - 温暖
+    Color(0xFF81C784), // 绿灰 - 生机（低饱和）
+    Color(0xFF64B5F6), // 天蓝 - 清新（低饱和）
+    Color(0xFFFFB74D), // 橙灰 - 活力（低饱和）
+    Color(0xFFBA68C8), // 紫灰 - 优雅（低饱和）
   ];
 
-  // ============ 数据分类图标颜色 - 统一中蓝灰色(加深) ============
+  // ============ 数据分类图标颜色 - 低饱和度多色方案 ============
+  // 使用柔和色调增加视觉趣味性，同时保持专业感
   static const List<Color> dataCategoryColors = [
-    Color(0xFF90A4AE), // 统一中蓝灰(加深)
-    Color(0xFF90A4AE), // 统一中蓝灰(加深)
-    Color(0xFF90A4AE), // 统一中蓝灰(加深)
-    Color(0xFF90A4AE), // 统一中蓝灰(加深)
-    Color(0xFF90A4AE), // 统一中蓝灰(加深)
-    Color(0xFF90A4AE), // 统一中蓝灰(加深)
-    Color(0xFF90A4AE), // 统一中蓝灰(加深)
-    Color(0xFF90A4AE), // 统一中蓝灰(加深)
-    Color(0xFF90A4AE), // 统一中蓝灰(加深)
+    Color(0xFF64B5F6), // 天蓝 - 房产
+    Color(0xFF81C784), // 绿灰 - 企业
+    Color(0xFFFFB74D), // 橙灰 - 产品
+    Color(0xFFBA68C8), // 紫灰 - 个人
+    Color(0xFF4FC3F7), // 亮蓝 - 金融（低饱和）
+    Color(0xFF4DB6AC), // 青绿 - 电商（低饱和）
+    Color(0xFFE57373), // 柔红 - 社交（低饱和）
+    Color(0xFF9575CD), // 柔紫 - 位置（低饱和）
+    Color(0xFFFFD54F), // 柔黄 - 生活（低饱和）
   ];
 
   // ============ 辅助方法 ============

@@ -129,41 +129,48 @@ class MyHomePage extends StatelessWidget {
                 width: double.infinity,
                 margin: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
-                  border: Border.all(
-                    color: AppColors.border,
-                    width: 1,
-                  ),
+                  borderRadius: BorderRadius.circular(12), // 圆角设计
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.06),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-                child: CachedNetworkImage(
-                  imageUrl: banner.imageUrl,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    color: AppColors.background,
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.accent,
-                        strokeWidth: 2,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: CachedNetworkImage(
+                    imageUrl: banner.imageUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                      color: AppColors.background,
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.accent,
+                          strokeWidth: 2,
+                        ),
                       ),
                     ),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    color: AppColors.background,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.image_outlined,
-                            size: 36, color: AppColors.textTertiary),
-                        const SizedBox(height: 12),
-                        Text(
-                          banner.title.toUpperCase(),
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
-                            fontWeight: FontWeight.w300,
-                            fontSize: 12,
-                            letterSpacing: 2,
+                    errorWidget: (context, url, error) => Container(
+                      color: AppColors.background,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.image_outlined,
+                              size: 36, color: AppColors.textTertiary),
+                          const SizedBox(height: 12),
+                          Text(
+                            banner.title.toUpperCase(),
+                            style: const TextStyle(
+                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.w300,
+                              fontSize: 12,
+                              letterSpacing: 2,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -197,7 +204,7 @@ class MyHomePage extends StatelessWidget {
       {
         'icon': Icons.dns_outlined,
         'title': '数据服务',
-        'route': null
+        'route': AppRoutes.dataService
       },
       {
         'icon': Icons.verified_user_outlined,
@@ -224,7 +231,9 @@ class MyHomePage extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: actions.map((action) {
-          return GestureDetector(
+          return _QuickActionButton(
+            icon: action['icon'],
+            title: action['title'],
             onTap: () {
               if (action['route'] != null) {
                 Get.toNamed(action['route']);
@@ -232,37 +241,6 @@ class MyHomePage extends StatelessWidget {
                 Get.snackbar('功能', '${action['title']}功能开发中...');
               }
             },
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    color: AppColors.containerLight,
-                    border: Border.all(
-                      color: AppColors.borderLight,
-                      width: 1,
-                    ),
-                  ),
-                  child: Icon(
-                    action['icon'],
-                    color: AppColors.textPrimary,
-                    size: 28,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  action['title'],
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ],
-            ),
           );
         }).toList(),
       ),
@@ -330,7 +308,15 @@ class MyHomePage extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: cardColor,
+          borderRadius: BorderRadius.circular(8), // 圆角设计
           border: Border.all(color: AppColors.border, width: 0.5),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -488,48 +474,39 @@ class MyHomePage extends StatelessWidget {
     final List<Map<String, dynamic>> dataCategories = [
       {
         'title': '房产数据',
-        'icon': Icons.home,
-        'color': const Color(0xFF4FC3F7), // 蓝色
+        'icon': Icons.home_outlined, // outlined风格
       },
       {
         'title': '企业数据',
-        'icon': Icons.business,
-        'color': const Color(0xFF66BB6A), // 绿色
+        'icon': Icons.business_outlined, // outlined风格
       },
       {
         'title': '产品信息',
-        'icon': Icons.inventory_2,
-        'color': const Color(0xFFFF7043), // 橙色
+        'icon': Icons.inventory_2_outlined, // outlined风格
       },
       {
         'title': '个人信息',
-        'icon': Icons.person,
-        'color': const Color(0xFFAB47BC), // 紫色
+        'icon': Icons.person_outline, // outlined风格
       },
       {
         'title': '金融数据',
-        'icon': Icons.account_balance,
-        'color': const Color(0xFF42A5F5), // 深蓝色
+        'icon': Icons.account_balance_outlined, // outlined风格
       },
       {
         'title': '电商数据',
-        'icon': Icons.shopping_bag,
-        'color': const Color(0xFF26A69A), // 青色
+        'icon': Icons.shopping_bag_outlined, // outlined风格
       },
       {
         'title': '社交数据',
-        'icon': Icons.group,
-        'color': const Color(0xFFEF5350), // 红色
+        'icon': Icons.group_outlined, // outlined风格
       },
       {
         'title': '位置数据',
-        'icon': Icons.location_on,
-        'color': const Color(0xFF7E57C2), // 深紫色
+        'icon': Icons.location_on_outlined, // outlined风格
       },
       {
         'title': '生活服务',
-        'icon': Icons.local_activity,
-        'color': const Color(0xFFFF9800), // 橙黄色
+        'icon': Icons.stars_outlined, // outlined风格
       },
     ];
 
@@ -561,7 +538,12 @@ class MyHomePage extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        Get.snackbar('数据分类', '${category['title']}功能开发中...');
+        // 如果是位置数据,跳转到位置演示页面
+        if (category['title'] == '位置数据') {
+          Get.toNamed(AppRoutes.locationDemo);
+        } else {
+          Get.snackbar('数据分类', '${category['title']}功能开发中...');
+        }
       },
       child: Container(
         color: Colors.transparent,
@@ -591,6 +573,89 @@ class MyHomePage extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// 快捷功能按钮组件 - 带hover效果
+class _QuickActionButton extends StatefulWidget {
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+
+  const _QuickActionButton({
+    required this.icon,
+    required this.title,
+    required this.onTap,
+  });
+
+  @override
+  State<_QuickActionButton> createState() => _QuickActionButtonState();
+}
+
+class _QuickActionButtonState extends State<_QuickActionButton> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeInOut,
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: _isHovered
+                      ? AppColors.containerLight.withValues(alpha: 0.7)
+                      : AppColors.containerLight,
+                  border: Border.all(
+                    color: _isHovered
+                        ? AppColors.accent.withValues(alpha: 0.3)
+                        : AppColors.borderLight,
+                    width: 1,
+                  ),
+                  boxShadow: _isHovered
+                      ? [
+                          BoxShadow(
+                            color: AppColors.accent.withValues(alpha: 0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : [],
+                ),
+                child: Icon(
+                  widget.icon,
+                  color: _isHovered ? AppColors.accent : AppColors.textPrimary,
+                  size: 28,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                widget.title,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: _isHovered
+                      ? AppColors.textPrimary
+                      : AppColors.textSecondary,
+                  fontWeight: FontWeight.w400,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

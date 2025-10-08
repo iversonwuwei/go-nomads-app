@@ -1,378 +1,302 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Badge;
 import 'package:get/get.dart';
 
-import '../config/app_colors.dart';
+import '../controllers/user_profile_controller.dart';
+import '../models/user_model.dart';
 import '../routes/app_routes.dart';
-import '../widgets/copyright_widget.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.put(UserProfileController());
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 768;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // 用户信息卡片 - API开发者身份
-              Container(
-                margin: const EdgeInsets.all(16),
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: AppColors.containerBlueGrey,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: AppColors.border,
-                    width: 0.5,
+      backgroundColor: Colors.white,
+      body: Obx(() {
+        if (controller.isLoading.value) {
+          return const Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
+            ),
+          );
+        }
+
+        final user = controller.currentUser.value;
+        if (user == null) {
+          return const Center(child: Text('User not found'));
+        }
+
+        return CustomScrollView(
+          slivers: [
+            // App Bar
+            SliverAppBar(
+              expandedHeight: 0,
+              floating: true,
+              pinned: true,
+              backgroundColor: Colors.white,
+              elevation: 0,
+              title: const Text(
+                'Profile',
+                style: TextStyle(
+                  color: Color(0xFF1a1a1a),
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              actions: [
+                IconButton(
+                  icon: Icon(
+                    controller.isEditMode.value ? Icons.check : Icons.edit,
+                    color: const Color(0xFFFF4458),
                   ),
+                  onPressed: controller.toggleEditMode,
+                ),
+                const SizedBox(width: 8),
+              ],
+            ),
+
+            // Content
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isMobile ? 16 : 32,
+                  vertical: 24,
                 ),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 68,
-                          height: 68,
-                          decoration: BoxDecoration(
-                            color: AppColors.containerWhite15,
-                            borderRadius: BorderRadius.circular(4),
-                            border: const Border(
-                              top: BorderSide(
-                                  color: AppColors.borderWhite30, width: 1),
-                              left: BorderSide(
-                                  color: AppColors.borderWhite30, width: 1),
-                              right: BorderSide(
-                                  color: AppColors.borderWhite30, width: 1),
-                              bottom: BorderSide(
-                                  color: AppColors.borderWhite30, width: 1),
-                            ),
-                          ),
-                          child: Icon(
-                            Icons.code,
-                            size: 32,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        const Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'API DEVELOPER',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors.white,
-                                  letterSpacing: 2,
-                                ),
-                              ),
-                              SizedBox(height: 4),
-                              Text(
-                                'developer@sjsj.com',
-                                style: TextStyle(
-                                  color: AppColors.textWhite70,
-                                  fontSize: 12,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                              SizedBox(height: 4),
-                              Text(
-                                'VERIFIED DEVELOPER • VIP',
-                                style: TextStyle(
-                                  color: AppColors.textWhite60,
-                                  fontSize: 10,
-                                  letterSpacing: 1.5,
-                                  fontWeight: FontWeight.w300,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Icon(
-                          Icons.verified,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    // 统计信息
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildStatItem('已购API', '12'),
-                        ),
-                        Container(
-                          width: 1,
-                          height: 30,
-                          color: Colors.white.withOpacity(0.3),
-                        ),
-                        Expanded(
-                          child: _buildStatItem('本月调用', '1.2万'),
-                        ),
-                        Container(
-                          width: 1,
-                          height: 30,
-                          color: Colors.white.withOpacity(0.3),
-                        ),
-                        Expanded(
-                          child: _buildStatItem('余额', '¥68.5'),
-                        ),
-                      ],
-                    ),
+                    // Profile Header
+                    _buildProfileHeader(user, isMobile),
+                    const SizedBox(height: 32),
+
+                    // Stats
+                    _buildStatsSection(user.stats, isMobile),
+                    const SizedBox(height: 32),
+
+                    // Badges
+                    _buildBadgesSection(user.badges, isMobile),
+                    const SizedBox(height: 32),
+
+                    // Skills & Interests
+                    _buildSkillsAndInterests(user, controller, isMobile),
+                    const SizedBox(height: 32),
+
+                    // Travel History
+                    _buildTravelHistory(user.travelHistory, isMobile),
+                    const SizedBox(height: 32),
+
+                    // Social Links
+                    _buildSocialLinks(user.socialLinks, isMobile),
+
+                    const SizedBox(height: 48),
+
+                    // Legacy API Profile Link
+                    _buildLegacyProfileLink(),
                   ],
                 ),
               ),
-
-              // API管理菜单
-              _buildMenuSection(
-                '📊 API管理',
-                [
-                  _buildMenuItem(Icons.api, '我的API接口', Colors.blue, () {
-                    Get.snackbar('API接口', '查看已购买的API接口');
-                  }),
-                  _buildMenuItem(Icons.analytics, '调用统计', Colors.green, () {
-                    Get.snackbar('调用统计', '查看API调用统计数据');
-                  }),
-                  _buildMenuItem(Icons.receipt, '消费记录', Colors.orange, () {
-                    Get.snackbar('消费记录', '查看API消费记录');
-                  }),
-                  _buildMenuItem(Icons.code, 'API文档', Colors.purple, () {
-                    Get.snackbar('API文档', '查看API接口文档');
-                  }),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-
-              // 数据服务菜单
-              _buildMenuSection(
-                '💰 数据服务',
-                [
-                  _buildMenuItem(Icons.shopping_cart, '购买清单', Colors.red, () {
-                    Get.snackbar('购买清单', '查看待购买的API接口');
-                  }),
-                  _buildMenuItem(Icons.star, '收藏接口', Colors.amber, () {
-                    Get.snackbar('收藏接口', '查看收藏的API接口');
-                  }),
-                  _buildMenuItem(Icons.payment, '充值中心', Colors.teal, () {
-                    Get.snackbar('充值中心', '账户余额充值');
-                  }),
-                  _buildMenuItem(Icons.card_membership, '套餐订阅', Colors.indigo,
-                      () {
-                    Get.snackbar('套餐订阅', '查看API套餐订阅');
-                  }),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-
-              // 开发者工具菜单
-              _buildMenuSection(
-                '🛠️ 开发者工具',
-                [
-                  _buildMenuItem(Icons.bug_report, 'API测试', Colors.cyan, () {
-                    Get.snackbar('API测试', '在线API接口测试工具');
-                  }),
-                  _buildMenuItem(Icons.key, 'API密钥', Colors.brown, () {
-                    Get.snackbar('API密钥', '管理API访问密钥');
-                  }),
-                  _buildMenuItem(Icons.integration_instructions, 'SDK下载',
-                      Colors.deepOrange, () {
-                    Get.snackbar('SDK下载', '下载各语言SDK');
-                  }),
-                  _buildMenuItem(Icons.school, '开发教程', Colors.deepPurple, () {
-                    Get.snackbar('开发教程', '查看API开发教程');
-                  }),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-
-              // 账户设置菜单
-              _buildMenuSection(
-                '⚙️ 账户设置',
-                [
-                  _buildMenuItem(Icons.login, '登录/注册', Colors.blue, () {
-                    Get.toNamed(AppRoutes.login);
-                  }),
-                  _buildMenuItem(Icons.person, '个人信息', Colors.grey, () {
-                    Get.snackbar('个人信息', '编辑个人资料');
-                  }),
-                  _buildMenuItem(Icons.security, '安全设置', Colors.red, () {
-                    Get.snackbar('安全设置', '密码和安全设置');
-                  }),
-                  _buildMenuItem(Icons.notifications, '消息通知', Colors.orange,
-                      () {
-                    Get.snackbar('消息通知', '通知设置');
-                  }),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-
-              // 帮助与支持菜单
-              _buildMenuSection(
-                '❓ 帮助与支持',
-                [
-                  _buildMenuItem(Icons.help_outline, '使用帮助', Colors.green, () {
-                    Get.snackbar('使用帮助', '查看使用帮助文档');
-                  }),
-                  _buildMenuItem(Icons.contact_support, '客服支持', Colors.blue,
-                      () {
-                    Get.snackbar('客服支持', '联系在线客服');
-                  }),
-                  _buildMenuItem(Icons.feedback, '意见反馈', Colors.purple, () {
-                    Get.snackbar('意见反馈', '提交意见和建议');
-                  }),
-                  _buildMenuItem(Icons.info_outline, '关于数金数据', Colors.grey, () {
-                    Get.snackbar('关于我们', '数金数据API交易平台');
-                  }),
-                ],
-              ),
-
-              const SizedBox(height: 32),
-
-              // 退出登录按钮
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Get.dialog(
-                      AlertDialog(
-                        title: const Text('确认退出'),
-                        content: const Text('确定要退出登录吗？'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Get.back(),
-                            child: const Text('取消'),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Get.back(); // 关闭对话框
-                              Get.snackbar(
-                                '提示',
-                                '已退出登录',
-                                duration: const Duration(seconds: 2),
-                              );
-                              // 延迟一下再跳转，让用户看到提示信息
-                              Future.delayed(const Duration(milliseconds: 500),
-                                  () {
-                                Get.offAllNamed(
-                                    AppRoutes.login); // 跳转到登录页面并清除所有路由栈
-                              });
-                            },
-                            child: const Text('确定'),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: AppColors.containerDark,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero,
-                      side: BorderSide(
-                        color: AppColors.containerDark,
-                        width: 1,
-                      ),
-                    ),
-                  ),
-                  child: const Text(
-                    'SIGN OUT',
-                    style: TextStyle(
-                      letterSpacing: 2,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ),
-              ),
-
-              // 版权信息
-              const CopyrightWidget(useTopMargin: true),
-            ],
-          ),
-        ),
-      ),
+            ),
+          ],
+        );
+      }),
     );
   }
 
-  // 统计信息项构建方法
-  Widget _buildStatItem(String label, String value) {
-    return Column(
+  // Profile Header
+  Widget _buildProfileHeader(UserModel user, bool isMobile) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+        // Avatar
+        Stack(
+          children: [
+            Container(
+              width: isMobile ? 80 : 120,
+              height: isMobile ? 80 : 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: const Color(0xFFFF4458),
+                  width: 3,
+                ),
+              ),
+              child: ClipOval(
+                child: Image.network(
+                  user.avatarUrl ?? 'https://i.pravatar.cc/300',
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            if (user.isVerified)
+              Positioned(
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  width: isMobile ? 24 : 32,
+                  height: isMobile ? 24 : 32,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFF4458),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.check,
+                    color: Colors.white,
+                    size: 16,
+                  ),
+                ),
+              ),
+          ],
         ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 12,
-            color: Colors.white70,
+
+        const SizedBox(width: 20),
+
+        // User Info
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    user.name,
+                    style: TextStyle(
+                      fontSize: isMobile ? 24 : 32,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF1a1a1a),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  if (user.isVerified)
+                    const Icon(
+                      Icons.verified,
+                      color: Color(0xFFFF4458),
+                      size: 20,
+                    ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                user.username,
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Color(0xFF6b7280),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              if (user.currentCity != null && user.currentCountry != null) ...[
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.location_on,
+                      size: 18,
+                      color: Color(0xFFFF4458),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      '${user.currentCity}, ${user.currentCountry}',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF1a1a1a),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+              if (user.bio != null) ...[
+                const SizedBox(height: 16),
+                Text(
+                  user.bio!,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    color: Color(0xFF374151),
+                    height: 1.6,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 12),
+              Text(
+                'Member since ${_formatJoinDate(user.joinedDate)}',
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF9ca3af),
+                ),
+              ),
+            ],
           ),
         ),
       ],
     );
   }
 
-  // 菜单分组构建方法
-  Widget _buildMenuSection(String title, List<Widget> items) {
+  // Stats Section
+  Widget _buildStatsSection(TravelStats stats, bool isMobile) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Nomad Stats',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1a1a1a),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            _buildStatCard(
+                '🌍', stats.countriesVisited.toString(), 'Countries', isMobile),
+            _buildStatCard(
+                '🏙️', stats.citiesLived.toString(), 'Cities', isMobile),
+            _buildStatCard(
+                '📅', stats.daysNomading.toString(), 'Days nomading', isMobile),
+            _buildStatCard(
+                '🤝', stats.meetupsAttended.toString(), 'Meetups', isMobile),
+            _buildStatCard(
+                '✈️', stats.tripsCompleted.toString(), 'Trips', isMobile),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatCard(
+      String emoji, String value, String label, bool isMobile) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      width: isMobile ? ((Get.width - 44) / 2) : 150,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF9FAFB),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 12),
-            child: Container(
-              padding: const EdgeInsets.only(bottom: 8),
-              decoration: const BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: Color(0xFF9E9E9E),
-                    width: 2,
-                  ),
-                ),
-              ),
-              child: Text(
-                title
-                    .replaceAll(RegExp(r'[\p{Emoji}\s]+', unicode: true), '')
-                    .trim()
-                    .toUpperCase(),
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.textPrimary,
-                  letterSpacing: 2,
-                ),
-              ),
+          Text(emoji, style: const TextStyle(fontSize: 32)),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1a1a1a),
             ),
           ),
-          Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              border: Border(
-                top: BorderSide(color: AppColors.border, width: 1),
-                left: BorderSide(color: AppColors.border, width: 1),
-                right: BorderSide(color: AppColors.border, width: 1),
-                bottom: BorderSide(color: AppColors.border, width: 1),
-              ),
-            ),
-            child: Column(
-              children: _buildMenuItems(items),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 13,
+              color: Color(0xFF6b7280),
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -380,53 +304,432 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  // 菜单项列表构建方法
-  List<Widget> _buildMenuItems(List<Widget> items) {
-    List<Widget> widgets = [];
-    for (int i = 0; i < items.length; i++) {
-      widgets.add(items[i]);
-      if (i < items.length - 1) {
-        widgets.add(_buildDivider());
-      }
-    }
-    return widgets;
+  // Badges Section
+  Widget _buildBadgesSection(List<Badge> badges, bool isMobile) {
+    if (badges.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Badges',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1a1a1a),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: badges.map((badge) => _buildBadgeCard(badge)).toList(),
+        ),
+      ],
+    );
   }
 
-  // 菜单项构建方法
-  Widget _buildMenuItem(
-      IconData icon, String title, Color iconColor, VoidCallback onTap) {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-      leading: Icon(
-        icon,
-        color: AppColors.containerDark,
-        size: 24,
+  Widget _buildBadgeCard(Badge badge) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFF4458).withValues(alpha: 0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      title: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w400,
-          color: AppColors.textPrimary,
-          letterSpacing: 0.5,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(badge.icon, style: const TextStyle(fontSize: 24)),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                badge.name,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                badge.description,
+                style: const TextStyle(fontSize: 11, color: Colors.white),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Skills & Interests
+  Widget _buildSkillsAndInterests(
+      UserModel user, UserProfileController controller, bool isMobile) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Skills',
+            style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1a1a1a))),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: user.skills.map((skill) {
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF4458).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                    color: const Color(0xFFFF4458).withValues(alpha: 0.3)),
+              ),
+              child: Text(
+                skill,
+                style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFFFF4458)),
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 24),
+        const Text('Interests',
+            style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1a1a1a))),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: user.interests.map((interest) {
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF3F4F6),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFFE5E7EB)),
+              ),
+              child: Text(
+                interest,
+                style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF374151)),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  // Travel History
+  Widget _buildTravelHistory(List<TravelHistory> history, bool isMobile) {
+    if (history.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Travel History',
+            style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1a1a1a))),
+        const SizedBox(height: 16),
+        ...history.map((trip) => _buildTravelHistoryCard(trip)),
+      ],
+    );
+  }
+
+  Widget _buildTravelHistoryCard(TravelHistory trip) {
+    final isCurrentLocation = trip.endDate == null;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isCurrentLocation
+            ? const Color(0xFFFF4458).withValues(alpha: 0.05)
+            : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isCurrentLocation
+              ? const Color(0xFFFF4458).withValues(alpha: 0.3)
+              : const Color(0xFFE5E7EB),
+          width: isCurrentLocation ? 2 : 1,
         ),
       ),
-      trailing: const Icon(
-        Icons.arrow_forward_ios,
-        color: AppColors.iconLight,
-        size: 14,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text('${trip.city}, ${trip.country}',
+                            style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1a1a1a))),
+                        if (isCurrentLocation) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                                color: const Color(0xFFFF4458),
+                                borderRadius: BorderRadius.circular(4)),
+                            child: const Text('Current',
+                                style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white)),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      '${_formatDate(trip.startDate)} - ${trip.endDate != null ? _formatDate(trip.endDate!) : 'Present'}',
+                      style: const TextStyle(
+                          fontSize: 13, color: Color(0xFF6b7280)),
+                    ),
+                  ],
+                ),
+              ),
+              if (trip.rating != null)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                      color: const Color(0xFFFEF3C7),
+                      borderRadius: BorderRadius.circular(6)),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.star,
+                          size: 16, color: Color(0xFFF59E0B)),
+                      const SizedBox(width: 4),
+                      Text(trip.rating!.toStringAsFixed(1),
+                          style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF92400E))),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+          if (trip.review != null) ...[
+            const SizedBox(height: 12),
+            Text(trip.review!,
+                style: const TextStyle(
+                    fontSize: 14, color: Color(0xFF374151), height: 1.5)),
+          ],
+        ],
       ),
-      onTap: onTap,
     );
   }
 
-  // 分割线构建方法
-  Widget _buildDivider() {
-    return const Divider(
-      height: 1,
-      color: AppColors.borderLight,
-      indent: 20,
-      endIndent: 20,
+  // Social Links
+  Widget _buildSocialLinks(Map<String, String> links, bool isMobile) {
+    if (links.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Connect',
+            style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1a1a1a))),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: links.entries
+              .map((entry) => _buildSocialLinkButton(entry.key, entry.value))
+              .toList(),
+        ),
+      ],
     );
+  }
+
+  Widget _buildSocialLinkButton(String platform, String url) {
+    IconData icon;
+    Color color;
+
+    switch (platform.toLowerCase()) {
+      case 'twitter':
+        icon = Icons.flutter_dash;
+        color = const Color(0xFF1DA1F2);
+        break;
+      case 'github':
+        icon = Icons.code;
+        color = const Color(0xFF171515);
+        break;
+      case 'linkedin':
+        icon = Icons.business;
+        color = const Color(0xFF0A66C2);
+        break;
+      case 'website':
+        icon = Icons.language;
+        color = const Color(0xFF6B7280);
+        break;
+      default:
+        icon = Icons.link;
+        color = const Color(0xFF6B7280);
+    }
+
+    return InkWell(
+      onTap: () {},
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 20, color: color),
+            const SizedBox(width: 8),
+            Text(platform.toUpperCase(),
+                style: TextStyle(
+                    fontSize: 13, fontWeight: FontWeight.w600, color: color)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Legacy Profile Link
+  Widget _buildLegacyProfileLink() {
+    return Column(
+      children: [
+        // 位置服务设置
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF3F4F6),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: const Color(0xFFE5E7EB)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.location_on, color: Color(0xFFFF4458), size: 20),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  '位置服务',
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF374151)),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Get.toNamed(AppRoutes.locationDemo);
+                },
+                child: const Text('打开',
+                    style: TextStyle(color: Color(0xFFFF4458))),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        // API开发者设置
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF3F4F6),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: const Color(0xFFE5E7EB)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.settings, color: Color(0xFF6B7280), size: 20),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'API Developer Settings',
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF374151)),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Get.toNamed(AppRoutes.login);
+                },
+                child: const Text('View',
+                    style: TextStyle(color: Color(0xFFFF4458))),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _formatJoinDate(DateTime date) {
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
+    return '${months[date.month - 1]} ${date.year}';
+  }
+
+  String _formatDate(DateTime date) {
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
+    return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 }

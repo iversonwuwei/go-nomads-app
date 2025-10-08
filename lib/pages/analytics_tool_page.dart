@@ -1,10 +1,9 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+import '../config/app_colors.dart';
 import '../controllers/analytics_controller.dart';
+import '../widgets/copyright_widget.dart';
 
 class AnalyticsToolPage extends StatelessWidget {
   const AnalyticsToolPage({super.key});
@@ -14,105 +13,151 @@ class AnalyticsToolPage extends StatelessWidget {
     final AnalyticsController controller = Get.put(AnalyticsController());
     
     return Scaffold(
-      backgroundColor: const Color(0xFF1E1E2E),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E1E2E),
+        backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_outlined,
+              color: AppColors.textSecondary),
           onPressed: () => Get.back(),
         ),
         title: const Text(
-          '商品分析工具',
+          '分析工具',
           style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w300,
+            fontSize: 16,
+            letterSpacing: 2,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white),
+            icon: const Icon(Icons.refresh_outlined,
+                color: AppColors.textSecondary),
             onPressed: () => controller.refreshData(),
           ),
           IconButton(
-            icon: const Icon(Icons.settings, color: Colors.white),
+            icon:
+                const Icon(Icons.tune_outlined, color: AppColors.textSecondary),
             onPressed: () => _showTimeRangeDialog(controller),
           ),
-          SizedBox(width: 8.w),
+          const SizedBox(width: 8),
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(
+            height: 1,
+            color: AppColors.borderLight,
+          ),
+        ),
       ),
-      body: Obx(() {
-        if (controller.isLoading.value) {
-          return const Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+      body: SafeArea(
+        child: Obx(() {
+          if (controller.isLoading.value) {
+            return const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+                strokeWidth: 2,
+              ),
+            );
+          }
+
+          return SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 16),
+                
+                // 时间范围选择器
+                _buildTimeRangeSelector(controller),
+                
+                const SizedBox(height: 20),
+                
+                // 大类商品概览
+                _buildOverviewCards(controller),
+                
+                const SizedBox(height: 20),
+                
+                // 主要K线图区域
+                _buildKLineChart(controller),
+                
+                const SizedBox(height: 20),
+                
+                // 商品列表详情
+                _buildCommodityList(controller),
+                
+                const SizedBox(height: 24),
+
+                // 版权信息
+                const CopyrightWidget(useTopMargin: false),
+
+                const SizedBox(height: 24),
+              ],
             ),
           );
-        }
-
-        return SingleChildScrollView(
-          child: Column(
-            children: [
-              // 时间范围选择器
-              _buildTimeRangeSelector(controller),
-              
-              // 大类商品概览
-              _buildOverviewCards(controller),
-              
-              // 主要K线图区域
-              _buildKLineChart(controller),
-              
-              // 商品列表详情
-              _buildCommodityList(controller),
-            ],
-          ),
-        );
-      }),
+        }),
+      ),
     );
   }
 
   Widget _buildTimeRangeSelector(AnalyticsController controller) {
-    return Container(
-      margin: EdgeInsets.all(16.w),
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+    return Obx(() => Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       decoration: BoxDecoration(
-        color: const Color(0xFF2A2A3E),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.grey.withOpacity(0.3)),
-      ),
-      child: GestureDetector(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.borderLight, width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: InkWell(
         onTap: () => _showTimeRangeDialog(controller),
+            borderRadius: BorderRadius.circular(8),
         child: Row(
           children: [
-            Icon(Icons.access_time, color: Colors.white70, size: 20.sp),
-            SizedBox(width: 8.w),
-            Text(
-              '时间范围：',
+                const Icon(Icons.calendar_today_outlined,
+                    color: AppColors.textSecondary, size: 18),
+                const SizedBox(width: 12),
+                const Text(
+                  '时间范围',
               style: TextStyle(
-                color: Colors.white70,
-                fontSize: 14.sp,
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
+                    letterSpacing: 0.5,
               ),
             ),
+                const SizedBox(width: 8),
             Expanded(
-              child: Obx(() => Text(
+                  child: Text(
                 controller.selectedTimeRange.value,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14.sp,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 13,
                   fontWeight: FontWeight.w500,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
                 ),
-              )),
-            ),
-            Icon(Icons.keyboard_arrow_down, color: Colors.white70, size: 20.sp),
+                const Icon(Icons.keyboard_arrow_down_outlined,
+                    color: AppColors.textTertiary, size: 18),
           ],
         ),
       ),
-    );
+        ));
   }
 
   Widget _buildOverviewCards(AnalyticsController controller) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       child: Obx(() {
         final stats = controller.getOverviewStats();
         return Row(
@@ -121,26 +166,26 @@ class AnalyticsToolPage extends StatelessWidget {
               child: _buildOverviewCard(
                 '大类商品',
                 '${stats['totalCategories']}',
-                Icons.category,
-                Colors.blue,
+                Icons.category_outlined,
+                const Color(0xFF64B5F6), // 低饱和蓝
               ),
             ),
-            SizedBox(width: 12.w),
+            const SizedBox(width: 12),
             Expanded(
               child: _buildOverviewCard(
                 '平均涨幅',
                 '${stats['averageChange'].toStringAsFixed(2)}%',
-                Icons.trending_up,
-                Colors.green,
+                Icons.trending_up_outlined,
+                const Color(0xFF81C784), // 低饱和绿
               ),
             ),
-            SizedBox(width: 12.w),
+            const SizedBox(width: 12),
             Expanded(
               child: _buildOverviewCard(
                 '成交量',
                 '${stats['totalVolume']}',
-                Icons.bar_chart,
-                Colors.orange,
+                Icons.bar_chart_outlined,
+                const Color(0xFFFFB74D), // 低饱和橙
               ),
             ),
           ],
@@ -151,30 +196,40 @@ class AnalyticsToolPage extends StatelessWidget {
 
   Widget _buildOverviewCard(String title, String value, IconData icon, Color color) {
     return Container(
-      padding: EdgeInsets.all(16.w),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF2A2A3E),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.grey.withOpacity(0.3)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.borderLight, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         children: [
-          Icon(icon, color: color, size: 24.sp),
-          SizedBox(height: 8.h),
+          Icon(icon, color: color, size: 28),
+          const SizedBox(height: 12),
           Text(
             value,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18.sp,
-              fontWeight: FontWeight.bold,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 22,
+              fontWeight: FontWeight.w400,
+              letterSpacing: 0.5,
             ),
           ),
-          SizedBox(height: 4.h),
+          const SizedBox(height: 6),
           Text(
             title,
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 12.sp,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 11,
+              fontWeight: FontWeight.w400,
+              letterSpacing: 0.5,
             ),
           ),
         ],
@@ -184,64 +239,64 @@ class AnalyticsToolPage extends StatelessWidget {
 
   Widget _buildKLineChart(AnalyticsController controller) {
     return Container(
-      margin: EdgeInsets.all(16.w),
-      padding: EdgeInsets.all(16.w),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF2A2A3E),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.grey.withOpacity(0.3)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.borderLight, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // 图表标题
           Row(
             children: [
-              Icon(Icons.show_chart, color: Colors.white, size: 20.sp),
-              SizedBox(width: 8.w),
-              Text(
+              const Icon(Icons.show_chart_outlined,
+                  color: AppColors.textPrimary, size: 20),
+              const SizedBox(width: 8),
+              const Text(
                 '大类商品走势图',
                 style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w400,
+                  letterSpacing: 0.5,
                 ),
               ),
               const Spacer(),
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(6.r),
+                  color: AppColors.accent.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(4),
                 ),
-                child: Text(
+                child: const Text(
                   '实时',
                   style: TextStyle(
-                    color: Colors.blue,
-                    fontSize: 10.sp,
+                    color: AppColors.accent,
+                    fontSize: 10,
                     fontWeight: FontWeight.w500,
+                    letterSpacing: 0.5,
                   ),
                 ),
               ),
             ],
           ),
-          SizedBox(height: 16.h),
+          const SizedBox(height: 20),
           
           // 模拟K线图区域
-          Container(
-            height: 300.h,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: const Color(0xFF1E1E2E),
-              borderRadius: BorderRadius.circular(8.r),
-            ),
-            child: CustomPaint(
-              painter: KLinePainter(controller.kLineData),
-              size: Size(double.infinity, 300.h),
-            ),
-          ),
+          _buildChartCanvas(controller),
           
-          SizedBox(height: 16.h),
+          const SizedBox(height: 16),
           
           // 图例
           _buildChartLegend(),
@@ -250,36 +305,56 @@ class AnalyticsToolPage extends StatelessWidget {
     );
   }
 
+  Widget _buildChartCanvas(AnalyticsController controller) {
+    return Obx(() {
+      return Container(
+        height: 280,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: AppColors.borderLight, width: 1),
+        ),
+        child: CustomPaint(
+          painter: KLinePainter(controller.kLineData.toList()),
+          size: const Size(double.infinity, 280),
+        ),
+      );
+    });
+  }
+
   Widget _buildChartLegend() {
     final List<Map<String, dynamic>> legends = [
-      {'label': '电子产品', 'color': Colors.blue},
-      {'label': '服装纺织', 'color': Colors.green},
-      {'label': '食品饮料', 'color': Colors.orange},
-      {'label': '化工原料', 'color': Colors.red},
-      {'label': '机械设备', 'color': Colors.purple},
+      {'label': '电子产品', 'color': const Color(0xFF64B5F6)},
+      {'label': '服装纺织', 'color': const Color(0xFF81C784)},
+      {'label': '食品饮料', 'color': const Color(0xFFFFB74D)},
+      {'label': '化工原料', 'color': const Color(0xFFE57373)},
+      {'label': '机械设备', 'color': const Color(0xFFBA68C8)},
     ];
 
     return Wrap(
-      spacing: 16.w,
-      runSpacing: 8.h,
+      spacing: 20,
+      runSpacing: 10,
       children: legends.map((legend) {
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 12.w,
-              height: 12.h,
+              width: 10,
+              height: 10,
               decoration: BoxDecoration(
                 color: legend['color'],
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
-            SizedBox(width: 4.w),
+            const SizedBox(width: 6),
             Text(
               legend['label'],
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 12.sp,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 11,
+                fontWeight: FontWeight.w400,
+                letterSpacing: 0.3,
               ),
             ),
           ],
@@ -290,25 +365,26 @@ class AnalyticsToolPage extends StatelessWidget {
 
   Widget _buildCommodityList(AnalyticsController controller) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             '商品详情',
             style: TextStyle(
-              color: Colors.white,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+              fontSize: 15,
+              fontWeight: FontWeight.w400,
+              letterSpacing: 0.5,
             ),
           ),
-          SizedBox(height: 12.h),
+          const SizedBox(height: 12),
+          // 只在这里使用Obx，响应commodities列表的变化
           Obx(() => Column(
             children: controller.commodities.map((commodity) {
               return _buildCommodityItem(commodity);
             }).toList(),
-          )),
-          SizedBox(height: 20.h),
+              )),
         ],
       ),
     );
@@ -316,34 +392,43 @@ class AnalyticsToolPage extends StatelessWidget {
 
   Widget _buildCommodityItem(Map<String, dynamic> commodity) {
     final isPositive = commodity['change'] >= 0;
-    final changeColor = isPositive ? Colors.green : Colors.red;
-    final changeIcon = isPositive ? Icons.trending_up : Icons.trending_down;
+    final changeColor =
+        isPositive ? const Color(0xFF81C784) : const Color(0xFFE57373);
+    final changeIcon =
+        isPositive ? Icons.trending_up_outlined : Icons.trending_down_outlined;
 
     return Container(
-      margin: EdgeInsets.only(bottom: 12.h),
-      padding: EdgeInsets.all(16.w),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF2A2A3E),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.grey.withOpacity(0.3)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.borderLight, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
           // 商品图标
           Container(
-            width: 40.w,
-            height: 40.h,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
-              color: commodity['color'].withOpacity(0.2),
-              borderRadius: BorderRadius.circular(8.r),
+              color: commodity['color'].withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(6),
             ),
             child: Icon(
               commodity['icon'],
               color: commodity['color'],
-              size: 20.sp,
+              size: 22,
             ),
           ),
-          SizedBox(width: 12.w),
+          const SizedBox(width: 14),
           
           // 商品信息
           Expanded(
@@ -352,18 +437,20 @@ class AnalyticsToolPage extends StatelessWidget {
               children: [
                 Text(
                   commodity['name'],
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w500,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    letterSpacing: 0.3,
                   ),
                 ),
-                SizedBox(height: 4.h),
+                const SizedBox(height: 4),
                 Text(
                   '当前价格: ¥${commodity['price']}',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 12.sp,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                    letterSpacing: 0.3,
                   ),
                 ),
               ],
@@ -377,24 +464,26 @@ class AnalyticsToolPage extends StatelessWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(changeIcon, color: changeColor, size: 16.sp),
-                  SizedBox(width: 4.w),
+                  Icon(changeIcon, color: changeColor, size: 16),
+                  const SizedBox(width: 4),
                   Text(
                     '${isPositive ? '+' : ''}${commodity['change'].toStringAsFixed(2)}%',
                     style: TextStyle(
                       color: changeColor,
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.3,
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: 4.h),
+              const SizedBox(height: 4),
               Text(
                 '成交量: ${commodity['volume']}',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 10.sp,
+                style: const TextStyle(
+                  color: AppColors.textTertiary,
+                  fontSize: 10,
+                  letterSpacing: 0.3,
                 ),
               ),
             ],
@@ -405,31 +494,78 @@ class AnalyticsToolPage extends StatelessWidget {
   }
 
   void _showTimeRangeDialog(AnalyticsController controller) {
+    final timeRanges = [
+      {'label': '最近 7 天', 'value': '7d'},
+      {'label': '最近 30 天', 'value': '30d'},
+      {'label': '最近 3 个月', 'value': '3m'},
+      {'label': '最近 1 年', 'value': '1y'},
+    ];
+
     Get.dialog(
       AlertDialog(
-        backgroundColor: const Color(0xFF2A2A3E),
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
         title: const Text(
           '选择时间范围',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+            letterSpacing: 0.5,
+          ),
         ),
+        contentPadding: const EdgeInsets.symmetric(vertical: 8),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          children: [
-            '最近7天',
-            '最近30天',
-            '最近3个月',
-            '最近1年',
-          ].map((range) {
-            return ListTile(
-              title: Text(
-                range,
-                style: const TextStyle(color: Colors.white70),
-              ),
-              onTap: () {
-                controller.updateTimeRange(range);
-                Get.back();
-              },
-            );
+          children: timeRanges.map((range) {
+            return Obx(() {
+              final isSelected =
+                  controller.selectedTimeRange.value == range['value'];
+              return Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    controller.updateTimeRange(range['value']!);
+                    Get.back();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 14, horizontal: 24),
+                    child: Row(
+                      children: [
+                        Icon(
+                          isSelected
+                              ? Icons.check_circle_outlined
+                              : Icons.circle_outlined,
+                          color: isSelected
+                              ? AppColors.accent
+                              : AppColors.textTertiary,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            range['label']!,
+                            style: TextStyle(
+                              color: isSelected
+                                  ? AppColors.textPrimary
+                                  : AppColors.textSecondary,
+                              fontSize: 14,
+                              fontWeight: isSelected
+                                  ? FontWeight.w500
+                                  : FontWeight.w400,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            });
           }).toList(),
         ),
       ),
@@ -439,36 +575,33 @@ class AnalyticsToolPage extends StatelessWidget {
 
 // 自定义K线图绘制器
 class KLinePainter extends CustomPainter {
-  final RxList<Map<String, dynamic>> data;
+  final List<Map<String, dynamic>> data;
 
   KLinePainter(this.data);
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0;
+    if (data.isEmpty) return;
 
-    // 绘制网格线
-    _drawGrid(canvas, size);
-
-    // 绘制多条商品走势线
-    final colors = [Colors.blue, Colors.green, Colors.orange, Colors.red, Colors.purple];
-    
-    for (int i = 0; i < 5; i++) {
-      paint.color = colors[i];
-      _drawTrendLine(canvas, size, i, paint);
-    }
-  }
-
-  void _drawGrid(Canvas canvas, Size size) {
+    // 网格线画笔
     final gridPaint = Paint()
-      ..color = Colors.grey.withOpacity(0.3)
-      ..strokeWidth = 0.5;
+      ..color = AppColors.borderLight
+      ..strokeWidth = 0.5
+      ..style = PaintingStyle.stroke;
 
-    // 垂直网格线
-    for (int i = 0; i <= 7; i++) {
-      final x = (size.width / 7) * i;
+    // 绘制水平网格线
+    for (int i = 0; i <= 5; i++) {
+      final y = size.height / 5 * i;
+      canvas.drawLine(
+        Offset(0, y),
+        Offset(size.width, y),
+        gridPaint,
+      );
+    }
+
+    // 绘制垂直网格线
+    for (int i = 0; i <= 6; i++) {
+      final x = size.width / 6 * i;
       canvas.drawLine(
         Offset(x, 0),
         Offset(x, size.height),
@@ -476,37 +609,50 @@ class KLinePainter extends CustomPainter {
       );
     }
 
-    // 水平网格线
-    for (int i = 0; i <= 5; i++) {
-      final y = (size.height / 5) * i;
-      canvas.drawLine(
-        Offset(0, y),
-        Offset(size.width, y),
-        gridPaint,
-      );
-    }
-  }
+    // 趋势线颜色
+    final trendColors = [
+      const Color(0xFF64B5F6), // 天蓝
+      const Color(0xFF81C784), // 绿灰
+      const Color(0xFFFFB74D), // 橙灰
+      const Color(0xFFE57373), // 红灰
+      const Color(0xFFBA68C8), // 紫灰
+    ];
 
-  void _drawTrendLine(Canvas canvas, Size size, int lineIndex, Paint paint) {
-    final path = Path();
-    final pointCount = 30;
-    final baseValue = 100 + lineIndex * 10;
-    
-    for (int i = 0; i < pointCount; i++) {
-      final x = (size.width / (pointCount - 1)) * i;
-      // 模拟价格波动
-      final noise = math.sin(i * 0.3 + lineIndex) * 20 + math.cos(i * 0.1) * 10;
-      final trend = i * 0.5; // 整体上升趋势
-      final y = size.height - ((baseValue + noise + trend) / (baseValue + 50)) * size.height;
+    // 绘制每个商品的趋势线
+    for (int i = 0; i < data.length; i++) {
+      final commodity = data[i];
+      final points = commodity['points'] as List<double>;
+
+      if (points.isEmpty) continue;
+
+      final linePaint = Paint()
+        ..color = trendColors[i % trendColors.length]
+        ..strokeWidth = 2
+        ..style = PaintingStyle.stroke;
+
+      final path = Path();
       
-      if (i == 0) {
-        path.moveTo(x, y);
-      } else {
-        path.lineTo(x, y);
+      // 找到最大值和最小值用于归一化
+      final maxValue = points.reduce((a, b) => a > b ? a : b);
+      final minValue = points.reduce((a, b) => a < b ? a : b);
+      final range = maxValue - minValue;
+
+      for (int j = 0; j < points.length; j++) {
+        final x = size.width / (points.length - 1) * j;
+        final normalizedValue =
+            range > 0 ? (points[j] - minValue) / range : 0.5;
+        final y = size.height -
+            (normalizedValue * size.height * 0.8 + size.height * 0.1);
+
+        if (j == 0) {
+          path.moveTo(x, y);
+        } else {
+          path.lineTo(x, y);
+        }
       }
+
+      canvas.drawPath(path, linePaint);
     }
-    
-    canvas.drawPath(path, paint);
   }
 
   @override

@@ -5,8 +5,14 @@ import 'package:get/get.dart';
 import 'controllers/auth_controller.dart';
 import 'controllers/shopping_controller.dart';
 import 'routes/app_routes.dart';
+import 'services/location_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // 初始化位置服务
+  await Get.putAsync(() => LocationService().init());
+  
   runApp(const MyApp());
 }
 

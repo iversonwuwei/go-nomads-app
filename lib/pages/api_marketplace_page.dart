@@ -51,7 +51,8 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
       backgroundColor: AppColors.background,
       elevation: 0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+        icon:
+            const Icon(Icons.arrow_back_outlined, color: AppColors.textPrimary),
         onPressed: () => Get.back(),
       ),
       title: const Text(

@@ -252,7 +252,7 @@ class LoginPageOptimized extends StatelessWidget {
           width: 32.w,
           height: 32.h,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8.r),
           ),
           child: Icon(

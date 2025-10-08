@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../config/app_colors.dart';
 import '../controllers/snake_game_controller.dart';
 import '../models/snake_game_model.dart';
 
@@ -20,7 +21,8 @@ class SnakeGamePage extends StatelessWidget {
           style: TextStyle(color: Colors.white),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_outlined,
+              color: AppColors.backButtonLight),
           onPressed: () => Get.back(),
         ),
         elevation: 0,
