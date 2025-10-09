@@ -24,11 +24,14 @@ class _DataServicePageState extends State<DataServicePage> {
   }
 
   void _scrollToCitiesList() {
-    final RenderBox? renderBox = _citiesListKey.currentContext?.findRenderObject() as RenderBox?;
+    final RenderBox? renderBox =
+        _citiesListKey.currentContext?.findRenderObject() as RenderBox?;
     if (renderBox != null) {
       final position = renderBox.localToGlobal(Offset.zero).dy;
-      final scrollPosition = _scrollController.position.pixels + position - 100; // 100px offset for better UX
-      
+      final scrollPosition = _scrollController.position.pixels +
+          position -
+          100; // 100px offset for better UX
+
       _scrollController.animateTo(
         scrollPosition,
         duration: const Duration(milliseconds: 800),
@@ -63,69 +66,69 @@ class _DataServicePageState extends State<DataServicePage> {
               child: _buildHeroSection(isMobile),
             ),
 
-              // 搜索和筛选栏
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isMobile ? 16 : 32,
-                    vertical: 20,
-                  ),
-                  child: _buildSearchBar(controller, isMobile),
+            // 搜索和筛选栏
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isMobile ? 16 : 32,
+                  vertical: 20,
                 ),
+                child: _buildSearchBar(controller, isMobile),
               ),
+            ),
 
-              // 视图切换和排序工具栏
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isMobile ? 16 : 32,
-                  ),
-                  child: _buildToolbar(controller),
-                ),
-              ),
-
-              const SliverToBoxAdapter(child: SizedBox(height: 20)),
-
-              // 城市列表锚点 (用于滚动定位)
-              SliverToBoxAdapter(
-                child: Container(
-                  key: _citiesListKey,
-                  height: 0,
-                ),
-              ),
-
-              // 数据卡片网格
-              SliverPadding(
+            // 视图切换和排序工具栏
+            SliverToBoxAdapter(
+              child: Padding(
                 padding: EdgeInsets.symmetric(
                   horizontal: isMobile ? 16 : 32,
                 ),
-                sliver: _buildDataGridSliver(controller, isMobile),
+                child: _buildToolbar(controller),
               ),
+            ),
 
-              // 底部间距
-              const SliverToBoxAdapter(child: SizedBox(height: 40)),
+            const SliverToBoxAdapter(child: SizedBox(height: 20)),
 
-              // Meetups 部分 - Nomads.com 风格
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isMobile ? 16 : 32,
-                  ),
-                  child: _buildMeetupsSection(controller, isMobile),
+            // 城市列表锚点 (用于滚动定位)
+            SliverToBoxAdapter(
+              child: Container(
+                key: _citiesListKey,
+                height: 0,
+              ),
+            ),
+
+            // 数据卡片网格
+            SliverPadding(
+              padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 16 : 32,
+              ),
+              sliver: _buildDataGridSliver(controller, isMobile),
+            ),
+
+            // 底部间距
+            const SliverToBoxAdapter(child: SizedBox(height: 40)),
+
+            // Meetups 部分 - Nomads.com 风格
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isMobile ? 16 : 32,
                 ),
+                child: _buildMeetupsSection(controller, isMobile),
               ),
+            ),
 
-              const SliverToBoxAdapter(child: SizedBox(height: 40)),
+            const SliverToBoxAdapter(child: SizedBox(height: 40)),
 
-              // 版权信息
-              const SliverToBoxAdapter(
-                child: CopyrightWidget(useTopMargin: false),
-              ),
+            // 版权信息
+            const SliverToBoxAdapter(
+              child: CopyrightWidget(useTopMargin: false),
+            ),
 
-              const SliverToBoxAdapter(child: SizedBox(height: 24)),
-            ],
-          );
-        }),
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+          ],
+        );
+      }),
     );
   }
 
@@ -133,13 +136,13 @@ class _DataServicePageState extends State<DataServicePage> {
   Widget _buildHeroSection(bool isMobile) {
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            const Color(0xFF1a1a2e),
-            const Color(0xFF16213e),
+            Color(0xFF1a1a2e),
+            Color(0xFF16213e),
           ],
         ),
       ),
@@ -164,127 +167,128 @@ class _DataServicePageState extends State<DataServicePage> {
               ),
             ),
 
-          // 主要内容
-          Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: isMobile ? 24 : 48,
-              vertical: isMobile ? 40 : 60,
-            ),
-            child: Column(
-              children: [
-                // Logo和标题区域
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.public,
-                        color: Colors.white,
-                        size: 32,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Text(
-                      'Go nomad',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: isMobile ? 32 : 42,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -1,
-                      ),
-                    ),
-                  ],
-                ),
-
-                SizedBox(height: isMobile ? 24 : 32),
-
-                // 副标题
-                Text(
-                  'Join a global community of remote workers',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: isMobile ? 18 : 22,
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'living and traveling around the world',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: isMobile ? 18 : 22,
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-
-                SizedBox(height: isMobile ? 32 : 48),
-
-                // 用户头像圈
-                _buildUserAvatars(),
-
-                SizedBox(height: isMobile ? 32 : 40),
-
-                // 功能列表
-                _buildFeatureList(isMobile),
-
-                SizedBox(height: isMobile ? 40 : 60),
-
-                // CTA按钮
-                InkWell(
-                  onTap: _scrollToCitiesList,
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                    width: isMobile ? double.infinity : 400,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 32,
-                      vertical: 16,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFF4458),
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFFF4458).withValues(alpha: 0.3),
-                          blurRadius: 16,
-                          offset: const Offset(0, 4),
+            // 主要内容
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 24 : 48,
+                vertical: isMobile ? 40 : 60,
+              ),
+              child: Column(
+                children: [
+                  // Logo和标题区域
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Explore Cities',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: isMobile ? 16 : 18,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Icon(
-                          Icons.arrow_forward_outlined,
+                        child: const Icon(
+                          Icons.public,
                           color: Colors.white,
-                          size: 20,
+                          size: 32,
                         ),
-                      ],
+                      ),
+                      const SizedBox(width: 16),
+                      Text(
+                        'Go nomad',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: isMobile ? 32 : 42,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -1,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  SizedBox(height: isMobile ? 24 : 32),
+
+                  // 副标题
+                  Text(
+                    'Join a global community of remote workers',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: isMobile ? 18 : 22,
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: 0.5,
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 8),
+                  Text(
+                    'living and traveling around the world',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: isMobile ? 18 : 22,
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+
+                  SizedBox(height: isMobile ? 32 : 48),
+
+                  // 用户头像圈
+                  _buildUserAvatars(),
+
+                  SizedBox(height: isMobile ? 32 : 40),
+
+                  // 功能列表
+                  _buildFeatureList(isMobile),
+
+                  SizedBox(height: isMobile ? 40 : 60),
+
+                  // CTA按钮
+                  InkWell(
+                    onTap: _scrollToCitiesList,
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      width: isMobile ? double.infinity : 400,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 16,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF4458),
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                const Color(0xFFFF4458).withValues(alpha: 0.3),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Explore Cities',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: isMobile ? 16 : 18,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Icon(
+                            Icons.arrow_forward_outlined,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
         ),
       ),
     );
@@ -292,47 +296,77 @@ class _DataServicePageState extends State<DataServicePage> {
 
   // 用户头像圈
   Widget _buildUserAvatars() {
-    return SizedBox(
-      height: 50,
-      child: Stack(
-        alignment: Alignment.center,
-        children: List.generate(8, (index) {
-          return Positioned(
-            left: 80 + (index * 28.0), // 每个头像偏移28px实现重叠
-            child: CircleAvatar(
-              radius: 20,
-              backgroundColor: Colors.white,
-              child: CircleAvatar(
-                radius: 18,
-                backgroundColor: Color.lerp(
-                  const Color(0xFF6366F1),
-                  const Color(0xFFEC4899),
-                  index / 7,
-                ),
-                child: Text(
-                  String.fromCharCode(65 + index),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final screenWidth = constraints.maxWidth;
+        final avatarSize = 40.0; // 每个头像的直径
+        final overlapOffset = 14.0; // 重叠偏移量
+        final totalWidth = (avatarSize * 8) - (overlapOffset * 7); // 计算总宽度
+        final startPosition = (screenWidth - totalWidth) / 2; // 计算起始位置以居中
+
+        return SizedBox(
+          height: 50,
+          width: screenWidth,
+          child: Stack(
+            children: List.generate(8, (index) {
+              return Positioned(
+                left: startPosition + (index * (avatarSize - overlapOffset)),
+                child: CircleAvatar(
+                  radius: 20,
+                  backgroundColor: Colors.white,
+                  child: CircleAvatar(
+                    radius: 18,
+                    backgroundColor: Color.lerp(
+                      const Color(0xFF6366F1),
+                      const Color(0xFFEC4899),
+                      index / 7,
+                    ),
+                    child: Text(
+                      String.fromCharCode(65 + index),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-          );
-        }),
-      ),
+              );
+            }),
+          ),
+        );
+      },
     );
   }
 
   // 功能列表
   Widget _buildFeatureList(bool isMobile) {
     final features = [
-      {'icon': '🏆', 'text': 'Attend 363 meetups/year', 'highlight': ' in 100+ cities'},
-      {'icon': '❤️', 'text': 'Meet new people', 'highlight': ' for dating and friends'},
-      {'icon': '📊', 'text': 'Research destinations', 'highlight': ' and find your best place to live and work'},
-      {'icon': '🌍', 'text': 'Keep track of your travels', 'highlight': ' and record where you\'ve been'},
-      {'icon': '💬', 'text': 'Join community chat', 'highlight': ' and find your community on the road'},
+      {
+        'icon': '🏆',
+        'text': 'Attend 363 meetups/year',
+        'highlight': ' in 100+ cities'
+      },
+      {
+        'icon': '❤️',
+        'text': 'Meet new people',
+        'highlight': ' for dating and friends'
+      },
+      {
+        'icon': '📊',
+        'text': 'Research destinations',
+        'highlight': ' and find your best place to live and work'
+      },
+      {
+        'icon': '🌍',
+        'text': 'Keep track of your travels',
+        'highlight': ' and record where you\'ve been'
+      },
+      {
+        'icon': '💬',
+        'text': 'Join community chat',
+        'highlight': ' and find your community on the road'
+      },
     ];
 
     return Column(
@@ -530,8 +564,7 @@ class _DataServicePageState extends State<DataServicePage> {
                 color: const Color(0xFFFF4458).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.add,
-                  color: Color(0xFFFF4458), size: 18),
+              child: const Icon(Icons.add, color: Color(0xFFFF4458), size: 18),
             ),
           ),
         ],
@@ -578,7 +611,7 @@ class _DataServicePageState extends State<DataServicePage> {
   Widget _buildMeetupsSection(DataServiceController controller, bool isMobile) {
     return Obx(() {
       final upcomingMeetups = controller.upcomingMeetups;
-      
+
       if (upcomingMeetups.isEmpty) {
         return const SizedBox.shrink();
       }
@@ -604,7 +637,7 @@ class _DataServicePageState extends State<DataServicePage> {
                   const SizedBox(height: 4),
                   Text(
                     '${upcomingMeetups.length} upcoming events',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 14,
                       color: AppColors.textSecondary,
                     ),
@@ -668,17 +701,17 @@ class _DataCardState extends State<_DataCard> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
-    
+
     return GestureDetector(
       onTap: () {
         // 单击跳转到城市详情页面
         Get.to(() => CityDetailPage(
-          cityId: widget.data['id']?.toString() ?? '',
-          cityName: widget.data['name']?.toString() ?? 'Unknown City',
-          cityImage: widget.data['image']?.toString() ?? '',
-          overallScore: (widget.data['score'] as num?)?.toDouble() ?? 0.0,
-          reviewCount: (widget.data['reviews'] as num?)?.toInt() ?? 0,
-        ));
+              cityId: widget.data['id']?.toString() ?? '',
+              cityName: widget.data['name']?.toString() ?? 'Unknown City',
+              cityImage: widget.data['image']?.toString() ?? '',
+              overallScore: (widget.data['score'] as num?)?.toDouble() ?? 0.0,
+              reviewCount: (widget.data['reviews'] as num?)?.toInt() ?? 0,
+            ));
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
@@ -692,8 +725,7 @@ class _DataCardState extends State<_DataCard> {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black
-                  .withValues(alpha: showDetails ? 0.08 : 0.03),
+              color: Colors.black.withValues(alpha: showDetails ? 0.08 : 0.03),
               blurRadius: showDetails ? 12 : 8,
               offset: Offset(0, showDetails ? 4 : 2),
             ),
@@ -747,7 +779,7 @@ class _DataCardState extends State<_DataCard> {
                           children: [
                             Container(
                               padding: EdgeInsets.symmetric(
-                                  horizontal: isMobile ? 4 : 6, 
+                                  horizontal: isMobile ? 4 : 6,
                                   vertical: isMobile ? 2 : 3),
                               decoration: BoxDecoration(
                                 color: Colors.black.withValues(alpha: 0.6),
@@ -762,13 +794,13 @@ class _DataCardState extends State<_DataCard> {
                                 ),
                               ),
                             ),
-                            if (widget.data['badge'] != null && 
+                            if (widget.data['badge'] != null &&
                                 widget.data['badge'].toString().isNotEmpty) ...[
                               SizedBox(width: isMobile ? 3 : 6),
                               Flexible(
                                 child: Container(
                                   padding: EdgeInsets.symmetric(
-                                      horizontal: isMobile ? 4 : 6, 
+                                      horizontal: isMobile ? 4 : 6,
                                       vertical: isMobile ? 2 : 3),
                                   decoration: BoxDecoration(
                                     color: Colors.orange.withValues(alpha: 0.9),
@@ -794,7 +826,7 @@ class _DataCardState extends State<_DataCard> {
                       // 右侧：网速 - 移动端简化显示
                       Container(
                         padding: EdgeInsets.symmetric(
-                            horizontal: isMobile ? 3 : 6, 
+                            horizontal: isMobile ? 3 : 6,
                             vertical: isMobile ? 2 : 3),
                         decoration: BoxDecoration(
                           color: Colors.black.withValues(alpha: 0.6),
@@ -851,7 +883,7 @@ class _DataCardState extends State<_DataCard> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      
+
                       // 国家
                       Text(
                         widget.data['country'],
@@ -904,7 +936,8 @@ class _DataCardState extends State<_DataCard> {
                                   child: Text(
                                     'FEELS ',
                                     style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.7),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.7),
                                       fontSize: isMobile ? 7 : 8,
                                       fontWeight: FontWeight.w500,
                                       height: 1,
@@ -934,7 +967,10 @@ class _DataCardState extends State<_DataCard> {
                                 // 高温标识
                                 if (widget.data['feelsLike'] >= 35) ...[
                                   const SizedBox(width: 2),
-                                  Text('🥵', style: TextStyle(fontSize: isMobile ? 9 : 10, height: 1)),
+                                  Text('🥵',
+                                      style: TextStyle(
+                                          fontSize: isMobile ? 9 : 10,
+                                          height: 1)),
                                 ],
                               ],
                             ),
@@ -951,12 +987,15 @@ class _DataCardState extends State<_DataCard> {
                                 height: 1,
                               ),
                             ),
-                            if (widget.data['aqiLevel'] != null && 
-                                widget.data['aqiLevel'].toString().isNotEmpty) ...[
+                            if (widget.data['aqiLevel'] != null &&
+                                widget.data['aqiLevel']
+                                    .toString()
+                                    .isNotEmpty) ...[
                               const SizedBox(width: 2),
                               Text(
                                 widget.data['aqiLevel'],
-                                style: TextStyle(fontSize: isMobile ? 9 : 10, height: 1),
+                                style: TextStyle(
+                                    fontSize: isMobile ? 9 : 10, height: 1),
                               ),
                             ],
                           ],
@@ -1001,7 +1040,7 @@ class _DataCardState extends State<_DataCard> {
                           ],
                         ],
                       ),
-                      
+
                       if (isMobile) ...[
                         const SizedBox(height: 3),
                         Row(
@@ -1030,21 +1069,21 @@ class _DataCardState extends State<_DataCard> {
               ],
             ),
 
-              // 点击显示详情弹窗
-              if (showDetails)
-                Positioned.fill(
-                  child: _DetailOverlay(
-                    data: widget.data,
-                    onClose: () => setState(() => showDetails = false),
-                  ),
+            // 点击显示详情弹窗
+            if (showDetails)
+              Positioned.fill(
+                child: _DetailOverlay(
+                  data: widget.data,
+                  onClose: () => setState(() => showDetails = false),
                 ),
-            ],
-          ),
+              ),
+          ],
         ),
-      );
-    }
+      ),
+    );
+  }
 
-    IconData _getWeatherIcon(String weather) {
+  IconData _getWeatherIcon(String weather) {
     switch (weather.toLowerCase()) {
       case 'sunny':
         return Icons.wb_sunny_outlined;
@@ -1062,7 +1101,7 @@ class _DataCardState extends State<_DataCard> {
     // score 范围 0-5，计算进度条填充比例
     final isGood = score >= 4.0;
     final isMedium = score >= 3.0 && score < 4.0;
-    
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -1083,10 +1122,10 @@ class _DataCardState extends State<_DataCard> {
             widthFactor: score / 5,
             child: Container(
               decoration: BoxDecoration(
-                color: isGood 
-                    ? Colors.green 
-                    : isMedium 
-                        ? Colors.orange 
+                color: isGood
+                    ? Colors.green
+                    : isMedium
+                        ? Colors.orange
                         : Colors.red,
                 borderRadius: BorderRadius.circular(2),
               ),
@@ -1106,7 +1145,6 @@ class _DataCardState extends State<_DataCard> {
     return Colors.purple;
   }
 }
-
 
 // 详情悬浮层
 class _DetailOverlay extends StatelessWidget {
@@ -1154,7 +1192,8 @@ class _DetailOverlay extends StatelessWidget {
             const SizedBox(height: 10),
             _buildMetricBar('💰 Cost', data['cost'], _getColor('cost')),
             const SizedBox(height: 10),
-            _buildMetricBar('📡 Internet', data['internetScore'], _getColor('internet')),
+            _buildMetricBar(
+                '📡 Internet', data['internetScore'], _getColor('internet')),
             const SizedBox(height: 10),
             _buildMetricBar('👍 Liked', data['liked'], _getColor('liked')),
             const SizedBox(height: 10),
@@ -1237,12 +1276,12 @@ class _DataListItem extends StatelessWidget {
       onTap: () {
         // 单击跳转到城市详情页面
         Get.to(() => CityDetailPage(
-          cityId: data['id']?.toString() ?? '',
-          cityName: data['name']?.toString() ?? 'Unknown City',
-          cityImage: data['image']?.toString() ?? '',
-          overallScore: (data['score'] as num?)?.toDouble() ?? 0.0,
-          reviewCount: (data['reviews'] as num?)?.toInt() ?? 0,
-        ));
+              cityId: data['id']?.toString() ?? '',
+              cityName: data['name']?.toString() ?? 'Unknown City',
+              cityImage: data['image']?.toString() ?? '',
+              overallScore: (data['score'] as num?)?.toDouble() ?? 0.0,
+              reviewCount: (data['reviews'] as num?)?.toInt() ?? 0,
+            ));
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
@@ -1347,7 +1386,7 @@ class _FilterDrawer extends StatelessWidget {
           // 顶部栏
           Container(
             padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               border: Border(
                 bottom: BorderSide(color: AppColors.borderLight, width: 1),
               ),
@@ -1420,8 +1459,9 @@ class _FilterDrawer extends StatelessWidget {
                               color: isSelected
                                   ? const Color(0xFFFF4458)
                                   : AppColors.textSecondary,
-                              fontWeight:
-                                  isSelected ? FontWeight.w600 : FontWeight.normal,
+                              fontWeight: isSelected
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
                             ),
                             side: BorderSide(
                               color: isSelected
@@ -1575,8 +1615,9 @@ class _FilterDrawer extends StatelessWidget {
                               color: isSelected
                                   ? const Color(0xFFFF4458)
                                   : AppColors.textSecondary,
-                              fontWeight:
-                                  isSelected ? FontWeight.w600 : FontWeight.normal,
+                              fontWeight: isSelected
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
                             ),
                             side: BorderSide(
                               color: isSelected
@@ -1608,7 +1649,7 @@ class _FilterDrawer extends StatelessWidget {
                               const SizedBox(width: 8),
                               Text(
                                 _getAQILabel(controller.maxAqi.value),
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 13,
                                   color: AppColors.textSecondary,
                                 ),
@@ -1638,7 +1679,7 @@ class _FilterDrawer extends StatelessWidget {
           // 底部应用按钮
           Container(
             padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               border: Border(
                 top: BorderSide(color: AppColors.borderLight, width: 1),
               ),
@@ -1737,7 +1778,8 @@ class _MeetupCard extends StatelessWidget {
           Stack(
             children: [
               ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(12)),
                 child: Image.network(
                   meetup['image'],
                   width: double.infinity,
@@ -1749,7 +1791,8 @@ class _MeetupCard extends StatelessWidget {
                 top: 12,
                 left: 12,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
                     color: _getTypeColor(meetup['type']),
                     borderRadius: BorderRadius.circular(6),
@@ -1877,19 +1920,18 @@ class _MeetupCard extends StatelessWidget {
 
                 // RSVP 按钮
                 Obx(() {
-                  final isRSVPed = controller.rsvpedMeetups.contains(meetup['id']);
+                  final isRSVPed =
+                      controller.rsvpedMeetups.contains(meetup['id']);
                   return SizedBox(
                     width: double.infinity,
                     height: 36,
                     child: ElevatedButton(
                       onPressed: () => controller.toggleRSVP(meetup['id']),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isRSVPed
-                            ? Colors.white
-                            : const Color(0xFFFF4458),
-                        foregroundColor: isRSVPed
-                            ? const Color(0xFFFF4458)
-                            : Colors.white,
+                        backgroundColor:
+                            isRSVPed ? Colors.white : const Color(0xFFFF4458),
+                        foregroundColor:
+                            isRSVPed ? const Color(0xFFFF4458) : Colors.white,
                         elevation: 0,
                         side: isRSVPed
                             ? const BorderSide(

@@ -383,7 +383,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
                     ),
                     SizedBox(height: isMobile ? 4 : 8),
                     Text(
-                      '${(scoreValue * 10).toStringAsFixed(1)}',
+                      (scoreValue * 10).toStringAsFixed(1),
                       style: TextStyle(
                         fontSize: isMobile ? 24 : 28,
                         fontWeight: FontWeight.bold,
@@ -561,7 +561,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        '${temp}°',
+                        '$temp°',
                         style: TextStyle(
                           fontSize: isMobile ? 10 : 12,
                           fontWeight: FontWeight.w500,

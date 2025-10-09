@@ -24,7 +24,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   };
 
   // 用户偏好设置
-  bool _darkMode = true;
+  final bool _darkMode = true;
   bool _notifications = true;
   String _currency = 'USD';
   String _temperatureUnit = 'Celsius';
@@ -403,7 +403,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
         Switch(
           value: value,
           onChanged: onChanged,
-          activeColor: Colors.orange,
+          activeThumbColor: Colors.orange,
         ),
       ],
     );
