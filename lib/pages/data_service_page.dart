@@ -511,6 +511,7 @@ class _DataServicePageState extends State<DataServicePage> {
     );
   }
 
+  // 显示创建 Meetup 对话框
   // 搜索栏
   Widget _buildSearchBar(DataServiceController controller, bool isMobile) {
     return Container(
@@ -644,19 +645,50 @@ class _DataServicePageState extends State<DataServicePage> {
                   ),
                 ],
               ),
-              if (!isMobile)
-                TextButton(
-                  onPressed: () {
-                    // TODO: 导航到完整的 meetups 页面
-                  },
-                  child: const Text(
-                    'View all',
-                    style: TextStyle(
-                      color: Color(0xFFFF4458),
-                      fontWeight: FontWeight.w600,
+              Row(
+                children: [
+                  // Create Meetup 按钮
+                  Obx(() => ElevatedButton.icon(
+                        onPressed: controller.isLoggedIn.value
+                            ? () => Get.toNamed('/create-meetup')
+                            : () {
+                                Get.snackbar(
+                                  '🔐 Login Required',
+                                  'Please login to create a meetup',
+                                  snackPosition: SnackPosition.BOTTOM,
+                                  duration: const Duration(seconds: 2),
+                                );
+                              },
+                        icon: const Icon(Icons.add, size: 18),
+                        label: Text(isMobile ? 'Create' : 'Create Meetup'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFF4458),
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isMobile ? 12 : 16,
+                            vertical: isMobile ? 8 : 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      )),
+                  if (!isMobile) const SizedBox(width: 12),
+                  if (!isMobile)
+                    TextButton(
+                      onPressed: () {
+                        // TODO: 导航到完整的 meetups 页面
+                      },
+                      child: const Text(
+                        'View all',
+                        style: TextStyle(
+                          color: Color(0xFFFF4458),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
+                ],
+              ),
             ],
           ),
 
@@ -1918,44 +1950,141 @@ class _MeetupCard extends StatelessWidget {
 
                 const SizedBox(height: 24),
 
-                // RSVP 按钮
+                // RSVP 按钮或 Going/Join Chat 按钮
                 Obx(() {
                   final isRSVPed =
                       controller.rsvpedMeetups.contains(meetup['id']);
+                  
+                  // 如果已 RSVP，显示两个按钮
+                  if (isRSVPed) {
+                    return Row(
+                      children: [
+                        // Going 按钮
+                        Expanded(
+                          child: SizedBox(
+                            height: 36,
+                            child: ElevatedButton(
+                              onPressed: () =>
+                                  controller.toggleRSVP(meetup['id']),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: const Color(0xFFFF4458),
+                                elevation: 0,
+                                side: const BorderSide(
+                                  color: Color(0xFFFF4458),
+                                  width: 1.5,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                              ),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.check_circle_outline,
+                                    size: 16,
+                                  ),
+                                  SizedBox(width: 4),
+                                  Flexible(
+                                    child: Text(
+                                      'Going',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        // Join Chat 按钮
+                        Expanded(
+                          child: SizedBox(
+                            height: 36,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                // 跳转到聊天页面并加入该城市的聊天室
+                                Get.toNamed(
+                                  '/city-chat',
+                                  arguments: {
+                                    'city': meetup['city'],
+                                    'country': meetup['country'],
+                                    'meetupId': meetup['id'],
+                                    'meetupTitle': meetup['title'],
+                                  },
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFFF4458),
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                              ),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.chat_bubble_outline,
+                                    size: 16,
+                                  ),
+                                  SizedBox(width: 4),
+                                  Flexible(
+                                    child: Text(
+                                      'Join Chat',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+
+                  // 如果未 RSVP，显示单个 RSVP 按钮
                   return SizedBox(
                     width: double.infinity,
                     height: 36,
                     child: ElevatedButton(
                       onPressed: () => controller.toggleRSVP(meetup['id']),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            isRSVPed ? Colors.white : const Color(0xFFFF4458),
-                        foregroundColor:
-                            isRSVPed ? const Color(0xFFFF4458) : Colors.white,
+                        backgroundColor: const Color(0xFFFF4458),
+                        foregroundColor: Colors.white,
                         elevation: 0,
-                        side: isRSVPed
-                            ? const BorderSide(
-                                color: Color(0xFFFF4458),
-                                width: 1.5,
-                              )
-                            : null,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(6),
                         ),
                       ),
-                      child: Row(
+                      child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            isRSVPed
-                                ? Icons.check_circle_outline
-                                : Icons.add_circle_outline,
+                            Icons.add_circle_outline,
                             size: 16,
                           ),
-                          const SizedBox(width: 6),
+                          SizedBox(width: 6),
                           Text(
-                            isRSVPed ? 'Going' : 'RSVP',
-                            style: const TextStyle(
+                            'RSVP',
+                            style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                             ),

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class DataServiceController extends GetxController {
@@ -7,6 +8,9 @@ class DataServiceController extends GetxController {
   final RxString sortBy = 'popular'.obs;
   final RxString searchQuery = ''.obs;
   final RxList<Map<String, dynamic>> dataItems = <Map<String, dynamic>>[].obs;
+  
+  // 用户登录状态 (模拟)
+  final RxBool isLoggedIn = true.obs; // 在实际应用中，这应该从认证服务获取
 
   // 筛选状态 - Nomads.com 风格
   final RxList<String> selectedRegions = <String>[].obs; // 地区筛选
@@ -47,6 +51,24 @@ class DataServiceController extends GetxController {
     'Workshop',
     'Networking'
   ];
+
+  // 可用的城市列表（从数据中提取）
+  List<String> get availableCities {
+    return dataItems.map((item) => item['city'] as String).toSet().toList()
+      ..sort();
+  }
+
+  // 可用的国家列表（从数据中提取）
+  List<String> get availableCountries {
+    return dataItems.map((item) => item['country'] as String).toSet().toList()
+      ..sort();
+  }
+
+  // 根据城市获取对应的国家
+  String getCountryByCity(String city) {
+    final cityData = dataItems.firstWhereOrNull((item) => item['city'] == city);
+    return cityData?['country'] as String? ?? 'Thailand';
+  }
 
   @override
   void onInit() {
@@ -570,5 +592,59 @@ class DataServiceController extends GetxController {
   // 刷新数据
   void refreshData() {
     initializeData();
+  }
+
+  // 创建新的 Meetup
+  void createMeetup({
+    required String title,
+    required String city,
+    required String country,
+    required String type,
+    required String venue,
+    required DateTime date,
+    required String time,
+    required int maxAttendees,
+    required String description,
+    String? imageUrl,
+  }) {
+    // 生成新的 meetup ID
+    final newId = meetups.isEmpty
+        ? 1
+        : (meetups.map((m) => m['id'] as int).reduce((a, b) => a > b ? a : b) +
+            1);
+
+    final newMeetup = {
+      'id': newId,
+      'city': city,
+      'country': country,
+      'type': type,
+      'title': title,
+      'venue': venue,
+      'date': date,
+      'time': time,
+      'attendees': 1, // 创建者自动加入
+      'maxAttendees': maxAttendees,
+      'organizer': 'You', // 在实际应用中从用户资料获取
+      'organizerAvatar': 'https://i.pravatar.cc/150?img=68',
+      'image': imageUrl ??
+          'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400',
+      'description': description,
+    };
+
+    meetups.add(newMeetup);
+    meetups.refresh();
+
+    // 自动 RSVP
+    rsvpedMeetups.add(newId);
+
+    Get.back(); // 关闭对话框
+    Get.snackbar(
+      '✅ Meetup Created!',
+      'Your meetup "$title" has been created successfully',
+      snackPosition: SnackPosition.BOTTOM,
+      duration: const Duration(seconds: 3),
+      backgroundColor: const Color(0xFF4CAF50),
+      colorText: const Color(0xFFFFFFFF),
+    );
   }
 }

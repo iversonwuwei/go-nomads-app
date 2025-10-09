@@ -5,6 +5,7 @@ import '../pages/analytics_tool_page.dart';
 import '../pages/api_marketplace_page.dart';
 import '../pages/city_chat_page.dart';
 import '../pages/city_detail_page.dart';
+import '../pages/create_meetup_page.dart';
 import '../pages/data_service_page.dart';
 import '../pages/location_demo_page.dart';
 import '../pages/login_page_optimized.dart';
@@ -23,6 +24,7 @@ class AppRoutes {
   static const String analyticsTool = '/analytics-tool';
   static const String cityDetail = '/city-detail';
   static const String cityChat = '/city-chat';
+  static const String createMeetup = '/create-meetup';
   static const String locationDemo = '/location-demo';
 
   static List<GetPage> getPages = [
@@ -71,6 +73,10 @@ class AppRoutes {
     GetPage(
       name: cityChat,
       page: () => const CityChatPage(),
+    ),
+    GetPage(
+      name: createMeetup,
+      page: () => const CreateMeetupPage(),
     ),
     GetPage(
       name: locationDemo,

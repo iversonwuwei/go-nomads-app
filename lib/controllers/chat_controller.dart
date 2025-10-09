@@ -17,6 +17,19 @@ class ChatController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    
+    // 检查是否从 meetup 页面传递了参数
+    final arguments = Get.arguments;
+    if (arguments != null && arguments is Map<String, dynamic>) {
+      final city = arguments['city'] as String?;
+      final country = arguments['country'] as String?;
+      if (city != null && country != null) {
+        // 直接加入指定城市的聊天室
+        joinRoomByCity(city, country);
+        return;
+      }
+    }
+    
     loadChatRooms();
   }
 
@@ -27,6 +40,36 @@ class ChatController extends GetxController {
     Future.delayed(const Duration(milliseconds: 800), () {
       chatRooms.value = _generateMockChatRooms();
       isLoading.value = false;
+    });
+  }
+  
+  // 根据城市名称加入聊天室
+  void joinRoomByCity(String city, String country) {
+    isLoading.value = true;
+
+    Future.delayed(const Duration(milliseconds: 500), () {
+      // 创建或查找该城市的聊天室
+      final existingRoom = chatRooms.firstWhereOrNull(
+        (room) => room.city.toLowerCase() == city.toLowerCase(),
+      );
+
+      final room = existingRoom ??
+          ChatRoom(
+            id: 'room_${city.toLowerCase().replaceAll(' ', '_')}',
+            city: city,
+            country: country,
+            onlineUsers: 12,
+            totalMembers: 234,
+            lastMessage: null,
+          );
+
+      // 如果是新房间，添加到列表
+      if (existingRoom == null) {
+        chatRooms.insert(0, room);
+      }
+
+      // 加入聊天室
+      joinRoom(room);
     });
   }
 

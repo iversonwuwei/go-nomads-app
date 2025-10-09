@@ -52,5 +52,8 @@
 <string>我们需要访问您的位置以提供更好的服务体验</string>
 <key>NSLocationAlwaysUsageDescription</key>
 <string>我们需要访问您的位置以提供持续的位置服务</string>
+<!-- 日历权限描述 -->
+<key>NSCalendarsUsageDescription</key>
+<string>We need access to your calendar to add meetup events</string>
 </dict>
 </plist>
