@@ -1,0 +1,25 @@
+# Android Local Properties Template
+# 复制此文件为 local.properties 并填入你的本地路径
+# Copy this file to local.properties and fill in your local paths
+
+# Android SDK 路径 (必需)
+# Android SDK path (required)
+# macOS 示例: /Users/your-username/Library/Android/sdk
+# Windows 示例: C:\\Users\\your-username\\AppData\\Local\\Android\\Sdk
+# Linux 示例: /home/your-username/Android/Sdk
+sdk.dir=YOUR_ANDROID_SDK_PATH
+
+# Flutter SDK 路径 (必需)
+# Flutter SDK path (required)
+# macOS/Linux 示例: /Users/your-username/flutter
+# Windows 示例: C:\\Users\\your-username\\flutter
+flutter.sdk=YOUR_FLUTTER_SDK_PATH
+
+# 构建模式 (可选，默认 debug)
+# Build mode (optional, defaults to debug)
+flutter.buildMode=release
+
+# 版本信息 (可选)
+# Version info (optional)
+flutter.versionName=1.0.0
+flutter.versionCode=1

@@ -60,6 +60,90 @@ lib/
 - **cached_network_image**: 网络图片缓存
 - **cupertino_icons**: iOS风格图标
 
+## 开发环境要求
+
+### 必需软件
+
+- **Flutter SDK**: >= 3.4.0
+- **Dart**: >= 3.4.0
+- **Java**: 21 LTS ⚠️ **重要**
+- **Android SDK**: API 34+
+- **iOS**: Xcode 15+ (仅 macOS)
+
+### JDK 21 配置
+
+本项目使用 Java 21 LTS，**必须**正确配置 `JAVA_HOME` 环境变量。
+
+#### 快速设置 (macOS/Linux)
+
+```bash
+# 在项目根目录运行
+source ./set_jdk21.sh
+```
+
+#### 手动设置
+
+**macOS**:
+
+```bash
+# 临时设置
+export JAVA_HOME=$(/usr/libexec/java_home -v 21)
+export PATH=$JAVA_HOME/bin:$PATH
+
+# 永久设置（添加到 ~/.zshrc）
+echo 'export JAVA_HOME=$(/usr/libexec/java_home -v 21)' >> ~/.zshrc
+echo 'export PATH=$JAVA_HOME/bin:$PATH' >> ~/.zshrc
+source ~/.zshrc
+```
+
+**Windows**:
+
+```cmd
+# 设置环境变量（需要管理员权限）
+setx JAVA_HOME "C:\Program Files\Java\jdk-21"
+setx PATH "%JAVA_HOME%\bin;%PATH%"
+```
+
+**Linux**:
+
+```bash
+# 添加到 ~/.bashrc 或 ~/.zshrc
+export JAVA_HOME=/usr/lib/jvm/java-21-openjdk
+export PATH=$JAVA_HOME/bin:$PATH
+```
+
+#### 验证配置
+
+```bash
+# 检查 JAVA_HOME
+echo $JAVA_HOME  # macOS/Linux
+echo %JAVA_HOME% # Windows
+
+# 检查 Java 版本（应显示 21.x.x）
+java -version
+```
+
+#### 详细说明
+
+查看完整的 JDK 环境配置指南: [JDK_ENVIRONMENT_SETUP.md](./JDK_ENVIRONMENT_SETUP.md)
+
+### Android 本地配置
+
+首次运行需要创建 `android/local.properties` 文件：
+
+```bash
+cd android
+cp local.properties.template local.properties
+# 编辑 local.properties，填入你的本地路径
+```
+
+示例内容：
+
+```properties
+sdk.dir=/Users/your-username/Library/Android/sdk
+flutter.sdk=/Users/your-username/flutter
+```
+
 ## 运行项目
 
 ```bash
