@@ -8,8 +8,9 @@ import '../pages/city_detail_page.dart';
 import '../pages/create_meetup_page.dart';
 import '../pages/data_service_page.dart';
 import '../pages/location_demo_page.dart';
-import '../pages/login_page_optimized.dart';
 import '../pages/main_page.dart';
+import '../pages/nomads_login_page.dart';
+import '../pages/register_page.dart';
 import '../pages/second_page.dart';
 import '../pages/snake_game_page.dart';
 
@@ -17,6 +18,7 @@ class AppRoutes {
   static const String home = '/';
   static const String second = '/second';
   static const String login = '/login';
+  static const String register = '/register';
   static const String aiChat = '/ai-chat';
   static const String snakeGame = '/snake-game';
   static const String apiMarketplace = '/api-marketplace';
@@ -38,7 +40,11 @@ class AppRoutes {
     ),
     GetPage(
       name: login,
-      page: () => const LoginPageOptimized(),
+      page: () => const NomadsLoginPage(),
+    ),
+    GetPage(
+      name: register,
+      page: () => const RegisterPage(),
     ),
     GetPage(
       name: aiChat,

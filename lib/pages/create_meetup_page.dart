@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:add_2_calendar/add_2_calendar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/data_service_controller.dart';
@@ -24,6 +27,10 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   double _maxAttendees = 10;
+  
+  // 图片相关
+  final List<XFile> _selectedImages = [];
+  final ImagePicker _imagePicker = ImagePicker();
 
   final DataServiceController controller = Get.find<DataServiceController>();
 
@@ -97,6 +104,207 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
       backgroundColor: const Color(0xFFFF4458),
       colorText: Colors.white,
       duration: const Duration(seconds: 2),
+    );
+  }
+
+  // 选择图片
+  Future<void> _pickImages() async {
+    try {
+      final List<XFile> images = await _imagePicker.pickMultiImage(
+        maxWidth: 1920,
+        maxHeight: 1080,
+        imageQuality: 85,
+      );
+
+      if (images.isNotEmpty) {
+        setState(() {
+          // 限制最多上传 10 张图片
+          if (_selectedImages.length + images.length <= 10) {
+            _selectedImages.addAll(images);
+          } else {
+            final remaining = 10 - _selectedImages.length;
+            if (remaining > 0) {
+              _selectedImages.addAll(images.take(remaining));
+              Get.snackbar(
+                'Notice',
+                'Maximum 10 images allowed. Only first $remaining images were added.',
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: Colors.orange,
+                colorText: Colors.white,
+              );
+            } else {
+              Get.snackbar(
+                'Notice',
+                'Maximum 10 images already selected',
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: Colors.orange,
+                colorText: Colors.white,
+              );
+            }
+          }
+        });
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to pick images: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  // 从相机拍照
+  Future<void> _takePhoto() async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: 1920,
+        maxHeight: 1080,
+        imageQuality: 85,
+      );
+
+      if (image != null) {
+        setState(() {
+          if (_selectedImages.length < 10) {
+            _selectedImages.add(image);
+          } else {
+            Get.snackbar(
+              'Notice',
+              'Maximum 10 images allowed',
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.orange,
+              colorText: Colors.white,
+            );
+          }
+        });
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to take photo: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  // 删除图片
+  void _removeImage(int index) {
+    setState(() {
+      _selectedImages.removeAt(index);
+    });
+  }
+
+  // 显示图片选择选项
+  void _showImagePickerOptions() {
+    Get.bottomSheet(
+      Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              // 顶部指示器
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+              // 标题
+              const Text(
+                'Add Venue Photos',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 20),
+              // 从相册选择
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF4458).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.photo_library_outlined,
+                    color: Color(0xFFFF4458),
+                  ),
+                ),
+                title: const Text(
+                  'Choose from Gallery',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                subtitle: Text(
+                  'Select multiple photos (${_selectedImages.length}/10)',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+                onTap: () {
+                  Get.back();
+                  _pickImages();
+                },
+              ),
+              // 拍照
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF4458).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.camera_alt_outlined,
+                    color: Color(0xFFFF4458),
+                  ),
+                ),
+                title: const Text(
+                  'Take a Photo',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                subtitle: Text(
+                  'Use camera to take a new photo',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+                onTap: () {
+                  Get.back();
+                  _takePhoto();
+                },
+              ),
+              const SizedBox(height: 12),
+            ],
+          ),
+        ),
+      ),
+      isDismissible: true,
+      enableDrag: true,
     );
   }
 
@@ -316,7 +524,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
         margin: const EdgeInsets.all(16),
         duration: const Duration(seconds: 3),
       );
-      print('Calendar error: $e'); // 调试日志
+      // Calendar error logged
     }
   }
 
@@ -719,6 +927,191 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                 contentPadding: const EdgeInsets.all(16),
               ),
             ),
+
+            const SizedBox(height: 20),
+
+            // Venue Photos Section
+            const Text(
+              'Venue Photos',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Add photos of the meetup venue (${_selectedImages.length}/10)',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // 图片网格显示
+            if (_selectedImages.isNotEmpty)
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                  childAspectRatio: 1,
+                ),
+                itemCount: _selectedImages.length + 1, // +1 for add button
+                itemBuilder: (context, index) {
+                  if (index == _selectedImages.length) {
+                    // 添加更多图片按钮
+                    return InkWell(
+                      onTap: _selectedImages.length < 10
+                          ? _showImagePickerOptions
+                          : null,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: _selectedImages.length < 10
+                                ? const Color(0xFFFF4458)
+                                : Colors.grey.shade300,
+                            width: 2,
+                            style: BorderStyle.solid,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                          color: _selectedImages.length < 10
+                              ? const Color(0xFFFF4458).withValues(alpha: 0.05)
+                              : Colors.grey.shade100,
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.add_photo_alternate_outlined,
+                              size: 32,
+                              color: _selectedImages.length < 10
+                                  ? const Color(0xFFFF4458)
+                                  : Colors.grey.shade400,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Add Photo',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: _selectedImages.length < 10
+                                    ? const Color(0xFFFF4458)
+                                    : Colors.grey.shade400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+
+                  // 图片缩略图
+                  return Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.file(
+                          File(_selectedImages[index].path),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      // 删除按钮
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: InkWell(
+                          onTap: () => _removeImage(index),
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Colors.black54,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.close,
+                              size: 16,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                      // 主图标记
+                      if (index == 0)
+                        Positioned(
+                          bottom: 4,
+                          left: 4,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFF4458),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Text(
+                              'Cover',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                },
+              ),
+
+            // 如果没有图片，显示添加按钮
+            if (_selectedImages.isEmpty)
+              InkWell(
+                onTap: _showImagePickerOptions,
+                child: Container(
+                  height: 120,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.grey.shade300,
+                      width: 2,
+                      style: BorderStyle.solid,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.grey.shade50,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.add_photo_alternate_outlined,
+                        size: 48,
+                        color: Colors.grey.shade400,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Add Venue Photos',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade600,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Tap to select from gallery or camera',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
 
             const SizedBox(height: 32),
 
