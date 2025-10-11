@@ -40,5 +40,16 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+    
+    # 修复高德地图 SDK 在模拟器上的架构问题
+    target.build_configurations.each do |config|
+      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
+      config.build_settings['ONLY_ACTIVE_ARCH'] = 'YES'
+    end
+  end
+  
+  # 额外配置：允许模拟器运行
+  installer.pods_project.build_configurations.each do |config|
+    config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
   end
 end

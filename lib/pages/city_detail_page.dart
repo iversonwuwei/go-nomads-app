@@ -1,13 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/city_detail_controller.dart';
 import '../widgets/skeleton_loader.dart';
+import 'amap_location_picker_page.dart';
 import 'travel_plan_page.dart';
 
 /// 城市详情页 - 完整的 Nomads.com 风格标签页系统
@@ -1008,7 +1008,6 @@ class CityDetailPage extends StatelessWidget {
     String travelStyle = 'culture';
     List<String> interests = [];
     String departureLocation = '';
-    bool isLoadingLocation = false;
 
     Get.dialog(
       StatefulBuilder(
@@ -1082,8 +1081,12 @@ class CityDetailPage extends StatelessWidget {
                       children: [
                         Expanded(
                           child: TextField(
+                            controller: TextEditingController(
+                              text: departureLocation,
+                            ),
+                            readOnly: true,
                             decoration: InputDecoration(
-                              hintText: 'Enter your departure city',
+                              hintText: 'Select departure location',
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -1115,11 +1118,6 @@ class CityDetailPage extends StatelessWidget {
                                     )
                                   : null,
                             ),
-                            onChanged: (value) {
-                              setState(() {
-                                departureLocation = value;
-                              });
-                            },
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -1130,66 +1128,31 @@ class CityDetailPage extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: IconButton(
-                            icon: isLoadingLocation
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        Color(0xFFFF4458),
-                                      ),
-                                    ),
-                                  )
-                                : const Icon(
-                                    Icons.my_location,
-                                    color: Color(0xFFFF4458),
-                                  ),
-                            onPressed: isLoadingLocation
-                                ? null
-                                : () async {
-                                    setState(() {
-                                      isLoadingLocation = true;
-                                    });
-                                    try {
-                                      final permission =
-                                          await Geolocator.checkPermission();
-                                      if (permission ==
-                                              LocationPermission.denied ||
-                                          permission ==
-                                              LocationPermission
-                                                  .deniedForever) {
-                                        await Geolocator.requestPermission();
-                                      }
-                                      final position =
-                                          await Geolocator.getCurrentPosition();
-                                      // 这里可以使用反向地理编码获取城市名称
-                                      // 暂时使用坐标作为位置标识
-                                      setState(() {
-                                        departureLocation =
-                                            'Current Location (${position.latitude.toStringAsFixed(2)}, ${position.longitude.toStringAsFixed(2)})';
-                                      });
-                                    } catch (e) {
-                                      Get.snackbar(
-                                        'Error',
-                                        'Failed to get current location',
-                                        backgroundColor: Colors.red.shade100,
-                                        colorText: Colors.red.shade900,
-                                      );
-                                    } finally {
-                                      setState(() {
-                                        isLoadingLocation = false;
-                                      });
-                                    }
-                                  },
-                            tooltip: 'Use current location',
+                            icon: const Icon(
+                              Icons.map_outlined,
+                              color: Color(0xFFFF4458),
+                            ),
+                            onPressed: () async {
+                              // 打开地图选择器
+                              final result = await Get.to(
+                                () => const AmapLocationPickerPage(),
+                              );
+                              
+                              if (result != null && result is Map) {
+                                setState(() {
+                                  departureLocation =
+                                      result['address'] as String? ?? '';
+                                });
+                              }
+                            },
+                            tooltip: 'Select on map',
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 8),
                     Text(
-                      'Tip: Enter your departure city for more accurate travel time and route planning',
+                      'Tap the map icon to select your departure location on the map',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey.shade600,

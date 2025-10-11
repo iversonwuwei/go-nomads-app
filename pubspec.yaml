@@ -44,6 +44,8 @@ dependencies:
   geolocator: ^13.0.2
   add_2_calendar: ^3.0.1
   image_picker: ^1.0.7
+  http: ^1.5.0
+  amap_map_fluttify: ^2.0.2
 
 dev_dependencies:
   flutter_test:

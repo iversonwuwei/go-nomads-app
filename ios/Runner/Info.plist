@@ -45,6 +45,12 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+<!-- 允许 HTTP 请求（地图瓦片加载） -->
+<key>NSAppTransportSecurity</key>
+<dict>
+	<key>NSAllowsArbitraryLoads</key>
+	<true/>
+</dict>
 <!-- 位置权限描述 -->
 <key>NSLocationWhenInUseUsageDescription</key>
 <string>我们需要访问您的位置以提供基于位置的城市推荐服务</string>
