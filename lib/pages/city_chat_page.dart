@@ -17,7 +17,8 @@ class CityChatPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Obx(() {
-        if (controller.isLoading.value && controller.currentRoom.value == null) {
+        if (controller.isLoading.value &&
+            controller.currentRoom.value == null) {
           return const Center(
             child: CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
@@ -47,7 +48,8 @@ class CityChatPage extends StatelessWidget {
           backgroundColor: Colors.white,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_outlined, color: AppColors.backButtonDark),
+            icon: const Icon(Icons.arrow_back_outlined,
+                color: AppColors.backButtonDark),
             onPressed: () => Get.back(),
           ),
           iconTheme: const IconThemeData(color: AppColors.backButtonDark),
@@ -76,7 +78,8 @@ class CityChatPage extends StatelessWidget {
     );
   }
 
-  Widget _buildChatRoomCard(ChatRoom room, ChatController controller, bool isMobile) {
+  Widget _buildChatRoomCard(
+      ChatRoom room, ChatController controller, bool isMobile) {
     return InkWell(
       onTap: () => controller.joinRoom(room),
       child: Container(
@@ -151,7 +154,8 @@ class CityChatPage extends StatelessWidget {
                   if (room.lastMessage!.userAvatar != null)
                     CircleAvatar(
                       radius: 12,
-                      backgroundImage: NetworkImage(room.lastMessage!.userAvatar!),
+                      backgroundImage:
+                          NetworkImage(room.lastMessage!.userAvatar!),
                     ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -206,7 +210,8 @@ class CityChatPage extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 1,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_outlined, color: AppColors.backButtonDark),
+          icon: const Icon(Icons.arrow_back_outlined,
+              color: AppColors.backButtonDark),
           onPressed: () {
             controller.currentRoom.value = null;
             controller.messages.clear();
@@ -247,7 +252,8 @@ class CityChatPage extends StatelessWidget {
               if (controller.isLoading.value) {
                 return const Center(
                   child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
                   ),
                 );
               }
@@ -280,7 +286,8 @@ class CityChatPage extends StatelessWidget {
     );
   }
 
-  Widget _buildMessageBubble(ChatMessage message, bool isMe, ChatController controller) {
+  Widget _buildMessageBubble(
+      ChatMessage message, bool isMe, ChatController controller) {
     return GestureDetector(
       onLongPress: () {
         if (!isMe) {
@@ -290,19 +297,22 @@ class CityChatPage extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.only(bottom: 12),
         child: Row(
-          mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+          mainAxisAlignment:
+              isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (!isMe) ...[
               CircleAvatar(
                 radius: 16,
-                backgroundImage: NetworkImage(message.userAvatar ?? 'https://i.pravatar.cc/300'),
+                backgroundImage: NetworkImage(
+                    message.userAvatar ?? 'https://i.pravatar.cc/300'),
               ),
               const SizedBox(width: 8),
             ],
             Flexible(
               child: Column(
-                crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                crossAxisAlignment:
+                    isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                 children: [
                   if (!isMe)
                     Padding(
@@ -317,7 +327,8 @@ class CityChatPage extends StatelessWidget {
                       ),
                     ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
                       color: isMe ? const Color(0xFFFF4458) : Colors.white,
                       borderRadius: BorderRadius.only(
@@ -342,7 +353,10 @@ class CityChatPage extends StatelessWidget {
                             padding: const EdgeInsets.all(8),
                             margin: const EdgeInsets.only(bottom: 8),
                             decoration: BoxDecoration(
-                              color: (isMe ? Colors.white : const Color(0xFFF3F4F6)).withValues(alpha: 0.3),
+                              color: (isMe
+                                      ? Colors.white
+                                      : const Color(0xFFF3F4F6))
+                                  .withValues(alpha: 0.3),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Column(
@@ -353,7 +367,9 @@ class CityChatPage extends StatelessWidget {
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
-                                    color: isMe ? Colors.white.withValues(alpha: 0.8) : const Color(0xFF6b7280),
+                                    color: isMe
+                                        ? Colors.white.withValues(alpha: 0.8)
+                                        : const Color(0xFF6b7280),
                                   ),
                                 ),
                                 const SizedBox(height: 2),
@@ -363,7 +379,9 @@ class CityChatPage extends StatelessWidget {
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     fontSize: 11,
-                                    color: isMe ? Colors.white.withValues(alpha: 0.7) : const Color(0xFF9ca3af),
+                                    color: isMe
+                                        ? Colors.white.withValues(alpha: 0.7)
+                                        : const Color(0xFF9ca3af),
                                   ),
                                 ),
                               ],
@@ -374,7 +392,8 @@ class CityChatPage extends StatelessWidget {
                           message.message,
                           style: TextStyle(
                             fontSize: 14,
-                            color: isMe ? Colors.white : const Color(0xFF1a1a1a),
+                            color:
+                                isMe ? Colors.white : const Color(0xFF1a1a1a),
                             height: 1.4,
                           ),
                         ),
@@ -461,6 +480,11 @@ class CityChatPage extends StatelessWidget {
       ),
       child: Row(
         children: [
+          IconButton(
+            icon:
+                const Icon(Icons.add_circle_outline, color: Color(0xFFFF4458)),
+            onPressed: () => _showAttachmentOptions(controller),
+          ),
           Expanded(
             child: TextField(
               controller: textController,
@@ -473,7 +497,8 @@ class CityChatPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(24),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               ),
               maxLines: null,
             ),
@@ -498,6 +523,232 @@ class CityChatPage extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void _showAttachmentOptions(ChatController controller) {
+    Get.bottomSheet(
+      Container(
+        constraints: const BoxConstraints(maxHeight: 450),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 12),
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE5E7EB),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Send Attachment',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1a1a1a),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    children: [
+                      _buildAttachmentOption(
+                        icon: Icons.image_outlined,
+                        iconColor: const Color(0xFF8B5CF6),
+                        iconBgColor:
+                            const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                        title: 'Photo & Video',
+                        subtitle: 'Share photos and videos',
+                        onTap: () {
+                          Get.back();
+                          _handleImageUpload(controller);
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      _buildAttachmentOption(
+                        icon: Icons.location_on_outlined,
+                        iconColor: const Color(0xFFEF4444),
+                        iconBgColor:
+                            const Color(0xFFEF4444).withValues(alpha: 0.1),
+                        title: 'Location',
+                        subtitle: 'Share your location',
+                        onTap: () {
+                          Get.back();
+                          _handleLocationShare(controller);
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      _buildAttachmentOption(
+                        icon: Icons.insert_drive_file_outlined,
+                        iconColor: const Color(0xFF3B82F6),
+                        iconBgColor:
+                            const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                        title: 'Document',
+                        subtitle: 'Share files and documents',
+                        onTap: () {
+                          Get.back();
+                          _handleDocumentUpload(controller);
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      _buildAttachmentOption(
+                        icon: Icons.contact_page_outlined,
+                        iconColor: const Color(0xFF10B981),
+                        iconBgColor:
+                            const Color(0xFF10B981).withValues(alpha: 0.1),
+                        title: 'Contact',
+                        subtitle: 'Share contact information',
+                        onTap: () {
+                          Get.back();
+                          _handleContactShare(controller);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        ),
+      ),
+      isDismissible: true,
+      enableDrag: true,
+    );
+  }
+
+  Widget _buildAttachmentOption({
+    required IconData icon,
+    required Color iconColor,
+    required Color iconBgColor,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          border: Border.all(color: const Color(0xFFE5E7EB)),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: iconBgColor,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: iconColor, size: 24),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1a1a1a),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: Color(0xFF9CA3AF),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _handleImageUpload(ChatController controller) {
+    // TODO: 实现图片上传功能
+    Get.snackbar(
+      'Photo & Video',
+      'Image upload feature coming soon!',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: const Color(0xFF8B5CF6),
+      colorText: Colors.white,
+      margin: const EdgeInsets.all(16),
+      duration: const Duration(seconds: 2),
+      icon: const Icon(Icons.image_outlined, color: Colors.white),
+    );
+  }
+
+  void _handleLocationShare(ChatController controller) {
+    // TODO: 实现位置分享功能
+    Get.snackbar(
+      'Location',
+      'Location sharing feature coming soon!',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: const Color(0xFFEF4444),
+      colorText: Colors.white,
+      margin: const EdgeInsets.all(16),
+      duration: const Duration(seconds: 2),
+      icon: const Icon(Icons.location_on_outlined, color: Colors.white),
+    );
+  }
+
+  void _handleDocumentUpload(ChatController controller) {
+    // TODO: 实现文档上传功能
+    Get.snackbar(
+      'Document',
+      'Document upload feature coming soon!',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: const Color(0xFF3B82F6),
+      colorText: Colors.white,
+      margin: const EdgeInsets.all(16),
+      duration: const Duration(seconds: 2),
+      icon: const Icon(Icons.insert_drive_file_outlined, color: Colors.white),
+    );
+  }
+
+  void _handleContactShare(ChatController controller) {
+    // TODO: 实现联系人分享功能
+    Get.snackbar(
+      'Contact',
+      'Contact sharing feature coming soon!',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: const Color(0xFF10B981),
+      colorText: Colors.white,
+      margin: const EdgeInsets.all(16),
+      duration: const Duration(seconds: 2),
+      icon: const Icon(Icons.contact_page_outlined, color: Colors.white),
     );
   }
 
@@ -549,7 +800,8 @@ class CityChatPage extends StatelessWidget {
                         children: [
                           CircleAvatar(
                             radius: 20,
-                            backgroundImage: NetworkImage(user.avatar ?? 'https://i.pravatar.cc/300'),
+                            backgroundImage: NetworkImage(
+                                user.avatar ?? 'https://i.pravatar.cc/300'),
                           ),
                           if (user.isOnline)
                             Positioned(
@@ -561,7 +813,8 @@ class CityChatPage extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   color: const Color(0xFF10B981),
                                   shape: BoxShape.circle,
-                                  border: Border.all(color: Colors.white, width: 2),
+                                  border:
+                                      Border.all(color: Colors.white, width: 2),
                                 ),
                               ),
                             ),
@@ -575,10 +828,14 @@ class CityChatPage extends StatelessWidget {
                         ),
                       ),
                       subtitle: Text(
-                        user.isOnline ? 'Online' : 'Last seen ${_formatTime(user.lastSeen!)}',
+                        user.isOnline
+                            ? 'Online'
+                            : 'Last seen ${_formatTime(user.lastSeen!)}',
                         style: TextStyle(
                           fontSize: 12,
-                          color: user.isOnline ? const Color(0xFF10B981) : const Color(0xFF9ca3af),
+                          color: user.isOnline
+                              ? const Color(0xFF10B981)
+                              : const Color(0xFF9ca3af),
                         ),
                       ),
                     );
@@ -601,7 +858,20 @@ class CityChatPage extends StatelessWidget {
     if (diff.inDays < 1) return '${diff.inHours}h ago';
     if (diff.inDays < 7) return '${diff.inDays}d ago';
 
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
     return '${months[time.month - 1]} ${time.day}';
   }
 }

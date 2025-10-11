@@ -89,6 +89,10 @@ class ProfilePage extends StatelessWidget {
                     _buildTravelHistory(user.travelHistory, isMobile),
                     const SizedBox(height: 32),
 
+                    // My Travel Plans (AI Generated)
+                    _buildTravelPlansSection(isMobile),
+                    const SizedBox(height: 32),
+
                     // Social Links
                     _buildSocialLinks(user.socialLinks, isMobile),
 
@@ -693,6 +697,129 @@ class ProfilePage extends StatelessWidget {
             ],
           ),
         ),
+      ],
+    );
+  }
+
+  /// 我的旅行计划部分
+  Widget _buildTravelPlansSection(bool isMobile) {
+    // 这里应该从用户数据中获取保存的计划
+    // 暂时使用空列表演示
+    final savedPlans = <String>[]; // TODO: 从UserProfileController获取
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(
+              Icons.auto_awesome,
+              color: Color(0xFFFF4458),
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'My Travel Plans',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const Spacer(),
+            TextButton.icon(
+              onPressed: () {
+                Get.snackbar(
+                  'Info',
+                  'Visit city details and click "AI Travel Plan" to generate new plans',
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor:
+                      const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                  colorText: const Color(0xFF3B82F6),
+                );
+              },
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('Create New'),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFFFF4458),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        if (savedPlans.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey[200]!),
+            ),
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF4458).withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.travel_explore,
+                    size: 48,
+                    color: Color(0xFFFF4458),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'No Travel Plans Yet',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Generate AI-powered travel plans from city detail pages',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Get.back(); // 返回主页
+                  },
+                  icon: const Icon(Icons.explore, size: 18),
+                  label: const Text('Explore Cities'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF4458),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          // TODO: 显示保存的旅行计划列表
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: savedPlans.length,
+            itemBuilder: (context, index) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                child: const Text('Travel plan card'), // Placeholder
+              );
+            },
+          ),
       ],
     );
   }

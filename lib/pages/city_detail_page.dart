@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/city_detail_controller.dart';
+import 'travel_plan_page.dart';
 
 /// 城市详情页 - 完整的 Nomads.com 风格标签页系统
 class CityDetailPage extends StatelessWidget {
@@ -30,162 +31,235 @@ class CityDetailPage extends StatelessWidget {
     return DefaultTabController(
       length: 8, // 简化为8个主要标签
       child: Scaffold(
-        body: NestedScrollView(
-          headerSliverBuilder: (context, innerBoxIsScrolled) {
-            return [
-              // 大图 Banner
-              SliverAppBar(
-                expandedHeight: 250,
-                pinned: true,
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back_outlined, color: AppColors.backButtonLight),
-                  onPressed: () => Get.back(),
-                ),
-                flexibleSpace: FlexibleSpaceBar(
-                  title: Text(
-                    cityName,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      shadows: [
-                        Shadow(
-                          offset: Offset(0, 1),
-                          blurRadius: 3,
-                          color: Colors.black45,
-                        ),
-                      ],
+        body: Stack(
+          children: [
+            NestedScrollView(
+              headerSliverBuilder: (context, innerBoxIsScrolled) {
+                return [
+                  // 大图 Banner
+                  SliverAppBar(
+                    expandedHeight: 250,
+                    pinned: true,
+                    leading: IconButton(
+                      icon: const Icon(Icons.arrow_back_outlined,
+                          color: AppColors.backButtonLight),
+                      onPressed: () => Get.back(),
                     ),
-                  ),
-                  background: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      Image.network(
-                        cityImage,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(color: Colors.grey[300]);
-                        },
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.black.withOpacity(0.7),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              
-              // 评分信息
-              SliverToBoxAdapter(
-                child: Container(
-                  color: Colors.white,
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFF4458),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.star,
-                              color: Colors.white,
-                              size: 16,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              overallScore.toStringAsFixed(1),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
+                    flexibleSpace: FlexibleSpaceBar(
+                      title: Text(
+                        cityName,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          shadows: [
+                            Shadow(
+                              offset: Offset(0, 1),
+                              blurRadius: 3,
+                              color: Colors.black45,
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Text(
-                        '$reviewCount reviews',
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 14,
+                      background: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          Image.network(
+                            cityImage,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(color: Colors.grey[300]);
+                            },
+                          ),
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.transparent,
+                                  Colors.black.withOpacity(0.7),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // 评分信息
+                  SliverToBoxAdapter(
+                    child: Container(
+                      color: Colors.white,
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFF4458),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.star,
+                                  color: Colors.white,
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  overallScore.toStringAsFixed(1),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            '$reviewCount reviews',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 14,
+                            ),
+                          ),
+                          const Spacer(),
+                          const SizedBox(width: 8),
+                          IconButton(
+                            icon: const Icon(Icons.favorite_border),
+                            onPressed: () {},
+                            color: const Color(0xFFFF4458),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.share),
+                            onPressed: () {},
+                            color: Colors.grey[700],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // 标签页导航
+                  SliverPersistentHeader(
+                    pinned: true,
+                    delegate: _SliverAppBarDelegate(
+                      TabBar(
+                        isScrollable: true,
+                        labelColor: const Color(0xFFFF4458),
+                        unselectedLabelColor: Colors.grey[600],
+                        indicatorColor: const Color(0xFFFF4458),
+                        tabs: const [
+                          Tab(text: 'Scores'),
+                          Tab(text: 'Guide'),
+                          Tab(text: 'Pros & Cons'),
+                          Tab(text: 'Reviews'),
+                          Tab(text: 'Cost'),
+                          Tab(text: 'Photos'),
+                          Tab(text: 'Weather'),
+                          Tab(text: 'Neighborhoods'),
+                        ],
+                      ),
+                    ),
+                  ),
+                ];
+              },
+              body: Obx(() {
+                if (controller.isLoading.value) {
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      color: Color(0xFFFF4458),
+                    ),
+                  );
+                }
+
+                return TabBarView(
+                  children: [
+                    _buildScoresTab(controller),
+                    _buildGuideTab(controller),
+                    _buildProsConsTab(controller),
+                    _buildReviewsTab(controller),
+                    _buildCostTab(controller),
+                    _buildPhotosTab(controller),
+                    _buildWeatherTab(controller),
+                    _buildNeighborhoodsTab(controller),
+                  ],
+                );
+              }),
+            ),
+
+            // Floating AI Travel Plan Button
+            Positioned(
+              bottom: 16,
+              right: 16,
+              child: Material(
+                elevation: 6,
+                shadowColor: const Color(0xFFFF4458).withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(28),
+                child: InkWell(
+                  onTap: () => _showTravelPlanDialog(controller),
+                  borderRadius: BorderRadius.circular(28),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 12),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(28),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFF4458).withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
                         ),
-                      ),
-                      const Spacer(),
-                      IconButton(
-                        icon: const Icon(Icons.favorite_border),
-                        onPressed: () {},
-                        color: const Color(0xFFFF4458),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.share),
-                        onPressed: () {},
-                        color: Colors.grey[700],
-                      ),
-                    ],
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.25),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.auto_awesome,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        const Text(
+                          'AI Travel Plan',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Icon(
+                          Icons.arrow_forward_rounded,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-              
-              // 标签页导航
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: _SliverAppBarDelegate(
-                  TabBar(
-                    isScrollable: true,
-                    labelColor: const Color(0xFFFF4458),
-                    unselectedLabelColor: Colors.grey[600],
-                    indicatorColor: const Color(0xFFFF4458),
-                    tabs: const [
-                      Tab(text: 'Scores'),
-                      Tab(text: 'Guide'),
-                      Tab(text: 'Pros & Cons'),
-                      Tab(text: 'Reviews'),
-                      Tab(text: 'Cost'),
-                      Tab(text: 'Photos'),
-                      Tab(text: 'Weather'),
-                      Tab(text: 'Neighborhoods'),
-                    ],
-                  ),
-                ),
-              ),
-            ];
-          },
-          body: Obx(() {
-            if (controller.isLoading.value) {
-              return const Center(
-                child: CircularProgressIndicator(
-                  color: Color(0xFFFF4458),
-                ),
-              );
-            }
-            
-            return TabBarView(
-              children: [
-                _buildScoresTab(controller),
-                _buildGuideTab(controller),
-                _buildProsConsTab(controller),
-                _buildReviewsTab(controller),
-                _buildCostTab(controller),
-                _buildPhotosTab(controller),
-                _buildWeatherTab(controller),
-                _buildNeighborhoodsTab(controller),
-              ],
-            );
-          }),
+            ),
+          ],
         ),
       ),
     );
@@ -200,24 +274,68 @@ class CityDetailPage extends StatelessWidget {
 
     final scoreItems = [
       {'icon': Icons.star, 'label': 'Overall', 'value': scores.overall},
-      {'icon': Icons.favorite, 'label': 'Quality of Life', 'value': scores.qualityOfLife},
-      {'icon': Icons.family_restroom, 'label': 'Family Score', 'value': scores.familyScore},
-      {'icon': Icons.people, 'label': 'Community', 'value': scores.communityScore},
+      {
+        'icon': Icons.favorite,
+        'label': 'Quality of Life',
+        'value': scores.qualityOfLife
+      },
+      {
+        'icon': Icons.family_restroom,
+        'label': 'Family Score',
+        'value': scores.familyScore
+      },
+      {
+        'icon': Icons.people,
+        'label': 'Community',
+        'value': scores.communityScore
+      },
       {'icon': Icons.security, 'label': 'Safety', 'value': scores.safetyScore},
-      {'icon': Icons.female, 'label': 'Women Safety', 'value': scores.womenSafety},
-      {'icon': Icons.flag, 'label': 'LGBTQ+ Safety', 'value': scores.lgbtqSafety},
+      {
+        'icon': Icons.female,
+        'label': 'Women Safety',
+        'value': scores.womenSafety
+      },
+      {
+        'icon': Icons.flag,
+        'label': 'LGBTQ+ Safety',
+        'value': scores.lgbtqSafety
+      },
       {'icon': Icons.celebration, 'label': 'Fun', 'value': scores.funScore},
-      {'icon': Icons.directions_walk, 'label': 'Walkability', 'value': scores.walkability},
-      {'icon': Icons.nightlife, 'label': 'Nightlife', 'value': scores.nightlife},
-      {'icon': Icons.language, 'label': 'English Speaking', 'value': scores.englishSpeaking},
-      {'icon': Icons.restaurant, 'label': 'Food Safety', 'value': scores.foodSafety},
+      {
+        'icon': Icons.directions_walk,
+        'label': 'Walkability',
+        'value': scores.walkability
+      },
+      {
+        'icon': Icons.nightlife,
+        'label': 'Nightlife',
+        'value': scores.nightlife
+      },
+      {
+        'icon': Icons.language,
+        'label': 'English Speaking',
+        'value': scores.englishSpeaking
+      },
+      {
+        'icon': Icons.restaurant,
+        'label': 'Food Safety',
+        'value': scores.foodSafety
+      },
       {'icon': Icons.wifi, 'label': 'Free WiFi', 'value': scores.freeWiFi},
-      {'icon': Icons.laptop, 'label': 'Places to Work', 'value': scores.placesToWork},
-      {'icon': Icons.local_hospital, 'label': 'Hospitals', 'value': scores.hospitals},
+      {
+        'icon': Icons.laptop,
+        'label': 'Places to Work',
+        'value': scores.placesToWork
+      },
+      {
+        'icon': Icons.local_hospital,
+        'label': 'Hospitals',
+        'value': scores.hospitals
+      },
     ];
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 80),
       itemCount: scoreItems.length,
       itemBuilder: (context, index) {
         final item = scoreItems[index];
@@ -312,24 +430,24 @@ class CityDetailPage extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         ...guide.bestAreas.map((area) => Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Row(
-            children: [
-              const Icon(
-                Icons.location_on,
-                color: Color(0xFFFF4458),
-                size: 20,
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.location_on,
+                    color: Color(0xFFFF4458),
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      area,
+                      style: const TextStyle(fontSize: 15),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  area,
-                  style: const TextStyle(fontSize: 15),
-                ),
-              ),
-            ],
-          ),
-        )),
+            )),
         const SizedBox(height: 24),
         const Text(
           'Essential Tips',
@@ -340,21 +458,22 @@ class CityDetailPage extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         ...guide.tips.map((tip) => Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('•', style: TextStyle(fontSize: 18, color: Color(0xFFFF4458))),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  tip,
-                  style: const TextStyle(fontSize: 15),
-                ),
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('•',
+                      style: TextStyle(fontSize: 18, color: Color(0xFFFF4458))),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      tip,
+                      style: const TextStyle(fontSize: 15),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        )),
+            )),
       ],
     );
   }
@@ -362,7 +481,7 @@ class CityDetailPage extends StatelessWidget {
   // Pros & Cons 标签
   Widget _buildProsConsTab(CityDetailController controller) {
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 80),
       children: [
         const Text(
           'Pros',
@@ -373,36 +492,38 @@ class CityDetailPage extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         ...controller.prosList.map((item) => Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.check_circle,
-                  color: Colors.green,
-                  size: 24,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    item.text,
-                    style: const TextStyle(fontSize: 15),
-                  ),
-                ),
-                Column(
+              margin: const EdgeInsets.only(bottom: 12),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
                   children: [
-                    const Icon(Icons.arrow_upward, size: 16, color: Color(0xFFFF4458)),
-                    Text(
-                      '${item.upvotes}',
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                    const Icon(
+                      Icons.check_circle,
+                      color: Colors.green,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        item.text,
+                        style: const TextStyle(fontSize: 15),
+                      ),
+                    ),
+                    Column(
+                      children: [
+                        const Icon(Icons.arrow_upward,
+                            size: 16, color: Color(0xFFFF4458)),
+                        Text(
+                          '${item.upvotes}',
+                          style: const TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
-        )),
+              ),
+            )),
         const SizedBox(height: 24),
         const Text(
           'Cons',
@@ -413,36 +534,38 @@ class CityDetailPage extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         ...controller.consList.map((item) => Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.cancel,
-                  color: Colors.red,
-                  size: 24,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    item.text,
-                    style: const TextStyle(fontSize: 15),
-                  ),
-                ),
-                Column(
+              margin: const EdgeInsets.only(bottom: 12),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
                   children: [
-                    const Icon(Icons.arrow_upward, size: 16, color: Color(0xFFFF4458)),
-                    Text(
-                      '${item.upvotes}',
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                    const Icon(
+                      Icons.cancel,
+                      color: Colors.red,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        item.text,
+                        style: const TextStyle(fontSize: 15),
+                      ),
+                    ),
+                    Column(
+                      children: [
+                        const Icon(Icons.arrow_upward,
+                            size: 16, color: Color(0xFFFF4458)),
+                        Text(
+                          '${item.upvotes}',
+                          style: const TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
-        )),
+              ),
+            )),
       ],
     );
   }
@@ -450,7 +573,7 @@ class CityDetailPage extends StatelessWidget {
   // Reviews 标签
   Widget _buildReviewsTab(CityDetailController controller) {
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 80),
       itemCount: controller.reviews.length,
       itemBuilder: (context, index) {
         final review = controller.reviews[index];
@@ -478,7 +601,8 @@ class CityDetailPage extends StatelessWidget {
                           ),
                           Text(
                             '${review.stayDuration} days',
-                            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                            style: TextStyle(
+                                fontSize: 12, color: Colors.grey[600]),
                           ),
                         ],
                       ),
@@ -543,7 +667,7 @@ class CityDetailPage extends StatelessWidget {
     }
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 80),
       children: [
         Container(
           padding: const EdgeInsets.all(20),
@@ -639,7 +763,7 @@ class CityDetailPage extends StatelessWidget {
     }
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 80),
       children: [
         Container(
           padding: const EdgeInsets.all(20),
@@ -676,22 +800,26 @@ class CityDetailPage extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         ...weather.forecast.map((day) => Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text('${day.date.month}/${day.date.day}'),
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text('${day.date.month}/${day.date.day}'),
+                  ),
+                  Icon(
+                    day.condition == 'rainy'
+                        ? Icons.water_drop
+                        : Icons.wb_sunny,
+                    color:
+                        day.condition == 'rainy' ? Colors.blue : Colors.orange,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                      '${day.low.toStringAsFixed(0)}° - ${day.high.toStringAsFixed(0)}°'),
+                ],
               ),
-              Icon(
-                day.condition == 'rainy' ? Icons.water_drop : Icons.wb_sunny,
-                color: day.condition == 'rainy' ? Colors.blue : Colors.orange,
-                size: 20,
-              ),
-              const SizedBox(width: 12),
-              Text('${day.low.toStringAsFixed(0)}° - ${day.high.toStringAsFixed(0)}°'),
-            ],
-          ),
-        )),
+            )),
       ],
     );
   }
@@ -699,7 +827,7 @@ class CityDetailPage extends StatelessWidget {
   // Neighborhoods 标签
   Widget _buildNeighborhoodsTab(CityDetailController controller) {
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 80),
       itemCount: controller.neighborhoods.length,
       itemBuilder: (context, index) {
         final neighborhood = controller.neighborhoods[index];
@@ -709,7 +837,8 @@ class CityDetailPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(12)),
                 child: Image.network(
                   neighborhood.imageUrl,
                   height: 150,
@@ -740,13 +869,16 @@ class CityDetailPage extends StatelessWidget {
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        const Icon(Icons.security, size: 16, color: Color(0xFFFF4458)),
+                        const Icon(Icons.security,
+                            size: 16, color: Color(0xFFFF4458)),
                         const SizedBox(width: 4),
                         Text('Safety: ${neighborhood.safetyScore}'),
                         const SizedBox(width: 16),
-                        const Icon(Icons.attach_money, size: 16, color: Color(0xFFFF4458)),
+                        const Icon(Icons.attach_money,
+                            size: 16, color: Color(0xFFFF4458)),
                         const SizedBox(width: 4),
-                        Text('\$${neighborhood.rentPrice.toStringAsFixed(0)}/mo'),
+                        Text(
+                            '\$${neighborhood.rentPrice.toStringAsFixed(0)}/mo'),
                       ],
                     ),
                   ],
@@ -756,6 +888,332 @@ class CityDetailPage extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  /// 显示旅行计划生成对话框
+  void _showTravelPlanDialog(CityDetailController controller) {
+    int duration = 7;
+    String budget = 'medium';
+    String travelStyle = 'culture';
+    List<String> interests = [];
+
+    Get.dialog(
+      StatefulBuilder(
+        builder: (context, setState) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color:
+                                const Color(0xFFFF4458).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.auto_awesome,
+                            color: Color(0xFFFF4458),
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'AI Travel Planner',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                'Generate personalized plan',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Get.back(),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Duration
+                    const Text(
+                      'Trip Duration',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Slider(
+                      value: duration.toDouble(),
+                      min: 1,
+                      max: 30,
+                      divisions: 29,
+                      label: '$duration days',
+                      activeColor: const Color(0xFFFF4458),
+                      onChanged: (value) {
+                        setState(() => duration = value.toInt());
+                      },
+                    ),
+                    Text(
+                      '$duration days',
+                      style: const TextStyle(
+                        color: Color(0xFFFF4458),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Budget
+                    const Text(
+                      'Budget Level',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildBudgetChip('Low', budget == 'low', () {
+                            setState(() => budget = 'low');
+                          }),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _buildBudgetChip('Medium', budget == 'medium',
+                              () {
+                            setState(() => budget = 'medium');
+                          }),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _buildBudgetChip('High', budget == 'high', () {
+                            setState(() => budget = 'high');
+                          }),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Travel Style
+                    const Text(
+                      'Travel Style',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _buildStyleChip(
+                            'Culture', Icons.museum, travelStyle == 'culture',
+                            () {
+                          setState(() => travelStyle = 'culture');
+                        }),
+                        _buildStyleChip('Adventure', Icons.hiking,
+                            travelStyle == 'adventure', () {
+                          setState(() => travelStyle = 'adventure');
+                        }),
+                        _buildStyleChip('Relaxation', Icons.spa,
+                            travelStyle == 'relaxation', () {
+                          setState(() => travelStyle = 'relaxation');
+                        }),
+                        _buildStyleChip('Nightlife', Icons.nightlife,
+                            travelStyle == 'nightlife', () {
+                          setState(() => travelStyle = 'nightlife');
+                        }),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Interests
+                    const Text(
+                      'Interests (Optional)',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        'Food',
+                        'Shopping',
+                        'Photography',
+                        'History',
+                        'Nature',
+                        'Art'
+                      ]
+                          .map((interest) => FilterChip(
+                                label: Text(interest),
+                                selected: interests.contains(interest),
+                                onSelected: (selected) {
+                                  setState(() {
+                                    if (selected) {
+                                      interests.add(interest);
+                                    } else {
+                                      interests.remove(interest);
+                                    }
+                                  });
+                                },
+                                selectedColor: const Color(0xFFFF4458)
+                                    .withValues(alpha: 0.2),
+                                checkmarkColor: const Color(0xFFFF4458),
+                              ))
+                          .toList(),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Generate Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: Obx(() => ElevatedButton(
+                            onPressed: controller.isGeneratingPlan.value
+                                ? null
+                                : () async {
+                                    Get.back();
+                                    final plan =
+                                        await controller.generateTravelPlan(
+                                      duration: duration,
+                                      budget: budget,
+                                      travelStyle: travelStyle,
+                                      interests: interests,
+                                    );
+                                    if (plan != null) {
+                                      Get.to(() => TravelPlanPage(plan: plan));
+                                    }
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFFF4458),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: controller.isGeneratingPlan.value
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.auto_awesome, size: 20),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        'Generate AI Plan',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                          )),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildBudgetChip(String label, bool selected, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFFFF4458) : Colors.grey[100],
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: selected ? const Color(0xFFFF4458) : Colors.grey[300]!,
+          ),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              color: selected ? Colors.white : Colors.grey[700],
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStyleChip(
+      String label, IconData icon, bool selected, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected
+              ? const Color(0xFFFF4458).withValues(alpha: 0.1)
+              : Colors.grey[100],
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected ? const Color(0xFFFF4458) : Colors.grey[300]!,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: selected ? const Color(0xFFFF4458) : Colors.grey[600],
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                color: selected ? const Color(0xFFFF4458) : Colors.grey[700],
+                fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -768,7 +1226,7 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   double get minExtent => _tabBar.preferredSize.height;
-  
+
   @override
   double get maxExtent => _tabBar.preferredSize.height;
 
