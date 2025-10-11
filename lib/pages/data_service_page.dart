@@ -983,29 +983,6 @@ class _DataCardState extends State<_DataCard> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Flexible(
-                                  child: Text(
-                                    'FEELS ',
-                                    style: TextStyle(
-                                      color:
-                                          Colors.white.withValues(alpha: 0.7),
-                                      fontSize: isMobile ? 7 : 8,
-                                      fontWeight: FontWeight.w500,
-                                      height: 1,
-                                    ),
-                                    overflow: TextOverflow.clip,
-                                  ),
-                                ),
-                                Text(
-                                  '${widget.data['feelsLike']}°',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: isMobile ? 9 : 10,
-                                    fontWeight: FontWeight.w600,
-                                    height: 1,
-                                  ),
-                                ),
-                                const SizedBox(width: 2),
                                 Text(
                                   '${widget.data['temperature']}°',
                                   style: TextStyle(
