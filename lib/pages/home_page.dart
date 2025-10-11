@@ -9,6 +9,7 @@ import '../controllers/shopping_controller.dart';
 import '../models/api_interface_model.dart';
 import '../routes/app_routes.dart';
 import '../widgets/copyright_widget.dart';
+import '../widgets/skeleton_loader.dart';
 
 class MyHomePage extends StatelessWidget {
   final String title;
@@ -58,7 +59,7 @@ class MyHomePage extends StatelessWidget {
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
+          return const SkeletonLoader(type: SkeletonType.home);
         }
 
         return SingleChildScrollView(
@@ -206,11 +207,7 @@ class MyHomePage extends StatelessWidget {
         'title': '数据服务',
         'route': AppRoutes.dataService
       },
-      {
-        'icon': Icons.verified_user_outlined,
-        'title': '验证接口',
-        'route': null
-      },
+      {'icon': Icons.verified_user_outlined, 'title': '验证接口', 'route': null},
       {
         'icon': Icons.analytics_outlined,
         'title': '分析工具',

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/city_detail_controller.dart';
+import '../widgets/skeleton_loader.dart';
 import 'travel_plan_page.dart';
 
 /// 城市详情页 - 完整的 Nomads.com 风格标签页系统
@@ -171,11 +172,7 @@ class CityDetailPage extends StatelessWidget {
               },
               body: Obx(() {
                 if (controller.isLoading.value) {
-                  return const Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFFFF4458),
-                    ),
-                  );
+                  return const SkeletonLoader(type: SkeletonType.detail);
                 }
 
                 return TabBarView(
@@ -334,17 +331,32 @@ class CityDetailPage extends StatelessWidget {
       },
     ];
 
-    return ListView.builder(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 80),
-      itemCount: scoreItems.length,
-      itemBuilder: (context, index) {
-        final item = scoreItems[index];
-        return _buildScoreItem(
-          icon: item['icon'] as IconData,
-          label: item['label'] as String,
-          score: item['value'] as double,
-        );
-      },
+    return Stack(
+      children: [
+        ListView.builder(
+          padding:
+              const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 80),
+          itemCount: scoreItems.length,
+          itemBuilder: (context, index) {
+            final item = scoreItems[index];
+            return _buildScoreItem(
+              icon: item['icon'] as IconData,
+              label: item['label'] as String,
+              score: item['value'] as double,
+            );
+          },
+        ),
+        Positioned(
+          bottom: 16,
+          left: 16,
+          child: FloatingActionButton(
+            heroTag: 'scores_add',
+            backgroundColor: const Color(0xFFFF4458),
+            onPressed: () => _showShareScoreDialog(),
+            child: const Icon(Icons.add, color: Colors.white),
+          ),
+        ),
+      ],
     );
   }
 
@@ -401,6 +413,24 @@ class CityDetailPage extends StatelessWidget {
       return const Center(child: Text('Loading guide...'));
     }
 
+    return Stack(
+      children: [
+        _buildGuideContent(guide),
+        Positioned(
+          bottom: 16,
+          left: 16,
+          child: FloatingActionButton(
+            heroTag: 'guide_add',
+            backgroundColor: const Color(0xFFFF4458),
+            onPressed: () => _showShareGuideDialog(),
+            child: const Icon(Icons.add, color: Colors.white),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGuideContent(guide) {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -480,182 +510,214 @@ class CityDetailPage extends StatelessWidget {
 
   // Pros & Cons 标签
   Widget _buildProsConsTab(CityDetailController controller) {
-    return ListView(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 80),
+    return Stack(
       children: [
-        const Text(
-          'Pros',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 12),
-        ...controller.prosList.map((item) => Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.check_circle,
-                      color: Colors.green,
-                      size: 24,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        item.text,
-                        style: const TextStyle(fontSize: 15),
-                      ),
-                    ),
-                    Column(
+        ListView(
+          padding:
+              const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 80),
+          children: [
+            const Text(
+              'Pros',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ...controller.prosList.map((item) => Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
                       children: [
-                        const Icon(Icons.arrow_upward,
-                            size: 16, color: Color(0xFFFF4458)),
-                        Text(
-                          '${item.upvotes}',
-                          style: const TextStyle(
-                              fontSize: 12, fontWeight: FontWeight.bold),
+                        const Icon(
+                          Icons.check_circle,
+                          color: Colors.green,
+                          size: 24,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            item.text,
+                            style: const TextStyle(fontSize: 15),
+                          ),
+                        ),
+                        Column(
+                          children: [
+                            const Icon(Icons.arrow_upward,
+                                size: 16, color: Color(0xFFFF4458)),
+                            Text(
+                              '${item.upvotes}',
+                              style: const TextStyle(
+                                  fontSize: 12, fontWeight: FontWeight.bold),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                )),
+            const SizedBox(height: 24),
+            const Text(
+              'Cons',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
               ),
-            )),
-        const SizedBox(height: 24),
-        const Text(
-          'Cons',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 12),
-        ...controller.consList.map((item) => Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.cancel,
-                      color: Colors.red,
-                      size: 24,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        item.text,
-                        style: const TextStyle(fontSize: 15),
-                      ),
-                    ),
-                    Column(
+            ),
+            const SizedBox(height: 12),
+            ...controller.consList.map((item) => Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
                       children: [
-                        const Icon(Icons.arrow_upward,
-                            size: 16, color: Color(0xFFFF4458)),
-                        Text(
-                          '${item.upvotes}',
-                          style: const TextStyle(
-                              fontSize: 12, fontWeight: FontWeight.bold),
+                        const Icon(
+                          Icons.cancel,
+                          color: Colors.red,
+                          size: 24,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            item.text,
+                            style: const TextStyle(fontSize: 15),
+                          ),
+                        ),
+                        Column(
+                          children: [
+                            const Icon(Icons.arrow_upward,
+                                size: 16, color: Color(0xFFFF4458)),
+                            Text(
+                              '${item.upvotes}',
+                              style: const TextStyle(
+                                  fontSize: 12, fontWeight: FontWeight.bold),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-            )),
+                  ),
+                )),
+          ],
+        ),
+        Positioned(
+          bottom: 16,
+          left: 16,
+          child: FloatingActionButton(
+            heroTag: 'proscons_add',
+            backgroundColor: const Color(0xFFFF4458),
+            onPressed: () => _showShareProsConsDialog(),
+            child: const Icon(Icons.add, color: Colors.white),
+          ),
+        ),
       ],
     );
   }
 
   // Reviews 标签
   Widget _buildReviewsTab(CityDetailController controller) {
-    return ListView.builder(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 80),
-      itemCount: controller.reviews.length,
-      itemBuilder: (context, index) {
-        final review = controller.reviews[index];
-        return Card(
-          margin: const EdgeInsets.only(bottom: 16),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+    return Stack(
+      children: [
+        ListView.builder(
+          padding:
+              const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 80),
+          itemCount: controller.reviews.length,
+          itemBuilder: (context, index) {
+            final review = controller.reviews[index];
+            return Card(
+              margin: const EdgeInsets.only(bottom: 16),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    CircleAvatar(
-                      backgroundImage: NetworkImage(review.userAvatar),
-                      radius: 20,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            review.userName,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          Text(
-                            '${review.stayDuration} days',
-                            style: TextStyle(
-                                fontSize: 12, color: Colors.grey[600]),
-                          ),
-                        ],
-                      ),
-                    ),
                     Row(
                       children: [
-                        const Icon(Icons.star, color: Colors.amber, size: 16),
-                        Text(' ${review.rating}'),
+                        CircleAvatar(
+                          backgroundImage: NetworkImage(review.userAvatar),
+                          radius: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                review.userName,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                '${review.stayDuration} days',
+                                style: TextStyle(
+                                    fontSize: 12, color: Colors.grey[600]),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            const Icon(Icons.star,
+                                color: Colors.amber, size: 16),
+                            Text(' ${review.rating}'),
+                          ],
+                        ),
                       ],
                     ),
+                    const SizedBox(height: 12),
+                    Text(
+                      review.title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      review.content,
+                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                    ),
+                    if (review.photos.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        height: 100,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: review.photos.length,
+                          itemBuilder: (context, index) {
+                            return Container(
+                              width: 100,
+                              margin: const EdgeInsets.only(right: 8),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                image: DecorationImage(
+                                  image: NetworkImage(review.photos[index]),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ],
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  review.title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  review.content,
-                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                ),
-                if (review.photos.isNotEmpty) ...[
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    height: 100,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: review.photos.length,
-                      itemBuilder: (context, index) {
-                        return Container(
-                          width: 100,
-                          margin: const EdgeInsets.only(right: 8),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            image: DecorationImage(
-                              image: NetworkImage(review.photos[index]),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ],
-            ),
+              ),
+            );
+          },
+        ),
+        Positioned(
+          bottom: 16,
+          left: 16,
+          child: FloatingActionButton(
+            heroTag: 'reviews_add',
+            backgroundColor: const Color(0xFFFF4458),
+            onPressed: () => _showShareReviewDialog(),
+            child: const Icon(Icons.add, color: Colors.white),
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 
@@ -666,43 +728,58 @@ class CityDetailPage extends StatelessWidget {
       return const Center(child: Text('No data'));
     }
 
-    return ListView(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 80),
+    return Stack(
       children: [
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: const Color(0xFFFF4458),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            children: [
-              const Text(
-                'Average Monthly Cost',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                ),
+        ListView(
+          padding:
+              const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 80),
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF4458),
+                borderRadius: BorderRadius.circular(16),
               ),
-              const SizedBox(height: 8),
-              Text(
-                '\$${cost.total.toStringAsFixed(0)}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 36,
-                  fontWeight: FontWeight.bold,
-                ),
+              child: Column(
+                children: [
+                  const Text(
+                    'Average Monthly Cost',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '\$${cost.total.toStringAsFixed(0)}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
+            const SizedBox(height: 24),
+            _buildCostItem('🏠 Accommodation', cost.accommodation),
+            _buildCostItem('🍔 Food', cost.food),
+            _buildCostItem('🚕 Transportation', cost.transportation),
+            _buildCostItem('🎭 Entertainment', cost.entertainment),
+            _buildCostItem('💪 Gym', cost.gym),
+            _buildCostItem('💻 Coworking', cost.coworking),
+          ],
+        ),
+        Positioned(
+          bottom: 16,
+          left: 16,
+          child: FloatingActionButton(
+            heroTag: 'cost_add',
+            backgroundColor: const Color(0xFFFF4458),
+            onPressed: () => _showShareCostDialog(),
+            child: const Icon(Icons.add, color: Colors.white),
           ),
         ),
-        const SizedBox(height: 24),
-        _buildCostItem('🏠 Accommodation', cost.accommodation),
-        _buildCostItem('🍔 Food', cost.food),
-        _buildCostItem('🚕 Transportation', cost.transportation),
-        _buildCostItem('🎭 Entertainment', cost.entertainment),
-        _buildCostItem('💪 Gym', cost.gym),
-        _buildCostItem('💻 Coworking', cost.coworking),
       ],
     );
   }
@@ -732,26 +809,40 @@ class CityDetailPage extends StatelessWidget {
 
   // Photos 标签
   Widget _buildPhotosTab(CityDetailController controller) {
-    return GridView.builder(
-      padding: const EdgeInsets.all(8),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
-      ),
-      itemCount: controller.photos.length,
-      itemBuilder: (context, index) {
-        final photo = controller.photos[index];
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            image: DecorationImage(
-              image: NetworkImage(photo.url),
-              fit: BoxFit.cover,
-            ),
+    return Stack(
+      children: [
+        GridView.builder(
+          padding: const EdgeInsets.all(8),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
           ),
-        );
-      },
+          itemCount: controller.photos.length,
+          itemBuilder: (context, index) {
+            final photo = controller.photos[index];
+            return Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                image: DecorationImage(
+                  image: NetworkImage(photo.url),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            );
+          },
+        ),
+        Positioned(
+          bottom: 16,
+          left: 16,
+          child: FloatingActionButton(
+            heroTag: 'photos_add',
+            backgroundColor: const Color(0xFFFF4458),
+            onPressed: () => _showSharePhotoDialog(),
+            child: const Icon(Icons.add, color: Colors.white),
+          ),
+        ),
+      ],
     );
   }
 
@@ -826,68 +917,83 @@ class CityDetailPage extends StatelessWidget {
 
   // Neighborhoods 标签
   Widget _buildNeighborhoodsTab(CityDetailController controller) {
-    return ListView.builder(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 80),
-      itemCount: controller.neighborhoods.length,
-      itemBuilder: (context, index) {
-        final neighborhood = controller.neighborhoods[index];
-        return Card(
-          margin: const EdgeInsets.only(bottom: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ClipRRect(
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(12)),
-                child: Image.network(
-                  neighborhood.imageUrl,
-                  height: 150,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      neighborhood.name,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+    return Stack(
+      children: [
+        ListView.builder(
+          padding:
+              const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 80),
+          itemCount: controller.neighborhoods.length,
+          itemBuilder: (context, index) {
+            final neighborhood = controller.neighborhoods[index];
+            return Card(
+              margin: const EdgeInsets.only(bottom: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ClipRRect(
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(12)),
+                    child: Image.network(
+                      neighborhood.imageUrl,
+                      height: 150,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      neighborhood.description,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[700],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.security,
-                            size: 16, color: Color(0xFFFF4458)),
-                        const SizedBox(width: 4),
-                        Text('Safety: ${neighborhood.safetyScore}'),
-                        const SizedBox(width: 16),
-                        const Icon(Icons.attach_money,
-                            size: 16, color: Color(0xFFFF4458)),
-                        const SizedBox(width: 4),
                         Text(
-                            '\$${neighborhood.rentPrice.toStringAsFixed(0)}/mo'),
+                          neighborhood.name,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          neighborhood.description,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            const Icon(Icons.security,
+                                size: 16, color: Color(0xFFFF4458)),
+                            const SizedBox(width: 4),
+                            Text('Safety: ${neighborhood.safetyScore}'),
+                            const SizedBox(width: 16),
+                            const Icon(Icons.attach_money,
+                                size: 16, color: Color(0xFFFF4458)),
+                            const SizedBox(width: 4),
+                            Text(
+                                '\$${neighborhood.rentPrice.toStringAsFixed(0)}/mo'),
+                          ],
+                        ),
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
+            );
+          },
+        ),
+        Positioned(
+          bottom: 16,
+          left: 16,
+          child: FloatingActionButton(
+            heroTag: 'neighborhoods_add',
+            backgroundColor: const Color(0xFFFF4458),
+            onPressed: () => _showShareNeighborhoodDialog(),
+            child: const Icon(Icons.add, color: Colors.white),
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 
@@ -1096,54 +1202,43 @@ class CityDetailPage extends StatelessWidget {
                     // Generate Button
                     SizedBox(
                       width: double.infinity,
-                      child: Obx(() => ElevatedButton(
-                            onPressed: controller.isGeneratingPlan.value
-                                ? null
-                                : () async {
-                                    Get.back();
-                                    final plan =
-                                        await controller.generateTravelPlan(
-                                      duration: duration,
-                                      budget: budget,
-                                      travelStyle: travelStyle,
-                                      interests: interests,
-                                    );
-                                    if (plan != null) {
-                                      Get.to(() => TravelPlanPage(plan: plan));
-                                    }
-                                  },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFFF4458),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Get.back();
+                          Get.to(
+                            () => TravelPlanPage(
+                              cityId: controller.currentCityId.value,
+                              cityName: controller.currentCityName.value,
+                              duration: duration,
+                              budget: budget,
+                              travelStyle: travelStyle,
+                              interests: interests,
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFF4458),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.auto_awesome, size: 20),
+                            SizedBox(width: 8),
+                            Text(
+                              'Generate AI Plan',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                            child: controller.isGeneratingPlan.value
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : const Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(Icons.auto_awesome, size: 20),
-                                      SizedBox(width: 8),
-                                      Text(
-                                        'Generate AI Plan',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                          )),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -1212,6 +1307,375 @@ class CityDetailPage extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  // ========== 分享对话框方法 ==========
+
+  /// 分享评分信息
+  void _showShareScoreDialog() {
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.star, color: Color(0xFFFF4458), size: 48),
+              const SizedBox(height: 16),
+              const Text(
+                'Share Your Scores',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Help the community by rating different aspects of $cityName',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Get.back();
+                    Get.snackbar(
+                      'Coming Soon',
+                      'Score submission feature will be available soon!',
+                      backgroundColor: const Color(0xFFFF4458),
+                      colorText: Colors.white,
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF4458),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('Start Rating'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 分享指南信息
+  void _showShareGuideDialog() {
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.menu_book, color: Color(0xFFFF4458), size: 48),
+              const SizedBox(height: 16),
+              const Text(
+                'Share Your Guide Tips',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Share helpful tips about living in $cityName',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Get.back();
+                    Get.snackbar(
+                      'Coming Soon',
+                      'Guide submission feature will be available soon!',
+                      backgroundColor: const Color(0xFFFF4458),
+                      colorText: Colors.white,
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF4458),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('Add Guide Tip'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 分享优缺点
+  void _showShareProsConsDialog() {
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.balance, color: Color(0xFFFF4458), size: 48),
+              const SizedBox(height: 16),
+              const Text(
+                'Share Pros & Cons',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Share what you love or dislike about $cityName',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Get.back();
+                    Get.snackbar(
+                      'Coming Soon',
+                      'Pros & Cons submission feature will be available soon!',
+                      backgroundColor: const Color(0xFFFF4458),
+                      colorText: Colors.white,
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF4458),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('Add Your Opinion'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 分享评论
+  void _showShareReviewDialog() {
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.rate_review, color: Color(0xFFFF4458), size: 48),
+              const SizedBox(height: 16),
+              const Text(
+                'Write a Review',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Share your experience in $cityName with photos',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Get.back();
+                    Get.snackbar(
+                      'Coming Soon',
+                      'Review submission feature will be available soon!',
+                      backgroundColor: const Color(0xFFFF4458),
+                      colorText: Colors.white,
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF4458),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('Write Review'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 分享费用信息
+  void _showShareCostDialog() {
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.attach_money,
+                  color: Color(0xFFFF4458), size: 48),
+              const SizedBox(height: 16),
+              const Text(
+                'Share Cost Information',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Help others by sharing your living costs in $cityName',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Get.back();
+                    Get.snackbar(
+                      'Coming Soon',
+                      'Cost submission feature will be available soon!',
+                      backgroundColor: const Color(0xFFFF4458),
+                      colorText: Colors.white,
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF4458),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('Share Costs'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 分享照片
+  void _showSharePhotoDialog() {
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.photo_camera,
+                  color: Color(0xFFFF4458), size: 48),
+              const SizedBox(height: 16),
+              const Text(
+                'Upload Photos',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Share your favorite photos from $cityName',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Get.back();
+                    Get.snackbar(
+                      'Coming Soon',
+                      'Photo upload feature will be available soon!',
+                      backgroundColor: const Color(0xFFFF4458),
+                      colorText: Colors.white,
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF4458),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('Upload Photos'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 分享社区信息
+  void _showShareNeighborhoodDialog() {
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.location_city,
+                  color: Color(0xFFFF4458), size: 48),
+              const SizedBox(height: 16),
+              const Text(
+                'Share Neighborhood Info',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Share insights about neighborhoods in $cityName',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Get.back();
+                    Get.snackbar(
+                      'Coming Soon',
+                      'Neighborhood submission feature will be available soon!',
+                      backgroundColor: const Color(0xFFFF4458),
+                      colorText: Colors.white,
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF4458),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('Add Neighborhood'),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

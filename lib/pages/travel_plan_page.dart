@@ -2,19 +2,310 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
+import '../controllers/city_detail_controller.dart';
 import '../models/travel_plan_model.dart';
 
 /// 旅行计划详情页
-class TravelPlanPage extends StatelessWidget {
-  final TravelPlan plan;
+class TravelPlanPage extends StatefulWidget {
+  final TravelPlan? plan;
+  final String? cityId;
+  final String? cityName;
+  final int? duration;
+  final String? budget;
+  final String? travelStyle;
+  final List<String>? interests;
 
   const TravelPlanPage({
     super.key,
-    required this.plan,
+    this.plan,
+    this.cityId,
+    this.cityName,
+    this.duration,
+    this.budget,
+    this.travelStyle,
+    this.interests,
   });
 
   @override
+  State<TravelPlanPage> createState() => _TravelPlanPageState();
+}
+
+class _TravelPlanPageState extends State<TravelPlanPage>
+    with SingleTickerProviderStateMixin {
+  TravelPlan? _plan;
+  bool _isLoading = true;
+  late AnimationController _shimmerController;
+
+  @override
+  void initState() {
+    super.initState();
+    _shimmerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat();
+
+    if (widget.plan != null) {
+      _plan = widget.plan;
+      _isLoading = false;
+    } else {
+      _generatePlan();
+    }
+  }
+
+  @override
+  void dispose() {
+    _shimmerController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _generatePlan() async {
+    final controller = Get.find<CityDetailController>();
+    final plan = await controller.generateTravelPlan(
+      duration: widget.duration ?? 7,
+      budget: widget.budget ?? 'medium',
+      travelStyle: widget.travelStyle ?? 'culture',
+      interests: widget.interests ?? [],
+    );
+
+    if (mounted) {
+      setState(() {
+        _plan = plan;
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return _buildLoadingSkeleton();
+    }
+
+    if (_plan == null) {
+      return _buildErrorPage();
+    }
+
+    return _buildPlanContent(_plan!);
+  }
+
+  Widget _buildLoadingSkeleton() {
+    return Scaffold(
+      backgroundColor: Colors.grey[50],
+      body: CustomScrollView(
+        slivers: [
+          // App Bar Skeleton
+          SliverAppBar(
+            expandedHeight: 200,
+            pinned: true,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_outlined,
+                  color: AppColors.backButtonLight),
+              onPressed: () => Get.back(),
+            ),
+            flexibleSpace: FlexibleSpaceBar(
+              background: AnimatedBuilder(
+                animation: _shimmerController,
+                builder: (context, child) {
+                  return Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.grey[300]!,
+                          Colors.grey[100]!,
+                          Colors.grey[300]!,
+                        ],
+                        begin: Alignment(
+                            -1.0 + _shimmerController.value * 2, -1.0),
+                        end: Alignment(1.0 + _shimmerController.value * 2, 1.0),
+                        stops: const [0.0, 0.5, 1.0],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+
+          // Loading Content
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  // Overview Card Skeleton with details
+                  _buildDetailedSkeletonCard(height: 150),
+                  const SizedBox(height: 16),
+                  // Transportation Card Skeleton
+                  _buildDetailedSkeletonCard(height: 200),
+                  const SizedBox(height: 16),
+                  // Accommodation Card Skeleton
+                  _buildDetailedSkeletonCard(height: 180),
+                  const SizedBox(height: 16),
+                  // Itinerary Card Skeleton
+                  _buildDetailedSkeletonCard(height: 300),
+                  const SizedBox(height: 16),
+                  // Loading indicator
+                  Center(
+                    child: Column(
+                      children: [
+                        const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                Color(0xFFFF4458)),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Generating your AI travel plan...',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailedSkeletonCard({required double height}) {
+    return AnimatedBuilder(
+      animation: _shimmerController,
+      builder: (context, child) {
+        return Container(
+          height: height,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withValues(alpha: 0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Title bar
+              Row(
+                children: [
+                  _buildShimmerBox(width: 24, height: 24, borderRadius: 6),
+                  const SizedBox(width: 12),
+                  _buildShimmerBox(width: 120, height: 20, borderRadius: 4),
+                ],
+              ),
+              const SizedBox(height: 16),
+              // Content lines
+              _buildShimmerBox(
+                  width: double.infinity, height: 14, borderRadius: 4),
+              const SizedBox(height: 10),
+              _buildShimmerBox(
+                  width: double.infinity, height: 14, borderRadius: 4),
+              const SizedBox(height: 10),
+              _buildShimmerBox(width: 200, height: 14, borderRadius: 4),
+              const Spacer(),
+              // Bottom info
+              Row(
+                children: [
+                  _buildShimmerBox(width: 80, height: 12, borderRadius: 4),
+                  const Spacer(),
+                  _buildShimmerBox(width: 60, height: 12, borderRadius: 4),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildShimmerBox({
+    required double width,
+    required double height,
+    required double borderRadius,
+  }) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.grey[300]!,
+            Colors.grey[100]!,
+            Colors.grey[300]!,
+          ],
+          begin: Alignment(-1.0 + _shimmerController.value * 2, 0),
+          end: Alignment(1.0 + _shimmerController.value * 2, 0),
+          stops: const [0.0, 0.5, 1.0],
+        ),
+        borderRadius: BorderRadius.circular(borderRadius),
+      ),
+    );
+  }
+
+  Widget _buildErrorPage() {
+    return Scaffold(
+      backgroundColor: Colors.grey[50],
+      appBar: AppBar(
+        title: const Text('Travel Plan'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_outlined),
+          onPressed: () => Get.back(),
+        ),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.error_outline,
+              size: 64,
+              color: Colors.red,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Failed to generate travel plan',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Please try again',
+              style: TextStyle(
+                color: Colors.grey,
+              ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () => Get.back(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFF4458),
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Go Back'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlanContent(TravelPlan plan) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: CustomScrollView(
@@ -153,16 +444,19 @@ class TravelPlanPage extends StatelessWidget {
                   const SizedBox(height: 16),
                   const Divider(),
                   const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      _buildInfoChip(
-                          Icons.calendar_today, '${plan.duration} Days'),
-                      const SizedBox(width: 12),
-                      _buildInfoChip(
-                          Icons.attach_money, plan.budget.toUpperCase()),
-                      const SizedBox(width: 12),
-                      _buildInfoChip(Icons.style, plan.travelStyle),
-                    ],
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildInfoChip(
+                            Icons.calendar_today, '${plan.duration} Days'),
+                        const SizedBox(width: 12),
+                        _buildInfoChip(
+                            Icons.attach_money, plan.budget.toUpperCase()),
+                        const SizedBox(width: 12),
+                        _buildInfoChip(Icons.style, plan.travelStyle),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -174,7 +468,7 @@ class TravelPlanPage extends StatelessWidget {
             child: _buildSection(
               'Budget Breakdown',
               Icons.account_balance_wallet,
-              _buildBudgetCard(),
+              _buildBudgetCard(plan),
             ),
           ),
 
@@ -183,7 +477,7 @@ class TravelPlanPage extends StatelessWidget {
             child: _buildSection(
               'Transportation',
               Icons.flight,
-              _buildTransportationCard(),
+              _buildTransportationCard(plan),
             ),
           ),
 
@@ -192,7 +486,7 @@ class TravelPlanPage extends StatelessWidget {
             child: _buildSection(
               'Accommodation',
               Icons.hotel,
-              _buildAccommodationCard(),
+              _buildAccommodationCard(plan),
             ),
           ),
 
@@ -302,7 +596,7 @@ class TravelPlanPage extends StatelessWidget {
     );
   }
 
-  Widget _buildBudgetCard() {
+  Widget _buildBudgetCard(TravelPlan plan) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -370,7 +664,7 @@ class TravelPlanPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTransportationCard() {
+  Widget _buildTransportationCard(TravelPlan plan) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -454,7 +748,7 @@ class TravelPlanPage extends StatelessWidget {
     );
   }
 
-  Widget _buildAccommodationCard() {
+  Widget _buildAccommodationCard(TravelPlan plan) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(

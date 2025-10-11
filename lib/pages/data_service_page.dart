@@ -4,10 +4,13 @@ import 'package:get/get.dart';
 import '../config/app_colors.dart';
 import '../controllers/data_service_controller.dart';
 import '../widgets/copyright_widget.dart';
+import '../widgets/skeleton_loader.dart';
 import 'city_detail_page.dart';
 
 class DataServicePage extends StatefulWidget {
-  const DataServicePage({super.key});
+  final bool scrollToCities;
+
+  const DataServicePage({super.key, this.scrollToCities = false});
 
   @override
   State<DataServicePage> createState() => _DataServicePageState();
@@ -16,6 +19,12 @@ class DataServicePage extends StatefulWidget {
 class _DataServicePageState extends State<DataServicePage> {
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _citiesListKey = GlobalKey();
+  bool _hasScrolled = false;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -24,20 +33,30 @@ class _DataServicePageState extends State<DataServicePage> {
   }
 
   void _scrollToCitiesList() {
-    final RenderBox? renderBox =
-        _citiesListKey.currentContext?.findRenderObject() as RenderBox?;
-    if (renderBox != null) {
-      final position = renderBox.localToGlobal(Offset.zero).dy;
-      final scrollPosition = _scrollController.position.pixels +
-          position -
-          100; // 100px offset for better UX
+    if (_hasScrolled) return;
+    _hasScrolled = true;
 
-      _scrollController.animateTo(
-        scrollPosition,
-        duration: const Duration(milliseconds: 800),
-        curve: Curves.easeInOut,
-      );
-    }
+    // 等待布局完成后滚动
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (!mounted) return;
+
+        final RenderBox? renderBox =
+            _citiesListKey.currentContext?.findRenderObject() as RenderBox?;
+        if (renderBox != null && _scrollController.hasClients) {
+          final position = renderBox.localToGlobal(Offset.zero).dy;
+          final scrollPosition = _scrollController.position.pixels +
+              position -
+              100; // 100px offset for better UX
+
+          _scrollController.animateTo(
+            scrollPosition,
+            duration: const Duration(milliseconds: 800),
+            curve: Curves.easeInOut,
+          );
+        }
+      });
+    });
   }
 
   @override
@@ -50,12 +69,12 @@ class _DataServicePageState extends State<DataServicePage> {
       backgroundColor: AppColors.background,
       body: Obx(() {
         if (controller.isLoading.value) {
-          return const Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
-              strokeWidth: 2,
-            ),
-          );
+          return const SkeletonLoader(type: SkeletonType.list);
+        }
+
+        // 数据加载完成后,如果需要滚动则执行滚动
+        if (widget.scrollToCities && !_hasScrolled) {
+          _scrollToCitiesList();
         }
 
         return CustomScrollView(
@@ -1954,7 +1973,7 @@ class _MeetupCard extends StatelessWidget {
                 Obx(() {
                   final isRSVPed =
                       controller.rsvpedMeetups.contains(meetup['id']);
-                  
+
                   // 如果已 RSVP，显示两个按钮
                   if (isRSVPed) {
                     return Row(

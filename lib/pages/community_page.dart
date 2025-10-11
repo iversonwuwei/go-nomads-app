@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../controllers/community_controller.dart';
 import '../models/community_model.dart';
+import '../widgets/skeleton_loader.dart';
 
 class CommunityPage extends StatelessWidget {
   const CommunityPage({super.key});
@@ -41,11 +42,7 @@ class CommunityPage extends StatelessWidget {
         ),
         body: Obx(() {
           if (controller.isLoading.value) {
-            return const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
-              ),
-            );
+            return const SkeletonLoader(type: SkeletonType.community);
           }
 
           return TabBarView(
@@ -133,7 +130,8 @@ class CommunityPage extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.star, size: 14, color: Color(0xFFF59E0B)),
+                      const Icon(Icons.star,
+                          size: 14, color: Color(0xFFF59E0B)),
                       const SizedBox(width: 4),
                       Text(
                         report.overallRating.toStringAsFixed(1),
@@ -372,7 +370,8 @@ class CommunityPage extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: controller.categories.map((category) {
-                    final isSelected = controller.selectedCategory.value == category;
+                    final isSelected =
+                        controller.selectedCategory.value == category;
                     return Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: ChoiceChip(
@@ -386,7 +385,9 @@ class CommunityPage extends StatelessWidget {
                         selectedColor: const Color(0xFFFF4458),
                         backgroundColor: const Color(0xFFF3F4F6),
                         labelStyle: TextStyle(
-                          color: isSelected ? Colors.white : const Color(0xFF6b7280),
+                          color: isSelected
+                              ? Colors.white
+                              : const Color(0xFF6b7280),
                           fontWeight: FontWeight.w600,
                           fontSize: 13,
                         ),
@@ -455,7 +456,8 @@ class CommunityPage extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: _getCategoryColor(rec.category).withValues(alpha: 0.1),
+                    color:
+                        _getCategoryColor(rec.category).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(

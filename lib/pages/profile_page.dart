@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 import '../controllers/user_profile_controller.dart';
 import '../models/user_model.dart';
 import '../routes/app_routes.dart';
+import '../widgets/skeleton_loader.dart';
+import 'data_service_page.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -18,11 +20,7 @@ class ProfilePage extends StatelessWidget {
       backgroundColor: Colors.white,
       body: Obx(() {
         if (controller.isLoading.value) {
-          return const Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
-            ),
-          );
+          return const SkeletonLoader(type: SkeletonType.profile);
         }
 
         final user = controller.currentUser.value;
@@ -789,6 +787,9 @@ class ProfilePage extends StatelessWidget {
                 ElevatedButton.icon(
                   onPressed: () {
                     Get.back(); // 返回主页
+                    Future.delayed(const Duration(milliseconds: 100), () {
+                      Get.to(() => const DataServicePage(scrollToCities: true));
+                    });
                   },
                   icon: const Icon(Icons.explore, size: 18),
                   label: const Text('Explore Cities'),

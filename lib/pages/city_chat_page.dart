@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../config/app_colors.dart';
 import '../controllers/chat_controller.dart';
 import '../models/chat_model.dart';
+import '../widgets/skeleton_loader.dart';
 
 class CityChatPage extends StatelessWidget {
   const CityChatPage({super.key});
@@ -19,11 +20,7 @@ class CityChatPage extends StatelessWidget {
       body: Obx(() {
         if (controller.isLoading.value &&
             controller.currentRoom.value == null) {
-          return const Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
-            ),
-          );
+          return const SkeletonLoader(type: SkeletonType.chat);
         }
 
         // Show chat rooms list if no room is selected
@@ -250,12 +247,7 @@ class CityChatPage extends StatelessWidget {
           Expanded(
             child: Obx(() {
               if (controller.isLoading.value) {
-                return const Center(
-                  child: CircularProgressIndicator(
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
-                  ),
-                );
+                return const SkeletonLoader(type: SkeletonType.messages);
               }
 
               return ListView.builder(
