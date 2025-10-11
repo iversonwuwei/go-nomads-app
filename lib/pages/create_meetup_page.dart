@@ -18,7 +18,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
   final _typeController = TextEditingController();
   final _venueController = TextEditingController();
   final _descriptionController = TextEditingController();
-  
+  String? _venueErrorText;
   String? _selectedCity;
   String? _selectedCountry;
   DateTime? _selectedDate;
@@ -102,7 +102,9 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
 
   void _createMeetup() {
     if (_formKey.currentState!.validate()) {
-      if (_selectedCity == null || _selectedDate == null || _selectedTime == null) {
+      if (_selectedCity == null ||
+          _selectedDate == null ||
+          _selectedTime == null) {
         Get.snackbar(
           'Error',
           'Please fill in all required fields',
@@ -114,7 +116,8 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
       }
 
       // 将 TimeOfDay 转换为字符串格式 "HH:mm"
-      final timeString = '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}';
+      final timeString =
+          '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}';
 
       controller.createMeetup(
         title: _titleController.text,
@@ -129,7 +132,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
       );
 
       Get.back();
-      
+
       // 显示成功消息
       Get.snackbar(
         'Success',
@@ -267,8 +270,8 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
     // 创建日历事件 (默认持续2小时)
     final Event event = Event(
       title: _titleController.text,
-      description: _descriptionController.text.isNotEmpty 
-          ? _descriptionController.text 
+      description: _descriptionController.text.isNotEmpty
+          ? _descriptionController.text
           : 'Meetup organized via Nomads.com',
       location: _venueController.text,
       startDate: eventDateTime,
@@ -284,7 +287,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
     try {
       // 添加到系统日历
       final result = await Add2Calendar.addEvent2Cal(event);
-      
+
       if (result) {
         Get.snackbar(
           '✅ Success',
@@ -331,7 +334,8 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_outlined, color: AppColors.backButtonDark),
+          icon: const Icon(Icons.arrow_back_outlined,
+              color: AppColors.backButtonDark),
           onPressed: () => Get.back(),
         ),
         title: const Text(
@@ -394,7 +398,8 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
             TextFormField(
               controller: _typeController,
               decoration: InputDecoration(
-                hintText: 'e.g., Casual Meetup, Business Networking, Cultural Exchange',
+                hintText:
+                    'e.g., Casual Meetup, Business Networking, Cultural Exchange',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: const BorderSide(color: AppColors.borderLight),
@@ -425,34 +430,35 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
             ),
             const SizedBox(height: 8),
             Obx(() => DropdownButtonFormField<String>(
-              initialValue: _selectedCity,
-              isExpanded: true,
-              decoration: InputDecoration(
-                hintText: 'Select city',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: AppColors.borderLight),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-              ),
-              items: controller.availableCities
-                  .map((city) => DropdownMenuItem(
-                        value: city,
-                        child: Text(city),
-                      ))
-                  .toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedCity = value;
-                  if (value != null) {
-                    _selectedCountry = controller.getCountryByCity(value);
-                  }
-                });
-              },
-            )),
+                  initialValue: _selectedCity,
+                  isExpanded: true,
+                  decoration: InputDecoration(
+                    hintText: 'Select city',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide:
+                          const BorderSide(color: AppColors.borderLight),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                  ),
+                  items: controller.availableCities
+                      .map((city) => DropdownMenuItem(
+                            value: city,
+                            child: Text(city),
+                          ))
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedCity = value;
+                      if (value != null) {
+                        _selectedCountry = controller.getCountryByCity(value);
+                      }
+                    });
+                  },
+                )),
 
             const SizedBox(height: 20),
 
@@ -467,31 +473,32 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
             ),
             const SizedBox(height: 8),
             Obx(() => DropdownButtonFormField<String>(
-              initialValue: _selectedCountry,
-              isExpanded: true,
-              decoration: InputDecoration(
-                hintText: 'Select country',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: AppColors.borderLight),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-              ),
-              items: controller.availableCountries
-                  .map((country) => DropdownMenuItem(
-                        value: country,
-                        child: Text(country),
-                      ))
-                  .toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedCountry = value;
-                });
-              },
-            )),
+                  initialValue: _selectedCountry,
+                  isExpanded: true,
+                  decoration: InputDecoration(
+                    hintText: 'Select country',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide:
+                          const BorderSide(color: AppColors.borderLight),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                  ),
+                  items: controller.availableCountries
+                      .map((country) => DropdownMenuItem(
+                            value: country,
+                            child: Text(country),
+                          ))
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedCountry = value;
+                    });
+                  },
+                )),
 
             const SizedBox(height: 20),
 
@@ -505,47 +512,89 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
               ),
             ),
             const SizedBox(height: 8),
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _venueController,
-                    decoration: InputDecoration(
-                      hintText: 'Enter venue or select from map',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: AppColors.borderLight),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _venueController,
+                        decoration: InputDecoration(
+                          hintText: 'Enter venue or select from map',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide:
+                                const BorderSide(color: AppColors.borderLight),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(
+                              color: _venueErrorText != null &&
+                                      _venueErrorText!.isNotEmpty
+                                  ? Theme.of(context).colorScheme.error
+                                  : AppColors.borderLight,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(
+                              color: _venueErrorText != null &&
+                                      _venueErrorText!.isNotEmpty
+                                  ? Theme.of(context).colorScheme.error
+                                  : const Color(0xFFFF4458),
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            setState(() {
+                              _venueErrorText = 'Please enter a venue';
+                            });
+                            return '';
+                          }
+                          setState(() {
+                            _venueErrorText = null;
+                          });
+                          return null;
+                        },
                       ),
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a venue';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                SizedBox(
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: _selectVenueFromMap,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF4458),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                    const SizedBox(width: 12),
+                    SizedBox(
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: _selectVenueFromMap,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFF4458),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                        ),
+                        child: const Icon(Icons.map_outlined, size: 20),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
                     ),
-                    child: const Icon(Icons.map_outlined, size: 20),
-                  ),
+                  ],
                 ),
+                if (_venueErrorText != null && _venueErrorText!.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8, top: 4),
+                    child: Text(
+                      _venueErrorText!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
               ],
             ),
 
@@ -745,7 +794,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                 ),
               ),
             ),
-            
+
             // 底部安全区域间距
             SizedBox(height: MediaQuery.of(context).padding.bottom + 32),
           ],
