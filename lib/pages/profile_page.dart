@@ -5,7 +5,7 @@ import '../controllers/user_profile_controller.dart';
 import '../models/user_model.dart';
 import '../routes/app_routes.dart';
 import '../widgets/skeleton_loader.dart';
-import 'data_service_page.dart';
+import 'city_list_page.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -723,24 +723,26 @@ class ProfilePage extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const Spacer(),
-            TextButton.icon(
-              onPressed: () {
-                Get.snackbar(
-                  'Info',
-                  'Visit city details and click "AI Travel Plan" to generate new plans',
-                  snackPosition: SnackPosition.BOTTOM,
-                  backgroundColor:
-                      const Color(0xFF3B82F6).withValues(alpha: 0.1),
-                  colorText: const Color(0xFF3B82F6),
-                );
-              },
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text('Create New'),
-              style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFFFF4458),
+            if (savedPlans.isNotEmpty) ...[
+              const Spacer(),
+              TextButton.icon(
+                onPressed: () {
+                  Get.snackbar(
+                    'Info',
+                    'Visit city details and click "AI Travel Plan" to generate new plans',
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor:
+                        const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                    colorText: const Color(0xFF3B82F6),
+                  );
+                },
+                icon: const Icon(Icons.add, size: 18),
+                label: const Text('Create New'),
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFFFF4458),
+                ),
               ),
-            ),
+            ],
           ],
         ),
         const SizedBox(height: 16),
@@ -786,10 +788,7 @@ class ProfilePage extends StatelessWidget {
                 const SizedBox(height: 20),
                 ElevatedButton.icon(
                   onPressed: () {
-                    Get.back(); // 返回主页
-                    Future.delayed(const Duration(milliseconds: 100), () {
-                      Get.to(() => const DataServicePage(scrollToCities: true));
-                    });
+                    Get.to(() => const CityListPage());
                   },
                   icon: const Icon(Icons.explore, size: 18),
                   label: const Text('Explore Cities'),

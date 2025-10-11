@@ -15,7 +15,7 @@ class CityListPage extends StatefulWidget {
 }
 
 class _CityListPageState extends State<CityListPage> {
-  final DataServiceController controller = Get.find<DataServiceController>();
+  final DataServiceController controller = Get.put(DataServiceController());
   final TextEditingController _searchController = TextEditingController();
 
   String _selectedCountry = 'All Countries';
