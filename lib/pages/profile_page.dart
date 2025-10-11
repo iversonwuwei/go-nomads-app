@@ -71,6 +71,10 @@ class ProfilePage extends StatelessWidget {
                     _buildProfileHeader(user, isMobile),
                     const SizedBox(height: 32),
 
+                    // My Travel Plans (AI Generated)
+                    _buildTravelPlansSection(isMobile),
+                    const SizedBox(height: 32),
+
                     // Stats
                     _buildStatsSection(user.stats, isMobile),
                     const SizedBox(height: 32),
@@ -85,10 +89,6 @@ class ProfilePage extends StatelessWidget {
 
                     // Travel History
                     _buildTravelHistory(user.travelHistory, isMobile),
-                    const SizedBox(height: 32),
-
-                    // My Travel Plans (AI Generated)
-                    _buildTravelPlansSection(isMobile),
                     const SizedBox(height: 32),
 
                     // Social Links

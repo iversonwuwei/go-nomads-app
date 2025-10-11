@@ -6,6 +6,7 @@ import '../controllers/data_service_controller.dart';
 import '../widgets/copyright_widget.dart';
 import '../widgets/skeleton_loader.dart';
 import 'city_detail_page.dart';
+import 'city_list_page.dart';
 
 class DataServicePage extends StatefulWidget {
   final bool scrollToCities;
@@ -262,7 +263,9 @@ class _DataServicePageState extends State<DataServicePage> {
 
                   // CTA按钮
                   InkWell(
-                    onTap: _scrollToCitiesList,
+                    onTap: () {
+                      Get.to(() => const CityListPage());
+                    },
                     borderRadius: BorderRadius.circular(8),
                     child: Container(
                       width: isMobile ? double.infinity : 400,

@@ -14,6 +14,7 @@ class TravelPlanPage extends StatefulWidget {
   final String? budget;
   final String? travelStyle;
   final List<String>? interests;
+  final String? departureLocation;
 
   const TravelPlanPage({
     super.key,
@@ -24,6 +25,7 @@ class TravelPlanPage extends StatefulWidget {
     this.budget,
     this.travelStyle,
     this.interests,
+    this.departureLocation,
   });
 
   @override
@@ -65,6 +67,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
       budget: widget.budget ?? 'medium',
       travelStyle: widget.travelStyle ?? 'culture',
       interests: widget.interests ?? [],
+      departureLocation: widget.departureLocation,
     );
 
     if (mounted) {
@@ -448,6 +451,12 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
+                        if (widget.departureLocation != null &&
+                            widget.departureLocation!.isNotEmpty) ...[
+                          _buildInfoChip(Icons.flight_takeoff,
+                              'From: ${widget.departureLocation}'),
+                          const SizedBox(width: 12),
+                        ],
                         _buildInfoChip(
                             Icons.calendar_today, '${plan.duration} Days'),
                         const SizedBox(width: 12),

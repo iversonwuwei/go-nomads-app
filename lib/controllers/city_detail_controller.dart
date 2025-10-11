@@ -472,6 +472,7 @@ class CityDetailController extends GetxController {
     required String budget,
     required String travelStyle,
     required List<String> interests,
+    String? departureLocation,
   }) async {
     isGeneratingPlan.value = true;
 
@@ -486,6 +487,7 @@ class CityDetailController extends GetxController {
         budget: budget,
         travelStyle: travelStyle,
         interests: interests,
+        departureLocation: departureLocation,
       );
 
       generatedPlan.value = plan;
@@ -522,6 +524,7 @@ class CityDetailController extends GetxController {
     required String budget,
     required String travelStyle,
     required List<String> interests,
+    String? departureLocation,
   }) {
     final cityName = currentCityName.value;
 

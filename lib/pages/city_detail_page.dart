@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
@@ -1003,6 +1004,8 @@ class CityDetailPage extends StatelessWidget {
     String budget = 'medium';
     String travelStyle = 'culture';
     List<String> interests = [];
+    String departureLocation = '';
+    bool isLoadingLocation = false;
 
     Get.dialog(
       StatefulBuilder(
@@ -1062,6 +1065,135 @@ class CityDetailPage extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 24),
+
+                    // Departure Location
+                    const Text(
+                      'Departure Location',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            decoration: InputDecoration(
+                              hintText: 'Enter your departure city',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: Colors.grey.shade300,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFFF4458),
+                                  width: 2,
+                                ),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              suffixIcon: departureLocation.isNotEmpty
+                                  ? IconButton(
+                                      icon: const Icon(Icons.clear, size: 20),
+                                      onPressed: () {
+                                        setState(() {
+                                          departureLocation = '';
+                                        });
+                                      },
+                                    )
+                                  : null,
+                            ),
+                            onChanged: (value) {
+                              setState(() {
+                                departureLocation = value;
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          decoration: BoxDecoration(
+                            color:
+                                const Color(0xFFFF4458).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: IconButton(
+                            icon: isLoadingLocation
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Color(0xFFFF4458),
+                                      ),
+                                    ),
+                                  )
+                                : const Icon(
+                                    Icons.my_location,
+                                    color: Color(0xFFFF4458),
+                                  ),
+                            onPressed: isLoadingLocation
+                                ? null
+                                : () async {
+                                    setState(() {
+                                      isLoadingLocation = true;
+                                    });
+                                    try {
+                                      final permission =
+                                          await Geolocator.checkPermission();
+                                      if (permission ==
+                                              LocationPermission.denied ||
+                                          permission ==
+                                              LocationPermission
+                                                  .deniedForever) {
+                                        await Geolocator.requestPermission();
+                                      }
+                                      final position =
+                                          await Geolocator.getCurrentPosition();
+                                      // 这里可以使用反向地理编码获取城市名称
+                                      // 暂时使用坐标作为位置标识
+                                      setState(() {
+                                        departureLocation =
+                                            'Current Location (${position.latitude.toStringAsFixed(2)}, ${position.longitude.toStringAsFixed(2)})';
+                                      });
+                                    } catch (e) {
+                                      Get.snackbar(
+                                        'Error',
+                                        'Failed to get current location',
+                                        backgroundColor: Colors.red.shade100,
+                                        colorText: Colors.red.shade900,
+                                      );
+                                    } finally {
+                                      setState(() {
+                                        isLoadingLocation = false;
+                                      });
+                                    }
+                                  },
+                            tooltip: 'Use current location',
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Tip: Enter your departure city for more accurate travel time and route planning',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
 
                     // Duration
                     const Text(
@@ -1213,6 +1345,9 @@ class CityDetailPage extends StatelessWidget {
                               budget: budget,
                               travelStyle: travelStyle,
                               interests: interests,
+                              departureLocation: departureLocation.isEmpty
+                                  ? null
+                                  : departureLocation,
                             ),
                           );
                         },
