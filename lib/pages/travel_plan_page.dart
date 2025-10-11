@@ -363,6 +363,18 @@ class _TravelPlanPageState extends State<TravelPlanPage>
             ),
             actions: [
               IconButton(
+                icon: const Icon(Icons.map_outlined),
+                onPressed: () {
+                  Get.snackbar(
+                    'Info',
+                    'Async with Map feature coming soon!',
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: const Color(0xFF3B82F6),
+                    colorText: Colors.white,
+                  );
+                },
+              ),
+              IconButton(
                 icon: const Icon(Icons.download_outlined),
                 onPressed: () {
                   Get.snackbar(
