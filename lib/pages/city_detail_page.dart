@@ -8,6 +8,7 @@ import '../config/app_colors.dart';
 import '../controllers/city_detail_controller.dart';
 import '../widgets/skeleton_loader.dart';
 import 'amap_native_picker_page.dart';
+import 'coworking_list_page.dart';
 import 'travel_plan_page.dart';
 
 /// 城市详情页 - 完整的 Nomads.com 风格标签页系统
@@ -168,6 +169,7 @@ class CityDetailPage extends StatelessWidget {
                           Tab(text: 'Photos'),
                           Tab(text: 'Weather'),
                           Tab(text: 'Neighborhoods'),
+                          Tab(text: 'Coworking'),
                         ],
                       ),
                     ),
@@ -189,6 +191,7 @@ class CityDetailPage extends StatelessWidget {
                     _buildPhotosTab(controller),
                     _buildWeatherTab(controller),
                     _buildNeighborhoodsTab(controller),
+                    _buildCoworkingTab(controller),
                   ],
                 );
               }),
@@ -954,6 +957,14 @@ class CityDetailPage extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  /// Coworking 标签页
+  Widget _buildCoworkingTab(CityDetailController controller) {
+    return CoworkingListPage(
+      cityId: cityId,
+      cityName: cityName,
     );
   }
 

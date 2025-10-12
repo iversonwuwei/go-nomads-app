@@ -5,6 +5,7 @@ import '../pages/analytics_tool_page.dart';
 import '../pages/api_marketplace_page.dart';
 import '../pages/city_chat_page.dart';
 import '../pages/city_detail_page.dart';
+import '../pages/coworking_home_page.dart';
 import '../pages/create_meetup_page.dart';
 import '../pages/data_service_page.dart';
 import '../pages/location_demo_page.dart';
@@ -24,6 +25,7 @@ class AppRoutes {
   static const String apiMarketplace = '/api-marketplace';
   static const String dataService = '/data-service';
   static const String analyticsTool = '/analytics-tool';
+  static const String coworking = '/coworking';
   static const String cityDetail = '/city-detail';
   static const String cityChat = '/city-chat';
   static const String createMeetup = '/create-meetup';
@@ -65,6 +67,10 @@ class AppRoutes {
     GetPage(
       name: dataService,
       page: () => const DataServicePage(),
+    ),
+    GetPage(
+      name: coworking,
+      page: () => const CoworkingHomePage(),
     ),
     GetPage(
       name: cityDetail,

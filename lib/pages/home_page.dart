@@ -207,7 +207,11 @@ class MyHomePage extends StatelessWidget {
         'title': '数据服务',
         'route': AppRoutes.dataService
       },
-      {'icon': Icons.verified_user_outlined, 'title': '验证接口', 'route': null},
+      {
+        'icon': Icons.verified_user_outlined,
+        'title': '验证接口',
+        'route': AppRoutes.coworking
+      },
       {
         'icon': Icons.analytics_outlined,
         'title': '分析工具',
