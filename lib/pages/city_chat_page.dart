@@ -296,10 +296,20 @@ class CityChatPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (!isMe) ...[
-              CircleAvatar(
-                radius: 16,
-                backgroundImage: NetworkImage(
-                    message.userAvatar ?? 'https://i.pravatar.cc/300'),
+              GestureDetector(
+                onTap: () {
+                  // 点击头像查看成员详情
+                  _showUserDetail(message);
+                },
+                child: Hero(
+                  tag:
+                      'message_avatar_${message.userId}_${message.timestamp.millisecondsSinceEpoch}',
+                  child: CircleAvatar(
+                    radius: 16,
+                    backgroundImage: NetworkImage(
+                        message.userAvatar ?? 'https://i.pravatar.cc/300'),
+                  ),
+                ),
               ),
               const SizedBox(width: 8),
             ],
@@ -927,5 +937,60 @@ class CityChatPage extends StatelessWidget {
       joinedDate: DateTime.now().subtract(const Duration(days: 180)),
       isVerified: true,
     );
+  }
+
+  // 从消息对象查看用户详情
+  void _showUserDetail(ChatMessage message) {
+    // 从消息信息构建 UserModel
+    final userModel = models.UserModel(
+      id: message.userId,
+      name: message.userName,
+      username: message.userName.toLowerCase().replaceAll(' ', '_'),
+      bio: 'Digital nomad exploring the world 🌍\n\n'
+          'I love working remotely from different cities and meeting amazing people along the way. '
+          'Always up for coffee, coworking sessions, or exploring local spots!',
+      avatarUrl: message.userAvatar ?? 'https://i.pravatar.cc/300',
+      currentCity: 'Bangkok', // 默认值,实际应从API获取
+      currentCountry: 'Thailand',
+      skills: ['Flutter', 'Design', 'Marketing', 'Photography'],
+      interests: ['Travel', 'Coding', 'Coffee', 'Hiking', 'Photography'],
+      socialLinks: {},
+      badges: [
+        models.Badge(
+          id: '1',
+          name: 'Early Adopter',
+          icon: '🚀',
+          description: 'One of the first users',
+          earnedDate: DateTime.now().subtract(const Duration(days: 90)),
+        ),
+        models.Badge(
+          id: '2',
+          name: 'Globetrotter',
+          icon: '🌍',
+          description: 'Visited 10+ countries',
+          earnedDate: DateTime.now().subtract(const Duration(days: 60)),
+        ),
+        models.Badge(
+          id: '3',
+          name: 'Social Butterfly',
+          icon: '🦋',
+          description: 'Attended 20+ meetups',
+          earnedDate: DateTime.now().subtract(const Duration(days: 30)),
+        ),
+      ],
+      stats: models.TravelStats(
+        countriesVisited: 15,
+        citiesLived: 8,
+        daysNomading: 365,
+        meetupsAttended: 42,
+        tripsCompleted: 12,
+      ),
+      travelHistory: [],
+      joinedDate: DateTime.now().subtract(const Duration(days: 180)),
+      isVerified: true,
+    );
+
+    // 跳转到成员详情页
+    Get.to(() => MemberDetailPage(user: userModel));
   }
 }
