@@ -4,7 +4,9 @@ import 'package:get/get.dart';
 import '../config/app_colors.dart';
 import '../controllers/chat_controller.dart';
 import '../models/chat_model.dart';
+import '../models/user_model.dart' as models;
 import '../widgets/skeleton_loader.dart';
+import 'member_detail_page.dart';
 
 class CityChatPage extends StatelessWidget {
   const CityChatPage({super.key});
@@ -788,29 +790,38 @@ class CityChatPage extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final user = controller.onlineUsers[index];
                     return ListTile(
-                      leading: Stack(
-                        children: [
-                          CircleAvatar(
-                            radius: 20,
-                            backgroundImage: NetworkImage(
-                                user.avatar ?? 'https://i.pravatar.cc/300'),
-                          ),
-                          if (user.isOnline)
-                            Positioned(
-                              right: 0,
-                              bottom: 0,
-                              child: Container(
-                                width: 12,
-                                height: 12,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF10B981),
-                                  shape: BoxShape.circle,
-                                  border:
-                                      Border.all(color: Colors.white, width: 2),
+                      onTap: () {
+                        // 转换 OnlineUser 到 UserModel 并跳转到详情页
+                        Get.to(() => MemberDetailPage(
+                              user: _convertToUserModel(user),
+                            ));
+                      },
+                      leading: Hero(
+                        tag: 'user_avatar_${user.id}',
+                        child: Stack(
+                          children: [
+                            CircleAvatar(
+                              radius: 20,
+                              backgroundImage: NetworkImage(
+                                  user.avatar ?? 'https://i.pravatar.cc/300'),
+                            ),
+                            if (user.isOnline)
+                              Positioned(
+                                right: 0,
+                                bottom: 0,
+                                child: Container(
+                                  width: 12,
+                                  height: 12,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF10B981),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                        color: Colors.white, width: 2),
+                                  ),
                                 ),
                               ),
-                            ),
-                        ],
+                          ],
+                        ),
                       ),
                       title: Text(
                         user.name,
@@ -865,5 +876,56 @@ class CityChatPage extends StatelessWidget {
       'Dec'
     ];
     return '${months[time.month - 1]} ${time.day}';
+  }
+
+  // 将 OnlineUser 转换为 UserModel 用于显示详情页
+  models.UserModel _convertToUserModel(OnlineUser user) {
+    return models.UserModel(
+      id: user.id,
+      name: user.name,
+      username: user.name.toLowerCase().replaceAll(' ', '_'),
+      bio: 'Digital nomad exploring the world 🌍\n\n'
+          'I love working remotely from different cities and meeting amazing people along the way. '
+          'Always up for coffee, coworking sessions, or exploring local spots!',
+      avatarUrl: user.avatar ?? 'https://i.pravatar.cc/300',
+      currentCity: 'Bangkok', // 默认值,实际应从API获取
+      currentCountry: 'Thailand',
+      skills: ['Flutter', 'Design', 'Marketing', 'Photography'],
+      interests: ['Travel', 'Coding', 'Coffee', 'Hiking', 'Photography'],
+      socialLinks: {},
+      badges: [
+        models.Badge(
+          id: '1',
+          name: 'Early Adopter',
+          icon: '🚀',
+          description: 'One of the first users',
+          earnedDate: DateTime.now().subtract(const Duration(days: 90)),
+        ),
+        models.Badge(
+          id: '2',
+          name: 'Globetrotter',
+          icon: '🌍',
+          description: 'Visited 10+ countries',
+          earnedDate: DateTime.now().subtract(const Duration(days: 60)),
+        ),
+        models.Badge(
+          id: '3',
+          name: 'Social Butterfly',
+          icon: '🦋',
+          description: 'Attended 20+ meetups',
+          earnedDate: DateTime.now().subtract(const Duration(days: 30)),
+        ),
+      ],
+      stats: models.TravelStats(
+        countriesVisited: 15,
+        citiesLived: 8,
+        daysNomading: 365,
+        meetupsAttended: 42,
+        tripsCompleted: 12,
+      ),
+      travelHistory: [],
+      joinedDate: DateTime.now().subtract(const Duration(days: 180)),
+      isVerified: true,
+    );
   }
 }
