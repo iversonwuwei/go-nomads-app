@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 
 import '../controllers/shopping_controller.dart';
 import '../routes/app_routes.dart';
-import 'home_page.dart';
+import 'data_service_page.dart';
 import 'profile_page.dart';
 
 class MainPage extends StatelessWidget {
@@ -17,7 +17,7 @@ class MainPage extends StatelessWidget {
       body: Obx(() {
         switch (controller.currentTabIndex.value) {
           case 0:
-            return const MyHomePage(title: '数金数据');
+            return const DataServicePage();
           case 1:
             // AI助手页面 - 直接跳转到聊天页面
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -25,11 +25,11 @@ class MainPage extends StatelessWidget {
               // 重置导航栏到首页
               controller.changeTab(0);
             });
-            return const MyHomePage(title: '数金数据');
+            return const DataServicePage();
           case 2:
             return const ProfilePage();
           default:
-            return const MyHomePage(title: '数金数据');
+            return const DataServicePage();
         }
       }),
       bottomNavigationBar: Obx(() => BottomNavigationBar(

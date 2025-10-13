@@ -7,6 +7,7 @@ import '../widgets/copyright_widget.dart';
 import '../widgets/skeleton_loader.dart';
 import 'city_detail_page.dart';
 import 'city_list_page.dart';
+import 'coworking_home_page.dart';
 
 class DataServicePage extends StatefulWidget {
   final bool scrollToCities;
@@ -138,6 +139,19 @@ class _DataServicePageState extends State<DataServicePage> {
               ),
             ),
 
+            const SliverToBoxAdapter(child: SizedBox(height: 60)),
+
+            // 特性列表
+            SliverToBoxAdapter(
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isMobile ? 16 : 32,
+                  vertical: isMobile ? 10 : 20,
+                ),
+                child: _buildFeatureHighlights(isMobile),
+              ),
+            ),
+
             const SliverToBoxAdapter(child: SizedBox(height: 40)),
 
             // 版权信息
@@ -170,23 +184,6 @@ class _DataServicePageState extends State<DataServicePage> {
         bottom: false,
         child: Column(
           children: [
-            // 返回按钮
-            Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 16 : 32,
-                vertical: 16,
-              ),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back_outlined,
-                        color: AppColors.backButtonLight),
-                    onPressed: () => Get.back(),
-                  ),
-                ],
-              ),
-            ),
-
             // 主要内容
             Padding(
               padding: EdgeInsets.symmetric(
@@ -254,64 +251,227 @@ class _DataServicePageState extends State<DataServicePage> {
                   // 用户头像圈
                   _buildUserAvatars(),
 
-                  SizedBox(height: isMobile ? 32 : 40),
-
-                  // 功能列表
-                  _buildFeatureList(isMobile),
-
                   SizedBox(height: isMobile ? 40 : 60),
 
-                  // CTA按钮
-                  InkWell(
-                    onTap: () {
-                      Get.to(() => const CityListPage());
-                    },
-                    borderRadius: BorderRadius.circular(8),
-                    child: Container(
-                      width: isMobile ? double.infinity : 400,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 16,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFF4458),
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: [
-                          BoxShadow(
-                            color:
-                                const Color(0xFFFF4458).withValues(alpha: 0.3),
-                            blurRadius: 16,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Explore Cities',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: isMobile ? 16 : 18,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          const Icon(
-                            Icons.arrow_forward_outlined,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  // 双梯形按钮组
+                  _buildTrapezoidButtons(isMobile),
                 ],
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // 现代卡片式双按钮组
+  Widget _buildTrapezoidButtons(bool isMobile) {
+    return Container(
+      width: isMobile ? double.infinity : 600,
+      child: Row(
+        children: [
+          // 左侧卡片 - Cities
+          Expanded(
+            child: _buildActionCard(
+              context: context,
+              isMobile: isMobile,
+              icon: Icons.location_city_rounded,
+              title: 'Cities',
+              subtitle: 'Find your perfect nomad destination',
+              gradient: const LinearGradient(
+                colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              onTap: () => Get.to(() => const CityListPage()),
+            ),
+          ),
+
+          SizedBox(width: isMobile ? 12 : 16),
+
+          // 右侧卡片 - Coworking
+          Expanded(
+            child: _buildActionCard(
+              context: context,
+              isMobile: isMobile,
+              icon: Icons.business_center_rounded,
+              title: 'Coworkings',
+              subtitle: 'Discover inspiring workspaces',
+              gradient: const LinearGradient(
+                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              onTap: () => Get.to(() => const CoworkingHomePage()),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 行动卡片组件
+  Widget _buildActionCard({
+    required BuildContext context,
+    required bool isMobile,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Gradient gradient,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        decoration: BoxDecoration(
+          gradient: gradient,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.15),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Container(
+          padding: EdgeInsets.all(isMobile ? 20 : 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 图标
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  icon,
+                  color: Colors.white,
+                  size: isMobile ? 28 : 32,
+                ),
+              ),
+
+              SizedBox(height: isMobile ? 16 : 20),
+
+              // 标题
+              Text(
+                title,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: isMobile ? 18 : 20,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                  height: 1.2,
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              // 副标题
+              Text(
+                subtitle,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  fontSize: isMobile ? 13 : 14,
+                  fontWeight: FontWeight.w400,
+                  height: 1.4,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+
+              SizedBox(height: isMobile ? 16 : 20),
+
+              // 箭头按钮
+              Row(
+                children: [
+                  Text(
+                    'Explore',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: isMobile ? 14 : 15,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    Icons.arrow_forward_rounded,
+                    color: Colors.white,
+                    size: isMobile ? 18 : 20,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 底部特性亮点列表
+  Widget _buildFeatureHighlights(bool isMobile) {
+    final features = [
+      {
+        'icon': '🏆',
+        'text': 'Attend 363 meetups/year in 100+ cities',
+      },
+      {
+        'icon': '❤️',
+        'text': 'Meet new people for dating and friends',
+      },
+      {
+        'icon': '📊',
+        'text':
+            'Research destinations and find your best place to live and work',
+      },
+      {
+        'icon': '🌍',
+        'text': 'Keep track of your travels and record where you\'ve been',
+      },
+      {
+        'icon': '💬',
+        'text': 'Join community chat and find your community on the road',
+      },
+    ];
+
+    return Container(
+      constraints: BoxConstraints(maxWidth: isMobile ? double.infinity : 800),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: features.map((feature) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Emoji 图标
+                Text(
+                  feature['icon']!,
+                  style: const TextStyle(fontSize: 24),
+                ),
+                const SizedBox(width: 12),
+                // 文字描述
+                Expanded(
+                  child: Text(
+                    feature['text']!,
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: isMobile ? 15 : 16,
+                      fontWeight: FontWeight.w400,
+                      height: 1.4,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
       ),
     );
   }
@@ -361,81 +521,6 @@ class _DataServicePageState extends State<DataServicePage> {
     );
   }
 
-  // 功能列表
-  Widget _buildFeatureList(bool isMobile) {
-    final features = [
-      {
-        'icon': '🏆',
-        'text': 'Attend 363 meetups/year',
-        'highlight': ' in 100+ cities'
-      },
-      {
-        'icon': '❤️',
-        'text': 'Meet new people',
-        'highlight': ' for dating and friends'
-      },
-      {
-        'icon': '📊',
-        'text': 'Research destinations',
-        'highlight': ' and find your best place to live and work'
-      },
-      {
-        'icon': '🌍',
-        'text': 'Keep track of your travels',
-        'highlight': ' and record where you\'ve been'
-      },
-      {
-        'icon': '💬',
-        'text': 'Join community chat',
-        'highlight': ' and find your community on the road'
-      },
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: features.map((feature) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                feature['icon']!,
-                style: const TextStyle(fontSize: 20),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: RichText(
-                  text: TextSpan(
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.9),
-                      fontSize: isMobile ? 14 : 16,
-                      fontWeight: FontWeight.w400,
-                      height: 1.5,
-                    ),
-                    children: [
-                      TextSpan(
-                        text: feature['text']!,
-                        style: const TextStyle(
-                          decoration: TextDecoration.underline,
-                          decorationColor: Colors.white54,
-                        ),
-                      ),
-                      TextSpan(
-                        text: feature['highlight']!,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  // 媒体Logo
   // 工具栏 - 视图切换和排序
   Widget _buildToolbar(DataServiceController controller) {
     return Row(

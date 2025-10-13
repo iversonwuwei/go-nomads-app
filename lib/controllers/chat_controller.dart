@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../models/chat_model.dart';
@@ -9,6 +10,9 @@ class ChatController extends GetxController {
   final Rx<ChatRoom?> currentRoom = Rx<ChatRoom?>(null);
   final RxBool isLoading = true.obs;
   final Rx<ChatMessage?> replyingTo = Rx<ChatMessage?>(null);
+  
+  // 消息输入控制器
+  final messageInputController = TextEditingController();
 
   final String currentUserId = 'user_001';
   final String currentUserName = 'Alex Chen';
@@ -18,9 +22,22 @@ class ChatController extends GetxController {
   void onInit() {
     super.onInit();
     
-    // 检查是否从 meetup 页面传递了参数
+    // 检查是否从其他页面传递了参数
     final arguments = Get.arguments;
     if (arguments != null && arguments is Map<String, dynamic>) {
+      // 一对一聊天
+      final isDirect = arguments['isDirect'] as bool?;
+      if (isDirect == true) {
+        final userName = arguments['userName'] as String?;
+        final userAvatar = arguments['userAvatar'] as String?;
+        final userId = arguments['userId'] as String?;
+        if (userName != null) {
+          joinDirectChat(userName, userAvatar, userId);
+          return;
+        }
+      }
+
+      // 群聊
       final city = arguments['city'] as String?;
       final country = arguments['country'] as String?;
       if (city != null && country != null) {
@@ -31,6 +48,27 @@ class ChatController extends GetxController {
     }
     
     loadChatRooms();
+  }
+  
+  // 加入一对一聊天
+  void joinDirectChat(String userName, String? userAvatar, String? userId) {
+    isLoading.value = true;
+
+    Future.delayed(const Duration(milliseconds: 500), () {
+      // 创建一对一聊天室
+      final room = ChatRoom(
+        id: 'direct_${userId ?? userName.toLowerCase().replaceAll(' ', '_')}',
+        city: userName,
+        country: 'Direct Message',
+        onlineUsers: 1,
+        totalMembers: 2,
+        lastMessage: null,
+      );
+
+      currentRoom.value = room;
+      messages.value = _generateDirectMessages(userName, userAvatar);
+      isLoading.value = false;
+    });
   }
 
   // 加载聊天室列表
@@ -258,6 +296,38 @@ class ChatController extends GetxController {
         message: '@LisaChen Count me in! What time?',
         timestamp: DateTime.now().subtract(const Duration(hours: 1, minutes: 30)),
         mentions: ['LisaChen'],
+      ),
+    ];
+  }
+
+  // 生成一对一聊天消息
+  List<ChatMessage> _generateDirectMessages(
+      String userName, String? userAvatar) {
+    final avatar = userAvatar ?? 'https://i.pravatar.cc/300?img=10';
+    return [
+      ChatMessage(
+        id: 'dm_1',
+        userId: 'other_user',
+        userName: userName,
+        userAvatar: avatar,
+        message: 'Hey! How are you doing?',
+        timestamp: DateTime.now().subtract(const Duration(minutes: 10)),
+      ),
+      ChatMessage(
+        id: 'dm_2',
+        userId: currentUserId,
+        userName: currentUserName,
+        userAvatar: currentUserAvatar,
+        message: 'Hi! I\'m good, thanks! How about you?',
+        timestamp: DateTime.now().subtract(const Duration(minutes: 8)),
+      ),
+      ChatMessage(
+        id: 'dm_3',
+        userId: 'other_user',
+        userName: userName,
+        userAvatar: avatar,
+        message: 'Doing great! Are you still in town?',
+        timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
       ),
     ];
   }
