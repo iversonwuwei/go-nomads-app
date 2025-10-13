@@ -14,10 +14,11 @@ class AmapNativeService {
   static final AmapNativeService instance = AmapNativeService._();
 
   // Platform Channel
-  static const MethodChannel _channel = MethodChannel(AmapNativeConfig.channelName);
+  static const MethodChannel _channel =
+      MethodChannel(AmapNativeConfig.channelName);
 
   /// 打开地图选择器
-  /// 
+  ///
   /// 返回值:
   /// {
   ///   'latitude': double,
@@ -31,44 +32,60 @@ class AmapNativeService {
     double? initialLongitude,
   }) async {
     try {
+      print('🗺️ AmapNativeService: 准备打开地图选择器');
       final Map<String, dynamic> arguments = {};
-      
+
       if (initialLatitude != null && initialLongitude != null) {
         arguments['initialLatitude'] = initialLatitude;
         arguments['initialLongitude'] = initialLongitude;
+        print('📍 初始坐标: ($initialLatitude, $initialLongitude)');
+      } else {
+        print('📍 未提供初始坐标');
       }
+
+      print('📱 调用 Platform Channel: ${AmapNativeConfig.channelName}');
+      print('📱 方法: ${AmapNativeConfig.methodOpenMapPicker}');
+      print('📱 参数: $arguments');
 
       final result = await _channel.invokeMethod<Map<dynamic, dynamic>>(
         AmapNativeConfig.methodOpenMapPicker,
         arguments.isEmpty ? null : arguments,
       );
 
+      print('📱 Platform Channel 返回结果: $result');
+
       if (result == null) {
-        print('⚠️ 地图选择器返回 null');
+        print('⚠️ 地图选择器返回 null (用户可能取消了)');
         return null;
       }
 
       // 转换类型
-      return {
+      final convertedResult = {
         'latitude': result['latitude'] as double,
         'longitude': result['longitude'] as double,
         'address': result['address'] as String? ?? '',
         'city': result['city'] as String?,
         'province': result['province'] as String?,
       };
+
+      print('✅ 转换后的结果: $convertedResult');
+      return convertedResult;
     } on PlatformException catch (e) {
-      print('❌ 打开地图选择器失败: ${e.message}');
+      print('❌ 打开地图选择器失败 (PlatformException)');
       print('   Code: ${e.code}');
+      print('   Message: ${e.message}');
       print('   Details: ${e.details}');
       return null;
     } catch (e) {
-      print('❌ 未知错误: $e');
+      print('❌ 打开地图选择器失败 (未知错误)');
+      print('   错误类型: ${e.runtimeType}');
+      print('   错误信息: $e');
       return null;
     }
   }
 
   /// 获取当前位置
-  /// 
+  ///
   /// 返回值:
   /// {
   ///   'latitude': double,

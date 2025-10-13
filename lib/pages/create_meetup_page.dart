@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/data_service_controller.dart';
+import 'venue_map_picker_page.dart';
 
 class CreateMeetupPage extends StatefulWidget {
   const CreateMeetupPage({super.key});
@@ -27,7 +28,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   double _maxAttendees = 10;
-  
+
   // 图片相关
   final List<XFile> _selectedImages = [];
   final ImagePicker _imagePicker = ImagePicker();
@@ -95,16 +96,23 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
     }
   }
 
-  void _selectVenueFromMap() {
-    // TODO: 实现地图选择功能
-    Get.snackbar(
-      'Map Selection',
-      'Map venue selection coming soon!',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: const Color(0xFFFF4458),
-      colorText: Colors.white,
-      duration: const Duration(seconds: 2),
+  void _selectVenueFromMap() async {
+    print('🗺️ 打开地图选择器...');
+    final result = await Get.to<Map<String, dynamic>>(
+      () => VenueMapPickerPage(
+        cityName: _selectedCity ?? 'Bangkok',
+      ),
     );
+
+    if (result != null) {
+      print('✅ 选择了venue: ${result['name']}');
+      setState(() {
+        _venueController.text = '${result['name']} - ${result['address']}';
+        _venueErrorText = null;
+      });
+    } else {
+      print('⚠️ 用户取消了选择');
+    }
   }
 
   // 选择图片

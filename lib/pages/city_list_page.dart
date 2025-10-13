@@ -404,7 +404,7 @@ class _CityListPageState extends State<CityListPage> {
         onTap: () {
           Get.to(
             () => CityDetailPage(
-              cityId: city['city'],
+              cityId: city['id']?.toString() ?? city['city'],
               cityName: city['city'],
               cityImage: city['image'],
               overallScore: (city['score'] as num?)?.toDouble() ?? 0.0,

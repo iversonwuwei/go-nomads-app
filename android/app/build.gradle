@@ -60,3 +60,20 @@ android {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    // Material design components
+    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+
+    // 高德地图 3D SDK(使用 9.7.0,与 search SDK 兼容)
+    implementation('com.amap.api:3dmap:9.7.0') {
+        exclude group: 'com.amap.api', module: 'location'
+    }
+    // 高德地图搜索服务
+    implementation('com.amap.api:search:9.7.0') {
+        exclude group: 'com.amap.api', module: 'location'
+    }
+    // 不再单独引入 location,避免重复类冲突
+}

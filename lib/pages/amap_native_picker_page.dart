@@ -5,7 +5,7 @@ import '../config/app_colors.dart';
 import '../services/amap_native_service.dart';
 
 /// 高德地图位置选择器页面（原生实现）
-/// 
+///
 /// 使用方法：
 /// ```dart
 /// final result = await Get.to(() => AmapNativePickerPage());
@@ -42,32 +42,41 @@ class _AmapNativePickerPageState extends State<AmapNativePickerPage> {
   }
 
   Future<void> _openNativeMapPicker() async {
+    print('🗺️ AmapNativePickerPage: 开始打开地图选择器');
     setState(() {
       _isLoading = true;
     });
 
     try {
+      print('📍 调用 AmapNativeService.openMapPicker...');
       final result = await AmapNativeService.instance.openMapPicker(
         initialLatitude: widget.initialLatitude,
         initialLongitude: widget.initialLongitude,
       );
 
+      print('📍 AmapNativeService 返回结果: $result');
+
       if (mounted) {
         if (result != null) {
+          print('✅ 返回结果到上一页: $result');
           // 返回结果给上一个页面
           Get.back(result: result);
         } else {
+          print('⚠️ 结果为 null，用户可能取消了选择');
           // 用户取消或发生错误
           Get.back();
         }
       }
     } catch (e) {
+      print('❌ 打开地图选择器异常: $e');
+      print('❌ 异常类型: ${e.runtimeType}');
       if (mounted) {
         Get.snackbar(
           'Error',
           'Failed to open map picker: $e',
           backgroundColor: Colors.red.withOpacity(0.9),
           colorText: Colors.white,
+          duration: const Duration(seconds: 5),
         );
         Get.back();
       }
@@ -88,7 +97,8 @@ class _AmapNativePickerPageState extends State<AmapNativePickerPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_outlined, color: AppColors.backButtonDark),
+          icon: const Icon(Icons.arrow_back_outlined,
+              color: AppColors.backButtonDark),
           onPressed: () => Get.back(),
         ),
         title: const Text(

@@ -1,7 +1,12 @@
 allprojects {
     repositories {
-        google()
-        mavenCentral()
+    google()
+    mavenCentral()
+    // 高德地图 Maven 仓库
+    maven { url 'https://maven.aliyun.com/repository/public/' }
+    maven { url 'https://jitpack.io' }
+    // 启用 bintray 仓库（部分老版本依赖需要）
+    maven { url 'https://dl.bintray.com/thelasterstar/maven/' }
     }
 }
 
