@@ -26,6 +26,7 @@ class AddCoworkingPage extends StatefulWidget {
 
 class _AddCoworkingPageState extends State<AddCoworkingPage> {
   final _formKey = GlobalKey<FormState>();
+  final RxBool _isSubmitting = false.obs;
 
   // Basic Info
   final _nameController = TextEditingController();
@@ -132,25 +133,16 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: _submitForm,
-            child: const Text(
-              'Submit',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding:
-              const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
-          children: [
+      body: Column(
+        children: [
+          Expanded(
+            child: Form(
+              key: _formKey,
+              child: ListView(
+                padding: const EdgeInsets.only(
+                    left: 16, right: 16, top: 16, bottom: 16),
+                children: [
             // Image Upload
             _buildImageSection(),
             const SizedBox(height: 24),
@@ -406,8 +398,14 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                 (value) => setState(() => _hasPetFriendly = value)),
 
             const SizedBox(height: 32),
-          ],
-        ),
+                ],
+              ),
+            ),
+          ),
+
+          // Bottom Submit Button
+          _buildBottomBar(),
+        ],
       ),
     );
   }
@@ -708,8 +706,70 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
     }
   }
 
-  void _submitForm() {
-    if (_formKey.currentState!.validate()) {
+  /// 底部提交按钮栏
+  Widget _buildBottomBar() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Obx(() => ElevatedButton(
+              onPressed: _isSubmitting.value ? null : _submitCoworking,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFF4458),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
+                disabledBackgroundColor:
+                    const Color(0xFFFF4458).withValues(alpha: 0.5),
+              ),
+              child: _isSubmitting.value
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.check_circle_outline, size: 20),
+                        SizedBox(width: 8),
+                        Text(
+                          'Submit Coworking Space',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+            )),
+      ),
+    );
+  }
+
+  Future<void> _submitCoworking() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    _isSubmitting.value = true;
+
+    try {
       // Create CoworkingSpace object
       final coworkingSpace = CoworkingSpace(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -779,18 +839,27 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
         lastUpdated: DateTime.now(),
       );
 
+      // Simulate API call
+      await Future.delayed(const Duration(seconds: 2));
+
       // Show success message
+      Get.back(result: coworkingSpace);
       Get.snackbar(
         'Success',
-        'Coworking space has been submitted for review',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green[100],
-        colorText: Colors.green[900],
-        duration: const Duration(seconds: 3),
+        'Coworking space has been submitted successfully!',
+        backgroundColor: const Color(0xFFFF4458),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2),
       );
-
-      // Return to previous page
-      Get.back(result: coworkingSpace);
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to submit coworking space: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      _isSubmitting.value = false;
     }
   }
 }
