@@ -266,7 +266,7 @@ class _DataServicePageState extends State<DataServicePage> {
 
   // 现代卡片式双按钮组
   Widget _buildTrapezoidButtons(bool isMobile) {
-    return Container(
+    return SizedBox(
       width: isMobile ? double.infinity : 600,
       child: Row(
         children: [

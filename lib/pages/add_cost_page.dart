@@ -7,10 +7,10 @@ class AddCostPage extends StatefulWidget {
   final String cityName;
 
   const AddCostPage({
-    Key? key,
+    super.key,
     required this.cityId,
     required this.cityName,
-  }) : super(key: key);
+  });
 
   @override
   State<AddCostPage> createState() => _AddCostPageState();
@@ -72,7 +72,9 @@ class _AddCostPageState extends State<AddCostPage> {
 
   @override
   void dispose() {
-    _controllers.values.forEach((controller) => controller.dispose());
+    for (var controller in _controllers.values) {
+      controller.dispose();
+    }
     _notesController.dispose();
     super.dispose();
   }
@@ -241,7 +243,7 @@ class _AddCostPageState extends State<AddCostPage> {
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
-            value: _selectedCurrency,
+            initialValue: _selectedCurrency,
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.white,
@@ -307,7 +309,7 @@ class _AddCostPageState extends State<AddCostPage> {
           ),
         ),
         const SizedBox(height: 16),
-        ..._categories.map((category) => _buildCostInputField(category)).toList(),
+        ..._categories.map((category) => _buildCostInputField(category)),
       ],
     );
   }
