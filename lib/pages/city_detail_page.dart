@@ -19,7 +19,7 @@ import 'add_review_page.dart';
 import 'coworking_detail_page.dart';
 import 'create_travel_plan_page.dart';
 
-/// 城市详情页 - 完整的 Nomads.com 风格标签页系统
+/// 城市详情�?- 完整�?Nomads.com 风格标签页系�?
 class CityDetailPage extends StatefulWidget {
   final String cityId;
   final String cityName;
@@ -43,7 +43,7 @@ class CityDetailPage extends StatefulWidget {
 class _CityDetailPageState extends State<CityDetailPage> {
   late PageController _pageController;
   int _currentPage = 0;
-  bool _isPageActive = true; // 追踪页面是否处于活动状态
+  bool _isPageActive = true; // 追踪页面是否处于活动状�?
 
   @override
   void initState() {
@@ -53,10 +53,10 @@ class _CityDetailPageState extends State<CityDetailPage> {
 
   @override
   void dispose() {
-    _isPageActive = false; // 标记页面已销毁
+    _isPageActive = false; // 标记页面已销�?
     _pageController.dispose();
-    // 地图视图会在原生层自动销毁
-    print('🗑️ City detail page disposed, map view will be destroyed');
+    // 地图视图会在原生层自动销�?
+    print('🗑�?City detail page disposed, map view will be destroyed');
     super.dispose();
   }
 
@@ -68,7 +68,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
 
     return DefaultTabController(
       length:
-          9, // 修正为9个标签(Scores, Guide, Pros&Cons, Reviews, Cost, Photos, Weather, Neighborhoods, Coworking)
+          9, // 修正�?个标�?Scores, Guide, Pros&Cons, Reviews, Cost, Photos, Weather, Neighborhoods, Coworking)
       child: Scaffold(
         body: Stack(
           children: [
@@ -129,7 +129,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
                                         end: Alignment.bottomCenter,
                                         colors: [
                                           Colors.transparent,
-                                          Colors.black.withOpacity(0.7),
+                                          Colors.black.withValues(alpha: 0.7),
                                         ],
                                       ),
                                     ),
@@ -220,7 +220,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
                     ),
                   ),
 
-                  // 标签页导航
+                  // 标签页导�?
                   SliverPersistentHeader(
                     pinned: true,
                     delegate: _SliverAppBarDelegate(
@@ -356,7 +356,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
                 borderRadius: BorderRadius.circular(28),
                 child: InkWell(
                   onTap: () {
-                    // 跳转到创建旅行计划页面
+                    // 跳转到创建旅行计划页�?
                     Get.to(
                       () => CreateTravelPlanPage(
                         cityId: widget.cityId,
@@ -1056,7 +1056,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
     );
   }
 
-  /// Coworking 标签页
+  /// Coworking 标签�?
   Widget _buildCoworkingTab(CityDetailController controller) {
     final coworkingController = Get.put(CoworkingController());
     coworkingController.filterByCity(widget.cityName);
@@ -1292,7 +1292,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 名称和评分
+                  // 名称和评�?
                   Row(
                     children: [
                       Expanded(
@@ -1429,7 +1429,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
     );
   }
 
-  // ========== 分享对话框方法 ==========
+  // ========== 分享对话框方�?==========
 
   /// 分享评分信息
   void _showShareScoreDialog() {
@@ -1484,20 +1484,20 @@ class _CityDetailPageState extends State<CityDetailPage> {
   }
 
   /// 分享指南信息
-  /// 分享评论 - 跳转到独立页面
+  /// 分享评论 - 跳转到独立页�?
   void _showShareReviewDialog() async {
     final result = await Get.to(() => AddReviewPage(
           cityId: widget.cityId,
           cityName: widget.cityName,
         ));
 
-    // 如果提交成功，刷新评论列表
+    // 如果提交成功，刷新评论列�?
     if (result != null) {
       // TODO: 刷新评论列表
       // final controller = Get.find<CityDetailController>();
       // controller.refreshReviews();
-      
-      // 显示成功消息已经在 AddReviewPage 中处理
+
+      // 显示成功消息已经�?AddReviewPage 中处�?
       print('Review submitted successfully: $result');
     }
   }
@@ -1623,7 +1623,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
         ));
     if (result != null) {
       Get.snackbar(
-        '✅ Success',
+        '�?Success',
         'Your coworking space will be reviewed and added soon!',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.green[100],
@@ -1635,7 +1635,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
 
   /// Build map view widget
   Widget _buildMapView() {
-    // 只在页面活动且当前显示地图页面时才创建地图
+    // 只在页面活动且当前显示地图页面时才创建地�?
     if (!_isPageActive || _currentPage != 1) {
       return Container(
         width: double.infinity,
@@ -1655,7 +1655,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
       return Container(
         width: double.infinity,
         height: double.infinity,
-        color: Colors.grey[100], // 地图背景色
+        color: Colors.grey[100], // 地图背景�?
         child: PlatformViewLink(
           viewType: 'amap_city_view',
           surfaceFactory: (context, controller) {
@@ -1668,7 +1668,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
           },
           onCreatePlatformView: (params) {
             print(
-                '🗺️ Creating Amap view for ${widget.cityName} (id: ${params.id})');
+                '🗺�?Creating Amap view for ${widget.cityName} (id: ${params.id})');
             return PlatformViewsService.initSurfaceAndroidView(
               id: params.id,
               viewType: 'amap_city_view',
@@ -1684,14 +1684,14 @@ class _CityDetailPageState extends State<CityDetailPage> {
               ..addOnPlatformViewCreatedListener(params.onPlatformViewCreated)
               ..addOnPlatformViewCreatedListener((int id) {
                 print(
-                    '✅ Amap view created with id: $id for ${widget.cityName}');
+                    '�?Amap view created with id: $id for ${widget.cityName}');
               })
               ..create();
           },
         ),
       );
     } else {
-      // iOS 或其他平台: 显示占位符
+      // iOS 或其他平�? 显示占位�?
       return Container(
         width: double.infinity,
         height: double.infinity,
@@ -1724,7 +1724,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
                     height: 100,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: const Color(0xFFFF4458).withOpacity(0.1),
+                      color: const Color(0xFFFF4458).withValues(alpha: 0.1),
                     ),
                     child: const Center(
                       child: Icon(
@@ -1771,7 +1771,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
       decoration: BoxDecoration(
         color: _currentPage == index
             ? Colors.white
-            : Colors.white.withOpacity(0.4),
+            : Colors.white.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(4),
       ),
     );
@@ -1812,7 +1812,7 @@ class _GridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.grey.withOpacity(0.1)
+      ..color = Colors.grey.withValues(alpha: 0.1)
       ..strokeWidth = 1;
 
     const gridSize = 40.0;

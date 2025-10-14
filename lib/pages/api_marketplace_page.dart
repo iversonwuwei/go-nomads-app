@@ -263,7 +263,7 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
           sliver: SliverGrid(
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 0.85, // 调整比例，减少卡片高度
+              childAspectRatio: 0.85, // 调整比例，减少卡片高�?
               crossAxisSpacing: 12.w,
               mainAxisSpacing: 12.h,
             ),
@@ -282,7 +282,7 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
   }
 
   Widget _buildApiCard(ApiInterfaceModel api) {
-    // 为每个API定义简洁的单色方案 - 性冷淡风格(浅色系)
+    // 为每个API定义简洁的单色方案 - 性冷淡风�?浅色�?
     final colorIndex = api.name.hashCode.abs() % AppColors.apiCardColors.length;
     final cardColor = AppColors.apiCardColors[colorIndex];
     
@@ -311,9 +311,9 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
                           width: 32.w,
                           height: 32.w,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
+                            color: Colors.white.withValues(alpha: 0.15),
                             border: Border.all(
-                              color: Colors.white.withOpacity(0.3),
+                              color: Colors.white.withValues(alpha: 0.3),
                               width: 1,
                             ),
                           ),
@@ -353,7 +353,7 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
                       api.category.toUpperCase(),
                       style: TextStyle(
                         fontSize: 9.sp,
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         fontWeight: FontWeight.w300,
                         letterSpacing: 1.5,
                       ),
@@ -367,7 +367,7 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
                         api.description,
                         style: TextStyle(
                           fontSize: 10.sp,
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                           height: 1.4,
                           fontWeight: FontWeight.w300,
                         ),
@@ -384,10 +384,10 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.15),
+                color: Colors.black.withValues(alpha: 0.15),
                 border: Border(
                   top: BorderSide(
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withValues(alpha: 0.1),
                     width: 0.5,
                   ),
                 ),
@@ -395,7 +395,7 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // 可靠性
+                  // 可靠�?
                   Row(
                     children: [
                       Icon(
@@ -409,7 +409,7 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
                         style: TextStyle(
                           fontSize: 9.sp,
                           fontWeight: FontWeight.w400,
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                           letterSpacing: 0.5,
                         ),
                       ),
@@ -421,7 +421,7 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
                     '${api.responseTime}MS',
                     style: TextStyle(
                       fontSize: 8.sp,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                       fontWeight: FontWeight.w300,
                       letterSpacing: 1,
                     ),
@@ -433,7 +433,7 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
                         EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      border: Border.all(color: Colors.white.withOpacity(0.2)),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
                     ),
                     child: Text(
                       api.isFree ? 'FREE' : '\$${api.price}',
@@ -459,7 +459,7 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
       padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
       decoration: BoxDecoration(
         border: Border.all(
-          color: textColor.withOpacity(0.4),
+          color: textColor.withValues(alpha: 0.4),
           width: 0.5,
         ),
       ),

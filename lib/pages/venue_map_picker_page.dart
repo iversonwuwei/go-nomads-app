@@ -7,7 +7,7 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 
-/// Venue地图选择器页面
+/// Venue地图选择器页�?
 ///
 /// 显示地图并展示餐厅、Coworking和酒店的锚点
 /// 用户可以点击选择一个地点作为Meet Up的Venue
@@ -28,7 +28,7 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
   String? _selectedVenue;
   int _mapViewId = 0;
 
-  // 模拟POI数据(实际应该从后端获取)
+  // 模拟POI数据(实际应该从后端获�?
   final List<Map<String, dynamic>> _venues = [
     // 餐厅
     {
@@ -155,7 +155,7 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
   void initState() {
     super.initState();
     _mapViewId = DateTime.now().millisecondsSinceEpoch;
-    print('🗺️ VenueMapPicker: 初始化地图 viewId: $_mapViewId');
+    print('🗺️ VenueMapPicker: 初始化地图, viewId: $_mapViewId');
   }
 
   @override
@@ -231,7 +231,7 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 过滤器
+            // 过滤�?
             _buildFilterChips(),
 
             // 地图视图 - 固定高度
@@ -257,7 +257,7 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -279,7 +279,7 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
                   });
                 },
                 backgroundColor: Colors.white,
-                selectedColor: const Color(0xFFFF4458).withOpacity(0.1),
+                selectedColor: const Color(0xFFFF4458).withValues(alpha: 0.1),
                 labelStyle: TextStyle(
                   color: isSelected ? const Color(0xFFFF4458) : Colors.black87,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
@@ -306,7 +306,7 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
       clipBehavior: Clip.antiAlias,
       child: Stack(
         children: [
-          // 真实的高德地图 - 让原生组件自己处理所有手势
+          // 真实的高德地�?- 让原生组件自己处理所有手�?
           PlatformViewLink(
             viewType: 'amap_city_view',
             surfaceFactory: (context, controller) {
@@ -350,11 +350,11 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -382,18 +382,18 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
             ),
           ),
 
-          // 地图类型指示器
+          // 地图类型指示�?
           Positioned(
             bottom: 12,
             right: 12,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
                 borderRadius: BorderRadius.circular(6),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 4,
                   ),
                 ],
@@ -431,7 +431,7 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -441,7 +441,7 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 拖拽指示器
+          // 拖拽指示�?
           Center(
             child: Container(
               margin: const EdgeInsets.symmetric(vertical: 12),
@@ -469,11 +469,11 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
 
           const SizedBox(height: 12),
 
-          // Venue列表 - 使用 ListView.builder 配合 shrinkWrap 和 NeverScrollableScrollPhysics
+          // Venue列表 - 使用 ListView.builder 配合 shrinkWrap �?NeverScrollableScrollPhysics
           ListView.builder(
-            shrinkWrap: true, // 让 ListView 根据内容自适应高度
+            shrinkWrap: true, // �?ListView 根据内容自适应高度
             physics:
-                const NeverScrollableScrollPhysics(), // 禁用 ListView 自己的滚动,使用外层 SingleChildScrollView
+                const NeverScrollableScrollPhysics(), // 禁用 ListView 自己的滚�?使用外层 SingleChildScrollView
             padding: const EdgeInsets.only(
               left: 16,
               right: 16,
@@ -500,7 +500,7 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFFFF4458).withOpacity(0.05)
+              ? const Color(0xFFFF4458).withValues(alpha: 0.05)
               : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
@@ -515,7 +515,7 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: _getMarkerColor(venue['type']).withOpacity(0.1),
+                color: _getMarkerColor(venue['type']).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
@@ -581,7 +581,7 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: _getMarkerColor(venue['type']).withOpacity(0.1),
+                color: _getMarkerColor(venue['type']).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(

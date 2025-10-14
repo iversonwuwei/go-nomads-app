@@ -30,12 +30,12 @@ class _AmapNativeTestPageState extends State<AmapNativeTestPage> {
       final isConnected = await AmapNativeService.instance.testConnection();
       setState(() {
         _testResult = isConnected 
-            ? '‚úÖ Platform Channel Connected!' 
-            : '‚ùå Connection Failed';
+            ? '‚ú?Platform Channel Connected!' 
+            : '‚ù?Connection Failed';
       });
     } catch (e) {
       setState(() {
-        _testResult = '‚ùå Error: $e';
+        _testResult = '‚ù?Error: $e';
       });
     } finally {
       setState(() {
@@ -59,7 +59,7 @@ class _AmapNativeTestPageState extends State<AmapNativeTestPage> {
         Get.snackbar(
           'Success',
           'Location selected!',
-          backgroundColor: Colors.green.withOpacity(0.9),
+          backgroundColor: Colors.green.withValues(alpha: 0.9),
           colorText: Colors.white,
         );
       }
@@ -67,7 +67,7 @@ class _AmapNativeTestPageState extends State<AmapNativeTestPage> {
       Get.snackbar(
         'Error',
         'Failed to open map: $e',
-        backgroundColor: Colors.red.withOpacity(0.9),
+        backgroundColor: Colors.red.withValues(alpha: 0.9),
         colorText: Colors.white,
       );
     }
@@ -87,14 +87,14 @@ class _AmapNativeTestPageState extends State<AmapNativeTestPage> {
       Get.snackbar(
         'Success',
         'Got current location!',
-        backgroundColor: Colors.green.withOpacity(0.9),
+        backgroundColor: Colors.green.withValues(alpha: 0.9),
         colorText: Colors.white,
       );
     } catch (e) {
       Get.snackbar(
         'Error',
         'Failed to get location: $e',
-        backgroundColor: Colors.red.withOpacity(0.9),
+        backgroundColor: Colors.red.withValues(alpha: 0.9),
         colorText: Colors.white,
       );
     } finally {
@@ -161,9 +161,9 @@ class _AmapNativeTestPageState extends State<AmapNativeTestPage> {
                   _testResult,
                   style: TextStyle(
                     fontSize: 14,
-                    color: _testResult.contains('‚úÖ') 
+                    color: _testResult.contains('‚ú?) 
                         ? Colors.green 
-                        : _testResult.contains('‚ùå')
+                        : _testResult.contains('‚ù?)
                             ? Colors.red
                             : Colors.black54,
                     fontWeight: FontWeight.w500,

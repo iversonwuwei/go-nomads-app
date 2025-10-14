@@ -5,7 +5,7 @@ import '../config/app_colors.dart';
 import '../controllers/city_detail_controller.dart';
 import '../models/travel_plan_model.dart';
 
-/// 旅行计划详情页
+/// 旅行计划详情�?
 class TravelPlanPage extends StatefulWidget {
   final TravelPlan? plan;
   final String? cityId;
@@ -353,7 +353,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                         end: Alignment.bottomCenter,
                         colors: [
                           Colors.transparent,
-                          Colors.black.withOpacity(0.7),
+                          Colors.black.withValues(alpha: 0.7),
                         ],
                       ),
                     ),

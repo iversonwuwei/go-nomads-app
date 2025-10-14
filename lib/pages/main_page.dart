@@ -19,7 +19,7 @@ class MainPage extends StatelessWidget {
           case 0:
             return const DataServicePage();
           case 1:
-            // AI助手页面 - 直接跳转到聊天页面
+            // AI助手页面 - 直接跳转到聊天页�?
             WidgetsBinding.instance.addPostFrameCallback((_) {
               Get.toNamed(AppRoutes.aiChat);
               // 重置导航栏到首页
@@ -67,7 +67,7 @@ class MainPage extends StatelessWidget {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
+                        color: Colors.black.withValues(alpha: 0.2),
                         spreadRadius: 1,
                         blurRadius: 5,
                         offset: const Offset(0, 2),

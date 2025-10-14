@@ -110,7 +110,7 @@ class SnakeGamePage extends StatelessWidget {
             decoration: BoxDecoration(
               color: _getCellColor(currentPos, controller),
               border: Border.all(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 width: 0.5,
               ),
             ),
@@ -169,7 +169,7 @@ class SnakeGamePage extends StatelessWidget {
         );
       case GameState.playing:
         return const Text(
-          '游戏进行中...',
+          '游戏进行�?..',
           style: TextStyle(
             color: Colors.green,
             fontSize: 18,
@@ -198,7 +198,7 @@ class SnakeGamePage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              '最终分数: ${controller.gameData.value.score}',
+              '最终分�? ${controller.gameData.value.score}',
               style: const TextStyle(
                 color: Colors.white70,
                 fontSize: 16,
@@ -260,7 +260,7 @@ class SnakeGamePage extends StatelessWidget {
         const SizedBox(height: 12),
         Column(
           children: [
-            // 上
+            // �?
             _buildDirectionButton(
               icon: Icons.keyboard_arrow_up,
               onPressed: () => controller.changeDirection(Direction.up),
@@ -282,7 +282,7 @@ class SnakeGamePage extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            // 下
+            // �?
             _buildDirectionButton(
               icon: Icons.keyboard_arrow_down,
               onPressed: () => controller.changeDirection(Direction.down),
@@ -305,7 +305,7 @@ class SnakeGamePage extends StatelessWidget {
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             spreadRadius: 1,
             blurRadius: 4,
             offset: const Offset(0, 2),

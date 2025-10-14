@@ -31,7 +31,7 @@ class AiChatPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: Colors.black.withValues(alpha: 0.1),
                             spreadRadius: 1,
                             blurRadius: 4,
                             offset: const Offset(0, 2),
@@ -46,13 +46,13 @@ class AiChatPage extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  // 倒计时显示
+                  // 倒计时显�?
                   Obx(() => controller.showTimeoutWarning.value
                       ? Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: Colors.orange.withOpacity(0.9),
+                            color: Colors.orange.withValues(alpha: 0.9),
                             borderRadius: BorderRadius.circular(15),
                           ),
                           child: Row(
@@ -91,7 +91,7 @@ class AiChatPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           spreadRadius: 2,
                           blurRadius: 10,
                           offset: const Offset(0, 4),
@@ -128,7 +128,7 @@ class AiChatPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(25),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF4A90E2).withOpacity(0.3),
+                          color: const Color(0xFF4A90E2).withValues(alpha: 0.3),
                           spreadRadius: 2,
                           blurRadius: 8,
                           offset: const Offset(0, 4),
@@ -196,14 +196,14 @@ class AiChatPage extends StatelessWidget {
               ),
             ),
 
-            // 输入框区域
+            // 输入框区�?
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     offset: const Offset(0, -2),
                     blurRadius: 10,
                   ),
@@ -314,7 +314,7 @@ class AiChatPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(18),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     offset: const Offset(0, 2),
                     blurRadius: 8,
                   ),
@@ -379,7 +379,7 @@ class AiChatPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(18),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   offset: const Offset(0, 2),
                   blurRadius: 8,
                 ),
@@ -431,12 +431,12 @@ class AiChatPage extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: color.withOpacity(0.3),
+            color: color.withValues(alpha: 0.3),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               offset: const Offset(0, 2),
               blurRadius: 8,
             ),

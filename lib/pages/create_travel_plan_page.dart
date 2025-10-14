@@ -240,7 +240,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                               Get.snackbar(
                                 'Error',
                                 'Failed to open map: $e',
-                                backgroundColor: Colors.red.withOpacity(0.9),
+                                backgroundColor: Colors.red.withValues(alpha: 0.9),
                                 colorText: Colors.white,
                               );
                             }

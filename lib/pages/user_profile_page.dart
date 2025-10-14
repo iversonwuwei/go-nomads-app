@@ -24,7 +24,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
   };
 
   // 用户偏好设置
-  final bool _darkMode = true;
   bool _notifications = true;
   String _currency = 'USD';
   String _temperatureUnit = 'Celsius';
@@ -51,7 +50,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_outlined, color: AppColors.backButtonLight),
+          icon: const Icon(Icons.arrow_back_outlined,
+              color: AppColors.backButtonLight),
           onPressed: () => Get.back(),
         ),
         actions: [
@@ -474,25 +474,20 @@ class _UserProfilePageState extends State<UserProfilePage> {
             ),
           ),
           SizedBox(height: isMobile ? 16 : 20),
-
           _buildActionTile(
             'Privacy Settings',
             Icons.privacy_tip,
             () => _showComingSoon('Privacy Settings'),
             isMobile,
           ),
-
           const Divider(color: Colors.white24, height: 24),
-
           _buildActionTile(
             'Help & Support',
             Icons.help,
             () => _showComingSoon('Help & Support'),
             isMobile,
           ),
-
           const Divider(color: Colors.white24, height: 24),
-
           _buildActionTile(
             'About',
             Icons.info,

@@ -56,16 +56,66 @@ class _AddCostPageState extends State<AddCostPage> {
 
   // Cost categories with icons
   final List<Map<String, dynamic>> _categories = [
-    {'key': 'accommodation', 'name': 'Accommodation', 'icon': '🏠', 'hint': 'Monthly rent or hotel'},
-    {'key': 'food', 'name': 'Food & Dining', 'icon': '🍽️', 'hint': 'Groceries, restaurants'},
-    {'key': 'transportation', 'name': 'Transportation', 'icon': '🚗', 'hint': 'Public transport, taxi'},
-    {'key': 'entertainment', 'name': 'Entertainment', 'icon': '🎬', 'hint': 'Movies, activities'},
-    {'key': 'gym', 'name': 'Fitness & Gym', 'icon': '💪', 'hint': 'Gym membership, sports'},
-    {'key': 'coworking', 'name': 'Coworking Space', 'icon': '💼', 'hint': 'Workspace rental'},
-    {'key': 'utilities', 'name': 'Utilities', 'icon': '💡', 'hint': 'Electricity, water, internet'},
-    {'key': 'healthcare', 'name': 'Healthcare', 'icon': '🏥', 'hint': 'Medical, insurance'},
-    {'key': 'shopping', 'name': 'Shopping', 'icon': '🛍️', 'hint': 'Clothes, personal items'},
-    {'key': 'other', 'name': 'Other Expenses', 'icon': '📝', 'hint': 'Miscellaneous costs'},
+    {
+      'key': 'accommodation',
+      'name': 'Accommodation',
+      'icon': '🏠',
+      'hint': 'Monthly rent or hotel'
+    },
+    {
+      'key': 'food',
+      'name': 'Food & Dining',
+      'icon': '🍽️',
+      'hint': 'Groceries, restaurants'
+    },
+    {
+      'key': 'transportation',
+      'name': 'Transportation',
+      'icon': '🚗',
+      'hint': 'Public transport, taxi'
+    },
+    {
+      'key': 'entertainment',
+      'name': 'Entertainment',
+      'icon': '🎬',
+      'hint': 'Movies, activities'
+    },
+    {
+      'key': 'gym',
+      'name': 'Fitness & Gym',
+      'icon': '💪',
+      'hint': 'Gym membership, sports'
+    },
+    {
+      'key': 'coworking',
+      'name': 'Coworking Space',
+      'icon': '💼',
+      'hint': 'Workspace rental'
+    },
+    {
+      'key': 'utilities',
+      'name': 'Utilities',
+      'icon': '💡',
+      'hint': 'Electricity, water, internet'
+    },
+    {
+      'key': 'healthcare',
+      'name': 'Healthcare',
+      'icon': '🏥',
+      'hint': 'Medical, insurance'
+    },
+    {
+      'key': 'shopping',
+      'name': 'Shopping',
+      'icon': '🛍️',
+      'hint': 'Clothes, personal items'
+    },
+    {
+      'key': 'other',
+      'name': 'Other Expenses',
+      'icon': '📝',
+      'hint': 'Miscellaneous costs'
+    },
   ];
 
   final TextEditingController _notesController = TextEditingController();
@@ -80,7 +130,8 @@ class _AddCostPageState extends State<AddCostPage> {
   }
 
   String get _currencySymbol {
-    return _currencies.firstWhere((c) => c['code'] == _selectedCurrency)['symbol']!;
+    return _currencies
+        .firstWhere((c) => c['code'] == _selectedCurrency)['symbol']!;
   }
 
   double get _totalCost {
@@ -247,7 +298,8 @@ class _AddCostPageState extends State<AddCostPage> {
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.white,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide(color: Colors.grey[300]!),
@@ -354,7 +406,8 @@ class _AddCostPageState extends State<AddCostPage> {
               ),
               filled: true,
               fillColor: Colors.grey[50],
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide(color: Colors.grey[300]!),
@@ -363,10 +416,11 @@ class _AddCostPageState extends State<AddCostPage> {
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide(color: Colors.grey[300]!),
               ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFFF4458), width: 2),
-            ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide:
+                    const BorderSide(color: Color(0xFFFF4458), width: 2),
+              ),
             ),
             onChanged: (_) => setState(() {}), // Update total
           ),
@@ -381,12 +435,13 @@ class _AddCostPageState extends State<AddCostPage> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFFFF4458).withOpacity(0.1),
-            const Color(0xFFFF4458).withOpacity(0.05),
+            const Color(0xFFFF4458).withValues(alpha: 0.1),
+            const Color(0xFFFF4458).withValues(alpha: 0.05),
           ],
         ),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFFF4458).withOpacity(0.3)),
+        border:
+            Border.all(color: const Color(0xFFFF4458).withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -456,7 +511,8 @@ class _AddCostPageState extends State<AddCostPage> {
           maxLines: 4,
           maxLength: 500,
           decoration: InputDecoration(
-            hintText: 'Add any additional information about your living costs...',
+            hintText:
+                'Add any additional information about your living costs...',
             hintStyle: TextStyle(color: Colors.grey[400]),
             filled: true,
             fillColor: Colors.grey[50],
@@ -486,7 +542,7 @@ class _AddCostPageState extends State<AddCostPage> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
@@ -512,7 +568,8 @@ class _AddCostPageState extends State<AddCostPage> {
                         width: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
                     : const Text(

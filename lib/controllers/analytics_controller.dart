@@ -16,10 +16,10 @@ class AnalyticsController extends GetxController {
     initializeData();
   }
 
-  // 初始化数据
+  // 初始化数�?
   void initializeData() {
     isLoading.value = true;
-    
+
     // 模拟网络延迟
     Future.delayed(const Duration(seconds: 1), () {
       _generateMockData();
@@ -29,9 +29,9 @@ class AnalyticsController extends GetxController {
 
   // 生成模拟数据
   void _generateMockData() {
-    // 生成K线数据
+    // 生成K线数�?
     _generateKLineData();
-    
+
     // 生成商品列表数据
     _generateCommodityData();
   }
@@ -40,8 +40,8 @@ class AnalyticsController extends GetxController {
   void _generateKLineData() {
     final random = math.Random();
     final List<Map<String, dynamic>> data = [];
-    
-    // 为每个大类商品生成趋势数据
+
+    // 为每个大类商品生成趋势数�?
     final categories = [
       '电子产品',
       '服装纺织',
@@ -59,20 +59,20 @@ class AnalyticsController extends GetxController {
         baseValue = baseValue.clamp(60.0, 140.0);
         points.add(baseValue);
       }
-      
+
       data.add({
         'category': category,
         'points': points,
       });
     }
-    
+
     kLineData.value = data;
   }
 
   // 生成商品数据
   void _generateCommodityData() {
     final random = math.Random();
-    
+
     final List<Map<String, dynamic>> mockCommodities = [
       {
         'name': '电子产品',
@@ -139,21 +139,21 @@ class AnalyticsController extends GetxController {
         'volume': '${(random.nextDouble() * 149 + 80).toInt()}K',
       },
     ];
-    
+
     commodities.value = mockCommodities;
   }
 
   // 刷新数据
   void refreshData() {
     isLoading.value = true;
-    
+
     Future.delayed(const Duration(milliseconds: 800), () {
       _generateMockData();
       isLoading.value = false;
       Get.snackbar(
         '刷新成功',
         '数据已更新到最新状态',
-        backgroundColor: Colors.green.withOpacity(0.8),
+        backgroundColor: Colors.green.withValues(alpha: 0.8),
         colorText: Colors.white,
         duration: const Duration(seconds: 2),
         snackPosition: SnackPosition.TOP,
@@ -178,10 +178,10 @@ class AnalyticsController extends GetxController {
     }
 
     final totalCategories = commodities.length;
-    final averageChange = commodities
-        .map((c) => c['change'] as double)
-        .reduce((a, b) => a + b) / commodities.length;
-    
+    final averageChange =
+        commodities.map((c) => c['change'] as double).reduce((a, b) => a + b) /
+            commodities.length;
+
     // 计算总成交量（简化处理）
     var totalVolumeNum = 0;
     for (var commodity in commodities) {
@@ -189,7 +189,7 @@ class AnalyticsController extends GetxController {
       final numStr = volumeStr.replaceAll('K', '');
       totalVolumeNum += int.tryParse(numStr) ?? 0;
     }
-    
+
     final totalVolume = '${(totalVolumeNum / 1000).toStringAsFixed(1)}M';
 
     return {
@@ -223,12 +223,12 @@ class AnalyticsController extends GetxController {
     };
   }
 
-  // 根据分类筛选商品
+  // 根据分类筛选商�?
   List<Map<String, dynamic>> getCommoditiesByCategory(String category) {
     if (category == '全部') {
       return commodities;
     }
-    
+
     return commodities.where((commodity) {
       return commodity['name'].toString().contains(category);
     }).toList();
@@ -237,7 +237,7 @@ class AnalyticsController extends GetxController {
   // 排序商品
   void sortCommodities(String sortBy) {
     final currentList = List<Map<String, dynamic>>.from(commodities);
-    
+
     switch (sortBy) {
       case 'name':
         currentList.sort((a, b) => a['name'].compareTo(b['name']));
@@ -265,7 +265,7 @@ class AnalyticsController extends GetxController {
       default:
         break;
     }
-    
+
     commodities.value = currentList;
   }
 }
