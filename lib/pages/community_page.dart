@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import '../controllers/community_controller.dart';
 import '../generated/app_localizations.dart';
 import '../models/community_model.dart';
-import '../widgets/skeleton_loader.dart';
+import '../widgets/skeletons/skeletons.dart';
 
 class CommunityPage extends StatelessWidget {
   const CommunityPage({super.key});
@@ -44,7 +44,7 @@ class CommunityPage extends StatelessWidget {
         ),
         body: Obx(() {
           if (controller.isLoading.value) {
-            return const SkeletonLoader(type: SkeletonType.community);
+            return const CommunitySkeleton();
           }
 
           return TabBarView(

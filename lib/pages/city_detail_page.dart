@@ -14,7 +14,7 @@ import '../controllers/coworking_controller.dart';
 import '../generated/app_localizations.dart';
 import '../models/coworking_space_model.dart';
 import '../widgets/app_toast.dart';
-import '../widgets/skeleton_loader.dart';
+import '../widgets/skeletons/skeletons.dart';
 import 'add_cost_page.dart';
 import 'add_coworking_page.dart';
 import 'add_review_page.dart';
@@ -330,7 +330,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
               },
               body: Obx(() {
                 if (controller.isLoading.value) {
-                  return const SkeletonLoader(type: SkeletonType.detail);
+                  return const CityDetailSkeleton();
                 }
 
                 return TabBarView(

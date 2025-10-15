@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import '../config/app_colors.dart';
 import '../controllers/data_service_controller.dart';
 import '../generated/app_localizations.dart';
-import '../widgets/skeleton_loader.dart';
+import '../widgets/skeletons/skeletons.dart';
 import 'city_detail_page.dart';
 
 /// 城市列表页面 - 支持国家、城市和搜索筛选
@@ -201,7 +201,7 @@ class _CityListPageState extends State<CityListPage> {
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
-          return const SkeletonLoader(type: SkeletonType.list);
+          return const CityListSkeleton();
         }
 
         return Column(

@@ -7,7 +7,7 @@ import '../generated/app_localizations.dart';
 import '../models/meetup_model.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/copyright_widget.dart';
-import '../widgets/skeleton_loader.dart';
+import '../widgets/skeletons/skeletons.dart';
 import 'city_detail_page.dart';
 import 'city_list_page.dart';
 import 'coworking_home_page.dart';
@@ -76,7 +76,7 @@ class _DataServicePageState extends State<DataServicePage> {
       backgroundColor: AppColors.background,
       body: Obx(() {
         if (controller.isLoading.value) {
-          return const SkeletonLoader(type: SkeletonType.list);
+          return const DataServiceListSkeleton();
         }
 
         // 数据加载完成后,如果需要滚动则执行滚动

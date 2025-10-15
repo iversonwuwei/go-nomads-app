@@ -7,7 +7,7 @@ import '../generated/app_localizations.dart';
 import '../models/chat_model.dart';
 import '../models/user_model.dart' as models;
 import '../widgets/app_toast.dart';
-import '../widgets/skeleton_loader.dart';
+import '../widgets/skeletons/skeletons.dart';
 import 'member_detail_page.dart';
 
 class CityChatPage extends StatelessWidget {
@@ -25,7 +25,7 @@ class CityChatPage extends StatelessWidget {
       body: Obx(() {
         if (controller.isLoading.value &&
             controller.currentRoom.value == null) {
-          return const SkeletonLoader(type: SkeletonType.chat);
+          return const ChatListSkeleton();
         }
 
         // Show chat rooms list if no room is selected
@@ -252,7 +252,7 @@ class CityChatPage extends StatelessWidget {
           Expanded(
             child: Obx(() {
               if (controller.isLoading.value) {
-                return const SkeletonLoader(type: SkeletonType.messages);
+                return const MessagesSkeleton();
               }
 
               return ListView.builder(

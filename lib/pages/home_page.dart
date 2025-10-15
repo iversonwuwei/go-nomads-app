@@ -11,7 +11,7 @@ import '../models/api_interface_model.dart';
 import '../routes/app_routes.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/copyright_widget.dart';
-import '../widgets/skeleton_loader.dart';
+import '../widgets/skeletons/skeletons.dart';
 
 class MyHomePage extends StatelessWidget {
   final String title;
@@ -62,7 +62,7 @@ class MyHomePage extends StatelessWidget {
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
-          return const SkeletonLoader(type: SkeletonType.home);
+          return const HomeSkeleton();
         }
 
         return SingleChildScrollView(

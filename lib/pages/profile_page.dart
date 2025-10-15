@@ -7,7 +7,7 @@ import '../generated/app_localizations.dart';
 import '../models/user_model.dart';
 import '../routes/app_routes.dart';
 import '../widgets/app_toast.dart';
-import '../widgets/skeleton_loader.dart';
+import '../widgets/skeletons/skeletons.dart';
 import 'city_list_page.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -24,7 +24,7 @@ class ProfilePage extends StatelessWidget {
       backgroundColor: Colors.white,
       body: Obx(() {
         if (controller.isLoading.value) {
-          return const SkeletonLoader(type: SkeletonType.profile);
+          return const ProfileSkeleton();
         }
 
         final user = controller.currentUser.value;
