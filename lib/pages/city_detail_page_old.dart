@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../generated/app_localizations.dart';
-
 // 城市详情页面 - 基于 Nomads.com 设计
 class CityDetailPage extends StatefulWidget {
   final Map<String, dynamic> cityData;
@@ -17,7 +15,6 @@ class _CityDetailPageState extends State<CityDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
 

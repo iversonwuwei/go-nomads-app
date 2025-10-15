@@ -32,7 +32,6 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.background,
       body: CustomScrollView(

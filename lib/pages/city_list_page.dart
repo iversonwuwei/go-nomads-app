@@ -18,6 +18,7 @@ class CityListPage extends StatefulWidget {
 class _CityListPageState extends State<CityListPage> {
   final DataServiceController controller = Get.find<DataServiceController>();
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   String _searchQuery = '';
 
@@ -25,15 +26,62 @@ class _CityListPageState extends State<CityListPage> {
   bool _isGridView = true;
   String _sortBy = 'popular'; // popular, cost, internet, safety
 
+  // 分页相关
+  static const int _pageSize = 20; // 每页显示20条
+  int _currentPage = 1;
+  bool _isLoadingMore = false;
+  bool _hasMoreData = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
-  // 获取筛选后的城市列表
-  List<Map<String, dynamic>> get _filteredCities {
+  // 滚动监听
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      // 距离底部200像素时开始加载
+      _loadMoreCities();
+    }
+  }
+
+  // 加载更多城市
+  Future<void> _loadMoreCities() async {
+    if (_isLoadingMore || !_hasMoreData) return;
+
+    setState(() {
+      _isLoadingMore = true;
+    });
+
+    // 模拟网络延迟
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    setState(() {
+      _currentPage++;
+      _isLoadingMore = false;
+
+      // 检查是否还有更多数据
+      if (_displayedCities.length >= _allFilteredCities.length) {
+        _hasMoreData = false;
+      }
+    });
+  }
+
+  // 获取所有筛选后的城市列表（不分页）
+  List<Map<String, dynamic>> get _allFilteredCities {
     var items = controller.filteredItems;
+    
+    print('📊 DEBUG - controller.dataItems 总数: ${controller.dataItems.length}');
+    print('📊 DEBUG - controller.filteredItems 数量: ${items.length}');
 
     // 按搜索关键词筛选
     if (_searchQuery.isNotEmpty) {
@@ -44,8 +92,26 @@ class _CityListPageState extends State<CityListPage> {
         return city.contains(query) || country.contains(query);
       }).toList();
     }
-
+    
+    print('📊 DEBUG - 最终筛选后城市数量: ${items.length}');
     return items;
+  }
+
+  // 获取当前显示的城市列表（已分页）
+  List<Map<String, dynamic>> get _displayedCities {
+    final allCities = _allFilteredCities;
+    final endIndex = _currentPage * _pageSize;
+
+    print('📊 DEBUG - 当前页: $_currentPage, 每页数量: $_pageSize, 结束索引: $endIndex');
+    print(
+        '📊 DEBUG - 总城市数: ${allCities.length}, 显示城市数: ${endIndex > allCities.length ? allCities.length : endIndex}');
+
+    if (endIndex >= allCities.length) {
+      _hasMoreData = false;
+      return allCities;
+    }
+
+    return allCities.sublist(0, endIndex);
   }
 
   void _clearFilters() {
@@ -53,6 +119,8 @@ class _CityListPageState extends State<CityListPage> {
       _searchQuery = '';
       _searchController.clear();
       controller.resetFilters();
+      _currentPage = 1; // 重置分页
+      _hasMoreData = true;
     });
   }
 
@@ -221,7 +289,7 @@ class _CityListPageState extends State<CityListPage> {
 
             // 城市列表
             Expanded(
-              child: _filteredCities.isEmpty
+              child: _displayedCities.isEmpty
                   ? _buildEmptyState()
                   : _buildCityList(isMobile),
             ),
@@ -250,7 +318,7 @@ class _CityListPageState extends State<CityListPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '${_filteredCities.length} ${l10n.citiesFound}',
+                    '${_displayedCities.length}/${_allFilteredCities.length} ${l10n.citiesFound}',
                     style: const TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 14,
@@ -324,6 +392,8 @@ class _CityListPageState extends State<CityListPage> {
                   onChanged: (value) {
                     setState(() {
                       _searchQuery = value;
+                      _currentPage = 1; // 重置分页
+                      _hasMoreData = true;
                     });
                   },
                 ),
@@ -338,6 +408,8 @@ class _CityListPageState extends State<CityListPage> {
                     setState(() {
                       _searchQuery = '';
                       _searchController.clear();
+                      _currentPage = 1; // 重置分页
+                      _hasMoreData = true;
                     });
                   },
                 ),
@@ -351,12 +423,50 @@ class _CityListPageState extends State<CityListPage> {
   // 城市列表
   Widget _buildCityList(bool isMobile) {
     return ListView.builder(
+      controller: _scrollController,
       padding: EdgeInsets.all(isMobile ? 16 : 20),
-      itemCount: _filteredCities.length,
+      itemCount: _displayedCities.length +
+          (_hasMoreData ? 1 : 0), // +1 for loading indicator
       itemBuilder: (context, index) {
-        final city = _filteredCities[index];
+        // 加载指示器
+        if (index == _displayedCities.length) {
+          return _buildLoadingIndicator();
+        }
+
+        final city = _displayedCities[index];
         return _buildCityCard(city, isMobile);
       },
+    );
+  }
+
+  // 加载指示器
+  Widget _buildLoadingIndicator() {
+    if (!_isLoadingMore) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Center(
+        child: Column(
+          children: [
+            SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[600]!),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '加载更多城市...',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -628,6 +738,7 @@ class _CityFilterDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Container(
@@ -649,9 +760,9 @@ class _CityFilterDrawer extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Filters',
-                  style: TextStyle(
+                Text(
+                  l10n.filters,
+                  style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
@@ -663,9 +774,9 @@ class _CityFilterDrawer extends StatelessWidget {
                       onPressed: () {
                         controller.resetFilters();
                       },
-                      child: const Text(
-                        'Reset',
-                        style: TextStyle(
+                      child: Text(
+                        l10n.reset,
+                        style: const TextStyle(
                           color: Color(0xFFFF4458),
                           fontWeight: FontWeight.w600,
                         ),
@@ -689,7 +800,7 @@ class _CityFilterDrawer extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 地区筛选
-                  _buildSectionTitle('Region'),
+                  _buildSectionTitle(l10n.region),
                   const SizedBox(height: 12),
                   Obx(() => Wrap(
                         spacing: 8,
@@ -730,7 +841,7 @@ class _CityFilterDrawer extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // 国家筛选
-                  _buildSectionTitle('Country'),
+                  _buildSectionTitle(l10n.country),
                   const SizedBox(height: 12),
                   Obx(() => Wrap(
                         spacing: 8,
@@ -771,7 +882,7 @@ class _CityFilterDrawer extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // 城市筛选
-                  _buildSectionTitle('City'),
+                  _buildSectionTitle(l10n.city),
                   const SizedBox(height: 12),
                   Obx(() => Wrap(
                         spacing: 8,
@@ -812,7 +923,7 @@ class _CityFilterDrawer extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // 价格筛选
-                  _buildSectionTitle('Monthly Cost'),
+                  _buildSectionTitle(l10n.monthlyCost),
                   const SizedBox(height: 12),
                   Obx(() => Column(
                         children: [
@@ -858,7 +969,7 @@ class _CityFilterDrawer extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // 网速筛选
-                  _buildSectionTitle('Minimum Internet Speed'),
+                  _buildSectionTitle(l10n.minimumInternetSpeed),
                   const SizedBox(height: 12),
                   Obx(() => Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -888,7 +999,7 @@ class _CityFilterDrawer extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // 评分筛选
-                  _buildSectionTitle('Minimum Overall Rating'),
+                  _buildSectionTitle(l10n.minimumOverallRating),
                   const SizedBox(height: 12),
                   Obx(() => Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -927,7 +1038,7 @@ class _CityFilterDrawer extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // 气候筛选
-                  _buildSectionTitle('Climate'),
+                  _buildSectionTitle(l10n.climate),
                   const SizedBox(height: 12),
                   Obx(() => Wrap(
                         spacing: 8,
@@ -968,7 +1079,7 @@ class _CityFilterDrawer extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // AQI筛选
-                  _buildSectionTitle('Maximum Air Quality Index'),
+                  _buildSectionTitle(l10n.maximumAirQualityIndex),
                   const SizedBox(height: 12),
                   Obx(() => Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -985,7 +1096,7 @@ class _CityFilterDrawer extends StatelessWidget {
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                _getAQILabel(controller.maxAqi.value),
+                                _getAQILabel(controller.maxAqi.value, context),
                                 style: const TextStyle(
                                   fontSize: 13,
                                   color: AppColors.textSecondary,
@@ -1037,7 +1148,7 @@ class _CityFilterDrawer extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    'Show $count ${count == 1 ? 'city' : 'cities'}',
+                    l10n.showCities(count),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -1063,12 +1174,13 @@ class _CityFilterDrawer extends StatelessWidget {
     );
   }
 
-  String _getAQILabel(int aqi) {
-    if (aqi <= 50) return 'Good';
-    if (aqi <= 100) return 'Moderate';
-    if (aqi <= 150) return 'Unhealthy for Sensitive';
-    if (aqi <= 200) return 'Unhealthy';
-    if (aqi <= 300) return 'Very Unhealthy';
-    return 'Hazardous';
+  String _getAQILabel(int aqi, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    if (aqi <= 50) return l10n.aqiGood;
+    if (aqi <= 100) return l10n.aqiModerate;
+    if (aqi <= 150) return l10n.aqiUnhealthyForSensitive;
+    if (aqi <= 200) return l10n.aqiUnhealthy;
+    if (aqi <= 300) return l10n.aqiVeryUnhealthy;
+    return l10n.aqiHazardous;
   }
 }

@@ -713,7 +713,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get open24Hours => '24小时营业';
 
   @override
-  String get directions => '导航';
+  String get directions => '路线导航';
 
   @override
   String get callNow => '立即呼叫';
@@ -2079,7 +2079,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String freeTrialAvailable(Object duration) {
-    return '可免费试用 $duration 天';
+    return '可享受$duration免费试用';
   }
 
   @override
@@ -2843,8 +2843,81 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String showCities(int count) {
+    return '显示 $count 个城市';
+  }
+
+  @override
   String get noResultsFound => '未找到结果';
 
   @override
   String get adjustFilters => '尝试调整筛选条件';
+
+  @override
+  String get aqiGood => '优';
+
+  @override
+  String get aqiModerate => '良';
+
+  @override
+  String get aqiUnhealthyForSensitive => '轻度污染';
+
+  @override
+  String get aqiUnhealthy => '中度污染';
+
+  @override
+  String get aqiVeryUnhealthy => '重度污染';
+
+  @override
+  String get aqiHazardous => '严重污染';
+
+  @override
+  String get pricing => '价格';
+
+  @override
+  String get hourly => '每小时';
+
+  @override
+  String get daily => '每日';
+
+  @override
+  String get weekly => '每周';
+
+  @override
+  String get monthly => '每月';
+
+  @override
+  String get specifications => '规格参数';
+
+  @override
+  String get wifiSpeed => 'WiFi 速度';
+
+  @override
+  String get capacity => '容量';
+
+  @override
+  String get people => '人';
+
+  @override
+  String get desks => '工位';
+
+  @override
+  String get noiseLevel => '噪音水平';
+
+  @override
+  String get contactInfo => '联系方式';
+
+  @override
+  String get nextMeetups => '即将举行的聚会';
+
+  @override
+  String upcomingEventsCount(Object count) {
+    return '$count 个即将举行的活动';
+  }
+
+  @override
+  String get viewAllMeetups => '查看所有聚会';
+
+  @override
+  String get pleaseLoginToCreateMeetup => '请登录以创建聚会';
 }

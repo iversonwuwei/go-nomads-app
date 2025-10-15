@@ -1273,7 +1273,61 @@
       }
     }
   },
+  "showCities": "Show {count} {count, plural, =1{city} other{cities}}",
+  "@showCities": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "sortBy": "Sort by",
   "noResultsFound": "No results found",
-  "adjustFilters": "Try adjusting your filters"
+  "adjustFilters": "Try adjusting your filters",
+  "aqiGood": "Good",
+  "aqiModerate": "Moderate",
+  "aqiUnhealthyForSensitive": "Unhealthy for Sensitive",
+  "aqiUnhealthy": "Unhealthy",
+  "aqiVeryUnhealthy": "Very Unhealthy",
+  "aqiHazardous": "Hazardous",
+  "verified": "Verified",
+  "pricing": "Pricing",
+  "hourly": "Hourly",
+  "daily": "Daily",
+  "weekly": "Weekly",
+  "monthly": "Monthly",
+  "freeTrialAvailable": "Free {duration} trial available",
+  "@freeTrialAvailable": {
+    "description": "Free trial duration message",
+    "placeholders": {
+      "duration": {
+        "type": "Object"
+      }
+    }
+  },
+  "specifications": "Specifications",
+  "wifiSpeed": "WiFi Speed",
+  "capacity": "Capacity",
+  "people": "people",
+  "desks": "Desks",
+  "meetingRooms": "Meeting Rooms",
+  "noiseLevel": "Noise Level",
+  "amenities": "Amenities",
+  "openingHours": "Opening Hours",
+  "contactInfo": "Contact",
+  "directions": "Directions",
+  "visitWebsite": "Visit Website",
+  "nextMeetups": "Next meetups",
+  "upcomingEventsCount": "{count} upcoming events",
+  "@upcomingEventsCount": {
+    "description": "Number of upcoming events",
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "viewAllMeetups": "View all meetups",
+  "pleaseLoginToCreateMeetup": "Please login to create a meetup",
+  "loginRequired": "Login Required"
 }

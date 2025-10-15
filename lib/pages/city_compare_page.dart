@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
-import '../generated/app_localizations.dart';
 import '../routes/app_routes.dart';
 import '../widgets/app_toast.dart';
 
@@ -66,7 +65,6 @@ class _CityComparePageState extends State<CityComparePage> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
 

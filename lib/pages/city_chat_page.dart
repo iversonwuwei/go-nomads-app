@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/chat_controller.dart';
-import '../generated/app_localizations.dart';
 import '../models/chat_model.dart';
 import '../models/user_model.dart' as models;
 import '../widgets/app_toast.dart';
@@ -15,7 +14,6 @@ class CityChatPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final controller = Get.put(ChatController());
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;

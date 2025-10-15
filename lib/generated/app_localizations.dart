@@ -1505,7 +1505,7 @@ abstract class AppLocalizations {
   /// No description provided for @directions.
   ///
   /// In zh, this message translates to:
-  /// **'导航'**
+  /// **'路线导航'**
   String get directions;
 
   /// No description provided for @callNow.
@@ -4211,7 +4211,7 @@ abstract class AppLocalizations {
   /// No description provided for @freeTrialAvailable.
   ///
   /// In zh, this message translates to:
-  /// **'可免费试用 {duration} 天'**
+  /// **'可享受{duration}免费试用'**
   String freeTrialAvailable(Object duration);
 
   /// No description provided for @monthlyRate.
@@ -5684,6 +5684,12 @@ abstract class AppLocalizations {
   /// **'显示 {count} 个结果'**
   String showResults(int count);
 
+  /// No description provided for @showCities.
+  ///
+  /// In zh, this message translates to:
+  /// **'显示 {count} 个城市'**
+  String showCities(int count);
+
   /// No description provided for @noResultsFound.
   ///
   /// In zh, this message translates to:
@@ -5695,6 +5701,138 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'尝试调整筛选条件'**
   String get adjustFilters;
+
+  /// No description provided for @aqiGood.
+  ///
+  /// In zh, this message translates to:
+  /// **'优'**
+  String get aqiGood;
+
+  /// No description provided for @aqiModerate.
+  ///
+  /// In zh, this message translates to:
+  /// **'良'**
+  String get aqiModerate;
+
+  /// No description provided for @aqiUnhealthyForSensitive.
+  ///
+  /// In zh, this message translates to:
+  /// **'轻度污染'**
+  String get aqiUnhealthyForSensitive;
+
+  /// No description provided for @aqiUnhealthy.
+  ///
+  /// In zh, this message translates to:
+  /// **'中度污染'**
+  String get aqiUnhealthy;
+
+  /// No description provided for @aqiVeryUnhealthy.
+  ///
+  /// In zh, this message translates to:
+  /// **'重度污染'**
+  String get aqiVeryUnhealthy;
+
+  /// No description provided for @aqiHazardous.
+  ///
+  /// In zh, this message translates to:
+  /// **'严重污染'**
+  String get aqiHazardous;
+
+  /// No description provided for @pricing.
+  ///
+  /// In zh, this message translates to:
+  /// **'价格'**
+  String get pricing;
+
+  /// No description provided for @hourly.
+  ///
+  /// In zh, this message translates to:
+  /// **'每小时'**
+  String get hourly;
+
+  /// No description provided for @daily.
+  ///
+  /// In zh, this message translates to:
+  /// **'每日'**
+  String get daily;
+
+  /// No description provided for @weekly.
+  ///
+  /// In zh, this message translates to:
+  /// **'每周'**
+  String get weekly;
+
+  /// No description provided for @monthly.
+  ///
+  /// In zh, this message translates to:
+  /// **'每月'**
+  String get monthly;
+
+  /// No description provided for @specifications.
+  ///
+  /// In zh, this message translates to:
+  /// **'规格参数'**
+  String get specifications;
+
+  /// No description provided for @wifiSpeed.
+  ///
+  /// In zh, this message translates to:
+  /// **'WiFi 速度'**
+  String get wifiSpeed;
+
+  /// No description provided for @capacity.
+  ///
+  /// In zh, this message translates to:
+  /// **'容量'**
+  String get capacity;
+
+  /// No description provided for @people.
+  ///
+  /// In zh, this message translates to:
+  /// **'人'**
+  String get people;
+
+  /// No description provided for @desks.
+  ///
+  /// In zh, this message translates to:
+  /// **'工位'**
+  String get desks;
+
+  /// No description provided for @noiseLevel.
+  ///
+  /// In zh, this message translates to:
+  /// **'噪音水平'**
+  String get noiseLevel;
+
+  /// No description provided for @contactInfo.
+  ///
+  /// In zh, this message translates to:
+  /// **'联系方式'**
+  String get contactInfo;
+
+  /// No description provided for @nextMeetups.
+  ///
+  /// In zh, this message translates to:
+  /// **'即将举行的聚会'**
+  String get nextMeetups;
+
+  /// No description provided for @upcomingEventsCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 个即将举行的活动'**
+  String upcomingEventsCount(Object count);
+
+  /// No description provided for @viewAllMeetups.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看所有聚会'**
+  String get viewAllMeetups;
+
+  /// No description provided for @pleaseLoginToCreateMeetup.
+  ///
+  /// In zh, this message translates to:
+  /// **'请登录以创建聚会'**
+  String get pleaseLoginToCreateMeetup;
 }
 
 class _AppLocalizationsDelegate

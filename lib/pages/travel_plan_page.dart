@@ -82,7 +82,6 @@ class _TravelPlanPageState extends State<TravelPlanPage>
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     if (_isLoading) {
       return _buildLoadingSkeleton();
     }
@@ -318,7 +317,6 @@ class _TravelPlanPageState extends State<TravelPlanPage>
   }
 
   Widget _buildPlanContent(TravelPlan plan) {
-    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: CustomScrollView(

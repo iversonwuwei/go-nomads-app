@@ -25,9 +25,9 @@ void main() async {
   print('💾 初始化 SQLite 数据库...');
   try {
     final dbInitializer = DatabaseInitializer();
-    // 数据库表结构已更新,现在可以正常使用
-    // 如需重置数据,请临时设置 forceReset: true
-    await dbInitializer.initializeDatabase(forceReset: false);
+    // 强制重新生成数据（包含8个原始城市 + 50个中国城市）
+    // 完成后请改回 forceReset: false
+    await dbInitializer.initializeDatabase(forceReset: true);
     print('✅ 数据库初始化成功');
   } catch (e) {
     print('❌ 数据库初始化失败: $e');

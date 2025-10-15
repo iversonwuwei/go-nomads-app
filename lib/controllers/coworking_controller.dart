@@ -366,6 +366,75 @@ class CoworkingController extends GetxController {
     filteredSpaces.value = coworkingSpaces;
   }
 
+  /// 按城市ID加载共享办公空间
+  Future<void> loadCoworkingsByCity(int cityId, {String? cityName}) async {
+    try {
+      isLoading.value = true;
+      print('🏢 Loading coworkings for city ID: $cityId');
+
+      final coworkings = await _coworkingService.getCoworkingsByCity(cityId);
+      print('🏢 Found ${coworkings.length} coworkings');
+
+      // 转换数据库数据为 CoworkingSpace 模型
+      coworkingSpaces.value = coworkings.map((data) {
+        return CoworkingSpace(
+          id: data['id'].toString(),
+          name: data['name'] ?? '',
+          address: data['address'] ?? '',
+          city: cityName ?? _getCityNameById(data['city_id']),
+          country: data['country'] ?? 'Thailand', // 使用数据库中的国家或默认值
+          latitude: (data['latitude'] as num?)?.toDouble() ?? 0.0,
+          longitude: (data['longitude'] as num?)?.toDouble() ?? 0.0,
+          imageUrl: data['image_url'] ?? '',
+          images: [data['image_url'] ?? ''],
+          rating: (data['rating'] as num?)?.toDouble() ?? 4.0,
+          reviewCount: 0,
+          description: data['description'] ?? '',
+          pricing: CoworkingPricing(
+            dailyRate: (data['price_per_day'] as num?)?.toDouble(),
+            monthlyRate: (data['price_per_month'] as num?)?.toDouble(),
+            currency: 'USD',
+            hasFreeTrial: false,
+          ),
+          amenities: CoworkingAmenities(
+            hasWifi: ((data['wifi_speed'] as num?)?.toDouble() ?? 0) > 0,
+            hasCoffee: (data['has_coffee'] as int?) == 1,
+            hasPrinter: true,
+            hasMeetingRoom: (data['has_meeting_room'] as int?) == 1,
+            hasAirConditioning: true,
+          ),
+          specs: CoworkingSpecs(
+            wifiSpeed: (data['wifi_speed'] as num?)?.toDouble() ?? 0.0,
+            numberOfDesks: 50,
+            numberOfMeetingRooms:
+                (data['has_meeting_room'] as int?) == 1 ? 2 : 0,
+            capacity: 50,
+            noiseLevel: 'moderate',
+            hasNaturalLight: true,
+            spaceType: 'mixed',
+          ),
+          openingHours: [
+            data['opening_hours'] ?? 'Mon-Fri: 9:00 AM - 6:00 PM',
+          ],
+          phone: data['phone'] ?? '',
+          email: data['email'] ?? '',
+          website: data['website'] ?? '',
+          isVerified: true,
+          lastUpdated: DateTime.now(),
+        );
+      }).toList();
+
+      filteredSpaces.value = coworkingSpaces;
+      print('🏢 Loaded ${coworkingSpaces.length} coworking spaces');
+    } catch (e) {
+      print('❌ Error loading coworkings by city: $e');
+      coworkingSpaces.value = [];
+      filteredSpaces.value = [];
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   /// 按城市筛选
   void filterByCity(String city) {
     selectedCity.value = city;

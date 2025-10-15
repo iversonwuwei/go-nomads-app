@@ -2085,7 +2085,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String freeTrialAvailable(Object duration) {
-    return 'Free $duration-day trial available';
+    return 'Free $duration trial available';
   }
 
   @override
@@ -2861,8 +2861,87 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String showCities(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'cities',
+      one: 'city',
+    );
+    return 'Show $count $_temp0';
+  }
+
+  @override
   String get noResultsFound => 'No results found';
 
   @override
   String get adjustFilters => 'Try adjusting your filters';
+
+  @override
+  String get aqiGood => 'Good';
+
+  @override
+  String get aqiModerate => 'Moderate';
+
+  @override
+  String get aqiUnhealthyForSensitive => 'Unhealthy for Sensitive';
+
+  @override
+  String get aqiUnhealthy => 'Unhealthy';
+
+  @override
+  String get aqiVeryUnhealthy => 'Very Unhealthy';
+
+  @override
+  String get aqiHazardous => 'Hazardous';
+
+  @override
+  String get pricing => 'Pricing';
+
+  @override
+  String get hourly => 'Hourly';
+
+  @override
+  String get daily => 'Daily';
+
+  @override
+  String get weekly => 'Weekly';
+
+  @override
+  String get monthly => 'Monthly';
+
+  @override
+  String get specifications => 'Specifications';
+
+  @override
+  String get wifiSpeed => 'WiFi Speed';
+
+  @override
+  String get capacity => 'Capacity';
+
+  @override
+  String get people => 'people';
+
+  @override
+  String get desks => 'Desks';
+
+  @override
+  String get noiseLevel => 'Noise Level';
+
+  @override
+  String get contactInfo => 'Contact';
+
+  @override
+  String get nextMeetups => 'Next meetups';
+
+  @override
+  String upcomingEventsCount(Object count) {
+    return '$count upcoming events';
+  }
+
+  @override
+  String get viewAllMeetups => 'View all meetups';
+
+  @override
+  String get pleaseLoginToCreateMeetup => 'Please login to create a meetup';
 }

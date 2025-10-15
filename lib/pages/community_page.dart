@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../controllers/community_controller.dart';
-import '../generated/app_localizations.dart';
 import '../models/community_model.dart';
 import '../widgets/skeletons/skeletons.dart';
 
@@ -11,7 +10,6 @@ class CommunityPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final controller = Get.put(CommunityController());
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;

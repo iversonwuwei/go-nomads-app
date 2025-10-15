@@ -102,7 +102,7 @@ class CoworkingDetailPage extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              ' (${space.reviewCount} reviews)',
+                              ' (${space.reviewCount} ${l10n.reviews})',
                               style: TextStyle(
                                 color: Colors.grey[600],
                                 fontSize: 14,
@@ -125,15 +125,15 @@ class CoworkingDetailPage extends StatelessWidget {
                             color: Colors.blue[50],
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.verified,
+                              const Icon(Icons.verified,
                                   size: 18, color: Colors.blue),
-                              SizedBox(width: 4),
+                              const SizedBox(width: 4),
                               Text(
-                                'Verified',
-                                style: TextStyle(
+                                l10n.verified,
+                                style: const TextStyle(
                                   color: Colors.blue,
                                   fontWeight: FontWeight.w600,
                                   fontSize: 14,
@@ -163,9 +163,9 @@ class CoworkingDetailPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'About',
-                        style: TextStyle(
+                      Text(
+                        l10n.about,
+                        style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
@@ -186,22 +186,23 @@ class CoworkingDetailPage extends StatelessWidget {
                 const Divider(),
 
                 // Pricing
-                _buildPricingSection(),
+                _buildPricingSection(context),
 
                 const Divider(),
 
                 // Specs
-                _buildSpecsSection(),
+                _buildSpecsSection(context),
 
                 const Divider(),
 
                 // Amenities
-                _buildAmenitiesSection(),
+                _buildAmenitiesSection(context),
 
                 const Divider(),
 
                 // Opening Hours
-                if (space.openingHours.isNotEmpty) _buildOpeningHoursSection(),
+                if (space.openingHours.isNotEmpty)
+                  _buildOpeningHoursSection(context),
 
                 if (space.openingHours.isNotEmpty) const Divider(),
 
@@ -233,7 +234,7 @@ class CoworkingDetailPage extends StatelessWidget {
             Expanded(
               child: OutlinedButton.icon(
                 icon: const Icon(Icons.directions),
-                label: const Text('Directions'),
+                label: Text(l10n.directions),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
@@ -246,7 +247,7 @@ class CoworkingDetailPage extends StatelessWidget {
             Expanded(
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.language),
-                label: const Text('Visit Website'),
+                label: Text(l10n.visitWebsite),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
@@ -262,15 +263,16 @@ class CoworkingDetailPage extends StatelessWidget {
   }
 
   /// 价格区域
-  Widget _buildPricingSection() {
+  Widget _buildPricingSection(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Pricing',
-            style: TextStyle(
+          Text(
+            l10n.pricing,
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -281,7 +283,7 @@ class CoworkingDetailPage extends StatelessWidget {
               if (space.pricing.hourlyRate != null)
                 Expanded(
                   child: _buildPriceCard(
-                    'Hourly',
+                    l10n.hourly,
                     space.pricing.hourlyRate!,
                     space.pricing.currency,
                     Icons.access_time,
@@ -291,7 +293,7 @@ class CoworkingDetailPage extends StatelessWidget {
                 if (space.pricing.hourlyRate != null) const SizedBox(width: 8),
                 Expanded(
                   child: _buildPriceCard(
-                    'Daily',
+                    l10n.daily,
                     space.pricing.dailyRate!,
                     space.pricing.currency,
                     Icons.today,
@@ -306,7 +308,7 @@ class CoworkingDetailPage extends StatelessWidget {
               if (space.pricing.weeklyRate != null)
                 Expanded(
                   child: _buildPriceCard(
-                    'Weekly',
+                    l10n.weekly,
                     space.pricing.weeklyRate!,
                     space.pricing.currency,
                     Icons.date_range,
@@ -316,7 +318,7 @@ class CoworkingDetailPage extends StatelessWidget {
                 if (space.pricing.weeklyRate != null) const SizedBox(width: 8),
                 Expanded(
                   child: _buildPriceCard(
-                    'Monthly',
+                    l10n.monthly,
                     space.pricing.monthlyRate!,
                     space.pricing.currency,
                     Icons.calendar_month,
@@ -341,7 +343,8 @@ class CoworkingDetailPage extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Free ${space.pricing.trialDuration} trial available',
+                      l10n.freeTrialAvailable(
+                          space.pricing.trialDuration ?? ''),
                       style: TextStyle(
                         color: Colors.green[700],
                         fontWeight: FontWeight.w600,
@@ -391,15 +394,16 @@ class CoworkingDetailPage extends StatelessWidget {
   }
 
   /// 规格区域
-  Widget _buildSpecsSection() {
+  Widget _buildSpecsSection(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Specifications',
-            style: TextStyle(
+          Text(
+            l10n.specifications,
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -409,7 +413,7 @@ class CoworkingDetailPage extends StatelessWidget {
             children: [
               Expanded(
                 child: _buildSpecCard(
-                  'WiFi Speed',
+                  l10n.wifiSpeed,
                   '${space.specs.wifiSpeed?.toStringAsFixed(0) ?? 'N/A'} Mbps',
                   Icons.wifi,
                   Colors.blue,
@@ -418,8 +422,8 @@ class CoworkingDetailPage extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: _buildSpecCard(
-                  'Capacity',
-                  '${space.specs.capacity ?? 'N/A'} people',
+                  l10n.capacity,
+                  '${space.specs.capacity ?? 'N/A'} ${l10n.people}',
                   Icons.people,
                   Colors.green,
                 ),
@@ -432,7 +436,7 @@ class CoworkingDetailPage extends StatelessWidget {
               if (space.specs.numberOfDesks != null)
                 Expanded(
                   child: _buildSpecCard(
-                    'Desks',
+                    l10n.desks,
                     '${space.specs.numberOfDesks}',
                     Icons.desk,
                     Colors.orange,
@@ -442,7 +446,7 @@ class CoworkingDetailPage extends StatelessWidget {
                 if (space.specs.numberOfDesks != null) const SizedBox(width: 8),
                 Expanded(
                   child: _buildSpecCard(
-                    'Meeting Rooms',
+                    l10n.meetingRooms,
                     '${space.specs.numberOfMeetingRooms}',
                     Icons.meeting_room,
                     Colors.purple,
@@ -454,7 +458,7 @@ class CoworkingDetailPage extends StatelessWidget {
           if (space.specs.noiseLevel != null) ...[
             const SizedBox(height: 8),
             _buildSpecCard(
-              'Noise Level',
+              l10n.noiseLevel,
               space.specs.noiseLevel!,
               Icons.volume_down,
               Colors.red,
@@ -505,7 +509,8 @@ class CoworkingDetailPage extends StatelessWidget {
   }
 
   /// 设施区域
-  Widget _buildAmenitiesSection() {
+  Widget _buildAmenitiesSection(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final amenities = space.amenities.getAvailableAmenities();
 
     return Padding(
@@ -513,9 +518,9 @@ class CoworkingDetailPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Amenities',
-            style: TextStyle(
+          Text(
+            l10n.amenities,
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -575,15 +580,16 @@ class CoworkingDetailPage extends StatelessWidget {
   }
 
   /// 营业时间区域
-  Widget _buildOpeningHoursSection() {
+  Widget _buildOpeningHoursSection(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Opening Hours',
-            style: TextStyle(
+          Text(
+            l10n.openingHours,
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -609,14 +615,15 @@ class CoworkingDetailPage extends StatelessWidget {
 
   /// 联系方式区域
   Widget _buildContactSection(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Contact',
-            style: TextStyle(
+          Text(
+            l10n.contactInfo,
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),

@@ -127,7 +127,6 @@ class ProfilePage extends StatelessWidget {
   // Profile Header
   Widget _buildProfileHeader(
       BuildContext context, UserModel user, bool isMobile) {
-    final l10n = AppLocalizations.of(context)!;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -257,7 +256,6 @@ class ProfilePage extends StatelessWidget {
   // Stats Section
   Widget _buildStatsSection(
       BuildContext context, TravelStats stats, bool isMobile) {
-    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

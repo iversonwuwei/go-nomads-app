@@ -5,7 +5,6 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../config/app_colors.dart';
-import '../generated/app_localizations.dart';
 import '../models/coworking_space_model.dart';
 import '../widgets/app_toast.dart';
 import 'amap_native_picker_page.dart';
@@ -120,7 +119,6 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,

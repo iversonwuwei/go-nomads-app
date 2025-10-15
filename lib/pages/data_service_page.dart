@@ -302,12 +302,17 @@ class _DataServicePageState extends State<DataServicePage> {
 
           // Meetups
           Expanded(
-            child: _buildCompactCard(
-              isMobile: isMobile,
-              icon: Icons.groups_rounded,
-              title: 'Meetups',
-              color: const Color(0xFF10B981),
-              onTap: () => Get.toNamed('/meetups-list'),
+            child: Builder(
+              builder: (context) {
+                final l10n = AppLocalizations.of(context)!;
+                return _buildCompactCard(
+                  isMobile: isMobile,
+                  icon: Icons.groups_rounded,
+                  title: l10n.meetups,
+                  color: const Color(0xFF10B981),
+                  onTap: () => Get.toNamed('/meetups-list'),
+                );
+              },
             ),
           ),
         ],
@@ -744,105 +749,104 @@ class _DataServicePageState extends State<DataServicePage> {
         return _buildEmptyMeetupsState(isMobile);
       }
 
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 标题
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      return Builder(
+        builder: (context) {
+          final l10n = AppLocalizations.of(context)!;
+          
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Next meetups',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${upcomingMeetups.length} upcoming events',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
+              // 标题
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Create Meetup 按钮
-                  Obx(() => ElevatedButton.icon(
-                        onPressed: controller.isLoggedIn.value
-                            ? () => Get.toNamed('/create-meetup')
-                            : () {
-                                AppToast.warning(
-                                  'Please login to create a meetup',
-                                  title: 'Login Required',
-                                );
-                              },
-                        icon: const Icon(Icons.add, size: 18),
-                        label: Builder(
-                          builder: (context) {
-                            final l10n = AppLocalizations.of(context)!;
-                            return Text(
-                                isMobile ? l10n.create : l10n.createMeetup);
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.nextMeetups,
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        l10n.upcomingEventsCount(upcomingMeetups.length),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      // Create Meetup 按钮
+                      Obx(() => ElevatedButton.icon(
+                            onPressed: controller.isLoggedIn.value
+                                ? () => Get.toNamed('/create-meetup')
+                                : () {
+                                    AppToast.warning(
+                                      l10n.pleaseLoginToCreateMeetup,
+                                      title: l10n.loginRequired,
+                                    );
+                                  },
+                            icon: const Icon(Icons.add, size: 18),
+                            label: Text(
+                                isMobile ? l10n.create : l10n.createMeetup),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFFF4458),
+                              foregroundColor: Colors.white,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: isMobile ? 12 : 16,
+                                vertical: isMobile ? 8 : 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          )),
+                      if (!isMobile) const SizedBox(width: 12),
+                      if (!isMobile)
+                        OutlinedButton.icon(
+                          onPressed: () {
+                            Get.toNamed('/meetups-list');
                           },
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFFF4458),
-                          foregroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: isMobile ? 12 : 16,
-                            vertical: isMobile ? 8 : 12,
+                          icon: const Icon(
+                            Icons.arrow_forward,
+                            size: 20,
+                            color: Color(0xFFFF4458),
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                          label: Text(
+                            l10n.viewAllMeetups,
+                            style: const TextStyle(
+                              color: Color(0xFFFF4458),
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                            side: const BorderSide(
+                              color: Color(0xFFFF4458),
+                              width: 1.5,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
                         ),
-                      )),
-                  if (!isMobile) const SizedBox(width: 12),
-                  if (!isMobile)
-                    OutlinedButton.icon(
-                      onPressed: () {
-                        Get.toNamed('/meetups-list');
-                      },
-                      icon: const Icon(
-                        Icons.arrow_forward,
-                        size: 20,
-                        color: Color(0xFFFF4458),
-                      ),
-                      label: const Text(
-                        'View all meetups',
-                        style: TextStyle(
-                          color: Color(0xFFFF4458),
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                        side: const BorderSide(
-                          color: Color(0xFFFF4458),
-                          width: 1.5,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    ),
+                    ],
+                  ),
                 ],
               ),
-            ],
-          ),
 
-          const SizedBox(height: 24),
+              const SizedBox(height: 24),
 
           // Meetups 列表（横向滚动）
           SizedBox(
@@ -864,41 +868,48 @@ class _DataServicePageState extends State<DataServicePage> {
           // 移动端的 View all 按钮
           if (isMobile) ...[
             const SizedBox(height: 16),
-            Center(
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  Get.toNamed('/meetups-list');
-                },
-                icon: const Icon(
-                  Icons.arrow_forward,
-                  size: 20,
-                  color: Color(0xFFFF4458),
-                ),
-                label: const Text(
-                  'View all meetups',
-                  style: TextStyle(
-                    color: Color(0xFFFF4458),
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                  ),
-                ),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                  side: const BorderSide(
-                    color: Color(0xFFFF4458),
-                    width: 1.5,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
+                Builder(
+                  builder: (context) {
+                    final l10n = AppLocalizations.of(context)!;
+                    return Center(
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          Get.toNamed('/meetups-list');
+                        },
+                        icon: const Icon(
+                          Icons.arrow_forward,
+                          size: 20,
+                          color: Color(0xFFFF4458),
+                        ),
+                        label: Text(
+                          l10n.viewAllMeetups,
+                          style: const TextStyle(
+                            color: Color(0xFFFF4458),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                          side: const BorderSide(
+                            color: Color(0xFFFF4458),
+                            width: 1.5,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
             ),
           ],
         ],
+      );
+        },
       );
     });
   }

@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/analytics_controller.dart';
-import '../generated/app_localizations.dart';
 import '../widgets/copyright_widget.dart';
 
 class AnalyticsToolPage extends StatelessWidget {
@@ -11,7 +10,6 @@ class AnalyticsToolPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final AnalyticsController controller = Get.put(AnalyticsController());
 
     return Scaffold(

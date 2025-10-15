@@ -9,7 +9,7 @@ import '../generated/app_localizations.dart';
 /// Coworking List Page
 /// 共享办公空间列表页面
 class CoworkingListPage extends StatefulWidget {
-  final String cityId;
+  final int cityId;
   final String cityName;
 
   const CoworkingListPage({
@@ -24,12 +24,19 @@ class CoworkingListPage extends StatefulWidget {
 
 class _CoworkingListPageState extends State<CoworkingListPage> {
   bool _isGridView = true;
+  late final CoworkingController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.put(CoworkingController());
+    // 按城市ID加载数据，并传递城市名称
+    controller.loadCoworkingsByCity(widget.cityId, cityName: widget.cityName);
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final controller = Get.put(CoworkingController());
-    controller.filterByCity(widget.cityName);
 
     return Scaffold(
       appBar: AppBar(

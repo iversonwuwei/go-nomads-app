@@ -1,3 +1,4 @@
+import 'china_cities_generator.dart';
 import 'database/city_dao.dart';
 import 'database/meetup_dao.dart';
 import 'database/user_dao.dart';
@@ -10,6 +11,7 @@ class DatabaseInitializer {
   final UserDao _userDao = UserDao();
   final CityDao _cityDao = CityDao();
   final MeetupDao _meetupDao = MeetupDao();
+  final ChinaCitiesGenerator _chinaGenerator = ChinaCitiesGenerator();
 
   /// 初始化数据库并插入示例数据
   Future<void> initializeDatabase({bool forceReset = false}) async {
@@ -36,6 +38,9 @@ class DatabaseInitializer {
 
     // 插入示例城市（严格按照 DataServiceController 格式）
     await _insertCitiesFromController();
+    
+    // 生成中国50个城市及其共享办公空间
+    await _chinaGenerator.generateChineseCities();
 
     // 插入示例活动（严格按照 DataServiceController 格式）
     await _insertMeetupsFromController();

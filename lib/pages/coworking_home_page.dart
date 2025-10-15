@@ -46,7 +46,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
         // 只添加有coworking空间的城市
         if (coworkings.isNotEmpty) {
           citiesWithCount.add({
-            'id': city['id'].toString(),
+            'id': city['id'], // 保持为整数
             'name': city['name'],
             'country': city['country'],
             'image': city['image_url'],
@@ -271,7 +271,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
 
             // Info
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(4),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -284,7 +284,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Row(
                     children: [
                       Icon(
