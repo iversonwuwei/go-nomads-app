@@ -1960,7 +1960,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String day(int count) {
-    return '第';
+    return '$count 天';
   }
 
   @override
@@ -2729,6 +2729,11 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get bookingTips => '预订建议';
+
+  @override
+  String dayNumber(int number) {
+    return '第 $number 天';
+  }
 
   @override
   String get asyncWithMap => '地图异步功能即将推出!';

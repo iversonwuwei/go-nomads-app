@@ -1211,7 +1211,14 @@
   "localTransport": "本地交通",
   "pricePerNight": "晚",
   "bookingTips": "预订建议",
-  "day": "第",
+  "dayNumber": "第 {number} 天",
+  "@dayNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
   "asyncWithMap": "地图异步功能即将推出!",
   "planSaved": "计划已保存到您的个人资料!",
   "sharingPlan": "正在分享您的旅行计划...",

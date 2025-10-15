@@ -1211,7 +1211,14 @@
   "localTransport": "Local Transport",
   "pricePerNight": "night",
   "bookingTips": "Booking Tips",
-  "day": "Day",
+  "dayNumber": "Day {number}",
+  "@dayNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
   "asyncWithMap": "Async with Map feature coming soon!",
   "planSaved": "Plan saved to your profile!",
   "sharingPlan": "Sharing your travel plan...",

@@ -3977,7 +3977,7 @@ abstract class AppLocalizations {
   /// No description provided for @day.
   ///
   /// In zh, this message translates to:
-  /// **'第'**
+  /// **'{count} 天'**
   String day(int count);
 
   /// No description provided for @budgetLevel.
@@ -5467,6 +5467,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'预订建议'**
   String get bookingTips;
+
+  /// No description provided for @dayNumber.
+  ///
+  /// In zh, this message translates to:
+  /// **'第 {number} 天'**
+  String dayNumber(int number);
 
   /// No description provided for @asyncWithMap.
   ///

@@ -1964,7 +1964,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String day(int count) {
-    return 'Day';
+    return '$count day';
   }
 
   @override
@@ -2744,6 +2744,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get bookingTips => 'Booking Tips';
+
+  @override
+  String dayNumber(int number) {
+    return 'Day $number';
+  }
 
   @override
   String get asyncWithMap => 'Async with Map feature coming soon!';

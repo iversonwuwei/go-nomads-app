@@ -970,7 +970,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      '${l10n.day} ${dayItinerary.day}',
+                      l10n.dayNumber(dayItinerary.day),
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
