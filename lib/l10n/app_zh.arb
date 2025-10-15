@@ -710,6 +710,7 @@
   "submitting": "提交中...",
   "pleaseEnterCost": "请至少输入一项费用",
   "costShared": "您的费用信息已成功分享!",
+  "additionalCostInfo": "添加关于您生活费用的其他信息...",
   "aiTravelPlanner": "AI旅行规划师",
   "planYourTrip": "规划您的旅行到 {cityName}",
   "@planYourTrip": {
@@ -1219,9 +1220,61 @@
       }
     }
   },
-  "asyncWithMap": "地图异步功能即将推出!",
-  "planSaved": "计划已保存到您的个人资料!",
+    "asyncWithMap": "地图功能即将推出！",
+  "planSaved": "计划已保存到您的个人资料！",
   "sharingPlan": "正在分享您的旅行计划...",
   "info": "信息",
-  "download": "下载"
+  "download": "下载",
+  "currencyUSD": "美元",
+  "currencyEUR": "欧元",
+  "currencyGBP": "英镑",
+  "currencyJPY": "日元",
+  "currencyCNY": "人民币",
+  "currencyTHB": "泰铢",
+  "currencySGD": "新加坡元",
+  "currencyAUD": "澳元",
+  "currencyCAD": "加元",
+  "currencyINR": "印度卢比",
+  "currencyKRW": "韩元",
+  "currencyMYR": "马来西亚林吉特",
+  "currencyVND": "越南盾",
+  "currencyIDR": "印尼盾",
+  "currencyPHP": "菲律宾比索",
+  "goNomad": "成为数字游民",
+  "joinGlobalCommunity": "加入全球远程工作者社区",
+  "livingTravelingWorld": "在世界各地生活和旅行",
+  "attendMeetupsInCities": "在100多个城市参加363场聚会/年",
+  "meetNewPeople": "结识新朋友，寻找约会对象",
+  "researchDestinations": "研究目的地，找到最适合生活和工作的地方",
+  "keepTrackTravels": "记录您的旅行轨迹，记住去过的地方",
+  "joinCommunityChat": "加入社区聊天，在旅途中找到您的社区",
+  "popular": "热门",
+  "viewAllCities": "查看所有城市",
+  "perMonth": "每月",
+  "filters": "筛选",
+  "reset": "重置",
+  "monthlyCost": "每月费用",
+  "minimumInternetSpeed": "最低网速",
+  "minimumOverallRating": "最低综合评分",
+  "climate": "气候",
+  "maximumAirQualityIndex": "最高空气质量指数",
+  "good": "良好",
+  "moderate": "中等",
+  "unhealthyForSensitive": "对敏感人群不健康",
+  "unhealthy": "不健康",
+  "veryUnhealthy": "非常不健康",
+  "hazardous": "有害",
+  "applyFilters": "应用筛选",
+  "showResults": "显示 {count} 个结果",
+  "@showResults": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sortBy": "排序方式",
+  "noResultsFound": "未找到结果",
+  "adjustFilters": "尝试调整筛选条件"
 }
+

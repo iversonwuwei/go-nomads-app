@@ -69,6 +69,7 @@ class _DataServicePageState extends State<DataServicePage> {
   Widget build(BuildContext context) {
     // 使用 Get.find() 获取已经初始化的 Controller，而不是创建新实例
     final DataServiceController controller = Get.find<DataServiceController>();
+    final l10n = AppLocalizations.of(context)!;
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
 
@@ -89,7 +90,7 @@ class _DataServicePageState extends State<DataServicePage> {
           slivers: [
             // Hero区域 - Nomads.com风格
             SliverToBoxAdapter(
-              child: _buildHeroSection(isMobile),
+              child: _buildHeroSection(isMobile, l10n),
             ),
 
             // 搜索和筛选栏
@@ -113,7 +114,7 @@ class _DataServicePageState extends State<DataServicePage> {
               ),
             ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 20)),
+            const SliverToBoxAdapter(child: SizedBox(height: 8)),
 
             // 城市列表锚点 (用于滚动定位)
             SliverToBoxAdapter(
@@ -172,7 +173,7 @@ class _DataServicePageState extends State<DataServicePage> {
   }
 
   // Hero区域 - 完全复刻Nomads.com
-  Widget _buildHeroSection(bool isMobile) {
+  Widget _buildHeroSection(bool isMobile, AppLocalizations l10n) {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
@@ -215,7 +216,7 @@ class _DataServicePageState extends State<DataServicePage> {
                       ),
                       const SizedBox(width: 16),
                       Text(
-                        'Go nomad',
+                        l10n.goNomad,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: isMobile ? 32 : 42,
@@ -230,7 +231,7 @@ class _DataServicePageState extends State<DataServicePage> {
 
                   // 副标题
                   Text(
-                    'Join a global community of remote workers',
+                    l10n.joinGlobalCommunity,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
@@ -241,7 +242,7 @@ class _DataServicePageState extends State<DataServicePage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'living and traveling around the world',
+                    l10n.livingTravelingWorld,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
@@ -382,27 +383,27 @@ class _DataServicePageState extends State<DataServicePage> {
 
   // 底部特性亮点列表
   Widget _buildFeatureHighlights(bool isMobile) {
+    final l10n = AppLocalizations.of(context)!;
     final features = [
       {
         'icon': '🏆',
-        'text': 'Attend 363 meetups/year in 100+ cities',
+        'text': l10n.attendMeetupsInCities,
       },
       {
         'icon': '❤️',
-        'text': 'Meet new people for dating and friends',
+        'text': l10n.meetNewPeople,
       },
       {
         'icon': '📊',
-        'text':
-            'Research destinations and find your best place to live and work',
+        'text': l10n.researchDestinations,
       },
       {
         'icon': '🌍',
-        'text': 'Keep track of your travels and record where you\'ve been',
+        'text': l10n.keepTrackTravels,
       },
       {
         'icon': '💬',
-        'text': 'Join community chat and find your community on the road',
+        'text': l10n.joinCommunityChat,
       },
     ];
 
@@ -445,12 +446,13 @@ class _DataServicePageState extends State<DataServicePage> {
 
   // 工具栏 - 视图切换和排序
   Widget _buildToolbar(DataServiceController controller) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text(
-          'Popular',
-          style: TextStyle(
+        Text(
+          l10n.popular,
+          style: const TextStyle(
             color: AppColors.textPrimary,
             fontSize: 14,
             fontWeight: FontWeight.w500,
@@ -607,6 +609,7 @@ class _DataServicePageState extends State<DataServicePage> {
 
   // 数据网格 Sliver
   Widget _buildDataGridSliver(DataServiceController controller, bool isMobile) {
+    final l10n = AppLocalizations.of(context)!;
     return Obx(() {
       final items = controller.filteredItems;
       final isGrid = controller.isGridView.value;
@@ -654,9 +657,9 @@ class _DataServicePageState extends State<DataServicePage> {
                     size: 20,
                     color: Color(0xFFFF4458),
                   ),
-                  label: const Text(
-                    'View All Cities',
-                    style: TextStyle(
+                  label: Text(
+                    l10n.viewAllCities,
+                    style: const TextStyle(
                       color: Color(0xFFFF4458),
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
@@ -701,9 +704,9 @@ class _DataServicePageState extends State<DataServicePage> {
                     size: 20,
                     color: Color(0xFFFF4458),
                   ),
-                  label: const Text(
-                    'View All Cities',
-                    style: TextStyle(
+                  label: Text(
+                    l10n.viewAllCities,
+                    style: const TextStyle(
                       color: Color(0xFFFF4458),
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
@@ -1518,6 +1521,7 @@ class _DataListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: () {
         // 单击跳转到城市详情页面
@@ -1595,9 +1599,9 @@ class _DataListItem extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const Text(
-                  'per month',
-                  style: TextStyle(
+                Text(
+                  l10n.perMonth,
+                  style: const TextStyle(
                     color: AppColors.textTertiary,
                     fontSize: 10,
                   ),
@@ -1619,6 +1623,7 @@ class _FilterDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Container(
@@ -1640,9 +1645,9 @@ class _FilterDrawer extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Filters',
-                  style: TextStyle(
+                Text(
+                  l10n.filters,
+                  style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
@@ -1654,9 +1659,9 @@ class _FilterDrawer extends StatelessWidget {
                       onPressed: () {
                         controller.resetFilters();
                       },
-                      child: const Text(
-                        'Reset',
-                        style: TextStyle(
+                      child: Text(
+                        l10n.reset,
+                        style: const TextStyle(
                           color: Color(0xFFFF4458),
                           fontWeight: FontWeight.w600,
                         ),
@@ -1680,7 +1685,7 @@ class _FilterDrawer extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 地区筛选
-                  _buildSectionTitle('Region'),
+                  _buildSectionTitle(l10n.region),
                   const SizedBox(height: 12),
                   Obx(() => Wrap(
                         spacing: 8,
@@ -1721,7 +1726,7 @@ class _FilterDrawer extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // 价格筛选
-                  _buildSectionTitle('Monthly Cost'),
+                  _buildSectionTitle(l10n.monthlyCost),
                   const SizedBox(height: 12),
                   Obx(() => Column(
                         children: [
@@ -1767,7 +1772,7 @@ class _FilterDrawer extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // 网速筛选
-                  _buildSectionTitle('Minimum Internet Speed'),
+                  _buildSectionTitle(l10n.minimumInternetSpeed),
                   const SizedBox(height: 12),
                   Obx(() => Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1797,7 +1802,7 @@ class _FilterDrawer extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // 评分筛选
-                  _buildSectionTitle('Minimum Overall Rating'),
+                  _buildSectionTitle(l10n.minimumOverallRating),
                   const SizedBox(height: 12),
                   Obx(() => Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1836,7 +1841,7 @@ class _FilterDrawer extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // 气候筛选
-                  _buildSectionTitle('Climate'),
+                  _buildSectionTitle(l10n.climate),
                   const SizedBox(height: 12),
                   Obx(() => Wrap(
                         spacing: 8,
@@ -1877,7 +1882,7 @@ class _FilterDrawer extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // AQI筛选
-                  _buildSectionTitle('Maximum Air Quality Index'),
+                  _buildSectionTitle(l10n.maximumAirQualityIndex),
                   const SizedBox(height: 12),
                   Obx(() => Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1894,7 +1899,7 @@ class _FilterDrawer extends StatelessWidget {
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                _getAQILabel(controller.maxAqi.value),
+                                _getAQILabel(controller.maxAqi.value, context),
                                 style: const TextStyle(
                                   fontSize: 13,
                                   color: AppColors.textSecondary,
@@ -1972,13 +1977,14 @@ class _FilterDrawer extends StatelessWidget {
     );
   }
 
-  String _getAQILabel(int aqi) {
-    if (aqi <= 50) return 'Good';
-    if (aqi <= 100) return 'Moderate';
-    if (aqi <= 150) return 'Unhealthy for Sensitive';
-    if (aqi <= 200) return 'Unhealthy';
-    if (aqi <= 300) return 'Very Unhealthy';
-    return 'Hazardous';
+  String _getAQILabel(int aqi, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    if (aqi <= 50) return l10n.good;
+    if (aqi <= 100) return l10n.moderate;
+    if (aqi <= 150) return l10n.unhealthyForSensitive;
+    if (aqi <= 200) return l10n.unhealthy;
+    if (aqi <= 300) return l10n.veryUnhealthy;
+    return l10n.hazardous;
   }
 }
 

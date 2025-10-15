@@ -25,23 +25,28 @@ class _AddCostPageState extends State<AddCostPage> {
 
   // Currency selection
   String _selectedCurrency = 'USD';
-  final List<Map<String, String>> _currencies = [
-    {'code': 'USD', 'symbol': '\$', 'name': 'US Dollar'},
-    {'code': 'EUR', 'symbol': '€', 'name': 'Euro'},
-    {'code': 'GBP', 'symbol': '£', 'name': 'British Pound'},
-    {'code': 'JPY', 'symbol': '¥', 'name': 'Japanese Yen'},
-    {'code': 'CNY', 'symbol': '¥', 'name': 'Chinese Yuan'},
-    {'code': 'THB', 'symbol': '฿', 'name': 'Thai Baht'},
-    {'code': 'SGD', 'symbol': 'S\$', 'name': 'Singapore Dollar'},
-    {'code': 'AUD', 'symbol': 'A\$', 'name': 'Australian Dollar'},
-    {'code': 'CAD', 'symbol': 'C\$', 'name': 'Canadian Dollar'},
-    {'code': 'INR', 'symbol': '₹', 'name': 'Indian Rupee'},
-    {'code': 'KRW', 'symbol': '₩', 'name': 'South Korean Won'},
-    {'code': 'MYR', 'symbol': 'RM', 'name': 'Malaysian Ringgit'},
-    {'code': 'VND', 'symbol': '₫', 'name': 'Vietnamese Dong'},
-    {'code': 'IDR', 'symbol': 'Rp', 'name': 'Indonesian Rupiah'},
-    {'code': 'PHP', 'symbol': '₱', 'name': 'Philippine Peso'},
-  ];
+  
+  // Get localized currency list
+  List<Map<String, String>> _getCurrencies(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      {'code': 'USD', 'symbol': '\$', 'name': l10n.currencyUSD},
+      {'code': 'EUR', 'symbol': '€', 'name': l10n.currencyEUR},
+      {'code': 'GBP', 'symbol': '£', 'name': l10n.currencyGBP},
+      {'code': 'JPY', 'symbol': '¥', 'name': l10n.currencyJPY},
+      {'code': 'CNY', 'symbol': '¥', 'name': l10n.currencyCNY},
+      {'code': 'THB', 'symbol': '฿', 'name': l10n.currencyTHB},
+      {'code': 'SGD', 'symbol': 'S\$', 'name': l10n.currencySGD},
+      {'code': 'AUD', 'symbol': 'A\$', 'name': l10n.currencyAUD},
+      {'code': 'CAD', 'symbol': 'C\$', 'name': l10n.currencyCAD},
+      {'code': 'INR', 'symbol': '₹', 'name': l10n.currencyINR},
+      {'code': 'KRW', 'symbol': '₩', 'name': l10n.currencyKRW},
+      {'code': 'MYR', 'symbol': 'RM', 'name': l10n.currencyMYR},
+      {'code': 'VND', 'symbol': '₫', 'name': l10n.currencyVND},
+      {'code': 'IDR', 'symbol': 'Rp', 'name': l10n.currencyIDR},
+      {'code': 'PHP', 'symbol': '₱', 'name': l10n.currencyPHP},
+    ];
+  }
 
   // Cost category controllers
   final Map<String, TextEditingController> _controllers = {
@@ -58,68 +63,71 @@ class _AddCostPageState extends State<AddCostPage> {
   };
 
   // Cost categories with icons
-  final List<Map<String, dynamic>> _categories = [
-    {
-      'key': 'accommodation',
-      'name': 'Accommodation',
-      'icon': '🏠',
-      'hint': 'Monthly rent or hotel'
-    },
-    {
-      'key': 'food',
-      'name': 'Food & Dining',
-      'icon': '🍽️',
-      'hint': 'Groceries, restaurants'
-    },
-    {
-      'key': 'transportation',
-      'name': 'Transportation',
-      'icon': '🚗',
-      'hint': 'Public transport, taxi'
-    },
-    {
-      'key': 'entertainment',
-      'name': 'Entertainment',
-      'icon': '🎬',
-      'hint': 'Movies, activities'
-    },
-    {
-      'key': 'gym',
-      'name': 'Fitness & Gym',
-      'icon': '💪',
-      'hint': 'Gym membership, sports'
-    },
-    {
-      'key': 'coworking',
-      'name': 'Coworking Space',
-      'icon': '💼',
-      'hint': 'Workspace rental'
-    },
-    {
-      'key': 'utilities',
-      'name': 'Utilities',
-      'icon': '💡',
-      'hint': 'Electricity, water, internet'
-    },
-    {
-      'key': 'healthcare',
-      'name': 'Healthcare',
-      'icon': '🏥',
-      'hint': 'Medical, insurance'
-    },
-    {
-      'key': 'shopping',
-      'name': 'Shopping',
-      'icon': '🛍️',
-      'hint': 'Clothes, personal items'
-    },
-    {
-      'key': 'other',
-      'name': 'Other Expenses',
-      'icon': '📝',
-      'hint': 'Miscellaneous costs'
-    },
-  ];
+  List<Map<String, dynamic>> _getCategories(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      {
+        'key': 'accommodation',
+        'name': l10n.accommodation,
+        'icon': '🏠',
+        'hint': l10n.monthlyRent
+      },
+      {
+        'key': 'food',
+        'name': l10n.foodDining,
+        'icon': '🍽️',
+        'hint': l10n.groceriesRestaurants
+      },
+      {
+        'key': 'transportation',
+        'name': l10n.transportation,
+        'icon': '🚗',
+        'hint': l10n.publicTransport
+      },
+      {
+        'key': 'entertainment',
+        'name': l10n.entertainment,
+        'icon': '🎬',
+        'hint': l10n.moviesActivities
+      },
+      {
+        'key': 'gym',
+        'name': l10n.gym,
+        'icon': '💪',
+        'hint': l10n.gymMembership
+      },
+      {
+        'key': 'coworking',
+        'name': l10n.coworkingSpace,
+        'icon': '💼',
+        'hint': l10n.workspaceRental
+      },
+      {
+        'key': 'utilities',
+        'name': l10n.utilities,
+        'icon': '💡',
+        'hint': l10n.electricityWater
+      },
+      {
+        'key': 'healthcare',
+        'name': l10n.healthcare,
+        'icon': '🏥',
+        'hint': l10n.medicalInsurance
+      },
+      {
+        'key': 'shopping',
+        'name': l10n.shopping,
+        'icon': '🛍️',
+        'hint': l10n.clothesPersonal
+      },
+      {
+        'key': 'other',
+        'name': l10n.otherExpenses,
+        'icon': '📝',
+        'hint': l10n.miscellaneous
+      },
+    ];
+  }
 
   final TextEditingController _notesController = TextEditingController();
 
@@ -132,8 +140,9 @@ class _AddCostPageState extends State<AddCostPage> {
     super.dispose();
   }
 
-  String get _currencySymbol {
-    return _currencies
+  String _getCurrencySymbol(BuildContext context) {
+    final currencies = _getCurrencies(context);
+    return currencies
         .firstWhere((c) => c['code'] == _selectedCurrency)['symbol']!;
   }
 
@@ -269,6 +278,7 @@ class _AddCostPageState extends State<AddCostPage> {
   Widget _buildCurrencySelector() {
     return Builder(builder: (context) {
       final l10n = AppLocalizations.of(context)!;
+      final currencies = _getCurrencies(context);
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -312,7 +322,7 @@ class _AddCostPageState extends State<AddCostPage> {
                   borderSide: BorderSide(color: Colors.grey[300]!),
                 ),
               ),
-              items: _currencies.map((currency) {
+              items: currencies.map((currency) {
                 return DropdownMenuItem<String>(
                   value: currency['code'],
                   child: Row(
@@ -348,6 +358,7 @@ class _AddCostPageState extends State<AddCostPage> {
   Widget _buildCostCategories() {
     return Builder(builder: (context) {
       final l10n = AppLocalizations.of(context)!;
+      final categories = _getCategories(context);
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -367,78 +378,83 @@ class _AddCostPageState extends State<AddCostPage> {
             ),
           ),
           const SizedBox(height: 16),
-          ..._categories.map((category) => _buildCostInputField(category)),
+          ...categories.map((category) => _buildCostInputField(category)),
         ],
       );
     });
   }
 
   Widget _buildCostInputField(Map<String, dynamic> category) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                category['icon'],
-                style: const TextStyle(fontSize: 20),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                category['name'],
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
+    return Builder(builder: (context) {
+      final currencySymbol = _getCurrencySymbol(context);
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  category['icon'],
+                  style: const TextStyle(fontSize: 20),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  category['name'],
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _controllers[category['key']],
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+              ],
+              decoration: InputDecoration(
+                hintText: category['hint'],
+                hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+                prefixText: '$currencySymbol ',
+                prefixStyle: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+                filled: true,
+                fillColor: Colors.grey[50],
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey[300]!),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey[300]!),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide:
+                      const BorderSide(color: Color(0xFFFF4458), width: 2),
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          TextFormField(
-            controller: _controllers[category['key']],
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
-            ],
-            decoration: InputDecoration(
-              hintText: category['hint'],
-              hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
-              prefixText: '$_currencySymbol ',
-              prefixStyle: const TextStyle(
-                color: Colors.black,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-              filled: true,
-              fillColor: Colors.grey[50],
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey[300]!),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey[300]!),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide:
-                    const BorderSide(color: Color(0xFFFF4458), width: 2),
-              ),
+              onChanged: (_) => setState(() {}), // Update total
             ),
-            onChanged: (_) => setState(() {}), // Update total
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildTotalDisplay() {
     return Builder(builder: (context) {
       final l10n = AppLocalizations.of(context)!;
+      final currencySymbol = _getCurrencySymbol(context);
       return Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
@@ -468,7 +484,7 @@ class _AddCostPageState extends State<AddCostPage> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '$_currencySymbol ${_totalCost.toStringAsFixed(2)}',
+                  '$currencySymbol ${_totalCost.toStringAsFixed(2)}',
                   style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -523,8 +539,7 @@ class _AddCostPageState extends State<AddCostPage> {
             maxLines: 4,
             maxLength: 500,
             decoration: InputDecoration(
-              hintText:
-                  'Add any additional information about your living costs...',
+              hintText: l10n.additionalCostInfo,
               hintStyle: TextStyle(color: Colors.grey[400]),
               filled: true,
               fillColor: Colors.grey[50],

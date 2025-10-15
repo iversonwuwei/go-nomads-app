@@ -582,7 +582,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get reset => '重置';
 
   @override
-  String get sortBy => '排序';
+  String get sortBy => '排序方式';
 
   @override
   String get filterBy => '筛选';
@@ -1703,10 +1703,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get improvements => '改进建议';
 
   @override
-  String get goNomad => '数字游民之旅';
+  String get goNomad => '成为数字游民';
 
   @override
-  String get joinGlobalCommunity => '加入全球远程工作者社区\n在世界各地生活和旅行';
+  String get joinGlobalCommunity => '加入全球远程工作者社区';
 
   @override
   String get chooseUsername => '选择您的用户名';
@@ -1769,13 +1769,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get inCitiesWorldwide => '在全球 100+ 城市';
 
   @override
-  String get meetNewPeople => '结识新朋友';
+  String get meetNewPeople => '结识新朋友，寻找约会对象';
 
   @override
   String get forDatingAndFriends => '用于约会和交友';
 
   @override
-  String get researchDestinations => '研究目的地';
+  String get researchDestinations => '研究目的地，找到最适合生活和工作的地方';
 
   @override
   String get findBestPlace => '找到最适合您的居住地';
@@ -1856,7 +1856,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get selectCurrency => '选择货币';
 
   @override
-  String get monthlyCost => '月度费用';
+  String get monthlyCost => '每月费用';
 
   @override
   String get foodDining => '餐饮';
@@ -1926,6 +1926,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get costShared => '您的费用信息已成功分享!';
+
+  @override
+  String get additionalCostInfo => '添加关于您生活费用的其他信息...';
 
   @override
   String get aiTravelPlanner => 'AI旅行规划师';
@@ -2538,7 +2541,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get veryGood => '非常好';
 
   @override
-  String get good => '好';
+  String get good => '良好';
 
   @override
   String get fair => '一般';
@@ -2736,10 +2739,10 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get asyncWithMap => '地图异步功能即将推出!';
+  String get asyncWithMap => '地图功能即将推出！';
 
   @override
-  String get planSaved => '计划已保存到您的个人资料!';
+  String get planSaved => '计划已保存到您的个人资料！';
 
   @override
   String get sharingPlan => '正在分享您的旅行计划...';
@@ -2749,4 +2752,99 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get download => '下载';
+
+  @override
+  String get currencyUSD => '美元';
+
+  @override
+  String get currencyEUR => '欧元';
+
+  @override
+  String get currencyGBP => '英镑';
+
+  @override
+  String get currencyJPY => '日元';
+
+  @override
+  String get currencyCNY => '人民币';
+
+  @override
+  String get currencyTHB => '泰铢';
+
+  @override
+  String get currencySGD => '新加坡元';
+
+  @override
+  String get currencyAUD => '澳元';
+
+  @override
+  String get currencyCAD => '加元';
+
+  @override
+  String get currencyINR => '印度卢比';
+
+  @override
+  String get currencyKRW => '韩元';
+
+  @override
+  String get currencyMYR => '马来西亚林吉特';
+
+  @override
+  String get currencyVND => '越南盾';
+
+  @override
+  String get currencyIDR => '印尼盾';
+
+  @override
+  String get currencyPHP => '菲律宾比索';
+
+  @override
+  String get livingTravelingWorld => '在世界各地生活和旅行';
+
+  @override
+  String get attendMeetupsInCities => '在100多个城市参加363场聚会/年';
+
+  @override
+  String get keepTrackTravels => '记录您的旅行轨迹，记住去过的地方';
+
+  @override
+  String get joinCommunityChat => '加入社区聊天，在旅途中找到您的社区';
+
+  @override
+  String get viewAllCities => '查看所有城市';
+
+  @override
+  String get perMonth => '每月';
+
+  @override
+  String get minimumInternetSpeed => '最低网速';
+
+  @override
+  String get minimumOverallRating => '最低综合评分';
+
+  @override
+  String get maximumAirQualityIndex => '最高空气质量指数';
+
+  @override
+  String get unhealthyForSensitive => '对敏感人群不健康';
+
+  @override
+  String get unhealthy => '不健康';
+
+  @override
+  String get veryUnhealthy => '非常不健康';
+
+  @override
+  String get hazardous => '有害';
+
+  @override
+  String showResults(int count) {
+    return '显示 $count 个结果';
+  }
+
+  @override
+  String get noResultsFound => '未找到结果';
+
+  @override
+  String get adjustFilters => '尝试调整筛选条件';
 }

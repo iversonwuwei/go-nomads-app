@@ -25,8 +25,8 @@ void main() async {
   print('💾 初始化 SQLite 数据库...');
   try {
     final dbInitializer = DatabaseInitializer();
-    // 设置 forceReset: true 可以清空并重新初始化数据库
-    // 数据修复完成后已改为 false,避免每次启动都清空数据
+    // 数据库表结构已更新,现在可以正常使用
+    // 如需重置数据,请临时设置 forceReset: true
     await dbInitializer.initializeDatabase(forceReset: false);
     print('✅ 数据库初始化成功');
   } catch (e) {

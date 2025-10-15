@@ -1247,7 +1247,7 @@ abstract class AppLocalizations {
   /// No description provided for @sortBy.
   ///
   /// In zh, this message translates to:
-  /// **'排序'**
+  /// **'排序方式'**
   String get sortBy;
 
   /// No description provided for @filterBy.
@@ -3473,13 +3473,13 @@ abstract class AppLocalizations {
   /// No description provided for @goNomad.
   ///
   /// In zh, this message translates to:
-  /// **'数字游民之旅'**
+  /// **'成为数字游民'**
   String get goNomad;
 
   /// No description provided for @joinGlobalCommunity.
   ///
   /// In zh, this message translates to:
-  /// **'加入全球远程工作者社区\n在世界各地生活和旅行'**
+  /// **'加入全球远程工作者社区'**
   String get joinGlobalCommunity;
 
   /// No description provided for @chooseUsername.
@@ -3605,7 +3605,7 @@ abstract class AppLocalizations {
   /// No description provided for @meetNewPeople.
   ///
   /// In zh, this message translates to:
-  /// **'结识新朋友'**
+  /// **'结识新朋友，寻找约会对象'**
   String get meetNewPeople;
 
   /// No description provided for @forDatingAndFriends.
@@ -3617,7 +3617,7 @@ abstract class AppLocalizations {
   /// No description provided for @researchDestinations.
   ///
   /// In zh, this message translates to:
-  /// **'研究目的地'**
+  /// **'研究目的地，找到最适合生活和工作的地方'**
   String get researchDestinations;
 
   /// No description provided for @findBestPlace.
@@ -3779,7 +3779,7 @@ abstract class AppLocalizations {
   /// No description provided for @monthlyCost.
   ///
   /// In zh, this message translates to:
-  /// **'月度费用'**
+  /// **'每月费用'**
   String get monthlyCost;
 
   /// No description provided for @foodDining.
@@ -3919,6 +3919,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'您的费用信息已成功分享!'**
   String get costShared;
+
+  /// No description provided for @additionalCostInfo.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加关于您生活费用的其他信息...'**
+  String get additionalCostInfo;
 
   /// No description provided for @aiTravelPlanner.
   ///
@@ -5099,7 +5105,7 @@ abstract class AppLocalizations {
   /// No description provided for @good.
   ///
   /// In zh, this message translates to:
-  /// **'好'**
+  /// **'良好'**
   String get good;
 
   /// No description provided for @fair.
@@ -5477,13 +5483,13 @@ abstract class AppLocalizations {
   /// No description provided for @asyncWithMap.
   ///
   /// In zh, this message translates to:
-  /// **'地图异步功能即将推出!'**
+  /// **'地图功能即将推出！'**
   String get asyncWithMap;
 
   /// No description provided for @planSaved.
   ///
   /// In zh, this message translates to:
-  /// **'计划已保存到您的个人资料!'**
+  /// **'计划已保存到您的个人资料！'**
   String get planSaved;
 
   /// No description provided for @sharingPlan.
@@ -5503,6 +5509,192 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'下载'**
   String get download;
+
+  /// No description provided for @currencyUSD.
+  ///
+  /// In zh, this message translates to:
+  /// **'美元'**
+  String get currencyUSD;
+
+  /// No description provided for @currencyEUR.
+  ///
+  /// In zh, this message translates to:
+  /// **'欧元'**
+  String get currencyEUR;
+
+  /// No description provided for @currencyGBP.
+  ///
+  /// In zh, this message translates to:
+  /// **'英镑'**
+  String get currencyGBP;
+
+  /// No description provided for @currencyJPY.
+  ///
+  /// In zh, this message translates to:
+  /// **'日元'**
+  String get currencyJPY;
+
+  /// No description provided for @currencyCNY.
+  ///
+  /// In zh, this message translates to:
+  /// **'人民币'**
+  String get currencyCNY;
+
+  /// No description provided for @currencyTHB.
+  ///
+  /// In zh, this message translates to:
+  /// **'泰铢'**
+  String get currencyTHB;
+
+  /// No description provided for @currencySGD.
+  ///
+  /// In zh, this message translates to:
+  /// **'新加坡元'**
+  String get currencySGD;
+
+  /// No description provided for @currencyAUD.
+  ///
+  /// In zh, this message translates to:
+  /// **'澳元'**
+  String get currencyAUD;
+
+  /// No description provided for @currencyCAD.
+  ///
+  /// In zh, this message translates to:
+  /// **'加元'**
+  String get currencyCAD;
+
+  /// No description provided for @currencyINR.
+  ///
+  /// In zh, this message translates to:
+  /// **'印度卢比'**
+  String get currencyINR;
+
+  /// No description provided for @currencyKRW.
+  ///
+  /// In zh, this message translates to:
+  /// **'韩元'**
+  String get currencyKRW;
+
+  /// No description provided for @currencyMYR.
+  ///
+  /// In zh, this message translates to:
+  /// **'马来西亚林吉特'**
+  String get currencyMYR;
+
+  /// No description provided for @currencyVND.
+  ///
+  /// In zh, this message translates to:
+  /// **'越南盾'**
+  String get currencyVND;
+
+  /// No description provided for @currencyIDR.
+  ///
+  /// In zh, this message translates to:
+  /// **'印尼盾'**
+  String get currencyIDR;
+
+  /// No description provided for @currencyPHP.
+  ///
+  /// In zh, this message translates to:
+  /// **'菲律宾比索'**
+  String get currencyPHP;
+
+  /// No description provided for @livingTravelingWorld.
+  ///
+  /// In zh, this message translates to:
+  /// **'在世界各地生活和旅行'**
+  String get livingTravelingWorld;
+
+  /// No description provided for @attendMeetupsInCities.
+  ///
+  /// In zh, this message translates to:
+  /// **'在100多个城市参加363场聚会/年'**
+  String get attendMeetupsInCities;
+
+  /// No description provided for @keepTrackTravels.
+  ///
+  /// In zh, this message translates to:
+  /// **'记录您的旅行轨迹，记住去过的地方'**
+  String get keepTrackTravels;
+
+  /// No description provided for @joinCommunityChat.
+  ///
+  /// In zh, this message translates to:
+  /// **'加入社区聊天，在旅途中找到您的社区'**
+  String get joinCommunityChat;
+
+  /// No description provided for @viewAllCities.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看所有城市'**
+  String get viewAllCities;
+
+  /// No description provided for @perMonth.
+  ///
+  /// In zh, this message translates to:
+  /// **'每月'**
+  String get perMonth;
+
+  /// No description provided for @minimumInternetSpeed.
+  ///
+  /// In zh, this message translates to:
+  /// **'最低网速'**
+  String get minimumInternetSpeed;
+
+  /// No description provided for @minimumOverallRating.
+  ///
+  /// In zh, this message translates to:
+  /// **'最低综合评分'**
+  String get minimumOverallRating;
+
+  /// No description provided for @maximumAirQualityIndex.
+  ///
+  /// In zh, this message translates to:
+  /// **'最高空气质量指数'**
+  String get maximumAirQualityIndex;
+
+  /// No description provided for @unhealthyForSensitive.
+  ///
+  /// In zh, this message translates to:
+  /// **'对敏感人群不健康'**
+  String get unhealthyForSensitive;
+
+  /// No description provided for @unhealthy.
+  ///
+  /// In zh, this message translates to:
+  /// **'不健康'**
+  String get unhealthy;
+
+  /// No description provided for @veryUnhealthy.
+  ///
+  /// In zh, this message translates to:
+  /// **'非常不健康'**
+  String get veryUnhealthy;
+
+  /// No description provided for @hazardous.
+  ///
+  /// In zh, this message translates to:
+  /// **'有害'**
+  String get hazardous;
+
+  /// No description provided for @showResults.
+  ///
+  /// In zh, this message translates to:
+  /// **'显示 {count} 个结果'**
+  String showResults(int count);
+
+  /// No description provided for @noResultsFound.
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到结果'**
+  String get noResultsFound;
+
+  /// No description provided for @adjustFilters.
+  ///
+  /// In zh, this message translates to:
+  /// **'尝试调整筛选条件'**
+  String get adjustFilters;
 }
 
 class _AppLocalizationsDelegate

@@ -30,7 +30,7 @@ class DatabaseService {
     // 打开数据库,如果不存在则创建
     return await openDatabase(
       path,
-      version: 1,
+      version: 2, // 升级到版本2 - 添加 cities.region 字段支持
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -232,9 +232,22 @@ class DatabaseService {
 
   /// 升级数据库
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // 在这里处理数据库升级逻辑
-    if (oldVersion < newVersion) {
-      // 根据版本号进行相应的升级操作
+    // 数据库升级逻辑
+    if (oldVersion < 2 && newVersion >= 2) {
+      // 版本 1 -> 2: 添加 cities 表的 region 字段
+      try {
+        // 检查 cities 表是否存在 region 列
+        final result = await db.rawQuery("PRAGMA table_info(cities)");
+        final hasRegion = result.any((col) => col['name'] == 'region');
+
+        if (!hasRegion) {
+          // 添加 region 列
+          await db.execute('ALTER TABLE cities ADD COLUMN region TEXT');
+          print('✅ 已添加 cities.region 字段');
+        }
+      } catch (e) {
+        print('⚠️ 升级数据库时出错: $e');
+      }
     }
   }
 

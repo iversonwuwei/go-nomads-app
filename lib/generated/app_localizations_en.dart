@@ -582,7 +582,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reset => 'Reset';
 
   @override
-  String get sortBy => 'Sort By';
+  String get sortBy => 'Sort by';
 
   @override
   String get filterBy => 'Filter By';
@@ -1704,11 +1704,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get improvements => 'Improvements';
 
   @override
-  String get goNomad => 'Go Nomad';
+  String get goNomad => 'Go nomad';
 
   @override
-  String get joinGlobalCommunity =>
-      'Join a global community of remote workers\nliving and traveling around the world';
+  String get joinGlobalCommunity => 'Join a global community of remote workers';
 
   @override
   String get chooseUsername => 'Choose your username';
@@ -1772,13 +1771,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inCitiesWorldwide => 'in 100+ cities worldwide';
 
   @override
-  String get meetNewPeople => 'Meet new people';
+  String get meetNewPeople => 'Meet new people for dating and friends';
 
   @override
   String get forDatingAndFriends => 'for dating and friends';
 
   @override
-  String get researchDestinations => 'Research destinations';
+  String get researchDestinations =>
+      'Research destinations and find your best place to live and work';
 
   @override
   String get findBestPlace => 'and find your best place to live';
@@ -1930,6 +1930,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get costShared =>
       'Your cost information has been shared successfully!';
+
+  @override
+  String get additionalCostInfo =>
+      'Add any additional information about your living costs...';
 
   @override
   String get aiTravelPlanner => 'AI Travel Planner';
@@ -2764,4 +2768,101 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get download => 'Download';
+
+  @override
+  String get currencyUSD => 'US Dollar';
+
+  @override
+  String get currencyEUR => 'Euro';
+
+  @override
+  String get currencyGBP => 'British Pound';
+
+  @override
+  String get currencyJPY => 'Japanese Yen';
+
+  @override
+  String get currencyCNY => 'Chinese Yuan';
+
+  @override
+  String get currencyTHB => 'Thai Baht';
+
+  @override
+  String get currencySGD => 'Singapore Dollar';
+
+  @override
+  String get currencyAUD => 'Australian Dollar';
+
+  @override
+  String get currencyCAD => 'Canadian Dollar';
+
+  @override
+  String get currencyINR => 'Indian Rupee';
+
+  @override
+  String get currencyKRW => 'South Korean Won';
+
+  @override
+  String get currencyMYR => 'Malaysian Ringgit';
+
+  @override
+  String get currencyVND => 'Vietnamese Dong';
+
+  @override
+  String get currencyIDR => 'Indonesian Rupiah';
+
+  @override
+  String get currencyPHP => 'Philippine Peso';
+
+  @override
+  String get livingTravelingWorld => 'living and traveling around the world';
+
+  @override
+  String get attendMeetupsInCities => 'Attend 363 meetups/year in 100+ cities';
+
+  @override
+  String get keepTrackTravels =>
+      'Keep track of your travels and record where you\'ve been';
+
+  @override
+  String get joinCommunityChat =>
+      'Join community chat and find your community on the road';
+
+  @override
+  String get viewAllCities => 'View All Cities';
+
+  @override
+  String get perMonth => 'per month';
+
+  @override
+  String get minimumInternetSpeed => 'Minimum Internet Speed';
+
+  @override
+  String get minimumOverallRating => 'Minimum Overall Rating';
+
+  @override
+  String get maximumAirQualityIndex => 'Maximum Air Quality Index';
+
+  @override
+  String get unhealthyForSensitive => 'Unhealthy for Sensitive';
+
+  @override
+  String get unhealthy => 'Unhealthy';
+
+  @override
+  String get veryUnhealthy => 'Very Unhealthy';
+
+  @override
+  String get hazardous => 'Hazardous';
+
+  @override
+  String showResults(int count) {
+    return 'Show $count Results';
+  }
+
+  @override
+  String get noResultsFound => 'No results found';
+
+  @override
+  String get adjustFilters => 'Try adjusting your filters';
 }

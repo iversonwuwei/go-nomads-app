@@ -13,14 +13,14 @@ class DatabaseInitializer {
 
   /// 初始化数据库并插入示例数据
   Future<void> initializeDatabase({bool forceReset = false}) async {
-    // 确保数据库已创建
-    await _dbService.database;
-
-    // 如果需要强制重置,先清空所有数据
+    // 如果需要强制重置,删除整个数据库文件并重新创建
     if (forceReset) {
       print('🔄 强制重置数据库...');
-      await _dbService.clearAllData();
+      await _dbService.deleteDatabase();
     }
+    
+    // 确保数据库已创建(如果删除了会自动重新创建)
+    await _dbService.database;
 
     // 检查是否已有数据
     final cities = await _cityDao.getAllCities();
