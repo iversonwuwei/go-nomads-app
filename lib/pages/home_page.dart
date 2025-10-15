@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/shopping_controller.dart';
+import '../generated/app_localizations.dart';
 import '../models/api_interface_model.dart';
 import '../routes/app_routes.dart';
 import '../widgets/copyright_widget.dart';
@@ -17,6 +18,7 @@ class MyHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final ShoppingController controller = Get.find<ShoppingController>();
 
     return Scaffold(
@@ -25,7 +27,7 @@ class MyHomePage extends StatelessWidget {
         backgroundColor: AppColors.background,
         elevation: 0,
         title: Text(
-          title.toUpperCase(),
+          l10n.home.toUpperCase(),
           style: const TextStyle(
             color: AppColors.textPrimary,
             fontWeight: FontWeight.w300,
@@ -66,12 +68,12 @@ class MyHomePage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Banner轮播图
+              // Banner轮播�?
               _buildBannerCarousel(controller),
 
               const SizedBox(height: 20),
 
-              // 快捷功能区
+              // 快捷功能�?
               _buildQuickActions(),
 
               const SizedBox(height: 20),
@@ -84,7 +86,7 @@ class MyHomePage extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              // 热门精选标题
+              // 热门精选标�?
               _buildSectionTitle('🔥 热门API接口'),
 
               // 热门API接口网格
@@ -92,8 +94,8 @@ class MyHomePage extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              // 精选推荐标题
-              _buildSectionTitle('⭐ 精选API服务'),
+              // 精选推荐标�?
+              _buildSectionTitle('�?精选API服务'),
 
               // 精选API接口网格
               _buildApiInterfaceGrid(controller.selectedApiInterfaces),
@@ -217,11 +219,16 @@ class MyHomePage extends StatelessWidget {
         'title': '分析工具',
         'route': AppRoutes.analyticsTool
       },
+      {
+        'icon': Icons.groups_outlined,
+        'title': 'Meetups',
+        'route': AppRoutes.meetupsList
+      },
     ];
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(
@@ -229,8 +236,10 @@ class MyHomePage extends StatelessWidget {
           width: 1,
         ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+      child: Wrap(
+        spacing: 20,
+        runSpacing: 20,
+        alignment: WrapAlignment.spaceEvenly,
         children: actions.map((action) {
           return _QuickActionButton(
             icon: action['icon'],
@@ -249,7 +258,7 @@ class MyHomePage extends StatelessWidget {
   }
 
   Widget _buildSectionTitle(String title) {
-    // 移除 emoji,只保留文字
+    // 移除 emoji,只保留文�?
     final cleanTitle =
         title.replaceAll(RegExp(r'[\p{Emoji}\s]+', unicode: true), '').trim();
     return Container(
@@ -299,7 +308,7 @@ class MyHomePage extends StatelessWidget {
   Widget _buildApiInterfaceCard(ApiInterfaceModel apiInterface) {
     final ShoppingController controller = Get.find<ShoppingController>();
 
-    // 为每个API定义单色方案 - 性冷淡风格(浅色系)
+    // 为每个API定义单色方案 - 性冷淡风�?浅色�?
     final colorIndex =
         apiInterface.name.hashCode.abs() % AppColors.apiCardColors.length;
     final cardColor = AppColors.apiCardColors[colorIndex];
@@ -324,7 +333,7 @@ class MyHomePage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 顶部: 图标和标签
+              // 顶部: 图标和标�?
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -532,14 +541,14 @@ class MyHomePage extends StatelessWidget {
   }
 
   Widget _buildDataCategoryCard(Map<String, dynamic> category) {
-    // 使用性冷淡风格的单色方案(浅色系)
+    // 使用性冷淡风格的单色方案(浅色�?
     final index =
         category['title'].hashCode.abs() % AppColors.dataCategoryColors.length;
     final iconColor = AppColors.dataCategoryColors[index];
 
     return GestureDetector(
       onTap: () {
-        // 如果是位置数据,跳转到位置演示页面
+        // 如果是位置数�?跳转到位置演示页�?
         if (category['title'] == '位置数据') {
           Get.toNamed(AppRoutes.locationDemo);
         } else {
@@ -551,7 +560,7 @@ class MyHomePage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // 纯图标 - 无边框无背景
+            // 纯图�?- 无边框无背景
             Icon(
               category['icon'],
               color: iconColor,
@@ -560,7 +569,7 @@ class MyHomePage extends StatelessWidget {
 
             const SizedBox(height: 8),
 
-            // 分类名称 - 深灰色文字
+            // 分类名称 - 深灰色文�?
             Text(
               category['title'],
               style: const TextStyle(

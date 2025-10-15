@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart' hide Badge;
 import 'package:get/get.dart';
 
+import '../controllers/locale_controller.dart';
 import '../controllers/user_profile_controller.dart';
+import '../generated/app_localizations.dart';
 import '../models/user_model.dart';
 import '../routes/app_routes.dart';
 import '../widgets/skeleton_loader.dart';
@@ -15,6 +17,7 @@ class ProfilePage extends StatelessWidget {
     final controller = Get.put(UserProfileController());
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -25,7 +28,7 @@ class ProfilePage extends StatelessWidget {
 
         final user = controller.currentUser.value;
         if (user == null) {
-          return const Center(child: Text('User not found'));
+          return Center(child: Text(l10n.userNotFound));
         }
 
         return CustomScrollView(
@@ -37,9 +40,9 @@ class ProfilePage extends StatelessWidget {
               pinned: true,
               backgroundColor: Colors.white,
               elevation: 0,
-              title: const Text(
-                'Profile',
-                style: TextStyle(
+              title: Text(
+                l10n.profile,
+                style: const TextStyle(
                   color: Color(0xFF1a1a1a),
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -51,7 +54,17 @@ class ProfilePage extends StatelessWidget {
                     controller.isEditMode.value ? Icons.check : Icons.edit,
                     color: const Color(0xFFFF4458),
                   ),
-                  onPressed: controller.toggleEditMode,
+                  onPressed: () {
+                    controller.toggleEditMode();
+                    Get.snackbar(
+                      l10n.editProfile,
+                      l10n.profileEditingComingSoon,
+                      backgroundColor: Colors.orange.withValues(alpha: 0.8),
+                      colorText: Colors.white,
+                      snackPosition: SnackPosition.BOTTOM,
+                      margin: const EdgeInsets.all(16),
+                    );
+                  },
                 ),
                 const SizedBox(width: 8),
               ],
@@ -68,36 +81,42 @@ class ProfilePage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Profile Header
-                    _buildProfileHeader(user, isMobile),
+                    _buildProfileHeader(context, user, isMobile),
                     const SizedBox(height: 32),
 
                     // My Travel Plans (AI Generated)
-                    _buildTravelPlansSection(isMobile),
+                    _buildTravelPlansSection(context, isMobile),
                     const SizedBox(height: 32),
 
                     // Stats
-                    _buildStatsSection(user.stats, isMobile),
+                    _buildStatsSection(context, user.stats, isMobile),
                     const SizedBox(height: 32),
 
                     // Badges
-                    _buildBadgesSection(user.badges, isMobile),
+                    _buildBadgesSection(context, user.badges, isMobile),
                     const SizedBox(height: 32),
 
                     // Skills & Interests
-                    _buildSkillsAndInterests(user, controller, isMobile),
+                    _buildSkillsAndInterests(
+                        context, user, controller, isMobile),
                     const SizedBox(height: 32),
 
                     // Travel History
-                    _buildTravelHistory(user.travelHistory, isMobile),
+                    _buildTravelHistory(context, user.travelHistory, isMobile),
                     const SizedBox(height: 32),
 
                     // Social Links
-                    _buildSocialLinks(user.socialLinks, isMobile),
+                    _buildSocialLinks(context, user.socialLinks, isMobile),
+
+                    const SizedBox(height: 32),
+
+                    // Preferences
+                    _buildPreferencesSection(isMobile),
 
                     const SizedBox(height: 48),
 
                     // Legacy API Profile Link
-                    _buildLegacyProfileLink(),
+                    _buildLegacyProfileLink(context),
                   ],
                 ),
               ),
@@ -109,7 +128,9 @@ class ProfilePage extends StatelessWidget {
   }
 
   // Profile Header
-  Widget _buildProfileHeader(UserModel user, bool isMobile) {
+  Widget _buildProfileHeader(
+      BuildContext context, UserModel user, bool isMobile) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -237,7 +258,9 @@ class ProfilePage extends StatelessWidget {
   }
 
   // Stats Section
-  Widget _buildStatsSection(TravelStats stats, bool isMobile) {
+  Widget _buildStatsSection(
+      BuildContext context, TravelStats stats, bool isMobile) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -307,15 +330,17 @@ class ProfilePage extends StatelessWidget {
   }
 
   // Badges Section
-  Widget _buildBadgesSection(List<Badge> badges, bool isMobile) {
+  Widget _buildBadgesSection(
+      BuildContext context, List<Badge> badges, bool isMobile) {
+    final l10n = AppLocalizations.of(context)!;
     if (badges.isEmpty) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Badges',
-          style: TextStyle(
+        Text(
+          l10n.badges,
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
             color: Color(0xFF1a1a1a),
@@ -377,14 +402,15 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  // Skills & Interests
-  Widget _buildSkillsAndInterests(
-      UserModel user, UserProfileController controller, bool isMobile) {
+  // Skills and Interests
+  Widget _buildSkillsAndInterests(BuildContext context, UserModel user,
+      UserProfileController controller, bool isMobile) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Skills',
-            style: TextStyle(
+        Text(l10n.skills,
+            style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF1a1a1a))),
@@ -412,8 +438,8 @@ class ProfilePage extends StatelessWidget {
           }).toList(),
         ),
         const SizedBox(height: 24),
-        const Text('Interests',
-            style: TextStyle(
+        Text(l10n.interests,
+            style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF1a1a1a))),
@@ -444,14 +470,16 @@ class ProfilePage extends StatelessWidget {
   }
 
   // Travel History
-  Widget _buildTravelHistory(List<TravelHistory> history, bool isMobile) {
+  Widget _buildTravelHistory(
+      BuildContext context, List<TravelHistory> history, bool isMobile) {
+    final l10n = AppLocalizations.of(context)!;
     if (history.isEmpty) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Travel History',
-            style: TextStyle(
+        Text(l10n.travelHistory,
+            style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF1a1a1a))),
@@ -555,14 +583,16 @@ class ProfilePage extends StatelessWidget {
   }
 
   // Social Links
-  Widget _buildSocialLinks(Map<String, String> links, bool isMobile) {
+  Widget _buildSocialLinks(
+      BuildContext context, Map<String, String> links, bool isMobile) {
+    final l10n = AppLocalizations.of(context)!;
     if (links.isEmpty) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Connect',
-            style: TextStyle(
+        Text(l10n.connect,
+            style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF1a1a1a))),
@@ -629,7 +659,8 @@ class ProfilePage extends StatelessWidget {
   }
 
   // Legacy Profile Link
-  Widget _buildLegacyProfileLink() {
+  Widget _buildLegacyProfileLink(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
         // 位置服务设置
@@ -657,8 +688,8 @@ class ProfilePage extends StatelessWidget {
                 onPressed: () {
                   Get.toNamed(AppRoutes.locationDemo);
                 },
-                child: const Text('打开',
-                    style: TextStyle(color: Color(0xFFFF4458))),
+                child: Text(l10n.open,
+                    style: const TextStyle(color: Color(0xFFFF4458))),
               ),
             ],
           ),
@@ -676,10 +707,10 @@ class ProfilePage extends StatelessWidget {
             children: [
               const Icon(Icons.settings, color: Color(0xFF6B7280), size: 20),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'API Developer Settings',
-                  style: TextStyle(
+                  l10n.apiDeveloperSettings,
+                  style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                       color: Color(0xFF374151)),
@@ -689,8 +720,8 @@ class ProfilePage extends StatelessWidget {
                 onPressed: () {
                   Get.toNamed(AppRoutes.login);
                 },
-                child: const Text('View',
-                    style: TextStyle(color: Color(0xFFFF4458))),
+                child: Text(l10n.view,
+                    style: const TextStyle(color: Color(0xFFFF4458))),
               ),
             ],
           ),
@@ -700,7 +731,8 @@ class ProfilePage extends StatelessWidget {
   }
 
   /// 我的旅行计划部分
-  Widget _buildTravelPlansSection(bool isMobile) {
+  Widget _buildTravelPlansSection(BuildContext context, bool isMobile) {
+    final l10n = AppLocalizations.of(context)!;
     // 这里应该从用户数据中获取保存的计划
     // 暂时使用空列表演示
     final savedPlans = <String>[]; // TODO: 从UserProfileController获取
@@ -737,7 +769,7 @@ class ProfilePage extends StatelessWidget {
                   );
                 },
                 icon: const Icon(Icons.add, size: 18),
-                label: const Text('Create New'),
+                label: Text(l10n.createNew),
                 style: TextButton.styleFrom(
                   foregroundColor: const Color(0xFFFF4458),
                 ),
@@ -791,7 +823,7 @@ class ProfilePage extends StatelessWidget {
                     Get.to(() => const CityListPage());
                   },
                   icon: const Icon(Icons.explore, size: 18),
-                  label: const Text('Explore Cities'),
+                  label: Text(l10n.exploreCities),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFF4458),
                     foregroundColor: Colors.white,
@@ -816,7 +848,7 @@ class ProfilePage extends StatelessWidget {
             itemBuilder: (context, index) {
               return Container(
                 margin: const EdgeInsets.only(bottom: 12),
-                child: const Text('Travel plan card'), // Placeholder
+                child: Text(l10n.travelPlanCard), // Placeholder
               );
             },
           ),
@@ -858,5 +890,94 @@ class ProfilePage extends StatelessWidget {
       'Dec'
     ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
+  }
+
+  // Preferences Section
+  Widget _buildPreferencesSection(bool isMobile) {
+    return Container(
+      padding: EdgeInsets.all(isMobile ? 16 : 20),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Builder(
+            builder: (context) {
+              final l10n = AppLocalizations.of(context)!;
+              return Text(
+                l10n.preferences,
+                style: TextStyle(
+                  fontSize: isMobile ? 16 : 18,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF1a1a1a),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+          _buildLanguageTile(isMobile),
+        ],
+      ),
+    );
+  }
+
+  // Language Selection Tile
+  Widget _buildLanguageTile(bool isMobile) {
+    final localeController = Get.find<LocaleController>();
+
+    return Builder(
+      builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
+
+        return InkWell(
+          onTap: () => Get.toNamed(AppRoutes.languageSettings),
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.language,
+                  color: const Color(0xFFFF4458),
+                  size: isMobile ? 20 : 24,
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.language,
+                        style: TextStyle(
+                          fontSize: isMobile ? 14 : 16,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1a1a1a),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Obx(() => Text(
+                            localeController.currentLanguageName,
+                            style: TextStyle(
+                              fontSize: isMobile ? 12 : 14,
+                              color: const Color(0xFF6B7280),
+                            ),
+                          )),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right,
+                  color: const Color(0xFF6B7280),
+                  size: isMobile ? 20 : 24,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 }

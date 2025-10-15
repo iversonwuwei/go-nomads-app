@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -44,25 +45,25 @@ class _AddReviewPageState extends State<AddReviewPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: AppColors.textPrimary),
+          icon: Icon(Icons.close, color: AppColors.textPrimary, size: 24.sp),
           onPressed: () => Get.back(),
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Write a Review',
               style: TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 18,
+                fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
               ),
             ),
             Text(
               widget.cityName,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.textSecondary,
-                fontSize: 14,
+                fontSize: 14.sp,
                 fontWeight: FontWeight.normal,
               ),
             ),
@@ -72,27 +73,27 @@ class _AddReviewPageState extends State<AddReviewPage> {
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(20.w),
           children: [
             // Rating Section
             _buildRatingSection(),
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h),
 
             // Title Input
             _buildTitleInput(),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // Content Input
             _buildContentInput(),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // Photos Section
             _buildPhotosSection(),
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h),
 
             // Guidelines
             _buildGuidelines(),
-            const SizedBox(height: 96),
+            SizedBox(height: 96.h),
           ],
         ),
       ),
@@ -103,35 +104,36 @@ class _AddReviewPageState extends State<AddReviewPage> {
   /// 评分区域
   Widget _buildRatingSection() {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            blurRadius: 10.r,
+            offset: Offset(0, 2.h),
           ),
         ],
       ),
       child: Column(
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.star_border, color: Color(0xFFFF4458), size: 24),
-              SizedBox(width: 8),
+              Icon(Icons.star_border,
+                  color: const Color(0xFFFF4458), size: 24.sp),
+              SizedBox(width: 8.w),
               Text(
                 'Overall Rating',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
           Obx(() => Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(5, (index) {
@@ -141,10 +143,10 @@ class _AddReviewPageState extends State<AddReviewPage> {
                       _rating.value % 1 != 0;
 
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    padding: EdgeInsets.symmetric(horizontal: 6.w),
                     child: SizedBox(
-                      width: 44,
-                      height: 44,
+                      width: 44.w,
+                      height: 44.w,
                       child: Stack(
                         children: [
                           // 星星图标
@@ -155,14 +157,14 @@ class _AddReviewPageState extends State<AddReviewPage> {
                                     ? Icons.star_half
                                     : Icons.star_border,
                             color: const Color(0xFFFF4458),
-                            size: 44,
+                            size: 44.sp,
                           ),
                           // 左半边点击区域
                           Positioned(
                             left: 0,
                             top: 0,
                             bottom: 0,
-                            width: 22,
+                            width: 22.w,
                             child: GestureDetector(
                               onTap: () {
                                 _rating.value = index + 0.5;
@@ -175,7 +177,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
                             right: 0,
                             top: 0,
                             bottom: 0,
-                            width: 22,
+                            width: 22.w,
                             child: GestureDetector(
                               onTap: () {
                                 _rating.value = (index + 1).toDouble();
@@ -189,13 +191,13 @@ class _AddReviewPageState extends State<AddReviewPage> {
                   );
                 }),
               )),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           Obx(() => Text(
                 _rating.value == 0
                     ? 'Tap stars to rate'
                     : '${_rating.value.toStringAsFixed(1)} / 5.0',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
                   color: _rating.value == 0
                       ? AppColors.textTertiary
@@ -205,8 +207,8 @@ class _AddReviewPageState extends State<AddReviewPage> {
           if (_rating.value > 0)
             Obx(() => Text(
                   _getRatingLabel(_rating.value),
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: TextStyle(
+                    fontSize: 14.sp,
                     color: AppColors.textSecondary,
                   ),
                 )),
@@ -220,29 +222,29 @@ class _AddReviewPageState extends State<AddReviewPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Row(
+        Row(
           children: [
-            Icon(Icons.title, color: AppColors.textSecondary, size: 20),
-            SizedBox(width: 8),
+            Icon(Icons.title, color: AppColors.textSecondary, size: 20.sp),
+            SizedBox(width: 8.w),
             Text(
               'Review Title',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 16.sp,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
               ),
             ),
-            SizedBox(width: 4),
+            SizedBox(width: 4.w),
             Text(
               '*',
               style: TextStyle(
-                color: Color(0xFFFF4458),
-                fontSize: 16,
+                color: const Color(0xFFFF4458),
+                fontSize: 16.sp,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         TextFormField(
           controller: _titleController,
           maxLength: 100,
@@ -251,22 +253,22 @@ class _AddReviewPageState extends State<AddReviewPage> {
             filled: true,
             fillColor: Colors.white,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide(color: AppColors.borderLight),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide(color: AppColors.borderLight),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: Color(0xFFFF4458),
-                width: 2,
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide(
+                color: const Color(0xFFFF4458),
+                width: 2.w,
               ),
             ),
-            counterStyle: const TextStyle(
-              fontSize: 12,
+            counterStyle: TextStyle(
+              fontSize: 12.sp,
               color: AppColors.textTertiary,
             ),
           ),
@@ -289,29 +291,29 @@ class _AddReviewPageState extends State<AddReviewPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Row(
+        Row(
           children: [
-            Icon(Icons.edit_note, color: AppColors.textSecondary, size: 20),
-            SizedBox(width: 8),
+            Icon(Icons.edit_note, color: AppColors.textSecondary, size: 20.sp),
+            SizedBox(width: 8.w),
             Text(
               'Your Experience',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 16.sp,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
               ),
             ),
-            SizedBox(width: 4),
+            SizedBox(width: 4.w),
             Text(
               '*',
               style: TextStyle(
-                color: Color(0xFFFF4458),
-                fontSize: 16,
+                color: const Color(0xFFFF4458),
+                fontSize: 16.sp,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         TextFormField(
           controller: _contentController,
           maxLength: 1000,
@@ -322,22 +324,22 @@ class _AddReviewPageState extends State<AddReviewPage> {
             filled: true,
             fillColor: Colors.white,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide(color: AppColors.borderLight),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide(color: AppColors.borderLight),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: Color(0xFFFF4458),
-                width: 2,
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide(
+                color: const Color(0xFFFF4458),
+                width: 2.w,
               ),
             ),
-            counterStyle: const TextStyle(
-              fontSize: 12,
+            counterStyle: TextStyle(
+              fontSize: 12.sp,
               color: AppColors.textTertiary,
             ),
           ),
@@ -363,24 +365,24 @@ class _AddReviewPageState extends State<AddReviewPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Row(
+            Row(
               children: [
                 Icon(Icons.photo_library,
-                    color: AppColors.textSecondary, size: 20),
-                SizedBox(width: 8),
+                    color: AppColors.textSecondary, size: 20.sp),
+                SizedBox(width: 8.w),
                 Text(
                   'Photos',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
                   ),
                 ),
-                SizedBox(width: 8),
+                SizedBox(width: 8.w),
                 Text(
                   '(Optional)',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 14.sp,
                     color: AppColors.textTertiary,
                   ),
                 ),
@@ -389,7 +391,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
             Obx(() => Text(
                   '${_selectedImages.length} / 5',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
                     color: _selectedImages.length >= 5
                         ? const Color(0xFFFF4458)
@@ -398,10 +400,10 @@ class _AddReviewPageState extends State<AddReviewPage> {
                 )),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         Obx(() => Wrap(
-              spacing: 12,
-              runSpacing: 12,
+              spacing: 12.w,
+              runSpacing: 12.h,
               children: [
                 ..._selectedImages.asMap().entries.map((entry) {
                   final index = entry.key;
@@ -418,41 +420,41 @@ class _AddReviewPageState extends State<AddReviewPage> {
   /// 图片缩略图
   Widget _buildImageThumbnail(XFile image, int index) {
     return Container(
-      width: 100,
-      height: 100,
+      width: 100.w,
+      height: 100.w,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: AppColors.borderLight,
-          width: 1,
+          width: 1.w,
         ),
       ),
       child: Stack(
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
             child: Image.file(
               File(image.path),
-              width: 100,
-              height: 100,
+              width: 100.w,
+              height: 100.w,
               fit: BoxFit.cover,
             ),
           ),
           // 删除按钮
           Positioned(
-            top: 4,
-            right: 4,
+            top: 4.h,
+            right: 4.w,
             child: GestureDetector(
               onTap: () => _selectedImages.removeAt(index),
               child: Container(
-                padding: const EdgeInsets.all(4),
+                padding: EdgeInsets.all(4.w),
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.7),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.close,
-                  size: 16,
+                  size: 16.sp,
                   color: Colors.white,
                 ),
               ),
@@ -468,30 +470,30 @@ class _AddReviewPageState extends State<AddReviewPage> {
     return GestureDetector(
       onTap: _pickImages,
       child: Container(
-        width: 100,
-        height: 100,
+        width: 100.w,
+        height: 100.w,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: const Color(0xFFFF4458),
-            width: 2,
+            width: 2.w,
             style: BorderStyle.solid,
           ),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.add_photo_alternate,
-              color: Color(0xFFFF4458),
-              size: 32,
+              color: const Color(0xFFFF4458),
+              size: 32.sp,
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4.h),
             Text(
               'Add Photo',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 12.sp,
                 color: const Color(0xFFFF4458),
                 fontWeight: FontWeight.w600,
               ),
@@ -505,33 +507,33 @@ class _AddReviewPageState extends State<AddReviewPage> {
   /// 指南
   Widget _buildGuidelines() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.blue.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: Colors.blue.withValues(alpha: 0.2),
-          width: 1,
+          width: 1.w,
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.info_outline, color: Colors.blue, size: 20),
-              SizedBox(width: 8),
+              Icon(Icons.info_outline, color: Colors.blue, size: 20.sp),
+              SizedBox(width: 8.w),
               Text(
                 'Review Guidelines',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
                   color: Colors.blue,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           _buildGuidelineItem('✓ Be honest and detailed about your experience'),
           _buildGuidelineItem('✓ Focus on facts and specific examples'),
           _buildGuidelineItem('✓ Respect others and avoid offensive language'),
@@ -543,11 +545,11 @@ class _AddReviewPageState extends State<AddReviewPage> {
 
   Widget _buildGuidelineItem(String text) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
+      padding: EdgeInsets.only(bottom: 6.h),
       child: Text(
         text,
-        style: const TextStyle(
-          fontSize: 13,
+        style: TextStyle(
+          fontSize: 13.sp,
           color: AppColors.textSecondary,
           height: 1.4,
         ),
@@ -558,14 +560,14 @@ class _AddReviewPageState extends State<AddReviewPage> {
   /// 底部栏
   Widget _buildBottomBar() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
+            blurRadius: 10.r,
+            offset: Offset(0, -2.h),
           ),
         ],
       ),
@@ -575,32 +577,33 @@ class _AddReviewPageState extends State<AddReviewPage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFF4458),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: EdgeInsets.symmetric(vertical: 16.h),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
                 elevation: 0,
                 disabledBackgroundColor:
                     const Color(0xFFFF4458).withValues(alpha: 0.5),
               ),
               child: _isSubmitting.value
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
+                  ? SizedBox(
+                      height: 20.h,
+                      width: 20.w,
                       child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        strokeWidth: 2.w,
+                        valueColor:
+                            const AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     )
-                  : const Row(
+                  : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.check_circle_outline, size: 20),
-                        SizedBox(width: 8),
+                        Icon(Icons.check_circle_outline, size: 20.sp),
+                        SizedBox(width: 8.w),
                         Text(
                           'Submit Review',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 16.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ),

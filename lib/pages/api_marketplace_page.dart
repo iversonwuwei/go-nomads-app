@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/shopping_controller.dart';
+import '../generated/app_localizations.dart';
 import '../models/api_interface_model.dart';
 import '../widgets/copyright_widget.dart';
 
@@ -17,16 +18,23 @@ class ApiMarketplacePage extends StatefulWidget {
 class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
   final TextEditingController _searchController = TextEditingController();
   final ShoppingController _shoppingController = Get.find<ShoppingController>();
-  
+
   String _selectedCategory = 'All';
   final String _selectedPricing = 'All';
   final String _sortBy = 'popularity';
-  
+
   final List<String> _categories = [
-    'All', 'Data Analytics', 'Payment', 'AI/ML', 'Weather', 
-    'Location', 'Social Media', 'E-commerce', 'Security'
+    'All',
+    'Data Analytics',
+    'Payment',
+    'AI/ML',
+    'Weather',
+    'Location',
+    'Social Media',
+    'E-commerce',
+    'Security'
   ];
-  
+
   final List<String> _pricingOptions = ['All', 'Free', 'Freemium', 'Paid'];
 
   @override
@@ -55,15 +63,18 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
             const Icon(Icons.arrow_back_outlined, color: AppColors.textPrimary),
         onPressed: () => Get.back(),
       ),
-      title: const Text(
-        'API MARKETPLACE',
-        style: TextStyle(
-          color: AppColors.textPrimary,
-          fontWeight: FontWeight.w300,
-          fontSize: 16,
-          letterSpacing: 2,
-        ),
-      ),
+      title: Builder(builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
+        return Text(
+          l10n.apiMarketplace.toUpperCase(),
+          style: const TextStyle(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w300,
+            fontSize: 16,
+            letterSpacing: 2,
+          ),
+        );
+      }),
       actions: [
         IconButton(
           icon:
@@ -88,56 +99,63 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
   }
 
   Widget _buildSearchAndFilters() {
-    return Container(
-      color: Colors.white,
-      padding: EdgeInsets.all(20.w),
-      child: Column(
-        children: [
-          // Search Bar
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(color: AppColors.textTertiary, width: 1),
-            ),
-            child: TextField(
-              controller: _searchController,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 14,
-                letterSpacing: 0.5,
+    return Builder(builder: (context) {
+      final l10n = AppLocalizations.of(context)!;
+      return Container(
+        color: Colors.white,
+        padding: EdgeInsets.all(20.w),
+        child: Column(
+          children: [
+            // Search Bar
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: AppColors.textTertiary, width: 1),
               ),
-              decoration: InputDecoration(
-                hintText: 'SEARCH',
-                hintStyle: TextStyle(
-                  color: AppColors.iconLight,
-                  fontSize: 12.sp,
-                  letterSpacing: 2,
+              child: TextField(
+                controller: _searchController,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
+                  letterSpacing: 0.5,
                 ),
-                prefixIcon: const Icon(Icons.search,
-                    color: AppColors.textTertiary, size: 20),
-                border: InputBorder.none,
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+                decoration: InputDecoration(
+                  hintText: l10n.search.toUpperCase(),
+                  hintStyle: TextStyle(
+                    color: AppColors.iconLight,
+                    fontSize: 12.sp,
+                    letterSpacing: 2,
+                  ),
+                  prefixIcon: const Icon(Icons.search,
+                      color: AppColors.textTertiary, size: 20),
+                  border: InputBorder.none,
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+                ),
+                onChanged: (value) => _filterApis(),
               ),
-              onChanged: (value) => _filterApis(),
             ),
-          ),
-          
-          SizedBox(height: 16.h),
-          
-          // Filter Row - Minimalist
-          Row(
-            children: [
-              Expanded(child: _buildFilterChip('Category', _selectedCategory, _categories)),
-              SizedBox(width: 8.w),
-              Expanded(child: _buildFilterChip('Pricing', _selectedPricing, _pricingOptions)),
-              SizedBox(width: 8.w),
-              Expanded(child: _buildSortChip()),
-            ],
-          ),
-        ],
-      ),
-    );
+
+            SizedBox(height: 16.h),
+
+            // Filter Row - Minimalist
+            Row(
+              children: [
+                Expanded(
+                    child: _buildFilterChip(
+                        l10n.category, _selectedCategory, _categories)),
+                SizedBox(width: 8.w),
+                Expanded(
+                    child: _buildFilterChip(
+                        'Pricing', _selectedPricing, _pricingOptions)),
+                SizedBox(width: 8.w),
+                Expanded(child: _buildSortChip()),
+              ],
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildFilterChip(String label, String value, List<String> options) {
@@ -216,7 +234,7 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
         itemBuilder: (context, index) {
           final category = _categories[index];
           final isSelected = category == _selectedCategory;
-          
+
           return GestureDetector(
             onTap: () => setState(() => _selectedCategory = category),
             child: Container(
@@ -251,11 +269,11 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
 
   Widget _buildApiGrid() {
     final filteredApis = _getFilteredApis();
-    
+
     if (filteredApis.isEmpty) {
       return _buildEmptyState();
     }
-    
+
     return CustomScrollView(
       slivers: [
         SliverPadding(
@@ -285,7 +303,7 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
     // 为每个API定义简洁的单色方案 - 性冷淡风�?浅色�?
     final colorIndex = api.name.hashCode.abs() % AppColors.apiCardColors.length;
     final cardColor = AppColors.apiCardColors[colorIndex];
-    
+
     return GestureDetector(
       onTap: () => _showApiDetails(api),
       child: Container(
@@ -330,7 +348,7 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
                           _buildMinimalTag('HOT', Colors.white),
                       ],
                     ),
-                    
+
                     SizedBox(height: 16.h),
 
                     // API Name
@@ -345,7 +363,7 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    
+
                     SizedBox(height: 6.h),
 
                     // Category
@@ -358,7 +376,7 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
                         letterSpacing: 1.5,
                       ),
                     ),
-                    
+
                     SizedBox(height: 12.h),
 
                     // Description
@@ -415,7 +433,7 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
                       ),
                     ],
                   ),
-                  
+
                   // 响应时间
                   Text(
                     '${api.responseTime}MS',
@@ -426,14 +444,15 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
                       letterSpacing: 1,
                     ),
                   ),
-                  
+
                   // 价格
                   Container(
                     padding:
                         EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.2)),
                     ),
                     child: Text(
                       api.isFree ? 'FREE' : '\$${api.price}',
@@ -475,53 +494,52 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
     );
   }
 
-
-
-  
-
   Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 80.w,
-            height: 80.w,
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: AppColors.border,
-                width: 2,
+    return Builder(builder: (context) {
+      final l10n = AppLocalizations.of(context)!;
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80.w,
+              height: 80.w,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: AppColors.border,
+                  width: 2,
+                ),
+              ),
+              child: Icon(
+                Icons.search_off,
+                size: 36.sp,
+                color: AppColors.textTertiary,
               ),
             ),
-            child: Icon(
-              Icons.search_off,
-              size: 36.sp,
-              color: AppColors.textTertiary,
+            SizedBox(height: 24.h),
+            Text(
+              l10n.noResults,
+              style: TextStyle(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w400,
+                color: AppColors.textSecondary,
+                letterSpacing: 3,
+              ),
             ),
-          ),
-          SizedBox(height: 24.h),
-          Text(
-            'NO RESULTS',
-            style: TextStyle(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w400,
-              color: AppColors.textSecondary,
-              letterSpacing: 3,
+            SizedBox(height: 8.h),
+            Text(
+              l10n.tryDifferentKeywords,
+              style: TextStyle(
+                fontSize: 11.sp,
+                color: AppColors.textTertiary,
+                fontWeight: FontWeight.w300,
+                letterSpacing: 0.5,
+              ),
             ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'Try different keywords',
-            style: TextStyle(
-              fontSize: 11.sp,
-              color: AppColors.textTertiary,
-              fontWeight: FontWeight.w300,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    });
   }
 
   List<ApiInterfaceModel> _getFilteredApis() {
@@ -536,25 +554,30 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
   }
 
   void _showFilterDialog(String title, List<String> options) {
+    final l10n = AppLocalizations.of(Get.context!)!;
     // Show filter selection dialog
-    Get.snackbar('Filter', '$title filter options would be shown here');
+    Get.snackbar(l10n.filter, '$title ${l10n.filterOptions}');
   }
 
   void _showSortDialog() {
+    final l10n = AppLocalizations.of(Get.context!)!;
     // Show sort options dialog
-    Get.snackbar('Sort', 'Sort options would be shown here');
+    Get.snackbar(l10n.sortBy, l10n.sortOptions);
   }
 
   void _showApiDetails(ApiInterfaceModel api) {
+    final l10n = AppLocalizations.of(Get.context!)!;
     // Navigate to API details page
-    Get.snackbar('API Details', 'Showing details for ${api.name}');
+    Get.snackbar(l10n.apiDetails, '${l10n.showingDetails} ${api.name}');
   }
 
   void _showBookmarks() {
-    Get.snackbar('Bookmarks', 'Bookmarked APIs would be shown here');
+    final l10n = AppLocalizations.of(Get.context!)!;
+    Get.snackbar(l10n.bookmarks, l10n.bookmarkedApis);
   }
 
   void _showCart() {
-    Get.snackbar('Cart', 'API cart would be shown here');
+    final l10n = AppLocalizations.of(Get.context!)!;
+    Get.snackbar(l10n.cart, l10n.apiCart);
   }
 }

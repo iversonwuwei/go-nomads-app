@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../generated/app_localizations.dart';
+
 class NomadsLoginPage extends StatefulWidget {
   const NomadsLoginPage({super.key});
-  
+
   // Nomads.com 品牌红色
   static const Color nomadsRed = Color(0xFFFF4458);
 
@@ -15,7 +17,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  
+
   bool _obscurePassword = true;
   bool _rememberMe = false;
 
@@ -38,7 +40,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
         margin: const EdgeInsets.all(16),
         duration: const Duration(seconds: 2),
       );
-      
+
       // 登录成功后跳转到主页
       Get.offAllNamed('/');
     }
@@ -46,6 +48,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -58,7 +61,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 40),
-                  
+
                   // Logo 和标题
                   Center(
                     child: Column(
@@ -68,7 +71,8 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                           width: 80,
                           height: 80,
                           decoration: BoxDecoration(
-                            color: NomadsLoginPage.nomadsRed.withValues(alpha: 0.1),
+                            color: NomadsLoginPage.nomadsRed
+                                .withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -78,23 +82,23 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        
+
                         // 标题
-                        const Text(
-                          'Welcome Back',
-                          style: TextStyle(
+                        Text(
+                          l10n.welcome,
+                          style: const TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
                           ),
                         ),
                         const SizedBox(height: 12),
-                        
+
                         // 副标题
-                        const Text(
-                          'Log in to continue your nomad journey',
+                        Text(
+                          l10n.login,
                           textAlign: TextAlign.center,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 16,
                             color: Colors.grey,
                             height: 1.5,
@@ -103,16 +107,16 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                       ],
                     ),
                   ),
-                  
+
                   const SizedBox(height: 48),
-                  
+
                   // 邮箱输入
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
-                      labelText: 'Email',
-                      hintText: 'Enter your email',
+                      labelText: l10n.email,
+                      hintText: l10n.email,
                       prefixIcon: const Icon(Icons.email_outlined),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -131,30 +135,30 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
+                        return l10n.email;
                       }
                       if (!GetUtils.isEmail(value)) {
-                        return 'Please enter a valid email';
+                        return l10n.email;
                       }
                       return null;
                     },
                   ),
-                  
+
                   const SizedBox(height: 20),
-                  
+
                   // 密码输入
                   TextFormField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
                     decoration: InputDecoration(
-                      labelText: 'Password',
-                      hintText: 'Enter your password',
+                      labelText: l10n.password,
+                      hintText: l10n.password,
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscurePassword 
-                            ? Icons.visibility_outlined 
-                            : Icons.visibility_off_outlined,
+                          _obscurePassword
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
                         ),
                         onPressed: () {
                           setState(() {
@@ -179,14 +183,14 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your password';
+                        return l10n.password;
                       }
                       return null;
                     },
                   ),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // 记住我 & 忘记密码
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -202,9 +206,9 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                             },
                             activeColor: NomadsLoginPage.nomadsRed,
                           ),
-                          const Text(
-                            'Remember me',
-                            style: TextStyle(
+                          Text(
+                            l10n.login,
+                            style: const TextStyle(
                               fontSize: 14,
                               color: Colors.black87,
                             ),
@@ -214,17 +218,17 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                       TextButton(
                         onPressed: () {
                           Get.snackbar(
-                            'Forgot Password',
-                            'Password reset feature coming soon',
+                            l10n.forgotPassword,
+                            l10n.forgotPassword,
                             backgroundColor: Colors.orange.shade100,
                             colorText: Colors.black87,
                             snackPosition: SnackPosition.BOTTOM,
                             margin: const EdgeInsets.all(16),
                           );
                         },
-                        child: const Text(
-                          'Forgot Password?',
-                          style: TextStyle(
+                        child: Text(
+                          l10n.forgotPassword,
+                          style: const TextStyle(
                             fontSize: 14,
                             color: NomadsLoginPage.nomadsRed,
                             fontWeight: FontWeight.w600,
@@ -233,9 +237,9 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                       ),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 24),
-                  
+
                   // 登录按钮
                   ElevatedButton(
                     onPressed: _login,
@@ -248,17 +252,17 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                       ),
                       elevation: 0,
                     ),
-                    child: const Text(
-                      'Log In →',
-                      style: TextStyle(
+                    child: Text(
+                      l10n.login,
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 24),
-                  
+
                   // 分隔线
                   Row(
                     children: [
@@ -276,9 +280,9 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                       Expanded(child: Divider(color: Colors.grey.shade300)),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 24),
-                  
+
                   // 社交登录按钮
                   Row(
                     children: [
@@ -312,8 +316,8 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                         child: OutlinedButton.icon(
                           onPressed: () {
                             Get.snackbar(
-                              'Apple Sign In',
-                              'Apple authentication coming soon',
+                              'Apple',
+                              'Apple',
                               backgroundColor: Colors.grey.shade100,
                               colorText: Colors.black87,
                               snackPosition: SnackPosition.BOTTOM,
@@ -333,17 +337,17 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                       ),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 32),
-                  
+
                   // 注册提示
                   Center(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text(
-                          "Don't have an account? ",
-                          style: TextStyle(
+                        Text(
+                          l10n.register,
+                          style: const TextStyle(
                             color: Colors.black87,
                             fontSize: 15,
                           ),
@@ -352,9 +356,9 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                           onTap: () {
                             Get.toNamed('/register');
                           },
-                          child: const Text(
-                            'Join Nomads.com',
-                            style: TextStyle(
+                          child: Text(
+                            l10n.register,
+                            style: const TextStyle(
                               color: NomadsLoginPage.nomadsRed,
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
@@ -364,12 +368,12 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                       ],
                     ),
                   ),
-                  
+
                   const SizedBox(height: 32),
-                  
+
                   // 社区亮点提示
                   _buildCommunityHighlight(),
-                  
+
                   SizedBox(height: MediaQuery.of(context).padding.bottom + 32),
                 ],
               ),

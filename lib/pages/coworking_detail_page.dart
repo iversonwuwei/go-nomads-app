@@ -2,6 +2,8 @@ import 'package:df_admin_mobile/models/coworking_space_model.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../generated/app_localizations.dart';
+
 /// Coworking Detail Page
 /// 共享办公空间详情页面
 class CoworkingDetailPage extends StatelessWidget {
@@ -14,6 +16,7 @@ class CoworkingDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -88,7 +91,8 @@ class CoworkingDetailPage extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.star, size: 18, color: Colors.amber),
+                            const Icon(Icons.star,
+                                size: 18, color: Colors.amber),
                             const SizedBox(width: 4),
                             Text(
                               space.rating.toStringAsFixed(1),
@@ -124,7 +128,8 @@ class CoworkingDetailPage extends StatelessWidget {
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.verified, size: 18, color: Colors.blue),
+                              Icon(Icons.verified,
+                                  size: 18, color: Colors.blue),
                               SizedBox(width: 4),
                               Text(
                                 'Verified',
@@ -352,7 +357,8 @@ class CoworkingDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildPriceCard(String label, double price, String currency, IconData icon) {
+  Widget _buildPriceCard(
+      String label, double price, String currency, IconData icon) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -459,7 +465,8 @@ class CoworkingDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSpecCard(String label, String value, IconData icon, Color color) {
+  Widget _buildSpecCard(
+      String label, String value, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -651,7 +658,8 @@ class CoworkingDetailPage extends StatelessWidget {
 
   /// 启动地图
   void _launchMaps(double latitude, double longitude) async {
-    final url = 'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude';
+    final url =
+        'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude';
     _launchURL(url);
   }
 }

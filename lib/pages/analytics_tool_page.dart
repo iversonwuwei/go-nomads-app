@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/analytics_controller.dart';
+import '../generated/app_localizations.dart';
 import '../widgets/copyright_widget.dart';
 
 class AnalyticsToolPage extends StatelessWidget {
@@ -10,8 +11,9 @@ class AnalyticsToolPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final AnalyticsController controller = Get.put(AnalyticsController());
-    
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -69,25 +71,25 @@ class AnalyticsToolPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 16),
-                
+
                 // 时间范围选择器
                 _buildTimeRangeSelector(controller),
-                
+
                 const SizedBox(height: 20),
-                
+
                 // 大类商品概览
                 _buildOverviewCards(controller),
-                
+
                 const SizedBox(height: 20),
-                
+
                 // 主要K线图区域
                 _buildKLineChart(controller),
-                
+
                 const SizedBox(height: 20),
-                
+
                 // 商品列表详情
                 _buildCommodityList(controller),
-                
+
                 const SizedBox(height: 24),
 
                 // 版权信息
@@ -106,7 +108,7 @@ class AnalyticsToolPage extends StatelessWidget {
     return Obx(() => Container(
           margin: const EdgeInsets.symmetric(horizontal: 16),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-      decoration: BoxDecoration(
+          decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: AppColors.borderLight, width: 1),
@@ -119,39 +121,39 @@ class AnalyticsToolPage extends StatelessWidget {
             ],
           ),
           child: InkWell(
-        onTap: () => _showTimeRangeDialog(controller),
+            onTap: () => _showTimeRangeDialog(controller),
             borderRadius: BorderRadius.circular(8),
-        child: Row(
-          children: [
+            child: Row(
+              children: [
                 const Icon(Icons.calendar_today_outlined,
                     color: AppColors.textSecondary, size: 18),
                 const SizedBox(width: 12),
                 const Text(
                   '时间范围',
-              style: TextStyle(
+                  style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 13,
                     fontWeight: FontWeight.w400,
                     letterSpacing: 0.5,
-              ),
-            ),
+                  ),
+                ),
                 const SizedBox(width: 8),
-            Expanded(
+                Expanded(
                   child: Text(
-                controller.selectedTimeRange.value,
+                    controller.selectedTimeRange.value,
                     style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 13,
-                  fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w500,
                       letterSpacing: 0.5,
                     ),
                   ),
                 ),
                 const Icon(Icons.keyboard_arrow_down_outlined,
                     color: AppColors.textTertiary, size: 18),
-          ],
-        ),
-      ),
+              ],
+            ),
+          ),
         ));
   }
 
@@ -194,7 +196,8 @@ class AnalyticsToolPage extends StatelessWidget {
     );
   }
 
-  Widget _buildOverviewCard(String title, String value, IconData icon, Color color) {
+  Widget _buildOverviewCard(
+      String title, String value, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -292,12 +295,12 @@ class AnalyticsToolPage extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
-          
+
           // 模拟K线图区域
           _buildChartCanvas(controller),
-          
+
           const SizedBox(height: 16),
-          
+
           // 图例
           _buildChartLegend(),
         ],
@@ -381,9 +384,9 @@ class AnalyticsToolPage extends StatelessWidget {
           const SizedBox(height: 12),
           // 只在这里使用Obx，响应commodities列表的变化
           Obx(() => Column(
-            children: controller.commodities.map((commodity) {
-              return _buildCommodityItem(commodity);
-            }).toList(),
+                children: controller.commodities.map((commodity) {
+                  return _buildCommodityItem(commodity);
+                }).toList(),
               )),
         ],
       ),
@@ -429,7 +432,7 @@ class AnalyticsToolPage extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 14),
-          
+
           // 商品信息
           Expanded(
             child: Column(
@@ -456,7 +459,7 @@ class AnalyticsToolPage extends StatelessWidget {
               ],
             ),
           ),
-          
+
           // 涨跌信息
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -631,7 +634,7 @@ class KLinePainter extends CustomPainter {
         ..style = PaintingStyle.stroke;
 
       final path = Path();
-      
+
       // 找到最大值和最小值用于归一化
       final maxValue = points.reduce((a, b) => a > b ? a : b);
       final minValue = points.reduce((a, b) => a < b ? a : b);

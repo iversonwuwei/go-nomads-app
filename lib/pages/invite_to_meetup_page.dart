@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../controllers/data_service_controller.dart';
+import '../generated/app_localizations.dart';
 import '../models/user_model.dart' as models;
 
 class InviteToMeetupPage extends StatelessWidget {
@@ -14,6 +15,7 @@ class InviteToMeetupPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final controller = Get.find<DataServiceController>();
     final myMeetups = controller.upcomingMeetups;
 
@@ -30,16 +32,16 @@ class InviteToMeetupPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Invite ${user.name}',
+              '${l10n.invite} ${user.name}',
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF1a1a1a),
               ),
             ),
-            const Text(
-              'Select a meetup to invite',
-              style: TextStyle(
+            Text(
+              l10n.selectMeetup,
+              style: const TextStyle(
                 fontSize: 13,
                 color: Color(0xFF6b7280),
                 fontWeight: FontWeight.normal,
@@ -63,58 +65,63 @@ class InviteToMeetupPage extends StatelessWidget {
 
   // 空状态
   Widget _buildEmptyMeetupState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.event_busy,
-              size: 64,
-              color: const Color(0xFF6b7280).withValues(alpha: 0.3),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'No upcoming meetups',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF1a1a1a),
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Create a meetup first to invite members',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Color(0xFF6b7280),
-              ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.pop(Get.context!);
-                Get.toNamed('/create-meetup');
-              },
-              icon: const Icon(Icons.add),
-              label: const Text('Create Meetup'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF10B981),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
+    return Builder(
+      builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.event_busy,
+                  size: 64,
+                  color: const Color(0xFF6b7280).withValues(alpha: 0.3),
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                const SizedBox(height: 16),
+                Text(
+                  l10n.noData,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1a1a1a),
+                  ),
                 ),
-              ),
+                const SizedBox(height: 8),
+                Text(
+                  l10n.createMeetup,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF6b7280),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(Get.context!);
+                    Get.toNamed('/create-meetup');
+                  },
+                  icon: const Icon(Icons.add),
+                  label: Text(l10n.createMeetup),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF10B981),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -241,6 +248,7 @@ class InviteToMeetupPage extends StatelessWidget {
 
   // 邀请到 Meetup
   void _inviteToMeetup(BuildContext context, Map<String, dynamic> meetup) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -269,9 +277,9 @@ class InviteToMeetupPage extends StatelessWidget {
               const SizedBox(height: 16),
 
               // Title
-              const Text(
-                'Confirm Invitation',
-                style: TextStyle(
+              Text(
+                l10n.confirm,
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF1a1a1a),
@@ -281,7 +289,7 @@ class InviteToMeetupPage extends StatelessWidget {
 
               // Message
               Text(
-                'Invite ${user.name} to:',
+                '${l10n.invite} ${user.name}',
                 style: const TextStyle(
                   fontSize: 14,
                   color: Color(0xFF6b7280),
@@ -344,9 +352,9 @@ class InviteToMeetupPage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      child: const Text(
-                        'Cancel',
-                        style: TextStyle(
+                      child: Text(
+                        l10n.cancel,
+                        style: const TextStyle(
                           color: Color(0xFF6b7280),
                           fontWeight: FontWeight.w600,
                         ),
@@ -360,8 +368,8 @@ class InviteToMeetupPage extends StatelessWidget {
                         // TODO: 实现实际的邀请逻辑
                         Navigator.pop(context);
                         Get.snackbar(
-                          'Success',
-                          '${user.name} has been invited to ${meetup['title']}',
+                          l10n.success,
+                          '${user.name} ${l10n.sendInvitation}',
                           backgroundColor: const Color(0xFF10B981),
                           colorText: Colors.white,
                           snackPosition: SnackPosition.BOTTOM,
@@ -374,7 +382,7 @@ class InviteToMeetupPage extends StatelessWidget {
                         Navigator.pop(Get.context!);
                       },
                       icon: const Icon(Icons.send, size: 18),
-                      label: const Text('Send Invite'),
+                      label: Text(l10n.sendInvitation),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF10B981),
                         foregroundColor: Colors.white,

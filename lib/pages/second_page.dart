@@ -2,20 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../controllers/counter_controller.dart';
+import '../generated/app_localizations.dart';
 
 class SecondPage extends StatelessWidget {
   const SecondPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final CounterController c = Get.find();
     return Scaffold(
-      appBar: AppBar(title: const Text('第二页')),
+      appBar: AppBar(title: Text(l10n.secondPage)),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('第二页，计数器同样可用：'),
+            Text(l10n.secondPageCounterText),
             Obx(() => Text(
                   '${c.count}',
                   style: Theme.of(context).textTheme.headlineMedium,
@@ -23,7 +25,7 @@ class SecondPage extends StatelessWidget {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () => Get.back(),
-              child: const Text('返回首页'),
+              child: Text(l10n.backToHome),
             ),
           ],
         ),

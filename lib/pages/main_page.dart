@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../controllers/shopping_controller.dart';
+import '../generated/app_localizations.dart';
 import '../routes/app_routes.dart';
 import 'data_service_page.dart';
 import 'profile_page.dart';
@@ -12,6 +13,7 @@ class MainPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ShoppingController controller = Get.put(ShoppingController());
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: Obx(() {
@@ -41,9 +43,9 @@ class MainPage extends StatelessWidget {
             backgroundColor: Colors.white,
             elevation: 8,
             items: [
-              const BottomNavigationBarItem(
-                icon: Icon(Icons.home),
-                label: '首页',
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.home),
+                label: l10n.home,
               ),
               BottomNavigationBarItem(
                 icon: Container(
@@ -80,11 +82,11 @@ class MainPage extends StatelessWidget {
                     size: 24,
                   ),
                 ),
-                label: 'AI助手',
+                label: l10n.aiAssistant,
               ),
-              const BottomNavigationBarItem(
-                icon: Icon(Icons.person),
-                label: '我的',
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.person),
+                label: l10n.myProfile,
               ),
             ],
           )),

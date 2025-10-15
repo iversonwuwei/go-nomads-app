@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../generated/app_localizations.dart';
 import '../routes/app_routes.dart';
 
 class TestAuthPage extends StatelessWidget {
@@ -8,9 +9,10 @@ class TestAuthPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('测试认证'),
+        title: Text(l10n.testAuth),
         backgroundColor: Colors.blue[600],
         foregroundColor: Colors.white,
       ),
@@ -20,9 +22,9 @@ class TestAuthPage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  '用于测试登录功能',
-                  style: TextStyle(fontSize: 18),
+                Text(
+                  l10n.testLoginFunction,
+                  style: const TextStyle(fontSize: 18),
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
@@ -35,14 +37,14 @@ class TestAuthPage extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 32, vertical: 16),
                   ),
-                  child: const Text('前往登录页面'),
+                  child: Text(l10n.goToLoginPage),
                 ),
                 const SizedBox(height: 10),
                 TextButton(
                   onPressed: () {
                     Get.back();
                   },
-                  child: const Text('返回'),
+                  child: Text(l10n.back),
                 ),
               ],
             ),

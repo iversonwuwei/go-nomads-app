@@ -3,9 +3,10 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/city_detail_controller.dart';
+import '../generated/app_localizations.dart';
 import '../models/travel_plan_model.dart';
 
-/// 旅行计划详情�?
+/// 旅行计划详情�?
 class TravelPlanPage extends StatefulWidget {
   final TravelPlan? plan;
   final String? cityId;
@@ -80,6 +81,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (_isLoading) {
       return _buildLoadingSkeleton();
     }

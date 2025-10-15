@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../generated/app_localizations.dart';
+
 // 城市详情页面 - 基于 Nomads.com 设计
 class CityDetailPage extends StatefulWidget {
   final Map<String, dynamic> cityData;
@@ -15,6 +17,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
 
@@ -434,12 +437,30 @@ class _CityDetailPageState extends State<CityDetailPage> {
   // 生活成本
   Widget _buildCostOfLiving(bool isMobile) {
     final costs = [
-      {'item': 'Apartment (1br)', 'price': '\$${(widget.cityData['price'] * 0.6).toInt()}'},
-      {'item': 'Coworking Space', 'price': '\$${(widget.cityData['price'] * 0.15).toInt()}'},
-      {'item': 'Meal (Restaurant)', 'price': '\$${(widget.cityData['price'] * 0.02).toInt()}'},
-      {'item': 'Coffee', 'price': '\$${(widget.cityData['price'] * 0.008).toInt()}'},
-      {'item': 'Transport (Monthly)', 'price': '\$${(widget.cityData['price'] * 0.1).toInt()}'},
-      {'item': 'Gym Membership', 'price': '\$${(widget.cityData['price'] * 0.08).toInt()}'},
+      {
+        'item': 'Apartment (1br)',
+        'price': '\$${(widget.cityData['price'] * 0.6).toInt()}'
+      },
+      {
+        'item': 'Coworking Space',
+        'price': '\$${(widget.cityData['price'] * 0.15).toInt()}'
+      },
+      {
+        'item': 'Meal (Restaurant)',
+        'price': '\$${(widget.cityData['price'] * 0.02).toInt()}'
+      },
+      {
+        'item': 'Coffee',
+        'price': '\$${(widget.cityData['price'] * 0.008).toInt()}'
+      },
+      {
+        'item': 'Transport (Monthly)',
+        'price': '\$${(widget.cityData['price'] * 0.1).toInt()}'
+      },
+      {
+        'item': 'Gym Membership',
+        'price': '\$${(widget.cityData['price'] * 0.08).toInt()}'
+      },
     ];
 
     return Container(
@@ -516,8 +537,18 @@ class _CityDetailPageState extends State<CityDetailPage> {
   // 天气信息
   Widget _buildWeatherSection(bool isMobile) {
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
     ];
 
     return Container(
@@ -554,7 +585,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
                 final temp = 15 + (months.indexOf(month) % 6) * 5;
                 final maxHeight = isMobile ? 80.0 : 100.0;
                 final barHeight = (temp / 35) * maxHeight;
-                
+
                 return Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.end,

@@ -11,6 +11,7 @@ import 'package:image_picker/image_picker.dart';
 import '../config/app_colors.dart';
 import '../controllers/city_detail_controller.dart';
 import '../controllers/coworking_controller.dart';
+import '../generated/app_localizations.dart';
 import '../models/coworking_space_model.dart';
 import '../widgets/skeleton_loader.dart';
 import 'add_cost_page.dart';
@@ -62,6 +63,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final controller = Get.put(CityDetailController());
     controller.currentCityId.value = widget.cityId;
     controller.currentCityName.value = widget.cityName;
@@ -234,7 +236,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Text('Scores'),
+                                Text(l10n.scores),
                                 const SizedBox(width: 4),
                                 GestureDetector(
                                   onTap: () => _showShareScoreDialog(),
@@ -247,13 +249,13 @@ class _CityDetailPageState extends State<CityDetailPage> {
                               ],
                             ),
                           ),
-                          const Tab(text: 'Guide'),
-                          const Tab(text: 'Pros & Cons'),
+                          Tab(text: l10n.guide),
+                          Tab(text: l10n.prosAndCons),
                           Tab(
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Text('Reviews'),
+                                Text(l10n.reviews),
                                 const SizedBox(width: 4),
                                 GestureDetector(
                                   onTap: () => _showShareReviewDialog(),
@@ -270,7 +272,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Text('Cost'),
+                                Text(l10n.cost),
                                 const SizedBox(width: 4),
                                 GestureDetector(
                                   onTap: () => _showShareCostDialog(),
@@ -287,7 +289,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Text('Photos'),
+                                Text(l10n.photos),
                                 const SizedBox(width: 4),
                                 GestureDetector(
                                   onTap: () => _showSharePhotoDialog(),
@@ -300,13 +302,13 @@ class _CityDetailPageState extends State<CityDetailPage> {
                               ],
                             ),
                           ),
-                          const Tab(text: 'Weather'),
-                          const Tab(text: 'Neighborhoods'),
+                          Tab(text: l10n.weather),
+                          Tab(text: l10n.neighborhoods),
                           Tab(
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Text('Coworking'),
+                                Text(l10n.coworking),
                                 const SizedBox(width: 4),
                                 GestureDetector(
                                   onTap: () => _showAddCoworkingPage(),
@@ -332,7 +334,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
 
                 return TabBarView(
                   children: [
-                    _buildScoresTab(controller),
+                    _buildScoresTab(context, controller),
                     _buildGuideTab(controller),
                     _buildProsConsTab(controller),
                     _buildReviewsTab(controller),
@@ -427,70 +429,76 @@ class _CityDetailPageState extends State<CityDetailPage> {
   }
 
   // Scores 标签
-  Widget _buildScoresTab(CityDetailController controller) {
+  Widget _buildScoresTab(
+      BuildContext context, CityDetailController controller) {
+    final l10n = AppLocalizations.of(context)!;
     final scores = controller.scores.value;
     if (scores == null) {
-      return const Center(child: Text('No data'));
+      return Center(child: Text(l10n.noData));
     }
 
     final scoreItems = [
-      {'icon': Icons.star, 'label': 'Overall', 'value': scores.overall},
+      {'icon': Icons.star, 'label': l10n.overall, 'value': scores.overall},
       {
         'icon': Icons.favorite,
-        'label': 'Quality of Life',
+        'label': l10n.qualityOfLife,
         'value': scores.qualityOfLife
       },
       {
         'icon': Icons.family_restroom,
-        'label': 'Family Score',
+        'label': l10n.familyScore,
         'value': scores.familyScore
       },
       {
         'icon': Icons.people,
-        'label': 'Community',
+        'label': l10n.community,
         'value': scores.communityScore
       },
-      {'icon': Icons.security, 'label': 'Safety', 'value': scores.safetyScore},
+      {
+        'icon': Icons.security,
+        'label': l10n.safety,
+        'value': scores.safetyScore
+      },
       {
         'icon': Icons.female,
-        'label': 'Women Safety',
+        'label': l10n.womenSafety,
         'value': scores.womenSafety
       },
       {
         'icon': Icons.flag,
-        'label': 'LGBTQ+ Safety',
+        'label': l10n.lgbtqSafety,
         'value': scores.lgbtqSafety
       },
-      {'icon': Icons.celebration, 'label': 'Fun', 'value': scores.funScore},
+      {'icon': Icons.celebration, 'label': l10n.fun, 'value': scores.funScore},
       {
         'icon': Icons.directions_walk,
-        'label': 'Walkability',
+        'label': l10n.walkability,
         'value': scores.walkability
       },
       {
         'icon': Icons.nightlife,
-        'label': 'Nightlife',
+        'label': l10n.nightlife,
         'value': scores.nightlife
       },
       {
         'icon': Icons.language,
-        'label': 'English Speaking',
+        'label': l10n.englishSpeaking,
         'value': scores.englishSpeaking
       },
       {
         'icon': Icons.restaurant,
-        'label': 'Food Safety',
+        'label': l10n.foodSafety,
         'value': scores.foodSafety
       },
-      {'icon': Icons.wifi, 'label': 'Free WiFi', 'value': scores.freeWiFi},
+      {'icon': Icons.wifi, 'label': l10n.freeWiFi, 'value': scores.freeWiFi},
       {
         'icon': Icons.laptop,
-        'label': 'Places to Work',
+        'label': l10n.placesToWork,
         'value': scores.placesToWork
       },
       {
         'icon': Icons.local_hospital,
-        'label': 'Hospitals',
+        'label': l10n.hospitals,
         'value': scores.hospitals
       },
     ];
@@ -559,19 +567,20 @@ class _CityDetailPageState extends State<CityDetailPage> {
   Widget _buildGuideTab(CityDetailController controller) {
     final guide = controller.guide.value;
     if (guide == null) {
-      return const Center(child: Text('Loading guide...'));
+      return Center(child: Text(AppLocalizations.of(context)!.loadingGuide));
     }
 
-    return _buildGuideContent(guide);
+    return _buildGuideContent(context, guide);
   }
 
-  Widget _buildGuideContent(guide) {
+  Widget _buildGuideContent(BuildContext context, guide) {
+    final l10n = AppLocalizations.of(context)!;
     return ListView(
       padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
       children: [
-        const Text(
-          'Overview',
-          style: TextStyle(
+        Text(
+          l10n.overview,
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
@@ -828,7 +837,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
   Widget _buildCostTab(CityDetailController controller) {
     final cost = controller.costOfLiving.value;
     if (cost == null) {
-      return const Center(child: Text('No data'));
+      return Center(child: Text(AppLocalizations.of(context)!.noData));
     }
 
     return ListView(
@@ -924,7 +933,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
   Widget _buildWeatherTab(CityDetailController controller) {
     final weather = controller.weather.value;
     if (weather == null) {
-      return const Center(child: Text('No data'));
+      return Center(child: Text(AppLocalizations.of(context)!.noData));
     }
 
     return ListView(
@@ -1037,7 +1046,8 @@ class _CityDetailPageState extends State<CityDetailPage> {
                         const Icon(Icons.security,
                             size: 16, color: Color(0xFFFF4458)),
                         const SizedBox(width: 4),
-                        Text('Safety: ${neighborhood.safetyScore}'),
+                        Text(
+                            '${AppLocalizations.of(context)!.safety}: ${neighborhood.safetyScore}'),
                         const SizedBox(width: 16),
                         const Icon(Icons.attach_money,
                             size: 16, color: Color(0xFFFF4458)),
@@ -1473,7 +1483,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text('Start Rating'),
+                  child: Text(AppLocalizations.of(context)!.startRating),
                 ),
               ),
             ],
@@ -1484,20 +1494,20 @@ class _CityDetailPageState extends State<CityDetailPage> {
   }
 
   /// 分享指南信息
-  /// 分享评论 - 跳转到独立页�?
+  /// 分享评论 - 跳转到独立页面
   void _showShareReviewDialog() async {
     final result = await Get.to(() => AddReviewPage(
           cityId: widget.cityId,
           cityName: widget.cityName,
         ));
 
-    // 如果提交成功，刷新评论列�?
+    // 如果提交成功,刷新评论列表
     if (result != null) {
       // TODO: 刷新评论列表
       // final controller = Get.find<CityDetailController>();
       // controller.refreshReviews();
 
-      // 显示成功消息已经�?AddReviewPage 中处�?
+      // 显示成功消息已经在 AddReviewPage 中处理
       print('Review submitted successfully: $result');
     }
   }
@@ -1545,7 +1555,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
                         _pickImage(ImageSource.camera);
                       },
                       icon: const Icon(Icons.camera_alt),
-                      label: const Text('Camera'),
+                      label: Text(AppLocalizations.of(context)!.camera),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: const Color(0xFFFF4458),
                         side: const BorderSide(color: Color(0xFFFF4458)),
@@ -1564,7 +1574,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
                         _pickImage(ImageSource.gallery);
                       },
                       icon: const Icon(Icons.photo_library),
-                      label: const Text('Gallery'),
+                      label: Text(AppLocalizations.of(context)!.gallery),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFFF4458),
                         foregroundColor: Colors.white,

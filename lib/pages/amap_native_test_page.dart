@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
+import '../generated/app_localizations.dart';
 import '../services/amap_native_service.dart';
 import 'amap_native_picker_page.dart';
 
@@ -16,26 +17,27 @@ class AmapNativeTestPage extends StatefulWidget {
 }
 
 class _AmapNativeTestPageState extends State<AmapNativeTestPage> {
-  String _testResult = 'Not tested';
+  String _testResult = '';
   bool _isLoading = false;
   Map<String, dynamic>? _selectedLocation;
 
   Future<void> _testConnection() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() {
       _isLoading = true;
-      _testResult = 'Testing...';
+      _testResult = l10n.testing;
     });
 
     try {
       final isConnected = await AmapNativeService.instance.testConnection();
       setState(() {
         _testResult = isConnected 
-            ? '‚ú?Platform Channel Connected!' 
-            : '‚ù?Connection Failed';
+            ? l10n.platformChannelConnected
+            : l10n.connectionFailed;
       });
     } catch (e) {
       setState(() {
-        _testResult = '‚ù?Error: $e';
+        _testResult = '‚úó ${l10n.error}: $e';
       });
     } finally {
       setState(() {
@@ -55,18 +57,19 @@ class _AmapNativeTestPageState extends State<AmapNativeTestPage> {
         setState(() {
           _selectedLocation = result;
         });
-
+        final l10n = AppLocalizations.of(context)!;
         Get.snackbar(
-          'Success',
-          'Location selected!',
+          l10n.success,
+          l10n.locationSelected,
           backgroundColor: Colors.green.withValues(alpha: 0.9),
           colorText: Colors.white,
         );
       }
     } catch (e) {
+      final l10n = AppLocalizations.of(context)!;
       Get.snackbar(
-        'Error',
-        'Failed to open map: $e',
+        l10n.error,
+        '${l10n.openMapPicker}: $e',
         backgroundColor: Colors.red.withValues(alpha: 0.9),
         colorText: Colors.white,
       );
@@ -83,17 +86,18 @@ class _AmapNativeTestPageState extends State<AmapNativeTestPage> {
       setState(() {
         _selectedLocation = result;
       });
-
+      final l10n = AppLocalizations.of(context)!;
       Get.snackbar(
-        'Success',
-        'Got current location!',
+        l10n.success,
+        l10n.gotCurrentLocation,
         backgroundColor: Colors.green.withValues(alpha: 0.9),
         colorText: Colors.white,
       );
     } catch (e) {
+      final l10n = AppLocalizations.of(context)!;
       Get.snackbar(
-        'Error',
-        'Failed to get location: $e',
+        l10n.error,
+        '${l10n.getCurrentLocation}: $e',
         backgroundColor: Colors.red.withValues(alpha: 0.9),
         colorText: Colors.white,
       );
@@ -106,6 +110,7 @@ class _AmapNativeTestPageState extends State<AmapNativeTestPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -115,9 +120,9 @@ class _AmapNativeTestPageState extends State<AmapNativeTestPage> {
           icon: const Icon(Icons.arrow_back_outlined, color: AppColors.backButtonDark),
           onPressed: () => Get.back(),
         ),
-        title: const Text(
-          'Amap Native Test',
-          style: TextStyle(
+        title: Text(
+          l10n.amapNativeTest,
+          style: const TextStyle(
             color: Colors.black,
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -129,7 +134,7 @@ class _AmapNativeTestPageState extends State<AmapNativeTestPage> {
         children: [
           // Test Connection Section
           _buildSection(
-            title: '1. Test Platform Channel',
+            title: '1. ${l10n.testPlatformChannel}',
             child: Column(
               children: [
                 ElevatedButton(
@@ -147,9 +152,9 @@ class _AmapNativeTestPageState extends State<AmapNativeTestPage> {
                             strokeWidth: 2,
                           ),
                         )
-                      : const Text(
-                          'Test Connection',
-                          style: TextStyle(
+                      : Text(
+                          l10n.testConnection,
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -158,12 +163,12 @@ class _AmapNativeTestPageState extends State<AmapNativeTestPage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  _testResult,
+                  _testResult.isEmpty ? l10n.notTested : _testResult,
                   style: TextStyle(
                     fontSize: 14,
-                    color: _testResult.contains('‚ú?) 
+                    color: _testResult.contains('‚úì') 
                         ? Colors.green 
-                        : _testResult.contains('‚ù?)
+                        : _testResult.contains('‚úó')
                             ? Colors.red
                             : Colors.black54,
                     fontWeight: FontWeight.w500,
@@ -176,16 +181,16 @@ class _AmapNativeTestPageState extends State<AmapNativeTestPage> {
 
           // Open Map Picker Section
           _buildSection(
-            title: '2. Open Map Picker',
+            title: '2. ${l10n.openMapPicker}',
             child: ElevatedButton(
               onPressed: _isLoading ? null : _openMapPicker,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFF4458),
                 minimumSize: const Size(double.infinity, 48),
               ),
-              child: const Text(
-                'Open Native Map Picker',
-                style: TextStyle(
+              child: Text(
+                l10n.openNativeMapPicker,
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -197,16 +202,16 @@ class _AmapNativeTestPageState extends State<AmapNativeTestPage> {
 
           // Get Current Location Section
           _buildSection(
-            title: '3. Get Current Location',
+            title: '3. ${l10n.getCurrentLocation}',
             child: ElevatedButton(
               onPressed: _isLoading ? null : _getCurrentLocation,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFF4458),
                 minimumSize: const Size(double.infinity, 48),
               ),
-              child: const Text(
-                'Get Current Location',
-                style: TextStyle(
+              child: Text(
+                l10n.getCurrentLocation,
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -219,15 +224,15 @@ class _AmapNativeTestPageState extends State<AmapNativeTestPage> {
           // Selected Location Display
           if (_selectedLocation != null) ...[
             _buildSection(
-              title: 'üìç Selected Location',
+              title: l10n.selectedLocation,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildLocationInfo('Latitude', _selectedLocation!['latitude'].toString()),
-                  _buildLocationInfo('Longitude', _selectedLocation!['longitude'].toString()),
-                  _buildLocationInfo('Address', _selectedLocation!['address'] ?? 'N/A'),
-                  _buildLocationInfo('City', _selectedLocation!['city'] ?? 'N/A'),
-                  _buildLocationInfo('Province', _selectedLocation!['province'] ?? 'N/A'),
+                  _buildLocationInfo(l10n.latitude, _selectedLocation!['latitude'].toString()),
+                  _buildLocationInfo(l10n.longitude, _selectedLocation!['longitude'].toString()),
+                  _buildLocationInfo(l10n.address, _selectedLocation!['address'] ?? 'N/A'),
+                  _buildLocationInfo(l10n.city, _selectedLocation!['city'] ?? 'N/A'),
+                  _buildLocationInfo(l10n.province, _selectedLocation!['province'] ?? 'N/A'),
                 ],
               ),
             ),
@@ -237,33 +242,33 @@ class _AmapNativeTestPageState extends State<AmapNativeTestPage> {
 
           // Instructions
           _buildSection(
-            title: 'üìñ Instructions',
-            child: const Column(
+            title: l10n.instructions,
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '1. First test the Platform Channel connection',
-                  style: TextStyle(fontSize: 14, color: Colors.black87),
+                  l10n.instructionStep1,
+                  style: const TextStyle(fontSize: 14, color: Colors.black87),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Text(
-                  '2. If connected, open the native map picker',
-                  style: TextStyle(fontSize: 14, color: Colors.black87),
+                  l10n.instructionStep2,
+                  style: const TextStyle(fontSize: 14, color: Colors.black87),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Text(
-                  '3. Drag the map to select a location',
-                  style: TextStyle(fontSize: 14, color: Colors.black87),
+                  l10n.instructionStep3,
+                  style: const TextStyle(fontSize: 14, color: Colors.black87),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Text(
-                  '4. Tap "Confirm Location" to return',
-                  style: TextStyle(fontSize: 14, color: Colors.black87),
+                  l10n.instructionStep4,
+                  style: const TextStyle(fontSize: 14, color: Colors.black87),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Text(
-                  'Note: Map tiles may not load in iOS Simulator. Use a real device for full testing.',
-                  style: TextStyle(
+                  l10n.mapTilesNote,
+                  style: const TextStyle(
                     fontSize: 12,
                     color: Colors.orange,
                     fontStyle: FontStyle.italic,

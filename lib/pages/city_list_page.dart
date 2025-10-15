@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/data_service_controller.dart';
+import '../generated/app_localizations.dart';
 import '../widgets/skeleton_loader.dart';
 import 'city_detail_page.dart';
 
@@ -18,9 +19,11 @@ class _CityListPageState extends State<CityListPage> {
   final DataServiceController controller = Get.put(DataServiceController());
   final TextEditingController _searchController = TextEditingController();
 
-  String _selectedCountry = 'All Countries';
-  String _selectedCity = 'All Cities';
   String _searchQuery = '';
+
+  // 视图和排序状态
+  bool _isGridView = true;
+  String _sortBy = 'popular'; // popular, cost, internet, safety
 
   @override
   void dispose() {
@@ -30,18 +33,7 @@ class _CityListPageState extends State<CityListPage> {
 
   // 获取筛选后的城市列表
   List<Map<String, dynamic>> get _filteredCities {
-    var items = controller.dataItems.toList();
-
-    // 按国家筛选
-    if (_selectedCountry != 'All Countries') {
-      items =
-          items.where((item) => item['country'] == _selectedCountry).toList();
-    }
-
-    // 按城市筛选
-    if (_selectedCity != 'All Cities') {
-      items = items.where((item) => item['city'] == _selectedCity).toList();
-    }
+    var items = controller.filteredItems;
 
     // 按搜索关键词筛选
     if (_searchQuery.isNotEmpty) {
@@ -56,33 +48,129 @@ class _CityListPageState extends State<CityListPage> {
     return items;
   }
 
-  // 获取可用城市列表（基于当前国家筛选）
-  List<String> get _availableCities {
-    if (_selectedCountry == 'All Countries') {
-      return ['All Cities', ...controller.availableCities];
-    }
-
-    final cities = controller.dataItems
-        .where((item) => item['country'] == _selectedCountry)
-        .map((item) => item['city'] as String)
-        .toSet()
-        .toList()
-      ..sort();
-
-    return ['All Cities', ...cities];
-  }
-
   void _clearFilters() {
     setState(() {
-      _selectedCountry = 'All Countries';
-      _selectedCity = 'All Cities';
       _searchQuery = '';
       _searchController.clear();
+      controller.resetFilters();
     });
+  }
+
+  // 构建工具栏
+  Widget _buildToolbar(bool isMobile) {
+    final l10n = AppLocalizations.of(context)!;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          _sortBy == 'popular'
+              ? l10n.popular
+              : _sortBy == 'cost'
+                  ? l10n.cost
+                  : _sortBy == 'internet'
+                      ? l10n.internet
+                      : l10n.safety,
+          style: const TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        Row(
+          children: [
+            // 筛选按钮
+            Container(
+              margin: const EdgeInsets.only(right: 8),
+              decoration: BoxDecoration(
+                color: controller.hasActiveFilters
+                    ? const Color(0xFFFF4458).withValues(alpha: 0.1)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: controller.hasActiveFilters
+                      ? const Color(0xFFFF4458)
+                      : AppColors.borderLight,
+                  width: 1.5,
+                ),
+              ),
+              child: Stack(
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      Icons.tune_outlined,
+                      color: controller.hasActiveFilters
+                          ? const Color(0xFFFF4458)
+                          : AppColors.textSecondary,
+                      size: 20,
+                    ),
+                    onPressed: () => _showFilterDrawer(),
+                  ),
+                  if (controller.hasActiveFilters)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFFF4458),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            // Grid/List 视图切换
+            IconButton(
+              icon: Icon(
+                _isGridView
+                    ? Icons.view_list_outlined
+                    : Icons.grid_view_outlined,
+                color: AppColors.textSecondary,
+                size: 20,
+              ),
+              onPressed: () {
+                setState(() {
+                  _isGridView = !_isGridView;
+                });
+              },
+            ),
+            // 排序
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.sort_outlined,
+                  color: AppColors.textSecondary, size: 20),
+              onSelected: (value) {
+                setState(() {
+                  _sortBy = value;
+                });
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem(value: 'popular', child: Text(l10n.popular)),
+                PopupMenuItem(value: 'cost', child: Text(l10n.cost)),
+                PopupMenuItem(value: 'internet', child: Text(l10n.internet)),
+                PopupMenuItem(value: 'safety', child: Text(l10n.safety)),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // 显示筛选抽屉
+  void _showFilterDrawer() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _CityFilterDrawer(controller: controller),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
 
@@ -92,7 +180,7 @@ class _CityListPageState extends State<CityListPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         title: Text(
-          'Explore Cities',
+          l10n.exploreCities,
           style: TextStyle(
             color: AppColors.textPrimary,
             fontSize: isMobile ? 20 : 24,
@@ -100,8 +188,7 @@ class _CityListPageState extends State<CityListPage> {
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_outlined,
-              color: AppColors.textPrimary),
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Get.back(),
         ),
         bottom: PreferredSize(
@@ -122,6 +209,16 @@ class _CityListPageState extends State<CityListPage> {
             // 筛选栏
             _buildFilterBar(isMobile),
 
+            // 工具栏 (筛选/视图/排序)
+            Container(
+              color: Colors.white,
+              padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 16 : 20,
+                vertical: 12,
+              ),
+              child: _buildToolbar(isMobile),
+            ),
+
             // 城市列表
             Expanded(
               child: _filteredCities.isEmpty
@@ -136,240 +233,118 @@ class _CityListPageState extends State<CityListPage> {
 
   // 筛选栏
   Widget _buildFilterBar(bool isMobile) {
-    return Container(
-      color: Colors.white,
-      padding: EdgeInsets.all(isMobile ? 16 : 20),
-      child: Column(
-        children: [
-          // 搜索框
-          _buildSearchField(),
-          const SizedBox(height: 12),
-
-          // 筛选按钮行
-          Row(
+    return Builder(
+      builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
+        return Container(
+          color: Colors.white,
+          padding: EdgeInsets.all(isMobile ? 16 : 20),
+          child: Column(
             children: [
-              // 国家筛选
-              Expanded(
-                child: _buildCountryDropdown(),
-              ),
-              const SizedBox(width: 12),
+              // 搜索框
+              _buildSearchField(),
+              const SizedBox(height: 12),
 
-              // 城市筛选
-              Expanded(
-                child: _buildCityDropdown(),
-              ),
-              const SizedBox(width: 12),
-
-              // 清除筛选按钮
-              IconButton(
-                icon: const Icon(Icons.filter_alt_off),
-                color: const Color(0xFFFF4458),
-                tooltip: 'Clear filters',
-                onPressed: _clearFilters,
-              ),
-            ],
-          ),
-
-          // 结果数量
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Text(
-                '${_filteredCities.length} cities found',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              if (_selectedCountry != 'All Countries' ||
-                  _selectedCity != 'All Cities' ||
-                  _searchQuery.isNotEmpty) ...[
-                const SizedBox(width: 8),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Text(
-                    'Filtered',
-                    style: TextStyle(
-                      color: Color(0xFFFF4458),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+              // 结果数量
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '${_filteredCities.length} ${l10n.citiesFound}',
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                ),
-              ],
+                  Obx(() {
+                    final hasFilters =
+                        controller.hasActiveFilters || _searchQuery.isNotEmpty;
+                    if (!hasFilters) return const SizedBox.shrink();
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF4458).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        l10n.filtered,
+                        style: const TextStyle(
+                          color: Color(0xFFFF4458),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    );
+                  }),
+                ],
+              ),
             ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
   // 搜索框
   Widget _buildSearchField() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.borderLight),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.search, color: AppColors.textSecondary, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: TextField(
-              controller: _searchController,
-              decoration: const InputDecoration(
-                hintText: 'Search city or country...',
-                hintStyle: TextStyle(
-                  color: AppColors.textTertiary,
-                  fontSize: 14,
+    return Builder(
+      builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.borderLight),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.search,
+                  color: AppColors.textSecondary, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: l10n.searchCityOrCountry,
+                    hintStyle: const TextStyle(
+                      color: AppColors.textTertiary,
+                      fontSize: 14,
+                    ),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      _searchQuery = value;
+                    });
+                  },
                 ),
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
               ),
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 14,
-              ),
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                });
-              },
-            ),
+              if (_searchQuery.isNotEmpty)
+                IconButton(
+                  icon: const Icon(Icons.clear, size: 18),
+                  color: AppColors.textSecondary,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  onPressed: () {
+                    setState(() {
+                      _searchQuery = '';
+                      _searchController.clear();
+                    });
+                  },
+                ),
+            ],
           ),
-          if (_searchQuery.isNotEmpty)
-            IconButton(
-              icon: const Icon(Icons.clear, size: 18),
-              color: AppColors.textSecondary,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-              onPressed: () {
-                setState(() {
-                  _searchQuery = '';
-                  _searchController.clear();
-                });
-              },
-            ),
-        ],
-      ),
-    );
-  }
-
-  // 国家下拉菜单
-  Widget _buildCountryDropdown() {
-    final countries = ['All Countries', ...controller.availableCountries];
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.borderLight),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: _selectedCountry,
-          isExpanded: true,
-          icon: const Icon(Icons.arrow_drop_down, size: 20),
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 14,
-          ),
-          items: countries.map((country) {
-            return DropdownMenuItem<String>(
-              value: country,
-              child: Row(
-                children: [
-                  Icon(
-                    country == 'All Countries' ? Icons.public : Icons.flag,
-                    size: 16,
-                    color: AppColors.textSecondary,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      country,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
-          onChanged: (value) {
-            setState(() {
-              _selectedCountry = value!;
-              // 如果改变国家，重置城市筛选
-              if (value != 'All Countries') {
-                _selectedCity = 'All Cities';
-              }
-            });
-          },
-        ),
-      ),
-    );
-  }
-
-  // 城市下拉菜单
-  Widget _buildCityDropdown() {
-    final cities = _availableCities;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.borderLight),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: cities.contains(_selectedCity) ? _selectedCity : 'All Cities',
-          isExpanded: true,
-          icon: const Icon(Icons.arrow_drop_down, size: 20),
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 14,
-          ),
-          items: cities.map((city) {
-            return DropdownMenuItem<String>(
-              value: city,
-              child: Row(
-                children: [
-                  Icon(
-                    city == 'All Cities'
-                        ? Icons.location_city
-                        : Icons.location_on,
-                    size: 16,
-                    color: AppColors.textSecondary,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      city,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
-          onChanged: (value) {
-            setState(() {
-              _selectedCity = value!;
-            });
-          },
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -583,59 +558,517 @@ class _CityListPageState extends State<CityListPage> {
 
   // 空状态
   Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.search_off,
-                size: 64,
-                color: Color(0xFFFF4458),
-              ),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'No cities found',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Try adjusting your filters or search query',
-              style: TextStyle(
-                fontSize: 14,
-                color: AppColors.textSecondary,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: _clearFilters,
-              icon: const Icon(Icons.refresh, size: 18),
-              label: const Text('Clear Filters'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF4458),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
+    return Builder(
+      builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF4458).withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.search_off,
+                    size: 64,
+                    color: Color(0xFFFF4458),
+                  ),
                 ),
+                const SizedBox(height: 24),
+                Text(
+                  l10n.noCitiesFound,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  l10n.tryAdjustingFilters,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton.icon(
+                  onPressed: _clearFilters,
+                  icon: const Icon(Icons.refresh, size: 18),
+                  label: Text(l10n.clearFilters),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF4458),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+// 城市筛选抽屉
+class _CityFilterDrawer extends StatelessWidget {
+  final DataServiceController controller;
+
+  const _CityFilterDrawer({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    return Container(
+      height: screenHeight * 0.85,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        children: [
+          // 顶部栏
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: const BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: AppColors.borderLight, width: 1),
               ),
             ),
-          ],
-        ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Filters',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                Row(
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        controller.resetFilters();
+                      },
+                      child: const Text(
+                        'Reset',
+                        style: TextStyle(
+                          color: Color(0xFFFF4458),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // 筛选选项（可滚动）
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 地区筛选
+                  _buildSectionTitle('Region'),
+                  const SizedBox(height: 12),
+                  Obx(() => Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: controller.availableRegions.map((region) {
+                          final isSelected =
+                              controller.selectedRegions.contains(region);
+                          return FilterChip(
+                            label: Text(region),
+                            selected: isSelected,
+                            onSelected: (selected) {
+                              if (selected) {
+                                controller.selectedRegions.add(region);
+                              } else {
+                                controller.selectedRegions.remove(region);
+                              }
+                            },
+                            selectedColor:
+                                const Color(0xFFFF4458).withValues(alpha: 0.1),
+                            checkmarkColor: const Color(0xFFFF4458),
+                            labelStyle: TextStyle(
+                              color: isSelected
+                                  ? const Color(0xFFFF4458)
+                                  : AppColors.textSecondary,
+                              fontWeight: isSelected
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
+                            ),
+                            side: BorderSide(
+                              color: isSelected
+                                  ? const Color(0xFFFF4458)
+                                  : AppColors.borderLight,
+                            ),
+                          );
+                        }).toList(),
+                      )),
+
+                  const SizedBox(height: 24),
+
+                  // 国家筛选
+                  _buildSectionTitle('Country'),
+                  const SizedBox(height: 12),
+                  Obx(() => Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: controller.availableCountries.map((country) {
+                          final isSelected =
+                              controller.selectedCountries.contains(country);
+                          return FilterChip(
+                            label: Text(country),
+                            selected: isSelected,
+                            onSelected: (selected) {
+                              if (selected) {
+                                controller.selectedCountries.add(country);
+                              } else {
+                                controller.selectedCountries.remove(country);
+                              }
+                            },
+                            selectedColor:
+                                const Color(0xFFFF4458).withValues(alpha: 0.1),
+                            checkmarkColor: const Color(0xFFFF4458),
+                            labelStyle: TextStyle(
+                              color: isSelected
+                                  ? const Color(0xFFFF4458)
+                                  : AppColors.textSecondary,
+                              fontWeight: isSelected
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
+                            ),
+                            side: BorderSide(
+                              color: isSelected
+                                  ? const Color(0xFFFF4458)
+                                  : AppColors.borderLight,
+                            ),
+                          );
+                        }).toList(),
+                      )),
+
+                  const SizedBox(height: 24),
+
+                  // 城市筛选
+                  _buildSectionTitle('City'),
+                  const SizedBox(height: 12),
+                  Obx(() => Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: controller.availableCities.map((city) {
+                          final isSelected =
+                              controller.selectedCities.contains(city);
+                          return FilterChip(
+                            label: Text(city),
+                            selected: isSelected,
+                            onSelected: (selected) {
+                              if (selected) {
+                                controller.selectedCities.add(city);
+                              } else {
+                                controller.selectedCities.remove(city);
+                              }
+                            },
+                            selectedColor:
+                                const Color(0xFFFF4458).withValues(alpha: 0.1),
+                            checkmarkColor: const Color(0xFFFF4458),
+                            labelStyle: TextStyle(
+                              color: isSelected
+                                  ? const Color(0xFFFF4458)
+                                  : AppColors.textSecondary,
+                              fontWeight: isSelected
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
+                            ),
+                            side: BorderSide(
+                              color: isSelected
+                                  ? const Color(0xFFFF4458)
+                                  : AppColors.borderLight,
+                            ),
+                          );
+                        }).toList(),
+                      )),
+
+                  const SizedBox(height: 24),
+
+                  // 价格筛选
+                  _buildSectionTitle('Monthly Cost'),
+                  const SizedBox(height: 12),
+                  Obx(() => Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                '\$${controller.minPrice.value.toInt()}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              Text(
+                                '\$${controller.maxPrice.value.toInt()}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          RangeSlider(
+                            values: RangeValues(
+                              controller.minPrice.value,
+                              controller.maxPrice.value,
+                            ),
+                            min: 0,
+                            max: 5000,
+                            divisions: 50,
+                            activeColor: const Color(0xFFFF4458),
+                            inactiveColor: AppColors.borderLight,
+                            onChanged: (values) {
+                              controller.minPrice.value = values.start;
+                              controller.maxPrice.value = values.end;
+                            },
+                          ),
+                        ],
+                      )),
+
+                  const SizedBox(height: 24),
+
+                  // 网速筛选
+                  _buildSectionTitle('Minimum Internet Speed'),
+                  const SizedBox(height: 12),
+                  Obx(() => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${controller.minInternet.value.toInt()} Mbps',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          Slider(
+                            value: controller.minInternet.value,
+                            min: 0,
+                            max: 100,
+                            divisions: 20,
+                            activeColor: const Color(0xFFFF4458),
+                            inactiveColor: AppColors.borderLight,
+                            onChanged: (value) {
+                              controller.minInternet.value = value;
+                            },
+                          ),
+                        ],
+                      )),
+
+                  const SizedBox(height: 24),
+
+                  // 评分筛选
+                  _buildSectionTitle('Minimum Overall Rating'),
+                  const SizedBox(height: 12),
+                  Obx(() => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                controller.minRating.value.toStringAsFixed(1),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              const Text(
+                                '⭐️',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                            ],
+                          ),
+                          Slider(
+                            value: controller.minRating.value,
+                            min: 0,
+                            max: 5,
+                            divisions: 10,
+                            activeColor: const Color(0xFFFF4458),
+                            inactiveColor: AppColors.borderLight,
+                            onChanged: (value) {
+                              controller.minRating.value = value;
+                            },
+                          ),
+                        ],
+                      )),
+
+                  const SizedBox(height: 24),
+
+                  // 气候筛选
+                  _buildSectionTitle('Climate'),
+                  const SizedBox(height: 12),
+                  Obx(() => Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: controller.availableClimates.map((climate) {
+                          final isSelected =
+                              controller.selectedClimates.contains(climate);
+                          return FilterChip(
+                            label: Text(climate),
+                            selected: isSelected,
+                            onSelected: (selected) {
+                              if (selected) {
+                                controller.selectedClimates.add(climate);
+                              } else {
+                                controller.selectedClimates.remove(climate);
+                              }
+                            },
+                            selectedColor:
+                                const Color(0xFFFF4458).withValues(alpha: 0.1),
+                            checkmarkColor: const Color(0xFFFF4458),
+                            labelStyle: TextStyle(
+                              color: isSelected
+                                  ? const Color(0xFFFF4458)
+                                  : AppColors.textSecondary,
+                              fontWeight: isSelected
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
+                            ),
+                            side: BorderSide(
+                              color: isSelected
+                                  ? const Color(0xFFFF4458)
+                                  : AppColors.borderLight,
+                            ),
+                          );
+                        }).toList(),
+                      )),
+
+                  const SizedBox(height: 24),
+
+                  // AQI筛选
+                  _buildSectionTitle('Maximum Air Quality Index'),
+                  const SizedBox(height: 12),
+                  Obx(() => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                'AQI ${controller.maxAqi.value}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                _getAQILabel(controller.maxAqi.value),
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Slider(
+                            value: controller.maxAqi.value.toDouble(),
+                            min: 0,
+                            max: 500,
+                            divisions: 10,
+                            activeColor: const Color(0xFFFF4458),
+                            inactiveColor: AppColors.borderLight,
+                            onChanged: (value) {
+                              controller.maxAqi.value = value.toInt();
+                            },
+                          ),
+                        ],
+                      )),
+
+                  const SizedBox(height: 40),
+                ],
+              ),
+            ),
+          ),
+
+          // 底部应用按钮
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: const BoxDecoration(
+              border: Border(
+                top: BorderSide(color: AppColors.borderLight, width: 1),
+              ),
+            ),
+            child: Obx(() {
+              final count = controller.filteredItems.length;
+              return SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF4458),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    'Show $count ${count == 1 ? 'city' : 'cities'}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
+        ],
       ),
     );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: const TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.bold,
+        color: AppColors.textPrimary,
+      ),
+    );
+  }
+
+  String _getAQILabel(int aqi) {
+    if (aqi <= 50) return 'Good';
+    if (aqi <= 100) return 'Moderate';
+    if (aqi <= 150) return 'Unhealthy for Sensitive';
+    if (aqi <= 200) return 'Unhealthy';
+    if (aqi <= 300) return 'Very Unhealthy';
+    return 'Hazardous';
   }
 }

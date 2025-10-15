@@ -8,12 +8,14 @@ class DataServiceController extends GetxController {
   final RxString sortBy = 'popular'.obs;
   final RxString searchQuery = ''.obs;
   final RxList<Map<String, dynamic>> dataItems = <Map<String, dynamic>>[].obs;
-  
+
   // 用户登录状态 (模拟)
   final RxBool isLoggedIn = true.obs; // 在实际应用中，这应该从认证服务获取
 
   // 筛选状态 - Nomads.com 风格
   final RxList<String> selectedRegions = <String>[].obs; // 地区筛选
+  final RxList<String> selectedCountries = <String>[].obs; // 国家筛选
+  final RxList<String> selectedCities = <String>[].obs; // 城市筛选
   final RxDouble minPrice = 0.0.obs; // 最低价格
   final RxDouble maxPrice = 5000.0.obs; // 最高价格
   final RxDouble minInternet = 0.0.obs; // 最低网速
@@ -24,7 +26,7 @@ class DataServiceController extends GetxController {
   // 可用的筛选选项
   final List<String> availableRegions = [
     'Asia',
-    'Europe', 
+    'Europe',
     'Americas',
     'Africa',
     'Oceania'
@@ -96,7 +98,8 @@ class DataServiceController extends GetxController {
         'country': 'Thailand',
         'region': 'Asia', // 地区
         'climate': 'Hot', // 气候
-        'image': 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=400',
+        'image':
+            'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=400',
         'temperature': 32,
         'feelsLike': 41, // 体感温度
         'weather': 'sunny',
@@ -115,14 +118,16 @@ class DataServiceController extends GetxController {
         'population': '10.5M',
         'timezone': 'GMT+7',
         'humidity': 75,
-        'about': 'Bangkok is a vibrant digital nomad hub with incredible food, affordable living, and a thriving expat community. Great coworking spaces and fast internet make it perfect for remote work.',
+        'about':
+            'Bangkok is a vibrant digital nomad hub with incredible food, affordable living, and a thriving expat community. Great coworking spaces and fast internet make it perfect for remote work.',
       },
       {
         'city': 'Chiang Mai',
         'country': 'Thailand',
         'region': 'Asia',
         'climate': 'Warm',
-        'image': 'https://images.unsplash.com/photo-1598970434795-0c54fe7c0648?w=400',
+        'image':
+            'https://images.unsplash.com/photo-1598970434795-0c54fe7c0648?w=400',
         'temperature': 29,
         'feelsLike': 35,
         'weather': 'cloudy',
@@ -141,14 +146,16 @@ class DataServiceController extends GetxController {
         'population': '1.2M',
         'timezone': 'GMT+7',
         'humidity': 68,
-        'about': 'Chiang Mai offers a perfect blend of affordability, nature, and digital nomad infrastructure. The Old City is filled with temples, cafes, and coworking spaces.',
+        'about':
+            'Chiang Mai offers a perfect blend of affordability, nature, and digital nomad infrastructure. The Old City is filled with temples, cafes, and coworking spaces.',
       },
       {
         'city': 'Canggu, Bali',
         'country': 'Indonesia',
         'region': 'Asia',
         'climate': 'Hot',
-        'image': 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=400',
+        'image':
+            'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=400',
         'temperature': 27,
         'feelsLike': 30,
         'weather': 'sunny',
@@ -167,14 +174,16 @@ class DataServiceController extends GetxController {
         'population': '50K',
         'timezone': 'GMT+8',
         'humidity': 82,
-        'about': 'Surf, work, and wellness paradise. Canggu has become the ultimate digital nomad destination with amazing beaches, healthy food, and vibrant coworking scene.',
+        'about':
+            'Surf, work, and wellness paradise. Canggu has become the ultimate digital nomad destination with amazing beaches, healthy food, and vibrant coworking scene.',
       },
       {
         'city': 'Tokyo',
         'country': 'Japan',
         'region': 'Asia',
         'climate': 'Mild',
-        'image': 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400',
+        'image':
+            'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400',
         'temperature': 23,
         'feelsLike': 23,
         'weather': 'cloudy',
@@ -193,14 +202,16 @@ class DataServiceController extends GetxController {
         'population': '14M',
         'timezone': 'GMT+9',
         'humidity': 65,
-        'about': 'Ultra-modern city with incredible infrastructure, safety, and food. Expensive but worth it for the unique culture and unmatched efficiency.',
+        'about':
+            'Ultra-modern city with incredible infrastructure, safety, and food. Expensive but worth it for the unique culture and unmatched efficiency.',
       },
       {
         'city': 'Seoul',
         'country': 'South Korea',
         'region': 'Asia',
         'climate': 'Cool',
-        'image': 'https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=400',
+        'image':
+            'https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=400',
         'temperature': 18,
         'feelsLike': 19,
         'weather': 'rainy',
@@ -219,14 +230,16 @@ class DataServiceController extends GetxController {
         'population': '10M',
         'timezone': 'GMT+9',
         'humidity': 70,
-        'about': 'Tech-forward city with blazing fast internet, incredible food scene, and efficient public transport. Great for digital nomads who love urban energy.',
+        'about':
+            'Tech-forward city with blazing fast internet, incredible food scene, and efficient public transport. Great for digital nomads who love urban energy.',
       },
       {
         'city': 'Lisbon',
         'country': 'Portugal',
         'region': 'Europe',
         'climate': 'Mild',
-        'image': 'https://images.unsplash.com/photo-1585208798174-6cedd86e019a?w=400',
+        'image':
+            'https://images.unsplash.com/photo-1585208798174-6cedd86e019a?w=400',
         'temperature': 23,
         'feelsLike': 23,
         'weather': 'sunny',
@@ -245,14 +258,16 @@ class DataServiceController extends GetxController {
         'population': '2.8M',
         'timezone': 'GMT+1',
         'humidity': 72,
-        'about': 'Beautiful coastal city with amazing weather, great food, and a booming startup scene. Perfect balance of European culture and beach lifestyle.',
+        'about':
+            'Beautiful coastal city with amazing weather, great food, and a booming startup scene. Perfect balance of European culture and beach lifestyle.',
       },
       {
         'city': 'Mexico City',
         'country': 'Mexico',
         'region': 'Americas',
         'climate': 'Mild',
-        'image': 'https://images.unsplash.com/photo-1518638150340-f706e86654de?w=400',
+        'image':
+            'https://images.unsplash.com/photo-1518638150340-f706e86654de?w=400',
         'temperature': 21,
         'feelsLike': 21,
         'weather': 'sunny',
@@ -271,14 +286,16 @@ class DataServiceController extends GetxController {
         'population': '9M',
         'timezone': 'GMT-6',
         'humidity': 58,
-        'about': 'Vibrant cultural capital with incredible food, art, and nightlife. Large digital nomad community and affordable living, though internet can be spotty.',
+        'about':
+            'Vibrant cultural capital with incredible food, art, and nightlife. Large digital nomad community and affordable living, though internet can be spotty.',
       },
       {
         'city': 'Singapore',
         'country': 'Singapore',
         'region': 'Asia',
         'climate': 'Hot',
-        'image': 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=400',
+        'image':
+            'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=400',
         'temperature': 31,
         'feelsLike': 37,
         'weather': 'sunny',
@@ -297,7 +314,8 @@ class DataServiceController extends GetxController {
         'population': '5.7M',
         'timezone': 'GMT+8',
         'humidity': 85,
-        'about': 'Ultra-clean, safe, and efficient city-state with world-class infrastructure. Expensive but perfect for business-minded nomads.',
+        'about':
+            'Ultra-clean, safe, and efficient city-state with world-class infrastructure. Expensive but perfect for business-minded nomads.',
       },
     ];
 
@@ -307,7 +325,7 @@ class DataServiceController extends GetxController {
   // 生成 Meetup 模拟数据 - Nomads.com 风格
   void _generateMeetupData() {
     final now = DateTime.now();
-    
+
     meetups.value = [
       {
         'id': 1,
@@ -322,8 +340,10 @@ class DataServiceController extends GetxController {
         'maxAttendees': 30,
         'organizer': 'Sarah Chen',
         'organizerAvatar': 'https://i.pravatar.cc/150?img=1',
-        'image': 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400',
-        'description': 'Join us for drinks and networking with fellow digital nomads in Bangkok!',
+        'image':
+            'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400',
+        'description':
+            'Join us for drinks and networking with fellow digital nomads in Bangkok!',
       },
       {
         'id': 2,
@@ -338,8 +358,10 @@ class DataServiceController extends GetxController {
         'maxAttendees': 20,
         'organizer': 'Alex Wong',
         'organizerAvatar': 'https://i.pravatar.cc/150?img=12',
-        'image': 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=400',
-        'description': 'Start your day with focused work alongside other remote workers.',
+        'image':
+            'https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=400',
+        'description':
+            'Start your day with focused work alongside other remote workers.',
       },
       {
         'id': 3,
@@ -354,8 +376,10 @@ class DataServiceController extends GetxController {
         'maxAttendees': 15,
         'organizer': 'Mike Johnson',
         'organizerAvatar': 'https://i.pravatar.cc/150?img=33',
-        'image': 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=400',
-        'description': 'Catch some waves and watch the sunset with the nomad community!',
+        'image':
+            'https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=400',
+        'description':
+            'Catch some waves and watch the sunset with the nomad community!',
       },
       {
         'id': 4,
@@ -370,8 +394,10 @@ class DataServiceController extends GetxController {
         'maxAttendees': 20,
         'organizer': 'Emma Silva',
         'organizerAvatar': 'https://i.pravatar.cc/150?img=5',
-        'image': 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400',
-        'description': 'Taste the best of Portuguese cuisine with fellow food lovers!',
+        'image':
+            'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400',
+        'description':
+            'Taste the best of Portuguese cuisine with fellow food lovers!',
       },
       {
         'id': 5,
@@ -386,8 +412,10 @@ class DataServiceController extends GetxController {
         'maxAttendees': 15,
         'organizer': 'Yuki Tanaka',
         'organizerAvatar': 'https://i.pravatar.cc/150?img=47',
-        'image': 'https://images.unsplash.com/photo-1528164344705-47542687000d?w=400',
-        'description': 'Practice Japanese with locals and learn about the culture.',
+        'image':
+            'https://images.unsplash.com/photo-1528164344705-47542687000d?w=400',
+        'description':
+            'Practice Japanese with locals and learn about the culture.',
       },
       {
         'id': 6,
@@ -402,8 +430,10 @@ class DataServiceController extends GetxController {
         'maxAttendees': 25,
         'organizer': 'Carlos Rodriguez',
         'organizerAvatar': 'https://i.pravatar.cc/150?img=15',
-        'image': 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400',
-        'description': 'Connect with startup founders and entrepreneurs in CDMX.',
+        'image':
+            'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400',
+        'description':
+            'Connect with startup founders and entrepreneurs in CDMX.',
       },
       {
         'id': 7,
@@ -418,8 +448,10 @@ class DataServiceController extends GetxController {
         'maxAttendees': 20,
         'organizer': 'Lisa Park',
         'organizerAvatar': 'https://i.pravatar.cc/150?img=9',
-        'image': 'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=400',
-        'description': 'Explore Bangkok\'s beautiful temples with a local photographer.',
+        'image':
+            'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=400',
+        'description':
+            'Explore Bangkok\'s beautiful temples with a local photographer.',
       },
       {
         'id': 8,
@@ -434,8 +466,10 @@ class DataServiceController extends GetxController {
         'maxAttendees': 22,
         'organizer': 'Ji-woo Kim',
         'organizerAvatar': 'https://i.pravatar.cc/150?img=20',
-        'image': 'https://images.unsplash.com/photo-1498654896293-37aacf113fd9?w=400',
-        'description': 'Experience authentic Korean BBQ and nightlife in Gangnam!',
+        'image':
+            'https://images.unsplash.com/photo-1498654896293-37aacf113fd9?w=400',
+        'description':
+            'Experience authentic Korean BBQ and nightlife in Gangnam!',
       },
     ];
   }
@@ -460,12 +494,13 @@ class DataServiceController extends GetxController {
   List<Map<String, dynamic>> get upcomingMeetups {
     final now = DateTime.now();
     final nextMonth = now.add(const Duration(days: 30));
-    
+
     return meetups.where((meetup) {
       final date = meetup['date'] as DateTime;
       return date.isAfter(now) && date.isBefore(nextMonth);
     }).toList()
-      ..sort((a, b) => (a['date'] as DateTime).compareTo(b['date'] as DateTime));
+      ..sort(
+          (a, b) => (a['date'] as DateTime).compareTo(b['date'] as DateTime));
   }
 
   // 按城市过滤meetups
@@ -492,7 +527,7 @@ class DataServiceController extends GetxController {
   // 排序数据
   void _sortItems() {
     final items = dataItems.toList();
-    
+
     switch (sortBy.value) {
       case 'cost':
         items.sort((a, b) => a['price'].compareTo(b['price']));
@@ -508,7 +543,7 @@ class DataServiceController extends GetxController {
         items.sort((a, b) => a['rank'].compareTo(b['rank']));
         break;
     }
-    
+
     dataItems.value = items;
   }
 
@@ -530,6 +565,20 @@ class DataServiceController extends GetxController {
     if (selectedRegions.isNotEmpty) {
       items = items.where((item) {
         return selectedRegions.contains(item['region']);
+      }).toList();
+    }
+
+    // 国家筛选
+    if (selectedCountries.isNotEmpty) {
+      items = items.where((item) {
+        return selectedCountries.contains(item['country']);
+      }).toList();
+    }
+
+    // 城市筛选
+    if (selectedCities.isNotEmpty) {
+      items = items.where((item) {
+        return selectedCities.contains(item['city']);
       }).toList();
     }
 
@@ -570,6 +619,8 @@ class DataServiceController extends GetxController {
   // 重置所有筛选
   void resetFilters() {
     selectedRegions.clear();
+    selectedCountries.clear();
+    selectedCities.clear();
     minPrice.value = 0.0;
     maxPrice.value = 5000.0;
     minInternet.value = 0.0;
@@ -581,6 +632,8 @@ class DataServiceController extends GetxController {
   // 检查是否有活动筛选
   bool get hasActiveFilters {
     return selectedRegions.isNotEmpty ||
+        selectedCountries.isNotEmpty ||
+        selectedCities.isNotEmpty ||
         minPrice.value > 0 ||
         maxPrice.value < 5000 ||
         minInternet.value > 0 ||

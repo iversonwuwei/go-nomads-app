@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/chat_controller.dart';
+import '../generated/app_localizations.dart';
 import '../models/chat_model.dart';
 import '../models/user_model.dart' as models;
 import '../widgets/skeleton_loader.dart';
@@ -89,51 +90,55 @@ class DirectChatPage extends StatelessWidget {
                   Get.to(() => MemberDetailPage(user: user));
                   break;
                 case 'mute':
+                  final l10n = AppLocalizations.of(context)!;
                   Get.snackbar(
-                    'Muted',
-                    'Notifications muted for ${user.name}',
+                    l10n.muted,
+                    l10n.notificationsMuted,
                     snackPosition: SnackPosition.BOTTOM,
                     backgroundColor: const Color(0xFF10B981),
                     colorText: Colors.white,
                   );
                   break;
                 case 'block':
-                  _showBlockDialog(user.name);
+                  _showBlockDialog(user.name, context);
                   break;
               }
             },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'profile',
-                child: Row(
-                  children: [
-                    Icon(Icons.person_outline, size: 20),
-                    SizedBox(width: 12),
-                    Text('View Profile'),
-                  ],
+            itemBuilder: (context) {
+              final l10n = AppLocalizations.of(context)!;
+              return [
+                PopupMenuItem(
+                  value: 'profile',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.person_outline, size: 20),
+                      const SizedBox(width: 12),
+                      Text(l10n.viewProfile),
+                    ],
+                  ),
                 ),
-              ),
-              const PopupMenuItem(
-                value: 'mute',
-                child: Row(
-                  children: [
-                    Icon(Icons.notifications_off_outlined, size: 20),
-                    SizedBox(width: 12),
-                    Text('Mute Notifications'),
-                  ],
+                PopupMenuItem(
+                  value: 'mute',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.notifications_off_outlined, size: 20),
+                      const SizedBox(width: 12),
+                      Text(l10n.muteNotifications),
+                    ],
+                  ),
                 ),
-              ),
-              const PopupMenuItem(
-                value: 'block',
-                child: Row(
-                  children: [
-                    Icon(Icons.block_outlined, size: 20, color: Colors.red),
-                    SizedBox(width: 12),
-                    Text('Block User', style: TextStyle(color: Colors.red)),
-                  ],
+                PopupMenuItem(
+                  value: 'block',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.block_outlined, size: 20, color: Colors.red),
+                      const SizedBox(width: 12),
+                      Text(l10n.blockUser, style: const TextStyle(color: Colors.red)),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ];
+            },
           ),
         ],
       ),
@@ -178,25 +183,30 @@ class DirectChatPage extends StatelessWidget {
 
   // 空状态
   Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.chat_bubble_outline_rounded,
-            size: 64,
-            color: const Color(0xFF6b7280).withValues(alpha: 0.3),
+    return Builder(
+      builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.chat_bubble_outline_rounded,
+                size: 64,
+                color: const Color(0xFF6b7280).withValues(alpha: 0.3),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                l10n.startConversation,
+                style: const TextStyle(
+                  color: Color(0xFF6b7280),
+                  fontSize: 16,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          Text(
-            'Start your conversation with ${user.name}',
-            style: const TextStyle(
-              color: Color(0xFF6b7280),
-              fontSize: 16,
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -336,145 +346,155 @@ class DirectChatPage extends StatelessWidget {
   // Reply preview bar
   Widget _buildReplyPreview(ChatController controller) {
     final replyTo = controller.replyingTo.value!;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF3F4F6),
-        border: Border(
-          top: BorderSide(color: const Color(0xFFE5E7EB)),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 3,
-            height: 40,
-            decoration: BoxDecoration(
-              color: const Color(0xFFFF4458),
-              borderRadius: BorderRadius.circular(2),
+    return Builder(
+      builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF3F4F6),
+            border: Border(
+              top: BorderSide(color: const Color(0xFFE5E7EB)),
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Replying to ${replyTo.userName}',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFFFF4458),
-                  ),
+          child: Row(
+            children: [
+              Container(
+                width: 3,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF4458),
+                  borderRadius: BorderRadius.circular(2),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  replyTo.message,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Color(0xFF6b7280),
-                  ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${l10n.reply} ${replyTo.userName}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFFFF4458),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      replyTo.message,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF6b7280),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close, size: 20),
+                onPressed: () => controller.cancelReply(),
+              ),
+            ],
           ),
-          IconButton(
-            icon: const Icon(Icons.close, size: 20),
-            onPressed: () => controller.cancelReply(),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
   // Message input
   Widget _buildMessageInput(ChatController controller) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Color(0xFFE5E7EB)),
-        ),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Row(
-          children: [
-            // Emoji button
-            IconButton(
-              icon: const Icon(Icons.emoji_emotions_outlined,
-                  color: Color(0xFF6b7280)),
-              onPressed: () {
-                // TODO: Show emoji picker
-                Get.snackbar(
-                  'Emoji',
-                  'Emoji picker coming soon!',
-                  snackPosition: SnackPosition.BOTTOM,
-                  duration: const Duration(seconds: 1),
-                );
-              },
+    return Builder(
+      builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
+        return Container(
+          padding: const EdgeInsets.all(12),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            border: Border(
+              top: BorderSide(color: Color(0xFFE5E7EB)),
             ),
-
-            // Text field
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF3F4F6),
-                  borderRadius: BorderRadius.circular(24),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Row(
+              children: [
+                // Emoji button
+                IconButton(
+                  icon: const Icon(Icons.emoji_emotions_outlined,
+                      color: Color(0xFF6b7280)),
+                  onPressed: () {
+                    // TODO: Show emoji picker
+                    Get.snackbar(
+                      'Emoji',
+                      'Emoji picker coming soon!',
+                      snackPosition: SnackPosition.BOTTOM,
+                      duration: const Duration(seconds: 1),
+                    );
+                  },
                 ),
-                child: TextField(
-                  controller: controller.messageInputController,
-                  decoration: const InputDecoration(
-                    hintText: 'Type a message...',
-                    hintStyle: TextStyle(
-                      color: Color(0xFF9ca3af),
-                      fontSize: 15,
+
+                // Text field
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF3F4F6),
+                      borderRadius: BorderRadius.circular(24),
                     ),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(vertical: 10),
+                    child: TextField(
+                      controller: controller.messageInputController,
+                      decoration: InputDecoration(
+                        hintText: l10n.typeMessage,
+                        hintStyle: const TextStyle(
+                          color: Color(0xFF9ca3af),
+                          fontSize: 15,
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                      ),
+                      maxLines: null,
+                      textCapitalization: TextCapitalization.sentences,
+                    ),
                   ),
-                  maxLines: null,
-                  textCapitalization: TextCapitalization.sentences,
                 ),
-              ),
-            ),
 
-            const SizedBox(width: 8),
+                const SizedBox(width: 8),
 
-            // Send button
-            AnimatedBuilder(
-              animation: controller.messageInputController,
-              builder: (context, child) {
-                final hasText = controller.messageInputController.text.trim().isNotEmpty;
-                return Container(
-                  decoration: BoxDecoration(
-                    color: hasText
-                        ? const Color(0xFFFF4458)
-                        : const Color(0xFFE5E7EB),
-                    shape: BoxShape.circle,
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.send_rounded, color: Colors.white),
-                    onPressed: hasText
-                        ? () {
-                            final text = controller.messageInputController.text;
-                            if (text.trim().isNotEmpty) {
-                              controller.sendMessage(text);
-                              controller.messageInputController.clear();
-                            }
-                          }
-                        : null,
-                  ),
-                );
-              },
+                // Send button
+                AnimatedBuilder(
+                  animation: controller.messageInputController,
+                  builder: (context, child) {
+                    final hasText = controller.messageInputController.text.trim().isNotEmpty;
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: hasText
+                            ? const Color(0xFFFF4458)
+                            : const Color(0xFFE5E7EB),
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Icons.send_rounded, color: Colors.white),
+                        onPressed: hasText
+                            ? () {
+                                final text = controller.messageInputController.text;
+                                if (text.trim().isNotEmpty) {
+                                  controller.sendMessage(text);
+                                  controller.messageInputController.clear();
+                                }
+                              }
+                            : null,
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -495,30 +515,31 @@ class DirectChatPage extends StatelessWidget {
     }
   }
 
-  void _showBlockDialog(String userName) {
+  void _showBlockDialog(String userName, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     Get.dialog(
       AlertDialog(
-        title: const Text('Block User'),
-        content: Text('Are you sure you want to block $userName?'),
+        title: Text(l10n.blockUser),
+        content: Text(l10n.blockWarning),
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () {
               Get.back(); // Close dialog
               Get.back(); // Go back to previous page
               Get.snackbar(
-                'Blocked',
-                '$userName has been blocked',
+                l10n.blockConfirm,
+                l10n.userBlocked,
                 snackPosition: SnackPosition.BOTTOM,
                 backgroundColor: Colors.red,
                 colorText: Colors.white,
               );
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Block'),
+            child: Text(l10n.block),
           ),
         ],
       ),

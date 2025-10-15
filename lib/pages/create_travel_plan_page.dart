@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/city_detail_controller.dart';
+import '../generated/app_localizations.dart';
 import 'amap_native_picker_page.dart';
 import 'travel_plan_page.dart';
 
@@ -40,385 +41,410 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
               color: AppColors.backButtonDark),
           onPressed: () => Get.back(),
         ),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(
-                Icons.auto_awesome,
-                color: Color(0xFFFF4458),
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        title: Builder(
+          builder: (context) {
+            final l10n = AppLocalizations.of(context)!;
+            return Row(
               children: [
-                const Text(
-                  'AI Travel Planner',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF4458).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.auto_awesome,
+                    color: Color(0xFFFF4458),
+                    size: 20,
                   ),
                 ),
-                Text(
-                  'Plan your trip to ${widget.cityName}',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                    fontWeight: FontWeight.normal,
-                  ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.aiTravelPlanner,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    Text(
+                      l10n.planYourTrip(widget.cityName),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                  ],
                 ),
               ],
-            ),
-          ],
+            );
+          },
         ),
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
             // Header Card
-            Container(
-              width: double.infinity,
-              margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFFF4458).withValues(alpha: 0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
+            Builder(
+              builder: (context) {
+                final l10n = AppLocalizations.of(context)!;
+                return Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFF4458).withValues(alpha: 0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.auto_awesome, color: Colors.white, size: 24),
-                      SizedBox(width: 8),
+                      Row(
+                        children: [
+                          const Icon(Icons.auto_awesome,
+                              color: Colors.white, size: 24),
+                          const SizedBox(width: 8),
+                          Text(
+                            l10n.aiPoweredPlanning,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
                       Text(
-                        'AI-Powered Planning',
-                        style: TextStyle(
+                        l10n.tellPreferences(widget.cityName),
+                        style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          height: 1.4,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Tell us your preferences and let AI create the perfect ${widget.cityName} itinerary for you',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      height: 1.4,
-                    ),
-                  ),
-                ],
-              ),
+                );
+              },
             ),
 
             // Form Section
-            Container(
-              margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
+            Builder(
+              builder: (context) {
+                final l10n = AppLocalizations.of(context)!;
+                return Container(
+                  margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Departure Location
-                  _buildSectionTitle(
-                      'Departure Location', Icons.location_on_outlined),
-                  const SizedBox(height: 12),
-                  Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: TextField(
-                          controller:
-                              TextEditingController(text: departureLocation),
-                          readOnly: true,
-                          decoration: InputDecoration(
-                            hintText: 'Select departure location',
-                            hintStyle: TextStyle(color: Colors.grey[400]),
-                            filled: true,
-                            fillColor: Colors.grey[50],
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide:
-                                  BorderSide(color: Colors.grey.shade200),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFFF4458),
-                                width: 2,
+                      // Departure Location
+                      _buildSectionTitle(
+                          l10n.departureLocation, Icons.location_on_outlined),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: TextEditingController(
+                                  text: departureLocation),
+                              readOnly: true,
+                              decoration: InputDecoration(
+                                hintText: l10n.selectDeparture,
+                                hintStyle: TextStyle(color: Colors.grey[400]),
+                                filled: true,
+                                fillColor: Colors.grey[50],
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide.none,
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide:
+                                      BorderSide(color: Colors.grey.shade200),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFFF4458),
+                                    width: 2,
+                                  ),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 16,
+                                ),
+                                suffixIcon: departureLocation.isNotEmpty
+                                    ? IconButton(
+                                        icon: const Icon(Icons.clear, size: 20),
+                                        onPressed: () {
+                                          setState(() {
+                                            departureLocation = '';
+                                          });
+                                        },
+                                      )
+                                    : null,
                               ),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 16,
-                            ),
-                            suffixIcon: departureLocation.isNotEmpty
-                                ? IconButton(
-                                    icon: const Icon(Icons.clear, size: 20),
-                                    onPressed: () {
-                                      setState(() {
-                                        departureLocation = '';
-                                      });
-                                    },
-                                  )
-                                : null,
                           ),
+                          const SizedBox(width: 12),
+                          Container(
+                            height: 56,
+                            width: 56,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFFF4458)
+                                      .withValues(alpha: 0.3),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: IconButton(
+                              icon: const Icon(
+                                Icons.map_outlined,
+                                color: Colors.white,
+                              ),
+                              onPressed: () async {
+                                try {
+                                  final result = await Get.to(
+                                    () => const AmapNativePickerPage(),
+                                  );
+                                  if (result != null && result is Map) {
+                                    final address =
+                                        result['address'] as String? ?? '';
+                                    setState(() {
+                                      departureLocation = address;
+                                    });
+                                  }
+                                } catch (e) {
+                                  Get.snackbar(
+                                    l10n.error,
+                                    '${l10n.failedToOpenMap}: $e',
+                                    backgroundColor:
+                                        Colors.red.withValues(alpha: 0.9),
+                                    colorText: Colors.white,
+                                  );
+                                }
+                              },
+                              tooltip: l10n.selectOnMap,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        l10n.tapMapIcon,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                          fontStyle: FontStyle.italic,
                         ),
                       ),
-                      const SizedBox(width: 12),
+
+                      const SizedBox(height: 28),
+
+                      // Trip Duration
+                      _buildSectionTitle(
+                          l10n.tripDuration, Icons.calendar_today_outlined),
+                      const SizedBox(height: 12),
                       Container(
-                        height: 56,
-                        width: 56,
+                        padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
+                          color: Colors.grey[50],
                           borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFFF4458)
-                                  .withValues(alpha: 0.3),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
+                          border: Border.all(color: Colors.grey.shade200),
+                        ),
+                        child: Column(
+                          children: [
+                            Slider(
+                              value: duration.toDouble(),
+                              min: 1,
+                              max: 30,
+                              divisions: 29,
+                              label: l10n.days(duration),
+                              activeColor: const Color(0xFFFF4458),
+                              inactiveColor: Colors.grey[300],
+                              onChanged: (value) {
+                                setState(() => duration = value.toInt());
+                              },
+                            ),
+                            Text(
+                              duration == 1 ? l10n.day(1) : l10n.days(duration),
+                              style: const TextStyle(
+                                color: Color(0xFFFF4458),
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ],
                         ),
-                        child: IconButton(
-                          icon: const Icon(
-                            Icons.map_outlined,
-                            color: Colors.white,
+                      ),
+
+                      const SizedBox(height: 28),
+
+                      // Budget Level
+                      _buildSectionTitle(
+                          l10n.budget, Icons.attach_money_outlined),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child:
+                                _buildBudgetChip(l10n.low, budget == 'low', () {
+                              setState(() => budget = 'low');
+                            }),
                           ),
-                          onPressed: () async {
-                            try {
-                              final result = await Get.to(
-                                () => const AmapNativePickerPage(),
-                              );
-                              if (result != null && result is Map) {
-                                final address =
-                                    result['address'] as String? ?? '';
-                                setState(() {
-                                  departureLocation = address;
-                                });
-                              }
-                            } catch (e) {
-                              Get.snackbar(
-                                'Error',
-                                'Failed to open map: $e',
-                                backgroundColor: Colors.red.withValues(alpha: 0.9),
-                                colorText: Colors.white,
-                              );
-                            }
-                          },
-                          tooltip: 'Select on map',
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Tap the map icon to select your departure location',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-
-                  const SizedBox(height: 28),
-
-                  // Trip Duration
-                  _buildSectionTitle(
-                      'Trip Duration', Icons.calendar_today_outlined),
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[50],
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade200),
-                    ),
-                    child: Column(
-                      children: [
-                        Slider(
-                          value: duration.toDouble(),
-                          min: 1,
-                          max: 30,
-                          divisions: 29,
-                          label: '$duration days',
-                          activeColor: const Color(0xFFFF4458),
-                          inactiveColor: Colors.grey[300],
-                          onChanged: (value) {
-                            setState(() => duration = value.toInt());
-                          },
-                        ),
-                        Text(
-                          '$duration ${duration == 1 ? 'day' : 'days'}',
-                          style: const TextStyle(
-                            color: Color(0xFFFF4458),
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildBudgetChip(
+                                l10n.medium, budget == 'medium', () {
+                              setState(() => budget = 'medium');
+                            }),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 28),
-
-                  // Budget Level
-                  _buildSectionTitle(
-                      'Budget Level', Icons.attach_money_outlined),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildBudgetChip('Low', budget == 'low', () {
-                          setState(() => budget = 'low');
-                        }),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildBudgetChip(l10n.high, budget == 'high',
+                                () {
+                              setState(() => budget = 'high');
+                            }),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child:
-                            _buildBudgetChip('Medium', budget == 'medium', () {
-                          setState(() => budget = 'medium');
-                        }),
+
+                      const SizedBox(height: 28),
+
+                      // Travel Style
+                      _buildSectionTitle(
+                          l10n.travelStyle, Icons.style_outlined),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _buildStyleChip(
+                              l10n.culture, 'culture', Icons.museum_outlined),
+                          _buildStyleChip(l10n.adventure, 'adventure',
+                              Icons.landscape_outlined),
+                          _buildStyleChip(l10n.relaxation, 'relaxation',
+                              Icons.spa_outlined),
+                          _buildStyleChip(
+                              l10n.foodie, 'food', Icons.restaurant_outlined),
+                          _buildStyleChip(l10n.nightlife, 'nightlife',
+                              Icons.nightlife_outlined),
+                          _buildStyleChip(l10n.shopping, 'shopping',
+                              Icons.shopping_bag_outlined),
+                        ],
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildBudgetChip('High', budget == 'high', () {
-                          setState(() => budget = 'high');
-                        }),
+
+                      const SizedBox(height: 28),
+
+                      // Interests
+                      _buildSectionTitle(
+                          l10n.interests, Icons.interests_outlined),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _buildInterestChip(l10n.photography),
+                          _buildInterestChip(l10n.history),
+                          _buildInterestChip('Art'),
+                          _buildInterestChip(l10n.nature),
+                          _buildInterestChip('Beach'),
+                          _buildInterestChip('Temples'),
+                          _buildInterestChip('Markets'),
+                          _buildInterestChip('Coffee'),
+                        ],
                       ),
                     ],
                   ),
-
-                  const SizedBox(height: 28),
-
-                  // Travel Style
-                  _buildSectionTitle('Travel Style', Icons.style_outlined),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      _buildStyleChip(
-                          'Culture', 'culture', Icons.museum_outlined),
-                      _buildStyleChip(
-                          'Adventure', 'adventure', Icons.landscape_outlined),
-                      _buildStyleChip(
-                          'Relaxation', 'relaxation', Icons.spa_outlined),
-                      _buildStyleChip(
-                          'Food & Dining', 'food', Icons.restaurant_outlined),
-                      _buildStyleChip(
-                          'Nightlife', 'nightlife', Icons.nightlife_outlined),
-                      _buildStyleChip(
-                          'Shopping', 'shopping', Icons.shopping_bag_outlined),
-                    ],
-                  ),
-
-                  const SizedBox(height: 28),
-
-                  // Interests
-                  _buildSectionTitle(
-                      'Special Interests (Optional)', Icons.interests_outlined),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      _buildInterestChip('Photography'),
-                      _buildInterestChip('History'),
-                      _buildInterestChip('Art'),
-                      _buildInterestChip('Nature'),
-                      _buildInterestChip('Beach'),
-                      _buildInterestChip('Temples'),
-                      _buildInterestChip('Markets'),
-                      _buildInterestChip('Coffee'),
-                    ],
-                  ),
-                ],
-              ),
+                );
+              },
             ),
           ],
         ),
       ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: ElevatedButton(
-            onPressed: () => _generatePlan(),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFF4458),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              elevation: 0,
-            ),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.auto_awesome, size: 20),
-                SizedBox(width: 8),
-                Text(
-                  'Generate AI Travel Plan',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.3,
-                  ),
+      bottomNavigationBar: Builder(
+        builder: (context) {
+          final l10n = AppLocalizations.of(context)!;
+          return Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, -2),
                 ),
               ],
             ),
-          ),
-        ),
+            child: SafeArea(
+              child: ElevatedButton(
+                onPressed: () => _generatePlan(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFF4458),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 0,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.auto_awesome, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      l10n.generatePlan,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

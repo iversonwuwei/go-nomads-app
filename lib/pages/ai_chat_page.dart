@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/ai_chat_controller.dart';
+import '../generated/app_localizations.dart';
 
 class AiChatPage extends StatelessWidget {
   const AiChatPage({super.key});
@@ -173,26 +174,31 @@ class AiChatPage extends StatelessWidget {
             // 快捷功能区域
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _buildQuickAction('深度思考', Icons.psychology,
-                        const Color(0xFF667eea), controller),
-                    const SizedBox(width: 12),
-                    _buildQuickAction('专属播客', Icons.podcasts,
-                        const Color(0xFFE91E63), controller),
-                    const SizedBox(width: 12),
-                    _buildQuickAction('翻译', Icons.translate,
-                        const Color(0xFF4CAF50), controller),
-                    const SizedBox(width: 12),
-                    _buildQuickAction('分析研究', Icons.analytics,
-                        const Color(0xFF2196F3), controller),
-                    const SizedBox(width: 12),
-                    _buildQuickAction('创作助手', Icons.edit,
-                        const Color(0xFFFF9800), controller),
-                  ],
-                ),
+              child: Builder(
+                builder: (context) {
+                  final l10n = AppLocalizations.of(context)!;
+                  return SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildQuickAction(l10n.deepThinking, Icons.psychology,
+                            const Color(0xFF667eea), controller),
+                        const SizedBox(width: 12),
+                        _buildQuickAction(l10n.podcast, Icons.podcasts,
+                            const Color(0xFFE91E63), controller),
+                        const SizedBox(width: 12),
+                        _buildQuickAction(l10n.translation, Icons.translate,
+                            const Color(0xFF4CAF50), controller),
+                        const SizedBox(width: 12),
+                        _buildQuickAction(l10n.analytics, Icons.analytics,
+                            const Color(0xFF2196F3), controller),
+                        const SizedBox(width: 12),
+                        _buildQuickAction(l10n.creativeAssistant, Icons.edit,
+                            const Color(0xFFFF9800), controller),
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
 
@@ -227,19 +233,24 @@ class AiChatPage extends StatelessWidget {
                           width: 1,
                         ),
                       ),
-                      child: TextField(
-                        controller: controller.messageController,
-                        decoration: const InputDecoration(
-                          hintText: '发消息或按住说话',
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 12),
-                          hintStyle: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 14,
-                          ),
-                        ),
-                        onSubmitted: controller.sendMessage,
+                      child: Builder(
+                        builder: (context) {
+                          final l10n = AppLocalizations.of(context)!;
+                          return TextField(
+                            controller: controller.messageController,
+                            decoration: InputDecoration(
+                              hintText: l10n.typeYourMessage,
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
+                              hintStyle: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 14,
+                              ),
+                            ),
+                            onSubmitted: controller.sendMessage,
+                          );
+                        },
                       ),
                     ),
                   ),

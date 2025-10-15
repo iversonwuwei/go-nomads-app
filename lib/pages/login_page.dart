@@ -4,12 +4,14 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../controllers/auth_controller.dart';
+import '../generated/app_localizations.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final AuthController controller = Get.put(AuthController());
     final screenWidth = MediaQuery.of(context).size.width;
     final isLargeScreen = screenWidth > 800;
@@ -90,7 +92,7 @@ class LoginPage extends StatelessWidget {
             ),
             SizedBox(height: 8.h),
             Text(
-              '登录您的账号以继续使�?,
+              '登录您的账号以继续使用',
               style: TextStyle(
                 fontSize: 16.sp,
                 color: Colors.black54,
@@ -104,7 +106,7 @@ class LoginPage extends StatelessWidget {
             // 登录按钮
             _buildLoginButton(controller),
             SizedBox(height: 24.h),
-            // 分隔�?
+            // 分隔�?
             Row(
               children: [
                 Expanded(
@@ -113,7 +115,7 @@ class LoginPage extends StatelessWidget {
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16.w),
                   child: Text(
-                    '或使用其他方式登�?,
+                    '或使用其他方式登录',
                     style: TextStyle(
                       color: Colors.black45,
                       fontSize: 14.sp,
@@ -126,7 +128,7 @@ class LoginPage extends StatelessWidget {
               ],
             ),
             SizedBox(height: 24.h),
-            // 第三方登录按�?
+            // 第三方登录按�?
             _buildThirdPartyButtons(controller),
             SizedBox(height: 32.h),
             // 注册提示
@@ -221,7 +223,7 @@ class LoginPage extends StatelessWidget {
           ),
           SizedBox(height: 80.h),
           Text(
-            '一站式开放平�?,
+            '一站式开放平台',
             style: TextStyle(
               color: Colors.white,
               fontSize: 36.sp,
@@ -240,7 +242,7 @@ class LoginPage extends StatelessWidget {
           ),
           SizedBox(height: 30.h),
           Text(
-            '集成认证、支付、风控、数据等核心能力，提供安全可靠的 API 服务，精准助力企业上线、商用部署，打造有温度的开发者体验�?,
+            '集成认证、支付、风控、数据等核心能力,提供安全可靠的 API 服务,精准助力企业上线、商用部署,打造有温度的开发者体验。',
             style: TextStyle(
               color: Colors.white70,
               fontSize: 14.sp,
@@ -248,7 +250,7 @@ class LoginPage extends StatelessWidget {
             ),
           ),
           SizedBox(height: 40.h),
-          _buildFeatureItem(Icons.api, '统一 API / IP、标准化接口文档及接口工�?),
+          _buildFeatureItem(Icons.api, '统一 API / IP、标准化接口文档及接口工具'),
           SizedBox(height: 16.h),
           _buildFeatureItem(Icons.verified_user, '企业级权限管理与身份安全认证'),
           SizedBox(height: 16.h),
@@ -316,11 +318,11 @@ class LoginPage extends StatelessWidget {
               color: Colors.black87,
             ),
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 16.h),
           Text(
-            '使用您的手机号登�?管理 API 与追踪进度安全的使用�?,
+            '使用您的手机号登录管理 API 与追踪进度安全的使用。',
             style: TextStyle(
-              fontSize: 13.sp,
+              fontSize: 14.sp,
               color: Colors.grey[600],
               height: 1.5,
             ),
@@ -355,7 +357,7 @@ class LoginPage extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
                 child: Text(
-                  '�?,
+                  '密码',
                   style: TextStyle(
                     color: Colors.grey[500],
                     fontSize: 13.sp,
@@ -424,7 +426,7 @@ class LoginPage extends StatelessWidget {
             SizedBox(width: 12.w),
             Expanded(
               child: _buildLoginTypeTab(
-                '验证码登�?,
+                '验证码登录',
                 controller.loginType.value == LoginType.phoneCode,
                 () => controller.switchLoginType(LoginType.phoneCode),
               ),
@@ -524,7 +526,7 @@ class LoginPage extends StatelessWidget {
                       ),
                       SizedBox(width: 8.w),
                       Text(
-                        '记住�?,
+                        '记住我',
                         style: TextStyle(
                           fontSize: 14.sp,
                           color: Colors.black54,
@@ -566,7 +568,7 @@ class LoginPage extends StatelessWidget {
           style: TextStyle(fontSize: 16.sp),
           decoration: InputDecoration(
             labelText: '密码',
-            hintText: '请输入密�?,
+            hintText: '请输入密码',
             prefixIcon: Icon(Icons.lock_outline, size: 22.sp),
             suffixIcon: IconButton(
               icon: Icon(
@@ -622,7 +624,7 @@ class LoginPage extends StatelessWidget {
               LengthLimitingTextInputFormatter(6),
             ],
             decoration: InputDecoration(
-              labelText: '验证�?,
+              labelText: '验证码',
               hintText: '请输入验证码',
               prefixIcon: Icon(Icons.sms_outlined, size: 22.sp),
               filled: true,
@@ -682,7 +684,7 @@ class LoginPage extends StatelessWidget {
                 ),
                 child: Text(
                   controller.canSendCode.value
-                      ? '获取验证�?
+                      ? '获取验证码'
                       : '${controller.codeCountdown.value}s',
                   style: TextStyle(
                     fontSize: 13.sp,

@@ -1,0 +1,2403 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for English (`en`).
+class AppLocalizationsEn extends AppLocalizations {
+  AppLocalizationsEn([String locale = 'en']) : super(locale);
+
+  @override
+  String get appTitle => 'Xingtu';
+
+  @override
+  String get home => 'Home';
+
+  @override
+  String get profile => 'Profile';
+
+  @override
+  String get dataService => 'Data Service';
+
+  @override
+  String get apiMarketplace => 'API Marketplace';
+
+  @override
+  String get community => 'Community';
+
+  @override
+  String get chat => 'Chat';
+
+  @override
+  String get settings => 'Settings';
+
+  @override
+  String get login => 'Login';
+
+  @override
+  String get logout => 'Logout';
+
+  @override
+  String get register => 'Register';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get password => 'Password';
+
+  @override
+  String get confirmPassword => 'Confirm Password';
+
+  @override
+  String get username => 'Username';
+
+  @override
+  String get forgotPassword => 'Forgot Password?';
+
+  @override
+  String get welcome => 'Welcome';
+
+  @override
+  String get search => 'Search';
+
+  @override
+  String get filter => 'Filter';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get confirm => 'Confirm';
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get edit => 'Edit';
+
+  @override
+  String get add => 'Add';
+
+  @override
+  String get share => 'Share';
+
+  @override
+  String get loading => 'Loading...';
+
+  @override
+  String get noData => 'No Data';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get success => 'Success';
+
+  @override
+  String get error => 'Error';
+
+  @override
+  String get city => 'City';
+
+  @override
+  String get cities => 'Cities';
+
+  @override
+  String get cityDetail => 'City Detail';
+
+  @override
+  String get cityCompare => 'City Compare';
+
+  @override
+  String get weather => 'Weather';
+
+  @override
+  String get temperature => 'Temperature';
+
+  @override
+  String get coworking => 'Coworking';
+
+  @override
+  String get coworkingSpaces => 'Coworking Spaces';
+
+  @override
+  String get venue => 'Venue';
+
+  @override
+  String get member => 'Member';
+
+  @override
+  String get members => 'Members';
+
+  @override
+  String get meetup => 'Meetup';
+
+  @override
+  String get createMeetup => 'Create Meetup';
+
+  @override
+  String get invite => 'Invite';
+
+  @override
+  String get inviteToMeetup => 'Invite to Meetup';
+
+  @override
+  String get selectMeetup => 'Select Meetup';
+
+  @override
+  String get sendInvitation => 'Send Invitation';
+
+  @override
+  String get date => 'Date';
+
+  @override
+  String get time => 'Time';
+
+  @override
+  String get location => 'Location';
+
+  @override
+  String get description => 'Description';
+
+  @override
+  String get participants => 'Participants';
+
+  @override
+  String get favorites => 'Favorites';
+
+  @override
+  String get addToFavorites => 'Add to Favorites';
+
+  @override
+  String get removeFromFavorites => 'Remove from Favorites';
+
+  @override
+  String get cost => 'Cost';
+
+  @override
+  String get addCost => 'Add Cost';
+
+  @override
+  String get category => 'Category';
+
+  @override
+  String get amount => 'Amount';
+
+  @override
+  String get currency => 'Currency';
+
+  @override
+  String get food => 'Food';
+
+  @override
+  String get transport => 'Transport';
+
+  @override
+  String get accommodation => 'Accommodation';
+
+  @override
+  String get shopping => 'Shopping';
+
+  @override
+  String get entertainment => 'Entertainment';
+
+  @override
+  String get other => 'Other';
+
+  @override
+  String get total => 'Total';
+
+  @override
+  String get analytics => 'Analytics';
+
+  @override
+  String get statistics => 'Statistics';
+
+  @override
+  String get chart => 'Chart';
+
+  @override
+  String get aiChat => 'AI Chat';
+
+  @override
+  String get askAI => 'Ask AI';
+
+  @override
+  String get sendMessage => 'Send Message';
+
+  @override
+  String get map => 'Map';
+
+  @override
+  String get selectLocation => 'Select Location';
+
+  @override
+  String get currentLocation => 'Current Location';
+
+  @override
+  String get region => 'Region';
+
+  @override
+  String get ranking => 'Ranking';
+
+  @override
+  String get review => 'Review';
+
+  @override
+  String get addReview => 'Add Review';
+
+  @override
+  String get rating => 'Rating';
+
+  @override
+  String get travelPlan => 'Travel Plan';
+
+  @override
+  String get createPlan => 'Create Plan';
+
+  @override
+  String get viewPlan => 'View Plan';
+
+  @override
+  String get monday => 'Monday';
+
+  @override
+  String get tuesday => 'Tuesday';
+
+  @override
+  String get wednesday => 'Wednesday';
+
+  @override
+  String get thursday => 'Thursday';
+
+  @override
+  String get friday => 'Friday';
+
+  @override
+  String get saturday => 'Saturday';
+
+  @override
+  String get sunday => 'Sunday';
+
+  @override
+  String get january => 'January';
+
+  @override
+  String get february => 'February';
+
+  @override
+  String get march => 'March';
+
+  @override
+  String get april => 'April';
+
+  @override
+  String get may => 'May';
+
+  @override
+  String get june => 'June';
+
+  @override
+  String get july => 'July';
+
+  @override
+  String get august => 'August';
+
+  @override
+  String get september => 'September';
+
+  @override
+  String get october => 'October';
+
+  @override
+  String get november => 'November';
+
+  @override
+  String get december => 'December';
+
+  @override
+  String get today => 'Today';
+
+  @override
+  String get yesterday => 'Yesterday';
+
+  @override
+  String get tomorrow => 'Tomorrow';
+
+  @override
+  String get thisWeek => 'This Week';
+
+  @override
+  String get thisMonth => 'This Month';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get back => 'Back';
+
+  @override
+  String get next => 'Next';
+
+  @override
+  String get previous => 'Previous';
+
+  @override
+  String get refresh => 'Refresh';
+
+  @override
+  String get more => 'More';
+
+  @override
+  String get less => 'Less';
+
+  @override
+  String get all => 'All';
+
+  @override
+  String get selectAll => 'Select All';
+
+  @override
+  String get deselectAll => 'Deselect All';
+
+  @override
+  String get language => 'Language';
+
+  @override
+  String get theme => 'Theme';
+
+  @override
+  String get darkMode => 'Dark Mode';
+
+  @override
+  String get lightMode => 'Light Mode';
+
+  @override
+  String get notifications => 'Notifications';
+
+  @override
+  String get privacy => 'Privacy';
+
+  @override
+  String get termsOfService => 'Terms of Service';
+
+  @override
+  String get about => 'About';
+
+  @override
+  String get version => 'Version';
+
+  @override
+  String get help => 'Help';
+
+  @override
+  String get contact => 'Contact Us';
+
+  @override
+  String get feedback => 'Feedback';
+
+  @override
+  String get userNotFound => 'User not found';
+
+  @override
+  String get editProfile => 'Edit Profile';
+
+  @override
+  String get profileEditingComingSoon => 'Profile editing coming soon';
+
+  @override
+  String get myTravelPlans => 'My Travel Plans';
+
+  @override
+  String get aiGenerated => 'AI Generated';
+
+  @override
+  String get stats => 'Stats';
+
+  @override
+  String get badges => 'Badges';
+
+  @override
+  String get skills => 'Skills';
+
+  @override
+  String get interests => 'Interests';
+
+  @override
+  String get travelHistory => 'Travel History';
+
+  @override
+  String get current => 'Current';
+
+  @override
+  String get connect => 'Connect';
+
+  @override
+  String get preferences => 'Preferences';
+
+  @override
+  String get open => 'Open';
+
+  @override
+  String get view => 'View';
+
+  @override
+  String get apiDeveloperSettings => 'API Developer Settings';
+
+  @override
+  String get createNew => 'Create New';
+
+  @override
+  String get exploreCities => 'Explore Cities';
+
+  @override
+  String get travelPlanCard => 'Travel plan card';
+
+  @override
+  String get logoutConfirmTitle => 'Logout';
+
+  @override
+  String get logoutConfirmMessage => 'Are you sure you want to logout?';
+
+  @override
+  String get loggedOut => 'Logged Out';
+
+  @override
+  String get loggedOutSuccess => 'You have been successfully logged out';
+
+  @override
+  String get aiAssistant => 'AI Assistant';
+
+  @override
+  String get myProfile => 'Profile';
+
+  @override
+  String get popular => 'Popular';
+
+  @override
+  String get costOfLiving => 'Cost of Living';
+
+  @override
+  String get internet => 'Internet';
+
+  @override
+  String get internetSpeed => 'Internet Speed';
+
+  @override
+  String get safety => 'Safety';
+
+  @override
+  String get nomadScore => 'Nomad Score';
+
+  @override
+  String get humidity => 'Humidity';
+
+  @override
+  String get airQuality => 'Air Quality';
+
+  @override
+  String get placesToWork => 'Places to Work';
+
+  @override
+  String get forNomads => 'For Nomads';
+
+  @override
+  String get lifeQuality => 'Life Quality';
+
+  @override
+  String get healthcare => 'Healthcare';
+
+  @override
+  String get english => 'English Level';
+
+  @override
+  String get walkability => 'Walkability';
+
+  @override
+  String get peaceScore => 'Peace Score';
+
+  @override
+  String get nightlife => 'Nightlife';
+
+  @override
+  String get free => 'Free';
+
+  @override
+  String get ac => 'AC';
+
+  @override
+  String get totalSpaces => 'Total Spaces';
+
+  @override
+  String get upcomingMeetups => 'Upcoming';
+
+  @override
+  String get findYourTribe => 'Find Your Tribe';
+
+  @override
+  String get create => 'Create';
+
+  @override
+  String get attendees => 'Attendees';
+
+  @override
+  String get seeAll => 'See All';
+
+  @override
+  String get topRatedCities => 'Top Rated Cities';
+
+  @override
+  String get byNomads => 'By Nomads';
+
+  @override
+  String get month => 'month';
+
+  @override
+  String get compareWith => 'Compare with';
+
+  @override
+  String get or => 'or';
+
+  @override
+  String get startComparison => 'Start Comparison';
+
+  @override
+  String get selectCity => 'Select City';
+
+  @override
+  String get selectCities => 'Select Cities';
+
+  @override
+  String get clearAll => 'Clear All';
+
+  @override
+  String get apply => 'Apply';
+
+  @override
+  String get reset => 'Reset';
+
+  @override
+  String get sortBy => 'Sort By';
+
+  @override
+  String get filterBy => 'Filter By';
+
+  @override
+  String get allCategories => 'All Categories';
+
+  @override
+  String get searchHint => 'Search...';
+
+  @override
+  String get searchCities => 'Search Cities';
+
+  @override
+  String get searchResults => 'Search Results';
+
+  @override
+  String get noResults => 'NO RESULTS';
+
+  @override
+  String get tryAgain => 'Try Again';
+
+  @override
+  String get yes => 'Yes';
+
+  @override
+  String get no => 'No';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get done => 'Done';
+
+  @override
+  String get skip => 'Skip';
+
+  @override
+  String get submit => 'Submit';
+
+  @override
+  String get send => 'Send';
+
+  @override
+  String get reply => 'Reply';
+
+  @override
+  String get comment => 'Comment';
+
+  @override
+  String get comments => 'Comments';
+
+  @override
+  String get like => 'Like';
+
+  @override
+  String get likes => 'Likes';
+
+  @override
+  String get viewDetails => 'View Details';
+
+  @override
+  String get details => 'Details';
+
+  @override
+  String get overview => 'Overview';
+
+  @override
+  String get photos => 'Photos';
+
+  @override
+  String get reviews => 'Reviews';
+
+  @override
+  String get writeReview => 'Write Review';
+
+  @override
+  String get yourRating => 'Your Rating';
+
+  @override
+  String get selectDate => 'Select Date';
+
+  @override
+  String get selectTime => 'Select Time';
+
+  @override
+  String get startDate => 'Start Date';
+
+  @override
+  String get endDate => 'End Date';
+
+  @override
+  String get duration => 'Duration';
+
+  @override
+  String days(int count) {
+    return '$count days';
+  }
+
+  @override
+  String get hours => 'Hours';
+
+  @override
+  String get minutes => 'Minutes';
+
+  @override
+  String get title => 'Title';
+
+  @override
+  String get name => 'Name';
+
+  @override
+  String get address => 'Address';
+
+  @override
+  String get phone => 'Phone';
+
+  @override
+  String get website => 'Website';
+
+  @override
+  String get openingHours => 'Opening Hours';
+
+  @override
+  String get closed => 'Closed';
+
+  @override
+  String get open24Hours => 'Open 24 Hours';
+
+  @override
+  String get directions => 'Directions';
+
+  @override
+  String get callNow => 'Call Now';
+
+  @override
+  String get bookNow => 'Book Now';
+
+  @override
+  String get visitWebsite => 'Visit Website';
+
+  @override
+  String get shareLocation => 'Share Location';
+
+  @override
+  String get favoriteAdded => 'Added to Favorites';
+
+  @override
+  String get favoriteRemoved => 'Removed from Favorites';
+
+  @override
+  String get myFavorites => 'My Favorites';
+
+  @override
+  String get noFavorites => 'No Favorites';
+
+  @override
+  String get nearby => 'Nearby';
+
+  @override
+  String get distance => 'Distance';
+
+  @override
+  String get away => 'Away';
+
+  @override
+  String get filters => 'Filters';
+
+  @override
+  String get priceRange => 'Price Range';
+
+  @override
+  String get price => 'Price';
+
+  @override
+  String get cheap => 'Cheap';
+
+  @override
+  String get moderate => 'Moderate';
+
+  @override
+  String get expensive => 'Expensive';
+
+  @override
+  String get facilities => 'Facilities';
+
+  @override
+  String get wifi => 'WiFi';
+
+  @override
+  String get parking => 'Parking';
+
+  @override
+  String get meetingRoom => 'Meeting Room';
+
+  @override
+  String get kitchen => 'Kitchen';
+
+  @override
+  String get printer => 'Printer';
+
+  @override
+  String get coffee => 'Coffee';
+
+  @override
+  String get events => 'Events';
+
+  @override
+  String get upcomingEvents => 'Upcoming Events';
+
+  @override
+  String get pastEvents => 'Past Events';
+
+  @override
+  String get eventDetails => 'Event Details';
+
+  @override
+  String get joinEvent => 'Join Event';
+
+  @override
+  String get leaveEvent => 'Leave Event';
+
+  @override
+  String get eventFull => 'Event Full';
+
+  @override
+  String get spotsLeft => 'Spots Left';
+
+  @override
+  String get organizer => 'Organizer';
+
+  @override
+  String get host => 'Host';
+
+  @override
+  String get cohost => 'Co-host';
+
+  @override
+  String get joined => 'Joined';
+
+  @override
+  String get notJoined => 'Not Joined';
+
+  @override
+  String get rsvp => 'RSVP';
+
+  @override
+  String get going => 'Going';
+
+  @override
+  String get notGoing => 'Not Going';
+
+  @override
+  String get maybe => 'Maybe';
+
+  @override
+  String get inviteFriends => 'Invite Friends';
+
+  @override
+  String get shareEvent => 'Share Event';
+
+  @override
+  String get report => 'Report';
+
+  @override
+  String get reportIssue => 'Report Issue';
+
+  @override
+  String get block => 'Block';
+
+  @override
+  String get unblock => 'Unblock';
+
+  @override
+  String get follow => 'Follow';
+
+  @override
+  String get unfollow => 'Unfollow';
+
+  @override
+  String get following => 'Following';
+
+  @override
+  String get followers => 'Followers';
+
+  @override
+  String get posts => 'Posts';
+
+  @override
+  String get newPost => 'New Post';
+
+  @override
+  String get createPost => 'Create Post';
+
+  @override
+  String get editPost => 'Edit Post';
+
+  @override
+  String get deletePost => 'Delete Post';
+
+  @override
+  String get deleteConfirm => 'Are you sure you want to delete?';
+
+  @override
+  String get deleteSuccess => 'Deleted Successfully';
+
+  @override
+  String get saveSuccess => 'Saved Successfully';
+
+  @override
+  String get updateSuccess => 'Updated Successfully';
+
+  @override
+  String get uploadPhoto => 'Upload Photo';
+
+  @override
+  String get takePhoto => 'Take Photo';
+
+  @override
+  String get chooseFromGallery => 'Choose from Gallery';
+
+  @override
+  String get camera => 'Camera';
+
+  @override
+  String get gallery => 'Gallery';
+
+  @override
+  String get selectPhoto => 'Select Photo';
+
+  @override
+  String get photo => 'Photo';
+
+  @override
+  String get video => 'Video';
+
+  @override
+  String get audio => 'Audio';
+
+  @override
+  String get file => 'File';
+
+  @override
+  String get attachment => 'Attachment';
+
+  @override
+  String get downloadAttachment => 'Download Attachment';
+
+  @override
+  String get viewAttachment => 'View Attachment';
+
+  @override
+  String get typeMessage => 'Type a message...';
+
+  @override
+  String get newMessage => 'New Message';
+
+  @override
+  String get messages => 'Messages';
+
+  @override
+  String get inbox => 'Inbox';
+
+  @override
+  String get sent => 'Sent';
+
+  @override
+  String get draft => 'Draft';
+
+  @override
+  String get trash => 'Trash';
+
+  @override
+  String get markAsRead => 'Mark as Read';
+
+  @override
+  String get markAsUnread => 'Mark as Unread';
+
+  @override
+  String get archive => 'Archive';
+
+  @override
+  String get unarchive => 'Unarchive';
+
+  @override
+  String get starred => 'Starred';
+
+  @override
+  String get unstarred => 'Unstarred';
+
+  @override
+  String get notification => 'Notification';
+
+  @override
+  String get enableNotifications => 'Enable Notifications';
+
+  @override
+  String get disableNotifications => 'Disable Notifications';
+
+  @override
+  String get notificationSettings => 'Notification Settings';
+
+  @override
+  String get pushNotifications => 'Push Notifications';
+
+  @override
+  String get emailNotifications => 'Email Notifications';
+
+  @override
+  String get account => 'Account';
+
+  @override
+  String get accountSettings => 'Account Settings';
+
+  @override
+  String get profileSettings => 'Profile Settings';
+
+  @override
+  String get privacySettings => 'Privacy Settings';
+
+  @override
+  String get securitySettings => 'Security Settings';
+
+  @override
+  String get changePassword => 'Change Password';
+
+  @override
+  String get currentPassword => 'Current Password';
+
+  @override
+  String get newPassword => 'New Password';
+
+  @override
+  String get confirmNewPassword => 'Confirm New Password';
+
+  @override
+  String get passwordChanged => 'Password Changed';
+
+  @override
+  String get logoutConfirm => 'Are you sure you want to logout?';
+
+  @override
+  String get loginRequired => 'Login Required';
+
+  @override
+  String get pleaseLogin => 'Please Login';
+
+  @override
+  String get signUp => 'Sign Up';
+
+  @override
+  String get signIn => 'Sign In';
+
+  @override
+  String get signOut => 'Sign Out';
+
+  @override
+  String get continueWithGoogle => 'Continue with Google';
+
+  @override
+  String get continueWithFacebook => 'Continue with Facebook';
+
+  @override
+  String get continueWithApple => 'Continue with Apple';
+
+  @override
+  String get orContinueWith => 'Or continue with';
+
+  @override
+  String get termsAndConditions => 'Terms and Conditions';
+
+  @override
+  String get privacyPolicy => 'Privacy Policy';
+
+  @override
+  String get agreeToTerms => 'I agree to the';
+
+  @override
+  String get bySigningUp => 'By signing up, you agree to our';
+
+  @override
+  String get and => 'and';
+
+  @override
+  String get required => 'Required';
+
+  @override
+  String get optional => 'Optional';
+
+  @override
+  String get invalidEmail => 'Invalid Email';
+
+  @override
+  String get invalidPassword => 'Invalid Password';
+
+  @override
+  String get passwordTooShort => 'Password Too Short';
+
+  @override
+  String get passwordMismatch => 'Password Mismatch';
+
+  @override
+  String get fieldRequired => 'This field is required';
+
+  @override
+  String get pleaseEnter => 'Please Enter';
+
+  @override
+  String get pleaseSelect => 'Please Select';
+
+  @override
+  String get invalidInput => 'Invalid Input';
+
+  @override
+  String get somethingWentWrong => 'Something Went Wrong';
+
+  @override
+  String get tryAgainLater => 'Try Again Later';
+
+  @override
+  String get networkError => 'Network Error';
+
+  @override
+  String get noInternetConnection => 'No Internet Connection';
+
+  @override
+  String get checkConnection => 'Please check your connection';
+
+  @override
+  String get refreshing => 'Refreshing...';
+
+  @override
+  String get pullToRefresh => 'Pull to Refresh';
+
+  @override
+  String get releaseToRefresh => 'Release to Refresh';
+
+  @override
+  String get loadingMore => 'Loading More...';
+
+  @override
+  String get noMoreData => 'No More Data';
+
+  @override
+  String get endOfList => 'End of List';
+
+  @override
+  String get tapToRetry => 'Tap to Retry';
+
+  @override
+  String get goBack => 'Go Back';
+
+  @override
+  String get goHome => 'Go Home';
+
+  @override
+  String get exit => 'Exit';
+
+  @override
+  String get exitApp => 'Exit App';
+
+  @override
+  String get exitConfirm => 'Are you sure you want to exit?';
+
+  @override
+  String get update => 'Update';
+
+  @override
+  String get updateAvailable => 'Update Available';
+
+  @override
+  String get updateNow => 'Update Now';
+
+  @override
+  String get updateLater => 'Update Later';
+
+  @override
+  String get versionInfo => 'Version Info';
+
+  @override
+  String get currentVersion => 'Current Version';
+
+  @override
+  String get latestVersion => 'Latest Version';
+
+  @override
+  String get aboutApp => 'About App';
+
+  @override
+  String get contactSupport => 'Contact Support';
+
+  @override
+  String get helpCenter => 'Help Center';
+
+  @override
+  String get faq => 'FAQ';
+
+  @override
+  String get reportBug => 'Report Bug';
+
+  @override
+  String get suggestFeature => 'Suggest Feature';
+
+  @override
+  String get rateApp => 'Rate App';
+
+  @override
+  String get shareApp => 'Share App';
+
+  @override
+  String get allCountries => 'All Countries';
+
+  @override
+  String get allCities => 'All Cities';
+
+  @override
+  String get clearFilters => 'Clear Filters';
+
+  @override
+  String get citiesFound => 'cities found';
+
+  @override
+  String get filtered => 'Filtered';
+
+  @override
+  String get searchCityOrCountry => 'Search city or country...';
+
+  @override
+  String get noCitiesFound => 'No cities found';
+
+  @override
+  String get tryAdjustingFilters =>
+      'Try adjusting your filters or search query';
+
+  @override
+  String get scores => 'Scores';
+
+  @override
+  String get guide => 'Guide';
+
+  @override
+  String get prosAndCons => 'Pros & Cons';
+
+  @override
+  String get pros => 'Pros';
+
+  @override
+  String get cons => 'Cons';
+
+  @override
+  String get neighborhoods => 'Neighborhoods';
+
+  @override
+  String get loadingGuide => 'Loading guide...';
+
+  @override
+  String get startRating => 'Start Rating';
+
+  @override
+  String get tripReports => 'Trip Reports';
+
+  @override
+  String get recommendations => 'Recommendations';
+
+  @override
+  String get qa => 'Q&A';
+
+  @override
+  String get question => 'Question';
+
+  @override
+  String get answer => 'Answer';
+
+  @override
+  String get answers => 'answers';
+
+  @override
+  String get views => 'views';
+
+  @override
+  String get askQuestion => 'Ask Question';
+
+  @override
+  String get writeRecommendation => 'Write Recommendation';
+
+  @override
+  String get createTripReport => 'Create Trip Report';
+
+  @override
+  String get typeYourMessage => 'Type your message...';
+
+  @override
+  String get chatHistory => 'Chat History';
+
+  @override
+  String get clearChat => 'Clear Chat';
+
+  @override
+  String get newChat => 'New Chat';
+
+  @override
+  String get createTravelPlan => 'Create Travel Plan';
+
+  @override
+  String get destination => 'Destination';
+
+  @override
+  String get budget => 'Budget';
+
+  @override
+  String get savePlan => 'Save Plan';
+
+  @override
+  String get selectDestination => 'Select Destination';
+
+  @override
+  String get enterBudget => 'Enter Budget';
+
+  @override
+  String get addNotes => 'Add Notes';
+
+  @override
+  String get addCoworking => 'Add Coworking';
+
+  @override
+  String get spaceName => 'Space Name';
+
+  @override
+  String get amenities => 'Amenities';
+
+  @override
+  String get pricePerDay => 'Price per Day';
+
+  @override
+  String get pricePerMonth => 'Price per Month';
+
+  @override
+  String get addSpace => 'Add Space';
+
+  @override
+  String get addExpense => 'Add Expense';
+
+  @override
+  String get totalCost => 'Total Cost';
+
+  @override
+  String get monthlyAverage => 'Monthly Average';
+
+  @override
+  String get tools => 'Tools';
+
+  @override
+  String get compare => 'Compare';
+
+  @override
+  String get compareCities => 'Compare Cities';
+
+  @override
+  String get addCity => 'Add City';
+
+  @override
+  String get removeCity => 'Remove City';
+
+  @override
+  String get comparison => 'Comparison';
+
+  @override
+  String get winner => 'Winner';
+
+  @override
+  String get quality => 'Quality';
+
+  @override
+  String get speed => 'Speed';
+
+  @override
+  String get reliability => 'Reliability';
+
+  @override
+  String get coverage => 'Coverage';
+
+  @override
+  String get avgSpeed => 'Avg Speed';
+
+  @override
+  String get population => 'Population';
+
+  @override
+  String get timezone => 'Timezone';
+
+  @override
+  String get languages => 'Languages';
+
+  @override
+  String get climate => 'Climate';
+
+  @override
+  String get visa => 'Visa';
+
+  @override
+  String get visaRequired => 'Visa Required';
+
+  @override
+  String get visaFree => 'Visa Free';
+
+  @override
+  String get healthcareQuality => 'Healthcare Quality';
+
+  @override
+  String get hospitals => 'Hospitals';
+
+  @override
+  String get transportation => 'Transportation';
+
+  @override
+  String get publicTransport => 'Public transport, taxi';
+
+  @override
+  String get bikeability => 'Bikeability';
+
+  @override
+  String get traffic => 'Traffic';
+
+  @override
+  String get pollution => 'Pollution';
+
+  @override
+  String get aqi => 'AQI';
+
+  @override
+  String get noise => 'Noise';
+
+  @override
+  String get recreation => 'Recreation';
+
+  @override
+  String get restaurants => 'Restaurants';
+
+  @override
+  String get cafes => 'Cafes';
+
+  @override
+  String get bars => 'Bars';
+
+  @override
+  String get culture => 'Culture';
+
+  @override
+  String get museums => 'Museums';
+
+  @override
+  String get theaters => 'Theaters';
+
+  @override
+  String get galleries => 'Galleries';
+
+  @override
+  String get festivals => 'Festivals';
+
+  @override
+  String get concerts => 'Concerts';
+
+  @override
+  String get sports => 'Sports';
+
+  @override
+  String get gyms => 'Gyms';
+
+  @override
+  String get parks => 'Parks';
+
+  @override
+  String get beaches => 'Beaches';
+
+  @override
+  String get mountains => 'Mountains';
+
+  @override
+  String get nature => 'Nature';
+
+  @override
+  String get malls => 'Malls';
+
+  @override
+  String get markets => 'Markets';
+
+  @override
+  String get groceries => 'Groceries';
+
+  @override
+  String get education => 'Education';
+
+  @override
+  String get schools => 'Schools';
+
+  @override
+  String get universities => 'Universities';
+
+  @override
+  String get libraries => 'Libraries';
+
+  @override
+  String get workspace => 'Workspace';
+
+  @override
+  String get cafesForWork => 'Cafes for Work';
+
+  @override
+  String get meetingRooms => 'Meeting Rooms';
+
+  @override
+  String get socialLife => 'Social Life';
+
+  @override
+  String get networking => 'Networking';
+
+  @override
+  String get friendliness => 'Friendliness';
+
+  @override
+  String get diversity => 'Diversity';
+
+  @override
+  String get englishSpeaking => 'English Speaking';
+
+  @override
+  String get overall => 'Overall';
+
+  @override
+  String get qualityOfLife => 'Quality of Life';
+
+  @override
+  String get familyScore => 'Family Score';
+
+  @override
+  String get womenSafety => 'Women Safety';
+
+  @override
+  String get lgbtqSafety => 'LGBTQ+ Safety';
+
+  @override
+  String get fun => 'Fun';
+
+  @override
+  String get foodSafety => 'Food Safety';
+
+  @override
+  String get freeWiFi => 'Free WiFi';
+
+  @override
+  String get expats => 'Expats';
+
+  @override
+  String get digitalNomads => 'Digital Nomads';
+
+  @override
+  String get remoteWorkers => 'Remote Workers';
+
+  @override
+  String get startupScene => 'Startup Scene';
+
+  @override
+  String get entrepreneurship => 'Entrepreneurship';
+
+  @override
+  String get innovation => 'Innovation';
+
+  @override
+  String get techHub => 'Tech Hub';
+
+  @override
+  String get hotels => 'Hotels';
+
+  @override
+  String get hostels => 'Hostels';
+
+  @override
+  String get apartments => 'Apartments';
+
+  @override
+  String get rentals => 'Rentals';
+
+  @override
+  String get realEstate => 'Real Estate';
+
+  @override
+  String get housingCost => 'Housing Cost';
+
+  @override
+  String get utilities => 'Utilities';
+
+  @override
+  String get electricity => 'Electricity';
+
+  @override
+  String get water => 'Water';
+
+  @override
+  String get gas => 'Gas';
+
+  @override
+  String get foodCost => 'Food Cost';
+
+  @override
+  String get groceryCost => 'Grocery Cost';
+
+  @override
+  String get restaurantCost => 'Restaurant Cost';
+
+  @override
+  String get transportCost => 'Transport Cost';
+
+  @override
+  String get entertainmentCost => 'Entertainment Cost';
+
+  @override
+  String get overallCost => 'Overall Cost';
+
+  @override
+  String get veryExpensive => 'Very Expensive';
+
+  @override
+  String get affordable => 'Affordable';
+
+  @override
+  String get value => 'Value';
+
+  @override
+  String get overallScore => 'Overall Score';
+
+  @override
+  String get userReviews => 'User Reviews';
+
+  @override
+  String get writeAReview => 'Write a Review';
+
+  @override
+  String get viewAllReviews => 'View All Reviews';
+
+  @override
+  String get helpful => 'Helpful';
+
+  @override
+  String get notHelpful => 'Not Helpful';
+
+  @override
+  String get reportReview => 'Report Review';
+
+  @override
+  String get verified => 'Verified';
+
+  @override
+  String get unverified => 'Unverified';
+
+  @override
+  String get contributor => 'Contributor';
+
+  @override
+  String get localExpert => 'Local Expert';
+
+  @override
+  String get frequentTraveler => 'Frequent Traveler';
+
+  @override
+  String get lastActive => 'Last Active';
+
+  @override
+  String get contributions => 'Contributions';
+
+  @override
+  String get readMore => 'Read More';
+
+  @override
+  String get showLess => 'Show Less';
+
+  @override
+  String get seeMore => 'See More';
+
+  @override
+  String get viewMore => 'View More';
+
+  @override
+  String get loadMore => 'Load More';
+
+  @override
+  String get finish => 'Finish';
+
+  @override
+  String get getStarted => 'Get Started';
+
+  @override
+  String get learnMore => 'Learn More';
+
+  @override
+  String get discoverMore => 'Discover More';
+
+  @override
+  String get exploreNow => 'Explore Now';
+
+  @override
+  String get reserveNow => 'Reserve Now';
+
+  @override
+  String get contactUs => 'Contact Us';
+
+  @override
+  String get getInTouch => 'Get in Touch';
+
+  @override
+  String get suggestions => 'Suggestions';
+
+  @override
+  String get improvements => 'Improvements';
+
+  @override
+  String get goNomad => 'Go Nomad';
+
+  @override
+  String get joinGlobalCommunity =>
+      'Join a global community of remote workers\nliving and traveling around the world';
+
+  @override
+  String get chooseUsername => 'Choose your username';
+
+  @override
+  String get usernameRequired => 'Please enter a username';
+
+  @override
+  String get usernameMinLength => 'Username must be at least 3 characters';
+
+  @override
+  String get createPassword => 'Create a password';
+
+  @override
+  String get reenterPassword => 'Re-enter your password';
+
+  @override
+  String get confirmPasswordRequired => 'Please confirm your password';
+
+  @override
+  String get passwordsNotMatch => 'Passwords do not match';
+
+  @override
+  String get communityGuidelines => 'Community Guidelines';
+
+  @override
+  String get termsRequired => 'Terms Required';
+
+  @override
+  String get pleaseAgreeToTerms =>
+      'Please agree to the Terms of Service and Community Guidelines';
+
+  @override
+  String get joinNomads => 'Join Nomads.com →';
+
+  @override
+  String get googleSignIn => 'Google Sign In';
+
+  @override
+  String get appleSignIn => 'Apple Sign In';
+
+  @override
+  String get googleAuthComingSoon => 'Google authentication coming soon';
+
+  @override
+  String get appleAuthComingSoon => 'Apple authentication coming soon';
+
+  @override
+  String get alreadyHaveAccount => 'Already have an account?';
+
+  @override
+  String get welcomeToCommunity => 'Welcome to the Nomads community!';
+
+  @override
+  String get joinMembers => 'Join 38,000+ members and get:';
+
+  @override
+  String get attendMeetups => 'Attend 363 meetups/year';
+
+  @override
+  String get inCitiesWorldwide => 'in 100+ cities worldwide';
+
+  @override
+  String get meetNewPeople => 'Meet new people';
+
+  @override
+  String get forDatingAndFriends => 'for dating and friends';
+
+  @override
+  String get researchDestinations => 'Research destinations';
+
+  @override
+  String get findBestPlace => 'and find your best place to live';
+
+  @override
+  String get joinExclusiveChat => 'Join exclusive chat';
+
+  @override
+  String get messagesSentThisMonth => '15,000+ messages sent this month';
+
+  @override
+  String get trackTravels => 'Track your travels';
+
+  @override
+  String get shareJourney => 'and share your journey';
+
+  @override
+  String get dataAnalytics => 'Data Analytics';
+
+  @override
+  String get payment => 'Payment';
+
+  @override
+  String get aiMl => 'AI/ML';
+
+  @override
+  String get socialMedia => 'Social Media';
+
+  @override
+  String get ecommerce => 'E-commerce';
+
+  @override
+  String get security => 'Security';
+
+  @override
+  String get freemium => 'Freemium';
+
+  @override
+  String get paid => 'Paid';
+
+  @override
+  String get popularity => 'Popularity';
+
+  @override
+  String get bookmarks => 'Bookmarks';
+
+  @override
+  String get cart => 'Cart';
+
+  @override
+  String get tryDifferentKeywords => 'Try different keywords';
+
+  @override
+  String get hot => 'HOT';
+
+  @override
+  String get responseTime => 'Response Time';
+
+  @override
+  String get apiDetails => 'API Details';
+
+  @override
+  String get showingDetails => 'Showing details for';
+
+  @override
+  String get bookmarkedApis => 'Bookmarked APIs would be shown here';
+
+  @override
+  String get apiCart => 'API cart would be shown here';
+
+  @override
+  String get filterOptions => 'filter options would be shown here';
+
+  @override
+  String get sortOptions => 'Sort options would be shown here';
+
+  @override
+  String get selectCurrency => 'Select Currency';
+
+  @override
+  String get monthlyCost => 'Monthly Cost';
+
+  @override
+  String get foodDining => 'Food & Dining';
+
+  @override
+  String get gym => 'Fitness & Gym';
+
+  @override
+  String get coworkingSpace => 'Coworking Space';
+
+  @override
+  String get otherExpenses => 'Other Expenses';
+
+  @override
+  String get monthlyRent => 'Monthly rent or hotel';
+
+  @override
+  String get groceriesRestaurants => 'Groceries, restaurants';
+
+  @override
+  String get moviesActivities => 'Movies, activities';
+
+  @override
+  String get gymMembership => 'Gym membership, sports';
+
+  @override
+  String get workspaceRental => 'Workspace rental';
+
+  @override
+  String get electricityWater => 'Electricity, water, internet';
+
+  @override
+  String get medicalInsurance => 'Medical, insurance';
+
+  @override
+  String get clothesPersonal => 'Clothes, personal items';
+
+  @override
+  String get miscellaneous => 'Miscellaneous costs';
+
+  @override
+  String get additionalNotes => 'Additional Notes';
+
+  @override
+  String get shareExperience => 'Share your experience with costs';
+
+  @override
+  String get totalMonthly => 'Total Monthly Cost';
+
+  @override
+  String get submitCost => 'Submit Cost Information';
+
+  @override
+  String get submitting => 'Submitting...';
+
+  @override
+  String get pleaseEnterCost => 'Please enter at least one cost item';
+
+  @override
+  String get costShared =>
+      'Your cost information has been shared successfully!';
+
+  @override
+  String get aiTravelPlanner => 'AI Travel Planner';
+
+  @override
+  String planYourTrip(String cityName) {
+    return 'Plan your trip to $cityName';
+  }
+
+  @override
+  String get aiPoweredPlanning => 'AI-Powered Planning';
+
+  @override
+  String tellPreferences(String cityName) {
+    return 'Tell us your preferences and let AI create the perfect $cityName itinerary for you';
+  }
+
+  @override
+  String get departureLocation => 'Departure Location';
+
+  @override
+  String get selectDeparture => 'Select departure location';
+
+  @override
+  String get selectOnMap => 'Select on map';
+
+  @override
+  String get tapMapIcon => 'Tap the map icon to select your departure location';
+
+  @override
+  String get tripDuration => 'Trip Duration';
+
+  @override
+  String day(int count) {
+    return '$count day';
+  }
+
+  @override
+  String get budgetLevel => 'Budget Level';
+
+  @override
+  String get low => 'Low';
+
+  @override
+  String get medium => 'Medium';
+
+  @override
+  String get high => 'High';
+
+  @override
+  String get luxury => 'Luxury';
+
+  @override
+  String get travelStyle => 'Travel Style';
+
+  @override
+  String get adventure => 'Adventure';
+
+  @override
+  String get relaxation => 'Relaxation';
+
+  @override
+  String get foodie => 'Foodie';
+
+  @override
+  String get selectInterests => 'Select your interests (up to 5)';
+
+  @override
+  String get hiking => 'Hiking';
+
+  @override
+  String get localFood => 'Local Food';
+
+  @override
+  String get photography => 'Photography';
+
+  @override
+  String get history => 'History';
+
+  @override
+  String get architecture => 'Architecture';
+
+  @override
+  String get generatePlan => 'Generate Travel Plan';
+
+  @override
+  String get generating => 'Generating...';
+
+  @override
+  String get pleaseSelectDeparture => 'Please select departure location';
+
+  @override
+  String get failedToOpenMap => 'Failed to open map';
+
+  @override
+  String get countries => 'Countries';
+
+  @override
+  String get meetups => 'Meetups';
+
+  @override
+  String get connections => 'Connections';
+
+  @override
+  String get viewProfile => 'View Profile';
+
+  @override
+  String get muteNotifications => 'Mute Notifications';
+
+  @override
+  String get blockUser => 'Block User';
+
+  @override
+  String get muted => 'Muted';
+
+  @override
+  String get notificationsMuted => 'Notifications muted for';
+
+  @override
+  String get startConversation => 'Start your conversation with';
+
+  @override
+  String get blockWarning => 'Are you sure you want to block this user?';
+
+  @override
+  String get blockConfirm =>
+      'You won\'t be able to see their messages or activity.';
+
+  @override
+  String get userBlocked => 'User has been blocked';
+
+  @override
+  String get filtersApplied => 'Filters Applied';
+
+  @override
+  String get showingResults => 'Showing results for your criteria';
+
+  @override
+  String get deepThinking => 'Deep Thinking';
+
+  @override
+  String get podcast => 'Podcast';
+
+  @override
+  String get translation => 'Translation';
+
+  @override
+  String get creativeAssistant => 'Creative Assistant';
+
+  @override
+  String freeTrialAvailable(Object duration) {
+    return 'Free $duration-day trial available';
+  }
+
+  @override
+  String get monthlyRate => 'monthly';
+
+  @override
+  String get locationService => 'Location Service';
+
+  @override
+  String get locationDetails => 'Location Details';
+
+  @override
+  String get noLocationInfo => 'No location information';
+
+  @override
+  String get latitude => 'Latitude';
+
+  @override
+  String get longitude => 'Longitude';
+
+  @override
+  String get accuracy => 'Accuracy';
+
+  @override
+  String get altitude => 'Altitude';
+
+  @override
+  String get distanceCalculation => 'Distance Calculation';
+
+  @override
+  String get stopAutoUpdate => 'Stop Auto Update (5s interval)';
+
+  @override
+  String get startAutoUpdate => 'Start Auto Update (5s interval)';
+
+  @override
+  String get manualRefreshLocation => 'Manual Refresh Location';
+
+  @override
+  String get locationSettings => 'Location Settings';
+
+  @override
+  String get snakeGame => 'Snake Game';
+
+  @override
+  String get score => 'Score';
+
+  @override
+  String get length => 'Length';
+
+  @override
+  String get readyToStart => 'Ready to Start';
+
+  @override
+  String get gamePlaying => 'Playing...';
+
+  @override
+  String get gamePaused => 'Game Paused';
+
+  @override
+  String get gameOver => 'Game Over!';
+
+  @override
+  String get finalScore => 'Final Score';
+
+  @override
+  String get pause => 'Pause';
+
+  @override
+  String get start => 'Start';
+
+  @override
+  String get resetGame => 'Reset';
+
+  @override
+  String get directionControl => 'Direction Control';
+
+  @override
+  String get openingNativeMapPicker => 'Opening native map picker...';
+
+  @override
+  String get mapPicker => 'Map Picker';
+
+  @override
+  String get usesNativeAMapSDK => 'Uses native iOS AMap SDK';
+
+  @override
+  String get openMapPicker => 'Open Map Picker';
+
+  @override
+  String get failedToOpenMapPicker => 'Failed to open map picker';
+
+  @override
+  String get secondPage => 'Second Page';
+
+  @override
+  String get secondPageCounterText => 'Second page, counter also available:';
+
+  @override
+  String get backToHome => 'Back to Home';
+
+  @override
+  String get testAuth => 'Test Auth';
+
+  @override
+  String get testLoginFunction => 'For testing login functionality';
+
+  @override
+  String get goToLoginPage => 'Go to Login Page';
+
+  @override
+  String get amapNativeTest => 'Amap Native Test';
+
+  @override
+  String get testPlatformChannel => 'Test Platform Channel';
+
+  @override
+  String get testConnection => 'Test Connection';
+
+  @override
+  String get notTested => 'Not tested';
+
+  @override
+  String get testing => 'Testing...';
+
+  @override
+  String get platformChannelConnected => '✓ Platform Channel Connected!';
+
+  @override
+  String get connectionFailed => '✗ Connection Failed';
+
+  @override
+  String get openMapPickerSection => '2. Open Map Picker';
+
+  @override
+  String get openNativeMapPicker => 'Open Native Map Picker';
+
+  @override
+  String get getCurrentLocationSection => '3. Get Current Location';
+
+  @override
+  String get getCurrentLocation => 'Get Current Location';
+
+  @override
+  String get selectedLocation => '📍 Selected Location';
+
+  @override
+  String get instructions => '📖 Instructions';
+
+  @override
+  String get instruction1 => '1. First test the Platform Channel connection';
+
+  @override
+  String get instruction2 => '2. If connected, open the native map picker';
+
+  @override
+  String get instruction3 => '3. Drag the map to select a location';
+
+  @override
+  String get instruction4 => '4. Tap \"Confirm Location\" to return';
+
+  @override
+  String get simulatorNote =>
+      'Note: Map tiles may not load in iOS Simulator. Use a real device for full testing.';
+
+  @override
+  String get locationSelected => 'Location selected!';
+
+  @override
+  String get gotCurrentLocation => 'Got current location!';
+
+  @override
+  String get failedToGetLocation => 'Failed to get location';
+
+  @override
+  String get province => 'Province';
+
+  @override
+  String get instructionStep1 =>
+      '1. First test the Platform Channel connection';
+
+  @override
+  String get instructionStep2 => '2. If connected, open the native map picker';
+
+  @override
+  String get instructionStep3 => '3. Drag the map to select a location';
+
+  @override
+  String get instructionStep4 => '4. Tap \"Confirm Location\" to return';
+
+  @override
+  String get mapTilesNote =>
+      'Note: Map tiles may not load in iOS Simulator. Use a real device for full testing.';
+
+  @override
+  String get selectVenue => 'Select Venue';
+
+  @override
+  String get venues => 'Venues';
+
+  @override
+  String get noSelection => 'No Selection';
+
+  @override
+  String get pleaseSelectVenue => 'Please select a venue first';
+
+  @override
+  String venuesCount(Object count) {
+    return '$count venues';
+  }
+
+  @override
+  String get restaurant => 'Restaurant';
+
+  @override
+  String get hotel => 'Hotel';
+
+  @override
+  String get trending => 'Trending';
+
+  @override
+  String get featured => 'Featured';
+
+  @override
+  String get shopNow => 'Shop Now';
+
+  @override
+  String get viewAll => 'View All';
+
+  @override
+  String get welcomeBack => 'Welcome Back';
+
+  @override
+  String get emailOrUsername => 'Email or Username';
+
+  @override
+  String get dontHaveAccount => 'Don\'t have an account?';
+
+  @override
+  String get overallRating => 'Overall Rating';
+
+  @override
+  String get tapStarsToRate => 'Tap stars to rate';
+
+  @override
+  String get reviewTitle => 'Review Title';
+
+  @override
+  String get reviewTitleHint => 'Briefly describe your experience';
+
+  @override
+  String get yourReview => 'Your Review';
+
+  @override
+  String get shareYourExperience => 'Share your experience in this city...';
+
+  @override
+  String get addPhotos => 'Add Photos';
+
+  @override
+  String get addPhoto => 'Add Photo';
+
+  @override
+  String get reviewGuidelines => 'Review Guidelines';
+
+  @override
+  String get beHonest => '• Be honest and objective';
+
+  @override
+  String get beSpecific => '• Be specific and detailed';
+
+  @override
+  String get beRespectful => '• Be respectful';
+
+  @override
+  String get submitReview => 'Submit Review';
+
+  @override
+  String get pleaseProvideRating => 'Please provide a rating';
+
+  @override
+  String get discussions => 'Discussions';
+
+  @override
+  String get joinMeetup => 'Join Meetup';
+
+  @override
+  String get pastMeetups => 'Past Meetups';
+
+  @override
+  String get compareCity => 'Compare Cities';
+
+  @override
+  String get selectCitiesToCompare => 'Select cities to compare';
+
+  @override
+  String get coworkingDetail => 'Coworking Detail';
+
+  @override
+  String get workingHours => 'Working Hours';
+
+  @override
+  String get monthlyPrice => 'Monthly Price';
+
+  @override
+  String get dailyPrice => 'Daily Price';
+
+  @override
+  String get uploadPhotos => 'Upload Photos';
+
+  @override
+  String get cityChat => 'City Chat';
+
+  @override
+  String get online => 'Online';
+
+  @override
+  String get offline => 'Offline';
+
+  @override
+  String get myPlans => 'My Plans';
+
+  @override
+  String get notes => 'Notes';
+
+  @override
+  String get attractions => 'Attractions';
+
+  @override
+  String get dashboard => 'Dashboard';
+
+  @override
+  String get timeRange => 'Time Range';
+}

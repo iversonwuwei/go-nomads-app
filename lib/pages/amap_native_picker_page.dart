@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
+import '../generated/app_localizations.dart';
 import '../services/amap_native_service.dart';
 
 /// 高德地图位置选择器页面（原生实现�?
@@ -68,12 +69,13 @@ class _AmapNativePickerPageState extends State<AmapNativePickerPage> {
         }
       }
     } catch (e) {
-      print('�?打开地图选择器异�? $e');
-      print('�?异常类型: ${e.runtimeType}');
+      print('❌打开地图选择器异常: $e');
+      print('❌异常类型: ${e.runtimeType}');
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         Get.snackbar(
-          'Error',
-          'Failed to open map picker: $e',
+          l10n.error,
+          '${l10n.failedToOpenMapPicker}: $e',
           backgroundColor: Colors.red.withValues(alpha: 0.9),
           colorText: Colors.white,
           duration: const Duration(seconds: 5),
@@ -91,6 +93,7 @@ class _AmapNativePickerPageState extends State<AmapNativePickerPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -101,9 +104,9 @@ class _AmapNativePickerPageState extends State<AmapNativePickerPage> {
               color: AppColors.backButtonDark),
           onPressed: () => Get.back(),
         ),
-        title: const Text(
-          'Select Location',
-          style: TextStyle(
+        title: Text(
+          l10n.selectLocation,
+          style: const TextStyle(
             color: Colors.black,
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -119,9 +122,9 @@ class _AmapNativePickerPageState extends State<AmapNativePickerPage> {
                 valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Opening native map picker...',
-                style: TextStyle(
+              Text(
+                l10n.openingNativeMapPicker,
+                style: const TextStyle(
                   fontSize: 16,
                   color: Colors.black54,
                 ),
@@ -133,18 +136,18 @@ class _AmapNativePickerPageState extends State<AmapNativePickerPage> {
                 color: Color(0xFFFF4458),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Map Picker',
-                style: TextStyle(
+              Text(
+                l10n.mapPicker,
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
                   color: Colors.black87,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Uses native iOS AMap SDK',
-                style: TextStyle(
+              Text(
+                l10n.usesNativeAMapSDK,
+                style: const TextStyle(
                   fontSize: 14,
                   color: Colors.black54,
                 ),
@@ -159,9 +162,9 @@ class _AmapNativePickerPageState extends State<AmapNativePickerPage> {
                     vertical: 12,
                   ),
                 ),
-                child: const Text(
-                  'Open Map Picker',
-                  style: TextStyle(
+                child: Text(
+                  l10n.openMapPicker,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,

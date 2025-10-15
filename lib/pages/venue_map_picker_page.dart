@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
+import '../generated/app_localizations.dart';
 
 /// Venue地图选择器页�?
 ///
@@ -171,10 +172,11 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
   }
 
   void _confirmSelection() {
+    final l10n = AppLocalizations.of(context)!;
     if (_selectedVenue == null) {
       Get.snackbar(
-        'No Selection',
-        'Please select a venue first',
+        l10n.noSelection,
+        l10n.pleaseSelectVenue,
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.orange,
         colorText: Colors.white,
@@ -194,6 +196,7 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -204,9 +207,9 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
               color: AppColors.backButtonDark),
           onPressed: () => Get.back(),
         ),
-        title: const Text(
-          'Select Venue',
-          style: TextStyle(
+        title: Text(
+          l10n.selectVenue,
+          style: const TextStyle(
             color: Colors.black,
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -215,9 +218,9 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
         actions: [
           TextButton(
             onPressed: _confirmSelection,
-            child: const Text(
-              'Confirm',
-              style: TextStyle(
+            child: Text(
+              l10n.confirm,
+              style: const TextStyle(
                 color: Color(0xFFFF4458),
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -249,7 +252,13 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
   }
 
   Widget _buildFilterChips() {
-    final filters = ['All', 'Restaurants', 'Coworking', 'Hotels'];
+    final l10n = AppLocalizations.of(context)!;
+    final filters = [
+      {'key': 'All', 'label': l10n.all},
+      {'key': 'Restaurants', 'label': l10n.restaurants},
+      {'key': 'Coworking', 'label': 'Coworking'},
+      {'key': 'Hotels', 'label': l10n.hotels},
+    ];
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -267,15 +276,15 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
         scrollDirection: Axis.horizontal,
         child: Row(
           children: filters.map((filter) {
-            final isSelected = _selectedFilter == filter;
+            final isSelected = _selectedFilter == filter['key'];
             return Padding(
               padding: const EdgeInsets.only(right: 8),
               child: FilterChip(
-                label: Text(filter),
+                label: Text(filter['label']!),
                 selected: isSelected,
                 onSelected: (selected) {
                   setState(() {
-                    _selectedFilter = filter;
+                    _selectedFilter = filter['key']!;
                   });
                 },
                 backgroundColor: Colors.white,
@@ -408,7 +417,7 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    '${_filteredVenues.length} Venues',
+                    '${_filteredVenues.length} ${AppLocalizations.of(context)!.venues}',
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey[700],

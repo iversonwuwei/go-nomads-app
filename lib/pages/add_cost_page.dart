@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
+import '../generated/app_localizations.dart';
+
 class AddCostPage extends StatefulWidget {
   final String cityId;
   final String cityName;
@@ -152,9 +154,10 @@ class _AddCostPageState extends State<AddCostPage> {
     // Check if at least one cost is entered
     bool hasAnyCost = _controllers.values.any((c) => c.text.isNotEmpty);
     if (!hasAnyCost) {
+      final l10n = AppLocalizations.of(context)!;
       Get.snackbar(
-        'Error',
-        'Please enter at least one cost item',
+        l10n.error,
+        l10n.pleaseEnterCost,
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -184,10 +187,11 @@ class _AddCostPageState extends State<AddCostPage> {
     _isSubmitting.value = false;
 
     // Show success message
+    final l10n = AppLocalizations.of(context)!;
     Get.back(result: true);
     Get.snackbar(
-      'Success',
-      'Your cost information has been shared successfully!',
+      l10n.success,
+      l10n.costShared,
       backgroundColor: const Color(0xFFFF4458),
       colorText: Colors.white,
       duration: const Duration(seconds: 2),
@@ -196,6 +200,7 @@ class _AddCostPageState extends State<AddCostPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -208,8 +213,8 @@ class _AddCostPageState extends State<AddCostPage> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Share Costs',
+            Text(
+              l10n.monthlyCost,
               style: TextStyle(
                 color: Colors.black,
                 fontSize: 18,
@@ -266,104 +271,110 @@ class _AddCostPageState extends State<AddCostPage> {
   }
 
   Widget _buildCurrencySelector() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Text(
-                '💱',
-                style: TextStyle(fontSize: 20),
-              ),
-              const SizedBox(width: 8),
-              const Text(
-                'Currency',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+    return Builder(builder: (context) {
+      final l10n = AppLocalizations.of(context)!;
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.grey[50],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey[200]!),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Text(
+                  '💱',
+                  style: TextStyle(fontSize: 20),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          DropdownButtonFormField<String>(
-            initialValue: _selectedCurrency,
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.white,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey[300]!),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey[300]!),
-              ),
+                const SizedBox(width: 8),
+                Text(
+                  l10n.selectCurrency,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
-            items: _currencies.map((currency) {
-              return DropdownMenuItem<String>(
-                value: currency['code'],
-                child: Row(
-                  children: [
-                    Text(
-                      currency['symbol']!,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      '${currency['code']} - ${currency['name']}',
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                  ],
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              initialValue: _selectedCurrency,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey[300]!),
                 ),
-              );
-            }).toList(),
-            onChanged: (value) {
-              setState(() {
-                _selectedCurrency = value!;
-              });
-            },
-          ),
-        ],
-      ),
-    );
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey[300]!),
+                ),
+              ),
+              items: _currencies.map((currency) {
+                return DropdownMenuItem<String>(
+                  value: currency['code'],
+                  child: Row(
+                    children: [
+                      Text(
+                        currency['symbol']!,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        '${currency['code']} - ${currency['name']}',
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedCurrency = value!;
+                });
+              },
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildCostCategories() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Cost Breakdown',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+    return Builder(builder: (context) {
+      final l10n = AppLocalizations.of(context)!;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.monthlyCost,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          'Enter your monthly expenses for each category',
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey[600],
+          const SizedBox(height: 4),
+          Text(
+            l10n.shareExperience,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[600],
+            ),
           ),
-        ),
-        const SizedBox(height: 16),
-        ..._categories.map((category) => _buildCostInputField(category)),
-      ],
-    );
+          const SizedBox(height: 16),
+          ..._categories.map((category) => _buildCostInputField(category)),
+        ],
+      );
+    });
   }
 
   Widget _buildCostInputField(Map<String, dynamic> category) {
@@ -430,159 +441,169 @@ class _AddCostPageState extends State<AddCostPage> {
   }
 
   Widget _buildTotalDisplay() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFFFF4458).withValues(alpha: 0.1),
-            const Color(0xFFFF4458).withValues(alpha: 0.05),
+    return Builder(builder: (context) {
+      final l10n = AppLocalizations.of(context)!;
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              const Color(0xFFFF4458).withValues(alpha: 0.1),
+              const Color(0xFFFF4458).withValues(alpha: 0.05),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(12),
+          border:
+              Border.all(color: const Color(0xFFFF4458).withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.totalMonthly,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[700],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '$_currencySymbol ${_totalCost.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFFF4458),
+                  ),
+                ),
+              ],
+            ),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF4458),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.calculate,
+                color: Colors.white,
+                size: 32,
+              ),
+            ),
           ],
         ),
-        borderRadius: BorderRadius.circular(12),
-        border:
-            Border.all(color: const Color(0xFFFF4458).withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      );
+    });
+  }
+
+  Widget _buildNotesSection() {
+    return Builder(builder: (context) {
+      final l10n = AppLocalizations.of(context)!;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
             children: [
-              Text(
-                'Total Monthly Cost',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[700],
-                  fontWeight: FontWeight.w500,
-                ),
+              const Text(
+                '📝',
+                style: TextStyle(fontSize: 20),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(width: 8),
               Text(
-                '$_currencySymbol ${_totalCost.toStringAsFixed(2)}',
-                style: const TextStyle(
-                  fontSize: 28,
+                l10n.additionalNotes,
+                style: TextStyle(
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFFFF4458),
                 ),
               ),
             ],
           ),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFF4458),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.calculate,
-              color: Colors.white,
-              size: 32,
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: _notesController,
+            maxLines: 4,
+            maxLength: 500,
+            decoration: InputDecoration(
+              hintText:
+                  'Add any additional information about your living costs...',
+              hintStyle: TextStyle(color: Colors.grey[400]),
+              filled: true,
+              fillColor: Colors.grey[50],
+              contentPadding: const EdgeInsets.all(16),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey[300]!),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey[300]!),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide:
+                    const BorderSide(color: Color(0xFFFF4458), width: 2),
+              ),
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildNotesSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Text(
-              '📝',
-              style: TextStyle(fontSize: 20),
-            ),
-            const SizedBox(width: 8),
-            const Text(
-              'Additional Notes (Optional)',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        TextFormField(
-          controller: _notesController,
-          maxLines: 4,
-          maxLength: 500,
-          decoration: InputDecoration(
-            hintText:
-                'Add any additional information about your living costs...',
-            hintStyle: TextStyle(color: Colors.grey[400]),
-            filled: true,
-            fillColor: Colors.grey[50],
-            contentPadding: const EdgeInsets.all(16),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[300]!),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[300]!),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFFF4458), width: 2),
-            ),
-          ),
-        ),
-      ],
-    );
+      );
+    });
   }
 
   Widget _buildSubmitButton() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: Obx(() => SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: _isSubmitting.value ? null : _submitCost,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFF4458),
-                  disabledBackgroundColor: Colors.grey[300],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+    return Builder(builder: (context) {
+      final l10n = AppLocalizations.of(context)!;
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -5),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: Obx(() => SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _isSubmitting.value ? null : _submitCost,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF4458),
+                    disabledBackgroundColor: Colors.grey[300],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
                   ),
-                  elevation: 0,
+                  child: _isSubmitting.value
+                      ? SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : Text(
+                          l10n.submitCost,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
                 ),
-                child: _isSubmitting.value
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
-                    : const Text(
-                        'Share Cost Information',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-              ),
-            )),
-      ),
-    );
+              )),
+        ),
+      );
+    });
   }
 }

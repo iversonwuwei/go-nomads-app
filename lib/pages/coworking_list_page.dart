@@ -4,9 +4,11 @@ import 'package:df_admin_mobile/pages/coworking_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../generated/app_localizations.dart';
+
 /// Coworking List Page
 /// 共享办公空间列表页面
-class CoworkingListPage extends StatelessWidget {
+class CoworkingListPage extends StatefulWidget {
   final String cityId;
   final String cityName;
 
@@ -17,66 +19,119 @@ class CoworkingListPage extends StatelessWidget {
   });
 
   @override
+  State<CoworkingListPage> createState() => _CoworkingListPageState();
+}
+
+class _CoworkingListPageState extends State<CoworkingListPage> {
+  bool _isGridView = true;
+
+  @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final controller = Get.put(CoworkingController());
-    controller.filterByCity(cityName);
+    controller.filterByCity(widget.cityName);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('$cityName - Coworking Spaces'),
+        title: Text('${widget.cityName} - ${l10n.coworkingSpaces}'),
         actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.sort),
-            onSelected: (value) {
-              switch (value) {
-                case 'rating':
-                  controller.sortByRating();
-                  break;
-                case 'price':
-                  controller.sortByPrice();
-                  break;
-                case 'distance':
-                  controller.sortByDistance();
-                  break;
-              }
+          IconButton(
+            icon: const Icon(Icons.filter_list),
+            onPressed: () {
+              // Show filter drawer
             },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'rating',
-                child: Row(
-                  children: [
-                    Icon(Icons.star, size: 20),
-                    SizedBox(width: 8),
-                    Text('Sort by Rating'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'price',
-                child: Row(
-                  children: [
-                    Icon(Icons.attach_money, size: 20),
-                    SizedBox(width: 8),
-                    Text('Sort by Price'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'distance',
-                child: Row(
-                  children: [
-                    Icon(Icons.location_on, size: 20),
-                    SizedBox(width: 8),
-                    Text('Sort by Distance'),
-                  ],
-                ),
-              ),
-            ],
           ),
         ],
       ),
       body: Column(
         children: [
+          // Toolbar
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            color: Colors.white,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Obx(() => Text(
+                      '${controller.filteredSpaces.length} spaces',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    )),
+                Row(
+                  children: [
+                    // Grid/List toggle
+                    IconButton(
+                      icon: Icon(
+                        _isGridView
+                            ? Icons.view_list_outlined
+                            : Icons.grid_view_outlined,
+                        size: 20,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isGridView = !_isGridView;
+                        });
+                      },
+                    ),
+                    // Sort
+                    PopupMenuButton<String>(
+                      icon: const Icon(Icons.sort, size: 20),
+                      onSelected: (value) {
+                        switch (value) {
+                          case 'rating':
+                            controller.sortByRating();
+                            break;
+                          case 'price':
+                            controller.sortByPrice();
+                            break;
+                          case 'distance':
+                            controller.sortByDistance();
+                            break;
+                        }
+                      },
+                      itemBuilder: (context) {
+                        final l10n = AppLocalizations.of(context)!;
+                        return [
+                          PopupMenuItem(
+                            value: 'rating',
+                            child: Row(
+                              children: [
+                                const Icon(Icons.star, size: 20),
+                                const SizedBox(width: 8),
+                                Text(l10n.rating),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 'price',
+                            child: Row(
+                              children: [
+                                const Icon(Icons.attach_money, size: 20),
+                                const SizedBox(width: 8),
+                                Text(l10n.price),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 'distance',
+                            child: Row(
+                              children: [
+                                const Icon(Icons.location_on, size: 20),
+                                const SizedBox(width: 8),
+                                Text(l10n.distance),
+                              ],
+                            ),
+                          ),
+                        ];
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
           _buildFilterChips(controller),
           Expanded(
             child: Obx(() {
@@ -85,30 +140,35 @@ class CoworkingListPage extends StatelessWidget {
               }
 
               if (controller.filteredSpaces.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.search_off,
-                        size: 80,
-                        color: Colors.grey[400],
+                return Builder(
+                  builder: (context) {
+                    final l10n = AppLocalizations.of(context)!;
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.search_off,
+                            size: 80,
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            l10n.noData,
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          TextButton(
+                            onPressed: () => controller.clearFilters(),
+                            child: Text(l10n.reset),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'No coworking spaces found',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      TextButton(
-                        onPressed: () => controller.clearFilters(),
-                        child: const Text('Clear Filters'),
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 );
               }
 
@@ -129,45 +189,50 @@ class CoworkingListPage extends StatelessWidget {
 
   /// 筛选条件
   Widget _buildFilterChips(CoworkingController controller) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Obx(() => Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _buildFilterChip(
-                    controller,
-                    'WiFi',
-                    Icons.wifi,
-                  ),
-                  _buildFilterChip(
-                    controller,
-                    '24/7',
-                    Icons.access_time,
-                  ),
-                  _buildFilterChip(
-                    controller,
-                    'Meeting Rooms',
-                    Icons.meeting_room,
-                  ),
-                  _buildFilterChip(
-                    controller,
-                    'Coffee',
-                    Icons.coffee,
-                  ),
-                  if (controller.selectedFilters.isNotEmpty)
-                    ActionChip(
-                      avatar: const Icon(Icons.clear, size: 18),
-                      label: const Text('Clear'),
-                      onPressed: () => controller.clearFilters(),
-                    ),
-                ],
-              )),
-        ],
-      ),
+    return Builder(
+      builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Obx(() => Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildFilterChip(
+                        controller,
+                        'WiFi',
+                        Icons.wifi,
+                      ),
+                      _buildFilterChip(
+                        controller,
+                        '24/7',
+                        Icons.access_time,
+                      ),
+                      _buildFilterChip(
+                        controller,
+                        l10n.meetingRooms,
+                        Icons.meeting_room,
+                      ),
+                      _buildFilterChip(
+                        controller,
+                        'Coffee',
+                        Icons.coffee,
+                      ),
+                      if (controller.selectedFilters.isNotEmpty)
+                        ActionChip(
+                          avatar: const Icon(Icons.clear, size: 18),
+                          label: Text(l10n.reset),
+                          onPressed: () => controller.clearFilters(),
+                        ),
+                    ],
+                  )),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -222,34 +287,39 @@ class CoworkingListPage extends StatelessWidget {
                   Positioned(
                     top: 8,
                     right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.blue,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.verified,
-                            size: 14,
-                            color: Colors.white,
+                    child: Builder(
+                      builder: (context) {
+                        final l10n = AppLocalizations.of(context)!;
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
                           ),
-                          SizedBox(width: 4),
-                          Text(
-                            'Verified',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
+                          decoration: BoxDecoration(
+                            color: Colors.blue,
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                        ],
-                      ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.verified,
+                                size: 14,
+                                color: Colors.white,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                l10n.verified,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                   ),
               ],
@@ -304,7 +374,8 @@ class CoworkingListPage extends StatelessWidget {
                   // 地址
                   Row(
                     children: [
-                      Icon(Icons.location_on, size: 16, color: Colors.grey[600]),
+                      Icon(Icons.location_on,
+                          size: 16, color: Colors.grey[600]),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
@@ -332,10 +403,15 @@ class CoworkingListPage extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       if (space.pricing.monthlyRate != null)
-                        _buildInfoChip(
-                          Icons.attach_money,
-                          '${space.pricing.monthlyRate!.toStringAsFixed(0)}/mo',
-                          Colors.green,
+                        Builder(
+                          builder: (context) {
+                            final l10n = AppLocalizations.of(context)!;
+                            return _buildInfoChip(
+                              Icons.attach_money,
+                              '${space.pricing.monthlyRate!.toStringAsFixed(0)}/${l10n.monthlyRate}',
+                              Colors.green,
+                            );
+                          },
                         ),
                       const SizedBox(width: 8),
                       if (space.amenities.has24HourAccess)
@@ -383,7 +459,8 @@ class CoworkingListPage extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.local_offer, size: 16, color: Colors.green[700]),
+                          Icon(Icons.local_offer,
+                              size: 16, color: Colors.green[700]),
                           const SizedBox(width: 4),
                           Text(
                             'Free ${space.pricing.trialDuration} trial available',

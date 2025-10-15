@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../generated/app_localizations.dart';
 import '../models/user_model.dart' as models;
 import 'direct_chat_page.dart';
 import 'invite_to_meetup_page.dart';
@@ -96,36 +97,41 @@ class MemberDetailPage extends StatelessWidget {
                       top: 180,
                       right: 0,
                       left: 0,
-                      child: Center(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF10B981),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.verified,
-                                color: Colors.white,
-                                size: 16,
+                      child: Builder(
+                        builder: (context) {
+                          final l10n = AppLocalizations.of(context)!;
+                          return Center(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
                               ),
-                              SizedBox(width: 4),
-                              Text(
-                                'Verified',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF10B981),
+                                borderRadius: BorderRadius.circular(20),
                               ),
-                            ],
-                          ),
-                        ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.verified,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    l10n.verified,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ),
                 ],
@@ -190,7 +196,7 @@ class MemberDetailPage extends StatelessWidget {
 
                   // Bio Section
                   if (user.bio != null && user.bio!.isNotEmpty) ...[
-                    _buildSectionTitle('About'),
+                    _buildSectionTitle(AppLocalizations.of(context)!.about),
                     const SizedBox(height: 12),
                     Container(
                       width: double.infinity,
@@ -216,7 +222,7 @@ class MemberDetailPage extends StatelessWidget {
 
                   // Interests Section
                   if (user.interests.isNotEmpty) ...[
-                    _buildSectionTitle('Interests'),
+                    _buildSectionTitle(AppLocalizations.of(context)!.interests),
                     const SizedBox(height: 12),
                     Wrap(
                       spacing: 8,
@@ -234,7 +240,7 @@ class MemberDetailPage extends StatelessWidget {
 
                   // Skills Section
                   if (user.skills.isNotEmpty) ...[
-                    _buildSectionTitle('Skills'),
+                    _buildSectionTitle(AppLocalizations.of(context)!.skills),
                     const SizedBox(height: 12),
                     Wrap(
                       spacing: 8,
@@ -252,7 +258,7 @@ class MemberDetailPage extends StatelessWidget {
 
                   // Badges Section
                   if (user.badges.isNotEmpty) ...[
-                    _buildSectionTitle('Badges'),
+                    _buildSectionTitle(AppLocalizations.of(context)!.badges),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 100,
@@ -269,13 +275,13 @@ class MemberDetailPage extends StatelessWidget {
                   ],
 
                   // Stats Section
-                  _buildSectionTitle('Stats'),
+                  _buildSectionTitle(AppLocalizations.of(context)!.stats),
                   const SizedBox(height: 12),
                   Row(
                     children: [
                       Expanded(
                         child: _buildStatCard(
-                          'Cities',
+                          AppLocalizations.of(context)!.cities,
                           user.stats.citiesLived.toString(),
                           Icons.location_city,
                           const Color(0xFFFF4458),
@@ -284,7 +290,7 @@ class MemberDetailPage extends StatelessWidget {
                       const SizedBox(width: 12),
                       Expanded(
                         child: _buildStatCard(
-                          'Countries',
+                          AppLocalizations.of(context)!.countries,
                           user.stats.countriesVisited.toString(),
                           Icons.flag,
                           const Color(0xFF3B82F6),
@@ -293,7 +299,7 @@ class MemberDetailPage extends StatelessWidget {
                       const SizedBox(width: 12),
                       Expanded(
                         child: _buildStatCard(
-                          'Meetups',
+                          AppLocalizations.of(context)!.meetups,
                           user.stats.meetupsAttended.toString(),
                           Icons.people,
                           const Color(0xFF10B981),
@@ -305,75 +311,82 @@ class MemberDetailPage extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // Action Buttons
-                  Row(
-                    children: [
-                      // Invite 按钮
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () =>
-                              Get.to(() => InviteToMeetupPage(user: user)),
-                          icon: const Icon(Icons.event),
-                          label: const Text('Invite'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF10B981),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
+                  Builder(
+                    builder: (context) {
+                      final l10n = AppLocalizations.of(context)!;
+                      return Row(
+                        children: [
+                          // Invite 按钮
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () =>
+                                  Get.to(() => InviteToMeetupPage(user: user)),
+                              icon: const Icon(Icons.event),
+                              label: Text(l10n.inviteToMeetup),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF10B981),
+                                foregroundColor: Colors.white,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                elevation: 0,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          // Message 按钮
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                // 跳转到一对一聊天页面
+                                Get.to(() => DirectChatPage(user: user));
+                              },
+                              icon: const Icon(Icons.message),
+                              label: Text(l10n.sendMessage),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFFF4458),
+                                foregroundColor: Colors.white,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                elevation: 0,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: const Color(0xFFE5E7EB),
+                              ),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            elevation: 0,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      // Message 按钮
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            // 跳转到一对一聊天页面
-                            Get.to(() => DirectChatPage(user: user));
-                          },
-                          icon: const Icon(Icons.message),
-                          label: const Text('Message'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFFF4458),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                            child: IconButton(
+                              onPressed: () {
+                                // TODO: Add to favorites
+                                Get.snackbar(
+                                  l10n.favorites,
+                                  l10n.favoriteAdded,
+                                  backgroundColor: const Color(0xFF10B981),
+                                  colorText: Colors.white,
+                                  snackPosition: SnackPosition.TOP,
+                                  margin: const EdgeInsets.all(16),
+                                  borderRadius: 8,
+                                );
+                              },
+                              icon: const Icon(
+                                Icons.favorite_border,
+                                color: Color(0xFFFF4458),
+                              ),
                             ),
-                            elevation: 0,
                           ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: const Color(0xFFE5E7EB),
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: IconButton(
-                          onPressed: () {
-                            // TODO: Add to favorites
-                            Get.snackbar(
-                              'Favorite',
-                              'Added ${user.name} to favorites',
-                              backgroundColor: const Color(0xFF10B981),
-                              colorText: Colors.white,
-                              snackPosition: SnackPosition.TOP,
-                              margin: const EdgeInsets.all(16),
-                              borderRadius: 8,
-                            );
-                          },
-                          icon: const Icon(
-                            Icons.favorite_border,
-                            color: Color(0xFFFF4458),
-                          ),
-                        ),
-                      ),
-                    ],
+                        ],
+                      );
+                    },
                   ),
 
                   const SizedBox(height: 40),

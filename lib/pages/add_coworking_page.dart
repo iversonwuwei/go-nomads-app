@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../config/app_colors.dart';
+import '../generated/app_localizations.dart';
 import '../models/coworking_space_model.dart';
 import 'amap_native_picker_page.dart';
 
@@ -118,18 +119,20 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: AppColors.textPrimary),
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Get.back(),
         ),
         title: const Text(
           'Add Coworking Space',
           style: TextStyle(
             color: AppColors.textPrimary,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -143,261 +146,262 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                 padding: const EdgeInsets.only(
                     left: 16, right: 16, top: 16, bottom: 16),
                 children: [
-            // Image Upload
-            _buildImageSection(),
-            const SizedBox(height: 24),
+                  // Image Upload
+                  _buildImageSection(),
+                  const SizedBox(height: 24),
 
-            // Basic Information
-            _buildSectionTitle('Basic Information', Icons.info_outline),
-            const SizedBox(height: 16),
-            _buildTextField(
-              controller: _nameController,
-              label: 'Space Name',
-              hint: 'e.g., WeWork Times Square',
-              required: true,
-            ),
-            const SizedBox(height: 16),
-            _buildTextField(
-              controller: _descriptionController,
-              label: 'Description',
-              hint: 'Describe the coworking space...',
-              maxLines: 4,
-              required: true,
-            ),
-
-            const SizedBox(height: 32),
-
-            // Location
-            _buildSectionTitle('Location', Icons.location_on),
-            const SizedBox(height: 16),
-            _buildTextField(
-              controller: _addressController,
-              label: 'Address',
-              hint: '1460 Broadway',
-              required: true,
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildTextField(
-                    controller: _cityController,
-                    label: 'City',
-                    hint: 'New York',
+                  // Basic Information
+                  _buildSectionTitle('Basic Information', Icons.info_outline),
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    controller: _nameController,
+                    label: 'Space Name',
+                    hint: 'e.g., WeWork Times Square',
                     required: true,
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildTextField(
-                    controller: _countryController,
-                    label: 'Country',
-                    hint: 'USA',
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    controller: _descriptionController,
+                    label: 'Description',
+                    hint: 'Describe the coworking space...',
+                    maxLines: 4,
                     required: true,
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _buildLocationPicker(),
 
-            const SizedBox(height: 32),
+                  const SizedBox(height: 32),
 
-            // Contact Information
-            _buildSectionTitle('Contact Information', Icons.contact_phone),
-            const SizedBox(height: 16),
-            _buildTextField(
-              controller: _phoneController,
-              label: 'Phone',
-              hint: '+1 234 567 8900',
-              keyboardType: TextInputType.phone,
-            ),
-            const SizedBox(height: 16),
-            _buildTextField(
-              controller: _emailController,
-              label: 'Email',
-              hint: 'contact@example.com',
-              keyboardType: TextInputType.emailAddress,
-            ),
-            const SizedBox(height: 16),
-            _buildTextField(
-              controller: _websiteController,
-              label: 'Website',
-              hint: 'https://example.com',
-              keyboardType: TextInputType.url,
-            ),
-
-            const SizedBox(height: 32),
-
-            // Pricing
-            _buildSectionTitle('Pricing', Icons.attach_money),
-            const SizedBox(height: 16),
-            _buildCurrencyDropdown(),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildTextField(
-                    controller: _hourlyRateController,
-                    label: 'Hourly Rate',
-                    hint: '10',
-                    keyboardType: TextInputType.number,
+                  // Location
+                  _buildSectionTitle('Location', Icons.location_on),
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    controller: _addressController,
+                    label: 'Address',
+                    hint: '1460 Broadway',
+                    required: true,
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildTextField(
-                    controller: _dailyRateController,
-                    label: 'Daily Rate',
-                    hint: '50',
-                    keyboardType: TextInputType.number,
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildTextField(
+                          controller: _cityController,
+                          label: 'City',
+                          hint: 'New York',
+                          required: true,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildTextField(
+                          controller: _countryController,
+                          label: 'Country',
+                          hint: 'USA',
+                          required: true,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildTextField(
-                    controller: _weeklyRateController,
-                    label: 'Weekly Rate',
-                    hint: '200',
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildTextField(
-                    controller: _monthlyRateController,
-                    label: 'Monthly Rate',
-                    hint: '500',
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _buildSwitchTile(
-              'Free Trial Available',
-              _hasFreeTrial,
-              (value) => setState(() => _hasFreeTrial = value),
-            ),
-            if (_hasFreeTrial) ...[
-              const SizedBox(height: 16),
-              _buildTextField(
-                controller: _trialDurationController,
-                label: 'Trial Duration',
-                hint: '1 day, 1 week, etc.',
-              ),
-            ],
+                  const SizedBox(height: 16),
+                  _buildLocationPicker(),
 
-            const SizedBox(height: 32),
+                  const SizedBox(height: 32),
 
-            // Specifications
-            _buildSectionTitle('Specifications', Icons.settings),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildTextField(
-                    controller: _wifiSpeedController,
-                    label: 'WiFi Speed (Mbps)',
-                    hint: '500',
-                    keyboardType: TextInputType.number,
+                  // Contact Information
+                  _buildSectionTitle(
+                      'Contact Information', Icons.contact_phone),
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    controller: _phoneController,
+                    label: 'Phone',
+                    hint: '+1 234 567 8900',
+                    keyboardType: TextInputType.phone,
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildTextField(
-                    controller: _capacityController,
-                    label: 'Capacity',
-                    hint: '50',
-                    keyboardType: TextInputType.number,
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    controller: _emailController,
+                    label: 'Email',
+                    hint: 'contact@example.com',
+                    keyboardType: TextInputType.emailAddress,
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildTextField(
-                    controller: _numberOfDesksController,
-                    label: 'Number of Desks',
-                    hint: '30',
-                    keyboardType: TextInputType.number,
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    controller: _websiteController,
+                    label: 'Website',
+                    hint: 'https://example.com',
+                    keyboardType: TextInputType.url,
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildTextField(
-                    controller: _numberOfMeetingRoomsController,
-                    label: 'Meeting Rooms',
-                    hint: '5',
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _buildDropdown(
-              'Noise Level',
-              _noiseLevel,
-              ['Quiet', 'Moderate', 'Loud'],
-              (value) => setState(() => _noiseLevel = value),
-            ),
-            const SizedBox(height: 16),
-            _buildDropdown(
-              'Space Type',
-              _spaceType,
-              ['Open', 'Private', 'Mixed'],
-              (value) => setState(() => _spaceType = value),
-            ),
-            const SizedBox(height: 16),
-            _buildSwitchTile(
-              'Natural Light',
-              _hasNaturalLight,
-              (value) => setState(() => _hasNaturalLight = value),
-            ),
 
-            const SizedBox(height: 32),
+                  const SizedBox(height: 32),
 
-            // Amenities
-            _buildSectionTitle('Amenities', Icons.stars),
-            const SizedBox(height: 16),
-            _buildSwitchTile(
-                'WiFi', _hasWifi, (value) => setState(() => _hasWifi = value)),
-            _buildSwitchTile('Free Coffee', _hasCoffee,
-                (value) => setState(() => _hasCoffee = value)),
-            _buildSwitchTile('Printer', _hasPrinter,
-                (value) => setState(() => _hasPrinter = value)),
-            _buildSwitchTile('Meeting Rooms', _hasMeetingRoom,
-                (value) => setState(() => _hasMeetingRoom = value)),
-            _buildSwitchTile('Phone Booth', _hasPhoneBooth,
-                (value) => setState(() => _hasPhoneBooth = value)),
-            _buildSwitchTile('Kitchen', _hasKitchen,
-                (value) => setState(() => _hasKitchen = value)),
-            _buildSwitchTile('Parking', _hasParking,
-                (value) => setState(() => _hasParking = value)),
-            _buildSwitchTile('Locker', _hasLocker,
-                (value) => setState(() => _hasLocker = value)),
-            _buildSwitchTile('24/7 Access', _has24HourAccess,
-                (value) => setState(() => _has24HourAccess = value)),
-            _buildSwitchTile('Air Conditioning', _hasAirConditioning,
-                (value) => setState(() => _hasAirConditioning = value)),
-            _buildSwitchTile('Standing Desk', _hasStandingDesk,
-                (value) => setState(() => _hasStandingDesk = value)),
-            _buildSwitchTile('Shower', _hasShower,
-                (value) => setState(() => _hasShower = value)),
-            _buildSwitchTile('Bike Storage', _hasBike,
-                (value) => setState(() => _hasBike = value)),
-            _buildSwitchTile('Event Space', _hasEventSpace,
-                (value) => setState(() => _hasEventSpace = value)),
-            _buildSwitchTile('Pet Friendly', _hasPetFriendly,
-                (value) => setState(() => _hasPetFriendly = value)),
+                  // Pricing
+                  _buildSectionTitle('Pricing', Icons.attach_money),
+                  const SizedBox(height: 16),
+                  _buildCurrencyDropdown(),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildTextField(
+                          controller: _hourlyRateController,
+                          label: 'Hourly Rate',
+                          hint: '10',
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildTextField(
+                          controller: _dailyRateController,
+                          label: 'Daily Rate',
+                          hint: '50',
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildTextField(
+                          controller: _weeklyRateController,
+                          label: 'Weekly Rate',
+                          hint: '200',
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildTextField(
+                          controller: _monthlyRateController,
+                          label: 'Monthly Rate',
+                          hint: '500',
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _buildSwitchTile(
+                    'Free Trial Available',
+                    _hasFreeTrial,
+                    (value) => setState(() => _hasFreeTrial = value),
+                  ),
+                  if (_hasFreeTrial) ...[
+                    const SizedBox(height: 16),
+                    _buildTextField(
+                      controller: _trialDurationController,
+                      label: 'Trial Duration',
+                      hint: '1 day, 1 week, etc.',
+                    ),
+                  ],
 
-            const SizedBox(height: 32),
+                  const SizedBox(height: 32),
+
+                  // Specifications
+                  _buildSectionTitle('Specifications', Icons.settings),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildTextField(
+                          controller: _wifiSpeedController,
+                          label: 'WiFi Speed (Mbps)',
+                          hint: '500',
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildTextField(
+                          controller: _capacityController,
+                          label: 'Capacity',
+                          hint: '50',
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildTextField(
+                          controller: _numberOfDesksController,
+                          label: 'Number of Desks',
+                          hint: '30',
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildTextField(
+                          controller: _numberOfMeetingRoomsController,
+                          label: 'Meeting Rooms',
+                          hint: '5',
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _buildDropdown(
+                    'Noise Level',
+                    _noiseLevel,
+                    ['Quiet', 'Moderate', 'Loud'],
+                    (value) => setState(() => _noiseLevel = value),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildDropdown(
+                    'Space Type',
+                    _spaceType,
+                    ['Open', 'Private', 'Mixed'],
+                    (value) => setState(() => _spaceType = value),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildSwitchTile(
+                    'Natural Light',
+                    _hasNaturalLight,
+                    (value) => setState(() => _hasNaturalLight = value),
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // Amenities
+                  _buildSectionTitle('Amenities', Icons.stars),
+                  const SizedBox(height: 16),
+                  _buildSwitchTile('WiFi', _hasWifi,
+                      (value) => setState(() => _hasWifi = value)),
+                  _buildSwitchTile('Free Coffee', _hasCoffee,
+                      (value) => setState(() => _hasCoffee = value)),
+                  _buildSwitchTile('Printer', _hasPrinter,
+                      (value) => setState(() => _hasPrinter = value)),
+                  _buildSwitchTile('Meeting Rooms', _hasMeetingRoom,
+                      (value) => setState(() => _hasMeetingRoom = value)),
+                  _buildSwitchTile('Phone Booth', _hasPhoneBooth,
+                      (value) => setState(() => _hasPhoneBooth = value)),
+                  _buildSwitchTile('Kitchen', _hasKitchen,
+                      (value) => setState(() => _hasKitchen = value)),
+                  _buildSwitchTile('Parking', _hasParking,
+                      (value) => setState(() => _hasParking = value)),
+                  _buildSwitchTile('Locker', _hasLocker,
+                      (value) => setState(() => _hasLocker = value)),
+                  _buildSwitchTile('24/7 Access', _has24HourAccess,
+                      (value) => setState(() => _has24HourAccess = value)),
+                  _buildSwitchTile('Air Conditioning', _hasAirConditioning,
+                      (value) => setState(() => _hasAirConditioning = value)),
+                  _buildSwitchTile('Standing Desk', _hasStandingDesk,
+                      (value) => setState(() => _hasStandingDesk = value)),
+                  _buildSwitchTile('Shower', _hasShower,
+                      (value) => setState(() => _hasShower = value)),
+                  _buildSwitchTile('Bike Storage', _hasBike,
+                      (value) => setState(() => _hasBike = value)),
+                  _buildSwitchTile('Event Space', _hasEventSpace,
+                      (value) => setState(() => _hasEventSpace = value)),
+                  _buildSwitchTile('Pet Friendly', _hasPetFriendly,
+                      (value) => setState(() => _hasPetFriendly = value)),
+
+                  const SizedBox(height: 32),
                 ],
               ),
             ),

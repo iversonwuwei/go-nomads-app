@@ -5,12 +5,14 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/auth_controller.dart';
+import '../generated/app_localizations.dart';
 
 class LoginPageOptimized extends StatelessWidget {
   const LoginPageOptimized({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final AuthController controller = Get.put(AuthController());
     final screenWidth = MediaQuery.of(context).size.width;
     final isLargeScreen = screenWidth > 800;
@@ -111,13 +113,13 @@ class LoginPageOptimized extends StatelessWidget {
             // 登录按钮
             _buildLoginButton(controller),
             SizedBox(height: 20.h),
-            // 分隔�?
+            // 分隔�?
             Container(
               height: 1.h,
               color: AppColors.border,
             ),
             SizedBox(height: 24.h),
-            // 第三方登录按�?
+            // 第三方登录按�?
             _buildThirdPartyButtons(controller),
             SizedBox(height: 24.h),
             // 注册提示
@@ -208,7 +210,7 @@ class LoginPageOptimized extends StatelessWidget {
           ),
           SizedBox(height: 80.h),
           Text(
-            '一站式开放平�?,
+            '一站式开放平台',
             style: TextStyle(
               color: Colors.white,
               fontSize: 36.sp,
@@ -227,7 +229,7 @@ class LoginPageOptimized extends StatelessWidget {
           ),
           SizedBox(height: 30.h),
           Text(
-            '集成认证、支付、风控、数据等核心能力，提供安全可靠的 API 服务，精准助力企业上线、商用部署，打造有温度的开发者体验�?,
+            '集成认证、支付、风控、数据等核心能力，提供安全可靠的 API 服务，精准助力企业上线、商用部署，打造有温度的开发者体验。',
             style: TextStyle(
               color: Colors.white70,
               fontSize: 14.sp,
@@ -235,7 +237,7 @@ class LoginPageOptimized extends StatelessWidget {
             ),
           ),
           SizedBox(height: 40.h),
-          _buildFeatureItem(Icons.api, '统一 API / IP、标准化接口文档及接口工�?),
+          _buildFeatureItem(Icons.api, '统一 API / IP、标准化接口文档及接口工具'),
           SizedBox(height: 16.h),
           _buildFeatureItem(Icons.verified_user, '企业级权限管理与身份安全认证'),
           SizedBox(height: 16.h),
@@ -305,7 +307,7 @@ class LoginPageOptimized extends StatelessWidget {
           ),
           SizedBox(height: 8.h),
           Text(
-            '使用您的手机号登�?管理 API 与追踪进度安全的使用�?,
+            '使用您的手机号登录管理 API 与追踪进度安全的使用。',
             style: TextStyle(
               fontSize: 13.sp,
               color: Colors.grey[600],
@@ -342,7 +344,7 @@ class LoginPageOptimized extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
                 child: Text(
-                  '�?,
+                  '密码',
                   style: TextStyle(
                     color: Colors.grey[500],
                     fontSize: 13.sp,
@@ -423,7 +425,7 @@ class LoginPageOptimized extends StatelessWidget {
             SizedBox(width: 16.w),
             Expanded(
               child: _buildLoginTypeTab(
-                '验证�?,
+                '验证码',
                 Icons.message_outlined,
                 controller.loginType.value == LoginType.phoneCode,
                 () => controller.switchLoginType(LoginType.phoneCode),
@@ -509,18 +511,15 @@ class LoginPageOptimized extends StatelessWidget {
               fillColor: Colors.white,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(0),
-                borderSide:
-                    const BorderSide(color: AppColors.border, width: 1),
+                borderSide: const BorderSide(color: AppColors.border, width: 1),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(0),
-                borderSide:
-                    const BorderSide(color: AppColors.border, width: 1),
+                borderSide: const BorderSide(color: AppColors.border, width: 1),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(0),
-                borderSide:
-                    const BorderSide(
+                borderSide: const BorderSide(
                     color: AppColors.textSecondary, width: 1.5),
               ),
               errorBorder: OutlineInputBorder(
@@ -530,8 +529,7 @@ class LoginPageOptimized extends StatelessWidget {
               ),
               focusedErrorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(0),
-                borderSide:
-                    const BorderSide(
+                borderSide: const BorderSide(
                     color: AppColors.textSecondary, width: 1.5),
               ),
               contentPadding: EdgeInsets.symmetric(
@@ -570,7 +568,7 @@ class LoginPageOptimized extends StatelessWidget {
                       ),
                       SizedBox(width: 8.w),
                       Text(
-                        '记住�?,
+                        '记住我',
                         style: TextStyle(
                           fontSize: 12.sp,
                           color: AppColors.textTertiary,
@@ -618,7 +616,7 @@ class LoginPageOptimized extends StatelessWidget {
               color: AppColors.textTertiary,
               letterSpacing: 1,
             ),
-            hintText: '请输入密�?,
+            hintText: '请输入密码',
             hintStyle: TextStyle(
               fontSize: 15.sp,
               color: AppColors.border,
@@ -684,7 +682,7 @@ class LoginPageOptimized extends StatelessWidget {
               LengthLimitingTextInputFormatter(6),
             ],
             decoration: InputDecoration(
-              labelText: '验证�?,
+              labelText: '验证码',
               labelStyle: TextStyle(
                 fontSize: 12.sp,
                 color: AppColors.textTertiary,
@@ -699,18 +697,15 @@ class LoginPageOptimized extends StatelessWidget {
               fillColor: Colors.white,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(0),
-                borderSide:
-                    const BorderSide(color: AppColors.border, width: 1),
+                borderSide: const BorderSide(color: AppColors.border, width: 1),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(0),
-                borderSide:
-                    const BorderSide(color: AppColors.border, width: 1),
+                borderSide: const BorderSide(color: AppColors.border, width: 1),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(0),
-                borderSide:
-                    const BorderSide(
+                borderSide: const BorderSide(
                     color: AppColors.textSecondary, width: 1.5),
               ),
               errorBorder: OutlineInputBorder(
@@ -720,8 +715,7 @@ class LoginPageOptimized extends StatelessWidget {
               ),
               focusedErrorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(0),
-                borderSide:
-                    const BorderSide(
+                borderSide: const BorderSide(
                     color: AppColors.textSecondary, width: 1.5),
               ),
               contentPadding: EdgeInsets.symmetric(

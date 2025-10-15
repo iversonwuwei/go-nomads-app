@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
+import '../generated/app_localizations.dart';
 
 /// 城市搜索和筛选页面
 class CitySearchPage extends StatefulWidget {
@@ -13,13 +14,13 @@ class CitySearchPage extends StatefulWidget {
 
 class _CitySearchPageState extends State<CitySearchPage> {
   final TextEditingController _searchController = TextEditingController();
-  
+
   // 筛选条件
   String _selectedRegion = 'All';
   RangeValues _priceRange = const RangeValues(0, 5000);
   double _minInternetSpeed = 0;
   String _selectedClimate = 'All';
-  
+
   final List<String> _regions = [
     'All',
     'Asia',
@@ -29,7 +30,7 @@ class _CitySearchPageState extends State<CitySearchPage> {
     'Africa',
     'Oceania',
   ];
-  
+
   final List<String> _climates = [
     'All',
     'Tropical',
@@ -41,16 +42,17 @@ class _CitySearchPageState extends State<CitySearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
-    
+
     return Scaffold(
       backgroundColor: const Color(0xFF0a0a0a),
       appBar: AppBar(
         backgroundColor: const Color(0xFF1a1a1a),
         elevation: 0,
         title: Text(
-          'Search Cities',
+          l10n.search,
           style: TextStyle(
             color: Colors.white,
             fontSize: isMobile ? 20 : 24,
@@ -58,7 +60,8 @@ class _CitySearchPageState extends State<CitySearchPage> {
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_outlined, color: AppColors.backButtonLight),
+          icon: const Icon(Icons.arrow_back_outlined,
+              color: AppColors.backButtonLight),
           onPressed: () => Get.back(),
         ),
       ),
@@ -80,7 +83,7 @@ class _CitySearchPageState extends State<CitySearchPage> {
                   controller: _searchController,
                   style: const TextStyle(color: Colors.white, fontSize: 16),
                   decoration: InputDecoration(
-                    hintText: 'Search by city name...',
+                    hintText: l10n.search,
                     hintStyle: TextStyle(
                       color: Colors.white.withValues(alpha: 0.4),
                     ),
@@ -90,7 +93,8 @@ class _CitySearchPageState extends State<CitySearchPage> {
                     ),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
-                            icon: const Icon(Icons.clear, color: Colors.white54),
+                            icon:
+                                const Icon(Icons.clear, color: Colors.white54),
                             onPressed: () {
                               setState(() {
                                 _searchController.clear();
@@ -118,7 +122,7 @@ class _CitySearchPageState extends State<CitySearchPage> {
                 vertical: 8,
               ),
               child: Text(
-                'Filters',
+                l10n.filter,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: isMobile ? 18 : 22,
@@ -137,7 +141,7 @@ class _CitySearchPageState extends State<CitySearchPage> {
                 children: [
                   // 地区筛选
                   _buildFilterSection(
-                    'Region',
+                    l10n.region,
                     isMobile,
                     child: Wrap(
                       spacing: 8,
@@ -174,7 +178,7 @@ class _CitySearchPageState extends State<CitySearchPage> {
 
                   // 价格范围
                   _buildFilterSection(
-                    'Monthly Budget',
+                    l10n.budget,
                     isMobile,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,7 +212,7 @@ class _CitySearchPageState extends State<CitySearchPage> {
 
                   // 网速筛选
                   _buildFilterSection(
-                    'Minimum Internet Speed',
+                    l10n.internet,
                     isMobile,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -242,7 +246,7 @@ class _CitySearchPageState extends State<CitySearchPage> {
 
                   // 气候筛选
                   _buildFilterSection(
-                    'Climate',
+                    l10n.climate,
                     isMobile,
                     child: Wrap(
                       spacing: 8,
@@ -282,10 +286,11 @@ class _CitySearchPageState extends State<CitySearchPage> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
+                        final l10n = AppLocalizations.of(context)!;
                         // 应用筛选逻辑
                         Get.snackbar(
-                          'Filters Applied',
-                          'Showing results for your criteria',
+                          l10n.filtersApplied,
+                          l10n.showingResults,
                           backgroundColor: Colors.green.withValues(alpha: 0.8),
                           colorText: Colors.white,
                           snackPosition: SnackPosition.BOTTOM,
@@ -303,7 +308,7 @@ class _CitySearchPageState extends State<CitySearchPage> {
                         ),
                       ),
                       child: Text(
-                        'Apply Filters',
+                        l10n.filter,
                         style: TextStyle(
                           fontSize: isMobile ? 16 : 18,
                           fontWeight: FontWeight.w600,
@@ -340,7 +345,7 @@ class _CitySearchPageState extends State<CitySearchPage> {
                         ),
                       ),
                       child: Text(
-                        'Reset All',
+                        l10n.reset,
                         style: TextStyle(
                           fontSize: isMobile ? 16 : 18,
                           fontWeight: FontWeight.w600,

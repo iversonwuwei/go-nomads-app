@@ -1,5 +1,9 @@
 import 'package:df_admin_mobile/pages/coworking_list_page.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../config/app_colors.dart';
+import '../generated/app_localizations.dart';
 
 /// Coworking Home Page
 /// 共享办公空间首页 - 城市选择
@@ -55,8 +59,25 @@ class CoworkingHomePage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Coworking Spaces'),
-        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          onPressed: () => Get.back(),
+        ),
+        title: Builder(
+          builder: (context) {
+            final l10n = AppLocalizations.of(context)!;
+            return Text(
+              l10n.coworkingSpaces,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            );
+          },
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -72,34 +93,39 @@ class CoworkingHomePage extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(
-                  Icons.business_center,
-                  size: 48,
-                  color: Colors.white,
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Find Your Perfect\nWorkspace',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    height: 1.2,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Explore coworking spaces in digital nomad hotspots around the world',
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.white.withAlpha(230),
-                    height: 1.4,
-                  ),
-                ),
-              ],
+            child: Builder(
+              builder: (context) {
+                final l10n = AppLocalizations.of(context)!;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(
+                      Icons.business_center,
+                      size: 48,
+                      color: Colors.white,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      l10n.workspace,
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        height: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      l10n.coworkingSpaces,
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.white.withAlpha(230),
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
 
@@ -127,6 +153,7 @@ class CoworkingHomePage extends StatelessWidget {
   }
 
   Widget _buildCityCard(BuildContext context, Map<String, dynamic> city) {
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       clipBehavior: Clip.antiAlias,
       elevation: 2,
@@ -177,7 +204,7 @@ class CoworkingHomePage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      '${city['spaces']} spaces',
+                      '${city['spaces']} ${l10n.coworkingSpaces}',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 11,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
+import '../generated/app_localizations.dart';
 import '../routes/app_routes.dart';
 
 /// 城市对比页面 - 并排比较多个城市
@@ -64,6 +65,7 @@ class _CityComparePageState extends State<CityComparePage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
 
@@ -81,7 +83,8 @@ class _CityComparePageState extends State<CityComparePage> {
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_outlined, color: AppColors.backButtonLight),
+          icon: const Icon(Icons.arrow_back_outlined,
+              color: AppColors.backButtonLight),
           onPressed: () => Get.back(),
         ),
         actions: [
@@ -340,13 +343,17 @@ class _CityComparePageState extends State<CityComparePage> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                _buildMetricRow('Rank', '#${city['rank']}', Icons.star, Colors.orange),
+                _buildMetricRow(
+                    'Rank', '#${city['rank']}', Icons.star, Colors.orange),
                 const Divider(color: Colors.white24, height: 24),
-                _buildMetricRow('Monthly Cost', '\$${city['price']}', Icons.attach_money, Colors.green),
+                _buildMetricRow('Monthly Cost', '\$${city['price']}',
+                    Icons.attach_money, Colors.green),
                 const Divider(color: Colors.white24, height: 24),
-                _buildMetricRow('Internet', '${city['internet']} Mbps', Icons.wifi, Colors.blue),
+                _buildMetricRow('Internet', '${city['internet']} Mbps',
+                    Icons.wifi, Colors.blue),
                 const Divider(color: Colors.white24, height: 24),
-                _buildMetricRow('Temperature', '${city['temperature']}°C', Icons.thermostat, Colors.red),
+                _buildMetricRow('Temperature', '${city['temperature']}°C',
+                    Icons.thermostat, Colors.red),
                 const Divider(color: Colors.white24, height: 24),
                 _buildScoreRow('Overall', city['overall'], Colors.orange),
                 const Divider(color: Colors.white24, height: 24),
@@ -393,7 +400,8 @@ class _CityComparePageState extends State<CityComparePage> {
     );
   }
 
-  Widget _buildMetricRow(String label, String value, IconData icon, Color color) {
+  Widget _buildMetricRow(
+      String label, String value, IconData icon, Color color) {
     return Row(
       children: [
         Icon(icon, color: color, size: 20),
@@ -487,19 +495,24 @@ class _CityComparePageState extends State<CityComparePage> {
         ),
 
         // 排名
-        _buildTableRow('Rank', Icons.star, Colors.orange, (city) => '#${city['rank']}'),
+        _buildTableRow(
+            'Rank', Icons.star, Colors.orange, (city) => '#${city['rank']}'),
 
         // 价格
-        _buildTableRow('Monthly Cost', Icons.attach_money, Colors.green, (city) => '\$${city['price']}'),
+        _buildTableRow('Monthly Cost', Icons.attach_money, Colors.green,
+            (city) => '\$${city['price']}'),
 
         // 网速
-        _buildTableRow('Internet', Icons.wifi, Colors.blue, (city) => '${city['internet']} Mbps'),
+        _buildTableRow('Internet', Icons.wifi, Colors.blue,
+            (city) => '${city['internet']} Mbps'),
 
         // 温度
-        _buildTableRow('Temperature', Icons.thermostat, Colors.red, (city) => '${city['temperature']}°C'),
+        _buildTableRow('Temperature', Icons.thermostat, Colors.red,
+            (city) => '${city['temperature']}°C'),
 
         // 总体评分
-        _buildScoreTableRow('Overall', Colors.orange, (city) => city['overall']),
+        _buildScoreTableRow(
+            'Overall', Colors.orange, (city) => city['overall']),
 
         // 成本评分
         _buildScoreTableRow('Cost', Colors.green, (city) => city['cost']),
@@ -511,7 +524,8 @@ class _CityComparePageState extends State<CityComparePage> {
         _buildScoreTableRow('Food', Colors.red, (city) => city['food']),
 
         // 夜生活评分
-        _buildScoreTableRow('Nightlife', Colors.blue, (city) => city['nightlife']),
+        _buildScoreTableRow(
+            'Nightlife', Colors.blue, (city) => city['nightlife']),
       ],
     );
   }
@@ -578,8 +592,8 @@ class _CityComparePageState extends State<CityComparePage> {
     );
   }
 
-  TableRow _buildTableRow(
-      String label, IconData icon, Color color, String Function(Map<String, dynamic>) getValue) {
+  TableRow _buildTableRow(String label, IconData icon, Color color,
+      String Function(Map<String, dynamic>) getValue) {
     return TableRow(
       children: [
         Padding(
@@ -614,8 +628,8 @@ class _CityComparePageState extends State<CityComparePage> {
     );
   }
 
-  TableRow _buildScoreTableRow(
-      String label, Color color, double Function(Map<String, dynamic>) getScore) {
+  TableRow _buildScoreTableRow(String label, Color color,
+      double Function(Map<String, dynamic>) getScore) {
     return TableRow(
       children: [
         Padding(

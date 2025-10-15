@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/snake_game_controller.dart';
+import '../generated/app_localizations.dart';
 import '../models/snake_game_model.dart';
 
 class SnakeGamePage extends StatelessWidget {
@@ -10,15 +11,16 @@ class SnakeGamePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final SnakeGameController controller = Get.put(SnakeGameController());
 
     return Scaffold(
       backgroundColor: const Color(0xFF1B2951),
       appBar: AppBar(
         backgroundColor: const Color(0xFF1B2951),
-        title: const Text(
-          '贪吃蛇游戏',
-          style: TextStyle(color: Colors.white),
+        title: Text(
+          l10n.snakeGame,
+          style: const TextStyle(color: Colors.white),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_outlined,

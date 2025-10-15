@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/data_service_controller.dart';
+import '../generated/app_localizations.dart';
 import 'venue_map_picker_page.dart';
 
 class CreateMeetupPage extends StatefulWidget {
@@ -541,6 +542,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
 
@@ -550,16 +552,15 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_outlined,
-              color: AppColors.backButtonDark),
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Get.back(),
         ),
         title: const Text(
           'Create Meetup',
           style: TextStyle(
-            color: Colors.black,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),

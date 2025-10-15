@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/data_service_controller.dart';
+import '../generated/app_localizations.dart';
 import '../widgets/copyright_widget.dart';
 import '../widgets/skeleton_loader.dart';
 import 'city_detail_page.dart';
@@ -64,6 +65,7 @@ class _DataServicePageState extends State<DataServicePage> {
   @override
   Widget build(BuildContext context) {
     final DataServiceController controller = Get.put(DataServiceController());
+    final l10n = AppLocalizations.of(context)!;
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
 
@@ -246,15 +248,10 @@ class _DataServicePageState extends State<DataServicePage> {
                     ),
                   ),
 
-                  SizedBox(height: isMobile ? 32 : 48),
+                  SizedBox(height: isMobile ? 32 : 40),
 
-                  // 用户头像圈
-                  _buildUserAvatars(),
-
-                  SizedBox(height: isMobile ? 40 : 60),
-
-                  // 双梯形按钮组
-                  _buildTrapezoidButtons(isMobile),
+                  // 三个服务卡片
+                  _buildServiceCards(isMobile),
                 ],
               ),
             ),
@@ -264,45 +261,49 @@ class _DataServicePageState extends State<DataServicePage> {
     );
   }
 
-  // 现代卡片式双按钮组
-  Widget _buildTrapezoidButtons(bool isMobile) {
-    return SizedBox(
-      width: isMobile ? double.infinity : 600,
+  // 紧凑型服务卡片
+  Widget _buildServiceCards(bool isMobile) {
+    return Container(
+      constraints: BoxConstraints(
+        maxWidth: isMobile ? double.infinity : 750,
+      ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // 左侧卡片 - Cities
+          // Cities
           Expanded(
-            child: _buildActionCard(
-              context: context,
+            child: _buildCompactCard(
               isMobile: isMobile,
               icon: Icons.location_city_rounded,
               title: 'Cities',
-              subtitle: 'Find your perfect nomad destination',
-              gradient: const LinearGradient(
-                colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              color: const Color(0xFFFF4458),
               onTap: () => Get.to(() => const CityListPage()),
             ),
           ),
 
-          SizedBox(width: isMobile ? 12 : 16),
+          SizedBox(width: isMobile ? 8 : 12),
 
-          // 右侧卡片 - Coworking
+          // Coworkings
           Expanded(
-            child: _buildActionCard(
-              context: context,
+            child: _buildCompactCard(
               isMobile: isMobile,
               icon: Icons.business_center_rounded,
-              title: 'Coworkings',
-              subtitle: 'Discover inspiring workspaces',
-              gradient: const LinearGradient(
-                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              title: 'Coworks',
+              color: const Color(0xFF6366F1),
               onTap: () => Get.to(() => const CoworkingHomePage()),
+            ),
+          ),
+
+          SizedBox(width: isMobile ? 8 : 12),
+
+          // Meetups
+          Expanded(
+            child: _buildCompactCard(
+              isMobile: isMobile,
+              icon: Icons.groups_rounded,
+              title: 'Meetups',
+              color: const Color(0xFF10B981),
+              onTap: () => Get.toNamed('/meetups-list'),
             ),
           ),
         ],
@@ -310,104 +311,67 @@ class _DataServicePageState extends State<DataServicePage> {
     );
   }
 
-  // 行动卡片组件
-  Widget _buildActionCard({
-    required BuildContext context,
+  // 紧凑型卡片组件
+  Widget _buildCompactCard({
     required bool isMobile,
     required IconData icon,
     required String title,
-    required String subtitle,
-    required Gradient gradient,
+    required Color color,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          vertical: isMobile ? 20 : 24,
+          horizontal: isMobile ? 16 : 20,
+        ),
         decoration: BoxDecoration(
-          gradient: gradient,
+          gradient: LinearGradient(
+            colors: [
+              color,
+              color.withValues(alpha: 0.8),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.15),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
+              color: color.withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: Container(
-          padding: EdgeInsets.all(isMobile ? 20 : 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // 图标
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  icon,
-                  color: Colors.white,
-                  size: isMobile ? 28 : 32,
-                ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.25),
+                borderRadius: BorderRadius.circular(14),
               ),
-
-              SizedBox(height: isMobile ? 16 : 20),
-
-              // 标题
-              Text(
-                title,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: isMobile ? 18 : 20,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
-                  height: 1.2,
-                ),
+              child: Icon(
+                icon,
+                color: Colors.white,
+                size: isMobile ? 32 : 36,
               ),
-
-              const SizedBox(height: 8),
-
-              // 副标题
-              Text(
-                subtitle,
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.9),
-                  fontSize: isMobile ? 13 : 14,
-                  fontWeight: FontWeight.w400,
-                  height: 1.4,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+            ),
+            SizedBox(height: isMobile ? 12 : 14),
+            Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: isMobile ? 13 : 15,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.3,
               ),
-
-              SizedBox(height: isMobile ? 16 : 20),
-
-              // 箭头按钮
-              Row(
-                children: [
-                  Text(
-                    'Explore',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: isMobile ? 14 : 15,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Icon(
-                    Icons.arrow_forward_rounded,
-                    color: Colors.white,
-                    size: isMobile ? 18 : 20,
-                  ),
-                ],
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -473,51 +437,6 @@ class _DataServicePageState extends State<DataServicePage> {
           );
         }).toList(),
       ),
-    );
-  }
-
-  // 用户头像圈
-  Widget _buildUserAvatars() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final screenWidth = constraints.maxWidth;
-        final avatarSize = 40.0; // 每个头像的直径
-        final overlapOffset = 14.0; // 重叠偏移量
-        final totalWidth = (avatarSize * 8) - (overlapOffset * 7); // 计算总宽度
-        final startPosition = (screenWidth - totalWidth) / 2; // 计算起始位置以居中
-
-        return SizedBox(
-          height: 50,
-          width: screenWidth,
-          child: Stack(
-            children: List.generate(8, (index) {
-              return Positioned(
-                left: startPosition + (index * (avatarSize - overlapOffset)),
-                child: CircleAvatar(
-                  radius: 20,
-                  backgroundColor: Colors.white,
-                  child: CircleAvatar(
-                    radius: 18,
-                    backgroundColor: Color.lerp(
-                      const Color(0xFF6366F1),
-                      const Color(0xFFEC4899),
-                      index / 7,
-                    ),
-                    child: Text(
-                      String.fromCharCode(65 + index),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            }),
-          ),
-        );
-      },
     );
   }
 
@@ -595,12 +514,15 @@ class _DataServicePageState extends State<DataServicePage> {
               icon: const Icon(Icons.sort_outlined,
                   color: AppColors.textSecondary, size: 20),
               onSelected: controller.changeSortBy,
-              itemBuilder: (context) => [
-                const PopupMenuItem(value: 'popular', child: Text('Popular')),
-                const PopupMenuItem(value: 'cost', child: Text('Cost')),
-                const PopupMenuItem(value: 'internet', child: Text('Internet')),
-                const PopupMenuItem(value: 'safety', child: Text('Safety')),
-              ],
+              itemBuilder: (context) {
+                final l10n = AppLocalizations.of(context)!;
+                return [
+                  PopupMenuItem(value: 'popular', child: Text(l10n.popular)),
+                  PopupMenuItem(value: 'cost', child: Text(l10n.cost)),
+                  PopupMenuItem(value: 'internet', child: Text(l10n.internet)),
+                  PopupMenuItem(value: 'safety', child: Text(l10n.safety)),
+                ];
+              },
             ),
           ],
         ),
@@ -687,29 +609,113 @@ class _DataServicePageState extends State<DataServicePage> {
       final isGrid = controller.isGridView.value;
       final crossAxisCount = isMobile ? 2 : 4;
 
+      // 限制最多显示6个城市 (暂时改成6,方便测试)
+      final displayItems = items.length > 6 ? items.sublist(0, 6) : items;
+      final hasMore = items.length > 6;
+
+      // 调试信息
+      debugPrint(
+          '城市总数: ${items.length}, 显示数: ${displayItems.length}, 显示按钮: $hasMore');
+
       if (isGrid) {
-        return SliverGrid(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            childAspectRatio: isMobile ? 0.68 : 0.72, // 移动端更高一些以容纳所有内容
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-          ),
-          delegate: SliverChildBuilderDelegate(
-            (context, index) {
-              return _DataCard(data: items[index]);
-            },
-            childCount: items.length,
-          ),
+        return SliverList(
+          delegate: SliverChildListDelegate([
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                childAspectRatio: isMobile ? 0.68 : 0.72,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+              ),
+              itemCount: displayItems.length,
+              itemBuilder: (context, index) {
+                return _DataCard(data: displayItems[index]);
+              },
+            ),
+            if (hasMore) ...[
+              const SizedBox(height: 24),
+              Center(
+                child: OutlinedButton.icon(
+                  onPressed: () => Get.to(() => const CityListPage()),
+                  icon: const Icon(
+                    Icons.location_city_outlined,
+                    size: 20,
+                    color: Color(0xFFFF4458),
+                  ),
+                  label: const Text(
+                    'View All Cities',
+                    style: TextStyle(
+                      color: Color(0xFFFF4458),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                    side: const BorderSide(
+                      color: Color(0xFFFF4458),
+                      width: 1.5,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ]),
         );
       } else {
         return SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (context, index) {
-              return _DataListItem(data: items[index]);
-            },
-            childCount: items.length,
-          ),
+          delegate: SliverChildListDelegate([
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: displayItems.length,
+              itemBuilder: (context, index) {
+                return _DataListItem(data: displayItems[index]);
+              },
+            ),
+            if (hasMore) ...[
+              const SizedBox(height: 24),
+              Center(
+                child: OutlinedButton.icon(
+                  onPressed: () => Get.to(() => const CityListPage()),
+                  icon: const Icon(
+                    Icons.location_city_outlined,
+                    size: 20,
+                    color: Color(0xFFFF4458),
+                  ),
+                  label: const Text(
+                    'View All Cities',
+                    style: TextStyle(
+                      color: Color(0xFFFF4458),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                    side: const BorderSide(
+                      color: Color(0xFFFF4458),
+                      width: 1.5,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ]),
         );
       }
     });
@@ -767,7 +773,13 @@ class _DataServicePageState extends State<DataServicePage> {
                                 );
                               },
                         icon: const Icon(Icons.add, size: 18),
-                        label: Text(isMobile ? 'Create' : 'Create Meetup'),
+                        label: Builder(
+                          builder: (context) {
+                            final l10n = AppLocalizations.of(context)!;
+                            return Text(
+                                isMobile ? l10n.create : l10n.createMeetup);
+                          },
+                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFFF4458),
                           foregroundColor: Colors.white,
@@ -782,15 +794,34 @@ class _DataServicePageState extends State<DataServicePage> {
                       )),
                   if (!isMobile) const SizedBox(width: 12),
                   if (!isMobile)
-                    TextButton(
+                    OutlinedButton.icon(
                       onPressed: () {
-                        // TODO: 导航到完整的 meetups 页面
+                        Get.toNamed('/meetups-list');
                       },
-                      child: const Text(
-                        'View all',
+                      icon: const Icon(
+                        Icons.arrow_forward,
+                        size: 20,
+                        color: Color(0xFFFF4458),
+                      ),
+                      label: const Text(
+                        'View all meetups',
                         style: TextStyle(
                           color: Color(0xFFFF4458),
+                          fontSize: 15,
                           fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        side: const BorderSide(
+                          color: Color(0xFFFF4458),
+                          width: 1.5,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                     ),
@@ -817,6 +848,44 @@ class _DataServicePageState extends State<DataServicePage> {
               },
             ),
           ),
+
+          // 移动端的 View all 按钮
+          if (isMobile) ...[
+            const SizedBox(height: 16),
+            Center(
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  Get.toNamed('/meetups-list');
+                },
+                icon: const Icon(
+                  Icons.arrow_forward,
+                  size: 20,
+                  color: Color(0xFFFF4458),
+                ),
+                label: const Text(
+                  'View all meetups',
+                  style: TextStyle(
+                    color: Color(0xFFFF4458),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  side: const BorderSide(
+                    color: Color(0xFFFF4458),
+                    width: 1.5,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ],
       );
     });
@@ -1871,319 +1940,325 @@ class _MeetupCard extends StatelessWidget {
     final maxAttendees = meetup['maxAttendees'] as int;
     final spotsLeft = maxAttendees - attendees;
 
-    return Container(
-      width: isMobile ? 280 : 320,
-      margin: const EdgeInsets.only(right: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.borderLight, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 图片和类型标签
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(12)),
-                child: Image.network(
-                  meetup['image'],
-                  width: double.infinity,
-                  height: 140,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              Positioned(
-                top: 12,
-                left: 12,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: _getTypeColor(meetup['type']),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    meetup['type'],
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          // 内容
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return GestureDetector(
+      onTap: () {
+        // 点击跳转到 Meetups 列表页
+        Get.toNamed('/meetups-list');
+      },
+      child: Container(
+        width: isMobile ? 280 : 320,
+        margin: const EdgeInsets.only(right: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.borderLight, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 图片和类型标签
+            Stack(
               children: [
-                // 城市和日期
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.location_on_outlined,
-                      size: 14,
-                      color: AppColors.textSecondary,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      meetup['city'],
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    const Icon(
-                      Icons.calendar_today_outlined,
-                      size: 14,
-                      color: AppColors.textSecondary,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _formatDate(date),
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 6),
-
-                // 标题
-                Text(
-                  meetup['title'],
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-
-                const SizedBox(height: 6),
-
-                // 参加人数
-                Row(
-                  children: [
-                    // 头像堆叠
-                    SizedBox(
-                      height: 24,
-                      width: 60,
-                      child: Stack(
-                        children: List.generate(
-                          3,
-                          (index) => Positioned(
-                            left: index * 15.0,
-                            child: CircleAvatar(
-                              radius: 12,
-                              backgroundColor: Colors.white,
-                              child: CircleAvatar(
-                                radius: 11,
-                                backgroundImage: NetworkImage(
-                                  'https://i.pravatar.cc/150?img=${index + 10}',
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '$attendees going',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const Spacer(),
-                    if (spotsLeft > 0)
-                      Text(
-                        '$spotsLeft spots left',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: Color(0xFFFF4458),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                  ],
-                ),
-
-                const SizedBox(height: 24),
-
-                // RSVP 按钮或 Going/Join Chat 按钮
-                Obx(() {
-                  final isRSVPed =
-                      controller.rsvpedMeetups.contains(meetup['id']);
-
-                  // 如果已 RSVP，显示两个按钮
-                  if (isRSVPed) {
-                    return Row(
-                      children: [
-                        // Going 按钮
-                        Expanded(
-                          child: SizedBox(
-                            height: 36,
-                            child: ElevatedButton(
-                              onPressed: () =>
-                                  controller.toggleRSVP(meetup['id']),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                foregroundColor: const Color(0xFFFF4458),
-                                elevation: 0,
-                                side: const BorderSide(
-                                  color: Color(0xFFFF4458),
-                                  width: 1.5,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8),
-                              ),
-                              child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.check_circle_outline,
-                                    size: 16,
-                                  ),
-                                  SizedBox(width: 4),
-                                  Flexible(
-                                    child: Text(
-                                      'Going',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        // Join Chat 按钮
-                        Expanded(
-                          child: SizedBox(
-                            height: 36,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                // 跳转到聊天页面并加入该城市的聊天室
-                                Get.toNamed(
-                                  '/city-chat',
-                                  arguments: {
-                                    'city': meetup['city'],
-                                    'country': meetup['country'],
-                                    'meetupId': meetup['id'],
-                                    'meetupTitle': meetup['title'],
-                                  },
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFFF4458),
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8),
-                              ),
-                              child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.chat_bubble_outline,
-                                    size: 16,
-                                  ),
-                                  SizedBox(width: 4),
-                                  Flexible(
-                                    child: Text(
-                                      'Join Chat',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  }
-
-                  // 如果未 RSVP，显示单个 RSVP 按钮
-                  return SizedBox(
+                ClipRRect(
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(12)),
+                  child: Image.network(
+                    meetup['image'],
                     width: double.infinity,
-                    height: 36,
-                    child: ElevatedButton(
-                      onPressed: () => controller.toggleRSVP(meetup['id']),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFF4458),
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6),
+                    height: 140,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                Positioned(
+                  top: 12,
+                  left: 12,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: _getTypeColor(meetup['type']),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      meetup['type'],
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            // 内容
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 城市和日期
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.location_on_outlined,
+                        size: 14,
+                        color: AppColors.textSecondary,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        meetup['city'],
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.add_circle_outline,
-                            size: 16,
+                      const SizedBox(width: 12),
+                      const Icon(
+                        Icons.calendar_today_outlined,
+                        size: 14,
+                        color: AppColors.textSecondary,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        _formatDate(date),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  // 标题
+                  Text(
+                    meetup['title'],
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  // 参加人数
+                  Row(
+                    children: [
+                      // 头像堆叠
+                      SizedBox(
+                        height: 24,
+                        width: 60,
+                        child: Stack(
+                          children: List.generate(
+                            3,
+                            (index) => Positioned(
+                              left: index * 15.0,
+                              child: CircleAvatar(
+                                radius: 12,
+                                backgroundColor: Colors.white,
+                                child: CircleAvatar(
+                                  radius: 11,
+                                  backgroundImage: NetworkImage(
+                                    'https://i.pravatar.cc/150?img=${index + 10}',
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
-                          SizedBox(width: 6),
-                          Text(
-                            'RSVP',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '$attendees going',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const Spacer(),
+                      if (spotsLeft > 0)
+                        Text(
+                          '$spotsLeft spots left',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFFFF4458),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // RSVP 按钮或 Going/Join Chat 按钮
+                  Obx(() {
+                    final isRSVPed =
+                        controller.rsvpedMeetups.contains(meetup['id']);
+
+                    // 如果已 RSVP，显示两个按钮
+                    if (isRSVPed) {
+                      return Row(
+                        children: [
+                          // Going 按钮
+                          Expanded(
+                            child: SizedBox(
+                              height: 36,
+                              child: ElevatedButton(
+                                onPressed: () =>
+                                    controller.toggleRSVP(meetup['id']),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: const Color(0xFFFF4458),
+                                  elevation: 0,
+                                  side: const BorderSide(
+                                    color: Color(0xFFFF4458),
+                                    width: 1.5,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 8),
+                                ),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.check_circle_outline,
+                                      size: 16,
+                                    ),
+                                    SizedBox(width: 4),
+                                    Flexible(
+                                      child: Text(
+                                        'Going',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          // Join Chat 按钮
+                          Expanded(
+                            child: SizedBox(
+                              height: 36,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  // 跳转到聊天页面并加入该城市的聊天室
+                                  Get.toNamed(
+                                    '/city-chat',
+                                    arguments: {
+                                      'city': meetup['city'],
+                                      'country': meetup['country'],
+                                      'meetupId': meetup['id'],
+                                      'meetupTitle': meetup['title'],
+                                    },
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFFF4458),
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 8),
+                                ),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.chat_bubble_outline,
+                                      size: 16,
+                                    ),
+                                    SizedBox(width: 4),
+                                    Flexible(
+                                      child: Text(
+                                        'Join Chat',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
                         ],
+                      );
+                    }
+
+                    // 如果未 RSVP，显示单个 RSVP 按钮
+                    return SizedBox(
+                      width: double.infinity,
+                      height: 36,
+                      child: ElevatedButton(
+                        onPressed: () => controller.toggleRSVP(meetup['id']),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFF4458),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.add_circle_outline,
+                              size: 16,
+                            ),
+                            SizedBox(width: 6),
+                            Text(
+                              'RSVP',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                }),
-              ],
+                    );
+                  }),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      ), // GestureDetector child 的结束
+    ); // GestureDetector 的结束
   }
 
   Color _getTypeColor(String type) {

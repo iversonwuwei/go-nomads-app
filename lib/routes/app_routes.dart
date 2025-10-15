@@ -8,8 +8,10 @@ import '../pages/city_detail_page.dart';
 import '../pages/coworking_home_page.dart';
 import '../pages/create_meetup_page.dart';
 import '../pages/data_service_page.dart';
+import '../pages/language_settings_page.dart';
 import '../pages/location_demo_page.dart';
 import '../pages/main_page.dart';
+import '../pages/meetups_list_page.dart';
 import '../pages/nomads_login_page.dart';
 import '../pages/register_page.dart';
 import '../pages/second_page.dart';
@@ -29,7 +31,9 @@ class AppRoutes {
   static const String cityDetail = '/city-detail';
   static const String cityChat = '/city-chat';
   static const String createMeetup = '/create-meetup';
+  static const String meetupsList = '/meetups-list';
   static const String locationDemo = '/location-demo';
+  static const String languageSettings = '/language-settings';
 
   static List<GetPage> getPages = [
     GetPage(
@@ -91,8 +95,16 @@ class AppRoutes {
       page: () => const CreateMeetupPage(),
     ),
     GetPage(
+      name: meetupsList,
+      page: () => const MeetupsListPage(),
+    ),
+    GetPage(
       name: locationDemo,
       page: () => const LocationDemoPage(),
+    ),
+    GetPage(
+      name: languageSettings,
+      page: () => const LanguageSettingsPage(),
     ),
   ];
 }

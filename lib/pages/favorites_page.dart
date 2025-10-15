@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
+import '../generated/app_localizations.dart';
 import '../routes/app_routes.dart';
 
 /// 收藏夹页面 - 管理收藏的城市
@@ -69,8 +70,8 @@ class _FavoritesPageState extends State<FavoritesPage> {
           _favoriteCities.sort((a, b) => a['rank'].compareTo(b['rank']));
           break;
         case 'name':
-          _favoriteCities
-              .sort((a, b) => a['city'].toString().compareTo(b['city'].toString()));
+          _favoriteCities.sort(
+              (a, b) => a['city'].toString().compareTo(b['city'].toString()));
           break;
       }
     });
@@ -78,6 +79,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
 
@@ -90,7 +92,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'My Favorites',
+              l10n.favorites,
               style: TextStyle(
                 color: Colors.white,
                 fontSize: isMobile ? 20 : 24,
@@ -98,7 +100,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
               ),
             ),
             Text(
-              '${_favoriteCities.length} cities saved',
+              '${_favoriteCities.length} ${l10n.cities}',
               style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.6),
                 fontSize: isMobile ? 12 : 14,
@@ -108,7 +110,8 @@ class _FavoritesPageState extends State<FavoritesPage> {
           ],
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_outlined, color: AppColors.backButtonLight),
+          icon: const Icon(Icons.arrow_back_outlined,
+              color: AppColors.backButtonLight),
           onPressed: () => Get.back(),
         ),
         actions: [
@@ -122,12 +125,15 @@ class _FavoritesPageState extends State<FavoritesPage> {
               });
               _sortCities();
             },
-            itemBuilder: (context) => [
-              _buildPopupMenuItem('date', 'Date Added', Icons.calendar_today),
-              _buildPopupMenuItem('price', 'Price', Icons.attach_money),
-              _buildPopupMenuItem('rank', 'Rank', Icons.star),
-              _buildPopupMenuItem('name', 'Name', Icons.sort_by_alpha),
-            ],
+            itemBuilder: (context) {
+              final l10n = AppLocalizations.of(context)!;
+              return [
+                _buildPopupMenuItem('date', l10n.date, Icons.calendar_today),
+                _buildPopupMenuItem('price', l10n.price, Icons.attach_money),
+                _buildPopupMenuItem('rank', l10n.ranking, Icons.star),
+                _buildPopupMenuItem('name', l10n.name, Icons.sort_by_alpha),
+              ];
+            },
           ),
         ],
       ),
@@ -174,64 +180,70 @@ class _FavoritesPageState extends State<FavoritesPage> {
   }
 
   Widget _buildEmptyState(bool isMobile) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.favorite_border,
-              size: isMobile ? 80 : 120,
-              color: Colors.white.withValues(alpha: 0.3),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'No Favorites Yet',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: isMobile ? 24 : 32,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Start exploring cities and add your favorites here',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.6),
-                fontSize: isMobile ? 14 : 16,
-              ),
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: () => Get.toNamed(AppRoutes.dataService),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(
-                  horizontal: isMobile ? 32 : 48,
-                  vertical: isMobile ? 16 : 20,
+    return Builder(
+      builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.favorite_border,
+                  size: isMobile ? 80 : 120,
+                  color: Colors.white.withValues(alpha: 0.3),
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                const SizedBox(height: 24),
+                Text(
+                  l10n.noFavorites,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: isMobile ? 24 : 32,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              child: Text(
-                'Explore Cities',
-                style: TextStyle(
-                  fontSize: isMobile ? 16 : 18,
-                  fontWeight: FontWeight.w600,
+                const SizedBox(height: 12),
+                Text(
+                  l10n.exploreCities,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.6),
+                    fontSize: isMobile ? 14 : 16,
+                  ),
                 ),
-              ),
+                const SizedBox(height: 32),
+                ElevatedButton(
+                  onPressed: () => Get.toNamed(AppRoutes.dataService),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isMobile ? 32 : 48,
+                      vertical: isMobile ? 16 : 20,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    l10n.exploreCities,
+                    style: TextStyle(
+                      fontSize: isMobile ? 16 : 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildFavoriteCard(Map<String, dynamic> city, bool isMobile, int index) {
+  Widget _buildFavoriteCard(
+      Map<String, dynamic> city, bool isMobile, int index) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -367,12 +379,13 @@ class _FavoritesPageState extends State<FavoritesPage> {
                   IconButton(
                     icon: const Icon(Icons.favorite, color: Colors.red),
                     onPressed: () {
+                      final l10n = AppLocalizations.of(context)!;
                       setState(() {
                         _favoriteCities.removeAt(index);
                       });
                       Get.snackbar(
-                        'Removed',
-                        '${city['city']} removed from favorites',
+                        l10n.removeFromFavorites,
+                        l10n.favoriteRemoved,
                         backgroundColor: Colors.red.withValues(alpha: 0.8),
                         colorText: Colors.white,
                         snackPosition: SnackPosition.BOTTOM,

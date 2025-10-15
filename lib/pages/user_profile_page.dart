@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
+import '../controllers/locale_controller.dart';
+import '../generated/app_localizations.dart';
+import '../routes/app_routes.dart';
 
 /// 用户个人资料页面
 class UserProfilePage extends StatefulWidget {
@@ -39,20 +42,19 @@ class _UserProfilePageState extends State<UserProfilePage> {
     return Scaffold(
       backgroundColor: const Color(0xFF0a0a0a),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1a1a1a),
+        backgroundColor: Colors.white,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          onPressed: () => Get.back(),
+        ),
         title: Text(
           'Profile',
           style: TextStyle(
-            color: Colors.white,
-            fontSize: isMobile ? 20 : 24,
+            color: AppColors.textPrimary,
+            fontSize: isMobile ? 18 : 18,
             fontWeight: FontWeight.bold,
           ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_outlined,
-              color: AppColors.backButtonLight),
-          onPressed: () => Get.back(),
         ),
         actions: [
           IconButton(
@@ -360,7 +362,60 @@ class _UserProfilePageState extends State<UserProfilePage> {
             (value) => setState(() => _temperatureUnit = value!),
             isMobile,
           ),
+
+          const Divider(color: Colors.white24, height: 32),
+
+          // 语言选择
+          _buildLanguageTile(isMobile),
         ],
+      ),
+    );
+  }
+
+  Widget _buildLanguageTile(bool isMobile) {
+    final localeController = Get.find<LocaleController>();
+    final l10n = AppLocalizations.of(context)!;
+
+    return InkWell(
+      onTap: () => Get.toNamed(AppRoutes.languageSettings),
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            Icon(Icons.language,
+                color: Colors.orange, size: isMobile ? 20 : 24),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.language,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: isMobile ? 16 : 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Obx(() => Text(
+                        localeController.currentLanguageName,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.6),
+                          fontSize: isMobile ? 12 : 14,
+                        ),
+                      )),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              color: Colors.white54,
+              size: isMobile ? 20 : 24,
+            ),
+          ],
+        ),
       ),
     );
   }

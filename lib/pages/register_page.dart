@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../generated/app_localizations.dart';
+
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
-  
+
   // Nomads.com 品牌红色
   static const Color nomadsRed = Color(0xFFFF4458);
 
@@ -17,7 +19,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _usernameController = TextEditingController();
-  
+
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _agreeToTerms = false;
@@ -34,9 +36,10 @@ class _RegisterPageState extends State<RegisterPage> {
   void _register() {
     if (_formKey.currentState!.validate()) {
       if (!_agreeToTerms) {
+        final l10n = AppLocalizations.of(context)!;
         Get.snackbar(
-          '⚠️ Terms Required',
-          'Please agree to the Terms of Service and Community Guidelines',
+          '⚠️ ${l10n.termsRequired}',
+          l10n.pleaseAgreeToTerms,
           backgroundColor: Colors.orange,
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM,
@@ -46,15 +49,16 @@ class _RegisterPageState extends State<RegisterPage> {
       }
 
       // TODO: 实际的注册逻辑
+      final l10n = AppLocalizations.of(context)!;
       Get.snackbar(
-        '✅ Success',
-        'Welcome to the Nomads community!',
+        '✅ ${l10n.success}',
+        l10n.welcomeToCommunity,
         backgroundColor: Colors.green,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
         margin: const EdgeInsets.all(16),
       );
-      
+
       // 注册成功后跳转
       Get.offAllNamed('/main');
     }
@@ -62,6 +66,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -74,7 +79,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 40),
-                  
+
                   // Logo 和标题
                   Center(
                     child: Column(
@@ -84,7 +89,8 @@ class _RegisterPageState extends State<RegisterPage> {
                           width: 80,
                           height: 80,
                           decoration: BoxDecoration(
-                            color: RegisterPage.nomadsRed.withValues(alpha: 0.1),
+                            color:
+                                RegisterPage.nomadsRed.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -94,21 +100,21 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        
+
                         // 标题
-                        const Text(
-                          '🌍 Go Nomad',
-                          style: TextStyle(
+                        Text(
+                          '🌍 ${l10n.goNomad}',
+                          style: const TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
                           ),
                         ),
                         const SizedBox(height: 12),
-                        
+
                         // 副标题
-                        const Text(
-                          'Join a global community of remote workers\nliving and traveling around the world',
+                        Text(
+                          l10n.joinGlobalCommunity,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 16,
@@ -119,15 +125,15 @@ class _RegisterPageState extends State<RegisterPage> {
                       ],
                     ),
                   ),
-                  
+
                   const SizedBox(height: 48),
-                  
+
                   // 用户名输入
                   TextFormField(
                     controller: _usernameController,
                     decoration: InputDecoration(
-                      labelText: 'Username',
-                      hintText: 'Choose your username',
+                      labelText: l10n.username,
+                      hintText: l10n.chooseUsername,
                       prefixIcon: const Icon(Icons.person_outline),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -146,24 +152,24 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter a username';
+                        return l10n.usernameRequired;
                       }
                       if (value.length < 3) {
-                        return 'Username must be at least 3 characters';
+                        return l10n.usernameMinLength;
                       }
                       return null;
                     },
                   ),
-                  
+
                   const SizedBox(height: 20),
-                  
+
                   // 邮箱输入
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
-                      labelText: 'Email',
-                      hintText: 'Enter your email',
+                      labelText: l10n.email,
+                      hintText: l10n.email,
                       prefixIcon: const Icon(Icons.email_outlined),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -182,30 +188,30 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
+                        return l10n.email;
                       }
                       if (!GetUtils.isEmail(value)) {
-                        return 'Please enter a valid email';
+                        return l10n.email;
                       }
                       return null;
                     },
                   ),
-                  
+
                   const SizedBox(height: 20),
-                  
+
                   // 密码输入
                   TextFormField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
                     decoration: InputDecoration(
-                      labelText: 'Password',
-                      hintText: 'Create a password',
+                      labelText: l10n.password,
+                      hintText: l10n.createPassword,
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscurePassword 
-                            ? Icons.visibility_outlined 
-                            : Icons.visibility_off_outlined,
+                          _obscurePassword
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
                         ),
                         onPressed: () {
                           setState(() {
@@ -230,30 +236,30 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter a password';
+                        return l10n.password;
                       }
                       if (value.length < 6) {
-                        return 'Password must be at least 6 characters';
+                        return l10n.password;
                       }
                       return null;
                     },
                   ),
-                  
+
                   const SizedBox(height: 20),
-                  
+
                   // 确认密码输入
                   TextFormField(
                     controller: _confirmPasswordController,
                     obscureText: _obscureConfirmPassword,
                     decoration: InputDecoration(
-                      labelText: 'Confirm Password',
-                      hintText: 'Re-enter your password',
+                      labelText: l10n.confirmPassword,
+                      hintText: l10n.reenterPassword,
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscureConfirmPassword 
-                            ? Icons.visibility_outlined 
-                            : Icons.visibility_off_outlined,
+                          _obscureConfirmPassword
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
                         ),
                         onPressed: () {
                           setState(() {
@@ -278,17 +284,17 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please confirm your password';
+                        return l10n.confirmPasswordRequired;
                       }
                       if (value != _passwordController.text) {
-                        return 'Passwords do not match';
+                        return l10n.passwordsNotMatch;
                       }
                       return null;
                     },
                   ),
-                  
+
                   const SizedBox(height: 24),
-                  
+
                   // 服务条款复选框
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -318,17 +324,17 @@ class _RegisterPageState extends State<RegisterPage> {
                                   color: Colors.black87,
                                 ),
                                 children: [
-                                  const TextSpan(text: 'I agree to the '),
+                                  TextSpan(text: '${l10n.agreeToTerms} '),
                                   TextSpan(
-                                    text: 'Terms of Service',
-                                    style: TextStyle(
+                                    text: l10n.termsOfService,
+                                    style: const TextStyle(
                                       color: RegisterPage.nomadsRed,
                                       decoration: TextDecoration.underline,
                                     ),
                                   ),
-                                  const TextSpan(text: ' and '),
+                                  TextSpan(text: ' ${l10n.and} '),
                                   TextSpan(
-                                    text: 'Community Guidelines',
+                                    text: l10n.communityGuidelines,
                                     style: TextStyle(
                                       color: RegisterPage.nomadsRed,
                                       decoration: TextDecoration.underline,
@@ -342,9 +348,9 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 32),
-                  
+
                   // 注册按钮
                   ElevatedButton(
                     onPressed: _register,
@@ -357,17 +363,17 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       elevation: 0,
                     ),
-                    child: const Text(
-                      'Join Nomads.com →',
-                      style: TextStyle(
+                    child: Text(
+                      l10n.joinNomads,
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 24),
-                  
+
                   // 分隔线
                   Row(
                     children: [
@@ -375,7 +381,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Text(
-                          'Or continue with',
+                          l10n.orContinueWith,
                           style: TextStyle(
                             color: Colors.grey.shade600,
                             fontSize: 14,
@@ -385,9 +391,9 @@ class _RegisterPageState extends State<RegisterPage> {
                       Expanded(child: Divider(color: Colors.grey.shade300)),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 24),
-                  
+
                   // 社交登录按钮
                   Row(
                     children: [
@@ -396,8 +402,8 @@ class _RegisterPageState extends State<RegisterPage> {
                         child: OutlinedButton.icon(
                           onPressed: () {
                             Get.snackbar(
-                              'Google Sign In',
-                              'Google authentication coming soon',
+                              l10n.googleSignIn,
+                              l10n.googleAuthComingSoon,
                               snackPosition: SnackPosition.BOTTOM,
                             );
                           },
@@ -418,8 +424,8 @@ class _RegisterPageState extends State<RegisterPage> {
                         child: OutlinedButton.icon(
                           onPressed: () {
                             Get.snackbar(
-                              'Apple Sign In',
-                              'Apple authentication coming soon',
+                              l10n.appleSignIn,
+                              l10n.appleAuthComingSoon,
                               snackPosition: SnackPosition.BOTTOM,
                             );
                           },
@@ -436,17 +442,17 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 32),
-                  
+
                   // 已有账号提示
                   Center(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text(
-                          'Already have an account? ',
-                          style: TextStyle(
+                        Text(
+                          '${l10n.alreadyHaveAccount} ',
+                          style: const TextStyle(
                             color: Colors.black87,
                             fontSize: 15,
                           ),
@@ -455,8 +461,8 @@ class _RegisterPageState extends State<RegisterPage> {
                           onTap: () {
                             Get.toNamed('/login');
                           },
-                          child: const Text(
-                            'Log in',
+                          child: Text(
+                            l10n.login,
                             style: TextStyle(
                               color: RegisterPage.nomadsRed,
                               fontSize: 15,
@@ -467,12 +473,12 @@ class _RegisterPageState extends State<RegisterPage> {
                       ],
                     ),
                   ),
-                  
+
                   const SizedBox(height: 24),
-                  
+
                   // 社区亮点
                   _buildFeatureHighlights(),
-                  
+
                   SizedBox(height: MediaQuery.of(context).padding.bottom + 32),
                 ],
               ),
@@ -484,56 +490,59 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Widget _buildFeatureHighlights() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Join 38,000+ members and get:',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade800,
+    return Builder(builder: (context) {
+      final l10n = AppLocalizations.of(context)!;
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.joinMembers,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade800,
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          _buildFeatureItem(
-            '🍹',
-            'Attend 363 meetups/year',
-            'in 100+ cities worldwide',
-          ),
-          const SizedBox(height: 12),
-          _buildFeatureItem(
-            '❤️',
-            'Meet new people',
-            'for dating and friends',
-          ),
-          const SizedBox(height: 12),
-          _buildFeatureItem(
-            '🧪',
-            'Research destinations',
-            'and find your best place to live',
-          ),
-          const SizedBox(height: 12),
-          _buildFeatureItem(
-            '💬',
-            'Join exclusive chat',
-            '15,000+ messages sent this month',
-          ),
-          const SizedBox(height: 12),
-          _buildFeatureItem(
-            '🗺️',
-            'Track your travels',
-            'and share your journey',
-          ),
-        ],
-      ),
-    );
+            const SizedBox(height: 16),
+            _buildFeatureItem(
+              '🍹',
+              l10n.attendMeetups,
+              l10n.inCitiesWorldwide,
+            ),
+            const SizedBox(height: 12),
+            _buildFeatureItem(
+              '❤️',
+              l10n.meetNewPeople,
+              l10n.forDatingAndFriends,
+            ),
+            const SizedBox(height: 12),
+            _buildFeatureItem(
+              '🧪',
+              l10n.researchDestinations,
+              l10n.findBestPlace,
+            ),
+            const SizedBox(height: 12),
+            _buildFeatureItem(
+              '💬',
+              l10n.joinExclusiveChat,
+              l10n.messagesSentThisMonth,
+            ),
+            const SizedBox(height: 12),
+            _buildFeatureItem(
+              '🗺️',
+              l10n.trackTravels,
+              l10n.shareJourney,
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildFeatureItem(String emoji, String title, String subtitle) {
