@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
+import '../widgets/app_toast.dart';
 
 class DataServiceController extends GetxController {
   // 响应式数据
@@ -691,13 +692,9 @@ class DataServiceController extends GetxController {
     rsvpedMeetups.add(newId);
 
     Get.back(); // 关闭对话框
-    Get.snackbar(
-      '✅ Meetup Created!',
+    AppToast.success(
       'Your meetup "$title" has been created successfully',
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 3),
-      backgroundColor: const Color(0xFF4CAF50),
-      colorText: const Color(0xFFFFFFFF),
+      title: 'Meetup Created!',
     );
   }
 }

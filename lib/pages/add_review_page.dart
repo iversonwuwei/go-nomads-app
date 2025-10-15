@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../config/app_colors.dart';
+import '../widgets/app_toast.dart';
 
 /// 添加 Review 页面 - 独立页面形式
 class AddReviewPage extends StatefulWidget {
@@ -628,12 +629,9 @@ class _AddReviewPageState extends State<AddReviewPage> {
       final imagesToAdd = images.take(remainingSlots).toList();
       _selectedImages.addAll(imagesToAdd);
     } catch (e) {
-      Get.snackbar(
-        'Error',
+      AppToast.error(
         'Failed to pick images: $e',
-        backgroundColor: const Color(0xFFFF4458),
-        colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
+        title: 'Error',
       );
     }
   }
@@ -642,12 +640,9 @@ class _AddReviewPageState extends State<AddReviewPage> {
   Future<void> _submitReview() async {
     // 验证评分
     if (_rating.value == 0) {
-      Get.snackbar(
-        '⚠️ Missing Rating',
+      AppToast.warning(
         'Please select a rating before submitting',
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
+        title: 'Missing Rating',
       );
       return;
     }
@@ -679,21 +674,14 @@ class _AddReviewPageState extends State<AddReviewPage> {
         'imageCount': _selectedImages.length,
       });
 
-      Get.snackbar(
-        '✅ Success',
+      AppToast.success(
         'Your review has been submitted successfully!',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 3),
+        title: 'Success',
       );
     } catch (e) {
-      Get.snackbar(
-        '❌ Error',
+      AppToast.error(
         'Failed to submit review: $e',
-        backgroundColor: const Color(0xFFFF4458),
-        colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
+        title: 'Error',
       );
     } finally {
       _isSubmitting.value = false;

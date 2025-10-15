@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 
 import '../controllers/auth_controller.dart';
 import '../generated/app_localizations.dart';
+import '../widgets/app_toast.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -145,7 +146,7 @@ class LoginPage extends StatelessWidget {
                   ),
                   TextButton(
                     onPressed: () {
-                      Get.snackbar('提示', '立即注册功能开发中');
+                      AppToast.info('立即注册功能开发中', title: '提示');
                     },
                     style: TextButton.styleFrom(
                       padding: EdgeInsets.symmetric(horizontal: 8.w),
@@ -337,7 +338,7 @@ class LoginPage extends StatelessWidget {
           Center(
             child: TextButton(
               onPressed: () {
-                Get.snackbar('提示', '试用申请功能开发中');
+                AppToast.info('试用申请功能开发中', title: '提示');
               },
               child: Text(
                 '还没用过吗？申请试用',
@@ -375,7 +376,7 @@ class LoginPage extends StatelessWidget {
           Center(
             child: GestureDetector(
               onTap: () {
-                Get.snackbar('提示', '立即注册功能开发中');
+                AppToast.info('立即注册功能开发中', title: '提示');
               },
               child: RichText(
                 text: TextSpan(
@@ -538,7 +539,7 @@ class LoginPage extends StatelessWidget {
               if (controller.loginType.value == LoginType.phonePassword)
                 TextButton(
                   onPressed: () {
-                    Get.snackbar('提示', '忘记密码功能开发中');
+                    AppToast.info('忘记密码功能开发中', title: '提示');
                   },
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero,

@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import '../config/app_colors.dart';
 import '../generated/app_localizations.dart';
 import '../models/coworking_space_model.dart';
+import '../widgets/app_toast.dart';
 import 'amap_native_picker_page.dart';
 
 /// Add Coworking Space Page
@@ -700,12 +701,9 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
         });
       }
     } catch (e) {
-      Get.snackbar(
-        'Error',
+      AppToast.error(
         'Failed to pick image: $e',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red[100],
-        colorText: Colors.red[900],
+        title: 'Error',
       );
     }
   }
@@ -848,19 +846,14 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
 
       // Show success message
       Get.back(result: coworkingSpace);
-      Get.snackbar(
-        'Success',
+      AppToast.success(
         'Coworking space has been submitted successfully!',
-        backgroundColor: const Color(0xFFFF4458),
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
+        title: 'Success',
       );
     } catch (e) {
-      Get.snackbar(
-        'Error',
+      AppToast.error(
         'Failed to submit coworking space: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+        title: 'Error',
       );
     } finally {
       _isSubmitting.value = false;

@@ -6,6 +6,7 @@ import '../config/app_colors.dart';
 import '../controllers/shopping_controller.dart';
 import '../generated/app_localizations.dart';
 import '../models/api_interface_model.dart';
+import '../widgets/app_toast.dart';
 import '../widgets/copyright_widget.dart';
 
 class ApiMarketplacePage extends StatefulWidget {
@@ -556,28 +557,28 @@ class _ApiMarketplacePageState extends State<ApiMarketplacePage> {
   void _showFilterDialog(String title, List<String> options) {
     final l10n = AppLocalizations.of(Get.context!)!;
     // Show filter selection dialog
-    Get.snackbar(l10n.filter, '$title ${l10n.filterOptions}');
+    AppToast.info('$title ${l10n.filterOptions}', title: l10n.filter);
   }
 
   void _showSortDialog() {
     final l10n = AppLocalizations.of(Get.context!)!;
     // Show sort options dialog
-    Get.snackbar(l10n.sortBy, l10n.sortOptions);
+    AppToast.info(l10n.sortOptions, title: l10n.sortBy);
   }
 
   void _showApiDetails(ApiInterfaceModel api) {
     final l10n = AppLocalizations.of(Get.context!)!;
     // Navigate to API details page
-    Get.snackbar(l10n.apiDetails, '${l10n.showingDetails} ${api.name}');
+    AppToast.info('${l10n.showingDetails} ${api.name}', title: l10n.apiDetails);
   }
 
   void _showBookmarks() {
     final l10n = AppLocalizations.of(Get.context!)!;
-    Get.snackbar(l10n.bookmarks, l10n.bookmarkedApis);
+    AppToast.info(l10n.bookmarkedApis, title: l10n.bookmarks);
   }
 
   void _showCart() {
     final l10n = AppLocalizations.of(Get.context!)!;
-    Get.snackbar(l10n.cart, l10n.apiCart);
+    AppToast.info(l10n.apiCart, title: l10n.cart);
   }
 }

@@ -5,6 +5,7 @@ import '../config/app_colors.dart';
 import '../controllers/locale_controller.dart';
 import '../generated/app_localizations.dart';
 import '../routes/app_routes.dart';
+import '../widgets/app_toast.dart';
 
 /// 用户个人资料页面
 class UserProfilePage extends StatefulWidget {
@@ -60,13 +61,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
           IconButton(
             icon: const Icon(Icons.edit, color: Colors.white),
             onPressed: () {
-              Get.snackbar(
-                'Edit Profile',
+              AppToast.info(
                 'Profile editing coming soon',
-                backgroundColor: Colors.orange.withValues(alpha: 0.8),
-                colorText: Colors.white,
-                snackPosition: SnackPosition.BOTTOM,
-                margin: const EdgeInsets.all(16),
+                title: 'Edit Profile',
               );
             },
           ),
@@ -115,13 +112,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   buttonColor: Colors.red,
                   onConfirm: () {
                     Get.back();
-                    Get.snackbar(
-                      'Logged Out',
+                    AppToast.success(
                       'You have been successfully logged out',
-                      backgroundColor: Colors.green.withValues(alpha: 0.8),
-                      colorText: Colors.white,
-                      snackPosition: SnackPosition.BOTTOM,
-                      margin: const EdgeInsets.all(16),
+                      title: 'Logged Out',
                     );
                   },
                 );
@@ -590,13 +583,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   void _showComingSoon(String feature) {
-    Get.snackbar(
-      'Coming Soon',
+    AppToast.info(
       '$feature will be available in a future update',
-      backgroundColor: Colors.orange.withValues(alpha: 0.8),
-      colorText: Colors.white,
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
+      title: 'Coming Soon',
     );
   }
 }

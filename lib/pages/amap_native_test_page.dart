@@ -4,10 +4,11 @@ import 'package:get/get.dart';
 import '../config/app_colors.dart';
 import '../generated/app_localizations.dart';
 import '../services/amap_native_service.dart';
+import '../widgets/app_toast.dart';
 import 'amap_native_picker_page.dart';
 
 /// 高德原生地图测试页面
-/// 
+///
 /// 用于测试 Platform Channel 连接和地图选择功能
 class AmapNativeTestPage extends StatefulWidget {
   const AmapNativeTestPage({super.key});
@@ -31,9 +32,8 @@ class _AmapNativeTestPageState extends State<AmapNativeTestPage> {
     try {
       final isConnected = await AmapNativeService.instance.testConnection();
       setState(() {
-        _testResult = isConnected 
-            ? l10n.platformChannelConnected
-            : l10n.connectionFailed;
+        _testResult =
+            isConnected ? l10n.platformChannelConnected : l10n.connectionFailed;
       });
     } catch (e) {
       setState(() {
@@ -49,29 +49,25 @@ class _AmapNativeTestPageState extends State<AmapNativeTestPage> {
   Future<void> _openMapPicker() async {
     try {
       final result = await Get.to(() => const AmapNativePickerPage(
-        initialLatitude: 39.909187,
-        initialLongitude: 116.397451,
-      ));
+            initialLatitude: 39.909187,
+            initialLongitude: 116.397451,
+          ));
 
       if (result != null) {
         setState(() {
           _selectedLocation = result;
         });
         final l10n = AppLocalizations.of(context)!;
-        Get.snackbar(
-          l10n.success,
+        AppToast.success(
           l10n.locationSelected,
-          backgroundColor: Colors.green.withValues(alpha: 0.9),
-          colorText: Colors.white,
+          title: l10n.success,
         );
       }
     } catch (e) {
       final l10n = AppLocalizations.of(context)!;
-      Get.snackbar(
-        l10n.error,
+      AppToast.error(
         '${l10n.openMapPicker}: $e',
-        backgroundColor: Colors.red.withValues(alpha: 0.9),
-        colorText: Colors.white,
+        title: l10n.error,
       );
     }
   }
@@ -87,19 +83,15 @@ class _AmapNativeTestPageState extends State<AmapNativeTestPage> {
         _selectedLocation = result;
       });
       final l10n = AppLocalizations.of(context)!;
-      Get.snackbar(
-        l10n.success,
+      AppToast.success(
         l10n.gotCurrentLocation,
-        backgroundColor: Colors.green.withValues(alpha: 0.9),
-        colorText: Colors.white,
+        title: l10n.success,
       );
     } catch (e) {
       final l10n = AppLocalizations.of(context)!;
-      Get.snackbar(
-        l10n.error,
+      AppToast.error(
         '${l10n.getCurrentLocation}: $e',
-        backgroundColor: Colors.red.withValues(alpha: 0.9),
-        colorText: Colors.white,
+        title: l10n.error,
       );
     } finally {
       setState(() {
@@ -117,7 +109,8 @@ class _AmapNativeTestPageState extends State<AmapNativeTestPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_outlined, color: AppColors.backButtonDark),
+          icon: const Icon(Icons.arrow_back_outlined,
+              color: AppColors.backButtonDark),
           onPressed: () => Get.back(),
         ),
         title: Text(
@@ -166,8 +159,8 @@ class _AmapNativeTestPageState extends State<AmapNativeTestPage> {
                   _testResult.isEmpty ? l10n.notTested : _testResult,
                   style: TextStyle(
                     fontSize: 14,
-                    color: _testResult.contains('✓') 
-                        ? Colors.green 
+                    color: _testResult.contains('✓')
+                        ? Colors.green
                         : _testResult.contains('✗')
                             ? Colors.red
                             : Colors.black54,
@@ -228,11 +221,16 @@ class _AmapNativeTestPageState extends State<AmapNativeTestPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildLocationInfo(l10n.latitude, _selectedLocation!['latitude'].toString()),
-                  _buildLocationInfo(l10n.longitude, _selectedLocation!['longitude'].toString()),
-                  _buildLocationInfo(l10n.address, _selectedLocation!['address'] ?? 'N/A'),
-                  _buildLocationInfo(l10n.city, _selectedLocation!['city'] ?? 'N/A'),
-                  _buildLocationInfo(l10n.province, _selectedLocation!['province'] ?? 'N/A'),
+                  _buildLocationInfo(
+                      l10n.latitude, _selectedLocation!['latitude'].toString()),
+                  _buildLocationInfo(l10n.longitude,
+                      _selectedLocation!['longitude'].toString()),
+                  _buildLocationInfo(
+                      l10n.address, _selectedLocation!['address'] ?? 'N/A'),
+                  _buildLocationInfo(
+                      l10n.city, _selectedLocation!['city'] ?? 'N/A'),
+                  _buildLocationInfo(
+                      l10n.province, _selectedLocation!['province'] ?? 'N/A'),
                 ],
               ),
             ),

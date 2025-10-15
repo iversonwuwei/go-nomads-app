@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../config/app_colors.dart';
 import '../generated/app_localizations.dart';
 import '../routes/app_routes.dart';
+import '../widgets/app_toast.dart';
 
 /// 收藏夹页面 - 管理收藏的城市
 class FavoritesPage extends StatefulWidget {
@@ -383,14 +384,9 @@ class _FavoritesPageState extends State<FavoritesPage> {
                       setState(() {
                         _favoriteCities.removeAt(index);
                       });
-                      Get.snackbar(
-                        l10n.removeFromFavorites,
+                      AppToast.success(
                         l10n.favoriteRemoved,
-                        backgroundColor: Colors.red.withValues(alpha: 0.8),
-                        colorText: Colors.white,
-                        snackPosition: SnackPosition.BOTTOM,
-                        margin: const EdgeInsets.all(16),
-                        duration: const Duration(seconds: 2),
+                        title: l10n.removeFromFavorites,
                       );
                     },
                   ),

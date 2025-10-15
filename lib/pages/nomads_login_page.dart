@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../generated/app_localizations.dart';
+import '../widgets/app_toast.dart';
 
 class NomadsLoginPage extends StatefulWidget {
   const NomadsLoginPage({super.key});
@@ -31,14 +32,9 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
   void _login() {
     if (_formKey.currentState!.validate()) {
       // TODO: 实际的登录逻辑
-      Get.snackbar(
-        '✅ Welcome Back',
+      AppToast.success(
         'Successfully logged in to Nomads.com!',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 2),
+        title: 'Welcome Back',
       );
 
       // 登录成功后跳转到主页
@@ -217,13 +213,9 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                       ),
                       TextButton(
                         onPressed: () {
-                          Get.snackbar(
+                          AppToast.info(
                             l10n.forgotPassword,
-                            l10n.forgotPassword,
-                            backgroundColor: Colors.orange.shade100,
-                            colorText: Colors.black87,
-                            snackPosition: SnackPosition.BOTTOM,
-                            margin: const EdgeInsets.all(16),
+                            title: l10n.forgotPassword,
                           );
                         },
                         child: Text(
@@ -290,13 +282,9 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: () {
-                            Get.snackbar(
-                              'Google Sign In',
+                            AppToast.info(
                               'Google authentication coming soon',
-                              backgroundColor: Colors.blue.shade50,
-                              colorText: Colors.black87,
-                              snackPosition: SnackPosition.BOTTOM,
-                              margin: const EdgeInsets.all(16),
+                              title: 'Google Sign In',
                             );
                           },
                           style: OutlinedButton.styleFrom(
@@ -315,13 +303,9 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: () {
-                            Get.snackbar(
+                            AppToast.info(
                               'Apple',
-                              'Apple',
-                              backgroundColor: Colors.grey.shade100,
-                              colorText: Colors.black87,
-                              snackPosition: SnackPosition.BOTTOM,
-                              margin: const EdgeInsets.all(16),
+                              title: 'Apple',
                             );
                           },
                           style: OutlinedButton.styleFrom(

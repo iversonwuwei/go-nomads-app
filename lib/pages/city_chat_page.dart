@@ -6,6 +6,7 @@ import '../controllers/chat_controller.dart';
 import '../generated/app_localizations.dart';
 import '../models/chat_model.dart';
 import '../models/user_model.dart' as models;
+import '../widgets/app_toast.dart';
 import '../widgets/skeleton_loader.dart';
 import 'member_detail_page.dart';
 
@@ -704,57 +705,33 @@ class CityChatPage extends StatelessWidget {
 
   void _handleImageUpload(ChatController controller) {
     // TODO: 实现图片上传功能
-    Get.snackbar(
-      'Photo & Video',
+    AppToast.info(
       'Image upload feature coming soon!',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: const Color(0xFF8B5CF6),
-      colorText: Colors.white,
-      margin: const EdgeInsets.all(16),
-      duration: const Duration(seconds: 2),
-      icon: const Icon(Icons.image_outlined, color: Colors.white),
+      title: 'Photo & Video',
     );
   }
 
   void _handleLocationShare(ChatController controller) {
     // TODO: 实现位置分享功能
-    Get.snackbar(
-      'Location',
+    AppToast.info(
       'Location sharing feature coming soon!',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: const Color(0xFFEF4444),
-      colorText: Colors.white,
-      margin: const EdgeInsets.all(16),
-      duration: const Duration(seconds: 2),
-      icon: const Icon(Icons.location_on_outlined, color: Colors.white),
+      title: 'Location',
     );
   }
 
   void _handleDocumentUpload(ChatController controller) {
     // TODO: 实现文档上传功能
-    Get.snackbar(
-      'Document',
+    AppToast.info(
       'Document upload feature coming soon!',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: const Color(0xFF3B82F6),
-      colorText: Colors.white,
-      margin: const EdgeInsets.all(16),
-      duration: const Duration(seconds: 2),
-      icon: const Icon(Icons.insert_drive_file_outlined, color: Colors.white),
+      title: 'Document',
     );
   }
 
   void _handleContactShare(ChatController controller) {
     // TODO: 实现联系人分享功能
-    Get.snackbar(
-      'Contact',
+    AppToast.info(
       'Contact sharing feature coming soon!',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: const Color(0xFF10B981),
-      colorText: Colors.white,
-      margin: const EdgeInsets.all(16),
-      duration: const Duration(seconds: 2),
-      icon: const Icon(Icons.contact_page_outlined, color: Colors.white),
+      title: 'Contact',
     );
   }
 

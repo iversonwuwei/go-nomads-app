@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../controllers/data_service_controller.dart';
 import '../generated/app_localizations.dart';
 import '../models/user_model.dart' as models;
+import '../widgets/app_toast.dart';
 
 class InviteToMeetupPage extends StatelessWidget {
   final models.UserModel user;
@@ -367,16 +368,9 @@ class InviteToMeetupPage extends StatelessWidget {
                       onPressed: () {
                         // TODO: 实现实际的邀请逻辑
                         Navigator.pop(context);
-                        Get.snackbar(
-                          l10n.success,
+                        AppToast.success(
                           '${user.name} ${l10n.sendInvitation}',
-                          backgroundColor: const Color(0xFF10B981),
-                          colorText: Colors.white,
-                          snackPosition: SnackPosition.BOTTOM,
-                          margin: const EdgeInsets.all(16),
-                          borderRadius: 10,
-                          icon: const Icon(Icons.check_circle,
-                              color: Colors.white),
+                          title: l10n.success,
                         );
                         // 返回上一页
                         Navigator.pop(Get.context!);

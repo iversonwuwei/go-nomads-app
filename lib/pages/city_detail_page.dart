@@ -13,6 +13,7 @@ import '../controllers/city_detail_controller.dart';
 import '../controllers/coworking_controller.dart';
 import '../generated/app_localizations.dart';
 import '../models/coworking_space_model.dart';
+import '../widgets/app_toast.dart';
 import '../widgets/skeleton_loader.dart';
 import 'add_cost_page.dart';
 import 'add_coworking_page.dart';
@@ -1469,11 +1470,9 @@ class _CityDetailPageState extends State<CityDetailPage> {
                 child: ElevatedButton(
                   onPressed: () {
                     Get.back();
-                    Get.snackbar(
-                      'Coming Soon',
+                    AppToast.info(
                       'Score submission feature will be available soon!',
-                      backgroundColor: const Color(0xFFFF4458),
-                      colorText: Colors.white,
+                      title: 'Coming Soon',
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -1607,20 +1606,15 @@ class _CityDetailPageState extends State<CityDetailPage> {
 
       if (image != null) {
         // TODO: 上传图片到服务器
-        Get.snackbar(
-          'Success',
+        AppToast.success(
           'Photo selected: ${image.name}\nUpload feature coming soon!',
-          backgroundColor: const Color(0xFF10B981),
-          colorText: Colors.white,
-          duration: const Duration(seconds: 3),
+          title: 'Success',
         );
       }
     } catch (e) {
-      Get.snackbar(
-        'Error',
+      AppToast.error(
         'Failed to pick image: $e',
-        backgroundColor: const Color(0xFFFF4458),
-        colorText: Colors.white,
+        title: 'Error',
       );
     }
   }
@@ -1632,13 +1626,9 @@ class _CityDetailPageState extends State<CityDetailPage> {
           cityId: widget.cityId,
         ));
     if (result != null) {
-      Get.snackbar(
-        '�?Success',
+      AppToast.success(
         'Your coworking space will be reviewed and added soon!',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green[100],
-        colorText: Colors.green[900],
-        duration: const Duration(seconds: 3),
+        title: 'Success',
       );
     }
   }

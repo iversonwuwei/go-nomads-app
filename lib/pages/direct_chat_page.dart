@@ -6,6 +6,7 @@ import '../controllers/chat_controller.dart';
 import '../generated/app_localizations.dart';
 import '../models/chat_model.dart';
 import '../models/user_model.dart' as models;
+import '../widgets/app_toast.dart';
 import '../widgets/skeleton_loader.dart';
 import 'member_detail_page.dart';
 
@@ -91,12 +92,9 @@ class DirectChatPage extends StatelessWidget {
                   break;
                 case 'mute':
                   final l10n = AppLocalizations.of(context)!;
-                  Get.snackbar(
-                    l10n.muted,
+                  AppToast.success(
                     l10n.notificationsMuted,
-                    snackPosition: SnackPosition.BOTTOM,
-                    backgroundColor: const Color(0xFF10B981),
-                    colorText: Colors.white,
+                    title: l10n.muted,
                   );
                   break;
                 case 'block':
@@ -131,9 +129,11 @@ class DirectChatPage extends StatelessWidget {
                   value: 'block',
                   child: Row(
                     children: [
-                      const Icon(Icons.block_outlined, size: 20, color: Colors.red),
+                      const Icon(Icons.block_outlined,
+                          size: 20, color: Colors.red),
                       const SizedBox(width: 12),
-                      Text(l10n.blockUser, style: const TextStyle(color: Colors.red)),
+                      Text(l10n.blockUser,
+                          style: const TextStyle(color: Colors.red)),
                     ],
                   ),
                 ),
@@ -314,7 +314,8 @@ class DirectChatPage extends StatelessWidget {
                           message.message,
                           style: TextStyle(
                             fontSize: 15,
-                            color: isMe ? Colors.white : const Color(0xFF1a1a1a),
+                            color:
+                                isMe ? Colors.white : const Color(0xFF1a1a1a),
                             height: 1.4,
                           ),
                         ),
@@ -427,11 +428,9 @@ class DirectChatPage extends StatelessWidget {
                       color: Color(0xFF6b7280)),
                   onPressed: () {
                     // TODO: Show emoji picker
-                    Get.snackbar(
-                      'Emoji',
+                    AppToast.info(
                       'Emoji picker coming soon!',
-                      snackPosition: SnackPosition.BOTTOM,
-                      duration: const Duration(seconds: 1),
+                      title: 'Emoji',
                     );
                   },
                 ),
@@ -453,7 +452,8 @@ class DirectChatPage extends StatelessWidget {
                           fontSize: 15,
                         ),
                         border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                        contentPadding:
+                            const EdgeInsets.symmetric(vertical: 10),
                       ),
                       maxLines: null,
                       textCapitalization: TextCapitalization.sentences,
@@ -467,7 +467,9 @@ class DirectChatPage extends StatelessWidget {
                 AnimatedBuilder(
                   animation: controller.messageInputController,
                   builder: (context, child) {
-                    final hasText = controller.messageInputController.text.trim().isNotEmpty;
+                    final hasText = controller.messageInputController.text
+                        .trim()
+                        .isNotEmpty;
                     return Container(
                       decoration: BoxDecoration(
                         color: hasText
@@ -476,10 +478,12 @@ class DirectChatPage extends StatelessWidget {
                         shape: BoxShape.circle,
                       ),
                       child: IconButton(
-                        icon: const Icon(Icons.send_rounded, color: Colors.white),
+                        icon:
+                            const Icon(Icons.send_rounded, color: Colors.white),
                         onPressed: hasText
                             ? () {
-                                final text = controller.messageInputController.text;
+                                final text =
+                                    controller.messageInputController.text;
                                 if (text.trim().isNotEmpty) {
                                   controller.sendMessage(text);
                                   controller.messageInputController.clear();
@@ -530,12 +534,9 @@ class DirectChatPage extends StatelessWidget {
             onPressed: () {
               Get.back(); // Close dialog
               Get.back(); // Go back to previous page
-              Get.snackbar(
-                l10n.blockConfirm,
+              AppToast.success(
                 l10n.userBlocked,
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: Colors.red,
-                colorText: Colors.white,
+                title: l10n.blockConfirm,
               );
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),

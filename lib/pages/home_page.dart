@@ -9,6 +9,7 @@ import '../controllers/shopping_controller.dart';
 import '../generated/app_localizations.dart';
 import '../models/api_interface_model.dart';
 import '../routes/app_routes.dart';
+import '../widgets/app_toast.dart';
 import '../widgets/copyright_widget.dart';
 import '../widgets/skeleton_loader.dart';
 
@@ -39,14 +40,14 @@ class MyHomePage extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.search, color: AppColors.textTertiary),
             onPressed: () {
-              Get.snackbar('搜索', '搜索API接口功能开发中...');
+              AppToast.info('搜索API接口功能开发中...', title: '搜索');
             },
           ),
           IconButton(
             icon: const Icon(Icons.shopping_cart_outlined,
                 color: AppColors.textTertiary),
             onPressed: () {
-              Get.snackbar('购买清单', 'API购买清单功能开发中...');
+              AppToast.info('API购买清单功能开发中...', title: '购买清单');
             },
           ),
           const SizedBox(width: 8),
@@ -248,7 +249,7 @@ class MyHomePage extends StatelessWidget {
               if (action['route'] != null) {
                 Get.toNamed(action['route']);
               } else {
-                Get.snackbar('功能', '${action['title']}功能开发中...');
+                AppToast.info('${action['title']}功能开发中...', title: '功能');
               }
             },
           );
@@ -552,7 +553,7 @@ class MyHomePage extends StatelessWidget {
         if (category['title'] == '位置数据') {
           Get.toNamed(AppRoutes.locationDemo);
         } else {
-          Get.snackbar('数据分类', '${category['title']}功能开发中...');
+          AppToast.info('${category['title']}功能开发中...', title: '数据分类');
         }
       },
       child: Container(

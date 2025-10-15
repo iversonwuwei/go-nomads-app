@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../generated/app_localizations.dart';
 import '../models/user_model.dart' as models;
+import '../widgets/app_toast.dart';
 import 'direct_chat_page.dart';
 import 'invite_to_meetup_page.dart';
 
@@ -368,14 +369,9 @@ class MemberDetailPage extends StatelessWidget {
                             child: IconButton(
                               onPressed: () {
                                 // TODO: Add to favorites
-                                Get.snackbar(
-                                  l10n.favorites,
+                                AppToast.success(
                                   l10n.favoriteAdded,
-                                  backgroundColor: const Color(0xFF10B981),
-                                  colorText: Colors.white,
-                                  snackPosition: SnackPosition.TOP,
-                                  margin: const EdgeInsets.all(16),
-                                  borderRadius: 8,
+                                  title: l10n.favorites,
                                 );
                               },
                               icon: const Icon(

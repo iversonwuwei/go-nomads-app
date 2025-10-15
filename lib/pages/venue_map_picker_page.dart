@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../generated/app_localizations.dart';
+import '../widgets/app_toast.dart';
 
 /// Venue地图选择器页�?
 ///
@@ -174,12 +175,9 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
   void _confirmSelection() {
     final l10n = AppLocalizations.of(context)!;
     if (_selectedVenue == null) {
-      Get.snackbar(
-        l10n.noSelection,
+      AppToast.warning(
         l10n.pleaseSelectVenue,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
+        title: l10n.noSelection,
       );
       return;
     }

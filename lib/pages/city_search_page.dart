@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../generated/app_localizations.dart';
+import '../widgets/app_toast.dart';
 
 /// 城市搜索和筛选页面
 class CitySearchPage extends StatefulWidget {
@@ -288,13 +289,9 @@ class _CitySearchPageState extends State<CitySearchPage> {
                       onPressed: () {
                         final l10n = AppLocalizations.of(context)!;
                         // 应用筛选逻辑
-                        Get.snackbar(
-                          l10n.filtersApplied,
+                        AppToast.success(
                           l10n.showingResults,
-                          backgroundColor: Colors.green.withValues(alpha: 0.8),
-                          colorText: Colors.white,
-                          snackPosition: SnackPosition.BOTTOM,
-                          margin: const EdgeInsets.all(16),
+                          title: l10n.filtersApplied,
                         );
                       },
                       style: ElevatedButton.styleFrom(

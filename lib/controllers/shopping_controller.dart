@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../models/api_interface_model.dart';
 import '../models/product_model.dart';
+import '../widgets/app_toast.dart';
 
 class ShoppingController extends GetxController {
   // 轮播图数据
@@ -267,19 +268,16 @@ class ShoppingController extends GetxController {
   }
 
   void onProductTap(ProductModel product) {
-    Get.snackbar(
-      '商品详情',
+    AppToast.info(
       '点击了商品: ${product.name}',
-      snackPosition: SnackPosition.BOTTOM,
+      title: '商品详情',
     );
   }
 
   void onApiInterfaceTap(ApiInterfaceModel apiInterface) {
-    Get.snackbar(
-      'API接口详情',
+    AppToast.info(
       '${apiInterface.name}\n${apiInterface.description}\n价格: ¥${apiInterface.price.toStringAsFixed(3)}/次',
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 3),
+      title: 'API接口详情',
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../generated/app_localizations.dart';
+import '../widgets/app_toast.dart';
 
 class AddCostPage extends StatefulWidget {
   final String cityId;
@@ -155,11 +156,9 @@ class _AddCostPageState extends State<AddCostPage> {
     bool hasAnyCost = _controllers.values.any((c) => c.text.isNotEmpty);
     if (!hasAnyCost) {
       final l10n = AppLocalizations.of(context)!;
-      Get.snackbar(
-        l10n.error,
+      AppToast.error(
         l10n.pleaseEnterCost,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+        title: l10n.error,
       );
       return;
     }
@@ -189,12 +188,9 @@ class _AddCostPageState extends State<AddCostPage> {
     // Show success message
     final l10n = AppLocalizations.of(context)!;
     Get.back(result: true);
-    Get.snackbar(
-      l10n.success,
+    AppToast.success(
       l10n.costShared,
-      backgroundColor: const Color(0xFFFF4458),
-      colorText: Colors.white,
-      duration: const Duration(seconds: 2),
+      title: l10n.success,
     );
   }
 

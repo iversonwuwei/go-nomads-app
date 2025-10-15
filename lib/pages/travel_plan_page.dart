@@ -5,6 +5,7 @@ import '../config/app_colors.dart';
 import '../controllers/city_detail_controller.dart';
 import '../generated/app_localizations.dart';
 import '../models/travel_plan_model.dart';
+import '../widgets/app_toast.dart';
 
 /// 旅行计划详情�?
 class TravelPlanPage extends StatefulWidget {
@@ -367,34 +368,27 @@ class _TravelPlanPageState extends State<TravelPlanPage>
               IconButton(
                 icon: const Icon(Icons.map_outlined),
                 onPressed: () {
-                  Get.snackbar(
-                    'Info',
+                  AppToast.info(
                     'Async with Map feature coming soon!',
-                    snackPosition: SnackPosition.BOTTOM,
-                    backgroundColor: const Color(0xFF3B82F6),
-                    colorText: Colors.white,
+                    title: 'Info',
                   );
                 },
               ),
               IconButton(
                 icon: const Icon(Icons.download_outlined),
                 onPressed: () {
-                  Get.snackbar(
-                    'Download',
+                  AppToast.success(
                     'Plan saved to your profile!',
-                    snackPosition: SnackPosition.BOTTOM,
-                    backgroundColor: const Color(0xFF10B981),
-                    colorText: Colors.white,
+                    title: 'Download',
                   );
                 },
               ),
               IconButton(
                 icon: const Icon(Icons.share_outlined),
                 onPressed: () {
-                  Get.snackbar(
-                    'Share',
+                  AppToast.info(
                     'Sharing your travel plan...',
-                    snackPosition: SnackPosition.BOTTOM,
+                    title: 'Share',
                   );
                 },
               ),

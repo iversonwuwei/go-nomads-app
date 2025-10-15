@@ -4,11 +4,14 @@ import 'package:get/get.dart';
 import '../config/app_colors.dart';
 import '../controllers/data_service_controller.dart';
 import '../generated/app_localizations.dart';
+import '../models/meetup_model.dart';
+import '../widgets/app_toast.dart';
 import '../widgets/copyright_widget.dart';
 import '../widgets/skeleton_loader.dart';
 import 'city_detail_page.dart';
 import 'city_list_page.dart';
 import 'coworking_home_page.dart';
+import 'meetup_detail_page.dart';
 
 class DataServicePage extends StatefulWidget {
   final bool scrollToCities;
@@ -765,11 +768,9 @@ class _DataServicePageState extends State<DataServicePage> {
                         onPressed: controller.isLoggedIn.value
                             ? () => Get.toNamed('/create-meetup')
                             : () {
-                                Get.snackbar(
-                                  '🔐 Login Required',
+                                AppToast.warning(
                                   'Please login to create a meetup',
-                                  snackPosition: SnackPosition.BOTTOM,
-                                  duration: const Duration(seconds: 2),
+                                  title: 'Login Required',
                                 );
                               },
                         icon: const Icon(Icons.add, size: 18),
@@ -1940,32 +1941,34 @@ class _MeetupCard extends StatelessWidget {
     final maxAttendees = meetup['maxAttendees'] as int;
     final spotsLeft = maxAttendees - attendees;
 
-    return GestureDetector(
-      onTap: () {
-        // 点击跳转到 Meetups 列表页
-        Get.toNamed('/meetups-list');
-      },
-      child: Container(
-        width: isMobile ? 280 : 320,
-        margin: const EdgeInsets.only(right: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.borderLight, width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 图片和类型标签
-            Stack(
+    return Container(
+      width: isMobile ? 280 : 320,
+      margin: const EdgeInsets.only(right: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.borderLight, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 图片和类型标签 - 可点击跳转到详情页
+          GestureDetector(
+            onTap: () {
+              // 将 Map 转换为 MeetupModel
+              final meetupModel = _convertToMeetupModel(meetup);
+              // 跳转到 meetup 详情页
+              Get.to(() => MeetupDetailPage(meetup: meetupModel));
+            },
+            child: Stack(
               children: [
                 ClipRRect(
                   borderRadius:
@@ -1999,266 +2002,266 @@ class _MeetupCard extends StatelessWidget {
                 ),
               ],
             ),
+          ),
 
-            // 内容
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 城市和日期
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.location_on_outlined,
-                        size: 14,
-                        color: AppColors.textSecondary,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        meetup['city'],
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      const Icon(
-                        Icons.calendar_today_outlined,
-                        size: 14,
-                        color: AppColors.textSecondary,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        _formatDate(date),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 6),
-
-                  // 标题
-                  Text(
-                    meetup['title'],
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+          // 内容
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 城市和日期
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.location_on_outlined,
+                      size: 14,
+                      color: AppColors.textSecondary,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                    const SizedBox(width: 4),
+                    Text(
+                      meetup['city'],
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Icon(
+                      Icons.calendar_today_outlined,
+                      size: 14,
+                      color: AppColors.textSecondary,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      _formatDate(date),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 6),
+
+                // 标题
+                Text(
+                  meetup['title'],
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
 
-                  const SizedBox(height: 6),
+                const SizedBox(height: 6),
 
-                  // 参加人数
-                  Row(
-                    children: [
-                      // 头像堆叠
-                      SizedBox(
-                        height: 24,
-                        width: 60,
-                        child: Stack(
-                          children: List.generate(
-                            3,
-                            (index) => Positioned(
-                              left: index * 15.0,
+                // 参加人数
+                Row(
+                  children: [
+                    // 头像堆叠
+                    SizedBox(
+                      height: 24,
+                      width: 60,
+                      child: Stack(
+                        children: List.generate(
+                          3,
+                          (index) => Positioned(
+                            left: index * 15.0,
+                            child: CircleAvatar(
+                              radius: 12,
+                              backgroundColor: Colors.white,
                               child: CircleAvatar(
-                                radius: 12,
-                                backgroundColor: Colors.white,
-                                child: CircleAvatar(
-                                  radius: 11,
-                                  backgroundImage: NetworkImage(
-                                    'https://i.pravatar.cc/150?img=${index + 10}',
-                                  ),
+                                radius: 11,
+                                backgroundImage: NetworkImage(
+                                  'https://i.pravatar.cc/150?img=${index + 10}',
                                 ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '$attendees going',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const Spacer(),
+                    if (spotsLeft > 0)
                       Text(
-                        '$attendees going',
+                        '$spotsLeft spots left',
                         style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                          fontWeight: FontWeight.w500,
+                          fontSize: 11,
+                          color: Color(0xFFFF4458),
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const Spacer(),
-                      if (spotsLeft > 0)
-                        Text(
-                          '$spotsLeft spots left',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: Color(0xFFFF4458),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                    ],
-                  ),
+                  ],
+                ),
 
-                  const SizedBox(height: 24),
+                const SizedBox(height: 24),
 
-                  // RSVP 按钮或 Going/Join Chat 按钮
-                  Obx(() {
-                    final isRSVPed =
-                        controller.rsvpedMeetups.contains(meetup['id']);
+                // RSVP 按钮或 Going/Join Chat 按钮
+                Obx(() {
+                  final isRSVPed =
+                      controller.rsvpedMeetups.contains(meetup['id']);
 
-                    // 如果已 RSVP，显示两个按钮
-                    if (isRSVPed) {
-                      return Row(
-                        children: [
-                          // Going 按钮
-                          Expanded(
-                            child: SizedBox(
-                              height: 36,
-                              child: ElevatedButton(
-                                onPressed: () =>
-                                    controller.toggleRSVP(meetup['id']),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: const Color(0xFFFF4458),
-                                  elevation: 0,
-                                  side: const BorderSide(
-                                    color: Color(0xFFFF4458),
-                                    width: 1.5,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 8),
+                  // 如果已 RSVP，显示两个按钮
+                  if (isRSVPed) {
+                    return Row(
+                      children: [
+                        // Going 按钮
+                        Expanded(
+                          child: SizedBox(
+                            height: 36,
+                            child: ElevatedButton(
+                              onPressed: () =>
+                                  controller.toggleRSVP(meetup['id']),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: const Color(0xFFFF4458),
+                                elevation: 0,
+                                side: const BorderSide(
+                                  color: Color(0xFFFF4458),
+                                  width: 1.5,
                                 ),
-                                child: const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.check_circle_outline,
-                                      size: 16,
-                                    ),
-                                    SizedBox(width: 4),
-                                    Flexible(
-                                      child: Text(
-                                        'Going',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                              ),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.check_circle_outline,
+                                    size: 16,
+                                  ),
+                                  SizedBox(width: 4),
+                                  Flexible(
+                                    child: Text(
+                                      'Going',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
                                       ),
+                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          // Join Chat 按钮
-                          Expanded(
-                            child: SizedBox(
-                              height: 36,
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  // 跳转到聊天页面并加入该城市的聊天室
-                                  Get.toNamed(
-                                    '/city-chat',
-                                    arguments: {
-                                      'city': meetup['city'],
-                                      'country': meetup['country'],
-                                      'meetupId': meetup['id'],
-                                      'meetupTitle': meetup['title'],
-                                    },
-                                  );
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFFF4458),
-                                  foregroundColor: Colors.white,
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 8),
+                        ),
+                        const SizedBox(width: 8),
+                        // Join Chat 按钮
+                        Expanded(
+                          child: SizedBox(
+                            height: 36,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                // 跳转到聊天页面并加入该城市的聊天室
+                                Get.toNamed(
+                                  '/city-chat',
+                                  arguments: {
+                                    'city': meetup['city'],
+                                    'country': meetup['country'],
+                                    'meetupId': meetup['id'],
+                                    'meetupTitle': meetup['title'],
+                                  },
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFFF4458),
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(6),
                                 ),
-                                child: const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.chat_bubble_outline,
-                                      size: 16,
-                                    ),
-                                    SizedBox(width: 4),
-                                    Flexible(
-                                      child: Text(
-                                        'Join Chat',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
                               ),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.chat_bubble_outline,
+                                    size: 16,
+                                  ),
+                                  SizedBox(width: 4),
+                                  Flexible(
+                                    child: Text(
+                                      'Join Chat',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+
+                  // 如果未 RSVP，显示单个 RSVP 按钮
+                  return SizedBox(
+                    width: double.infinity,
+                    height: 36,
+                    child: ElevatedButton(
+                      onPressed: () => controller.toggleRSVP(meetup['id']),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFF4458),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.add_circle_outline,
+                            size: 16,
+                          ),
+                          SizedBox(width: 6),
+                          Text(
+                            'RSVP',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
-                      );
-                    }
-
-                    // 如果未 RSVP，显示单个 RSVP 按钮
-                    return SizedBox(
-                      width: double.infinity,
-                      height: 36,
-                      child: ElevatedButton(
-                        onPressed: () => controller.toggleRSVP(meetup['id']),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFFF4458),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                        ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.add_circle_outline,
-                              size: 16,
-                            ),
-                            SizedBox(width: 6),
-                            Text(
-                              'RSVP',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
                       ),
-                    );
-                  }),
-                ],
-              ),
+                    ),
+                  );
+                }),
+              ],
             ),
-          ],
-        ),
-      ), // GestureDetector child 的结束
-    ); // GestureDetector 的结束
+          ),
+        ],
+      ),
+    );
   }
 
   Color _getTypeColor(String type) {
@@ -2296,5 +2299,42 @@ class _MeetupCard extends StatelessWidget {
       'Dec'
     ];
     return '${months[date.month - 1]} ${date.day}';
+  }
+
+  // 将 Map 转换为 MeetupModel
+  MeetupModel _convertToMeetupModel(Map<String, dynamic> meetup) {
+    final date = meetup['date'] as DateTime;
+    final time = meetup['time'] as String;
+
+    // 合并日期和时间
+    final timeParts = time.split(':');
+    final dateTime = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      int.parse(timeParts[0]),
+      int.parse(timeParts[1]),
+    );
+
+    return MeetupModel(
+      id: meetup['id'].toString(),
+      title: meetup['title'] as String,
+      type: meetup['type'] as String,
+      description: meetup['description'] as String,
+      city: meetup['city'] as String,
+      country: meetup['country'] as String,
+      venue: meetup['venue'] as String,
+      venueAddress: meetup['venue'] as String, // 使用 venue 作为地址
+      dateTime: dateTime,
+      maxAttendees: meetup['maxAttendees'] as int,
+      currentAttendees: meetup['attendees'] as int,
+      organizerId: meetup['id'].toString(),
+      organizerName: meetup['organizer'] as String,
+      organizerAvatar: meetup['organizerAvatar'] as String,
+      images: [meetup['image'] as String],
+      attendeeIds: [],
+      isJoined: controller.rsvpedMeetups.contains(meetup['id']),
+      createdAt: DateTime.now(),
+    );
   }
 }

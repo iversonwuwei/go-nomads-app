@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../generated/app_localizations.dart';
+import '../widgets/app_toast.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -37,26 +38,18 @@ class _RegisterPageState extends State<RegisterPage> {
     if (_formKey.currentState!.validate()) {
       if (!_agreeToTerms) {
         final l10n = AppLocalizations.of(context)!;
-        Get.snackbar(
-          '⚠️ ${l10n.termsRequired}',
+        AppToast.warning(
           l10n.pleaseAgreeToTerms,
-          backgroundColor: Colors.orange,
-          colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM,
-          margin: const EdgeInsets.all(16),
+          title: l10n.termsRequired,
         );
         return;
       }
 
       // TODO: 实际的注册逻辑
       final l10n = AppLocalizations.of(context)!;
-      Get.snackbar(
-        '✅ ${l10n.success}',
+      AppToast.success(
         l10n.welcomeToCommunity,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+        title: l10n.success,
       );
 
       // 注册成功后跳转
@@ -401,10 +394,9 @@ class _RegisterPageState extends State<RegisterPage> {
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: () {
-                            Get.snackbar(
-                              l10n.googleSignIn,
+                            AppToast.info(
                               l10n.googleAuthComingSoon,
-                              snackPosition: SnackPosition.BOTTOM,
+                              title: l10n.googleSignIn,
                             );
                           },
                           style: OutlinedButton.styleFrom(
@@ -423,10 +415,9 @@ class _RegisterPageState extends State<RegisterPage> {
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: () {
-                            Get.snackbar(
-                              l10n.appleSignIn,
+                            AppToast.info(
                               l10n.appleAuthComingSoon,
-                              snackPosition: SnackPosition.BOTTOM,
+                              title: l10n.appleSignIn,
                             );
                           },
                           style: OutlinedButton.styleFrom(

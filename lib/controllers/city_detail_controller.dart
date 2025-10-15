@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../models/city_detail_model.dart';
 import '../models/travel_plan_model.dart';
+import '../widgets/app_toast.dart';
 
 /// 城市详情页控制器
 class CityDetailController extends GetxController {
@@ -493,24 +493,16 @@ class CityDetailController extends GetxController {
       generatedPlan.value = plan;
 
       // 显示成功消息
-      Get.snackbar(
-        '✅ Success',
+      AppToast.success(
         'Travel plan generated successfully!',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFF10B981),
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
+        title: 'Success',
       );
 
       return plan;
     } catch (e) {
-      Get.snackbar(
-        '❌ Error',
+      AppToast.error(
         'Failed to generate travel plan: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
+        title: 'Error',
       );
       return null;
     } finally {

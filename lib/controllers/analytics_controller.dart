@@ -3,6 +3,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../widgets/app_toast.dart';
+
 class AnalyticsController extends GetxController {
   // 响应式数据
   final RxBool isLoading = true.obs;
@@ -150,13 +152,9 @@ class AnalyticsController extends GetxController {
     Future.delayed(const Duration(milliseconds: 800), () {
       _generateMockData();
       isLoading.value = false;
-      Get.snackbar(
-        '刷新成功',
+      AppToast.success(
         '数据已更新到最新状态',
-        backgroundColor: Colors.green.withValues(alpha: 0.8),
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
-        snackPosition: SnackPosition.TOP,
+        title: '刷新成功',
       );
     });
   }

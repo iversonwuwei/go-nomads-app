@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import '../config/app_colors.dart';
 import '../controllers/auth_controller.dart';
 import '../generated/app_localizations.dart';
+import '../widgets/app_toast.dart';
 
 class LoginPageOptimized extends StatelessWidget {
   const LoginPageOptimized({super.key});
@@ -126,7 +127,7 @@ class LoginPageOptimized extends StatelessWidget {
             Center(
               child: GestureDetector(
                 onTap: () {
-                  Get.snackbar('提示', '立即注册功能开发中');
+                  AppToast.info('立即注册功能开发中', title: '提示');
                 },
                 child: Text(
                   'CREATE ACCOUNT',
@@ -324,7 +325,7 @@ class LoginPageOptimized extends StatelessWidget {
           Center(
             child: TextButton(
               onPressed: () {
-                Get.snackbar('提示', '试用申请功能开发中');
+                AppToast.info('试用申请功能开发中', title: '提示');
               },
               child: Text(
                 '还没用过吗？申请试用',
@@ -362,7 +363,7 @@ class LoginPageOptimized extends StatelessWidget {
           Center(
             child: GestureDetector(
               onTap: () {
-                Get.snackbar('提示', '立即注册功能开发中');
+                AppToast.info('立即注册功能开发中', title: '提示');
               },
               child: RichText(
                 text: TextSpan(
@@ -581,7 +582,7 @@ class LoginPageOptimized extends StatelessWidget {
               if (controller.loginType.value == LoginType.phonePassword)
                 GestureDetector(
                   onTap: () {
-                    Get.snackbar('提示', '忘记密码功能开发中');
+                    AppToast.info('忘记密码功能开发中', title: '提示');
                   },
                   child: Text(
                     '忘记密码?',

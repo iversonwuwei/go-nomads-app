@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import '../config/app_colors.dart';
 import '../controllers/data_service_controller.dart';
 import '../generated/app_localizations.dart';
+import '../widgets/app_toast.dart';
 import 'venue_map_picker_page.dart';
 
 class CreateMeetupPage extends StatefulWidget {
@@ -134,32 +135,23 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
             final remaining = 10 - _selectedImages.length;
             if (remaining > 0) {
               _selectedImages.addAll(images.take(remaining));
-              Get.snackbar(
-                'Notice',
+              AppToast.warning(
                 'Maximum 10 images allowed. Only first $remaining images were added.',
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: Colors.orange,
-                colorText: Colors.white,
+                title: 'Notice',
               );
             } else {
-              Get.snackbar(
-                'Notice',
+              AppToast.warning(
                 'Maximum 10 images already selected',
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: Colors.orange,
-                colorText: Colors.white,
+                title: 'Notice',
               );
             }
           }
         });
       }
     } catch (e) {
-      Get.snackbar(
-        'Error',
+      AppToast.error(
         'Failed to pick images: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+        title: 'Error',
       );
     }
   }
@@ -179,23 +171,17 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
           if (_selectedImages.length < 10) {
             _selectedImages.add(image);
           } else {
-            Get.snackbar(
-              'Notice',
+            AppToast.warning(
               'Maximum 10 images allowed',
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: Colors.orange,
-              colorText: Colors.white,
+              title: 'Notice',
             );
           }
         });
       }
     } catch (e) {
-      Get.snackbar(
-        'Error',
+      AppToast.error(
         'Failed to take photo: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+        title: 'Error',
       );
     }
   }
@@ -322,12 +308,9 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
       if (_selectedCity == null ||
           _selectedDate == null ||
           _selectedTime == null) {
-        Get.snackbar(
-          'Error',
+        AppToast.error(
           'Please fill in all required fields',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
+          title: 'Error',
         );
         return;
       }
@@ -351,13 +334,9 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
       Get.back();
 
       // 显示成功消息
-      Get.snackbar(
-        'Success',
+      AppToast.success(
         'Meetup created successfully!',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFFFF4458),
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
+        title: 'Success',
       );
 
       // 询问是否添加到系统日历
@@ -506,35 +485,20 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
       final result = await Add2Calendar.addEvent2Cal(event);
 
       if (result) {
-        Get.snackbar(
-          '✅ Success',
+        AppToast.success(
           'Event added to calendar successfully!',
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM,
-          margin: const EdgeInsets.all(16),
-          duration: const Duration(seconds: 2),
+          title: 'Success',
         );
       } else {
-        Get.snackbar(
-          '⚠️ Notice',
+        AppToast.warning(
           'Calendar operation was cancelled',
-          backgroundColor: Colors.orange,
-          colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM,
-          margin: const EdgeInsets.all(16),
-          duration: const Duration(seconds: 2),
+          title: 'Notice',
         );
       }
     } catch (e) {
-      Get.snackbar(
-        '❌ Error',
+      AppToast.error(
         'Failed to add event to calendar: ${e.toString()}',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 3),
+        title: 'Error',
       );
       // Calendar error logged
     }

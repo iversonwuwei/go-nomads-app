@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../widgets/app_toast.dart';
+
 enum LoginType {
   phonePassword,
   phoneCode,
@@ -96,12 +98,9 @@ class AuthController extends GetxController {
     codeCountdown.value = 60;
 
     // 模拟发送验证码
-    Get.snackbar(
-      '验证码已发送',
+    AppToast.success(
       '验证码已发送至 ${phoneController.text}',
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: Colors.green[100],
-      colorText: Colors.green[800],
+      title: '验证码已发送',
     );
 
     // 倒计时
@@ -117,11 +116,11 @@ class AuthController extends GetxController {
   bool _validatePhone() {
     final phone = phoneController.text.trim();
     if (phone.isEmpty) {
-      Get.snackbar('错误', '请输入手机号');
+      AppToast.error('请输入手机号', title: '错误');
       return false;
     }
     if (!RegExp(r'^1[3-9]\d{9}$').hasMatch(phone)) {
-      Get.snackbar('错误', '请输入正确的手机号');
+      AppToast.error('请输入正确的手机号', title: '错误');
       return false;
     }
     return true;
@@ -131,11 +130,11 @@ class AuthController extends GetxController {
   bool _validatePassword() {
     final password = passwordController.text;
     if (password.isEmpty) {
-      Get.snackbar('错误', '请输入密码');
+      AppToast.error('请输入密码', title: '错误');
       return false;
     }
     if (password.length < 6) {
-      Get.snackbar('错误', '密码长度不能少于6位');
+      AppToast.error('密码长度不能少于6位', title: '错误');
       return false;
     }
     return true;
@@ -145,11 +144,11 @@ class AuthController extends GetxController {
   bool _validateCode() {
     final code = codeController.text.trim();
     if (code.isEmpty) {
-      Get.snackbar('错误', '请输入验证码');
+      AppToast.error('请输入验证码', title: '错误');
       return false;
     }
     if (code.length != 6) {
-      Get.snackbar('错误', '请输入6位验证码');
+      AppToast.error('请输入6位验证码', title: '错误');
       return false;
     }
     return true;
@@ -180,18 +179,15 @@ class AuthController extends GetxController {
       // 模拟登录请求
       await Future.delayed(const Duration(seconds: 2));
 
-      Get.snackbar(
-        '登录成功',
+      AppToast.success(
         '欢迎回来！',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.green[100],
-        colorText: Colors.green[800],
+        title: '登录成功',
       );
 
       // 跳转到主页
       Get.offAllNamed('/');
     } catch (e) {
-      Get.snackbar('登录失败', '请检查网络连接后重试');
+      AppToast.error('请检查网络连接后重试', title: '登录失败');
     } finally {
       isLoading.value = false;
     }
@@ -206,12 +202,12 @@ class AuthController extends GetxController {
     }
 
     if (passwordController.text != confirmPasswordController.text) {
-      Get.snackbar('错误', '两次输入的密码不一致');
+      AppToast.error('两次输入的密码不一致', title: '错误');
       return;
     }
 
     if (!agreeToTerms.value) {
-      Get.snackbar('错误', '请先同意用户协议和隐私政策');
+      AppToast.error('请先同意用户协议和隐私政策', title: '错误');
       return;
     }
 
@@ -221,18 +217,15 @@ class AuthController extends GetxController {
       // 模拟注册请求
       await Future.delayed(const Duration(seconds: 2));
 
-      Get.snackbar(
-        '注册成功',
+      AppToast.success(
         '账号注册成功，欢迎加入！',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.green[100],
-        colorText: Colors.green[800],
+        title: '注册成功',
       );
 
       // 跳转到主页
       Get.offAllNamed('/');
     } catch (e) {
-      Get.snackbar('注册失败', '请检查网络连接后重试');
+      AppToast.error('请检查网络连接后重试', title: '注册失败');
     } finally {
       isLoading.value = false;
     }
@@ -247,7 +240,7 @@ class AuthController extends GetxController {
     }
 
     if (passwordController.text != confirmPasswordController.text) {
-      Get.snackbar('错误', '两次输入的密码不一致');
+      AppToast.error('两次输入的密码不一致', title: '错误');
       return;
     }
 
@@ -257,18 +250,15 @@ class AuthController extends GetxController {
       // 模拟重置密码请求
       await Future.delayed(const Duration(seconds: 2));
 
-      Get.snackbar(
-        '密码重置成功',
+      AppToast.success(
         '密码已重置，请使用新密码登录',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.green[100],
-        colorText: Colors.green[800],
+        title: '密码重置成功',
       );
 
       // 切换到登录模式
       switchAuthMode(AuthMode.login);
     } catch (e) {
-      Get.snackbar('重置失败', '请检查网络连接后重试');
+      AppToast.error('请检查网络连接后重试', title: '重置失败');
     } finally {
       isLoading.value = false;
     }
@@ -296,18 +286,15 @@ class AuthController extends GetxController {
       // 模拟第三方登录
       await Future.delayed(const Duration(seconds: 2));
 
-      Get.snackbar(
-        '登录成功',
+      AppToast.success(
         '通过$platform登录成功！',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.green[100],
-        colorText: Colors.green[800],
+        title: '登录成功',
       );
 
       // 跳转到主页
       Get.offAllNamed('/');
     } catch (e) {
-      Get.snackbar('登录失败', '$platform登录失败，请重试');
+      AppToast.error('$platform登录失败，请重试', title: '登录失败');
     } finally {
       isLoading.value = false;
     }

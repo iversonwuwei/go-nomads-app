@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import '../controllers/locale_controller.dart';
 import '../generated/app_localizations.dart';
+import '../widgets/app_toast.dart';
 
 class LanguageSettingsPage extends StatelessWidget {
   const LanguageSettingsPage({super.key});
@@ -28,11 +29,9 @@ class LanguageSettingsPage extends StatelessWidget {
                 isSelected: localeController.locale.value.languageCode == 'zh',
                 onTap: () {
                   localeController.changeLocale('zh');
-                  Get.snackbar(
-                    '语言已切换',
+                  AppToast.success(
                     '当前语言：简体中文',
-                    snackPosition: SnackPosition.BOTTOM,
-                    duration: const Duration(seconds: 2),
+                    title: '语言已切换',
                   );
                 },
               ),
@@ -45,11 +44,9 @@ class LanguageSettingsPage extends StatelessWidget {
                 isSelected: localeController.locale.value.languageCode == 'en',
                 onTap: () {
                   localeController.changeLocale('en');
-                  Get.snackbar(
-                    'Language Changed',
+                  AppToast.success(
                     'Current Language: English',
-                    snackPosition: SnackPosition.BOTTOM,
-                    duration: const Duration(seconds: 2),
+                    title: 'Language Changed',
                   );
                 },
               ),

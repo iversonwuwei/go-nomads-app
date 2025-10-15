@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../config/app_colors.dart';
 import '../generated/app_localizations.dart';
 import '../routes/app_routes.dart';
+import '../widgets/app_toast.dart';
 
 /// 城市对比页面 - 并排比较多个城市
 class CityComparePage extends StatefulWidget {
@@ -92,13 +93,9 @@ class _CityComparePageState extends State<CityComparePage> {
             icon: const Icon(Icons.add, color: Colors.white),
             onPressed: _selectedCities.length < 3
                 ? () {
-                    Get.snackbar(
-                      'Add City',
+                    AppToast.info(
                       'Select cities from the explore page',
-                      backgroundColor: Colors.orange.withValues(alpha: 0.8),
-                      colorText: Colors.white,
-                      snackPosition: SnackPosition.BOTTOM,
-                      margin: const EdgeInsets.all(16),
+                      title: 'Add City',
                     );
                   }
                 : null,

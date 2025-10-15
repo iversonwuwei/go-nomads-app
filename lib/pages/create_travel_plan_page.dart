@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../config/app_colors.dart';
 import '../controllers/city_detail_controller.dart';
 import '../generated/app_localizations.dart';
+import '../widgets/app_toast.dart';
 import 'amap_native_picker_page.dart';
 import 'travel_plan_page.dart';
 
@@ -252,12 +253,9 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                                     });
                                   }
                                 } catch (e) {
-                                  Get.snackbar(
-                                    l10n.error,
+                                  AppToast.error(
                                     '${l10n.failedToOpenMap}: $e',
-                                    backgroundColor:
-                                        Colors.red.withValues(alpha: 0.9),
-                                    colorText: Colors.white,
+                                    title: l10n.error,
                                   );
                                 }
                               },

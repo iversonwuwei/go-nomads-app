@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../config/app_colors.dart';
 import '../generated/app_localizations.dart';
 import '../services/amap_native_service.dart';
+import '../widgets/app_toast.dart';
 
 /// 高德地图位置选择器页面（原生实现�?
 ///
@@ -73,12 +74,9 @@ class _AmapNativePickerPageState extends State<AmapNativePickerPage> {
       print('❌异常类型: ${e.runtimeType}');
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        Get.snackbar(
-          l10n.error,
+        AppToast.error(
           '${l10n.failedToOpenMapPicker}: $e',
-          backgroundColor: Colors.red.withValues(alpha: 0.9),
-          colorText: Colors.white,
-          duration: const Duration(seconds: 5),
+          title: l10n.error,
         );
         Get.back();
       }

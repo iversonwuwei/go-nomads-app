@@ -1,16 +1,17 @@
-import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+
+import '../widgets/app_toast.dart';
 
 /// 位置服务类
 /// 提供位置权限管理和位置获取功能
 class LocationService extends GetxService {
   // 当前位置
   final Rx<Position?> currentPosition = Rx<Position?>(null);
-  
+
   // 位置权限状态
   final RxBool hasPermission = false.obs;
-  
+
   // 是否正在获取位置
   final RxBool isLoading = false.obs;
 
@@ -28,11 +29,9 @@ class LocationService extends GetxService {
     // 检查位置服务是否启用
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      Get.snackbar(
-        '位置服务未启用',
+      AppToast.warning(
         '请在设置中启用位置服务',
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 3),
+        title: '位置服务未启用',
       );
       hasPermission.value = false;
       return false;
@@ -43,11 +42,9 @@ class LocationService extends GetxService {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        Get.snackbar(
-          '位置权限被拒绝',
+        AppToast.warning(
           '请授予位置权限以使用此功能',
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 3),
+          title: '位置权限被拒绝',
         );
         hasPermission.value = false;
         return false;
@@ -55,15 +52,9 @@ class LocationService extends GetxService {
     }
 
     if (permission == LocationPermission.deniedForever) {
-      Get.snackbar(
-        '位置权限被永久拒绝',
+      AppToast.warning(
         '请在设置中手动开启位置权限',
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 3),
-        mainButton: TextButton(
-          onPressed: () => openAppSettings(),
-          child: const Text('打开设置'),
-        ),
+        title: '位置权限被永久拒绝',
       );
       hasPermission.value = false;
       return false;
@@ -92,15 +83,13 @@ class LocationService extends GetxService {
 
       currentPosition.value = position;
       isLoading.value = false;
-      
+
       return position;
     } catch (e) {
       isLoading.value = false;
-      Get.snackbar(
-        '获取位置失败',
+      AppToast.error(
         '无法获取您的位置信息: $e',
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 3),
+        title: '获取位置失败',
       );
       return null;
     }
@@ -171,7 +160,7 @@ class LocationService extends GetxService {
     if (currentPosition.value == null) {
       return '位置未知';
     }
-    
+
     final pos = currentPosition.value!;
     return '纬度: ${pos.latitude.toStringAsFixed(6)}, 经度: ${pos.longitude.toStringAsFixed(6)}';
   }

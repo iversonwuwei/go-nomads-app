@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../config/app_colors.dart';
 import '../models/meetup_model.dart';
+import '../widgets/app_toast.dart';
 
 /// Meetup 详情页面
 class MeetupDetailPage extends StatefulWidget {
@@ -595,28 +596,24 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     );
     _meetup.value = updated;
 
-    Get.snackbar(
-      updated.isJoined ? '✅ Joined!' : '👋 Left meetup',
-      updated.isJoined
-          ? 'You have successfully joined this meetup'
-          : 'You left this meetup',
-      backgroundColor:
-          updated.isJoined ? Colors.green : AppColors.textSecondary,
-      colorText: Colors.white,
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 2),
-    );
+    if (updated.isJoined) {
+      AppToast.success(
+        'You have successfully joined this meetup',
+        title: 'Joined!',
+      );
+    } else {
+      AppToast.info(
+        'You left this meetup',
+        title: 'Left meetup',
+      );
+    }
   }
 
   void _openChat() {
     if (!_meetup.value.isJoined) {
-      Get.snackbar(
-        '⚠️ Join Required',
+      AppToast.warning(
         'You need to join this meetup before you can access the group chat',
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 3),
+        title: 'Join Required',
       );
       return;
     }
@@ -634,22 +631,13 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
   }
 
   void _shareMeetup() {
-    Get.snackbar(
-      '🔗 Share',
-      'Share meetup functionality coming soon!',
-      backgroundColor: AppColors.textSecondary,
-      colorText: Colors.white,
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    AppToast.info('Share meetup functionality coming soon!', title: 'Share');
   }
 
   void _contactOrganizer() {
-    Get.snackbar(
-      '💬 Message',
+    AppToast.info(
       'Opening chat with ${_meetup.value.organizerName}...',
-      backgroundColor: Colors.blue,
-      colorText: Colors.white,
-      snackPosition: SnackPosition.BOTTOM,
+      title: 'Message',
     );
   }
 

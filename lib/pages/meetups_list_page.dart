@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../config/app_colors.dart';
 import '../controllers/location_controller.dart';
 import '../models/meetup_model.dart';
+import '../widgets/app_toast.dart';
 import 'meetup_detail_page.dart';
 
 /// Meetups 列表页面
@@ -734,27 +735,38 @@ class _MeetupsListPageState extends State<MeetupsListPage>
       );
       _meetups[index] = updated;
 
-      Get.snackbar(
-        updated.isJoined ? '✅ Joined!' : '👋 Left meetup',
-        updated.isJoined
-            ? 'You have joined ${meetup.title}'
-            : 'You left ${meetup.title}',
-        backgroundColor:
-            updated.isJoined ? Colors.green : AppColors.textSecondary,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 2),
-      );
+      if (updated.isJoined) {
+        AppToast.success(
+          'You have joined ${meetup.title}',
+          title: 'Joined!',
+        );
+      } else {
+        AppToast.info(
+          'You left ${meetup.title}',
+          title: 'Left meetup',
+        );
+      }
     }
   }
 
   void _openChat(MeetupModel meetup) {
-    Get.snackbar(
-      '💬 Chat',
-      'Opening chat for ${meetup.title}',
-      backgroundColor: Colors.blue,
-      colorText: Colors.white,
-      snackPosition: SnackPosition.BOTTOM,
+    if (!meetup.isJoined) {
+      AppToast.warning(
+        'You need to join this meetup before you can access the group chat',
+        title: 'Join Required',
+      );
+      return;
+    }
+
+    // 跳转到群聊页面
+    Get.toNamed(
+      '/city-chat',
+      arguments: {
+        'city': meetup.title,
+        'country': '${meetup.type} Meetup',
+        'meetupId': meetup.id,
+        'isMeetupChat': true,
+      },
     );
   }
 

@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 
 import '../models/user_model.dart';
+import '../widgets/app_toast.dart';
 
 class UserProfileController extends GetxController {
   final Rx<UserModel?> currentUser = Rx<UserModel?>(null);
@@ -31,7 +32,8 @@ class UserProfileController extends GetxController {
       id: 'user_001',
       name: 'Alex Chen',
       username: '@alexchen',
-      bio: '🌍 Digital nomad & full-stack developer\n💻 Building products remotely\n📍 Currently exploring Southeast Asia',
+      bio:
+          '🌍 Digital nomad & full-stack developer\n💻 Building products remotely\n📍 Currently exploring Southeast Asia',
       avatarUrl: 'https://i.pravatar.cc/300?img=33',
       currentCity: 'Chiang Mai',
       currentCountry: 'Thailand',
@@ -107,7 +109,8 @@ class UserProfileController extends GetxController {
           country: 'Indonesia',
           startDate: DateTime(2024, 8, 15),
           endDate: DateTime(2024, 10, 31),
-          review: 'Amazing coworking spaces and digital nomad community. Canggu is perfect for remote work!',
+          review:
+              'Amazing coworking spaces and digital nomad community. Canggu is perfect for remote work!',
           rating: 4.9,
         ),
         TravelHistory(
@@ -115,7 +118,8 @@ class UserProfileController extends GetxController {
           country: 'Portugal',
           startDate: DateTime(2024, 5, 1),
           endDate: DateTime(2024, 8, 14),
-          review: 'Beautiful city with great weather. Fast internet and affordable living costs.',
+          review:
+              'Beautiful city with great weather. Fast internet and affordable living costs.',
           rating: 4.7,
         ),
         TravelHistory(
@@ -123,7 +127,8 @@ class UserProfileController extends GetxController {
           country: 'Mexico',
           startDate: DateTime(2024, 2, 1),
           endDate: DateTime(2024, 4, 30),
-          review: 'Incredible food scene and vibrant culture. Roma Norte is ideal for nomads.',
+          review:
+              'Incredible food scene and vibrant culture. Roma Norte is ideal for nomads.',
           rating: 4.6,
         ),
         TravelHistory(
@@ -131,7 +136,8 @@ class UserProfileController extends GetxController {
           country: 'Japan',
           startDate: DateTime(2023, 11, 1),
           endDate: DateTime(2024, 1, 31),
-          review: 'Super fast internet everywhere. Expensive but worth it for the experience.',
+          review:
+              'Super fast internet everywhere. Expensive but worth it for the experience.',
           rating: 4.5,
         ),
       ],
@@ -149,17 +155,16 @@ class UserProfileController extends GetxController {
   void updateProfile(UserModel updatedUser) {
     currentUser.value = updatedUser;
     isEditMode.value = false;
-    Get.snackbar(
-      'Success',
+    AppToast.success(
       'Profile updated successfully',
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 2),
+      title: 'Success',
     );
   }
 
   // 添加技能
   void addSkill(String skill) {
-    if (currentUser.value != null && !currentUser.value!.skills.contains(skill)) {
+    if (currentUser.value != null &&
+        !currentUser.value!.skills.contains(skill)) {
       final updatedSkills = [...currentUser.value!.skills, skill];
       currentUser.value = UserModel(
         id: currentUser.value!.id,
@@ -184,7 +189,8 @@ class UserProfileController extends GetxController {
   // 移除技能
   void removeSkill(String skill) {
     if (currentUser.value != null) {
-      final updatedSkills = currentUser.value!.skills.where((s) => s != skill).toList();
+      final updatedSkills =
+          currentUser.value!.skills.where((s) => s != skill).toList();
       currentUser.value = UserModel(
         id: currentUser.value!.id,
         name: currentUser.value!.name,

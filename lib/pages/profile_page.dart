@@ -6,6 +6,7 @@ import '../controllers/user_profile_controller.dart';
 import '../generated/app_localizations.dart';
 import '../models/user_model.dart';
 import '../routes/app_routes.dart';
+import '../widgets/app_toast.dart';
 import '../widgets/skeleton_loader.dart';
 import 'city_list_page.dart';
 
@@ -56,13 +57,9 @@ class ProfilePage extends StatelessWidget {
                   ),
                   onPressed: () {
                     controller.toggleEditMode();
-                    Get.snackbar(
-                      l10n.editProfile,
+                    AppToast.info(
                       l10n.profileEditingComingSoon,
-                      backgroundColor: Colors.orange.withValues(alpha: 0.8),
-                      colorText: Colors.white,
-                      snackPosition: SnackPosition.BOTTOM,
-                      margin: const EdgeInsets.all(16),
+                      title: l10n.editProfile,
                     );
                   },
                 ),
@@ -759,13 +756,9 @@ class ProfilePage extends StatelessWidget {
               const Spacer(),
               TextButton.icon(
                 onPressed: () {
-                  Get.snackbar(
-                    'Info',
+                  AppToast.info(
                     'Visit city details and click "AI Travel Plan" to generate new plans',
-                    snackPosition: SnackPosition.BOTTOM,
-                    backgroundColor:
-                        const Color(0xFF3B82F6).withValues(alpha: 0.1),
-                    colorText: const Color(0xFF3B82F6),
+                    title: 'Info',
                   );
                 },
                 icon: const Icon(Icons.add, size: 18),
