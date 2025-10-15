@@ -164,13 +164,18 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                           ),
                         ),
                         const SizedBox(height: 12),
-                        Text(
-                          'Generating your AI travel plan...',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w500,
-                          ),
+                        Builder(
+                          builder: (context) {
+                            final l10n = AppLocalizations.of(context)!;
+                            return Text(
+                              l10n.generatingAiPlan,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -263,10 +268,11 @@ class _TravelPlanPageState extends State<TravelPlanPage>
   }
 
   Widget _buildErrorPage() {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text('Travel Plan'),
+        title: Text(l10n.travelPlan),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_outlined),
           onPressed: () => Get.back(),
@@ -282,17 +288,17 @@ class _TravelPlanPageState extends State<TravelPlanPage>
               color: Colors.red,
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Failed to generate travel plan',
-              style: TextStyle(
+            Text(
+              l10n.failedToGeneratePlan,
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Please try again',
-              style: TextStyle(
+            Text(
+              l10n.pleaseTryAgain,
+              style: const TextStyle(
                 color: Colors.grey,
               ),
             ),
@@ -303,7 +309,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                 backgroundColor: const Color(0xFFFF4458),
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Go Back'),
+              child: Text(l10n.goBack),
             ),
           ],
         ),
@@ -312,6 +318,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
   }
 
   Widget _buildPlanContent(TravelPlan plan) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: CustomScrollView(
@@ -368,27 +375,30 @@ class _TravelPlanPageState extends State<TravelPlanPage>
               IconButton(
                 icon: const Icon(Icons.map_outlined),
                 onPressed: () {
+                  final l10n = AppLocalizations.of(context)!;
                   AppToast.info(
-                    'Async with Map feature coming soon!',
-                    title: 'Info',
+                    l10n.asyncWithMap,
+                    title: l10n.info,
                   );
                 },
               ),
               IconButton(
                 icon: const Icon(Icons.download_outlined),
                 onPressed: () {
+                  final l10n = AppLocalizations.of(context)!;
                   AppToast.success(
-                    'Plan saved to your profile!',
-                    title: 'Download',
+                    l10n.planSaved,
+                    title: l10n.download,
                   );
                 },
               ),
               IconButton(
                 icon: const Icon(Icons.share_outlined),
                 onPressed: () {
+                  final l10n = AppLocalizations.of(context)!;
                   AppToast.info(
-                    'Sharing your travel plan...',
-                    title: 'Share',
+                    l10n.sharingPlan,
+                    title: l10n.share,
                   );
                 },
               ),
@@ -429,25 +439,30 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'AI Generated Plan',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              'Personalized for you',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
+                      Expanded(
+                        child: Builder(
+                          builder: (context) {
+                            final l10n = AppLocalizations.of(context)!;
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  l10n.aiGeneratedPlan,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  l10n.personalizedForYou,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
                         ),
                       ),
                     ],
@@ -455,25 +470,30 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                   const SizedBox(height: 16),
                   const Divider(),
                   const SizedBox(height: 16),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        if (widget.departureLocation != null &&
-                            widget.departureLocation!.isNotEmpty) ...[
-                          _buildInfoChip(Icons.flight_takeoff,
-                              'From: ${widget.departureLocation}'),
-                          const SizedBox(width: 12),
-                        ],
-                        _buildInfoChip(
-                            Icons.calendar_today, '${plan.duration} Days'),
-                        const SizedBox(width: 12),
-                        _buildInfoChip(
-                            Icons.attach_money, plan.budget.toUpperCase()),
-                        const SizedBox(width: 12),
-                        _buildInfoChip(Icons.style, plan.travelStyle),
-                      ],
-                    ),
+                  Builder(
+                    builder: (context) {
+                      final l10n = AppLocalizations.of(context)!;
+                      return SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            if (widget.departureLocation != null &&
+                                widget.departureLocation!.isNotEmpty) ...[
+                              _buildInfoChip(Icons.flight_takeoff,
+                                  '${l10n.from}: ${widget.departureLocation}'),
+                              const SizedBox(width: 12),
+                            ],
+                            _buildInfoChip(Icons.calendar_today,
+                                '${plan.duration} ${l10n.days}'),
+                            const SizedBox(width: 12),
+                            _buildInfoChip(
+                                Icons.attach_money, plan.budget.toUpperCase()),
+                            const SizedBox(width: 12),
+                            _buildInfoChip(Icons.style, plan.travelStyle),
+                          ],
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -482,78 +502,114 @@ class _TravelPlanPageState extends State<TravelPlanPage>
 
           // Budget Breakdown
           SliverToBoxAdapter(
-            child: _buildSection(
-              'Budget Breakdown',
-              Icons.account_balance_wallet,
-              _buildBudgetCard(plan),
+            child: Builder(
+              builder: (context) {
+                final l10n = AppLocalizations.of(context)!;
+                return _buildSection(
+                  l10n.budgetBreakdown,
+                  Icons.account_balance_wallet,
+                  _buildBudgetCard(plan),
+                );
+              },
             ),
           ),
 
           // Transportation
           SliverToBoxAdapter(
-            child: _buildSection(
-              'Transportation',
-              Icons.flight,
-              _buildTransportationCard(plan),
+            child: Builder(
+              builder: (context) {
+                final l10n = AppLocalizations.of(context)!;
+                return _buildSection(
+                  l10n.transportation,
+                  Icons.flight,
+                  _buildTransportationCard(plan),
+                );
+              },
             ),
           ),
 
           // Accommodation
           SliverToBoxAdapter(
-            child: _buildSection(
-              'Accommodation',
-              Icons.hotel,
-              _buildAccommodationCard(plan),
+            child: Builder(
+              builder: (context) {
+                final l10n = AppLocalizations.of(context)!;
+                return _buildSection(
+                  l10n.accommodation,
+                  Icons.hotel,
+                  _buildAccommodationCard(plan),
+                );
+              },
             ),
           ),
 
           // Daily Itinerary
           SliverToBoxAdapter(
-            child: _buildSection(
-              'Daily Itinerary',
-              Icons.event_note,
-              Column(
-                children: plan.dailyItineraries
-                    .map((day) => _buildDayCard(day))
-                    .toList(),
-              ),
+            child: Builder(
+              builder: (context) {
+                final l10n = AppLocalizations.of(context)!;
+                return _buildSection(
+                  l10n.dailyItinerary,
+                  Icons.event_note,
+                  Column(
+                    children: plan.dailyItineraries
+                        .map((day) => _buildDayCard(day))
+                        .toList(),
+                  ),
+                );
+              },
             ),
           ),
 
           // Must-Visit Attractions
           SliverToBoxAdapter(
-            child: _buildSection(
-              'Must-Visit Attractions',
-              Icons.place,
-              Column(
-                children: plan.attractions
-                    .map((attraction) => _buildAttractionCard(attraction))
-                    .toList(),
-              ),
+            child: Builder(
+              builder: (context) {
+                final l10n = AppLocalizations.of(context)!;
+                return _buildSection(
+                  l10n.mustVisitAttractions,
+                  Icons.place,
+                  Column(
+                    children: plan.attractions
+                        .map((attraction) => _buildAttractionCard(attraction))
+                        .toList(),
+                  ),
+                );
+              },
             ),
           ),
 
           // Recommended Restaurants
           SliverToBoxAdapter(
-            child: _buildSection(
-              'Recommended Restaurants',
-              Icons.restaurant,
-              Column(
-                children: plan.restaurants
-                    .map((restaurant) => _buildRestaurantCard(restaurant))
-                    .toList(),
-              ),
+            child: Builder(
+              builder: (context) {
+                final l10n = AppLocalizations.of(context)!;
+                return _buildSection(
+                  l10n.recommendedRestaurants,
+                  Icons.restaurant,
+                  Column(
+                    children: plan.restaurants
+                        .map((restaurant) => _buildRestaurantCard(restaurant))
+                        .toList(),
+                  ),
+                );
+              },
             ),
           ),
 
           // Travel Tips
           SliverToBoxAdapter(
-            child: _buildSection(
-              'Travel Tips',
-              Icons.lightbulb_outline,
-              Column(
-                children: plan.tips.map((tip) => _buildTipItem(tip)).toList(),
-              ),
+            child: Builder(
+              builder: (context) {
+                final l10n = AppLocalizations.of(context)!;
+                return _buildSection(
+                  l10n.travelTips,
+                  Icons.lightbulb_outline,
+                  Column(
+                    children:
+                        plan.tips.map((tip) => _buildTipItem(tip)).toList(),
+                  ),
+                );
+              },
             ),
           ),
 
@@ -614,48 +670,55 @@ class _TravelPlanPageState extends State<TravelPlanPage>
   }
 
   Widget _buildBudgetCard(TravelPlan plan) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: Column(
-        children: [
-          _buildBudgetRow(
-              'Transportation', plan.budgetBreakdown.transportation),
-          const Divider(height: 24),
-          _buildBudgetRow('Accommodation', plan.budgetBreakdown.accommodation),
-          const Divider(height: 24),
-          _buildBudgetRow('Food & Dining', plan.budgetBreakdown.food),
-          const Divider(height: 24),
-          _buildBudgetRow('Activities', plan.budgetBreakdown.activities),
-          const Divider(height: 24),
-          _buildBudgetRow('Miscellaneous', plan.budgetBreakdown.miscellaneous),
-          const Divider(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Builder(
+      builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey[200]!),
+          ),
+          child: Column(
             children: [
-              const Text(
-                'Total Estimated Cost',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                '\$${plan.budgetBreakdown.total.toStringAsFixed(0)}',
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFFFF4458),
-                ),
+              _buildBudgetRow(
+                  l10n.transportation, plan.budgetBreakdown.transportation),
+              const Divider(height: 24),
+              _buildBudgetRow(
+                  l10n.accommodation, plan.budgetBreakdown.accommodation),
+              const Divider(height: 24),
+              _buildBudgetRow(l10n.foodAndDining, plan.budgetBreakdown.food),
+              const Divider(height: 24),
+              _buildBudgetRow(l10n.activities, plan.budgetBreakdown.activities),
+              const Divider(height: 24),
+              _buildBudgetRow(
+                  l10n.miscellaneous, plan.budgetBreakdown.miscellaneous),
+              const Divider(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    l10n.totalEstimatedCost,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    '\$${plan.budgetBreakdown.total.toStringAsFixed(0)}',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFFF4458),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -721,18 +784,23 @@ class _TravelPlanPageState extends State<TravelPlanPage>
               color: const Color(0xFFFF4458).withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Estimated Cost:'),
-                Text(
-                  '\$${plan.transportation.estimatedCost.toStringAsFixed(0)}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFFFF4458),
-                  ),
-                ),
-              ],
+            child: Builder(
+              builder: (context) {
+                final l10n = AppLocalizations.of(context)!;
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('${l10n.estimatedCost}:'),
+                    Text(
+                      '\$${plan.transportation.estimatedCost.toStringAsFixed(0)}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFFF4458),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
           const SizedBox(height: 16),
@@ -795,13 +863,18 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                 ),
               ),
               const Spacer(),
-              Text(
-                '\$${plan.accommodation.pricePerNight.toStringAsFixed(0)}/night',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFFFF4458),
-                ),
+              Builder(
+                builder: (context) {
+                  final l10n = AppLocalizations.of(context)!;
+                  return Text(
+                    '\$${plan.accommodation.pricePerNight.toStringAsFixed(0)}/${l10n.pricePerNight}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFFF4458),
+                    ),
+                  );
+                },
               ),
             ],
           ),
@@ -872,75 +945,82 @@ class _TravelPlanPageState extends State<TravelPlanPage>
     );
   }
 
-  Widget _buildDayCard(DailyItinerary day) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFF4458),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  'Day ${day.day}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  day.theme,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
+  Widget _buildDayCard(DailyItinerary dayItinerary) {
+    return Builder(
+      builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey[200]!),
           ),
-          const SizedBox(height: 16),
-          ...day.activities.map((activity) => _buildActivityItem(activity)),
-          if (day.notes.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.amber[50],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  const Icon(Icons.info_outline, size: 16, color: Colors.amber),
-                  const SizedBox(width: 8),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFF4458),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      '${l10n.day} ${dayItinerary.day}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      day.notes,
-                      style: const TextStyle(fontSize: 12),
+                      dayItinerary.theme,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
               ),
-            ),
-          ],
-        ],
-      ),
+              const SizedBox(height: 16),
+              ...dayItinerary.activities
+                  .map((activity) => _buildActivityItem(activity)),
+              if (dayItinerary.notes.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.amber[50],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.info_outline,
+                          size: 16, color: Colors.amber),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          dayItinerary.notes,
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
     );
   }
 

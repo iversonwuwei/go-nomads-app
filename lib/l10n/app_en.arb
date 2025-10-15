@@ -703,6 +703,9 @@
   "additionalNotes": "Additional Notes",
   "shareExperience": "Share your experience with costs",
   "totalMonthly": "Total Monthly Cost",
+  "averageMonthlyCost": "Average Monthly Cost",
+  "sevenDayForecast": "7-Day Forecast",
+  "feelsLike": "Feels like",
   "submitCost": "Submit Cost Information",
   "submitting": "Submitting...",
   "pleaseEnterCost": "Please enter at least one cost item",
@@ -980,5 +983,238 @@
   "statistics": "Statistics",
   "timeRange": "Time Range",
   "refresh": "Refresh",
-  "filter": "Filter"
+  "filter": "Filter",
+  "startingSoon": "Starting Soon",
+  "dateAndTime": "Date & Time",
+  "attendees": "Attendees",
+  "about": "About",
+  "organizer": "Organizer",
+  "eventOrganizer": "Event Organizer",
+  "message": "Message",
+  "viewAll": "View All",
+  "noAttendeesYet": "No attendees yet. Be the first to join!",
+  "leaveMeetup": "Leave Meetup",
+  "ended": "Ended",
+  "full": "Full",
+  "joined": "Joined!",
+  "joinedSuccessfully": "You have successfully joined this meetup",
+  "leftMeetup": "Left meetup",
+  "youLeftMeetup": "You left this meetup",
+  "joinRequired": "Join Required",
+  "joinToAccessChat": "You need to join this meetup before you can access the group chat",
+  "shareMeetupComingSoon": "Share meetup functionality coming soon!",
+  "openingChatWith": "Opening chat with {name}...",
+  "@openingChatWith": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "allAttendees": "All Attendees",
+  "user": "User",
+  "digitalNomad": "Digital Nomad",
+  "close": "Close",
+  "meetupIsFull": "This meetup is full",
+  "spotsLeft": "{count} spots left",
+  "@spotsLeft": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "attendeesCount": "Attendees ({count})",
+  "@attendeesCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "meetups": "Meetups",
+  "allMeetups": "All Meetups",
+  "past": "Past",
+  "upcoming": "Upcoming",
+  "upcomingEvents": "{count} Upcoming Events",
+  "@upcomingEvents": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "joinedEvents": "{count} Joined Events",
+  "@joinedEvents": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "pastEvents": "{count} Past Events",
+  "@pastEvents": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "date": "Date",
+  "popular": "Popular",
+  "nearby": "Nearby",
+  "noJoinedMeetupsYet": "No joined meetups yet",
+  "noPastMeetups": "No past meetups",
+  "noMeetupsAvailable": "No meetups available",
+  "join": "Join",
+  "youHaveJoined": "You have joined {title}",
+  "@youHaveJoined": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "youLeft": "You left {title}",
+  "@youLeft": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "today": "Today",
+  "tomorrow": "Tomorrow",
+  "filters": "Filters",
+  "reset": "Reset",
+  "country": "Country",
+  "autoDetectedLocation": "Auto-detected based on your current location",
+  "meetupType": "Meetup Type",
+  "timeRange": "Time Range",
+  "all": "All",
+  "thisWeek": "This Week",
+  "thisMonth": "This Month",
+  "maximumAttendees": "Maximum Attendees",
+  "peoplePlus": "100+ people",
+  "peopleCount": "{count} people",
+  "@peopleCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "applyFilters": "Apply Filters",
+  "writeAReview": "Write a Review",
+  "overallRating": "Overall Rating",
+  "tapStarsToRate": "Tap stars to rate",
+  "excellent": "Excellent!",
+  "veryGood": "Very Good",
+  "good": "Good",
+  "fair": "Fair",
+  "poor": "Poor",
+  "veryPoor": "Very Poor",
+  "reviewTitle": "Review Title",
+  "required": "*",
+  "reviewTitleHint": "e.g., Amazing place for digital nomads!",
+  "pleaseEnterTitle": "Please enter a title",
+  "titleMinLength": "Title must be at least 5 characters",
+  "yourExperience": "Your Experience",
+  "experienceHint": "Share your experience, tips, and recommendations...\n\nWhat did you like most?\nWhat could be improved?\nAny tips for other nomads?",
+  "pleaseShareExperience": "Please share your experience",
+  "experienceMinLength": "Please write at least 20 characters",
+  "photos": "Photos",
+  "optional": "(Optional)",
+  "addPhoto": "Add Photo",
+  "reviewGuidelines": "Review Guidelines",
+  "guidelineHonest": "✓ Be honest and detailed about your experience",
+  "guidelineFacts": "✓ Focus on facts and specific examples",
+  "guidelineRespect": "✓ Respect others and avoid offensive language",
+  "guidelinePhotos": "✓ Photos should be relevant and appropriate",
+  "submitReview": "Submit Review",
+  "missingRating": "Missing Rating",
+  "pleaseSelectRating": "Please select a rating before submitting",
+  "reviewSubmitted": "Your review has been submitted successfully!",
+  "failedToSubmitReview": "Failed to submit review: {error}",
+  "@failedToSubmitReview": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "failedToPickImages": "Failed to pick images: {error}",
+  "@failedToPickImages": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "welcomeBack": "Welcome Back",
+  "loginToContinue": "Login to your account to continue",
+  "orLoginWith": "Or login with other methods",
+  "dontHaveAccount": "Don't have an account?",
+  "registerNow": "Register Now",
+  "registerInDevelopment": "Registration feature is under development",
+  "hint": "Hint",
+  "phoneNumber": "Phone Number",
+  "enterPhoneNumber": "Enter your phone number",
+  "enterPassword": "Enter your password",
+  "forgotPasswordQuestion": "Forgot Password?",
+  "forgotPasswordInDevelopment": "Forgot password feature is under development",
+  "passwordLogin": "Password Login",
+  "verificationCodeLogin": "Code Login",
+  "secureLoginDescription": "Use your phone number to login and manage API, track progress securely.",
+  "sendCode": "Send Code",
+  "pleaseEnterPhone": "Please enter phone number",
+  "pleaseEnterValidPhone": "Please enter valid phone number",
+  "pleaseEnterPassword": "Please enter password",
+  "passwordMinLength": "Password must be at least 6 characters",
+  "pleaseEnterCode": "Please enter verification code",
+  "codeLength": "Verification code must be 6 digits",
+  "enterVerificationCode": "Enter verification code",
+  "resend": "Resend",
+  "resendIn": "Resend in {seconds}s",
+  "@resendIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "rememberMe": "Remember Me",
+  "password": "Password",
+  "verificationCode": "Verification Code",
+  "login": "Login",
+  "travelPlan": "Travel Plan",
+  "generatingAiPlan": "Generating your AI travel plan...",
+  "failedToGeneratePlan": "Failed to generate travel plan",
+  "pleaseTryAgain": "Please try again",
+  "goBack": "Go Back",
+  "aiGeneratedPlan": "AI Generated Plan",
+  "personalizedForYou": "Personalized for you",
+  "from": "From",
+  "days": "Days",
+  "budgetBreakdown": "Budget Breakdown",
+  "transportation": "Transportation",
+  "accommodation": "Accommodation",
+  "dailyItinerary": "Daily Itinerary",
+  "mustVisitAttractions": "Must-Visit Attractions",
+  "recommendedRestaurants": "Recommended Restaurants",
+  "travelTips": "Travel Tips",
+  "totalEstimatedCost": "Total Estimated Cost",
+  "foodAndDining": "Food & Dining",
+  "activities": "Activities",
+  "miscellaneous": "Miscellaneous",
+  "estimatedCost": "Estimated Cost",
+  "localTransport": "Local Transport",
+  "pricePerNight": "night",
+  "bookingTips": "Booking Tips",
+  "day": "Day",
+  "asyncWithMap": "Async with Map feature coming soon!",
+  "planSaved": "Plan saved to your profile!",
+  "sharingPlan": "Sharing your travel plan...",
+  "info": "Info",
+  "download": "Download"
 }

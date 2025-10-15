@@ -1066,192 +1066,101 @@ class _DataCardState extends State<_DataCard> {
                   ),
                 ),
 
-                // 底部：完整的 Nomads.com 信息 - 紧凑布局防止溢出
+                // 底部:城市信息
                 Positioned(
-                  bottom: 6,
-                  left: 6,
-                  right: 6,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 城市名称 - 响应式字体大小
-                      Text(
-                        widget.data['city'],
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: isMobile ? 16 : 18,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.3,
-                          height: 1.1,
-                          shadows: const [
-                            Shadow(
-                              color: Colors.black,
-                              blurRadius: 4,
-                            ),
-                          ],
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-
-                      // 国家
-                      Text(
-                        widget.data['country'],
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.85),
-                          fontSize: isMobile ? 10 : 11,
-                          fontWeight: FontWeight.w400,
-                          height: 1.2,
-                          shadows: const [
-                            Shadow(
-                              color: Colors.black,
-                              blurRadius: 4,
-                            ),
-                          ],
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-
-                      SizedBox(height: isMobile ? 4 : 6),
-
-                      // 5个核心评分图标 - Nomads.com 风格
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          _buildScoreIcon('⭐️', widget.data['overall']),
-                          _buildScoreIcon('💵', widget.data['cost']),
-                          _buildScoreIcon('📡', widget.data['internetScore']),
-                          _buildScoreIcon('👍', widget.data['liked']),
-                          _buildScoreIcon('👮', widget.data['safety']),
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    padding: EdgeInsets.all(isMobile ? 8 : 12),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.7),
                         ],
                       ),
-
-                      SizedBox(height: isMobile ? 3 : 5),
-
-                      // 天气行：体感温度 + AQI - 超紧凑布局，防止溢出
-                      Row(
-                        children: [
-                          Icon(
-                            _getWeatherIcon(widget.data['weather']),
+                      borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(8),
+                        bottomRight: Radius.circular(8),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // 城市名
+                        Text(
+                          widget.data['city'] ?? '',
+                          style: TextStyle(
                             color: Colors.white,
-                            size: isMobile ? 10 : 12,
+                            fontSize: isMobile ? 16 : 18,
+                            fontWeight: FontWeight.bold,
                           ),
-                          const SizedBox(width: 2),
-                          Expanded(
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        SizedBox(height: isMobile ? 2 : 4),
+                        // 国家
+                        Text(
+                          widget.data['country'] ?? '',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: isMobile ? 12 : 14,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        SizedBox(height: isMobile ? 4 : 8),
+                        // 天气和价格
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // 天气信息
+                            Row(
                               children: [
                                 Text(
-                                  '${widget.data['temperature']}°',
+                                  _getWeatherIcon(widget.data['weather']),
+                                  style:
+                                      TextStyle(fontSize: isMobile ? 16 : 18),
+                                ),
+                                SizedBox(width: isMobile ? 3 : 6),
+                                Text(
+                                  '${widget.data['temperature'] ?? '--'}°',
                                   style: TextStyle(
                                     color: Colors.white,
-                                    fontSize: isMobile ? 9 : 10,
-                                    fontWeight: FontWeight.w600,
-                                    height: 1,
+                                    fontSize: isMobile ? 13 : 15,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
-                                // 高温标识
-                                if (widget.data['feelsLike'] >= 35) ...[
-                                  const SizedBox(width: 2),
-                                  Text('🥵',
-                                      style: TextStyle(
-                                          fontSize: isMobile ? 9 : 10,
-                                          height: 1)),
-                                ],
                               ],
                             ),
-                          ),
-                          const Spacer(),
-                          // AQI
-                          if (widget.data['aqi'] != null) ...[
-                            Text(
-                              'AQI${widget.data['aqi']}',
-                              style: TextStyle(
-                                color: _getAQIColor(widget.data['aqi']),
-                                fontSize: isMobile ? 7 : 9,
-                                fontWeight: FontWeight.w600,
-                                height: 1,
+                            // 价格
+                            if (widget.data['price'] != null)
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: isMobile ? 6 : 8,
+                                  vertical: isMobile ? 3 : 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.green.withValues(alpha: 0.9),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  '\$${widget.data['price']}',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: isMobile ? 11 : 13,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
-                            ),
-                            if (widget.data['aqiLevel'] != null &&
-                                widget.data['aqiLevel']
-                                    .toString()
-                                    .isNotEmpty) ...[
-                              const SizedBox(width: 2),
-                              Text(
-                                widget.data['aqiLevel'],
-                                style: TextStyle(
-                                    fontSize: isMobile ? 9 : 10, height: 1),
-                              ),
-                            ],
-                          ],
-                        ],
-                      ),
-
-                      SizedBox(height: isMobile ? 3 : 5),
-
-                      // 价格 - 移动端简化布局
-                      Row(
-                        children: [
-                          Text(
-                            '\$${widget.data['price']}',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: isMobile ? 12 : 16,
-                              fontWeight: FontWeight.bold,
-                              height: 1,
-                            ),
-                          ),
-                          const SizedBox(width: 2),
-                          Text(
-                            '/ mo',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: isMobile ? 7 : 9,
-                              height: 1,
-                            ),
-                          ),
-                          if (!isMobile) ...[
-                            const SizedBox(width: 4),
-                            const Text(
-                              'FOR A NOMAD',
-                              style: TextStyle(
-                                color: Colors.white54,
-                                fontSize: 7,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 0.3,
-                                height: 1,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-
-                      if (isMobile) ...[
-                        const SizedBox(height: 3),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.touch_app_outlined,
-                              color: Colors.white.withValues(alpha: 0.4),
-                              size: 8,
-                            ),
-                            const SizedBox(width: 2),
-                            Text(
-                              'Double tap for details',
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.4),
-                                fontSize: 6,
-                                fontWeight: FontWeight.w400,
-                                height: 1,
-                              ),
-                            ),
                           ],
                         ),
                       ],
-                    ],
+                    ),
                   ),
                 ),
               ],
@@ -1271,70 +1180,20 @@ class _DataCardState extends State<_DataCard> {
     );
   }
 
-  IconData _getWeatherIcon(String weather) {
-    switch (weather.toLowerCase()) {
-      case 'sunny':
-        return Icons.wb_sunny_outlined;
-      case 'cloudy':
-        return Icons.cloud_outlined;
-      case 'rainy':
-        return Icons.water_drop_outlined;
-      default:
-        return Icons.wb_sunny_outlined;
-    }
-  }
-
-  // 构建评分图标 - Nomads.com 风格（紧凑版）
-  Widget _buildScoreIcon(String emoji, double score) {
-    // score 范围 0-5，计算进度条填充比例
-    final isGood = score >= 4.0;
-    final isMedium = score >= 3.0 && score < 4.0;
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          emoji,
-          style: const TextStyle(fontSize: 12),
-        ),
-        const SizedBox(height: 1.5),
-        Container(
-          width: 28,
-          height: 2.5,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(2),
-          ),
-          child: FractionallySizedBox(
-            alignment: Alignment.centerLeft,
-            widthFactor: score / 5,
-            child: Container(
-              decoration: BoxDecoration(
-                color: isGood
-                    ? Colors.green
-                    : isMedium
-                        ? Colors.orange
-                        : Colors.red,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // 获取 AQI 颜色
-  Color _getAQIColor(int aqi) {
-    if (aqi <= 50) return Colors.green;
-    if (aqi <= 100) return Colors.yellow;
-    if (aqi <= 150) return Colors.orange;
-    if (aqi <= 200) return Colors.red;
-    return Colors.purple;
+  // 获取天气图标
+  String _getWeatherIcon(String? weather) {
+    if (weather == null) return '☀️';
+    final w = weather.toLowerCase();
+    if (w.contains('sun') || w.contains('clear')) return '☀️';
+    if (w.contains('cloud')) return '☁️';
+    if (w.contains('rain')) return '🌧️';
+    if (w.contains('storm')) return '⛈️';
+    if (w.contains('snow')) return '❄️';
+    return '☀️';
   }
 }
 
-// 详情悬浮层
+// 详情悬浮层 - 透明蒙层风格
 class _DetailOverlay extends StatelessWidget {
   final Map<String, dynamic> data;
   final VoidCallback onClose;
@@ -1353,39 +1212,72 @@ class _DetailOverlay extends StatelessWidget {
           color: Colors.black.withValues(alpha: 0.92),
           borderRadius: BorderRadius.circular(8),
         ),
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Stack(
           children: [
-            // 顶部图标行
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // 收藏图标
-                const Icon(Icons.favorite_border_outlined,
-                    color: Colors.white, size: 24),
-                // 关闭按钮
-                GestureDetector(
-                  onTap: onClose,
-                  child: Icon(Icons.close_outlined,
-                      color: Colors.white.withValues(alpha: 0.7), size: 24),
+            // 顶部左侧 - 收藏图标
+            Positioned(
+              top: 12,
+              left: 12,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.4),
+                  shape: BoxShape.circle,
                 ),
-              ],
+                child: const Icon(
+                  Icons.favorite_border,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
             ),
 
-            const SizedBox(height: 16),
+            // 顶部右侧 - 关闭按钮
+            Positioned(
+              top: 12,
+              right: 12,
+              child: GestureDetector(
+                onTap: onClose,
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.4),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.close,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ),
 
-            // 评分指标
-            _buildMetricBar('⭐ Overall', data['overall'], _getColor('overall')),
-            const SizedBox(height: 10),
-            _buildMetricBar('💰 Cost', data['cost'], _getColor('cost')),
-            const SizedBox(height: 10),
-            _buildMetricBar(
-                '📡 Internet', data['internetScore'], _getColor('internet')),
-            const SizedBox(height: 10),
-            _buildMetricBar('👍 Liked', data['liked'], _getColor('liked')),
-            const SizedBox(height: 10),
-            _buildMetricBar('🛡️ Safety', data['safety'], _getColor('safety')),
+            // 底部 - 评分条
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: 16,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildMetricBar(
+                      '⭐ Overall', data['overall'], const Color(0xFFFBBF24)),
+                  const SizedBox(height: 6),
+                  _buildMetricBar(
+                      '💰 Cost', data['cost'], const Color(0xFF4ADE80)),
+                  const SizedBox(height: 6),
+                  _buildMetricBar('� Internet', data['internetScore'],
+                      const Color(0xFFFBBF24)),
+                  const SizedBox(height: 6),
+                  _buildMetricBar(
+                      '👍 Liked', data['liked'], const Color(0xFF4ADE80)),
+                  const SizedBox(height: 6),
+                  _buildMetricBar(
+                      '🛡️ Safety', data['safety'], const Color(0xFF4ADE80)),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -1396,36 +1288,43 @@ class _DetailOverlay extends StatelessWidget {
     return Row(
       children: [
         SizedBox(
-          width: 90,
+          width: 85,
           child: Text(
             label,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 14,
+              fontSize: 13,
               fontWeight: FontWeight.w500,
+              shadows: [
+                Shadow(
+                  color: Colors.black54,
+                  blurRadius: 3,
+                ),
+              ],
             ),
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 8),
         Expanded(
           child: Stack(
             children: [
-              // 背景条
+              // 背景条 - 深色半透明
               Container(
-                height: 20,
+                height: 18,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(10),
+                  color: Colors.black.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(9),
                 ),
               ),
               // 进度条
               FractionallySizedBox(
-                widthFactor: value,
+                alignment: Alignment.centerLeft,
+                widthFactor: value / 5.0, // 将 0-5 分转换为 0-1 比例
                 child: Container(
-                  height: 20,
+                  height: 18,
                   decoration: BoxDecoration(
                     color: color,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(9),
                   ),
                 ),
               ),
@@ -1434,21 +1333,6 @@ class _DetailOverlay extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  Color _getColor(String metric) {
-    switch (metric) {
-      case 'overall':
-      case 'cost':
-      case 'safety':
-        return const Color(0xFF4ADE80); // 绿色
-      case 'internet':
-        return const Color(0xFFEF4444); // 红色
-      case 'liked':
-        return const Color(0xFFFBBF24); // 黄色
-      default:
-        return const Color(0xFF4ADE80);
-    }
   }
 }
 

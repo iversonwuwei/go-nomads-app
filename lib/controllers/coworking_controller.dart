@@ -1,9 +1,12 @@
 import 'package:df_admin_mobile/models/coworking_space_model.dart';
+import 'package:df_admin_mobile/services/data/coworking_data_service.dart';
 import 'package:get/get.dart';
 
 /// Coworking Controller
 /// 管理共享办公空间的控制器
 class CoworkingController extends GetxController {
+  final CoworkingDataService _coworkingService = CoworkingDataService();
+
   // 观察变量
   var coworkingSpaces = <CoworkingSpace>[].obs;
   var filteredSpaces = <CoworkingSpace>[].obs;
@@ -18,10 +21,91 @@ class CoworkingController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadMockData();
+    loadCoworkingsFromDatabase();
   }
 
-  /// 加载模拟数据
+  /// 从数据库加载共享办公空间数据
+  Future<void> loadCoworkingsFromDatabase() async {
+    try {
+      isLoading.value = true;
+      final coworkings = await _coworkingService.getAllCoworkings();
+
+      // 转换数据库数据为 CoworkingSpace 模型
+      coworkingSpaces.value = coworkings.map((data) {
+        return CoworkingSpace(
+          id: data['id'].toString(),
+          name: data['name'] ?? '',
+          address: data['address'] ?? '',
+          city: _getCityNameById(data['city_id']),
+          country: 'Thailand', // 默认国家
+          latitude: (data['latitude'] as num?)?.toDouble() ?? 0.0,
+          longitude: (data['longitude'] as num?)?.toDouble() ?? 0.0,
+          imageUrl: data['image_url'] ?? '',
+          images: [data['image_url'] ?? ''],
+          rating: (data['rating'] as num?)?.toDouble() ?? 4.0,
+          reviewCount: 0, // 数据库暂无此字段
+          description: data['description'] ?? '',
+          pricing: CoworkingPricing(
+            dailyRate: (data['price_per_day'] as num?)?.toDouble(),
+            monthlyRate: (data['price_per_month'] as num?)?.toDouble(),
+            currency: 'USD',
+            hasFreeTrial: false,
+          ),
+          amenities: CoworkingAmenities(
+            hasWifi: ((data['wifi_speed'] as num?)?.toDouble() ?? 0) > 0,
+            hasCoffee: (data['has_coffee'] as int?) == 1,
+            hasPrinter: true,
+            hasMeetingRoom: (data['has_meeting_room'] as int?) == 1,
+            hasAirConditioning: true,
+          ),
+          specs: CoworkingSpecs(
+            wifiSpeed: (data['wifi_speed'] as num?)?.toDouble() ?? 0.0,
+            numberOfDesks: 50, // 默认值
+            numberOfMeetingRooms:
+                (data['has_meeting_room'] as int?) == 1 ? 2 : 0,
+            capacity: 50, // 默认值
+            noiseLevel: 'moderate',
+            hasNaturalLight: true,
+            spaceType: 'mixed',
+          ),
+          openingHours: [
+            data['opening_hours'] ?? 'Mon-Fri: 9:00 AM - 6:00 PM',
+          ],
+          phone: data['phone'] ?? '',
+          email: data['email'] ?? '',
+          website: data['website'] ?? '',
+          isVerified: true,
+          lastUpdated: DateTime.now(),
+        );
+      }).toList();
+
+      filteredSpaces.value = coworkingSpaces;
+    } catch (e) {
+      print('Error loading coworkings from database: $e');
+      // 如果数据库加载失败,使用模拟数据
+      loadMockData();
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// 根据城市ID获取城市名称
+  String _getCityNameById(int? cityId) {
+    // 映射必须与 database_initializer.dart 中的城市插入顺序一致
+    const cityMap = {
+      1: 'Bangkok', // 第1个插入的城市
+      2: 'Chiang Mai', // 第2个插入的城市
+      3: 'Canggu', // 第3个插入的城市
+      4: 'Tokyo', // 第4个插入的城市
+      5: 'Seoul', // 第5个插入的城市
+      6: 'Lisbon', // 第6个插入的城市
+      7: 'Mexico City', // 第7个插入的城市
+      8: 'Singapore', // 第8个插入的城市
+    };
+    return cityMap[cityId] ?? 'Unknown';
+  }
+
+  /// 加载模拟数据(作为备用)
   void loadMockData() {
     coworkingSpaces.value = [
       CoworkingSpace(
@@ -142,8 +226,7 @@ class CoworkingController extends GetxController {
         country: 'Thailand',
         latitude: 13.7278,
         longitude: 100.5859,
-        imageUrl:
-            'https://images.unsplash.com/photo-1556761175-4b46a572b786',
+        imageUrl: 'https://images.unsplash.com/photo-1556761175-4b46a572b786',
         images: [
           'https://images.unsplash.com/photo-1556761175-4b46a572b786',
           'https://images.unsplash.com/photo-1497366412874-3415097a27e7',
@@ -293,8 +376,7 @@ class CoworkingController extends GetxController {
   void applyFilters() {
     var filtered = coworkingSpaces.where((space) {
       // 城市筛选
-      if (selectedCity.value.isNotEmpty &&
-          space.city != selectedCity.value) {
+      if (selectedCity.value.isNotEmpty && space.city != selectedCity.value) {
         return false;
       }
 
@@ -315,7 +397,8 @@ class CoworkingController extends GetxController {
       if (selectedFilters.contains('WiFi') && !space.amenities.hasWifi) {
         return false;
       }
-      if (selectedFilters.contains('24/7') && !space.amenities.has24HourAccess) {
+      if (selectedFilters.contains('24/7') &&
+          !space.amenities.has24HourAccess) {
         return false;
       }
       if (selectedFilters.contains('Meeting Rooms') &&

@@ -837,8 +837,9 @@ class _CityDetailPageState extends State<CityDetailPage> {
   // Cost of Living 标签
   Widget _buildCostTab(CityDetailController controller) {
     final cost = controller.costOfLiving.value;
+    final l10n = AppLocalizations.of(context)!;
     if (cost == null) {
-      return Center(child: Text(AppLocalizations.of(context)!.noData));
+      return Center(child: Text(l10n.noData));
     }
 
     return ListView(
@@ -852,9 +853,9 @@ class _CityDetailPageState extends State<CityDetailPage> {
           ),
           child: Column(
             children: [
-              const Text(
-                'Average Monthly Cost',
-                style: TextStyle(
+              Text(
+                l10n.averageMonthlyCost,
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 16,
                 ),
@@ -872,12 +873,12 @@ class _CityDetailPageState extends State<CityDetailPage> {
           ),
         ),
         const SizedBox(height: 24),
-        _buildCostItem('🏠 Accommodation', cost.accommodation),
-        _buildCostItem('🍔 Food', cost.food),
-        _buildCostItem('🚕 Transportation', cost.transportation),
-        _buildCostItem('🎭 Entertainment', cost.entertainment),
-        _buildCostItem('💪 Gym', cost.gym),
-        _buildCostItem('💻 Coworking', cost.coworking),
+        _buildCostItem('🏠 ${l10n.accommodation}', cost.accommodation),
+        _buildCostItem('🍔 ${l10n.food}', cost.food),
+        _buildCostItem('🚕 ${l10n.transportation}', cost.transportation),
+        _buildCostItem('🎭 ${l10n.entertainment}', cost.entertainment),
+        _buildCostItem('💪 ${l10n.gym}', cost.gym),
+        _buildCostItem('💻 ${l10n.coworking}', cost.coworking),
       ],
     );
   }
@@ -933,8 +934,9 @@ class _CityDetailPageState extends State<CityDetailPage> {
   // Weather 标签
   Widget _buildWeatherTab(CityDetailController controller) {
     final weather = controller.weather.value;
+    final l10n = AppLocalizations.of(context)!;
     if (weather == null) {
-      return Center(child: Text(AppLocalizations.of(context)!.noData));
+      return Center(child: Text(l10n.noData));
     }
 
     return ListView(
@@ -959,7 +961,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
                 ),
               ),
               Text(
-                'Feels like ${weather.feelsLike.toStringAsFixed(0)}°C',
+                '${l10n.feelsLike} ${weather.feelsLike.toStringAsFixed(0)}°C',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 16,
@@ -969,9 +971,9 @@ class _CityDetailPageState extends State<CityDetailPage> {
           ),
         ),
         const SizedBox(height: 24),
-        const Text(
-          '7-Day Forecast',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        Text(
+          l10n.sevenDayForecast,
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
         ...weather.forecast.map((day) => Padding(

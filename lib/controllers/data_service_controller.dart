@@ -1,8 +1,13 @@
 import 'package:get/get.dart';
 
+import '../services/data/city_data_service.dart';
+import '../services/data/meetup_data_service.dart';
 import '../widgets/app_toast.dart';
 
 class DataServiceController extends GetxController {
+  // 数据服务
+  final CityDataService _cityService = CityDataService();
+  final MeetupDataService _meetupService = MeetupDataService();
   // 响应式数据
   final RxBool isLoading = true.obs;
   final RxBool isGridView = true.obs;
@@ -80,19 +85,185 @@ class DataServiceController extends GetxController {
   }
 
   // 初始化数据
-  void initializeData() {
+  void initializeData() async {
     isLoading.value = true;
 
-    // 模拟网络延迟
-    Future.delayed(const Duration(milliseconds: 800), () {
-      _generateMockData();
-      _generateMeetupData();
+    try {
+      // 从数据库加载城市数据
+      await _loadCitiesFromDatabase();
+
+      // 从数据库加载活动数据
+      await _loadMeetupsFromDatabase();
+    } catch (e) {
+      print('Error loading data: $e');
+      // AppToast.showError('加载数据失败: $e');
+    } finally {
       isLoading.value = false;
-    });
+    }
   }
 
-  // 生成模拟数据 - 完全复刻 Nomads.com 数据结构
-  void _generateMockData() {
+  // 从数据库加载城市数据
+  Future<void> _loadCitiesFromDatabase() async {
+    try {
+      final cities = await _cityService.getAllCities();
+
+      // 转换数据格式以匹配现有的UI结构
+      dataItems.value = cities.map((city) {
+        return {
+          'city': city['name'],
+          'country': city['country'],
+          'region': city['region'] ?? 'Asia',
+          'climate': city['climate'] ?? 'Warm',
+          'image': city['image_url'],
+          'temperature': city['temperature'] ?? 25,
+          'feelsLike': city['temperature'] ?? 25,
+          'weather': _getWeatherFromClimate(city['climate']),
+          'internet': (city['internet_speed'] as num?)?.toInt() ?? 20,
+          'price': (city['cost_of_living'] as num?)?.toInt() ?? 1500,
+          'rank': cities.indexOf(city) + 1,
+          'badge': _getBadgeForCity(city),
+          'ratings': ['😊', '👍', '🌟'],
+          'overall': (city['overall_score'] as num?)?.toDouble() ?? 4.0,
+          'cost': _calculateCostScore(city['cost_of_living']),
+          'internetScore': _calculateInternetScore(city['internet_speed']),
+          'liked': (city['overall_score'] as num?)?.toDouble() ?? 4.0,
+          'safety': (city['safety_score'] as num?)?.toDouble() ?? 4.0,
+          'aqi': city['aqi'] ?? 50,
+          'aqiLevel': _getAqiLevel(city['aqi']),
+          'population': city['population'] ?? '1M',
+          'timezone': city['timezone'] ?? 'GMT',
+          'humidity': city['humidity'] ?? 70,
+          'about': city['description'] ?? '',
+        };
+      }).toList();
+    } catch (e) {
+      print('Error loading cities: $e');
+      rethrow;
+    }
+  }
+
+  // 从数据库加载活动数据
+  Future<void> _loadMeetupsFromDatabase() async {
+    try {
+      final dbMeetups = await _meetupService.getUpcomingMeetups(days: 30);
+
+      // 转换数据格式
+      final List<Map<String, dynamic>> convertedMeetups = [];
+
+      for (var meetup in dbMeetups) {
+        final cityId = meetup['city_id'] as int?;
+        final cityInfo = await _getCityInfoById(cityId);
+
+        convertedMeetups.add({
+          'id': meetup['id'],
+          'city': cityInfo['name'],
+          'country': cityInfo['country'],
+          'type': meetup['category'] ?? 'Activity',
+          'title': meetup['title'],
+          'venue': meetup['location'],
+          'date':
+              DateTime.tryParse(meetup['start_time'] ?? '') ?? DateTime.now(),
+          'time': _formatTime(meetup['start_time']),
+          'attendees': meetup['current_participants'] ?? 0,
+          'maxAttendees': meetup['max_participants'] ?? 20,
+          'organizer': 'Organizer', // TODO: 从用户表获取
+          'organizerAvatar': 'https://i.pravatar.cc/150?img=1',
+          'image': meetup['image_url'] ??
+              'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=400',
+          'description': meetup['description'] ?? '',
+        });
+      }
+
+      meetups.value = convertedMeetups;
+    } catch (e) {
+      print('Error loading meetups: $e');
+      rethrow;
+    }
+  }
+
+  // 辅助方法:根据城市ID获取城市信息
+  Future<Map<String, dynamic>> _getCityInfoById(int? cityId) async {
+    if (cityId == null) return {'name': 'Unknown', 'country': 'Unknown'};
+
+    try {
+      final city = await _cityService.getCityById(cityId);
+      return {
+        'name': city?['name'] ?? 'Unknown',
+        'country': city?['country'] ?? 'Unknown',
+      };
+    } catch (e) {
+      return {'name': 'Unknown', 'country': 'Unknown'};
+    }
+  }
+
+  // 辅助方法:根据气候获取天气
+  String _getWeatherFromClimate(String? climate) {
+    switch (climate) {
+      case 'Hot':
+        return 'sunny';
+      case 'Warm':
+        return 'cloudy';
+      case 'Cool':
+        return 'rainy';
+      case 'Cold':
+        return 'snowy';
+      default:
+        return 'sunny';
+    }
+  }
+
+  // 辅助方法:获取城市徽章
+  String _getBadgeForCity(Map<String, dynamic> city) {
+    final score = (city['overall_score'] as num?)?.toDouble() ?? 0;
+    final price = (city['cost_of_living'] as num?)?.toDouble() ?? 0;
+
+    if (score >= 4.7) return 'Popular';
+    if (price < 1500) return 'Best Value';
+    if (score >= 4.5) return 'Trending';
+    return '';
+  }
+
+  // 辅助方法:计算生活成本评分
+  double _calculateCostScore(num? cost) {
+    if (cost == null) return 3.0;
+    if (cost < 1000) return 5.0;
+    if (cost < 1500) return 4.5;
+    if (cost < 2000) return 4.0;
+    if (cost < 3000) return 3.5;
+    return 3.0;
+  }
+
+  // 辅助方法:计算网速评分
+  double _calculateInternetScore(num? speed) {
+    if (speed == null) return 3.0;
+    if (speed >= 50) return 5.0;
+    if (speed >= 30) return 4.5;
+    if (speed >= 20) return 4.0;
+    if (speed >= 10) return 3.5;
+    return 3.0;
+  }
+
+  // 辅助方法:获取AQI等级
+  String _getAqiLevel(int? aqi) {
+    if (aqi == null) return '';
+    if (aqi > 150) return '😷';
+    if (aqi > 50) return '😷';
+    return '';
+  }
+
+  // 辅助方法:格式化时间
+  String _formatTime(String? isoTime) {
+    if (isoTime == null) return '00:00';
+    try {
+      final dt = DateTime.parse(isoTime);
+      return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    } catch (e) {
+      return '00:00';
+    }
+  }
+
+  // 旧的生成模拟数据方法(保留以防需要)
+  void _generateMockData_deprecated() {
     final cities = [
       {
         'city': 'Bangkok',
@@ -649,7 +820,7 @@ class DataServiceController extends GetxController {
   }
 
   // 创建新的 Meetup
-  void createMeetup({
+  Future<void> createMeetup({
     required String title,
     required String city,
     required String country,
@@ -660,41 +831,82 @@ class DataServiceController extends GetxController {
     required int maxAttendees,
     required String description,
     String? imageUrl,
-  }) {
-    // 生成新的 meetup ID
-    final newId = meetups.isEmpty
-        ? 1
-        : (meetups.map((m) => m['id'] as int).reduce((a, b) => a > b ? a : b) +
-            1);
+  }) async {
+    try {
+      // 获取城市ID
+      final cityId = await _getCityIdByName(city);
+      if (cityId == null) {
+        AppToast.error('City not found in database');
+        return;
+      }
 
-    final newMeetup = {
-      'id': newId,
-      'city': city,
-      'country': country,
-      'type': type,
-      'title': title,
-      'venue': venue,
-      'date': date,
-      'time': time,
-      'attendees': 1, // 创建者自动加入
-      'maxAttendees': maxAttendees,
-      'organizer': 'You', // 在实际应用中从用户资料获取
-      'organizerAvatar': 'https://i.pravatar.cc/150?img=68',
-      'image': imageUrl ??
-          'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400',
-      'description': description,
-    };
+      // 准备数据库数据
+      final meetupData = {
+        'title': title,
+        'description': description,
+        'city_id': cityId,
+        'location': venue,
+        'start_time': date.toIso8601String(),
+        'category': type,
+        'max_participants': maxAttendees,
+        'current_participants': 1, // 创建者自动加入
+        'image_url': imageUrl ??
+            'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400',
+        'status': 'upcoming',
+        'organizer_id': 1, // TODO: 从当前用户获取
+      };
 
-    meetups.add(newMeetup);
-    meetups.refresh();
+      // 保存到数据库
+      final newId = await _meetupService.createMeetup(meetupData);
 
-    // 自动 RSVP
-    rsvpedMeetups.add(newId);
+      // 更新内存中的列表
+      final newMeetup = {
+        'id': newId,
+        'city': city,
+        'country': country,
+        'type': type,
+        'title': title,
+        'venue': venue,
+        'date': date,
+        'time': time,
+        'attendees': 1, // 创建者自动加入
+        'maxAttendees': maxAttendees,
+        'organizer': 'You', // 在实际应用中从用户资料获取
+        'organizerAvatar': 'https://i.pravatar.cc/150?img=68',
+        'image': imageUrl ??
+            'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400',
+        'description': description,
+      };
 
-    Get.back(); // 关闭对话框
-    AppToast.success(
-      'Your meetup "$title" has been created successfully',
-      title: 'Meetup Created!',
-    );
+      meetups.add(newMeetup);
+      meetups.refresh();
+
+      // 自动 RSVP
+      rsvpedMeetups.add(newId);
+
+      Get.back(); // 关闭对话框
+      AppToast.success(
+        'Your meetup "$title" has been created successfully',
+        title: 'Meetup Created!',
+      );
+    } catch (e) {
+      print('Error creating meetup: $e');
+      AppToast.error('Failed to create meetup: $e');
+    }
+  }
+
+  // 辅助方法:根据城市名称获取城市ID
+  Future<int?> _getCityIdByName(String cityName) async {
+    try {
+      final cities = await _cityService.getAllCities();
+      final city = cities.firstWhere(
+        (c) => c['name'] == cityName,
+        orElse: () => {},
+      );
+      return city['id'] as int?;
+    } catch (e) {
+      print('Error getting city ID: $e');
+      return null;
+    }
   }
 }

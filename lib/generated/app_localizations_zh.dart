@@ -679,7 +679,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String days(int count) {
-    return '$count 天';
+    return '天';
   }
 
   @override
@@ -749,7 +749,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get away => '远';
 
   @override
-  String get filters => '筛选器';
+  String get filters => '筛选';
 
   @override
   String get priceRange => '价格区间';
@@ -791,10 +791,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get events => '活动';
 
   @override
-  String get upcomingEvents => '即将到来的活动';
+  String upcomingEvents(String count) {
+    return '$count 个即将到来的活动';
+  }
 
   @override
-  String get pastEvents => '过往活动';
+  String pastEvents(String count) {
+    return '$count 个过往活动';
+  }
 
   @override
   String get eventDetails => '活动详情';
@@ -809,7 +813,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get eventFull => '活动已满';
 
   @override
-  String get spotsLeft => '剩余名额';
+  String spotsLeft(String count) {
+    return '剩余 $count 个名额';
+  }
 
   @override
   String get organizer => '组织者';
@@ -821,7 +827,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cohost => '联合主办';
 
   @override
-  String get joined => '加入';
+  String get joined => '已加入!';
 
   @override
   String get notJoined => '未加入';
@@ -1067,10 +1073,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get and => '和';
 
   @override
-  String get required => '必填';
+  String get required => '*';
 
   @override
-  String get optional => '可选';
+  String get optional => '(可选)';
 
   @override
   String get invalidEmail => '无效的邮箱地址';
@@ -1616,7 +1622,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get userReviews => '用户评价';
 
   @override
-  String get writeAReview => '写评论';
+  String get writeAReview => '撰写评价';
 
   @override
   String get viewAllReviews => '查看所有评价';
@@ -1889,7 +1895,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get clothesPersonal => '衣服、个人物品';
 
   @override
-  String get miscellaneous => '杂项费用';
+  String get miscellaneous => '其他';
 
   @override
   String get additionalNotes => '备注';
@@ -1899,6 +1905,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get totalMonthly => '每月总计';
+
+  @override
+  String get averageMonthlyCost => '平均月度费用';
+
+  @override
+  String get sevenDayForecast => '7天天气预报';
+
+  @override
+  String get feelsLike => '体感温度';
 
   @override
   String get submitCost => '提交费用';
@@ -1945,7 +1960,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String day(int count) {
-    return '$count 天';
+    return '第';
   }
 
   @override
@@ -2009,7 +2024,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get countries => '国家';
 
   @override
-  String get meetups => '聚会';
+  String get meetups => '聚会活动';
 
   @override
   String get connections => '联系人';
@@ -2304,10 +2319,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tapStarsToRate => '点击星星评分';
 
   @override
-  String get reviewTitle => '评论标题';
+  String get reviewTitle => '评价标题';
 
   @override
-  String get reviewTitleHint => '简短描述您的体验';
+  String get reviewTitleHint => '例如:数字游民的理想之地!';
 
   @override
   String get yourReview => '您的评论';
@@ -2322,7 +2337,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get addPhoto => '添加照片';
 
   @override
-  String get reviewGuidelines => '评论指南';
+  String get reviewGuidelines => '评价指南';
 
   @override
   String get beHonest => '• 诚实客观';
@@ -2334,7 +2349,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get beRespectful => '• 尊重他人';
 
   @override
-  String get submitReview => '提交评论';
+  String get submitReview => '提交评价';
 
   @override
   String get pleaseProvideRating => '请提供评分';
@@ -2392,4 +2407,341 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get timeRange => '时间范围';
+
+  @override
+  String get startingSoon => '即将开始';
+
+  @override
+  String get dateAndTime => '日期时间';
+
+  @override
+  String get eventOrganizer => '活动组织者';
+
+  @override
+  String get message => '消息';
+
+  @override
+  String get noAttendeesYet => '还没有参与者,成为第一个加入的人吧!';
+
+  @override
+  String get leaveMeetup => '退出活动';
+
+  @override
+  String get ended => '已结束';
+
+  @override
+  String get full => '已满员';
+
+  @override
+  String get joinedSuccessfully => '您已成功加入此活动';
+
+  @override
+  String get leftMeetup => '已退出活动';
+
+  @override
+  String get youLeftMeetup => '您已退出此活动';
+
+  @override
+  String get joinRequired => '需要加入';
+
+  @override
+  String get joinToAccessChat => '您需要先加入此活动才能访问群聊';
+
+  @override
+  String get shareMeetupComingSoon => '分享活动功能即将推出!';
+
+  @override
+  String openingChatWith(String name) {
+    return '正在打开与 $name 的聊天...';
+  }
+
+  @override
+  String get allAttendees => '所有参与者';
+
+  @override
+  String get user => '用户';
+
+  @override
+  String get digitalNomad => '数字游民';
+
+  @override
+  String get meetupIsFull => '此活动已满员';
+
+  @override
+  String attendeesCount(String count) {
+    return '参与者 ($count)';
+  }
+
+  @override
+  String get allMeetups => '全部聚会';
+
+  @override
+  String get past => '过往';
+
+  @override
+  String get upcoming => '即将到来';
+
+  @override
+  String joinedEvents(String count) {
+    return '$count 个已加入的活动';
+  }
+
+  @override
+  String get noJoinedMeetupsYet => '还没有加入任何聚会';
+
+  @override
+  String get noPastMeetups => '暂无过往聚会';
+
+  @override
+  String get noMeetupsAvailable => '暂无可用聚会';
+
+  @override
+  String get join => '加入';
+
+  @override
+  String youHaveJoined(String title) {
+    return '您已加入 $title';
+  }
+
+  @override
+  String youLeft(String title) {
+    return '您已退出 $title';
+  }
+
+  @override
+  String get country => '国家';
+
+  @override
+  String get autoDetectedLocation => '根据您的当前位置自动检测';
+
+  @override
+  String get meetupType => '聚会类型';
+
+  @override
+  String get maximumAttendees => '最大参与人数';
+
+  @override
+  String get peoplePlus => '100+ 人';
+
+  @override
+  String peopleCount(String count) {
+    return '$count 人';
+  }
+
+  @override
+  String get applyFilters => '应用筛选';
+
+  @override
+  String get excellent => '优秀!';
+
+  @override
+  String get veryGood => '非常好';
+
+  @override
+  String get good => '好';
+
+  @override
+  String get fair => '一般';
+
+  @override
+  String get poor => '较差';
+
+  @override
+  String get veryPoor => '很差';
+
+  @override
+  String get pleaseEnterTitle => '请输入标题';
+
+  @override
+  String get titleMinLength => '标题至少需要5个字符';
+
+  @override
+  String get yourExperience => '您的体验';
+
+  @override
+  String get experienceHint =>
+      '分享您的体验、建议和推荐...\n\n您最喜欢什么?\n有什么可以改进的?\n给其他数字游民的建议?';
+
+  @override
+  String get pleaseShareExperience => '请分享您的体验';
+
+  @override
+  String get experienceMinLength => '请至少输入20个字符';
+
+  @override
+  String get guidelineHonest => '✓ 诚实详细地描述您的体验';
+
+  @override
+  String get guidelineFacts => '✓ 关注事实和具体例子';
+
+  @override
+  String get guidelineRespect => '✓ 尊重他人,避免使用攻击性语言';
+
+  @override
+  String get guidelinePhotos => '✓ 照片应相关且适当';
+
+  @override
+  String get missingRating => '缺少评分';
+
+  @override
+  String get pleaseSelectRating => '提交前请先选择评分';
+
+  @override
+  String get reviewSubmitted => '您的评价已成功提交!';
+
+  @override
+  String failedToSubmitReview(String error) {
+    return '提交评价失败: $error';
+  }
+
+  @override
+  String failedToPickImages(String error) {
+    return '选择图片失败: $error';
+  }
+
+  @override
+  String get loginToContinue => '登录您的账号以继续使用';
+
+  @override
+  String get orLoginWith => '或使用其他方式登录';
+
+  @override
+  String get registerNow => '立即注册';
+
+  @override
+  String get registerInDevelopment => '立即注册功能开发中';
+
+  @override
+  String get hint => '提示';
+
+  @override
+  String get phoneNumber => '手机号';
+
+  @override
+  String get enterPhoneNumber => '请输入手机号';
+
+  @override
+  String get enterPassword => '请输入密码';
+
+  @override
+  String get forgotPasswordQuestion => '忘记密码?';
+
+  @override
+  String get forgotPasswordInDevelopment => '忘记密码功能开发中';
+
+  @override
+  String get passwordLogin => '密码登录';
+
+  @override
+  String get verificationCodeLogin => '验证码登录';
+
+  @override
+  String get secureLoginDescription => '使用您的手机号登录管理 API 与追踪进度安全的使用。';
+
+  @override
+  String get sendCode => '获取验证码';
+
+  @override
+  String get pleaseEnterPhone => '请输入手机号';
+
+  @override
+  String get pleaseEnterValidPhone => '请输入正确的手机号';
+
+  @override
+  String get pleaseEnterPassword => '请输入密码';
+
+  @override
+  String get passwordMinLength => '密码至少6位';
+
+  @override
+  String get pleaseEnterCode => '请输入验证码';
+
+  @override
+  String get codeLength => '验证码必须为6位数字';
+
+  @override
+  String get enterVerificationCode => '请输入验证码';
+
+  @override
+  String get resend => '重新发送';
+
+  @override
+  String resendIn(String seconds) {
+    return '$seconds秒后重发';
+  }
+
+  @override
+  String get rememberMe => '记住我';
+
+  @override
+  String get verificationCode => '验证码';
+
+  @override
+  String get generatingAiPlan => '正在生成您的AI旅行计划...';
+
+  @override
+  String get failedToGeneratePlan => '生成旅行计划失败';
+
+  @override
+  String get pleaseTryAgain => '请重试';
+
+  @override
+  String get aiGeneratedPlan => 'AI生成计划';
+
+  @override
+  String get personalizedForYou => '为您量身定制';
+
+  @override
+  String get from => '出发地';
+
+  @override
+  String get budgetBreakdown => '预算明细';
+
+  @override
+  String get dailyItinerary => '每日行程';
+
+  @override
+  String get mustVisitAttractions => '必游景点';
+
+  @override
+  String get recommendedRestaurants => '推荐餐厅';
+
+  @override
+  String get travelTips => '旅行小贴士';
+
+  @override
+  String get totalEstimatedCost => '预计总费用';
+
+  @override
+  String get foodAndDining => '餐饮';
+
+  @override
+  String get activities => '活动';
+
+  @override
+  String get estimatedCost => '预计费用';
+
+  @override
+  String get localTransport => '本地交通';
+
+  @override
+  String get pricePerNight => '晚';
+
+  @override
+  String get bookingTips => '预订建议';
+
+  @override
+  String get asyncWithMap => '地图异步功能即将推出!';
+
+  @override
+  String get planSaved => '计划已保存到您的个人资料!';
+
+  @override
+  String get sharingPlan => '正在分享您的旅行计划...';
+
+  @override
+  String get info => '信息';
+
+  @override
+  String get download => '下载';
 }

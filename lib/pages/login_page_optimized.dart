@@ -5,7 +5,6 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/auth_controller.dart';
-import '../generated/app_localizations.dart';
 import '../widgets/app_toast.dart';
 
 class LoginPageOptimized extends StatelessWidget {
@@ -13,7 +12,6 @@ class LoginPageOptimized extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final AuthController controller = Get.put(AuthController());
     final screenWidth = MediaQuery.of(context).size.width;
     final isLargeScreen = screenWidth > 800;
@@ -114,13 +112,13 @@ class LoginPageOptimized extends StatelessWidget {
             // 登录按钮
             _buildLoginButton(controller),
             SizedBox(height: 20.h),
-            // 分隔�?
+            // 分隔线
             Container(
               height: 1.h,
               color: AppColors.border,
             ),
             SizedBox(height: 24.h),
-            // 第三方登录按�?
+            // 第三方登录按钮
             _buildThirdPartyButtons(controller),
             SizedBox(height: 24.h),
             // 注册提示

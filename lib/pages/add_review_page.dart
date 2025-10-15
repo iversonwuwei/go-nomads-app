@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../config/app_colors.dart';
+import '../generated/app_localizations.dart';
 import '../widgets/app_toast.dart';
 
 /// 添加 Review 页面 - 独立页面形式
@@ -40,6 +41,8 @@ class _AddReviewPageState extends State<AddReviewPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -53,7 +56,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Write a Review',
+              l10n.writeAReview,
               style: TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 18.sp,
@@ -104,6 +107,8 @@ class _AddReviewPageState extends State<AddReviewPage> {
 
   /// 评分区域
   Widget _buildRatingSection() {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
@@ -125,7 +130,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
                   color: const Color(0xFFFF4458), size: 24.sp),
               SizedBox(width: 8.w),
               Text(
-                'Overall Rating',
+                l10n.overallRating,
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.bold,
@@ -195,7 +200,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
           SizedBox(height: 16.h),
           Obx(() => Text(
                 _rating.value == 0
-                    ? 'Tap stars to rate'
+                    ? l10n.tapStarsToRate
                     : '${_rating.value.toStringAsFixed(1)} / 5.0',
                 style: TextStyle(
                   fontSize: 18.sp,
@@ -220,6 +225,8 @@ class _AddReviewPageState extends State<AddReviewPage> {
 
   /// 标题输入
   Widget _buildTitleInput() {
+    final l10n = AppLocalizations.of(context)!;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -228,7 +235,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
             Icon(Icons.title, color: AppColors.textSecondary, size: 20.sp),
             SizedBox(width: 8.w),
             Text(
-              'Review Title',
+              l10n.reviewTitle,
               style: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.bold,
@@ -237,7 +244,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
             ),
             SizedBox(width: 4.w),
             Text(
-              '*',
+              l10n.required,
               style: TextStyle(
                 color: const Color(0xFFFF4458),
                 fontSize: 16.sp,
@@ -250,7 +257,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
           controller: _titleController,
           maxLength: 100,
           decoration: InputDecoration(
-            hintText: 'e.g., Amazing place for digital nomads!',
+            hintText: l10n.reviewTitleHint,
             filled: true,
             fillColor: Colors.white,
             border: OutlineInputBorder(
@@ -275,10 +282,10 @@ class _AddReviewPageState extends State<AddReviewPage> {
           ),
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
-              return 'Please enter a title';
+              return l10n.pleaseEnterTitle;
             }
             if (value.trim().length < 5) {
-              return 'Title must be at least 5 characters';
+              return l10n.titleMinLength;
             }
             return null;
           },
@@ -289,6 +296,8 @@ class _AddReviewPageState extends State<AddReviewPage> {
 
   /// 内容输入
   Widget _buildContentInput() {
+    final l10n = AppLocalizations.of(context)!;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -297,7 +306,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
             Icon(Icons.edit_note, color: AppColors.textSecondary, size: 20.sp),
             SizedBox(width: 8.w),
             Text(
-              'Your Experience',
+              l10n.yourExperience,
               style: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.bold,
@@ -306,7 +315,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
             ),
             SizedBox(width: 4.w),
             Text(
-              '*',
+              l10n.required,
               style: TextStyle(
                 color: const Color(0xFFFF4458),
                 fontSize: 16.sp,
@@ -320,8 +329,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
           maxLength: 1000,
           maxLines: 8,
           decoration: InputDecoration(
-            hintText:
-                'Share your experience, tips, and recommendations...\n\nWhat did you like most?\nWhat could be improved?\nAny tips for other nomads?',
+            hintText: l10n.experienceHint,
             filled: true,
             fillColor: Colors.white,
             border: OutlineInputBorder(
@@ -346,10 +354,10 @@ class _AddReviewPageState extends State<AddReviewPage> {
           ),
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
-              return 'Please share your experience';
+              return l10n.pleaseShareExperience;
             }
             if (value.trim().length < 20) {
-              return 'Please write at least 20 characters';
+              return l10n.experienceMinLength;
             }
             return null;
           },
@@ -360,6 +368,8 @@ class _AddReviewPageState extends State<AddReviewPage> {
 
   /// 照片区域
   Widget _buildPhotosSection() {
+    final l10n = AppLocalizations.of(context)!;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -372,7 +382,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
                     color: AppColors.textSecondary, size: 20.sp),
                 SizedBox(width: 8.w),
                 Text(
-                  'Photos',
+                  l10n.photos,
                   style: TextStyle(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.bold,
@@ -381,7 +391,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
                 ),
                 SizedBox(width: 8.w),
                 Text(
-                  '(Optional)',
+                  l10n.optional,
                   style: TextStyle(
                     fontSize: 14.sp,
                     color: AppColors.textTertiary,
@@ -468,6 +478,8 @@ class _AddReviewPageState extends State<AddReviewPage> {
 
   /// 添加图片按钮
   Widget _buildAddImageButton() {
+    final l10n = AppLocalizations.of(context)!;
+
     return GestureDetector(
       onTap: _pickImages,
       child: Container(
@@ -492,7 +504,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
             ),
             SizedBox(height: 4.h),
             Text(
-              'Add Photo',
+              l10n.addPhoto,
               style: TextStyle(
                 fontSize: 12.sp,
                 color: const Color(0xFFFF4458),
@@ -507,6 +519,8 @@ class _AddReviewPageState extends State<AddReviewPage> {
 
   /// 指南
   Widget _buildGuidelines() {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -525,7 +539,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
               Icon(Icons.info_outline, color: Colors.blue, size: 20.sp),
               SizedBox(width: 8.w),
               Text(
-                'Review Guidelines',
+                l10n.reviewGuidelines,
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
@@ -535,10 +549,10 @@ class _AddReviewPageState extends State<AddReviewPage> {
             ],
           ),
           SizedBox(height: 12.h),
-          _buildGuidelineItem('✓ Be honest and detailed about your experience'),
-          _buildGuidelineItem('✓ Focus on facts and specific examples'),
-          _buildGuidelineItem('✓ Respect others and avoid offensive language'),
-          _buildGuidelineItem('✓ Photos should be relevant and appropriate'),
+          _buildGuidelineItem(l10n.guidelineHonest),
+          _buildGuidelineItem(l10n.guidelineFacts),
+          _buildGuidelineItem(l10n.guidelineRespect),
+          _buildGuidelineItem(l10n.guidelinePhotos),
         ],
       ),
     );
@@ -560,6 +574,8 @@ class _AddReviewPageState extends State<AddReviewPage> {
 
   /// 底部栏
   Widget _buildBottomBar() {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -602,7 +618,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
                         Icon(Icons.check_circle_outline, size: 20.sp),
                         SizedBox(width: 8.w),
                         Text(
-                          'Submit Review',
+                          l10n.submitReview,
                           style: TextStyle(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.bold,
@@ -617,6 +633,8 @@ class _AddReviewPageState extends State<AddReviewPage> {
 
   /// 选择图片
   Future<void> _pickImages() async {
+    final l10n = AppLocalizations.of(context)!;
+
     try {
       final ImagePicker picker = ImagePicker();
       final List<XFile> images = await picker.pickMultiImage(
@@ -630,19 +648,21 @@ class _AddReviewPageState extends State<AddReviewPage> {
       _selectedImages.addAll(imagesToAdd);
     } catch (e) {
       AppToast.error(
-        'Failed to pick images: $e',
-        title: 'Error',
+        l10n.failedToPickImages('$e'),
+        title: l10n.error,
       );
     }
   }
 
   /// 提交评论
   Future<void> _submitReview() async {
+    final l10n = AppLocalizations.of(context)!;
+
     // 验证评分
     if (_rating.value == 0) {
       AppToast.warning(
-        'Please select a rating before submitting',
-        title: 'Missing Rating',
+        l10n.pleaseSelectRating,
+        title: l10n.missingRating,
       );
       return;
     }
@@ -675,13 +695,13 @@ class _AddReviewPageState extends State<AddReviewPage> {
       });
 
       AppToast.success(
-        'Your review has been submitted successfully!',
-        title: 'Success',
+        l10n.reviewSubmitted,
+        title: l10n.success,
       );
     } catch (e) {
       AppToast.error(
-        'Failed to submit review: $e',
-        title: 'Error',
+        l10n.failedToSubmitReview('$e'),
+        title: l10n.error,
       );
     } finally {
       _isSubmitting.value = false;
@@ -690,11 +710,13 @@ class _AddReviewPageState extends State<AddReviewPage> {
 
   /// 获取评分标签
   String _getRatingLabel(double rating) {
-    if (rating >= 4.5) return 'Excellent!';
-    if (rating >= 4.0) return 'Very Good';
-    if (rating >= 3.0) return 'Good';
-    if (rating >= 2.0) return 'Fair';
-    if (rating >= 1.0) return 'Poor';
-    return 'Very Poor';
+    final l10n = AppLocalizations.of(context)!;
+
+    if (rating >= 4.5) return l10n.excellent;
+    if (rating >= 4.0) return l10n.veryGood;
+    if (rating >= 3.0) return l10n.good;
+    if (rating >= 2.0) return l10n.fair;
+    if (rating >= 1.0) return l10n.poor;
+    return l10n.veryPoor;
   }
 }

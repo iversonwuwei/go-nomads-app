@@ -703,6 +703,9 @@
   "additionalNotes": "备注",
   "shareExperience": "分享您的花费经验",
   "totalMonthly": "每月总计",
+  "averageMonthlyCost": "平均月度费用",
+  "sevenDayForecast": "7天天气预报",
+  "feelsLike": "体感温度",
   "submitCost": "提交费用",
   "submitting": "提交中...",
   "pleaseEnterCost": "请至少输入一项费用",
@@ -980,5 +983,238 @@
   "statistics": "统计",
   "timeRange": "时间范围",
   "refresh": "刷新",
-  "filter": "筛选"
+  "filter": "筛选",
+  "startingSoon": "即将开始",
+  "dateAndTime": "日期时间",
+  "attendees": "参与者",
+  "about": "关于",
+  "organizer": "组织者",
+  "eventOrganizer": "活动组织者",
+  "message": "消息",
+  "viewAll": "查看全部",
+  "noAttendeesYet": "还没有参与者,成为第一个加入的人吧!",
+  "leaveMeetup": "退出活动",
+  "ended": "已结束",
+  "full": "已满员",
+  "joined": "已加入!",
+  "joinedSuccessfully": "您已成功加入此活动",
+  "leftMeetup": "已退出活动",
+  "youLeftMeetup": "您已退出此活动",
+  "joinRequired": "需要加入",
+  "joinToAccessChat": "您需要先加入此活动才能访问群聊",
+  "shareMeetupComingSoon": "分享活动功能即将推出!",
+  "openingChatWith": "正在打开与 {name} 的聊天...",
+  "@openingChatWith": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "allAttendees": "所有参与者",
+  "user": "用户",
+  "digitalNomad": "数字游民",
+  "close": "关闭",
+  "meetupIsFull": "此活动已满员",
+  "spotsLeft": "剩余 {count} 个名额",
+  "@spotsLeft": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "attendeesCount": "参与者 ({count})",
+  "@attendeesCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "meetups": "聚会活动",
+  "allMeetups": "全部聚会",
+  "past": "过往",
+  "upcoming": "即将到来",
+  "upcomingEvents": "{count} 个即将到来的活动",
+  "@upcomingEvents": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "joinedEvents": "{count} 个已加入的活动",
+  "@joinedEvents": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "pastEvents": "{count} 个过往活动",
+  "@pastEvents": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "date": "日期",
+  "popular": "热门",
+  "nearby": "附近",
+  "noJoinedMeetupsYet": "还没有加入任何聚会",
+  "noPastMeetups": "暂无过往聚会",
+  "noMeetupsAvailable": "暂无可用聚会",
+  "join": "加入",
+  "youHaveJoined": "您已加入 {title}",
+  "@youHaveJoined": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "youLeft": "您已退出 {title}",
+  "@youLeft": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "today": "今天",
+  "tomorrow": "明天",
+  "filters": "筛选",
+  "reset": "重置",
+  "country": "国家",
+  "autoDetectedLocation": "根据您的当前位置自动检测",
+  "meetupType": "聚会类型",
+  "timeRange": "时间范围",
+  "all": "全部",
+  "thisWeek": "本周",
+  "thisMonth": "本月",
+  "maximumAttendees": "最大参与人数",
+  "peoplePlus": "100+ 人",
+  "peopleCount": "{count} 人",
+  "@peopleCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "applyFilters": "应用筛选",
+  "writeAReview": "撰写评价",
+  "overallRating": "总体评分",
+  "tapStarsToRate": "点击星星评分",
+  "excellent": "优秀!",
+  "veryGood": "非常好",
+  "good": "好",
+  "fair": "一般",
+  "poor": "较差",
+  "veryPoor": "很差",
+  "reviewTitle": "评价标题",
+  "required": "*",
+  "reviewTitleHint": "例如:数字游民的理想之地!",
+  "pleaseEnterTitle": "请输入标题",
+  "titleMinLength": "标题至少需要5个字符",
+  "yourExperience": "您的体验",
+  "experienceHint": "分享您的体验、建议和推荐...\n\n您最喜欢什么?\n有什么可以改进的?\n给其他数字游民的建议?",
+  "pleaseShareExperience": "请分享您的体验",
+  "experienceMinLength": "请至少输入20个字符",
+  "photos": "照片",
+  "optional": "(可选)",
+  "addPhoto": "添加照片",
+  "reviewGuidelines": "评价指南",
+  "guidelineHonest": "✓ 诚实详细地描述您的体验",
+  "guidelineFacts": "✓ 关注事实和具体例子",
+  "guidelineRespect": "✓ 尊重他人,避免使用攻击性语言",
+  "guidelinePhotos": "✓ 照片应相关且适当",
+  "submitReview": "提交评价",
+  "missingRating": "缺少评分",
+  "pleaseSelectRating": "提交前请先选择评分",
+  "reviewSubmitted": "您的评价已成功提交!",
+  "failedToSubmitReview": "提交评价失败: {error}",
+  "@failedToSubmitReview": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "failedToPickImages": "选择图片失败: {error}",
+  "@failedToPickImages": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "welcomeBack": "欢迎回来",
+  "loginToContinue": "登录您的账号以继续使用",
+  "orLoginWith": "或使用其他方式登录",
+  "dontHaveAccount": "还没有账号?",
+  "registerNow": "立即注册",
+  "registerInDevelopment": "立即注册功能开发中",
+  "hint": "提示",
+  "phoneNumber": "手机号",
+  "enterPhoneNumber": "请输入手机号",
+  "enterPassword": "请输入密码",
+  "forgotPasswordQuestion": "忘记密码?",
+  "forgotPasswordInDevelopment": "忘记密码功能开发中",
+  "passwordLogin": "密码登录",
+  "verificationCodeLogin": "验证码登录",
+  "secureLoginDescription": "使用您的手机号登录管理 API 与追踪进度安全的使用。",
+  "sendCode": "获取验证码",
+  "pleaseEnterPhone": "请输入手机号",
+  "pleaseEnterValidPhone": "请输入正确的手机号",
+  "pleaseEnterPassword": "请输入密码",
+  "passwordMinLength": "密码至少6位",
+  "pleaseEnterCode": "请输入验证码",
+  "codeLength": "验证码必须为6位数字",
+  "enterVerificationCode": "请输入验证码",
+  "resend": "重新发送",
+  "resendIn": "{seconds}秒后重发",
+  "@resendIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "rememberMe": "记住我",
+  "password": "密码",
+  "verificationCode": "验证码",
+  "login": "登录",
+  "travelPlan": "旅行计划",
+  "generatingAiPlan": "正在生成您的AI旅行计划...",
+  "failedToGeneratePlan": "生成旅行计划失败",
+  "pleaseTryAgain": "请重试",
+  "goBack": "返回",
+  "aiGeneratedPlan": "AI生成计划",
+  "personalizedForYou": "为您量身定制",
+  "from": "出发地",
+  "days": "天",
+  "budgetBreakdown": "预算明细",
+  "transportation": "交通",
+  "accommodation": "住宿",
+  "dailyItinerary": "每日行程",
+  "mustVisitAttractions": "必游景点",
+  "recommendedRestaurants": "推荐餐厅",
+  "travelTips": "旅行小贴士",
+  "totalEstimatedCost": "预计总费用",
+  "foodAndDining": "餐饮",
+  "activities": "活动",
+  "miscellaneous": "其他",
+  "estimatedCost": "预计费用",
+  "localTransport": "本地交通",
+  "pricePerNight": "晚",
+  "bookingTips": "预订建议",
+  "day": "第",
+  "asyncWithMap": "地图异步功能即将推出!",
+  "planSaved": "计划已保存到您的个人资料!",
+  "sharingPlan": "正在分享您的旅行计划...",
+  "info": "信息",
+  "download": "下载"
 }

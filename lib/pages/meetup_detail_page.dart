@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 import '../config/app_colors.dart';
+import '../generated/app_localizations.dart';
 import '../models/meetup_model.dart';
 import '../widgets/app_toast.dart';
 
@@ -31,6 +32,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.background,
       body: CustomScrollView(
@@ -131,6 +133,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
   }
 
   Widget _buildBasicInfo() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: EdgeInsets.all(20.w),
       color: Colors.white,
@@ -156,7 +159,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                           size: 12.sp, color: const Color(0xFFFF4458)),
                       SizedBox(width: 4.w),
                       Text(
-                        'Starting Soon',
+                        l10n.startingSoon,
                         style: TextStyle(
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w600,
@@ -198,6 +201,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
   }
 
   Widget _buildTimeLocationInfo() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: EdgeInsets.all(20.w),
       color: Colors.white,
@@ -205,24 +209,24 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
         children: [
           _buildInfoRow(
             Icons.calendar_today,
-            'Date & Time',
+            l10n.dateAndTime,
             _formatDateTime(_meetup.value.dateTime),
           ),
           SizedBox(height: 16.h),
           _buildInfoRow(
             Icons.location_on,
-            'Venue',
+            l10n.venue,
             _meetup.value.venue,
             subtitle: _meetup.value.venueAddress,
           ),
           SizedBox(height: 16.h),
           _buildInfoRow(
             Icons.people,
-            'Attendees',
+            l10n.attendees,
             '${_meetup.value.currentAttendees} / ${_meetup.value.maxAttendees}',
             subtitle: _meetup.value.isFull
-                ? 'This meetup is full'
-                : '${_meetup.value.remainingSlots} spots left',
+                ? l10n.meetupIsFull
+                : l10n.spotsLeft('${_meetup.value.remainingSlots}'),
           ),
         ],
       ),
@@ -230,6 +234,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
   }
 
   Widget _buildDescription() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: EdgeInsets.all(20.w),
       color: Colors.white,
@@ -237,7 +242,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'About',
+            l10n.about,
             style: TextStyle(
               fontSize: 18.sp,
               fontWeight: FontWeight.bold,
@@ -259,6 +264,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
   }
 
   Widget _buildOrganizerInfo() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: EdgeInsets.all(20.w),
       color: Colors.white,
@@ -266,7 +272,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Organizer',
+            l10n.organizer,
             style: TextStyle(
               fontSize: 18.sp,
               fontWeight: FontWeight.bold,
@@ -295,7 +301,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      'Event Organizer',
+                      l10n.eventOrganizer,
                       style: TextStyle(
                         fontSize: 13.sp,
                         color: AppColors.textSecondary,
@@ -317,7 +323,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                       EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                 ),
                 child: Text(
-                  'Message',
+                  l10n.message,
                   style: TextStyle(
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w600,
@@ -332,6 +338,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
   }
 
   Widget _buildAttendeesList() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: EdgeInsets.all(20.w),
       color: Colors.white,
@@ -342,7 +349,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Attendees (${_meetup.value.currentAttendees})',
+                l10n.attendeesCount('${_meetup.value.currentAttendees}'),
                 style: TextStyle(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
@@ -353,7 +360,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                 TextButton(
                   onPressed: _showAllAttendees,
                   child: Text(
-                    'View All',
+                    l10n.viewAll,
                     style: TextStyle(
                       fontSize: 13.sp,
                       color: const Color(0xFFFF4458),
@@ -369,7 +376,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 20.h),
                 child: Text(
-                  'No attendees yet. Be the first to join!',
+                  l10n.noAttendeesYet,
                   style: TextStyle(
                     fontSize: 14.sp,
                     color: AppColors.textSecondary,
@@ -402,6 +409,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
   }
 
   Widget _buildBottomBar() {
+    final l10n = AppLocalizations.of(context)!;
     return Obx(() => Container(
           padding: EdgeInsets.all(20.w),
           decoration: BoxDecoration(
@@ -422,7 +430,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                   onPressed: _meetup.value.isJoined ? _openChat : null,
                   icon: Icon(Icons.chat_bubble_outline, size: 20.sp),
                   label: Text(
-                    'Chat',
+                    l10n.chat,
                     style: TextStyle(
                       fontSize: 15.sp,
                       fontWeight: FontWeight.w600,
@@ -469,12 +477,12 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                     ),
                     child: Text(
                       _meetup.value.isEnded
-                          ? 'Ended'
+                          ? l10n.ended
                           : _meetup.value.isFull
-                              ? 'Full'
+                              ? l10n.full
                               : _meetup.value.isJoined
-                                  ? 'Leave Meetup'
-                                  : 'Join Meetup',
+                                  ? l10n.leaveMeetup
+                                  : l10n.joinMeetup,
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
@@ -589,6 +597,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
   }
 
   void _toggleJoin() {
+    final l10n = AppLocalizations.of(context)!;
     final updated = _meetup.value.copyWith(
       isJoined: !_meetup.value.isJoined,
       currentAttendees:
@@ -598,22 +607,23 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
 
     if (updated.isJoined) {
       AppToast.success(
-        'You have successfully joined this meetup',
-        title: 'Joined!',
+        l10n.joinedSuccessfully,
+        title: l10n.joined,
       );
     } else {
       AppToast.info(
-        'You left this meetup',
-        title: 'Left meetup',
+        l10n.youLeftMeetup,
+        title: l10n.leftMeetup,
       );
     }
   }
 
   void _openChat() {
+    final l10n = AppLocalizations.of(context)!;
     if (!_meetup.value.isJoined) {
       AppToast.warning(
-        'You need to join this meetup before you can access the group chat',
-        title: 'Join Required',
+        l10n.joinToAccessChat,
+        title: l10n.joinRequired,
       );
       return;
     }
@@ -623,7 +633,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
       '/city-chat',
       arguments: {
         'city': _meetup.value.title,
-        'country': '${_meetup.value.type} Meetup',
+        'country': '${_meetup.value.type} ${l10n.meetup}',
         'meetupId': _meetup.value.id,
         'isMeetupChat': true,
       },
@@ -631,20 +641,23 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
   }
 
   void _shareMeetup() {
-    AppToast.info('Share meetup functionality coming soon!', title: 'Share');
+    final l10n = AppLocalizations.of(context)!;
+    AppToast.info(l10n.shareMeetupComingSoon, title: l10n.share);
   }
 
   void _contactOrganizer() {
+    final l10n = AppLocalizations.of(context)!;
     AppToast.info(
-      'Opening chat with ${_meetup.value.organizerName}...',
-      title: 'Message',
+      l10n.openingChatWith(_meetup.value.organizerName),
+      title: l10n.message,
     );
   }
 
   void _showAllAttendees() {
+    final l10n = AppLocalizations.of(context)!;
     Get.dialog(
       AlertDialog(
-        title: Text('All Attendees', style: TextStyle(fontSize: 18.sp)),
+        title: Text(l10n.allAttendees, style: TextStyle(fontSize: 18.sp)),
         content: SizedBox(
           width: double.maxFinite,
           child: ListView.builder(
@@ -657,10 +670,10 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                     'https://i.pravatar.cc/150?img=${index + 10}',
                   ),
                 ),
-                title: Text('User ${index + 1}',
+                title: Text('${l10n.user} ${index + 1}',
                     style: TextStyle(fontSize: 14.sp)),
                 subtitle:
-                    Text('Digital Nomad', style: TextStyle(fontSize: 12.sp)),
+                    Text(l10n.digitalNomad, style: TextStyle(fontSize: 12.sp)),
               );
             },
           ),
@@ -668,7 +681,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: Text('Close', style: TextStyle(fontSize: 14.sp)),
+            child: Text(l10n.close, style: TextStyle(fontSize: 14.sp)),
           ),
         ],
       ),

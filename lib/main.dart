@@ -8,6 +8,7 @@ import 'controllers/locale_controller.dart';
 import 'controllers/shopping_controller.dart';
 import 'generated/app_localizations.dart';
 import 'routes/app_routes.dart';
+import 'services/database_initializer.dart';
 import 'services/location_service.dart';
 
 void main() async {
@@ -18,6 +19,18 @@ void main() async {
 
   // 初始化位置服务
   await Get.putAsync(() => LocationService().init());
+
+  // 初始化 SQLite 数据库
+  print('💾 初始化 SQLite 数据库...');
+  try {
+    final dbInitializer = DatabaseInitializer();
+    // 设置 forceReset: true 可以清空并重新初始化数据库
+    // 数据修复完成后已改为 false,避免每次启动都清空数据
+    await dbInitializer.initializeDatabase(forceReset: false);
+    print('✅ 数据库初始化成功');
+  } catch (e) {
+    print('❌ 数据库初始化失败: $e');
+  }
 
   runApp(const MyApp());
 }

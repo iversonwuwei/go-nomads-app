@@ -679,7 +679,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String days(int count) {
-    return '$count days';
+    return 'Days';
   }
 
   @override
@@ -791,10 +791,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get events => 'Events';
 
   @override
-  String get upcomingEvents => 'Upcoming Events';
+  String upcomingEvents(String count) {
+    return '$count Upcoming Events';
+  }
 
   @override
-  String get pastEvents => 'Past Events';
+  String pastEvents(String count) {
+    return '$count Past Events';
+  }
 
   @override
   String get eventDetails => 'Event Details';
@@ -809,7 +813,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eventFull => 'Event Full';
 
   @override
-  String get spotsLeft => 'Spots Left';
+  String spotsLeft(String count) {
+    return '$count spots left';
+  }
 
   @override
   String get organizer => 'Organizer';
@@ -821,7 +827,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cohost => 'Co-host';
 
   @override
-  String get joined => 'Joined';
+  String get joined => 'Joined!';
 
   @override
   String get notJoined => 'Not Joined';
@@ -1067,10 +1073,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get and => 'and';
 
   @override
-  String get required => 'Required';
+  String get required => '*';
 
   @override
-  String get optional => 'Optional';
+  String get optional => '(Optional)';
 
   @override
   String get invalidEmail => 'Invalid Email';
@@ -1892,7 +1898,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get clothesPersonal => 'Clothes, personal items';
 
   @override
-  String get miscellaneous => 'Miscellaneous costs';
+  String get miscellaneous => 'Miscellaneous';
 
   @override
   String get additionalNotes => 'Additional Notes';
@@ -1902,6 +1908,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get totalMonthly => 'Total Monthly Cost';
+
+  @override
+  String get averageMonthlyCost => 'Average Monthly Cost';
+
+  @override
+  String get sevenDayForecast => '7-Day Forecast';
+
+  @override
+  String get feelsLike => 'Feels like';
 
   @override
   String get submitCost => 'Submit Cost Information';
@@ -1949,7 +1964,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String day(int count) {
-    return '$count day';
+    return 'Day';
   }
 
   @override
@@ -2315,7 +2330,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reviewTitle => 'Review Title';
 
   @override
-  String get reviewTitleHint => 'Briefly describe your experience';
+  String get reviewTitleHint => 'e.g., Amazing place for digital nomads!';
 
   @override
   String get yourReview => 'Your Review';
@@ -2400,4 +2415,348 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timeRange => 'Time Range';
+
+  @override
+  String get startingSoon => 'Starting Soon';
+
+  @override
+  String get dateAndTime => 'Date & Time';
+
+  @override
+  String get eventOrganizer => 'Event Organizer';
+
+  @override
+  String get message => 'Message';
+
+  @override
+  String get noAttendeesYet => 'No attendees yet. Be the first to join!';
+
+  @override
+  String get leaveMeetup => 'Leave Meetup';
+
+  @override
+  String get ended => 'Ended';
+
+  @override
+  String get full => 'Full';
+
+  @override
+  String get joinedSuccessfully => 'You have successfully joined this meetup';
+
+  @override
+  String get leftMeetup => 'Left meetup';
+
+  @override
+  String get youLeftMeetup => 'You left this meetup';
+
+  @override
+  String get joinRequired => 'Join Required';
+
+  @override
+  String get joinToAccessChat =>
+      'You need to join this meetup before you can access the group chat';
+
+  @override
+  String get shareMeetupComingSoon => 'Share meetup functionality coming soon!';
+
+  @override
+  String openingChatWith(String name) {
+    return 'Opening chat with $name...';
+  }
+
+  @override
+  String get allAttendees => 'All Attendees';
+
+  @override
+  String get user => 'User';
+
+  @override
+  String get digitalNomad => 'Digital Nomad';
+
+  @override
+  String get meetupIsFull => 'This meetup is full';
+
+  @override
+  String attendeesCount(String count) {
+    return 'Attendees ($count)';
+  }
+
+  @override
+  String get allMeetups => 'All Meetups';
+
+  @override
+  String get past => 'Past';
+
+  @override
+  String get upcoming => 'Upcoming';
+
+  @override
+  String joinedEvents(String count) {
+    return '$count Joined Events';
+  }
+
+  @override
+  String get noJoinedMeetupsYet => 'No joined meetups yet';
+
+  @override
+  String get noPastMeetups => 'No past meetups';
+
+  @override
+  String get noMeetupsAvailable => 'No meetups available';
+
+  @override
+  String get join => 'Join';
+
+  @override
+  String youHaveJoined(String title) {
+    return 'You have joined $title';
+  }
+
+  @override
+  String youLeft(String title) {
+    return 'You left $title';
+  }
+
+  @override
+  String get country => 'Country';
+
+  @override
+  String get autoDetectedLocation =>
+      'Auto-detected based on your current location';
+
+  @override
+  String get meetupType => 'Meetup Type';
+
+  @override
+  String get maximumAttendees => 'Maximum Attendees';
+
+  @override
+  String get peoplePlus => '100+ people';
+
+  @override
+  String peopleCount(String count) {
+    return '$count people';
+  }
+
+  @override
+  String get applyFilters => 'Apply Filters';
+
+  @override
+  String get excellent => 'Excellent!';
+
+  @override
+  String get veryGood => 'Very Good';
+
+  @override
+  String get good => 'Good';
+
+  @override
+  String get fair => 'Fair';
+
+  @override
+  String get poor => 'Poor';
+
+  @override
+  String get veryPoor => 'Very Poor';
+
+  @override
+  String get pleaseEnterTitle => 'Please enter a title';
+
+  @override
+  String get titleMinLength => 'Title must be at least 5 characters';
+
+  @override
+  String get yourExperience => 'Your Experience';
+
+  @override
+  String get experienceHint =>
+      'Share your experience, tips, and recommendations...\n\nWhat did you like most?\nWhat could be improved?\nAny tips for other nomads?';
+
+  @override
+  String get pleaseShareExperience => 'Please share your experience';
+
+  @override
+  String get experienceMinLength => 'Please write at least 20 characters';
+
+  @override
+  String get guidelineHonest =>
+      '✓ Be honest and detailed about your experience';
+
+  @override
+  String get guidelineFacts => '✓ Focus on facts and specific examples';
+
+  @override
+  String get guidelineRespect =>
+      '✓ Respect others and avoid offensive language';
+
+  @override
+  String get guidelinePhotos => '✓ Photos should be relevant and appropriate';
+
+  @override
+  String get missingRating => 'Missing Rating';
+
+  @override
+  String get pleaseSelectRating => 'Please select a rating before submitting';
+
+  @override
+  String get reviewSubmitted => 'Your review has been submitted successfully!';
+
+  @override
+  String failedToSubmitReview(String error) {
+    return 'Failed to submit review: $error';
+  }
+
+  @override
+  String failedToPickImages(String error) {
+    return 'Failed to pick images: $error';
+  }
+
+  @override
+  String get loginToContinue => 'Login to your account to continue';
+
+  @override
+  String get orLoginWith => 'Or login with other methods';
+
+  @override
+  String get registerNow => 'Register Now';
+
+  @override
+  String get registerInDevelopment =>
+      'Registration feature is under development';
+
+  @override
+  String get hint => 'Hint';
+
+  @override
+  String get phoneNumber => 'Phone Number';
+
+  @override
+  String get enterPhoneNumber => 'Enter your phone number';
+
+  @override
+  String get enterPassword => 'Enter your password';
+
+  @override
+  String get forgotPasswordQuestion => 'Forgot Password?';
+
+  @override
+  String get forgotPasswordInDevelopment =>
+      'Forgot password feature is under development';
+
+  @override
+  String get passwordLogin => 'Password Login';
+
+  @override
+  String get verificationCodeLogin => 'Code Login';
+
+  @override
+  String get secureLoginDescription =>
+      'Use your phone number to login and manage API, track progress securely.';
+
+  @override
+  String get sendCode => 'Send Code';
+
+  @override
+  String get pleaseEnterPhone => 'Please enter phone number';
+
+  @override
+  String get pleaseEnterValidPhone => 'Please enter valid phone number';
+
+  @override
+  String get pleaseEnterPassword => 'Please enter password';
+
+  @override
+  String get passwordMinLength => 'Password must be at least 6 characters';
+
+  @override
+  String get pleaseEnterCode => 'Please enter verification code';
+
+  @override
+  String get codeLength => 'Verification code must be 6 digits';
+
+  @override
+  String get enterVerificationCode => 'Enter verification code';
+
+  @override
+  String get resend => 'Resend';
+
+  @override
+  String resendIn(String seconds) {
+    return 'Resend in ${seconds}s';
+  }
+
+  @override
+  String get rememberMe => 'Remember Me';
+
+  @override
+  String get verificationCode => 'Verification Code';
+
+  @override
+  String get generatingAiPlan => 'Generating your AI travel plan...';
+
+  @override
+  String get failedToGeneratePlan => 'Failed to generate travel plan';
+
+  @override
+  String get pleaseTryAgain => 'Please try again';
+
+  @override
+  String get aiGeneratedPlan => 'AI Generated Plan';
+
+  @override
+  String get personalizedForYou => 'Personalized for you';
+
+  @override
+  String get from => 'From';
+
+  @override
+  String get budgetBreakdown => 'Budget Breakdown';
+
+  @override
+  String get dailyItinerary => 'Daily Itinerary';
+
+  @override
+  String get mustVisitAttractions => 'Must-Visit Attractions';
+
+  @override
+  String get recommendedRestaurants => 'Recommended Restaurants';
+
+  @override
+  String get travelTips => 'Travel Tips';
+
+  @override
+  String get totalEstimatedCost => 'Total Estimated Cost';
+
+  @override
+  String get foodAndDining => 'Food & Dining';
+
+  @override
+  String get activities => 'Activities';
+
+  @override
+  String get estimatedCost => 'Estimated Cost';
+
+  @override
+  String get localTransport => 'Local Transport';
+
+  @override
+  String get pricePerNight => 'night';
+
+  @override
+  String get bookingTips => 'Booking Tips';
+
+  @override
+  String get asyncWithMap => 'Async with Map feature coming soon!';
+
+  @override
+  String get planSaved => 'Plan saved to your profile!';
+
+  @override
+  String get sharingPlan => 'Sharing your travel plan...';
+
+  @override
+  String get info => 'Info';
+
+  @override
+  String get download => 'Download';
 }

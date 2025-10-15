@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/location_controller.dart';
+import '../generated/app_localizations.dart';
 import '../models/meetup_model.dart';
 import '../widgets/app_toast.dart';
 import 'meetup_detail_page.dart';
@@ -282,6 +283,8 @@ class _MeetupsListPageState extends State<MeetupsListPage>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -293,7 +296,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
           onPressed: () => Get.back(),
         ),
         title: Text(
-          'Meetups',
+          l10n.meetups,
           style: TextStyle(
             color: AppColors.textPrimary,
             fontSize: 18.sp,
@@ -346,9 +349,9 @@ class _MeetupsListPageState extends State<MeetupsListPage>
           unselectedLabelStyle: TextStyle(fontSize: 14.sp),
           onTap: (index) => setState(() {}),
           tabs: [
-            Tab(text: 'All Meetups'),
-            Tab(text: 'Joined'),
-            Tab(text: 'Past'),
+            Tab(text: l10n.allMeetups),
+            Tab(text: l10n.joined),
+            Tab(text: l10n.past),
           ],
         ),
       ),
@@ -381,7 +384,11 @@ class _MeetupsListPageState extends State<MeetupsListPage>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '${meetups.length} ${_tabController.index == 0 ? 'Upcoming' : _tabController.index == 1 ? 'Joined' : 'Past'} Events',
+                      _tabController.index == 0
+                          ? l10n.upcomingEvents('${meetups.length}')
+                          : _tabController.index == 1
+                              ? l10n.joinedEvents('${meetups.length}')
+                              : l10n.pastEvents('${meetups.length}'),
                       style: TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 14.sp,
@@ -412,12 +419,12 @@ class _MeetupsListPageState extends State<MeetupsListPage>
                             // Handle sort
                           },
                           itemBuilder: (context) => [
-                            const PopupMenuItem(
-                                value: 'date', child: Text('Date')),
-                            const PopupMenuItem(
-                                value: 'popular', child: Text('Popular')),
-                            const PopupMenuItem(
-                                value: 'nearby', child: Text('Nearby')),
+                            PopupMenuItem(
+                                value: 'date', child: Text(l10n.date)),
+                            PopupMenuItem(
+                                value: 'popular', child: Text(l10n.popular)),
+                            PopupMenuItem(
+                                value: 'nearby', child: Text(l10n.nearby)),
                           ],
                         ),
                       ],
@@ -444,6 +451,8 @@ class _MeetupsListPageState extends State<MeetupsListPage>
   }
 
   Widget _buildEmptyState() {
+    final l10n = AppLocalizations.of(context)!;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -456,10 +465,10 @@ class _MeetupsListPageState extends State<MeetupsListPage>
           SizedBox(height: 16.h),
           Text(
             _tabController.index == 1
-                ? 'No joined meetups yet'
+                ? l10n.noJoinedMeetupsYet
                 : _tabController.index == 2
-                    ? 'No past meetups'
-                    : 'No meetups available',
+                    ? l10n.noPastMeetups
+                    : l10n.noMeetupsAvailable,
             style: TextStyle(
               fontSize: 16.sp,
               color: AppColors.textSecondary,
@@ -556,7 +565,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
                   // 参与人数
                   _buildInfoRow(
                     Icons.people,
-                    '${meetup.currentAttendees}/${meetup.maxAttendees} attendees',
+                    '${meetup.currentAttendees}/${meetup.maxAttendees} ${AppLocalizations.of(context)!.attendees}',
                     meetup.isFull ? Colors.orange : null,
                   ),
 
@@ -650,6 +659,8 @@ class _MeetupsListPageState extends State<MeetupsListPage>
   }
 
   Widget _buildJoinButton(MeetupModel meetup) {
+    final l10n = AppLocalizations.of(context)!;
+
     if (meetup.isEnded) {
       return Container(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
@@ -658,7 +669,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
           borderRadius: BorderRadius.circular(20.r),
         ),
         child: Text(
-          'Ended',
+          l10n.ended,
           style: TextStyle(
             fontSize: 12.sp,
             color: AppColors.textSecondary,
@@ -676,7 +687,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
           borderRadius: BorderRadius.circular(20.r),
         ),
         child: Text(
-          'Full',
+          l10n.full,
           style: TextStyle(
             fontSize: 12.sp,
             color: Colors.orange,
@@ -697,7 +708,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
           borderRadius: BorderRadius.circular(20.r),
         ),
         child: Text(
-          meetup.isJoined ? 'Joined' : 'Join',
+          meetup.isJoined ? l10n.joined : l10n.join,
           style: TextStyle(
             fontSize: 12.sp,
             color: meetup.isJoined ? const Color(0xFFFF4458) : Colors.white,
@@ -727,6 +738,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
   }
 
   void _toggleJoin(MeetupModel meetup) {
+    final l10n = AppLocalizations.of(context)!;
     final index = _meetups.indexWhere((m) => m.id == meetup.id);
     if (index != -1) {
       final updated = meetup.copyWith(
@@ -737,23 +749,25 @@ class _MeetupsListPageState extends State<MeetupsListPage>
 
       if (updated.isJoined) {
         AppToast.success(
-          'You have joined ${meetup.title}',
-          title: 'Joined!',
+          l10n.youHaveJoined(meetup.title),
+          title: l10n.joined,
         );
       } else {
         AppToast.info(
-          'You left ${meetup.title}',
-          title: 'Left meetup',
+          l10n.youLeft(meetup.title),
+          title: l10n.leftMeetup,
         );
       }
     }
   }
 
   void _openChat(MeetupModel meetup) {
+    final l10n = AppLocalizations.of(context)!;
+
     if (!meetup.isJoined) {
       AppToast.warning(
-        'You need to join this meetup before you can access the group chat',
-        title: 'Join Required',
+        l10n.joinToAccessChat,
+        title: l10n.joinRequired,
       );
       return;
     }
@@ -790,13 +804,14 @@ class _MeetupsListPageState extends State<MeetupsListPage>
   }
 
   String _formatDateTime(DateTime dateTime) {
+    final l10n = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final difference = dateTime.difference(now);
 
     if (difference.inDays == 0) {
-      return 'Today ${DateFormat('HH:mm').format(dateTime)}';
+      return '${l10n.today} ${DateFormat('HH:mm').format(dateTime)}';
     } else if (difference.inDays == 1) {
-      return 'Tomorrow ${DateFormat('HH:mm').format(dateTime)}';
+      return '${l10n.tomorrow} ${DateFormat('HH:mm').format(dateTime)}';
     } else {
       return DateFormat('MMM dd, HH:mm').format(dateTime);
     }
@@ -829,6 +844,7 @@ class _MeetupFilterDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Container(
@@ -851,7 +867,7 @@ class _MeetupFilterDrawer extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Filters',
+                  l10n.filters,
                   style: TextStyle(
                     fontSize: 20.sp,
                     fontWeight: FontWeight.bold,
@@ -863,7 +879,7 @@ class _MeetupFilterDrawer extends StatelessWidget {
                     TextButton(
                       onPressed: onReset,
                       child: Text(
-                        'Reset',
+                        l10n.reset,
                         style: TextStyle(
                           color: const Color(0xFFFF4458),
                           fontWeight: FontWeight.w600,
@@ -889,10 +905,10 @@ class _MeetupFilterDrawer extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 国家筛选
-                  _buildSectionTitle('Country'),
+                  _buildSectionTitle(l10n.country),
                   SizedBox(height: 12.h),
                   Text(
-                    'Auto-detected based on your current location',
+                    l10n.autoDetectedLocation,
                     style: TextStyle(
                       fontSize: 12.sp,
                       color: AppColors.textTertiary,
@@ -940,7 +956,7 @@ class _MeetupFilterDrawer extends StatelessWidget {
                   SizedBox(height: 24.h),
 
                   // 城市筛选
-                  _buildSectionTitle('City'),
+                  _buildSectionTitle(l10n.city),
                   SizedBox(height: 12.h),
                   Obx(() => Wrap(
                         spacing: 8.w,
@@ -981,7 +997,7 @@ class _MeetupFilterDrawer extends StatelessWidget {
                   SizedBox(height: 24.h),
 
                   // 类型筛选
-                  _buildSectionTitle('Meetup Type'),
+                  _buildSectionTitle(l10n.meetupType),
                   SizedBox(height: 12.h),
                   Obx(() => Wrap(
                         spacing: 8.w,
@@ -1022,31 +1038,31 @@ class _MeetupFilterDrawer extends StatelessWidget {
                   SizedBox(height: 24.h),
 
                   // 时间筛选
-                  _buildSectionTitle('Time Range'),
+                  _buildSectionTitle(l10n.timeRange),
                   SizedBox(height: 12.h),
                   Obx(() => Wrap(
                         spacing: 8.w,
                         runSpacing: 8.h,
                         children: [
-                          _buildTimeChip('All', 'all'),
-                          _buildTimeChip('Today', 'today'),
-                          _buildTimeChip('This Week', 'week'),
-                          _buildTimeChip('This Month', 'month'),
+                          _buildTimeChip(l10n.all, 'all'),
+                          _buildTimeChip(l10n.today, 'today'),
+                          _buildTimeChip(l10n.thisWeek, 'week'),
+                          _buildTimeChip(l10n.thisMonth, 'month'),
                         ],
                       )),
 
                   SizedBox(height: 24.h),
 
                   // 最大人数筛选
-                  _buildSectionTitle('Maximum Attendees'),
+                  _buildSectionTitle(l10n.maximumAttendees),
                   SizedBox(height: 12.h),
                   Obx(() => Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             maxAttendees.value >= 100
-                                ? '100+ people'
-                                : '${maxAttendees.value} people',
+                                ? l10n.peoplePlus
+                                : l10n.peopleCount('${maxAttendees.value}'),
                             style: TextStyle(
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w600,
@@ -1096,7 +1112,7 @@ class _MeetupFilterDrawer extends StatelessWidget {
                     elevation: 0,
                   ),
                   child: Text(
-                    'Apply Filters',
+                    l10n.applyFilters,
                     style: TextStyle(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w600,
