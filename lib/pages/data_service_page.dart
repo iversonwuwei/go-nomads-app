@@ -67,8 +67,8 @@ class _DataServicePageState extends State<DataServicePage> {
 
   @override
   Widget build(BuildContext context) {
-    final DataServiceController controller = Get.put(DataServiceController());
-    final l10n = AppLocalizations.of(context)!;
+    // 使用 Get.find() 获取已经初始化的 Controller，而不是创建新实例
+    final DataServiceController controller = Get.find<DataServiceController>();
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
 
@@ -612,6 +612,13 @@ class _DataServicePageState extends State<DataServicePage> {
       final isGrid = controller.isGridView.value;
       final crossAxisCount = isMobile ? 2 : 4;
 
+      // 如果城市列表为空，显示空状态
+      if (items.isEmpty) {
+        return SliverToBoxAdapter(
+          child: _buildEmptyCitiesState(isMobile),
+        );
+      }
+
       // 限制最多显示6个城市 (暂时改成6,方便测试)
       final displayItems = items.length > 6 ? items.sublist(0, 6) : items;
       final hasMore = items.length > 6;
@@ -729,8 +736,9 @@ class _DataServicePageState extends State<DataServicePage> {
     return Obx(() {
       final upcomingMeetups = controller.upcomingMeetups;
 
+      // 如果活动列表为空，显示空状态
       if (upcomingMeetups.isEmpty) {
-        return const SizedBox.shrink();
+        return _buildEmptyMeetupsState(isMobile);
       }
 
       return Column(
@@ -890,6 +898,172 @@ class _DataServicePageState extends State<DataServicePage> {
         ],
       );
     });
+  }
+
+  // 空城市列表状态
+  Widget _buildEmptyCitiesState(bool isMobile) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 24 : 48,
+        vertical: isMobile ? 40 : 60,
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // 图标
+          Container(
+            width: isMobile ? 100 : 120,
+            height: isMobile ? 100 : 120,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFF4458).withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.location_city_rounded,
+              size: isMobile ? 50 : 60,
+              color: const Color(0xFFFF4458),
+            ),
+          ),
+
+          SizedBox(height: isMobile ? 24 : 32),
+
+          // 标题
+          Text(
+            'No Cities Yet',
+            style: TextStyle(
+              fontSize: isMobile ? 24 : 28,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // 描述
+          Text(
+            'Start exploring by adding your first city',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: isMobile ? 14 : 16,
+              color: AppColors.textSecondary,
+              height: 1.5,
+            ),
+          ),
+
+          SizedBox(height: isMobile ? 32 : 40),
+
+          // 添加按钮
+          ElevatedButton.icon(
+            onPressed: () {
+              Get.toNamed('/city-list');
+            },
+            icon: const Icon(Icons.add_circle_outline, size: 20),
+            label: const Text(
+              'Browse Cities',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFF4458),
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 24 : 32,
+                vertical: isMobile ? 14 : 16,
+              ),
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 空活动列表状态
+  Widget _buildEmptyMeetupsState(bool isMobile) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 24 : 48,
+        vertical: isMobile ? 40 : 60,
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // 图标
+          Container(
+            width: isMobile ? 100 : 120,
+            height: isMobile ? 100 : 120,
+            decoration: BoxDecoration(
+              color: const Color(0xFF10B981).withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.groups_rounded,
+              size: isMobile ? 50 : 60,
+              color: const Color(0xFF10B981),
+            ),
+          ),
+
+          SizedBox(height: isMobile ? 24 : 32),
+
+          // 标题
+          Text(
+            'No Meetups Available',
+            style: TextStyle(
+              fontSize: isMobile ? 24 : 28,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // 描述
+          Text(
+            'Be the first to create a meetup and connect\nwith fellow nomads in your city',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: isMobile ? 14 : 16,
+              color: AppColors.textSecondary,
+              height: 1.5,
+            ),
+          ),
+
+          SizedBox(height: isMobile ? 32 : 40),
+
+          // 添加按钮
+          ElevatedButton.icon(
+            onPressed: () {
+              Get.toNamed('/create-meetup');
+            },
+            icon: const Icon(Icons.add_circle_outline, size: 20),
+            label: const Text(
+              'Create Meetup',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 24 : 32,
+                vertical: isMobile ? 14 : 16,
+              ),
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
