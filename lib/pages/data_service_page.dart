@@ -915,8 +915,10 @@ class _DataCardState extends State<_DataCard> {
       onTap: () {
         // 单击跳转到城市详情页面
         Get.to(() => CityDetailPage(
-              cityId: widget.data['id']?.toString() ?? '',
-              cityName: widget.data['name']?.toString() ?? 'Unknown City',
+              cityId: widget.data['id']?.toString() ??
+                  widget.data['city']?.toString() ??
+                  '',
+              cityName: widget.data['city']?.toString() ?? 'Unknown City',
               cityImage: widget.data['image']?.toString() ?? '',
               overallScore: (widget.data['score'] as num?)?.toDouble() ?? 0.0,
               reviewCount: (widget.data['reviews'] as num?)?.toInt() ?? 0,
@@ -1462,8 +1464,8 @@ class _DataListItem extends StatelessWidget {
       onTap: () {
         // 单击跳转到城市详情页面
         Get.to(() => CityDetailPage(
-              cityId: data['id']?.toString() ?? '',
-              cityName: data['name']?.toString() ?? 'Unknown City',
+              cityId: data['id']?.toString() ?? data['city']?.toString() ?? '',
+              cityName: data['city']?.toString() ?? 'Unknown City',
               cityImage: data['image']?.toString() ?? '',
               overallScore: (data['score'] as num?)?.toDouble() ?? 0.0,
               reviewCount: (data['reviews'] as num?)?.toInt() ?? 0,
