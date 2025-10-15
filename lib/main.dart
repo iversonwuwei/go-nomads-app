@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import 'controllers/auth_controller.dart';
+import 'controllers/data_service_controller.dart';
 import 'controllers/locale_controller.dart';
 import 'controllers/shopping_controller.dart';
 import 'generated/app_localizations.dart';
@@ -43,6 +44,7 @@ class MyApp extends StatelessWidget {
     // 初始化全局控制器
     Get.put(AuthController());
     Get.put(ShoppingController());
+    Get.put(DataServiceController());
     final localeController = Get.put(LocaleController());
 
     return ScreenUtilInit(

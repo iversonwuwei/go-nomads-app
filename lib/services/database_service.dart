@@ -58,12 +58,14 @@ class DatabaseService {
       )
     ''');
 
-    // 城市表
+    // 城市表 - 按照 DataServiceController 格式
     await db.execute('''
       CREATE TABLE cities (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         country TEXT NOT NULL,
+        region TEXT,
+        climate TEXT,
         description TEXT,
         image_url TEXT,
         weather TEXT,
@@ -71,8 +73,13 @@ class DatabaseService {
         cost_of_living REAL,
         internet_speed REAL,
         safety_score REAL,
+        overall_score REAL,
         fun_score REAL,
         quality_of_life REAL,
+        aqi INTEGER,
+        population TEXT,
+        timezone TEXT,
+        humidity INTEGER,
         latitude REAL,
         longitude REAL,
         created_at TEXT NOT NULL,
