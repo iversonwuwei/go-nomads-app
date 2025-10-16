@@ -1739,7 +1739,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get pleaseAgreeToTerms => '请同意服务条款和社区准则';
 
   @override
-  String get joinNomads => '加入 Nomads.com →';
+  String get joinNomads => '加入行途';
 
   @override
   String get googleSignIn => 'Google 登录';

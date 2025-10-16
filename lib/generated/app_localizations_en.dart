@@ -1741,7 +1741,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Please agree to the Terms of Service and Community Guidelines';
 
   @override
-  String get joinNomads => 'Join Nomads.com →';
+  String get joinNomads => 'Join Go-Nomads';
 
   @override
   String get googleSignIn => 'Google Sign In';

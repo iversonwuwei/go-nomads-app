@@ -3545,7 +3545,7 @@ abstract class AppLocalizations {
   /// No description provided for @joinNomads.
   ///
   /// In zh, this message translates to:
-  /// **'加入 Nomads.com →'**
+  /// **'加入行途'**
   String get joinNomads;
 
   /// No description provided for @googleSignIn.

@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../controllers/data_service_controller.dart';
 import '../generated/app_localizations.dart';
@@ -288,15 +291,15 @@ class _GlobalMapPageState extends State<GlobalMapPage> {
                     height: 80,
                     child: GestureDetector(
                       onTap: () {
-                        // 跳转到城市详情页
-                        Get.to(() => CityDetailPage(
-                              cityId: city['id']?.toString() ?? city['city'],
-                              cityName: city['city'],
-                              cityImage: city['image'],
-                              overallScore:
-                                  (city['overall'] as num?)?.toDouble() ?? 0.0,
-                              reviewCount: city['reviews'] ?? 0,
-                            ));
+                        // 显示城市信息和导航选项
+                        _showCityInfoSheet(
+                          context,
+                          city['city'],
+                          city['country'] ?? '',
+                          coords,
+                          memberCount,
+                          city,
+                        );
                       },
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -684,5 +687,366 @@ class _GlobalMapPageState extends State<GlobalMapPage> {
         ],
       ),
     );
+  }
+
+  /// 显示城市信息和导航选项
+  void _showCityInfoSheet(
+    BuildContext context,
+    String cityName,
+    String country,
+    LatLng coords,
+    int memberCount,
+    Map<String, dynamic> cityData,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 城市信息
+            Row(
+              children: [
+                const FaIcon(
+                  FontAwesomeIcons.locationDot,
+                  color: Color(0xFFFF4458),
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        cityName,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        country,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF4458).withAlpha(26),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '$memberCount ${l10n.members}',
+                    style: const TextStyle(
+                      color: Color(0xFFFF4458),
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // 操作按钮
+            Row(
+              children: [
+                // 查看详情按钮
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Get.to(() => CityDetailPage(
+                            cityId: cityData['id']?.toString() ?? cityName,
+                            cityName: cityName,
+                            cityImage: cityData['image'],
+                            overallScore:
+                                (cityData['overall'] as num?)?.toDouble() ??
+                                    0.0,
+                            reviewCount: cityData['reviews'] ?? 0,
+                          ));
+                    },
+                    icon: const FaIcon(FontAwesomeIcons.circleInfo, size: 18),
+                    label: Text(l10n.viewDetails),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      side: const BorderSide(color: Color(0xFFFF4458)),
+                      foregroundColor: const Color(0xFFFF4458),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // 开始导航按钮
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _showMapSelectionSheet(context, cityName, coords);
+                    },
+                    icon: const FaIcon(FontAwesomeIcons.diamondTurnRight,
+                        size: 18),
+                    label: Text(l10n.directions),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      backgroundColor: const Color(0xFFFF4458),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 显示地图选择器
+  void _showMapSelectionSheet(
+      BuildContext context, String locationName, LatLng coords) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 标题
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  const FaIcon(FontAwesomeIcons.map,
+                      color: Colors.blue, size: 20),
+                  const SizedBox(width: 12),
+                  const Text(
+                    '选择导航应用',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 32),
+            // 谷歌地图
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withAlpha(25),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const FaIcon(FontAwesomeIcons.map,
+                    color: Colors.blue, size: 20),
+              ),
+              title: const Text('谷歌地图'),
+              subtitle: const Text('Google Maps'),
+              trailing: const FaIcon(FontAwesomeIcons.arrowRight, size: 16),
+              onTap: () {
+                Navigator.pop(context);
+                _openGoogleMaps(locationName, coords);
+              },
+            ),
+            // 高德地图
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.green.withAlpha(25),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const FaIcon(FontAwesomeIcons.locationDot,
+                    color: Colors.green, size: 20),
+              ),
+              title: const Text('高德地图'),
+              subtitle: const Text('Amap'),
+              trailing: const FaIcon(FontAwesomeIcons.arrowRight, size: 16),
+              onTap: () {
+                Navigator.pop(context);
+                _openAmap(locationName, coords);
+              },
+            ),
+            // 百度地图
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withAlpha(25),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const FaIcon(FontAwesomeIcons.mapLocationDot,
+                    color: Colors.orange, size: 20),
+              ),
+              title: const Text('百度地图'),
+              subtitle: const Text('Baidu Maps'),
+              trailing: const FaIcon(FontAwesomeIcons.arrowRight, size: 16),
+              onTap: () {
+                Navigator.pop(context);
+                _openBaiduMaps(locationName, coords);
+              },
+            ),
+            const SizedBox(height: 8),
+            // 取消按钮
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('取消'),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 打开谷歌地图
+  Future<void> _openGoogleMaps(String locationName, LatLng coords) async {
+    final lat = coords.latitude;
+    final lng = coords.longitude;
+    final name = Uri.encodeComponent(locationName);
+
+    // 尝试使用 Google Maps App URL Scheme
+    final appUrl =
+        Uri.parse('comgooglemaps://?daddr=$lat,$lng&directionsmode=driving');
+    // Web 版本作为备选
+    final webUrl = Uri.parse(
+        'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng&destination_place_id=$name');
+
+    try {
+      // 直接尝试打开 App，不检查 canLaunchUrl
+      final launched = await launchUrl(
+        appUrl,
+        mode: LaunchMode.externalApplication,
+      );
+
+      if (!launched) {
+        // 如果 App 未能打开，使用浏览器打开 Web 版本
+        await launchUrl(webUrl, mode: LaunchMode.externalApplication);
+      }
+    } catch (e) {
+      // 打开 App 失败，尝试使用 Web 版本
+      debugPrint('打开谷歌地图 App 失败: $e，尝试打开网页版');
+      try {
+        await launchUrl(webUrl, mode: LaunchMode.externalApplication);
+      } catch (webError) {
+        debugPrint('打开谷歌地图网页版也失败: $webError');
+      }
+    }
+  }
+
+  /// 打开高德地图
+  Future<void> _openAmap(String locationName, LatLng coords) async {
+    final lat = coords.latitude;
+    final lng = coords.longitude;
+    final name = Uri.encodeComponent(locationName);
+
+    // 高德地图 URL Scheme (根据平台使用不同的 scheme)
+    Uri appUrl;
+    if (Platform.isIOS) {
+      appUrl = Uri.parse(
+          'iosamap://navi?sourceApplication=applicationName&poiname=$name&lat=$lat&lon=$lng&dev=0&style=2');
+    } else {
+      appUrl = Uri.parse(
+          'androidamap://navi?sourceApplication=applicationName&poiname=$name&lat=$lat&lon=$lng&dev=0&style=2');
+    }
+
+    // Web 版本作为备选
+    final webUrl = Uri.parse(
+        'https://uri.amap.com/navigation?to=$lng,$lat,$name&mode=car&coordinate=gaode');
+
+    try {
+      // 直接尝试打开 App，不检查 canLaunchUrl
+      final launched = await launchUrl(
+        appUrl,
+        mode: LaunchMode.externalApplication,
+      );
+
+      if (!launched) {
+        // 如果 App 未能打开，使用浏览器打开 Web 版本
+        await launchUrl(webUrl, mode: LaunchMode.externalApplication);
+      }
+    } catch (e) {
+      // 打开 App 失败，尝试使用 Web 版本
+      debugPrint('打开高德地图 App 失败: $e，尝试打开网页版');
+      try {
+        await launchUrl(webUrl, mode: LaunchMode.externalApplication);
+      } catch (webError) {
+        debugPrint('打开高德地图网页版也失败: $webError');
+      }
+    }
+  }
+
+  /// 打开百度地图
+  Future<void> _openBaiduMaps(String locationName, LatLng coords) async {
+    final lat = coords.latitude;
+    final lng = coords.longitude;
+    final name = Uri.encodeComponent(locationName);
+
+    // 百度地图 URL Scheme
+    final appUrl = Uri.parse(
+        'baidumap://map/direction?destination=name:$name|latlng:$lat,$lng&mode=driving&coord_type=gcj02');
+    // Web 版本作为备选
+    final webUrl = Uri.parse(
+        'https://api.map.baidu.com/direction?destination=name:$name|latlng:$lat,$lng&mode=driving&coord_type=gcj02&output=html');
+
+    try {
+      // 直接尝试打开 App，不检查 canLaunchUrl
+      final launched = await launchUrl(
+        appUrl,
+        mode: LaunchMode.externalApplication,
+      );
+
+      if (!launched) {
+        // 如果 App 未能打开，使用浏览器打开 Web 版本
+        await launchUrl(webUrl, mode: LaunchMode.externalApplication);
+      }
+    } catch (e) {
+      // 打开 App 失败，尝试使用 Web 版本
+      debugPrint('打开百度地图 App 失败: $e，尝试打开网页版');
+      try {
+        await launchUrl(webUrl, mode: LaunchMode.externalApplication);
+      } catch (webError) {
+        debugPrint('打开百度地图网页版也失败: $webError');
+      }
+    }
   }
 }
