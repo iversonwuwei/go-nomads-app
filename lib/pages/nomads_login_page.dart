@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../generated/app_localizations.dart';
 import '../widgets/app_toast.dart';
+import 'main_page.dart';
 
 class NomadsLoginPage extends StatefulWidget {
   const NomadsLoginPage({super.key});
@@ -47,6 +48,20 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back,
+            color: NomadsLoginPage.nomadsRed,
+          ),
+          onPressed: () {
+            // 跳转到主页面 (Home tab)
+            Get.off(() => const MainPage());
+          },
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(

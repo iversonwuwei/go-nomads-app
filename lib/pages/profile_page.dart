@@ -659,7 +659,7 @@ class ProfilePage extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
-        // 位置服务设置
+        // 退出登录
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -669,43 +669,11 @@ class ProfilePage extends StatelessWidget {
           ),
           child: Row(
             children: [
-              const Icon(Icons.location_on, color: Color(0xFFFF4458), size: 20),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Text(
-                  '位置服务',
-                  style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF374151)),
-                ),
-              ),
-              TextButton(
-                onPressed: () {
-                  Get.toNamed(AppRoutes.locationDemo);
-                },
-                child: Text(l10n.open,
-                    style: const TextStyle(color: Color(0xFFFF4458))),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        // API开发者设置
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF3F4F6),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: const Color(0xFFE5E7EB)),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.settings, color: Color(0xFF6B7280), size: 20),
+              const Icon(Icons.logout, color: Color(0xFF6B7280), size: 20),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  l10n.apiDeveloperSettings,
+                  l10n.logout,
                   style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -714,9 +682,10 @@ class ProfilePage extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () {
-                  Get.toNamed(AppRoutes.login);
+                  // 退出登录并跳转到登录页面
+                  Get.offAllNamed(AppRoutes.login);
                 },
-                child: Text(l10n.view,
+                child: Text(l10n.logout,
                     style: const TextStyle(color: Color(0xFFFF4458))),
               ),
             ],
