@@ -1,10 +1,4 @@
-import 'dart:io';
-
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -45,7 +39,39 @@ class CityDetailPage extends StatefulWidget {
 class _CityDetailPageState extends State<CityDetailPage> {
   late PageController _pageController;
   int _currentPage = 0;
-  bool _isPageActive = true; // 追踪页面是否处于活动状�?
+
+  // 获取城市展示图片列表
+  List<String> _getCityImages() {
+    // 基于城市主图片生成多张展示图片
+    // 使用不同的Unsplash参数来获取该城市的不同视角图片
+    final baseImage = widget.cityImage;
+
+    // 如果主图片是Unsplash链接，生成系列图片
+    if (baseImage.contains('unsplash.com')) {
+      // 提取图片ID
+      final uri = Uri.parse(baseImage);
+      final photoId = uri.pathSegments
+          .lastWhere(
+            (segment) => segment.startsWith('photo-'),
+            orElse: () => 'photo-default',
+          )
+          .replaceAll('photo-', '');
+
+      return [
+        baseImage, // 主图片
+        'https://images.unsplash.com/$photoId?w=800&h=600&fit=crop&crop=entropy&q=80',
+        'https://images.unsplash.com/$photoId?w=800&h=600&fit=crop&crop=edges&q=80',
+        'https://images.unsplash.com/$photoId?w=800&h=600&fit=crop&crop=faces&q=80',
+      ];
+    }
+
+    // 如果不是Unsplash，返回主图片和一些通用城市图片
+    return [
+      baseImage,
+      'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800',
+      'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800',
+    ];
+  }
 
   @override
   void initState() {
@@ -55,10 +81,8 @@ class _CityDetailPageState extends State<CityDetailPage> {
 
   @override
   void dispose() {
-    _isPageActive = false; // 标记页面已销�?
     _pageController.dispose();
-    // 地图视图会在原生层自动销�?
-    print('🗑�?City detail page disposed, map view will be destroyed');
+    print('🗑️ City detail page disposed');
     super.dispose();
   }
 
@@ -104,27 +128,57 @@ class _CityDetailPageState extends State<CityDetailPage> {
                       background: Stack(
                         fit: StackFit.expand,
                         children: [
-                          // PageView carousel
-                          PageView(
+                          // PageView carousel - 城市图片轮播
+                          PageView.builder(
                             controller: _pageController,
                             onPageChanged: (index) {
                               setState(() {
                                 _currentPage = index;
                               });
                             },
-                            children: [
-                              // City Image with gradient
-                              Stack(
+                            itemCount: _getCityImages().length,
+                            itemBuilder: (context, index) {
+                              return Stack(
                                 fit: StackFit.expand,
                                 children: [
+                                  // 城市图片
                                   Image.network(
-                                    widget.cityImage,
+                                    _getCityImages()[index],
                                     fit: BoxFit.cover,
                                     errorBuilder: (context, error, stackTrace) {
-                                      return Container(color: Colors.grey[300]);
+                                      return Container(
+                                        color: Colors.grey[300],
+                                        child: const Center(
+                                          child: Icon(
+                                            Icons.image_not_supported,
+                                            size: 64,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    loadingBuilder:
+                                        (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return Container(
+                                        color: Colors.grey[200],
+                                        child: Center(
+                                          child: CircularProgressIndicator(
+                                            value: loadingProgress
+                                                        .expectedTotalBytes !=
+                                                    null
+                                                ? loadingProgress
+                                                        .cumulativeBytesLoaded /
+                                                    loadingProgress
+                                                        .expectedTotalBytes!
+                                                : null,
+                                            color: const Color(0xFFFF4458),
+                                          ),
+                                        ),
+                                      );
                                     },
                                   ),
-                                  // Gradient overlay only on image page
+                                  // 渐变遮罩层
                                   Container(
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
@@ -138,12 +192,10 @@ class _CityDetailPageState extends State<CityDetailPage> {
                                     ),
                                   ),
                                 ],
-                              ),
-                              // Map view (no gradient overlay)
-                              _buildMapView(),
-                            ],
+                              );
+                            },
                           ),
-                          // Page indicators - positioned at bottom
+                          // Page indicators - 动态生成
                           Positioned(
                             bottom: 8,
                             left: 0,
@@ -151,11 +203,14 @@ class _CityDetailPageState extends State<CityDetailPage> {
                             child: IgnorePointer(
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  _buildIndicator(0),
-                                  const SizedBox(width: 8),
-                                  _buildIndicator(1),
-                                ],
+                                children: List.generate(
+                                  _getCityImages().length,
+                                  (index) => Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 4),
+                                    child: _buildIndicator(index),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -1635,135 +1690,6 @@ class _CityDetailPageState extends State<CityDetailPage> {
     }
   }
 
-  /// Build map view widget
-  Widget _buildMapView() {
-    // 只在页面活动且当前显示地图页面时才创建地�?
-    if (!_isPageActive || _currentPage != 1) {
-      return Container(
-        width: double.infinity,
-        height: double.infinity,
-        color: Colors.grey[100],
-        child: const Center(
-          child: Text(
-            'Swipe to view map',
-            style: TextStyle(color: Colors.grey),
-          ),
-        ),
-      );
-    }
-
-    if (Platform.isAndroid) {
-      // Android: 使用原生高德地图 (Hybrid Composition 模式)
-      return Container(
-        width: double.infinity,
-        height: double.infinity,
-        color: Colors.grey[100], // 地图背景�?
-        child: PlatformViewLink(
-          viewType: 'amap_city_view',
-          surfaceFactory: (context, controller) {
-            return AndroidViewSurface(
-              controller: controller as AndroidViewController,
-              gestureRecognizers: const <Factory<
-                  OneSequenceGestureRecognizer>>{},
-              hitTestBehavior: PlatformViewHitTestBehavior.opaque,
-            );
-          },
-          onCreatePlatformView: (params) {
-            print(
-                '🗺�?Creating Amap view for ${widget.cityName} (id: ${params.id})');
-            return PlatformViewsService.initSurfaceAndroidView(
-              id: params.id,
-              viewType: 'amap_city_view',
-              layoutDirection: TextDirection.ltr,
-              creationParams: {
-                'cityName': widget.cityName,
-              },
-              creationParamsCodec: const StandardMessageCodec(),
-              onFocus: () {
-                params.onFocusChanged(true);
-              },
-            )
-              ..addOnPlatformViewCreatedListener(params.onPlatformViewCreated)
-              ..addOnPlatformViewCreatedListener((int id) {
-                print(
-                    '�?Amap view created with id: $id for ${widget.cityName}');
-              })
-              ..create();
-          },
-        ),
-      );
-    } else {
-      // iOS 或其他平�? 显示占位�?
-      return Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.grey[100]!,
-              Colors.grey[200]!,
-            ],
-          ),
-        ),
-        child: Stack(
-          children: [
-            // Grid pattern background
-            Positioned.fill(
-              child: CustomPaint(
-                painter: _GridPainter(),
-              ),
-            ),
-            // Map content
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Location icon with animation
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.location_on,
-                        size: 60,
-                        color: Color(0xFFFF4458),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  // City name
-                  Text(
-                    widget.cityName,
-                    style: const TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Map view (iOS)',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.black54,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-  }
-
   /// Build page indicator
   Widget _buildIndicator(int index) {
     return AnimatedContainer(
@@ -1807,37 +1733,4 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
     return false;
   }
-}
-
-/// Grid painter for map background
-class _GridPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.grey.withValues(alpha: 0.1)
-      ..strokeWidth = 1;
-
-    const gridSize = 40.0;
-
-    // Draw vertical lines
-    for (double i = 0; i < size.width; i += gridSize) {
-      canvas.drawLine(
-        Offset(i, 0),
-        Offset(i, size.height),
-        paint,
-      );
-    }
-
-    // Draw horizontal lines
-    for (double i = 0; i < size.height; i += gridSize) {
-      canvas.drawLine(
-        Offset(0, i),
-        Offset(size.width, i),
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

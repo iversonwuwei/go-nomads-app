@@ -2024,7 +2024,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get failedToOpenMap => '打开地图失败';
 
   @override
-  String get cities => '城市群';
+  String get cities => '城市';
 
   @override
   String get coworks => '共享空间';

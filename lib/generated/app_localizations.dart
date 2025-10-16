@@ -4103,7 +4103,7 @@ abstract class AppLocalizations {
   /// No description provided for @cities.
   ///
   /// In zh, this message translates to:
-  /// **'城市群'**
+  /// **'城市'**
   String get cities;
 
   /// No description provided for @coworks.

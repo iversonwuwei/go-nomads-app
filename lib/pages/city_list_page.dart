@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
@@ -6,6 +7,7 @@ import '../controllers/data_service_controller.dart';
 import '../generated/app_localizations.dart';
 import '../widgets/skeletons/skeletons.dart';
 import 'city_detail_page.dart';
+import 'global_map_page.dart';
 
 /// 城市列表页面 - 支持国家、城市和搜索筛选
 class CityListPage extends StatefulWidget {
@@ -22,8 +24,7 @@ class _CityListPageState extends State<CityListPage> {
 
   String _searchQuery = '';
 
-  // 视图和排序状态
-  bool _isGridView = true;
+  // 排序状态
   String _sortBy = 'popular'; // popular, cost, internet, safety
 
   // 分页相关
@@ -79,7 +80,7 @@ class _CityListPageState extends State<CityListPage> {
   // 获取所有筛选后的城市列表（不分页）
   List<Map<String, dynamic>> get _allFilteredCities {
     var items = controller.filteredItems;
-    
+
     print('📊 DEBUG - controller.dataItems 总数: ${controller.dataItems.length}');
     print('📊 DEBUG - controller.filteredItems 数量: ${items.length}');
 
@@ -92,7 +93,7 @@ class _CityListPageState extends State<CityListPage> {
         return city.contains(query) || country.contains(query);
       }).toList();
     }
-    
+
     print('📊 DEBUG - 最终筛选后城市数量: ${items.length}');
     return items;
   }
@@ -189,19 +190,15 @@ class _CityListPageState extends State<CityListPage> {
                 ],
               ),
             ),
-            // Grid/List 视图切换
+            // 全球地图按钮
             IconButton(
-              icon: Icon(
-                _isGridView
-                    ? Icons.view_list_outlined
-                    : Icons.grid_view_outlined,
+              icon: const FaIcon(
+                FontAwesomeIcons.mapLocationDot,
                 color: AppColors.textSecondary,
                 size: 20,
               ),
               onPressed: () {
-                setState(() {
-                  _isGridView = !_isGridView;
-                });
+                Get.to(() => const GlobalMapPage());
               },
             ),
             // 排序
@@ -213,12 +210,15 @@ class _CityListPageState extends State<CityListPage> {
                   _sortBy = value;
                 });
               },
-              itemBuilder: (context) => [
-                PopupMenuItem(value: 'popular', child: Text(l10n.popular)),
-                PopupMenuItem(value: 'cost', child: Text(l10n.cost)),
-                PopupMenuItem(value: 'internet', child: Text(l10n.internet)),
-                PopupMenuItem(value: 'safety', child: Text(l10n.safety)),
-              ],
+              itemBuilder: (context) {
+                final l10n = AppLocalizations.of(context)!;
+                return [
+                  PopupMenuItem(value: 'popular', child: Text(l10n.popular)),
+                  PopupMenuItem(value: 'cost', child: Text(l10n.cost)),
+                  PopupMenuItem(value: 'internet', child: Text(l10n.internet)),
+                  PopupMenuItem(value: 'safety', child: Text(l10n.safety)),
+                ];
+              },
             ),
           ],
         ),
@@ -492,7 +492,7 @@ class _CityListPageState extends State<CityListPage> {
               cityId: city['id']?.toString() ?? city['city'],
               cityName: city['city'],
               cityImage: city['image'],
-              overallScore: (city['score'] as num?)?.toDouble() ?? 0.0,
+              overallScore: (city['overall'] as num?)?.toDouble() ?? 0.0,
               reviewCount: city['reviews'] ?? 0,
             ),
           );
@@ -579,7 +579,8 @@ class _CityListPageState extends State<CityListPage> {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              (city['score'] ?? 0.0).toString(),
+                              (city['overall'] as num?)?.toStringAsFixed(1) ??
+                                  '0.0',
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
@@ -601,7 +602,7 @@ class _CityListPageState extends State<CityListPage> {
                     children: [
                       _buildInfoChip(
                         Icons.wb_sunny,
-                        '${city['temperature'] ?? 0}°',
+                        '${_truncateToOneDecimal(city['temperature'] ?? 0)}°',
                         Colors.orange,
                       ),
                       _buildInfoChip(
@@ -727,6 +728,12 @@ class _CityListPageState extends State<CityListPage> {
         );
       },
     );
+  }
+
+  // 截断数字到小数点后一位(不四舍五入)
+  String _truncateToOneDecimal(num value) {
+    final truncated = (value * 10).truncate() / 10;
+    return truncated.toStringAsFixed(1);
   }
 }
 

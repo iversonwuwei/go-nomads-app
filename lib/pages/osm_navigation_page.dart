@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -9,32 +10,7 @@ import '../generated/app_localizations.dart';
 import '../models/coworking_space_model.dart';
 import '../widgets/app_toast.dart';
 
-// 地图瓦片源枚举
-enum MapTileSource {
-  cartoDB, // CartoDB (默认)
-  openStreetMap, // OpenStreetMap 官方
-  amap, // 高德地图
-  mapbox, // Mapbox
-}
-
-// 地图瓦片配置
-class MapTileConfig {
-  final String name;
-  final String urlTemplate;
-  final List<String>? subdomains;
-  final int maxZoom;
-  final bool requiresApiKey;
-  final String? description;
-
-  const MapTileConfig({
-    required this.name,
-    required this.urlTemplate,
-    this.subdomains,
-    this.maxZoom = 19,
-    this.requiresApiKey = false,
-    this.description,
-  });
-}
+// 地图瓦片源配置已简化,使用与 GlobalMapPage 相同的配置
 
 /// OpenStreetMap 导航页面
 /// 显示 Coworking Space 位置和周边设施（交通、住宿、餐饮）
@@ -55,44 +31,47 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
   bool _showTransit = true;
   bool _showAccommodation = true;
   bool _showRestaurant = true;
-  MapTileSource _currentTileSource = MapTileSource.cartoDB; // 当前地图源
 
-  // 地图瓦片配置映射
-  static const Map<MapTileSource, MapTileConfig> _tileConfigs = {
-    // CartoDB - 清晰美观，免费无限制（推荐）
-    MapTileSource.cartoDB: MapTileConfig(
-      name: 'CartoDB',
-      urlTemplate:
-          'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-      subdomains: ['a', 'b', 'c', 'd'],
-      maxZoom: 20,
-      description: '清晰美观 • 免费 • 速度快',
-    ),
-    // OpenStreetMap 官方
-    MapTileSource.openStreetMap: MapTileConfig(
-      name: 'OpenStreetMap',
-      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-      maxZoom: 19,
-      description: '官方源 • 开源',
-    ),
-    // 高德地图 - 国内速度快，中文地名
-    MapTileSource.amap: MapTileConfig(
-      name: '高德地图',
-      urlTemplate:
-          'https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}',
-      subdomains: ['1', '2', '3', '4'],
-      maxZoom: 18,
-      description: '国内快 • 中文标注',
-    ),
-    // Mapbox - 需要 API Key（这里使用演示 token）
-    MapTileSource.mapbox: MapTileConfig(
-      name: 'Mapbox',
-      urlTemplate:
-          'https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',
-      maxZoom: 22,
-      requiresApiKey: true,
-      description: '高质量 • 需要 Token',
-    ),
+  // 瓦片源选择
+  String _selectedTileSource = 'amap-road'; // 默认使用高德标准地图
+
+  // 可用的瓦片源配置(与 GlobalMapPage 一致)
+  final Map<String, Map<String, String>> _tileSources = {
+    'amap-road': {
+      'name': '高德标准地图',
+      'url':
+          'https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
+    },
+    'amap-satellite': {
+      'name': '高德卫星图',
+      'url':
+          'https://webst01.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}',
+    },
+    'osm-standard': {
+      'name': 'OSM 标准地图',
+      'url': 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    },
+    'osm-humanitarian': {
+      'name': 'OSM 人道主义地图',
+      'url': 'https://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+    },
+    'cartodb-voyager': {
+      'name': 'CartoDB 航海版',
+      'url':
+          'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+    },
+    'cartodb-positron': {
+      'name': 'CartoDB 简洁版',
+      'url': 'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+    },
+    'cartodb-dark': {
+      'name': 'CartoDB 深色',
+      'url': 'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+    },
+    'stamen-terrain': {
+      'name': 'Stamen 地形图',
+      'url': 'https://stamen-tiles.a.ssl.fastly.net/terrain/{z}/{x}/{y}.jpg',
+    },
   };
 
   // 模拟周边设施数据（实际应该从 API 获取）
@@ -187,99 +166,113 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
     }
   }
 
-  // 切换地图源
+  // 显示瓦片源选择器
   void _changeTileSource() {
-    final l10n = AppLocalizations.of(context)!;
-
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => SingleChildScrollView(
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.selectMapSource,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.6,
+          minChildSize: 0.4,
+          maxChildSize: 0.8,
+          builder: (context, scrollController) {
+            return Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
                 ),
               ),
-              const SizedBox(height: 16),
-              ...MapTileSource.values.map((source) {
-                final config = _tileConfigs[source]!;
-                final isSelected = _currentTileSource == source;
-
-                return ListTile(
-                  leading: Icon(
-                    isSelected
-                        ? Icons.radio_button_checked
-                        : Icons.radio_button_unchecked,
-                    color: isSelected ? const Color(0xFFFF4458) : Colors.grey,
-                  ),
-                  title: Text(
-                    config.name,
-                    style: TextStyle(
-                      fontWeight:
-                          isSelected ? FontWeight.bold : FontWeight.normal,
-                    ),
-                  ),
-                  subtitle: config.description != null
-                      ? Text(
-                          config.description!,
-                          style: const TextStyle(fontSize: 12),
-                        )
-                      : null,
-                  trailing: config.requiresApiKey
-                      ? const Icon(Icons.vpn_key,
-                          size: 16, color: Colors.orange)
-                      : null,
-                  onTap: () {
-                    setState(() {
-                      _currentTileSource = source;
-                    });
-                    Navigator.pop(context);
-
-                    // 显示提示
-                    AppToast.success(l10n.switchedToMapSource(config.name));
-                  },
-                );
-              }),
-              const SizedBox(height: 8),
-              if (_tileConfigs[_currentTileSource]!.requiresApiKey)
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.info_outline,
-                          color: Colors.orange, size: 20),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          l10n.mapboxTokenWarning,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.orange[900],
-                          ),
+              child: Column(
+                children: [
+                  // 标题栏
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Colors.grey.shade200,
+                          width: 1,
                         ),
                       ),
-                    ],
+                    ),
+                    child: Row(
+                      children: [
+                        const FaIcon(
+                          FontAwesomeIcons.layerGroup,
+                          color: Color(0xFF1976D2),
+                          size: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        const Text(
+                          '选择地图瓦片源',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-            ],
-          ),
-        ),
-      ),
+                  // 可滚动的瓦片源列表
+                  Expanded(
+                    child: ListView(
+                      controller: scrollController,
+                      children: _tileSources.entries.map((entry) {
+                        final isSelected = _selectedTileSource == entry.key;
+                        return ListTile(
+                          leading: FaIcon(
+                            FontAwesomeIcons.map,
+                            color: isSelected
+                                ? const Color(0xFF1976D2)
+                                : Colors.grey.shade600,
+                            size: 20,
+                          ),
+                          title: Text(
+                            entry.value['name']!,
+                            style: TextStyle(
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                              color:
+                                  isSelected ? const Color(0xFF1976D2) : null,
+                            ),
+                          ),
+                          trailing: isSelected
+                              ? const FaIcon(
+                                  FontAwesomeIcons.circleCheck,
+                                  color: Color(0xFF1976D2),
+                                  size: 20,
+                                )
+                              : null,
+                          selected: isSelected,
+                          onTap: () {
+                            setState(() {
+                              _selectedTileSource = entry.key;
+                            });
+                            Navigator.pop(context);
+                            // 显示切换提示
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('已切换到 ${entry.value['name']}'),
+                                duration: const Duration(seconds: 2),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          },
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -300,19 +293,19 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
             mapController: _mapController,
             options: MapOptions(
               initialCenter: center,
-              initialZoom: 15.0,
+              initialZoom: 14.0,
               minZoom: 10.0,
-              maxZoom: 18.0,
+              maxZoom: 16.0,
               backgroundColor: Colors.grey[300]!, // 地图背景色
             ),
             children: [
-              // OpenStreetMap 瓦片层 - 使用动态配置
+              // 地图瓦片层
               TileLayer(
-                urlTemplate: _tileConfigs[_currentTileSource]!.urlTemplate,
-                subdomains:
-                    _tileConfigs[_currentTileSource]!.subdomains ?? const [],
-                userAgentPackageName: 'com.example.df_admin_mobile',
-                maxZoom: _tileConfigs[_currentTileSource]!.maxZoom.toDouble(),
+                urlTemplate: _tileSources[_selectedTileSource]!['url']!,
+                userAgentPackageName: 'com.digitalfuture.df_admin_mobile',
+                maxZoom: 18,
+                minZoom: 2,
+                tileProvider: NetworkTileProvider(),
               ),
               // 标记层 - 周边设施
               MarkerLayer(
@@ -476,7 +469,7 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
                 // 地图源切换按钮
                 _buildFilterButton(
                   icon: Icons.layers,
-                  label: _tileConfigs[_currentTileSource]!.name,
+                  label: _tileSources[_selectedTileSource]!['name']!,
                   isActive: false,
                   onTap: _changeTileSource,
                 ),
@@ -512,6 +505,87 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
                       _showRestaurant = !_showRestaurant;
                     });
                   },
+                ),
+              ],
+            ),
+          ),
+
+          // 缩放按钮
+          Positioned(
+            right: 16,
+            bottom: 100,
+            child: Column(
+              children: [
+                // Zoom In 按钮
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: () {
+                        final currentZoom = _mapController.camera.zoom;
+                        _mapController.move(
+                          _mapController.camera.center,
+                          currentZoom + 1,
+                        );
+                      },
+                      child: const Padding(
+                        padding: EdgeInsets.all(12),
+                        child: FaIcon(
+                          FontAwesomeIcons.plus,
+                          color: Color(0xFF1976D2),
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // Zoom Out 按钮
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: () {
+                        final currentZoom = _mapController.camera.zoom;
+                        _mapController.move(
+                          _mapController.camera.center,
+                          currentZoom - 1,
+                        );
+                      },
+                      child: const Padding(
+                        padding: EdgeInsets.all(12),
+                        child: FaIcon(
+                          FontAwesomeIcons.minus,
+                          color: Color(0xFF1976D2),
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),

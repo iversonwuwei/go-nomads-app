@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
@@ -11,6 +12,7 @@ import '../widgets/skeletons/skeletons.dart';
 import 'city_detail_page.dart';
 import 'city_list_page.dart';
 import 'coworking_home_page.dart';
+import 'global_map_page.dart';
 import 'meetup_detail_page.dart';
 
 class DataServicePage extends StatefulWidget {
@@ -508,17 +510,17 @@ class _DataServicePageState extends State<DataServicePage> {
                     ],
                   ),
                 )),
-            // Grid/List 视图切换
-            Obx(() => IconButton(
-                  icon: Icon(
-                    controller.isGridView.value
-                        ? Icons.view_list_outlined
-                        : Icons.grid_view_outlined,
-                    color: AppColors.textSecondary,
-                    size: 20,
-                  ),
-                  onPressed: controller.toggleView,
-                )),
+            // 全球地图按钮
+            IconButton(
+              icon: const FaIcon(
+                FontAwesomeIcons.mapLocationDot,
+                color: AppColors.textSecondary,
+                size: 20,
+              ),
+              onPressed: () {
+                Get.to(() => const GlobalMapPage());
+              },
+            ),
             // 排序
             PopupMenuButton<String>(
               icon: const Icon(Icons.sort_outlined,
@@ -1108,7 +1110,7 @@ class _DataCardState extends State<_DataCard> {
                   '',
               cityName: widget.data['city']?.toString() ?? 'Unknown City',
               cityImage: widget.data['image']?.toString() ?? '',
-              overallScore: (widget.data['score'] as num?)?.toDouble() ?? 0.0,
+              overallScore: (widget.data['overall'] as num?)?.toDouble() ?? 0.0,
               reviewCount: (widget.data['reviews'] as num?)?.toInt() ?? 0,
             ));
       },
@@ -1300,6 +1302,36 @@ class _DataCardState extends State<_DataCard> {
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
+                        ),
+                        SizedBox(height: isMobile ? 4 : 8),
+                        // 综合得分
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.star_rounded,
+                              color: const Color(0xFFFBBF24),
+                              size: isMobile ? 16 : 18,
+                            ),
+                            SizedBox(width: isMobile ? 3 : 4),
+                            Text(
+                              (widget.data['overall'] as num?)
+                                      ?.toStringAsFixed(1) ??
+                                  '0.0',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: isMobile ? 14 : 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(width: isMobile ? 3 : 4),
+                            Text(
+                              '综合得分',
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: isMobile ? 11 : 12,
+                              ),
+                            ),
+                          ],
                         ),
                         SizedBox(height: isMobile ? 4 : 8),
                         // 天气和价格
