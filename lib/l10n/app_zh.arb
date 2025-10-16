@@ -1313,6 +1313,10 @@
   "upcomingEventsCount": "{count} 个即将举行的活动",
   "viewAllMeetups": "查看所有聚会",
   "pleaseLoginToCreateMeetup": "请登录以创建聚会",
-  "loginRequired": "需要登录"
+  "loginRequired": "需要登录",
+  "transit": "交通",
+  "recenter": "回到中心",
+  "startNavigation": "开始导航",
+  "noMapAppAvailable": "未找到可用的地图应用"
 }
 

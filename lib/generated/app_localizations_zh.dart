@@ -2920,4 +2920,16 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get pleaseLoginToCreateMeetup => '请登录以创建聚会';
+
+  @override
+  String get transit => '交通';
+
+  @override
+  String get recenter => '回到中心';
+
+  @override
+  String get startNavigation => '开始导航';
+
+  @override
+  String get noMapAppAvailable => '未找到可用的地图应用';
 }

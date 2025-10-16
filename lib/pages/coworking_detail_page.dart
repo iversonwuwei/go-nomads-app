@@ -1,8 +1,10 @@
 import 'package:df_admin_mobile/models/coworking_space_model.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../generated/app_localizations.dart';
+import 'osm_navigation_page.dart';
 
 /// Coworking Detail Page
 /// 共享办公空间详情页面
@@ -239,7 +241,11 @@ class CoworkingDetailPage extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 onPressed: () {
-                  _launchMaps(space.latitude, space.longitude);
+                  // 导航到 OpenStreetMap 页面
+                  Get.to(
+                    () => OSMNavigationPage(coworkingSpace: space),
+                    transition: Transition.rightToLeft,
+                  );
                 },
               ),
             ),
@@ -662,11 +668,5 @@ class CoworkingDetailPage extends StatelessWidget {
       await launchUrl(uri);
     }
   }
-
-  /// 启动地图
-  void _launchMaps(double latitude, double longitude) async {
-    final url =
-        'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude';
-    _launchURL(url);
-  }
 }
+

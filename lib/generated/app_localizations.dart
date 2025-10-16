@@ -5833,6 +5833,30 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'请登录以创建聚会'**
   String get pleaseLoginToCreateMeetup;
+
+  /// No description provided for @transit.
+  ///
+  /// In zh, this message translates to:
+  /// **'交通'**
+  String get transit;
+
+  /// No description provided for @recenter.
+  ///
+  /// In zh, this message translates to:
+  /// **'回到中心'**
+  String get recenter;
+
+  /// No description provided for @startNavigation.
+  ///
+  /// In zh, this message translates to:
+  /// **'开始导航'**
+  String get startNavigation;
+
+  /// No description provided for @noMapAppAvailable.
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到可用的地图应用'**
+  String get noMapAppAvailable;
 }
 
 class _AppLocalizationsDelegate

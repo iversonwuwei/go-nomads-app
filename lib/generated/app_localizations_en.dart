@@ -2944,4 +2944,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pleaseLoginToCreateMeetup => 'Please login to create a meetup';
+
+  @override
+  String get transit => 'Transit';
+
+  @override
+  String get recenter => 'Recenter';
+
+  @override
+  String get startNavigation => 'Start Navigation';
+
+  @override
+  String get noMapAppAvailable => 'No map app available';
 }

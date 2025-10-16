@@ -1329,5 +1329,9 @@
   },
   "viewAllMeetups": "View all meetups",
   "pleaseLoginToCreateMeetup": "Please login to create a meetup",
-  "loginRequired": "Login Required"
+  "loginRequired": "Login Required",
+  "transit": "Transit",
+  "recenter": "Recenter",
+  "startNavigation": "Start Navigation",
+  "noMapAppAvailable": "No map app available"
 }
