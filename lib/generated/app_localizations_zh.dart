@@ -396,7 +396,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get help => '帮助';
 
   @override
-  String get contact => '联系我们';
+  String get contact => '联系人';
 
   @override
   String get feedback => '反馈';
@@ -1553,7 +1553,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get entrepreneurship => '创业精神';
 
   @override
-  String get innovation => '创新';
+  String get innovation => '创意项目';
 
   @override
   String get techHub => '科技中心';
@@ -3225,5 +3225,128 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String failedToAddEvent(String error) {
     return '添加事件到日历失败：$error';
+  }
+
+  @override
+  String get cityChats => '城市聊天';
+
+  @override
+  String get onlineMembers => '在线成员';
+
+  @override
+  String get justNow => '刚刚';
+
+  @override
+  String get photoVideo => '照片和视频';
+
+  @override
+  String get document => '文档';
+
+  @override
+  String minutesAgo(int minutes) {
+    return '$minutes分钟前';
+  }
+
+  @override
+  String hoursAgo(int hours) {
+    return '$hours小时前';
+  }
+
+  @override
+  String daysAgo(int count) {
+    return '$count天前';
+  }
+
+  @override
+  String lastSeen(String time) {
+    return '最后在线 $time';
+  }
+
+  @override
+  String get sendAttachment => '发送附件';
+
+  @override
+  String get sharePhotosAndVideos => '分享照片和视频';
+
+  @override
+  String get shareYourLocation => '分享你的位置';
+
+  @override
+  String get shareFilesAndDocuments => '分享文件和文档';
+
+  @override
+  String get shareContactInformation => '分享联系信息';
+
+  @override
+  String get imageUploadComingSoon => '图片上传功能即将推出！';
+
+  @override
+  String get locationSharingComingSoon => '位置分享功能即将推出！';
+
+  @override
+  String get documentUploadComingSoon => '文档上传功能即将推出！';
+
+  @override
+  String get contactSharingComingSoon => '联系人分享功能即将推出！';
+
+  @override
+  String get innovationDescription => '探索创新想法，寻找合作伙伴';
+
+  @override
+  String get elevatorPitch => '一句话定位';
+
+  @override
+  String get problem => '要解决的问题';
+
+  @override
+  String get solution => '解决方案';
+
+  @override
+  String get targetAudience => '目标用户';
+
+  @override
+  String get productType => '产品形态';
+
+  @override
+  String get keyFeatures => '核心功能';
+
+  @override
+  String get competitiveAdvantage => '竞争优势';
+
+  @override
+  String get businessModel => '商业模式';
+
+  @override
+  String get marketOpportunity => '市场潜力';
+
+  @override
+  String get currentStatus => '当前进展';
+
+  @override
+  String get team => '团队介绍';
+
+  @override
+  String get ask => '所需支持';
+
+  @override
+  String get createdAt => '创建于';
+
+  @override
+  String get createMyInnovation => '创建我的创意项目';
+
+  @override
+  String get exploreInnovations => '探索创意项目';
+
+  @override
+  String get contactCreator => '联系作者';
+
+  @override
+  String weeksAgo(int count) {
+    return '$count周前';
+  }
+
+  @override
+  String monthsAgo(int count) {
+    return '$count月前';
   }
 }

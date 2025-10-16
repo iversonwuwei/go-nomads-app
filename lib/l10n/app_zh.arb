@@ -1545,6 +1545,103 @@
         "type": "String"
       }
     }
+  },
+  "cityChats": "城市聊天",
+  "onlineMembers": "在线成员",
+  "online": "在线",
+  "justNow": "刚刚",
+  "photoVideo": "照片和视频",
+  "location": "位置",
+  "document": "文档",
+  "contact": "联系人",
+  "minutesAgo": "{minutes}分钟前",
+  "@minutesAgo": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "hoursAgo": "{hours}小时前",
+  "@hoursAgo": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "daysAgo": "{days}天前",
+  "@daysAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "lastSeen": "最后在线 {time}",
+  "@lastSeen": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "sendAttachment": "发送附件",
+  "sharePhotosAndVideos": "分享照片和视频",
+  "shareYourLocation": "分享你的位置",
+  "shareFilesAndDocuments": "分享文件和文档",
+  "shareContactInformation": "分享联系信息",
+  "imageUploadComingSoon": "图片上传功能即将推出！",
+  "locationSharingComingSoon": "位置分享功能即将推出！",
+  "documentUploadComingSoon": "文档上传功能即将推出！",
+  "contactSharingComingSoon": "联系人分享功能即将推出！",
+  "innovation": "创意项目",
+  "innovationDescription": "探索创新想法，寻找合作伙伴",
+  "elevatorPitch": "一句话定位",
+  "problem": "要解决的问题",
+  "solution": "解决方案",
+  "targetAudience": "目标用户",
+  "productType": "产品形态",
+  "keyFeatures": "核心功能",
+  "competitiveAdvantage": "竞争优势",
+  "businessModel": "商业模式",
+  "marketOpportunity": "市场潜力",
+  "currentStatus": "当前进展",
+  "team": "团队介绍",
+  "ask": "所需支持",
+  "createdAt": "创建于",
+  "createMyInnovation": "创建我的创意项目",
+  "exploreInnovations": "探索创意项目",
+  "viewDetails": "查看详情",
+  "contactCreator": "联系作者",
+  "today": "今天",
+  "yesterday": "昨天",
+  "daysAgo": "{count}天前",
+  "@daysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weeksAgo": "{count}周前",
+  "@weeksAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monthsAgo": "{count}月前",
+  "@monthsAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }
+
+
+
 

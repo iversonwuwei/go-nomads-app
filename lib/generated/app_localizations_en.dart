@@ -396,7 +396,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get help => 'Help';
 
   @override
-  String get contact => 'Contact Us';
+  String get contact => 'Contact';
 
   @override
   String get feedback => 'Feedback';
@@ -3254,5 +3254,130 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String failedToAddEvent(String error) {
     return 'Failed to add event to calendar: $error';
+  }
+
+  @override
+  String get cityChats => 'City Chats';
+
+  @override
+  String get onlineMembers => 'Online Members';
+
+  @override
+  String get justNow => 'Just now';
+
+  @override
+  String get photoVideo => 'Photo & Video';
+
+  @override
+  String get document => 'Document';
+
+  @override
+  String minutesAgo(int minutes) {
+    return '${minutes}m ago';
+  }
+
+  @override
+  String hoursAgo(int hours) {
+    return '${hours}h ago';
+  }
+
+  @override
+  String daysAgo(int count) {
+    return '$count days ago';
+  }
+
+  @override
+  String lastSeen(String time) {
+    return 'Last seen $time';
+  }
+
+  @override
+  String get sendAttachment => 'Send Attachment';
+
+  @override
+  String get sharePhotosAndVideos => 'Share photos and videos';
+
+  @override
+  String get shareYourLocation => 'Share your location';
+
+  @override
+  String get shareFilesAndDocuments => 'Share files and documents';
+
+  @override
+  String get shareContactInformation => 'Share contact information';
+
+  @override
+  String get imageUploadComingSoon => 'Image upload feature coming soon!';
+
+  @override
+  String get locationSharingComingSoon =>
+      'Location sharing feature coming soon!';
+
+  @override
+  String get documentUploadComingSoon => 'Document upload feature coming soon!';
+
+  @override
+  String get contactSharingComingSoon => 'Contact sharing feature coming soon!';
+
+  @override
+  String get innovationDescription =>
+      'Explore innovative ideas and find partners';
+
+  @override
+  String get elevatorPitch => 'Elevator Pitch';
+
+  @override
+  String get problem => 'Problem';
+
+  @override
+  String get solution => 'Solution';
+
+  @override
+  String get targetAudience => 'Target Audience';
+
+  @override
+  String get productType => 'Product Type';
+
+  @override
+  String get keyFeatures => 'Key Features';
+
+  @override
+  String get competitiveAdvantage => 'Competitive Advantage';
+
+  @override
+  String get businessModel => 'Business Model';
+
+  @override
+  String get marketOpportunity => 'Market Opportunity';
+
+  @override
+  String get currentStatus => 'Current Status';
+
+  @override
+  String get team => 'Team';
+
+  @override
+  String get ask => 'Ask';
+
+  @override
+  String get createdAt => 'Created at';
+
+  @override
+  String get createMyInnovation => 'Create My Innovation';
+
+  @override
+  String get exploreInnovations => 'Explore Innovations';
+
+  @override
+  String get contactCreator => 'Contact Creator';
+
+  @override
+  String weeksAgo(int count) {
+    return '$count weeks ago';
+  }
+
+  @override
+  String monthsAgo(int count) {
+    return '$count months ago';
   }
 }

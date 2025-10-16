@@ -875,7 +875,7 @@ abstract class AppLocalizations {
   /// No description provided for @contact.
   ///
   /// In zh, this message translates to:
-  /// **'联系我们'**
+  /// **'联系人'**
   String get contact;
 
   /// No description provided for @feedback.
@@ -3173,7 +3173,7 @@ abstract class AppLocalizations {
   /// No description provided for @innovation.
   ///
   /// In zh, this message translates to:
-  /// **'创新'**
+  /// **'创意项目'**
   String get innovation;
 
   /// No description provided for @techHub.
@@ -6409,6 +6409,228 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'添加事件到日历失败：{error}'**
   String failedToAddEvent(String error);
+
+  /// No description provided for @cityChats.
+  ///
+  /// In zh, this message translates to:
+  /// **'城市聊天'**
+  String get cityChats;
+
+  /// No description provided for @onlineMembers.
+  ///
+  /// In zh, this message translates to:
+  /// **'在线成员'**
+  String get onlineMembers;
+
+  /// No description provided for @justNow.
+  ///
+  /// In zh, this message translates to:
+  /// **'刚刚'**
+  String get justNow;
+
+  /// No description provided for @photoVideo.
+  ///
+  /// In zh, this message translates to:
+  /// **'照片和视频'**
+  String get photoVideo;
+
+  /// No description provided for @document.
+  ///
+  /// In zh, this message translates to:
+  /// **'文档'**
+  String get document;
+
+  /// No description provided for @minutesAgo.
+  ///
+  /// In zh, this message translates to:
+  /// **'{minutes}分钟前'**
+  String minutesAgo(int minutes);
+
+  /// No description provided for @hoursAgo.
+  ///
+  /// In zh, this message translates to:
+  /// **'{hours}小时前'**
+  String hoursAgo(int hours);
+
+  /// No description provided for @daysAgo.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count}天前'**
+  String daysAgo(int count);
+
+  /// No description provided for @lastSeen.
+  ///
+  /// In zh, this message translates to:
+  /// **'最后在线 {time}'**
+  String lastSeen(String time);
+
+  /// No description provided for @sendAttachment.
+  ///
+  /// In zh, this message translates to:
+  /// **'发送附件'**
+  String get sendAttachment;
+
+  /// No description provided for @sharePhotosAndVideos.
+  ///
+  /// In zh, this message translates to:
+  /// **'分享照片和视频'**
+  String get sharePhotosAndVideos;
+
+  /// No description provided for @shareYourLocation.
+  ///
+  /// In zh, this message translates to:
+  /// **'分享你的位置'**
+  String get shareYourLocation;
+
+  /// No description provided for @shareFilesAndDocuments.
+  ///
+  /// In zh, this message translates to:
+  /// **'分享文件和文档'**
+  String get shareFilesAndDocuments;
+
+  /// No description provided for @shareContactInformation.
+  ///
+  /// In zh, this message translates to:
+  /// **'分享联系信息'**
+  String get shareContactInformation;
+
+  /// No description provided for @imageUploadComingSoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'图片上传功能即将推出！'**
+  String get imageUploadComingSoon;
+
+  /// No description provided for @locationSharingComingSoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'位置分享功能即将推出！'**
+  String get locationSharingComingSoon;
+
+  /// No description provided for @documentUploadComingSoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'文档上传功能即将推出！'**
+  String get documentUploadComingSoon;
+
+  /// No description provided for @contactSharingComingSoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'联系人分享功能即将推出！'**
+  String get contactSharingComingSoon;
+
+  /// No description provided for @innovationDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'探索创新想法，寻找合作伙伴'**
+  String get innovationDescription;
+
+  /// No description provided for @elevatorPitch.
+  ///
+  /// In zh, this message translates to:
+  /// **'一句话定位'**
+  String get elevatorPitch;
+
+  /// No description provided for @problem.
+  ///
+  /// In zh, this message translates to:
+  /// **'要解决的问题'**
+  String get problem;
+
+  /// No description provided for @solution.
+  ///
+  /// In zh, this message translates to:
+  /// **'解决方案'**
+  String get solution;
+
+  /// No description provided for @targetAudience.
+  ///
+  /// In zh, this message translates to:
+  /// **'目标用户'**
+  String get targetAudience;
+
+  /// No description provided for @productType.
+  ///
+  /// In zh, this message translates to:
+  /// **'产品形态'**
+  String get productType;
+
+  /// No description provided for @keyFeatures.
+  ///
+  /// In zh, this message translates to:
+  /// **'核心功能'**
+  String get keyFeatures;
+
+  /// No description provided for @competitiveAdvantage.
+  ///
+  /// In zh, this message translates to:
+  /// **'竞争优势'**
+  String get competitiveAdvantage;
+
+  /// No description provided for @businessModel.
+  ///
+  /// In zh, this message translates to:
+  /// **'商业模式'**
+  String get businessModel;
+
+  /// No description provided for @marketOpportunity.
+  ///
+  /// In zh, this message translates to:
+  /// **'市场潜力'**
+  String get marketOpportunity;
+
+  /// No description provided for @currentStatus.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前进展'**
+  String get currentStatus;
+
+  /// No description provided for @team.
+  ///
+  /// In zh, this message translates to:
+  /// **'团队介绍'**
+  String get team;
+
+  /// No description provided for @ask.
+  ///
+  /// In zh, this message translates to:
+  /// **'所需支持'**
+  String get ask;
+
+  /// No description provided for @createdAt.
+  ///
+  /// In zh, this message translates to:
+  /// **'创建于'**
+  String get createdAt;
+
+  /// No description provided for @createMyInnovation.
+  ///
+  /// In zh, this message translates to:
+  /// **'创建我的创意项目'**
+  String get createMyInnovation;
+
+  /// No description provided for @exploreInnovations.
+  ///
+  /// In zh, this message translates to:
+  /// **'探索创意项目'**
+  String get exploreInnovations;
+
+  /// No description provided for @contactCreator.
+  ///
+  /// In zh, this message translates to:
+  /// **'联系作者'**
+  String get contactCreator;
+
+  /// No description provided for @weeksAgo.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count}周前'**
+  String weeksAgo(int count);
+
+  /// No description provided for @monthsAgo.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count}月前'**
+  String monthsAgo(int count);
 }
 
 class _AppLocalizationsDelegate

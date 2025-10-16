@@ -13,6 +13,7 @@ import 'city_detail_page.dart';
 import 'city_list_page.dart';
 import 'coworking_home_page.dart';
 import 'global_map_page.dart';
+import 'innovation_list_page.dart';
 import 'meetup_detail_page.dart';
 
 class DataServicePage extends StatefulWidget {
@@ -267,59 +268,160 @@ class _DataServicePageState extends State<DataServicePage> {
     );
   }
 
-  // 紧凑型服务卡片
+  // 紧凑型服务卡片 - 响应式网格布局
   Widget _buildServiceCards(bool isMobile, AppLocalizations l10n) {
-    return Container(
-      constraints: BoxConstraints(
-        maxWidth: isMobile ? double.infinity : 750,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Cities
-          Expanded(
-            child: _buildCompactCard(
-              isMobile: isMobile,
-              icon: Icons.location_city_rounded,
-              title: l10n.cities,
-              color: const Color(0xFFFF4458),
-              onTap: () => Get.to(() => const CityListPage()),
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    // 根据屏幕宽度决定布局
+    // 超小屏(<400px): 2列2行
+    // 小屏(400-768px): 2列2行
+    // 中屏(768-1024px): 4列1行
+    // 大屏(>1024px): 4列1行
+    final isVerySmall = screenWidth < 400;
+    final useGridLayout = screenWidth < 768;
+
+    if (useGridLayout) {
+      // 2x2 网格布局
+      return Container(
+        constraints: const BoxConstraints(maxWidth: 600),
+        child: Column(
+          children: [
+            // 第一行: Cities + Coworkings
+            Row(
+              children: [
+                Expanded(
+                  child: _buildCompactCard(
+                    isMobile: true,
+                    icon: Icons.location_city_rounded,
+                    title: l10n.cities,
+                    color: const Color(0xFFFF4458),
+                    onTap: () => Get.to(() => const CityListPage()),
+                    isCompact: isVerySmall,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildCompactCard(
+                    isMobile: true,
+                    icon: Icons.business_center_rounded,
+                    title: l10n.coworks,
+                    color: const Color(0xFF6366F1),
+                    onTap: () => Get.to(() => const CoworkingHomePage()),
+                    isCompact: isVerySmall,
+                  ),
+                ),
+              ],
             ),
-          ),
-
-          SizedBox(width: isMobile ? 8 : 12),
-
-          // Coworkings
-          Expanded(
-            child: _buildCompactCard(
-              isMobile: isMobile,
-              icon: Icons.business_center_rounded,
-              title: l10n.coworks,
-              color: const Color(0xFF6366F1),
-              onTap: () => Get.to(() => const CoworkingHomePage()),
+            const SizedBox(height: 12),
+            // 第二行: Meetups + Innovation
+            Row(
+              children: [
+                Expanded(
+                  child: Builder(
+                    builder: (context) {
+                      final l10n = AppLocalizations.of(context)!;
+                      return _buildCompactCard(
+                        isMobile: true,
+                        icon: Icons.groups_rounded,
+                        title: l10n.meetups,
+                        color: const Color(0xFF10B981),
+                        onTap: () => Get.toNamed('/meetups-list'),
+                        isCompact: isVerySmall,
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Builder(
+                    builder: (context) {
+                      final l10n = AppLocalizations.of(context)!;
+                      return _buildCompactCard(
+                        isMobile: true,
+                        icon: Icons.lightbulb_outline,
+                        title: l10n.innovation,
+                        color: const Color(0xFF8B5CF6),
+                        onTap: () => Get.to(() => const InnovationListPage()),
+                        isCompact: isVerySmall,
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
-          ),
-
-          SizedBox(width: isMobile ? 8 : 12),
-
-          // Meetups
-          Expanded(
-            child: Builder(
-              builder: (context) {
-                final l10n = AppLocalizations.of(context)!;
-                return _buildCompactCard(
-                  isMobile: isMobile,
-                  icon: Icons.groups_rounded,
-                  title: l10n.meetups,
-                  color: const Color(0xFF10B981),
-                  onTap: () => Get.toNamed('/meetups-list'),
-                );
-              },
+          ],
+        ),
+      );
+    } else {
+      // 1x4 横向布局(桌面端)
+      return Container(
+        constraints: const BoxConstraints(maxWidth: 900),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Cities
+            Expanded(
+              child: _buildCompactCard(
+                isMobile: false,
+                icon: Icons.location_city_rounded,
+                title: l10n.cities,
+                color: const Color(0xFFFF4458),
+                onTap: () => Get.to(() => const CityListPage()),
+              ),
             ),
-          ),
-        ],
-      ),
-    );
+
+            const SizedBox(width: 12),
+
+            // Coworkings
+            Expanded(
+              child: _buildCompactCard(
+                isMobile: false,
+                icon: Icons.business_center_rounded,
+                title: l10n.coworks,
+                color: const Color(0xFF6366F1),
+                onTap: () => Get.to(() => const CoworkingHomePage()),
+              ),
+            ),
+
+            const SizedBox(width: 12),
+
+            // Meetups
+            Expanded(
+              child: Builder(
+                builder: (context) {
+                  final l10n = AppLocalizations.of(context)!;
+                  return _buildCompactCard(
+                    isMobile: false,
+                    icon: Icons.groups_rounded,
+                    title: l10n.meetups,
+                    color: const Color(0xFF10B981),
+                    onTap: () => Get.toNamed('/meetups-list'),
+                  );
+                },
+              ),
+            ),
+
+            const SizedBox(width: 12),
+
+            // Innovation
+            Expanded(
+              child: Builder(
+                builder: (context) {
+                  final l10n = AppLocalizations.of(context)!;
+                  return _buildCompactCard(
+                    isMobile: false,
+                    icon: Icons.lightbulb_outline,
+                    title: l10n.innovation,
+                    color: const Color(0xFF8B5CF6),
+                    onTap: () => Get.to(() => const InnovationListPage()),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   // 紧凑型卡片组件
@@ -329,13 +431,14 @@ class _DataServicePageState extends State<DataServicePage> {
     required String title,
     required Color color,
     required VoidCallback onTap,
+    bool isCompact = false,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: EdgeInsets.symmetric(
-          vertical: isMobile ? 20 : 24,
-          horizontal: isMobile ? 16 : 20,
+          vertical: isCompact ? 16 : (isMobile ? 20 : 24),
+          horizontal: isCompact ? 12 : (isMobile ? 16 : 20),
         ),
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -359,7 +462,7 @@ class _DataServicePageState extends State<DataServicePage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(14),
+              padding: EdgeInsets.all(isCompact ? 10 : 14),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.25),
                 borderRadius: BorderRadius.circular(14),
@@ -367,17 +470,18 @@ class _DataServicePageState extends State<DataServicePage> {
               child: Icon(
                 icon,
                 color: Colors.white,
-                size: isMobile ? 32 : 36,
+                size: isCompact ? 28 : (isMobile ? 32 : 36),
               ),
             ),
-            SizedBox(height: isMobile ? 12 : 14),
+            SizedBox(height: isCompact ? 8 : (isMobile ? 12 : 14)),
             Text(
               title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white,
-                fontSize: isMobile ? 13 : 15,
+                fontSize: isCompact ? 12 : (isMobile ? 13 : 15),
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.3,
               ),

@@ -1561,5 +1561,101 @@
         "type": "String"
       }
     }
+  },
+  "cityChats": "City Chats",
+  "onlineMembers": "Online Members",
+  "online": "Online",
+  "justNow": "Just now",
+  "photoVideo": "Photo & Video",
+  "location": "Location",
+  "document": "Document",
+  "contact": "Contact",
+  "minutesAgo": "{minutes}m ago",
+  "@minutesAgo": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "hoursAgo": "{hours}h ago",
+  "@hoursAgo": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "daysAgo": "{days}d ago",
+  "@daysAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "lastSeen": "Last seen {time}",
+  "@lastSeen": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "sendAttachment": "Send Attachment",
+  "sharePhotosAndVideos": "Share photos and videos",
+  "shareYourLocation": "Share your location",
+  "shareFilesAndDocuments": "Share files and documents",
+  "shareContactInformation": "Share contact information",
+  "imageUploadComingSoon": "Image upload feature coming soon!",
+  "locationSharingComingSoon": "Location sharing feature coming soon!",
+  "documentUploadComingSoon": "Document upload feature coming soon!",
+  "contactSharingComingSoon": "Contact sharing feature coming soon!",
+  "innovation": "Innovation",
+  "innovationDescription": "Explore innovative ideas and find partners",
+  "elevatorPitch": "Elevator Pitch",
+  "problem": "Problem",
+  "solution": "Solution",
+  "targetAudience": "Target Audience",
+  "productType": "Product Type",
+  "keyFeatures": "Key Features",
+  "competitiveAdvantage": "Competitive Advantage",
+  "businessModel": "Business Model",
+  "marketOpportunity": "Market Opportunity",
+  "currentStatus": "Current Status",
+  "team": "Team",
+  "ask": "Ask",
+  "createdAt": "Created at",
+  "createMyInnovation": "Create My Innovation",
+  "exploreInnovations": "Explore Innovations",
+  "viewDetails": "View Details",
+  "contactCreator": "Contact Creator",
+  "today": "Today",
+  "yesterday": "Yesterday",
+  "daysAgo": "{count} days ago",
+  "@daysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weeksAgo": "{count} weeks ago",
+  "@weeksAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monthsAgo": "{count} months ago",
+  "@monthsAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }
+
+

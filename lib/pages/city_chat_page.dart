@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/chat_controller.dart';
+import '../generated/app_localizations.dart';
 import '../models/chat_model.dart';
 import '../models/user_model.dart' as models;
 import '../widgets/app_toast.dart';
@@ -28,17 +29,20 @@ class CityChatPage extends StatelessWidget {
 
         // Show chat rooms list if no room is selected
         if (controller.currentRoom.value == null) {
-          return _buildChatRoomsList(controller, isMobile);
+          return _buildChatRoomsList(context, controller, isMobile);
         }
 
         // Show chat room
-        return _buildChatRoom(controller, isMobile);
+        return _buildChatRoom(context, controller, isMobile);
       }),
     );
   }
 
   // Chat Rooms List
-  Widget _buildChatRoomsList(ChatController controller, bool isMobile) {
+  Widget _buildChatRoomsList(
+      BuildContext context, ChatController controller, bool isMobile) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return CustomScrollView(
       slivers: [
         SliverAppBar(
@@ -53,9 +57,9 @@ class CityChatPage extends StatelessWidget {
             onPressed: () => Get.back(),
           ),
           iconTheme: const IconThemeData(color: AppColors.backButtonDark),
-          title: const Text(
-            'City Chats',
-            style: TextStyle(
+          title: Text(
+            l10n.cityChats,
+            style: const TextStyle(
               color: Color(0xFF1a1a1a),
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -201,7 +205,8 @@ class CityChatPage extends StatelessWidget {
   }
 
   // Chat Room
-  Widget _buildChatRoom(ChatController controller, bool isMobile) {
+  Widget _buildChatRoom(
+      BuildContext context, ChatController controller, bool isMobile) {
     final room = controller.currentRoom.value!;
 
     return Scaffold(
@@ -532,6 +537,8 @@ class CityChatPage extends StatelessWidget {
   }
 
   void _showAttachmentOptions(ChatController controller) {
+    final l10n = AppLocalizations.of(Get.context!)!;
+    
     Get.bottomSheet(
       Container(
         constraints: const BoxConstraints(maxHeight: 450),
@@ -554,13 +561,13 @@ class CityChatPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      'Send Attachment',
-                      style: TextStyle(
+                      l10n.sendAttachment,
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF1a1a1a),
@@ -578,8 +585,8 @@ class CityChatPage extends StatelessWidget {
                         iconColor: const Color(0xFF8B5CF6),
                         iconBgColor:
                             const Color(0xFF8B5CF6).withValues(alpha: 0.1),
-                        title: 'Photo & Video',
-                        subtitle: 'Share photos and videos',
+                        title: l10n.photoVideo,
+                        subtitle: l10n.sharePhotosAndVideos,
                         onTap: () {
                           Get.back();
                           _handleImageUpload(controller);
@@ -591,8 +598,8 @@ class CityChatPage extends StatelessWidget {
                         iconColor: const Color(0xFFEF4444),
                         iconBgColor:
                             const Color(0xFFEF4444).withValues(alpha: 0.1),
-                        title: 'Location',
-                        subtitle: 'Share your location',
+                        title: l10n.location,
+                        subtitle: l10n.shareYourLocation,
                         onTap: () {
                           Get.back();
                           _handleLocationShare(controller);
@@ -604,8 +611,8 @@ class CityChatPage extends StatelessWidget {
                         iconColor: const Color(0xFF3B82F6),
                         iconBgColor:
                             const Color(0xFF3B82F6).withValues(alpha: 0.1),
-                        title: 'Document',
-                        subtitle: 'Share files and documents',
+                        title: l10n.document,
+                        subtitle: l10n.shareFilesAndDocuments,
                         onTap: () {
                           Get.back();
                           _handleDocumentUpload(controller);
@@ -617,8 +624,8 @@ class CityChatPage extends StatelessWidget {
                         iconColor: const Color(0xFF10B981),
                         iconBgColor:
                             const Color(0xFF10B981).withValues(alpha: 0.1),
-                        title: 'Contact',
-                        subtitle: 'Share contact information',
+                        title: l10n.contact,
+                        subtitle: l10n.shareContactInformation,
                         onTap: () {
                           Get.back();
                           _handleContactShare(controller);
@@ -702,38 +709,44 @@ class CityChatPage extends StatelessWidget {
   }
 
   void _handleImageUpload(ChatController controller) {
+    final l10n = AppLocalizations.of(Get.context!)!;
     // TODO: 实现图片上传功能
     AppToast.info(
-      'Image upload feature coming soon!',
-      title: 'Photo & Video',
+      l10n.imageUploadComingSoon,
+      title: l10n.photoVideo,
     );
   }
 
   void _handleLocationShare(ChatController controller) {
+    final l10n = AppLocalizations.of(Get.context!)!;
     // TODO: 实现位置分享功能
     AppToast.info(
-      'Location sharing feature coming soon!',
-      title: 'Location',
+      l10n.locationSharingComingSoon,
+      title: l10n.location,
     );
   }
 
   void _handleDocumentUpload(ChatController controller) {
+    final l10n = AppLocalizations.of(Get.context!)!;
     // TODO: 实现文档上传功能
     AppToast.info(
-      'Document upload feature coming soon!',
-      title: 'Document',
+      l10n.documentUploadComingSoon,
+      title: l10n.document,
     );
   }
 
   void _handleContactShare(ChatController controller) {
+    final l10n = AppLocalizations.of(Get.context!)!;
     // TODO: 实现联系人分享功能
     AppToast.info(
-      'Contact sharing feature coming soon!',
-      title: 'Contact',
+      l10n.contactSharingComingSoon,
+      title: l10n.contact,
     );
   }
 
   void _showOnlineUsers(ChatController controller) {
+    final l10n = AppLocalizations.of(Get.context!)!;
+    
     Get.bottomSheet(
       Container(
         height: 400,
@@ -753,13 +766,13 @@ class CityChatPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 children: [
                   Text(
-                    'Online Members',
-                    style: TextStyle(
+                    l10n.onlineMembers,
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF1a1a1a),
@@ -819,8 +832,8 @@ class CityChatPage extends StatelessWidget {
                       ),
                       subtitle: Text(
                         user.isOnline
-                            ? 'Online'
-                            : 'Last seen ${_formatTime(user.lastSeen!)}',
+                            ? l10n.online
+                            : l10n.lastSeen(_formatTime(user.lastSeen!)),
                         style: TextStyle(
                           fontSize: 12,
                           color: user.isOnline
@@ -840,13 +853,14 @@ class CityChatPage extends StatelessWidget {
   }
 
   String _formatTime(DateTime time) {
+    final l10n = AppLocalizations.of(Get.context!)!;
     final now = DateTime.now();
     final diff = now.difference(time);
 
-    if (diff.inMinutes < 1) return 'Just now';
-    if (diff.inHours < 1) return '${diff.inMinutes}m ago';
-    if (diff.inDays < 1) return '${diff.inHours}h ago';
-    if (diff.inDays < 7) return '${diff.inDays}d ago';
+    if (diff.inMinutes < 1) return l10n.justNow;
+    if (diff.inHours < 1) return l10n.minutesAgo(diff.inMinutes);
+    if (diff.inDays < 1) return l10n.hoursAgo(diff.inHours);
+    if (diff.inDays < 7) return l10n.daysAgo(diff.inDays);
 
     final months = [
       'Jan',

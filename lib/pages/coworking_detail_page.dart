@@ -1,10 +1,8 @@
 import 'package:df_admin_mobile/models/coworking_space_model.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../generated/app_localizations.dart';
-import 'osm_navigation_page.dart';
 
 /// Coworking Detail Page
 /// 共享办公空间详情页面
@@ -241,11 +239,8 @@ class CoworkingDetailPage extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 onPressed: () {
-                  // 导航到 OpenStreetMap 页面
-                  Get.to(
-                    () => OSMNavigationPage(coworkingSpace: space),
-                    transition: Transition.rightToLeft,
-                  );
+                  // 显示地图选择器
+                  _showMapSelectionSheet(context);
                 },
               ),
             ),
@@ -658,6 +653,201 @@ class CoworkingDetailPage extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// 显示地图选择器
+  void _showMapSelectionSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 标题
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  const Icon(Icons.map, color: Colors.blue),
+                  const SizedBox(width: 12),
+                  Text(
+                    '选择导航应用',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 32),
+            // 谷歌地图
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withAlpha(25),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.map, color: Colors.blue),
+              ),
+              title: const Text('谷歌地图'),
+              subtitle: const Text('Google Maps'),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              onTap: () {
+                Navigator.pop(context);
+                _openGoogleMaps();
+              },
+            ),
+            // 高德地图
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.green.withAlpha(25),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.location_on, color: Colors.green),
+              ),
+              title: const Text('高德地图'),
+              subtitle: const Text('Amap'),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              onTap: () {
+                Navigator.pop(context);
+                _openAmap();
+              },
+            ),
+            // 百度地图
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withAlpha(25),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.navigation, color: Colors.orange),
+              ),
+              title: const Text('百度地图'),
+              subtitle: const Text('Baidu Maps'),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              onTap: () {
+                Navigator.pop(context);
+                _openBaiduMaps();
+              },
+            ),
+            const SizedBox(height: 8),
+            // 取消按钮
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('取消'),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 打开谷歌地图
+  Future<void> _openGoogleMaps() async {
+    final lat = space.latitude;
+    final lng = space.longitude;
+    final name = Uri.encodeComponent(space.name);
+
+    // 尝试使用 Google Maps App URL Scheme
+    final appUrl =
+        Uri.parse('comgooglemaps://?daddr=$lat,$lng&directionsmode=driving');
+    // Web 版本作为备选
+    final webUrl = Uri.parse(
+        'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng&destination_place_id=$name');
+
+    try {
+      if (await canLaunchUrl(appUrl)) {
+        await launchUrl(appUrl);
+      } else {
+        // 如果 App 未安装,使用浏览器打开
+        if (await canLaunchUrl(webUrl)) {
+          await launchUrl(webUrl, mode: LaunchMode.externalApplication);
+        }
+      }
+    } catch (e) {
+      debugPrint('打开谷歌地图失败: $e');
+    }
+  }
+
+  /// 打开高德地图
+  Future<void> _openAmap() async {
+    final lat = space.latitude;
+    final lng = space.longitude;
+    final name = Uri.encodeComponent(space.name);
+
+    // 高德地图 URL Scheme
+    // iOS: iosamap://
+    // Android: androidamap://
+    final appUrl = Uri.parse(
+        'iosamap://navi?sourceApplication=applicationName&poiname=$name&lat=$lat&lon=$lng&dev=0&style=2');
+    // Web 版本作为备选
+    final webUrl = Uri.parse(
+        'https://uri.amap.com/navigation?to=$lng,$lat,$name&mode=car&coordinate=gaode');
+
+    try {
+      if (await canLaunchUrl(appUrl)) {
+        await launchUrl(appUrl);
+      } else {
+        // 尝试 Android scheme
+        final androidUrl = Uri.parse(
+            'androidamap://navi?sourceApplication=applicationName&poiname=$name&lat=$lat&lon=$lng&dev=0&style=2');
+        if (await canLaunchUrl(androidUrl)) {
+          await launchUrl(androidUrl);
+        } else if (await canLaunchUrl(webUrl)) {
+          // 如果 App 未安装,使用浏览器打开
+          await launchUrl(webUrl, mode: LaunchMode.externalApplication);
+        }
+      }
+    } catch (e) {
+      debugPrint('打开高德地图失败: $e');
+    }
+  }
+
+  /// 打开百度地图
+  Future<void> _openBaiduMaps() async {
+    final lat = space.latitude;
+    final lng = space.longitude;
+    final name = Uri.encodeComponent(space.name);
+
+    // 百度地图 URL Scheme
+    final appUrl = Uri.parse(
+        'baidumap://map/direction?destination=name:$name|latlng:$lat,$lng&mode=driving&coord_type=gcj02');
+    // Web 版本作为备选
+    final webUrl = Uri.parse(
+        'https://api.map.baidu.com/direction?destination=name:$name|latlng:$lat,$lng&mode=driving&coord_type=gcj02&output=html');
+
+    try {
+      if (await canLaunchUrl(appUrl)) {
+        await launchUrl(appUrl);
+      } else if (await canLaunchUrl(webUrl)) {
+        // 如果 App 未安装,使用浏览器打开
+        await launchUrl(webUrl, mode: LaunchMode.externalApplication);
+      }
+    } catch (e) {
+      debugPrint('打开百度地图失败: $e');
+    }
   }
 
   /// 启动URL

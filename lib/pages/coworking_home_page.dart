@@ -1,3 +1,4 @@
+import 'package:df_admin_mobile/pages/add_coworking_page.dart';
 import 'package:df_admin_mobile/pages/coworking_list_page.dart';
 import 'package:df_admin_mobile/services/data/city_data_service.dart';
 import 'package:df_admin_mobile/services/data/coworking_data_service.dart';
@@ -122,49 +123,59 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
               padding: const EdgeInsets.all(16),
               children: [
                 // Header
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.blue[700]!, Colors.blue[500]!],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AddCoworkingPage(),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.blue[700]!, Colors.blue[500]!],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Builder(
-                    builder: (context) {
-                      final l10n = AppLocalizations.of(context)!;
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Icon(
-                            Icons.business_center,
-                            size: 48,
-                            color: Colors.white,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            l10n.workspace,
-                            style: const TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
+                    child: Builder(
+                      builder: (context) {
+                        final l10n = AppLocalizations.of(context)!;
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(
+                              Icons.business_center,
+                              size: 48,
                               color: Colors.white,
-                              height: 1.2,
                             ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            l10n.coworkingSpaces,
-                            style: TextStyle(
-                              fontSize: 15,
-                              color: Colors.white.withAlpha(230),
-                              height: 1.4,
+                            const SizedBox(height: 16),
+                            Text(
+                              l10n.workspace,
+                              style: const TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                height: 1.2,
+                              ),
                             ),
-                          ),
-                        ],
-                      );
-                    },
+                            const SizedBox(height: 12),
+                            Text(
+                              l10n.coworkingSpaces,
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: Colors.white.withAlpha(230),
+                                height: 1.4,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
                   ),
                 ),
 
