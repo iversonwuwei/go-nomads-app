@@ -7,6 +7,7 @@ import '../config/app_colors.dart';
 import '../controllers/location_controller.dart';
 import '../generated/app_localizations.dart';
 import '../models/meetup_model.dart';
+import '../services/database/meetup_dao.dart';
 import '../widgets/app_toast.dart';
 import 'meetup_detail_page.dart';
 
@@ -60,6 +61,9 @@ class _MeetupsListPageState extends State<MeetupsListPage>
   // 位置控制器
   final LocationController _locationController = Get.put(LocationController());
 
+  // 数据访问对象
+  final MeetupDao _meetupDao = MeetupDao();
+
   @override
   void initState() {
     super.initState();
@@ -107,105 +111,43 @@ class _MeetupsListPageState extends State<MeetupsListPage>
 
   Future<void> _loadMeetups() async {
     _isLoading.value = true;
-    await Future.delayed(const Duration(seconds: 1));
 
-    // 模拟数据
-    _meetups.value = [
-      MeetupModel(
-        id: '1',
-        title: 'Digital Nomad Coffee Morning',
-        type: 'Coffee',
-        description:
-            'Join us for a relaxed morning coffee session to meet other digital nomads in Bangkok!',
-        city: 'Bangkok',
-        country: 'Thailand',
-        venue: 'Hub53 Coworking',
-        venueAddress: '535 Sukhumvit Road',
-        dateTime: DateTime.now().add(const Duration(days: 2, hours: 10)),
-        maxAttendees: 15,
-        currentAttendees: 8,
-        organizerId: 'user1',
-        organizerName: 'Sarah Chen',
-        organizerAvatar: 'https://i.pravatar.cc/150?img=1',
-        images: [
-          'https://images.unsplash.com/photo-1511920170033-f8396924c348?w=800',
-        ],
-        attendeeIds: List.generate(8, (i) => 'attendee$i'),
-        isJoined: false,
-        createdAt: DateTime.now().subtract(const Duration(days: 5)),
-      ),
-      MeetupModel(
-        id: '2',
-        title: 'Coworking Session & Networking',
-        type: 'Coworking',
-        description:
-            'Productive coworking session followed by networking drinks. Bring your laptop!',
-        city: 'Chiang Mai',
-        country: 'Thailand',
-        venue: 'Punspace Nimman',
-        venueAddress: 'Nimmana Haeminda Road',
-        dateTime: DateTime.now().add(const Duration(days: 1, hours: 14)),
-        maxAttendees: 20,
-        currentAttendees: 15,
-        organizerId: 'user2',
-        organizerName: 'Mike Johnson',
-        organizerAvatar: 'https://i.pravatar.cc/150?img=12',
-        images: [
-          'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800',
-        ],
-        attendeeIds: List.generate(15, (i) => 'attendee$i'),
-        isJoined: true,
-        createdAt: DateTime.now().subtract(const Duration(days: 3)),
-      ),
-      MeetupModel(
-        id: '3',
-        title: 'Weekend Hiking Adventure',
-        type: 'Activity',
-        description:
-            'Explore the beautiful trails around Chiang Mai. All fitness levels welcome!',
-        city: 'Chiang Mai',
-        country: 'Thailand',
-        venue: 'Doi Suthep Trailhead',
-        venueAddress: 'Doi Suthep-Pui National Park',
-        dateTime: DateTime.now().add(const Duration(days: 5, hours: 7)),
-        maxAttendees: 12,
-        currentAttendees: 9,
-        organizerId: 'user3',
-        organizerName: 'Emma Wilson',
-        organizerAvatar: 'https://i.pravatar.cc/150?img=5',
-        images: [
-          'https://images.unsplash.com/photo-1551632811-561732d1e306?w=800',
-        ],
-        attendeeIds: List.generate(9, (i) => 'attendee$i'),
-        isJoined: false,
-        createdAt: DateTime.now().subtract(const Duration(days: 7)),
-      ),
-      MeetupModel(
-        id: '4',
-        title: 'Thai Language Exchange',
-        type: 'Language',
-        description:
-            'Practice Thai with locals and help them with English. Fun and casual atmosphere!',
-        city: 'Bangkok',
-        country: 'Thailand',
-        venue: 'Lumpini Park',
-        venueAddress: 'Rama IV Road',
-        dateTime: DateTime.now().add(const Duration(days: 3, hours: 17)),
-        maxAttendees: 25,
-        currentAttendees: 18,
-        organizerId: 'user4',
-        organizerName: 'David Lee',
-        organizerAvatar: 'https://i.pravatar.cc/150?img=13',
-        images: [
-          'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800',
-        ],
-        attendeeIds: List.generate(18, (i) => 'attendee$i'),
-        isJoined: false,
-        createdAt: DateTime.now().subtract(const Duration(days: 2)),
-      ),
-    ];
+    try {
+      // 从数据库加载活动数据
+      final meetupsData = await _meetupDao.getAllMeetups();
 
-    _isLoading.value = false;
+      // 转换为 MeetupModel 列表
+      _meetups.value = meetupsData.map((data) {
+        return MeetupModel(
+          id: data['id'].toString(),
+          title: data['title'] as String,
+          type: data['category'] as String? ?? 'Other',
+          description: data['description'] as String? ?? '',
+          city: '', // 需要关联查询城市表
+          country: '', // 需要关联查询国家表
+          venue: data['location'] as String? ?? '',
+          venueAddress: data['address'] as String? ?? '',
+          dateTime: DateTime.parse(data['start_time'] as String),
+          maxAttendees: data['max_participants'] as int? ?? 20,
+          currentAttendees: data['current_participants'] as int? ?? 0,
+          organizerId: data['organizer_id']?.toString() ?? '0',
+          organizerName: 'Organizer', // 需要关联查询用户表
+          organizerAvatar: 'https://i.pravatar.cc/150',
+          images: (data['image_url'] as String?)?.isNotEmpty == true
+              ? [data['image_url'] as String]
+              : [],
+          attendeeIds: [], // 需要单独查询参与者表
+          isJoined: false, // 需要查询当前用户是否已加入
+          createdAt: DateTime.parse(data['created_at'] as String),
+        );
+      }).toList();
+    } catch (e) {
+      print('Error loading meetups: $e');
+      AppToast.error('Failed to load meetups: $e');
+      _meetups.value = [];
+    } finally {
+      _isLoading.value = false;
+    }
   }
 
   List<MeetupModel> get _filteredMeetups {
