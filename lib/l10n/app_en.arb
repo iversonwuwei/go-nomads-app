@@ -1333,5 +1333,158 @@
   "transit": "Transit",
   "recenter": "Recenter",
   "startNavigation": "Start Navigation",
-  "noMapAppAvailable": "No map app available"
+  "noMapAppAvailable": "No map app available",
+  "selectMapSource": "Select Map Source",
+  "switchedToMapSource": "Switched to {mapSource}",
+  "@switchedToMapSource": {
+    "description": "Map source switched notification",
+    "placeholders": {
+      "mapSource": {
+        "type": "String",
+        "example": "CartoDB"
+      }
+    }
+  },
+  "distanceFrom": "Distance from {placeName}",
+  "@distanceFrom": {
+    "description": "Distance from a place",
+    "placeholders": {
+      "placeName": {
+        "type": "String",
+        "example": "WeWork"
+      }
+    }
+  },
+  "longitude": "Longitude",
+  "latitude": "Latitude",
+  "close": "Close",
+  "viewOnMap": "View on Map",
+  "tapMarkersTip": "Tap markers on the map to view nearby facilities",
+  "mapboxTokenWarning": "Mapbox requires API Token. Currently using demo token with usage limits.",
+  "meters": "{count}m",
+  "@meters": {
+    "description": "Meters unit",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "100"
+      }
+    }
+  },
+  "kilometers": "{count}km",
+  "@kilometers": {
+    "description": "Kilometers unit",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "1.5"
+      }
+    }
+  },
+  "addCoworkingSpace": "Add Coworking Space",
+  "basicInformation": "Basic Information",
+  "spaceName": "Space Name",
+  "spaceNameHint": "e.g., WeWork Times Square",
+  "description": "Description",
+  "descriptionHint": "Describe the coworking space...",
+  "location": "Location",
+  "address": "Address",
+  "addressHint": "1460 Broadway",
+  "city": "City",
+  "cityHint": "New York",
+  "country": "Country",
+  "countryHint": "USA",
+  "pickLocationOnMap": "Pick Location on Map",
+  "locationCoordinates": "Location: {lat}, {lng}",
+  "@locationCoordinates": {
+    "description": "Location coordinates",
+    "placeholders": {
+      "lat": {
+        "type": "String"
+      },
+      "lng": {
+        "type": "String"
+      }
+    }
+  },
+  "contactInformation": "Contact Information",
+  "phone": "Phone",
+  "phoneHint": "+1 234 567 8900",
+  "email": "Email",
+  "emailHint": "contact@example.com",
+  "website": "Website",
+  "websiteHint": "https://example.com",
+  "pricing": "Pricing",
+  "currency": "Currency",
+  "hourlyRate": "Hourly Rate",
+  "hourlyRateHint": "10",
+  "dailyRate": "Daily Rate",
+  "dailyRateHint": "50",
+  "weeklyRate": "Weekly Rate",
+  "weeklyRateHint": "200",
+  "monthlyRate": "Monthly Rate",
+  "monthlyRateHint": "500",
+  "freeTrialAvailable": "Free Trial Available",
+  "trialDuration": "Trial Duration",
+  "trialDurationHint": "1 day, 1 week, etc.",
+  "specifications": "Specifications",
+  "wifiSpeed": "WiFi Speed (Mbps)",
+  "wifiSpeedHint": "500",
+  "capacity": "Capacity",
+  "capacityHint": "50",
+  "numberOfDesks": "Number of Desks",
+  "numberOfDesksHint": "30",
+  "meetingRooms": "Meeting Rooms",
+  "meetingRoomsHint": "5",
+  "noiseLevel": "Noise Level",
+  "noiseLevelQuiet": "Quiet",
+  "noiseLevelModerate": "Moderate",
+  "noiseLevelLoud": "Loud",
+  "spaceType": "Space Type",
+  "spaceTypeOpen": "Open",
+  "spaceTypePrivate": "Private",
+  "spaceTypeMixed": "Mixed",
+  "naturalLight": "Natural Light",
+  "amenities": "Amenities",
+  "wifi": "WiFi",
+  "freeCoffee": "Free Coffee",
+  "printer": "Printer",
+  "meetingRooms": "Meeting Rooms",
+  "phoneBooth": "Phone Booth",
+  "kitchen": "Kitchen",
+  "parking": "Parking",
+  "locker": "Locker",
+  "twentyFourSevenAccess": "24/7 Access",
+  "airConditioning": "Air Conditioning",
+  "standingDesk": "Standing Desk",
+  "shower": "Shower",
+  "bikeStorage": "Bike Storage",
+  "eventSpace": "Event Space",
+  "petFriendly": "Pet Friendly",
+  "addCoverPhoto": "Add Cover Photo",
+  "tapToChoosePhoto": "Tap to choose from gallery or camera",
+  "chooseImageSource": "Choose Image Source",
+  "photoLibrary": "Photo Library",
+  "camera": "Camera",
+  "submitCoworkingSpace": "Submit Coworking Space",
+  "thisFieldIsRequired": "This field is required",
+  "failedToPickImage": "Failed to pick image: {error}",
+  "@failedToPickImage": {
+    "description": "Failed to pick image error",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "coworkingSubmittedSuccess": "Coworking space has been submitted successfully!",
+  "failedToSubmitCoworking": "Failed to submit coworking space: {error}",
+  "@failedToSubmitCoworking": {
+    "description": "Failed to submit error",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
 }

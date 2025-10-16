@@ -186,6 +186,8 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
 
   // 切换地图源
   void _changeTileSource() {
+    final l10n = AppLocalizations.of(context)!;
+    
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -198,9 +200,9 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '选择地图源',
-              style: TextStyle(
+            Text(
+              l10n.selectMapSource,
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
@@ -237,7 +239,7 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
                   Navigator.pop(context);
                   
                   // 显示提示
-                  AppToast.success('已切换到 ${config.name}');
+                  AppToast.success(l10n.switchedToMapSource(config.name));
                 },
               );
             }),
@@ -255,7 +257,7 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Mapbox 需要 API Token。当前使用演示 Token，可能有使用限制。',
+                        l10n.mapboxTokenWarning,
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.orange[900],
@@ -678,6 +680,7 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
 
   // 显示 POI 信息
   void _showPOIInfo(POI poi) {
+    final l10n = AppLocalizations.of(context)!;
     final distance = _calculateDistance(
       LatLng(
         widget.coworkingSpace.latitude,
@@ -815,7 +818,7 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  '距离 ${widget.coworkingSpace.name}',
+                                  l10n.distanceFrom(widget.coworkingSpace.name),
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.grey[600],
@@ -854,7 +857,7 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
                         children: [
                           _buildInfoRow(
                             icon: Icons.location_on_outlined,
-                            label: '经度',
+                            label: l10n.longitude,
                             value: poi.position.longitude.toStringAsFixed(6),
                             color: _getPOIColor(poi.type),
                           ),
@@ -863,7 +866,7 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
                           const SizedBox(height: 12),
                           _buildInfoRow(
                             icon: Icons.location_on_outlined,
-                            label: '纬度',
+                            label: l10n.latitude,
                             value: poi.position.latitude.toStringAsFixed(6),
                             color: _getPOIColor(poi.type),
                           ),
@@ -890,7 +893,7 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              '点击地图上的标记可以查看更多周边设施',
+                              l10n.tapMarkersTip,
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.blue[900],
@@ -923,9 +926,9 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text(
-                          '关闭',
-                          style: TextStyle(
+                        child: Text(
+                          l10n.close,
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: AppColors.textSecondary,
@@ -943,9 +946,9 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
                           _focusOnLocation(poi.position);
                         },
                         icon: const Icon(Icons.my_location, size: 20),
-                        label: const Text(
-                          '在地图上查看',
-                          style: TextStyle(
+                        label: Text(
+                          l10n.viewOnMap,
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -1022,12 +1025,13 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
 
   // 计算距离（简化版，实际应使用 Haversine 公式）
   String _calculateDistance(LatLng from, LatLng to) {
+    final l10n = AppLocalizations.of(context)!;
     final distance = Distance();
     final meters = distance(from, to);
     if (meters < 1000) {
-      return '${meters.toStringAsFixed(0)}米';
+      return l10n.meters(meters.toStringAsFixed(0));
     } else {
-      return '${(meters / 1000).toStringAsFixed(1)}公里';
+      return l10n.kilometers((meters / 1000).toStringAsFixed(1));
     }
   }
 }

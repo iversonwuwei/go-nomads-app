@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../config/app_colors.dart';
+import '../generated/app_localizations.dart';
 import '../models/coworking_space_model.dart';
 import '../widgets/app_toast.dart';
 import 'amap_native_picker_page.dart';
@@ -119,6 +120,8 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -127,9 +130,9 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Get.back(),
         ),
-        title: const Text(
-          'Add Coworking Space',
-          style: TextStyle(
+        title: Text(
+          l10n.addCoworkingSpace,
+          style: const TextStyle(
             color: AppColors.textPrimary,
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -150,19 +153,19 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                   const SizedBox(height: 24),
 
                   // Basic Information
-                  _buildSectionTitle('Basic Information', Icons.info_outline),
+                  _buildSectionTitle(l10n.basicInformation, Icons.info_outline),
                   const SizedBox(height: 16),
                   _buildTextField(
                     controller: _nameController,
-                    label: 'Space Name',
-                    hint: 'e.g., WeWork Times Square',
+                    label: l10n.spaceName,
+                    hint: l10n.spaceNameHint,
                     required: true,
                   ),
                   const SizedBox(height: 16),
                   _buildTextField(
                     controller: _descriptionController,
-                    label: 'Description',
-                    hint: 'Describe the coworking space...',
+                    label: l10n.description,
+                    hint: l10n.descriptionHint,
                     maxLines: 4,
                     required: true,
                   ),
@@ -170,12 +173,12 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                   const SizedBox(height: 32),
 
                   // Location
-                  _buildSectionTitle('Location', Icons.location_on),
+                  _buildSectionTitle(l10n.location, Icons.location_on),
                   const SizedBox(height: 16),
                   _buildTextField(
                     controller: _addressController,
-                    label: 'Address',
-                    hint: '1460 Broadway',
+                    label: l10n.address,
+                    hint: l10n.addressHint,
                     required: true,
                   ),
                   const SizedBox(height: 16),
@@ -184,8 +187,8 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                       Expanded(
                         child: _buildTextField(
                           controller: _cityController,
-                          label: 'City',
-                          hint: 'New York',
+                          label: l10n.city,
+                          hint: l10n.cityHint,
                           required: true,
                         ),
                       ),
@@ -193,8 +196,8 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                       Expanded(
                         child: _buildTextField(
                           controller: _countryController,
-                          label: 'Country',
-                          hint: 'USA',
+                          label: l10n.country,
+                          hint: l10n.countryHint,
                           required: true,
                         ),
                       ),
@@ -207,43 +210,43 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
 
                   // Contact Information
                   _buildSectionTitle(
-                      'Contact Information', Icons.contact_phone),
+                      l10n.contactInformation, Icons.contact_phone),
                   const SizedBox(height: 16),
                   _buildTextField(
                     controller: _phoneController,
-                    label: 'Phone',
-                    hint: '+1 234 567 8900',
+                    label: l10n.phone,
+                    hint: l10n.phoneHint,
                     keyboardType: TextInputType.phone,
                   ),
                   const SizedBox(height: 16),
                   _buildTextField(
                     controller: _emailController,
-                    label: 'Email',
-                    hint: 'contact@example.com',
+                    label: l10n.email,
+                    hint: l10n.emailHint,
                     keyboardType: TextInputType.emailAddress,
                   ),
                   const SizedBox(height: 16),
                   _buildTextField(
                     controller: _websiteController,
-                    label: 'Website',
-                    hint: 'https://example.com',
+                    label: l10n.website,
+                    hint: l10n.websiteHint,
                     keyboardType: TextInputType.url,
                   ),
 
                   const SizedBox(height: 32),
 
-                  // Pricing
-                  _buildSectionTitle('Pricing', Icons.attach_money),
+                                    // Pricing
+                  _buildSectionTitle(l10n.pricing, Icons.attach_money),
                   const SizedBox(height: 16),
-                  _buildCurrencyDropdown(),
+                  _buildCurrencyDropdown(l10n),
                   const SizedBox(height: 16),
                   Row(
                     children: [
                       Expanded(
                         child: _buildTextField(
                           controller: _hourlyRateController,
-                          label: 'Hourly Rate',
-                          hint: '10',
+                          label: l10n.hourlyRate,
+                          hint: l10n.hourlyRateHint,
                           keyboardType: TextInputType.number,
                         ),
                       ),
@@ -251,8 +254,8 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                       Expanded(
                         child: _buildTextField(
                           controller: _dailyRateController,
-                          label: 'Daily Rate',
-                          hint: '50',
+                          label: l10n.dailyRate,
+                          hint: l10n.dailyRateHint,
                           keyboardType: TextInputType.number,
                         ),
                       ),
@@ -264,8 +267,8 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                       Expanded(
                         child: _buildTextField(
                           controller: _weeklyRateController,
-                          label: 'Weekly Rate',
-                          hint: '200',
+                          label: l10n.weeklyRate,
+                          hint: l10n.weeklyRateHint,
                           keyboardType: TextInputType.number,
                         ),
                       ),
@@ -273,8 +276,8 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                       Expanded(
                         child: _buildTextField(
                           controller: _monthlyRateController,
-                          label: 'Monthly Rate',
-                          hint: '500',
+                          label: l10n.monthlyRate,
+                          hint: l10n.monthlyRateHint,
                           keyboardType: TextInputType.number,
                         ),
                       ),
@@ -282,31 +285,29 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                   ),
                   const SizedBox(height: 16),
                   _buildSwitchTile(
-                    'Free Trial Available',
+                    l10n.freeTrialAvailable,
                     _hasFreeTrial,
                     (value) => setState(() => _hasFreeTrial = value),
                   ),
                   if (_hasFreeTrial) ...[
                     const SizedBox(height: 16),
                     _buildTextField(
-                      controller: _trialDurationController,
-                      label: 'Trial Duration',
-                      hint: '1 day, 1 week, etc.',
-                    ),
-                  ],
+                  controller: _trialDurationController,
+                  label: l10n.trialDuration,
+                  hint: l10n.trialDurationHint,
+                ),
+              ],
 
-                  const SizedBox(height: 32),
-
-                  // Specifications
-                  _buildSectionTitle('Specifications', Icons.settings),
+              const SizedBox(height: 32),                  // Specifications
+                  _buildSectionTitle(l10n.specifications, Icons.settings),
                   const SizedBox(height: 16),
                   Row(
                     children: [
                       Expanded(
                         child: _buildTextField(
                           controller: _wifiSpeedController,
-                          label: 'WiFi Speed (Mbps)',
-                          hint: '500',
+                          label: l10n.wifiSpeed,
+                          hint: l10n.wifiSpeedHint,
                           keyboardType: TextInputType.number,
                         ),
                       ),
@@ -314,8 +315,8 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                       Expanded(
                         child: _buildTextField(
                           controller: _capacityController,
-                          label: 'Capacity',
-                          hint: '50',
+                          label: l10n.capacity,
+                          hint: l10n.capacityHint,
                           keyboardType: TextInputType.number,
                         ),
                       ),
@@ -327,8 +328,8 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                       Expanded(
                         child: _buildTextField(
                           controller: _numberOfDesksController,
-                          label: 'Number of Desks',
-                          hint: '30',
+                          label: l10n.numberOfDesks,
+                          hint: l10n.numberOfDesksHint,
                           keyboardType: TextInputType.number,
                         ),
                       ),
@@ -336,8 +337,8 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                       Expanded(
                         child: _buildTextField(
                           controller: _numberOfMeetingRoomsController,
-                          label: 'Meeting Rooms',
-                          hint: '5',
+                          label: l10n.meetingRooms,
+                          hint: l10n.meetingRoomsHint,
                           keyboardType: TextInputType.number,
                         ),
                       ),
@@ -345,21 +346,21 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                   ),
                   const SizedBox(height: 16),
                   _buildDropdown(
-                    'Noise Level',
+                    l10n.noiseLevel,
                     _noiseLevel,
-                    ['Quiet', 'Moderate', 'Loud'],
+                    [l10n.noiseLevelQuiet, l10n.noiseLevelModerate, l10n.noiseLevelLoud],
                     (value) => setState(() => _noiseLevel = value),
                   ),
                   const SizedBox(height: 16),
                   _buildDropdown(
-                    'Space Type',
+                    l10n.spaceType,
                     _spaceType,
-                    ['Open', 'Private', 'Mixed'],
+                    [l10n.spaceTypeOpen, l10n.spaceTypePrivate, l10n.spaceTypeMixed],
                     (value) => setState(() => _spaceType = value),
                   ),
                   const SizedBox(height: 16),
                   _buildSwitchTile(
-                    'Natural Light',
+                    l10n.naturalLight,
                     _hasNaturalLight,
                     (value) => setState(() => _hasNaturalLight = value),
                   ),
@@ -367,37 +368,37 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                   const SizedBox(height: 32),
 
                   // Amenities
-                  _buildSectionTitle('Amenities', Icons.stars),
+                  _buildSectionTitle(l10n.amenities, Icons.stars),
                   const SizedBox(height: 16),
-                  _buildSwitchTile('WiFi', _hasWifi,
+                  _buildSwitchTile(l10n.wifi, _hasWifi,
                       (value) => setState(() => _hasWifi = value)),
-                  _buildSwitchTile('Free Coffee', _hasCoffee,
+                  _buildSwitchTile(l10n.freeCoffee, _hasCoffee,
                       (value) => setState(() => _hasCoffee = value)),
-                  _buildSwitchTile('Printer', _hasPrinter,
+                  _buildSwitchTile(l10n.printer, _hasPrinter,
                       (value) => setState(() => _hasPrinter = value)),
-                  _buildSwitchTile('Meeting Rooms', _hasMeetingRoom,
+                  _buildSwitchTile(l10n.meetingRooms, _hasMeetingRoom,
                       (value) => setState(() => _hasMeetingRoom = value)),
-                  _buildSwitchTile('Phone Booth', _hasPhoneBooth,
+                  _buildSwitchTile(l10n.phoneBooth, _hasPhoneBooth,
                       (value) => setState(() => _hasPhoneBooth = value)),
-                  _buildSwitchTile('Kitchen', _hasKitchen,
+                  _buildSwitchTile(l10n.kitchen, _hasKitchen,
                       (value) => setState(() => _hasKitchen = value)),
-                  _buildSwitchTile('Parking', _hasParking,
+                  _buildSwitchTile(l10n.parking, _hasParking,
                       (value) => setState(() => _hasParking = value)),
-                  _buildSwitchTile('Locker', _hasLocker,
+                  _buildSwitchTile(l10n.locker, _hasLocker,
                       (value) => setState(() => _hasLocker = value)),
-                  _buildSwitchTile('24/7 Access', _has24HourAccess,
+                  _buildSwitchTile(l10n.twentyFourSevenAccess, _has24HourAccess,
                       (value) => setState(() => _has24HourAccess = value)),
-                  _buildSwitchTile('Air Conditioning', _hasAirConditioning,
+                  _buildSwitchTile(l10n.airConditioning, _hasAirConditioning,
                       (value) => setState(() => _hasAirConditioning = value)),
-                  _buildSwitchTile('Standing Desk', _hasStandingDesk,
+                  _buildSwitchTile(l10n.standingDesk, _hasStandingDesk,
                       (value) => setState(() => _hasStandingDesk = value)),
-                  _buildSwitchTile('Shower', _hasShower,
+                  _buildSwitchTile(l10n.shower, _hasShower,
                       (value) => setState(() => _hasShower = value)),
-                  _buildSwitchTile('Bike Storage', _hasBike,
+                  _buildSwitchTile(l10n.bikeStorage, _hasBike,
                       (value) => setState(() => _hasBike = value)),
-                  _buildSwitchTile('Event Space', _hasEventSpace,
+                  _buildSwitchTile(l10n.eventSpace, _hasEventSpace,
                       (value) => setState(() => _hasEventSpace = value)),
-                  _buildSwitchTile('Pet Friendly', _hasPetFriendly,
+                  _buildSwitchTile(l10n.petFriendly, _hasPetFriendly,
                       (value) => setState(() => _hasPetFriendly = value)),
 
                   const SizedBox(height: 32),
@@ -438,6 +439,8 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
     bool required = false,
     TextInputType? keyboardType,
   }) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return TextFormField(
       controller: controller,
       maxLines: maxLines,
@@ -454,7 +457,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
       validator: required
           ? (value) {
               if (value == null || value.isEmpty) {
-                return 'This field is required';
+                return l10n.thisFieldIsRequired;
               }
               return null;
             }
@@ -498,11 +501,11 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
     );
   }
 
-  Widget _buildCurrencyDropdown() {
+  Widget _buildCurrencyDropdown(AppLocalizations l10n) {
     return DropdownButtonFormField<String>(
       initialValue: _currency,
       decoration: InputDecoration(
-        labelText: 'Currency',
+        labelText: l10n.currency,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
         ),
@@ -520,6 +523,8 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
   }
 
   Widget _buildLocationPicker() {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Card(
       elevation: 0,
       color: Colors.grey[50],
@@ -530,9 +535,11 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
       child: ListTile(
         leading: const Icon(Icons.map, color: Color(0xFFFF4458)),
         title: _latitude != 0 && _longitude != 0
-            ? Text(
-                'Location: ${_latitude.toStringAsFixed(6)}, ${_longitude.toStringAsFixed(6)}')
-            : const Text('Pick Location on Map'),
+            ? Text(l10n.locationCoordinates(
+                _latitude.toStringAsFixed(6),
+                _longitude.toStringAsFixed(6),
+              ))
+            : Text(l10n.pickLocationOnMap),
         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
         onTap: () async {
           final result = await Get.to(() => const AmapNativePickerPage());
@@ -551,6 +558,8 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
   }
 
   Widget _buildImageSection() {
+    final l10n = AppLocalizations.of(context)!;
+    
     return GestureDetector(
       onTap: _showImageSourceDialog,
       child: Container(
@@ -597,7 +606,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                       size: 64, color: Colors.grey[400]),
                   const SizedBox(height: 12),
                   Text(
-                    'Add Cover Photo',
+                    l10n.addCoverPhoto,
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey[600],
@@ -606,7 +615,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Tap to choose from gallery or camera',
+                    l10n.tapToChoosePhoto,
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey[500],
@@ -619,6 +628,8 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
   }
 
   Future<void> _showImageSourceDialog() async {
+    final l10n = AppLocalizations.of(context)!;
+    
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -645,9 +656,9 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Text(
-                  'Choose Image Source',
-                  style: TextStyle(
+                Text(
+                  l10n.chooseImageSource,
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                   ),
@@ -655,9 +666,9 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                 const SizedBox(height: 20),
                 ListTile(
                   leading: Icon(Icons.photo_library, color: AppColors.accent),
-                  title: const Text(
-                    'Photo Library',
-                    style: TextStyle(fontSize: 16),
+                  title: Text(
+                    l10n.photoLibrary,
+                    style: const TextStyle(fontSize: 16),
                   ),
                   onTap: () {
                     Navigator.pop(context);
@@ -666,9 +677,9 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                 ),
                 ListTile(
                   leading: Icon(Icons.camera_alt, color: AppColors.accent),
-                  title: const Text(
-                    'Camera',
-                    style: TextStyle(fontSize: 16),
+                  title: Text(
+                    l10n.camera,
+                    style: const TextStyle(fontSize: 16),
                   ),
                   onTap: () {
                     Navigator.pop(context);
@@ -685,6 +696,8 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
   }
 
   Future<void> _pickImage(ImageSource source) async {
+    final l10n = AppLocalizations.of(context)!;
+    
     try {
       final XFile? image = await _picker.pickImage(
         source: source,
@@ -700,14 +713,16 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
       }
     } catch (e) {
       AppToast.error(
-        'Failed to pick image: $e',
-        title: 'Error',
+        l10n.failedToPickImage(e.toString()),
+        title: l10n.error,
       );
     }
   }
 
   /// 底部提交按钮栏
   Widget _buildBottomBar() {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -743,14 +758,14 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     )
-                  : const Row(
+                  : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.check_circle_outline, size: 20),
-                        SizedBox(width: 8),
+                        const Icon(Icons.check_circle_outline, size: 20),
+                        const SizedBox(width: 8),
                         Text(
-                          'Submit Coworking Space',
-                          style: TextStyle(
+                          l10n.submitCoworkingSpace,
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
@@ -763,6 +778,8 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
   }
 
   Future<void> _submitCoworking() async {
+    final l10n = AppLocalizations.of(context)!;
+    
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -845,13 +862,13 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
       // Show success message
       Get.back(result: coworkingSpace);
       AppToast.success(
-        'Coworking space has been submitted successfully!',
-        title: 'Success',
+        l10n.coworkingSubmittedSuccess,
+        title: l10n.success,
       );
     } catch (e) {
       AppToast.error(
-        'Failed to submit coworking space: $e',
-        title: 'Error',
+        l10n.failedToSubmitCoworking(e.toString()),
+        title: l10n.error,
       );
     } finally {
       _isSubmitting.value = false;

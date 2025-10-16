@@ -1317,6 +1317,159 @@
   "transit": "交通",
   "recenter": "回到中心",
   "startNavigation": "开始导航",
-  "noMapAppAvailable": "未找到可用的地图应用"
+  "noMapAppAvailable": "未找到可用的地图应用",
+  "selectMapSource": "选择地图源",
+  "switchedToMapSource": "已切换到 {mapSource}",
+  "@switchedToMapSource": {
+    "description": "切换地图源成功提示",
+    "placeholders": {
+      "mapSource": {
+        "type": "String",
+        "example": "CartoDB"
+      }
+    }
+  },
+  "distanceFrom": "距离 {placeName}",
+  "@distanceFrom": {
+    "description": "距离某地点",
+    "placeholders": {
+      "placeName": {
+        "type": "String",
+        "example": "WeWork"
+      }
+    }
+  },
+  "longitude": "经度",
+  "latitude": "纬度",
+  "close": "关闭",
+  "viewOnMap": "在地图上查看",
+  "tapMarkersTip": "点击地图上的标记可以查看更多周边设施",
+  "mapboxTokenWarning": "Mapbox 需要 API Token。当前使用演示 Token，可能有使用限制。",
+  "meters": "{count}米",
+  "@meters": {
+    "description": "米单位",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "100"
+      }
+    }
+  },
+  "kilometers": "{count}公里",
+  "@kilometers": {
+    "description": "公里单位",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "1.5"
+      }
+    }
+  },
+  "addCoworkingSpace": "添加共享办公空间",
+  "basicInformation": "基本信息",
+  "spaceName": "空间名称",
+  "spaceNameHint": "例如：WeWork 时代广场",
+  "description": "描述",
+  "descriptionHint": "描述共享办公空间...",
+  "location": "位置",
+  "address": "地址",
+  "addressHint": "百老汇大道 1460 号",
+  "city": "城市",
+  "cityHint": "纽约",
+  "country": "国家",
+  "countryHint": "美国",
+  "pickLocationOnMap": "在地图上选择位置",
+  "locationCoordinates": "位置：{lat}, {lng}",
+  "@locationCoordinates": {
+    "description": "位置坐标",
+    "placeholders": {
+      "lat": {
+        "type": "String"
+      },
+      "lng": {
+        "type": "String"
+      }
+    }
+  },
+  "contactInformation": "联系信息",
+  "phone": "电话",
+  "phoneHint": "+86 138 0000 0000",
+  "email": "邮箱",
+  "emailHint": "contact@example.com",
+  "website": "网站",
+  "websiteHint": "https://example.com",
+  "pricing": "价格",
+  "currency": "货币",
+  "hourlyRate": "时租",
+  "hourlyRateHint": "10",
+  "dailyRate": "日租",
+  "dailyRateHint": "50",
+  "weeklyRate": "周租",
+  "weeklyRateHint": "200",
+  "monthlyRate": "月租",
+  "monthlyRateHint": "500",
+  "freeTrialAvailable": "免费试用",
+  "trialDuration": "试用时长",
+  "trialDurationHint": "1天、1周等",
+  "specifications": "规格",
+  "wifiSpeed": "WiFi 速度 (Mbps)",
+  "wifiSpeedHint": "500",
+  "capacity": "容量",
+  "capacityHint": "50",
+  "numberOfDesks": "桌位数量",
+  "numberOfDesksHint": "30",
+  "meetingRooms": "会议室",
+  "meetingRoomsHint": "5",
+  "noiseLevel": "噪音等级",
+  "noiseLevelQuiet": "安静",
+  "noiseLevelModerate": "适中",
+  "noiseLevelLoud": "嘈杂",
+  "spaceType": "空间类型",
+  "spaceTypeOpen": "开放式",
+  "spaceTypePrivate": "私密",
+  "spaceTypeMixed": "混合式",
+  "naturalLight": "自然光",
+  "amenities": "设施",
+  "wifi": "WiFi",
+  "freeCoffee": "免费咖啡",
+  "printer": "打印机",
+  "meetingRooms": "会议室",
+  "phoneBooth": "电话亭",
+  "kitchen": "厨房",
+  "parking": "停车场",
+  "locker": "储物柜",
+  "twentyFourSevenAccess": "24/7 全天候",
+  "airConditioning": "空调",
+  "standingDesk": "升降桌",
+  "shower": "淋浴",
+  "bikeStorage": "自行车存放",
+  "eventSpace": "活动空间",
+  "petFriendly": "宠物友好",
+  "addCoverPhoto": "添加封面照片",
+  "tapToChoosePhoto": "点击从相册或相机选择",
+  "chooseImageSource": "选择图片来源",
+  "photoLibrary": "相册",
+  "camera": "相机",
+  "submitCoworkingSpace": "提交共享办公空间",
+  "thisFieldIsRequired": "此字段为必填项",
+  "failedToPickImage": "选择图片失败：{error}",
+  "@failedToPickImage": {
+    "description": "选择图片失败提示",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "coworkingSubmittedSuccess": "共享办公空间提交成功！",
+  "failedToSubmitCoworking": "提交共享办公空间失败：{error}",
+  "@failedToSubmitCoworking": {
+    "description": "提交失败提示",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
 }
 

@@ -349,8 +349,7 @@ class CoworkingDetailPage extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      l10n.freeTrialAvailable(
-                          space.pricing.trialDuration ?? ''),
+                      '${l10n.freeTrialAvailable} ${space.pricing.trialDuration ?? ''}',
                       style: TextStyle(
                         color: Colors.green[700],
                         fontWeight: FontWeight.w600,

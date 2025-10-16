@@ -2084,12 +2084,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get creativeAssistant => 'Creative Assistant';
 
   @override
-  String freeTrialAvailable(Object duration) {
-    return 'Free $duration trial available';
-  }
+  String get freeTrialAvailable => 'Free Trial Available';
 
   @override
-  String get monthlyRate => 'monthly';
+  String get monthlyRate => 'Monthly Rate';
 
   @override
   String get locationService => 'Location Service';
@@ -2914,7 +2912,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get specifications => 'Specifications';
 
   @override
-  String get wifiSpeed => 'WiFi Speed';
+  String get wifiSpeed => 'WiFi Speed (Mbps)';
 
   @override
   String get capacity => 'Capacity';
@@ -2956,4 +2954,207 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noMapAppAvailable => 'No map app available';
+
+  @override
+  String get selectMapSource => 'Select Map Source';
+
+  @override
+  String switchedToMapSource(String mapSource) {
+    return 'Switched to $mapSource';
+  }
+
+  @override
+  String distanceFrom(String placeName) {
+    return 'Distance from $placeName';
+  }
+
+  @override
+  String get viewOnMap => 'View on Map';
+
+  @override
+  String get tapMarkersTip =>
+      'Tap markers on the map to view nearby facilities';
+
+  @override
+  String get mapboxTokenWarning =>
+      'Mapbox requires API Token. Currently using demo token with usage limits.';
+
+  @override
+  String meters(String count) {
+    return '${count}m';
+  }
+
+  @override
+  String kilometers(String count) {
+    return '${count}km';
+  }
+
+  @override
+  String get addCoworkingSpace => 'Add Coworking Space';
+
+  @override
+  String get basicInformation => 'Basic Information';
+
+  @override
+  String get spaceNameHint => 'e.g., WeWork Times Square';
+
+  @override
+  String get descriptionHint => 'Describe the coworking space...';
+
+  @override
+  String get addressHint => '1460 Broadway';
+
+  @override
+  String get cityHint => 'New York';
+
+  @override
+  String get countryHint => 'USA';
+
+  @override
+  String get pickLocationOnMap => 'Pick Location on Map';
+
+  @override
+  String locationCoordinates(String lat, String lng) {
+    return 'Location: $lat, $lng';
+  }
+
+  @override
+  String get contactInformation => 'Contact Information';
+
+  @override
+  String get phoneHint => '+1 234 567 8900';
+
+  @override
+  String get emailHint => 'contact@example.com';
+
+  @override
+  String get websiteHint => 'https://example.com';
+
+  @override
+  String get hourlyRate => 'Hourly Rate';
+
+  @override
+  String get hourlyRateHint => '10';
+
+  @override
+  String get dailyRate => 'Daily Rate';
+
+  @override
+  String get dailyRateHint => '50';
+
+  @override
+  String get weeklyRate => 'Weekly Rate';
+
+  @override
+  String get weeklyRateHint => '200';
+
+  @override
+  String get monthlyRateHint => '500';
+
+  @override
+  String get trialDuration => 'Trial Duration';
+
+  @override
+  String get trialDurationHint => '1 day, 1 week, etc.';
+
+  @override
+  String get wifiSpeedHint => '500';
+
+  @override
+  String get capacityHint => '50';
+
+  @override
+  String get numberOfDesks => 'Number of Desks';
+
+  @override
+  String get numberOfDesksHint => '30';
+
+  @override
+  String get meetingRoomsHint => '5';
+
+  @override
+  String get noiseLevelQuiet => 'Quiet';
+
+  @override
+  String get noiseLevelModerate => 'Moderate';
+
+  @override
+  String get noiseLevelLoud => 'Loud';
+
+  @override
+  String get spaceType => 'Space Type';
+
+  @override
+  String get spaceTypeOpen => 'Open';
+
+  @override
+  String get spaceTypePrivate => 'Private';
+
+  @override
+  String get spaceTypeMixed => 'Mixed';
+
+  @override
+  String get naturalLight => 'Natural Light';
+
+  @override
+  String get freeCoffee => 'Free Coffee';
+
+  @override
+  String get phoneBooth => 'Phone Booth';
+
+  @override
+  String get locker => 'Locker';
+
+  @override
+  String get twentyFourSevenAccess => '24/7 Access';
+
+  @override
+  String get airConditioning => 'Air Conditioning';
+
+  @override
+  String get standingDesk => 'Standing Desk';
+
+  @override
+  String get shower => 'Shower';
+
+  @override
+  String get bikeStorage => 'Bike Storage';
+
+  @override
+  String get eventSpace => 'Event Space';
+
+  @override
+  String get petFriendly => 'Pet Friendly';
+
+  @override
+  String get addCoverPhoto => 'Add Cover Photo';
+
+  @override
+  String get tapToChoosePhoto => 'Tap to choose from gallery or camera';
+
+  @override
+  String get chooseImageSource => 'Choose Image Source';
+
+  @override
+  String get photoLibrary => 'Photo Library';
+
+  @override
+  String get submitCoworkingSpace => 'Submit Coworking Space';
+
+  @override
+  String get thisFieldIsRequired => 'This field is required';
+
+  @override
+  String failedToPickImage(String error) {
+    return 'Failed to pick image: $error';
+  }
+
+  @override
+  String get coworkingSubmittedSuccess =>
+      'Coworking space has been submitted successfully!';
+
+  @override
+  String failedToSubmitCoworking(String error) {
+    return 'Failed to submit coworking space: $error';
+  }
 }

@@ -773,7 +773,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get wifi => 'WiFi';
 
   @override
-  String get parking => '停车';
+  String get parking => '停车场';
 
   @override
   String get meetingRoom => '会议室';
@@ -2078,12 +2078,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get creativeAssistant => '创作助手';
 
   @override
-  String freeTrialAvailable(Object duration) {
-    return '可享受$duration免费试用';
-  }
+  String get freeTrialAvailable => '免费试用';
 
   @override
-  String get monthlyRate => '每月';
+  String get monthlyRate => '月租';
 
   @override
   String get locationService => '位置服务';
@@ -2887,10 +2885,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get monthly => '每月';
 
   @override
-  String get specifications => '规格参数';
+  String get specifications => '规格';
 
   @override
-  String get wifiSpeed => 'WiFi 速度';
+  String get wifiSpeed => 'WiFi 速度 (Mbps)';
 
   @override
   String get capacity => '容量';
@@ -2902,7 +2900,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get desks => '工位';
 
   @override
-  String get noiseLevel => '噪音水平';
+  String get noiseLevel => '噪音等级';
 
   @override
   String get contactInfo => '联系方式';
@@ -2932,4 +2930,204 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get noMapAppAvailable => '未找到可用的地图应用';
+
+  @override
+  String get selectMapSource => '选择地图源';
+
+  @override
+  String switchedToMapSource(String mapSource) {
+    return '已切换到 $mapSource';
+  }
+
+  @override
+  String distanceFrom(String placeName) {
+    return '距离 $placeName';
+  }
+
+  @override
+  String get viewOnMap => '在地图上查看';
+
+  @override
+  String get tapMarkersTip => '点击地图上的标记可以查看更多周边设施';
+
+  @override
+  String get mapboxTokenWarning => 'Mapbox 需要 API Token。当前使用演示 Token，可能有使用限制。';
+
+  @override
+  String meters(String count) {
+    return '$count米';
+  }
+
+  @override
+  String kilometers(String count) {
+    return '$count公里';
+  }
+
+  @override
+  String get addCoworkingSpace => '添加共享办公空间';
+
+  @override
+  String get basicInformation => '基本信息';
+
+  @override
+  String get spaceNameHint => '例如：WeWork 时代广场';
+
+  @override
+  String get descriptionHint => '描述共享办公空间...';
+
+  @override
+  String get addressHint => '百老汇大道 1460 号';
+
+  @override
+  String get cityHint => '纽约';
+
+  @override
+  String get countryHint => '美国';
+
+  @override
+  String get pickLocationOnMap => '在地图上选择位置';
+
+  @override
+  String locationCoordinates(String lat, String lng) {
+    return '位置：$lat, $lng';
+  }
+
+  @override
+  String get contactInformation => '联系信息';
+
+  @override
+  String get phoneHint => '+86 138 0000 0000';
+
+  @override
+  String get emailHint => 'contact@example.com';
+
+  @override
+  String get websiteHint => 'https://example.com';
+
+  @override
+  String get hourlyRate => '时租';
+
+  @override
+  String get hourlyRateHint => '10';
+
+  @override
+  String get dailyRate => '日租';
+
+  @override
+  String get dailyRateHint => '50';
+
+  @override
+  String get weeklyRate => '周租';
+
+  @override
+  String get weeklyRateHint => '200';
+
+  @override
+  String get monthlyRateHint => '500';
+
+  @override
+  String get trialDuration => '试用时长';
+
+  @override
+  String get trialDurationHint => '1天、1周等';
+
+  @override
+  String get wifiSpeedHint => '500';
+
+  @override
+  String get capacityHint => '50';
+
+  @override
+  String get numberOfDesks => '桌位数量';
+
+  @override
+  String get numberOfDesksHint => '30';
+
+  @override
+  String get meetingRoomsHint => '5';
+
+  @override
+  String get noiseLevelQuiet => '安静';
+
+  @override
+  String get noiseLevelModerate => '适中';
+
+  @override
+  String get noiseLevelLoud => '嘈杂';
+
+  @override
+  String get spaceType => '空间类型';
+
+  @override
+  String get spaceTypeOpen => '开放式';
+
+  @override
+  String get spaceTypePrivate => '私密';
+
+  @override
+  String get spaceTypeMixed => '混合式';
+
+  @override
+  String get naturalLight => '自然光';
+
+  @override
+  String get freeCoffee => '免费咖啡';
+
+  @override
+  String get phoneBooth => '电话亭';
+
+  @override
+  String get locker => '储物柜';
+
+  @override
+  String get twentyFourSevenAccess => '24/7 全天候';
+
+  @override
+  String get airConditioning => '空调';
+
+  @override
+  String get standingDesk => '升降桌';
+
+  @override
+  String get shower => '淋浴';
+
+  @override
+  String get bikeStorage => '自行车存放';
+
+  @override
+  String get eventSpace => '活动空间';
+
+  @override
+  String get petFriendly => '宠物友好';
+
+  @override
+  String get addCoverPhoto => '添加封面照片';
+
+  @override
+  String get tapToChoosePhoto => '点击从相册或相机选择';
+
+  @override
+  String get chooseImageSource => '选择图片来源';
+
+  @override
+  String get photoLibrary => '相册';
+
+  @override
+  String get submitCoworkingSpace => '提交共享办公空间';
+
+  @override
+  String get thisFieldIsRequired => '此字段为必填项';
+
+  @override
+  String failedToPickImage(String error) {
+    return '选择图片失败：$error';
+  }
+
+  @override
+  String get coworkingSubmittedSuccess => '共享办公空间提交成功！';
+
+  @override
+  String failedToSubmitCoworking(String error) {
+    return '提交共享办公空间失败：$error';
+  }
 }

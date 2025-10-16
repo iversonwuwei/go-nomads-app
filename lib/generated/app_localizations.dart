@@ -1625,7 +1625,7 @@ abstract class AppLocalizations {
   /// No description provided for @parking.
   ///
   /// In zh, this message translates to:
-  /// **'停车'**
+  /// **'停车场'**
   String get parking;
 
   /// No description provided for @meetingRoom.
@@ -4211,13 +4211,13 @@ abstract class AppLocalizations {
   /// No description provided for @freeTrialAvailable.
   ///
   /// In zh, this message translates to:
-  /// **'可享受{duration}免费试用'**
-  String freeTrialAvailable(Object duration);
+  /// **'免费试用'**
+  String get freeTrialAvailable;
 
   /// No description provided for @monthlyRate.
   ///
   /// In zh, this message translates to:
-  /// **'每月'**
+  /// **'月租'**
   String get monthlyRate;
 
   /// No description provided for @locationService.
@@ -5771,13 +5771,13 @@ abstract class AppLocalizations {
   /// No description provided for @specifications.
   ///
   /// In zh, this message translates to:
-  /// **'规格参数'**
+  /// **'规格'**
   String get specifications;
 
   /// No description provided for @wifiSpeed.
   ///
   /// In zh, this message translates to:
-  /// **'WiFi 速度'**
+  /// **'WiFi 速度 (Mbps)'**
   String get wifiSpeed;
 
   /// No description provided for @capacity.
@@ -5801,7 +5801,7 @@ abstract class AppLocalizations {
   /// No description provided for @noiseLevel.
   ///
   /// In zh, this message translates to:
-  /// **'噪音水平'**
+  /// **'噪音等级'**
   String get noiseLevel;
 
   /// No description provided for @contactInfo.
@@ -5857,6 +5857,378 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'未找到可用的地图应用'**
   String get noMapAppAvailable;
+
+  /// No description provided for @selectMapSource.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择地图源'**
+  String get selectMapSource;
+
+  /// 切换地图源成功提示
+  ///
+  /// In zh, this message translates to:
+  /// **'已切换到 {mapSource}'**
+  String switchedToMapSource(String mapSource);
+
+  /// 距离某地点
+  ///
+  /// In zh, this message translates to:
+  /// **'距离 {placeName}'**
+  String distanceFrom(String placeName);
+
+  /// No description provided for @viewOnMap.
+  ///
+  /// In zh, this message translates to:
+  /// **'在地图上查看'**
+  String get viewOnMap;
+
+  /// No description provided for @tapMarkersTip.
+  ///
+  /// In zh, this message translates to:
+  /// **'点击地图上的标记可以查看更多周边设施'**
+  String get tapMarkersTip;
+
+  /// No description provided for @mapboxTokenWarning.
+  ///
+  /// In zh, this message translates to:
+  /// **'Mapbox 需要 API Token。当前使用演示 Token，可能有使用限制。'**
+  String get mapboxTokenWarning;
+
+  /// 米单位
+  ///
+  /// In zh, this message translates to:
+  /// **'{count}米'**
+  String meters(String count);
+
+  /// 公里单位
+  ///
+  /// In zh, this message translates to:
+  /// **'{count}公里'**
+  String kilometers(String count);
+
+  /// No description provided for @addCoworkingSpace.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加共享办公空间'**
+  String get addCoworkingSpace;
+
+  /// No description provided for @basicInformation.
+  ///
+  /// In zh, this message translates to:
+  /// **'基本信息'**
+  String get basicInformation;
+
+  /// No description provided for @spaceNameHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'例如：WeWork 时代广场'**
+  String get spaceNameHint;
+
+  /// No description provided for @descriptionHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'描述共享办公空间...'**
+  String get descriptionHint;
+
+  /// No description provided for @addressHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'百老汇大道 1460 号'**
+  String get addressHint;
+
+  /// No description provided for @cityHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'纽约'**
+  String get cityHint;
+
+  /// No description provided for @countryHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'美国'**
+  String get countryHint;
+
+  /// No description provided for @pickLocationOnMap.
+  ///
+  /// In zh, this message translates to:
+  /// **'在地图上选择位置'**
+  String get pickLocationOnMap;
+
+  /// 位置坐标
+  ///
+  /// In zh, this message translates to:
+  /// **'位置：{lat}, {lng}'**
+  String locationCoordinates(String lat, String lng);
+
+  /// No description provided for @contactInformation.
+  ///
+  /// In zh, this message translates to:
+  /// **'联系信息'**
+  String get contactInformation;
+
+  /// No description provided for @phoneHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'+86 138 0000 0000'**
+  String get phoneHint;
+
+  /// No description provided for @emailHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'contact@example.com'**
+  String get emailHint;
+
+  /// No description provided for @websiteHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'https://example.com'**
+  String get websiteHint;
+
+  /// No description provided for @hourlyRate.
+  ///
+  /// In zh, this message translates to:
+  /// **'时租'**
+  String get hourlyRate;
+
+  /// No description provided for @hourlyRateHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'10'**
+  String get hourlyRateHint;
+
+  /// No description provided for @dailyRate.
+  ///
+  /// In zh, this message translates to:
+  /// **'日租'**
+  String get dailyRate;
+
+  /// No description provided for @dailyRateHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'50'**
+  String get dailyRateHint;
+
+  /// No description provided for @weeklyRate.
+  ///
+  /// In zh, this message translates to:
+  /// **'周租'**
+  String get weeklyRate;
+
+  /// No description provided for @weeklyRateHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'200'**
+  String get weeklyRateHint;
+
+  /// No description provided for @monthlyRateHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'500'**
+  String get monthlyRateHint;
+
+  /// No description provided for @trialDuration.
+  ///
+  /// In zh, this message translates to:
+  /// **'试用时长'**
+  String get trialDuration;
+
+  /// No description provided for @trialDurationHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'1天、1周等'**
+  String get trialDurationHint;
+
+  /// No description provided for @wifiSpeedHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'500'**
+  String get wifiSpeedHint;
+
+  /// No description provided for @capacityHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'50'**
+  String get capacityHint;
+
+  /// No description provided for @numberOfDesks.
+  ///
+  /// In zh, this message translates to:
+  /// **'桌位数量'**
+  String get numberOfDesks;
+
+  /// No description provided for @numberOfDesksHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'30'**
+  String get numberOfDesksHint;
+
+  /// No description provided for @meetingRoomsHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'5'**
+  String get meetingRoomsHint;
+
+  /// No description provided for @noiseLevelQuiet.
+  ///
+  /// In zh, this message translates to:
+  /// **'安静'**
+  String get noiseLevelQuiet;
+
+  /// No description provided for @noiseLevelModerate.
+  ///
+  /// In zh, this message translates to:
+  /// **'适中'**
+  String get noiseLevelModerate;
+
+  /// No description provided for @noiseLevelLoud.
+  ///
+  /// In zh, this message translates to:
+  /// **'嘈杂'**
+  String get noiseLevelLoud;
+
+  /// No description provided for @spaceType.
+  ///
+  /// In zh, this message translates to:
+  /// **'空间类型'**
+  String get spaceType;
+
+  /// No description provided for @spaceTypeOpen.
+  ///
+  /// In zh, this message translates to:
+  /// **'开放式'**
+  String get spaceTypeOpen;
+
+  /// No description provided for @spaceTypePrivate.
+  ///
+  /// In zh, this message translates to:
+  /// **'私密'**
+  String get spaceTypePrivate;
+
+  /// No description provided for @spaceTypeMixed.
+  ///
+  /// In zh, this message translates to:
+  /// **'混合式'**
+  String get spaceTypeMixed;
+
+  /// No description provided for @naturalLight.
+  ///
+  /// In zh, this message translates to:
+  /// **'自然光'**
+  String get naturalLight;
+
+  /// No description provided for @freeCoffee.
+  ///
+  /// In zh, this message translates to:
+  /// **'免费咖啡'**
+  String get freeCoffee;
+
+  /// No description provided for @phoneBooth.
+  ///
+  /// In zh, this message translates to:
+  /// **'电话亭'**
+  String get phoneBooth;
+
+  /// No description provided for @locker.
+  ///
+  /// In zh, this message translates to:
+  /// **'储物柜'**
+  String get locker;
+
+  /// No description provided for @twentyFourSevenAccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'24/7 全天候'**
+  String get twentyFourSevenAccess;
+
+  /// No description provided for @airConditioning.
+  ///
+  /// In zh, this message translates to:
+  /// **'空调'**
+  String get airConditioning;
+
+  /// No description provided for @standingDesk.
+  ///
+  /// In zh, this message translates to:
+  /// **'升降桌'**
+  String get standingDesk;
+
+  /// No description provided for @shower.
+  ///
+  /// In zh, this message translates to:
+  /// **'淋浴'**
+  String get shower;
+
+  /// No description provided for @bikeStorage.
+  ///
+  /// In zh, this message translates to:
+  /// **'自行车存放'**
+  String get bikeStorage;
+
+  /// No description provided for @eventSpace.
+  ///
+  /// In zh, this message translates to:
+  /// **'活动空间'**
+  String get eventSpace;
+
+  /// No description provided for @petFriendly.
+  ///
+  /// In zh, this message translates to:
+  /// **'宠物友好'**
+  String get petFriendly;
+
+  /// No description provided for @addCoverPhoto.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加封面照片'**
+  String get addCoverPhoto;
+
+  /// No description provided for @tapToChoosePhoto.
+  ///
+  /// In zh, this message translates to:
+  /// **'点击从相册或相机选择'**
+  String get tapToChoosePhoto;
+
+  /// No description provided for @chooseImageSource.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择图片来源'**
+  String get chooseImageSource;
+
+  /// No description provided for @photoLibrary.
+  ///
+  /// In zh, this message translates to:
+  /// **'相册'**
+  String get photoLibrary;
+
+  /// No description provided for @submitCoworkingSpace.
+  ///
+  /// In zh, this message translates to:
+  /// **'提交共享办公空间'**
+  String get submitCoworkingSpace;
+
+  /// No description provided for @thisFieldIsRequired.
+  ///
+  /// In zh, this message translates to:
+  /// **'此字段为必填项'**
+  String get thisFieldIsRequired;
+
+  /// 选择图片失败提示
+  ///
+  /// In zh, this message translates to:
+  /// **'选择图片失败：{error}'**
+  String failedToPickImage(String error);
+
+  /// No description provided for @coworkingSubmittedSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'共享办公空间提交成功！'**
+  String get coworkingSubmittedSuccess;
+
+  /// 提交失败提示
+  ///
+  /// In zh, this message translates to:
+  /// **'提交共享办公空间失败：{error}'**
+  String failedToSubmitCoworking(String error);
 }
 
 class _AppLocalizationsDelegate
