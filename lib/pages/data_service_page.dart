@@ -255,7 +255,7 @@ class _DataServicePageState extends State<DataServicePage> {
                   SizedBox(height: isMobile ? 32 : 40),
 
                   // 三个服务卡片
-                  _buildServiceCards(isMobile),
+                  _buildServiceCards(isMobile, l10n),
                 ],
               ),
             ),
@@ -266,7 +266,7 @@ class _DataServicePageState extends State<DataServicePage> {
   }
 
   // 紧凑型服务卡片
-  Widget _buildServiceCards(bool isMobile) {
+  Widget _buildServiceCards(bool isMobile, AppLocalizations l10n) {
     return Container(
       constraints: BoxConstraints(
         maxWidth: isMobile ? double.infinity : 750,
@@ -279,7 +279,7 @@ class _DataServicePageState extends State<DataServicePage> {
             child: _buildCompactCard(
               isMobile: isMobile,
               icon: Icons.location_city_rounded,
-              title: 'Cities',
+              title: l10n.cities,
               color: const Color(0xFFFF4458),
               onTap: () => Get.to(() => const CityListPage()),
             ),
@@ -292,7 +292,7 @@ class _DataServicePageState extends State<DataServicePage> {
             child: _buildCompactCard(
               isMobile: isMobile,
               icon: Icons.business_center_rounded,
-              title: 'Coworks',
+              title: l10n.coworks,
               color: const Color(0xFF6366F1),
               onTap: () => Get.to(() => const CoworkingHomePage()),
             ),
@@ -623,7 +623,7 @@ class _DataServicePageState extends State<DataServicePage> {
       // 如果城市列表为空，显示空状态
       if (items.isEmpty) {
         return SliverToBoxAdapter(
-          child: _buildEmptyCitiesState(isMobile),
+          child: _buildEmptyCitiesState(isMobile, l10n),
         );
       }
 
@@ -752,7 +752,7 @@ class _DataServicePageState extends State<DataServicePage> {
       return Builder(
         builder: (context) {
           final l10n = AppLocalizations.of(context)!;
-          
+
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -848,26 +848,26 @@ class _DataServicePageState extends State<DataServicePage> {
 
               const SizedBox(height: 24),
 
-          // Meetups 列表（横向滚动）
-          SizedBox(
-            height: 310,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: upcomingMeetups.length,
-              itemBuilder: (context, index) {
-                final meetup = upcomingMeetups[index];
-                return _MeetupCard(
-                  meetup: meetup,
-                  controller: controller,
-                  isMobile: isMobile,
-                );
-              },
-            ),
-          ),
+              // Meetups 列表（横向滚动）
+              SizedBox(
+                height: 310,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: upcomingMeetups.length,
+                  itemBuilder: (context, index) {
+                    final meetup = upcomingMeetups[index];
+                    return _MeetupCard(
+                      meetup: meetup,
+                      controller: controller,
+                      isMobile: isMobile,
+                    );
+                  },
+                ),
+              ),
 
-          // 移动端的 View all 按钮
-          if (isMobile) ...[
-            const SizedBox(height: 16),
+              // 移动端的 View all 按钮
+              if (isMobile) ...[
+                const SizedBox(height: 16),
                 Builder(
                   builder: (context) {
                     final l10n = AppLocalizations.of(context)!;
@@ -905,17 +905,17 @@ class _DataServicePageState extends State<DataServicePage> {
                       ),
                     );
                   },
-            ),
-          ],
-        ],
-      );
+                ),
+              ],
+            ],
+          );
         },
       );
     });
   }
 
   // 空城市列表状态
-  Widget _buildEmptyCitiesState(bool isMobile) {
+  Widget _buildEmptyCitiesState(bool isMobile, AppLocalizations l10n) {
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: isMobile ? 24 : 48,
@@ -943,7 +943,7 @@ class _DataServicePageState extends State<DataServicePage> {
 
           // 标题
           Text(
-            'No Cities Yet',
+            l10n.noCitiesYet,
             style: TextStyle(
               fontSize: isMobile ? 24 : 28,
               fontWeight: FontWeight.bold,
@@ -972,9 +972,9 @@ class _DataServicePageState extends State<DataServicePage> {
               Get.toNamed('/city-list');
             },
             icon: const Icon(Icons.add_circle_outline, size: 20),
-            label: const Text(
-              'Browse Cities',
-              style: TextStyle(
+            label: Text(
+              l10n.browseCities,
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),

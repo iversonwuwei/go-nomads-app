@@ -35,7 +35,7 @@
   "success": "成功",
   "error": "错误",
   "city": "城市",
-  "cities": "城市列表",
+  "citiesList": "城市列表",
   "cityDetail": "城市详情",
   "cityCompare": "城市对比",
   "weather": "天气",
@@ -783,7 +783,8 @@
   "skills": "技能",
   "badges": "徽章",
   "stats": "统计",
-  "cities": "城市",
+  "cities": "城市群",
+  "coworks": "共享空间",
   "countries": "国家",
   "meetups": "聚会",
   "connections": "联系人",
@@ -1223,6 +1224,8 @@
     "asyncWithMap": "地图功能即将推出！",
   "planSaved": "计划已保存到您的个人资料！",
   "sharingPlan": "正在分享您的旅行计划...",
+  "noCitiesYet": "暂无城市",
+  "browseCities": "浏览城市群",
   "info": "信息",
   "download": "下载",
   "currencyUSD": "美元",
@@ -1465,6 +1468,77 @@
   "failedToSubmitCoworking": "提交共享办公空间失败：{error}",
   "@failedToSubmitCoworking": {
     "description": "提交失败提示",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "meetupTitle": "标题",
+  "enterMeetupTitle": "输入聚会标题",
+  "pleaseEnterTitle": "请输入标题",
+  "meetupType": "类型",
+  "meetupTypeHint": "例如：休闲聚会、商务社交、文化交流",
+  "pleaseEnterType": "请输入类型",
+  "selectCity": "选择城市",
+  "country": "国家",
+  "selectCountry": "选择国家",
+  "enterVenue": "输入场地或从地图选择",
+  "pleaseEnterVenue": "请输入场地",
+  "date": "日期",
+  "selectDate": "选择日期",
+  "time": "时间",
+  "selectTime": "选择时间",
+  "maxAttendees": "最大参与人数",
+  "description": "描述",
+  "enterMeetupDescription": "输入聚会描述",
+  "venuePhotos": "场地照片",
+  "addVenuePhotosCount": "添加聚会场地照片（{count}/10）",
+  "@addVenuePhotosCount": {
+    "description": "添加场地照片计数",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "addPhoto": "添加照片",
+  "coverPhoto": "封面",
+  "addVenuePhotos": "添加场地照片",
+  "tapToSelectPhoto": "点击从相册或相机选择",
+  "chooseFromGallery": "从相册选择",
+  "selectMultiplePhotos": "选择多张照片（{count}/10）",
+  "@selectMultiplePhotos": {
+    "description": "选择多张照片计数",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "takePhoto": "拍照",
+  "useCameraToTakePhoto": "使用相机拍摄新照片",
+  "maximumImagesAllowed": "最多允许 10 张图片",
+  "notice": "提示",
+  "failedToPickImages": "选择图片失败：{error}",
+  "@failedToPickImages": {
+    "description": "选择图片失败提示",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "pleaseFillAllFields": "请填写所有必填字段",
+  "meetupCreatedSuccess": "聚会创建成功！",
+  "addToCalendar": "添加到日历？",
+  "addToCalendarMessage": "是否要将此聚会添加到系统日历？",
+  "notNow": "暂不",
+  "addToCalendarButton": "添加到日历",
+  "eventAddedToCalendar": "事件已添加到您的日历！",
+  "failedToAddEvent": "添加事件到日历失败：{error}",
+  "@failedToAddEvent": {
+    "description": "添加事件失败提示",
     "placeholders": {
       "error": {
         "type": "String"

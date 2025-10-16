@@ -105,7 +105,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get city => '城市';
 
   @override
-  String get cities => '城市';
+  String get citiesList => '城市列表';
 
   @override
   String get cityDetail => '城市详情';
@@ -2024,6 +2024,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get failedToOpenMap => '打开地图失败';
 
   @override
+  String get cities => '城市群';
+
+  @override
+  String get coworks => '共享空间';
+
+  @override
   String get countries => '国家';
 
   @override
@@ -2516,7 +2522,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoDetectedLocation => '根据您的当前位置自动检测';
 
   @override
-  String get meetupType => '聚会类型';
+  String get meetupType => '类型';
 
   @override
   String get maximumAttendees => '最大参与人数';
@@ -2597,7 +2603,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String failedToPickImages(String error) {
-    return '选择图片失败: $error';
+    return '选择图片失败：$error';
   }
 
   @override
@@ -2744,6 +2750,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get sharingPlan => '正在分享您的旅行计划...';
+
+  @override
+  String get noCitiesYet => '暂无城市';
+
+  @override
+  String get browseCities => '浏览城市群';
 
   @override
   String get info => '信息';
@@ -3129,5 +3141,89 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String failedToSubmitCoworking(String error) {
     return '提交共享办公空间失败：$error';
+  }
+
+  @override
+  String get meetupTitle => '标题';
+
+  @override
+  String get enterMeetupTitle => '输入聚会标题';
+
+  @override
+  String get meetupTypeHint => '例如：休闲聚会、商务社交、文化交流';
+
+  @override
+  String get pleaseEnterType => '请输入类型';
+
+  @override
+  String get selectCountry => '选择国家';
+
+  @override
+  String get enterVenue => '输入场地或从地图选择';
+
+  @override
+  String get pleaseEnterVenue => '请输入场地';
+
+  @override
+  String get maxAttendees => '最大参与人数';
+
+  @override
+  String get enterMeetupDescription => '输入聚会描述';
+
+  @override
+  String get venuePhotos => '场地照片';
+
+  @override
+  String addVenuePhotosCount(int count) {
+    return '添加聚会场地照片（$count/10）';
+  }
+
+  @override
+  String get coverPhoto => '封面';
+
+  @override
+  String get addVenuePhotos => '添加场地照片';
+
+  @override
+  String get tapToSelectPhoto => '点击从相册或相机选择';
+
+  @override
+  String selectMultiplePhotos(int count) {
+    return '选择多张照片（$count/10）';
+  }
+
+  @override
+  String get useCameraToTakePhoto => '使用相机拍摄新照片';
+
+  @override
+  String get maximumImagesAllowed => '最多允许 10 张图片';
+
+  @override
+  String get notice => '提示';
+
+  @override
+  String get pleaseFillAllFields => '请填写所有必填字段';
+
+  @override
+  String get meetupCreatedSuccess => '聚会创建成功！';
+
+  @override
+  String get addToCalendar => '添加到日历？';
+
+  @override
+  String get addToCalendarMessage => '是否要将此聚会添加到系统日历？';
+
+  @override
+  String get notNow => '暂不';
+
+  @override
+  String get addToCalendarButton => '添加到日历';
+
+  @override
+  String get eventAddedToCalendar => '事件已添加到您的日历！';
+
+  @override
+  String failedToAddEvent(String error) {
+    return '添加事件到日历失败：$error';
   }
 }

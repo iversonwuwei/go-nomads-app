@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/data_service_controller.dart';
+import '../generated/app_localizations.dart';
 import '../widgets/app_toast.dart';
 import 'venue_map_picker_page.dart';
 
@@ -134,23 +135,26 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
             final remaining = 10 - _selectedImages.length;
             if (remaining > 0) {
               _selectedImages.addAll(images.take(remaining));
+              final l10n = AppLocalizations.of(context)!;
               AppToast.warning(
-                'Maximum 10 images allowed. Only first $remaining images were added.',
-                title: 'Notice',
+                l10n.maximumImagesAllowed,
+                title: l10n.notice,
               );
             } else {
+              final l10n = AppLocalizations.of(context)!;
               AppToast.warning(
-                'Maximum 10 images already selected',
-                title: 'Notice',
+                l10n.maximumImagesAllowed,
+                title: l10n.notice,
               );
             }
           }
         });
       }
     } catch (e) {
+      final l10n = AppLocalizations.of(context)!;
       AppToast.error(
-        'Failed to pick images: ${e.toString()}',
-        title: 'Error',
+        l10n.failedToPickImages(e.toString()),
+        title: l10n.error,
       );
     }
   }
@@ -219,9 +223,9 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
               ),
               const SizedBox(height: 20),
               // 标题
-              const Text(
-                'Add Venue Photos',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context)!.addVenuePhotos,
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: Colors.black87,
@@ -241,15 +245,16 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                     color: Color(0xFFFF4458),
                   ),
                 ),
-                title: const Text(
-                  'Choose from Gallery',
-                  style: TextStyle(
+                title: Text(
+                  AppLocalizations.of(context)!.chooseFromGallery,
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 subtitle: Text(
-                  'Select multiple photos (${_selectedImages.length}/10)',
+                  AppLocalizations.of(context)!
+                      .selectMultiplePhotos(_selectedImages.length),
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.grey.shade600,
@@ -273,15 +278,15 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                     color: Color(0xFFFF4458),
                   ),
                 ),
-                title: const Text(
-                  'Take a Photo',
-                  style: TextStyle(
+                title: Text(
+                  AppLocalizations.of(context)!.takePhoto,
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 subtitle: Text(
-                  'Use camera to take a new photo',
+                  AppLocalizations.of(context)!.useCameraToTakePhoto,
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.grey.shade600,
@@ -307,9 +312,10 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
       if (_selectedCity == null ||
           _selectedDate == null ||
           _selectedTime == null) {
+        final l10n = AppLocalizations.of(context)!;
         AppToast.error(
-          'Please fill in all required fields',
-          title: 'Error',
+          l10n.pleaseFillAllFields,
+          title: l10n.error,
         );
         return;
       }
@@ -333,9 +339,10 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
       Get.back();
 
       // 显示成功消息
+      final l10n = AppLocalizations.of(context)!;
       AppToast.success(
-        'Meetup created successfully!',
-        title: 'Success',
+        l10n.meetupCreatedSuccess,
+        title: l10n.success,
       );
 
       // 询问是否添加到系统日历
@@ -372,9 +379,9 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
               ),
               const SizedBox(height: 20),
               // 标题
-              const Text(
-                'Add to Calendar?',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context)!.addToCalendar,
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
                   color: Colors.black87,
@@ -383,7 +390,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
               const SizedBox(height: 12),
               // 描述
               Text(
-                'Would you like to add this meetup to your system calendar?',
+                AppLocalizations.of(context)!.addToCalendarMessage,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
@@ -407,9 +414,9 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: const Text(
-                        'Not Now',
-                        style: TextStyle(
+                      child: Text(
+                        AppLocalizations.of(context)!.notNow,
+                        style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w500,
                         ),
@@ -433,9 +440,9 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: const Text(
-                        'Add to Calendar',
-                        style: TextStyle(
+                      child: Text(
+                        AppLocalizations.of(context)!.addToCalendarButton,
+                        style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
                         ),
@@ -483,21 +490,23 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
       // 添加到系统日历
       final result = await Add2Calendar.addEvent2Cal(event);
 
+      final l10n = AppLocalizations.of(context)!;
       if (result) {
         AppToast.success(
-          'Event added to calendar successfully!',
-          title: 'Success',
+          l10n.eventAddedToCalendar,
+          title: l10n.success,
         );
       } else {
         AppToast.warning(
           'Calendar operation was cancelled',
-          title: 'Notice',
+          title: l10n.notice,
         );
       }
     } catch (e) {
+      final l10n = AppLocalizations.of(context)!;
       AppToast.error(
-        'Failed to add event to calendar: ${e.toString()}',
-        title: 'Error',
+        l10n.failedToAddEvent(e.toString()),
+        title: l10n.error,
       );
       // Calendar error logged
     }
@@ -517,9 +526,9 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Get.back(),
         ),
-        title: const Text(
-          'Create Meetup',
-          style: TextStyle(
+        title: Text(
+          AppLocalizations.of(context)!.createMeetup,
+          style: const TextStyle(
             color: AppColors.textPrimary,
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -532,9 +541,9 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
           padding: EdgeInsets.all(isMobile ? 16 : 24),
           children: [
             // Title
-            const Text(
-              'Title',
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context)!.meetupTitle,
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
@@ -544,7 +553,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
             TextFormField(
               controller: _titleController,
               decoration: InputDecoration(
-                hintText: 'Enter meetup title',
+                hintText: AppLocalizations.of(context)!.enterMeetupTitle,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: const BorderSide(color: AppColors.borderLight),
@@ -556,7 +565,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter a title';
+                  return AppLocalizations.of(context)!.pleaseEnterTitle;
                 }
                 return null;
               },
@@ -565,9 +574,9 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
             const SizedBox(height: 20),
 
             // Type
-            const Text(
-              'Type',
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context)!.meetupType,
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
@@ -577,8 +586,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
             TextFormField(
               controller: _typeController,
               decoration: InputDecoration(
-                hintText:
-                    'e.g., Casual Meetup, Business Networking, Cultural Exchange',
+                hintText: AppLocalizations.of(context)!.meetupTypeHint,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: const BorderSide(color: AppColors.borderLight),
@@ -590,7 +598,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter a type';
+                  return AppLocalizations.of(context)!.pleaseEnterType;
                 }
                 return null;
               },
@@ -599,9 +607,9 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
             const SizedBox(height: 20),
 
             // City
-            const Text(
-              'City',
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context)!.city,
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
@@ -612,7 +620,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                   initialValue: _selectedCity,
                   isExpanded: true,
                   decoration: InputDecoration(
-                    hintText: 'Select city',
+                    hintText: AppLocalizations.of(context)!.selectCity,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                       borderSide:
@@ -642,9 +650,9 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
             const SizedBox(height: 20),
 
             // Country
-            const Text(
-              'Country',
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context)!.country,
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
@@ -655,7 +663,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                   initialValue: _selectedCountry,
                   isExpanded: true,
                   decoration: InputDecoration(
-                    hintText: 'Select country',
+                    hintText: AppLocalizations.of(context)!.selectCountry,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                       borderSide:
@@ -682,9 +690,9 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
             const SizedBox(height: 20),
 
             // Venue with Map Button
-            const Text(
-              'Venue',
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context)!.venue,
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
@@ -701,7 +709,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                       child: TextFormField(
                         controller: _venueController,
                         decoration: InputDecoration(
-                          hintText: 'Enter venue or select from map',
+                          hintText: AppLocalizations.of(context)!.enterVenue,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                             borderSide:
@@ -731,9 +739,10 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                           ),
                         ),
                         validator: (value) {
+                          final l10n = AppLocalizations.of(context)!;
                           if (value == null || value.isEmpty) {
                             setState(() {
-                              _venueErrorText = 'Please enter a venue';
+                              _venueErrorText = l10n.pleaseEnterVenue;
                             });
                             return '';
                           }
@@ -787,9 +796,9 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Date',
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context)!.date,
+                        style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: Colors.black87,
@@ -814,7 +823,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                               const SizedBox(width: 8),
                               Text(
                                 _selectedDate == null
-                                    ? 'Select date'
+                                    ? AppLocalizations.of(context)!.selectDate
                                     : '${_selectedDate!.year}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.day.toString().padLeft(2, '0')}',
                                 style: TextStyle(
                                   fontSize: 14,
@@ -836,9 +845,9 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Time',
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context)!.time,
+                        style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: Colors.black87,
@@ -863,7 +872,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                               const SizedBox(width: 8),
                               Text(
                                 _selectedTime == null
-                                    ? 'Select time'
+                                    ? AppLocalizations.of(context)!.selectTime
                                     : '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}',
                                 style: TextStyle(
                                   fontSize: 14,
@@ -885,9 +894,9 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
             const SizedBox(height: 20),
 
             // Max Attendees
-            const Text(
-              'Max Attendees',
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context)!.maxAttendees,
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
@@ -926,9 +935,9 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
             const SizedBox(height: 20),
 
             // Description
-            const Text(
-              'Description',
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context)!.description,
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
@@ -939,7 +948,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
               controller: _descriptionController,
               maxLines: 4,
               decoration: InputDecoration(
-                hintText: 'Enter meetup description',
+                hintText: AppLocalizations.of(context)!.enterMeetupDescription,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: const BorderSide(color: AppColors.borderLight),
@@ -951,9 +960,9 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
             const SizedBox(height: 20),
 
             // Venue Photos Section
-            const Text(
-              'Venue Photos',
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context)!.venuePhotos,
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
@@ -961,7 +970,8 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Add photos of the meetup venue (${_selectedImages.length}/10)',
+              AppLocalizations.of(context)!
+                  .addVenuePhotosCount(_selectedImages.length),
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.grey.shade600,
@@ -1014,7 +1024,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Add Photo',
+                              AppLocalizations.of(context)!.addPhoto,
                               style: TextStyle(
                                 fontSize: 11,
                                 color: _selectedImages.length < 10
@@ -1073,9 +1083,9 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                               color: const Color(0xFFFF4458),
                               borderRadius: BorderRadius.circular(4),
                             ),
-                            child: const Text(
-                              'Cover',
-                              style: TextStyle(
+                            child: Text(
+                              AppLocalizations.of(context)!.coverPhoto,
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
@@ -1113,7 +1123,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Add Venue Photos',
+                        AppLocalizations.of(context)!.addVenuePhotos,
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey.shade600,
@@ -1122,7 +1132,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Tap to select from gallery or camera',
+                        AppLocalizations.of(context)!.tapToSelectPhoto,
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey.shade500,
@@ -1149,9 +1159,9 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text(
-                  'Create Meetup',
-                  style: TextStyle(
+                child: Text(
+                  AppLocalizations.of(context)!.createMeetup,
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),

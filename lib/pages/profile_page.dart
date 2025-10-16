@@ -256,6 +256,7 @@ class ProfilePage extends StatelessWidget {
   // Stats Section
   Widget _buildStatsSection(
       BuildContext context, TravelStats stats, bool isMobile) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -275,7 +276,7 @@ class ProfilePage extends StatelessWidget {
             _buildStatCard(
                 '🌍', stats.countriesVisited.toString(), 'Countries', isMobile),
             _buildStatCard(
-                '🏙️', stats.citiesLived.toString(), 'Cities', isMobile),
+                '🏙️', stats.citiesLived.toString(), l10n.cities, isMobile),
             _buildStatCard(
                 '📅', stats.daysNomading.toString(), 'Days nomading', isMobile),
             _buildStatCard(

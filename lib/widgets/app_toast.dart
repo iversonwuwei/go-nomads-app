@@ -61,8 +61,9 @@ class AppToast {
       backgroundColor: backgroundColor ?? Colors.black87,
       textColor: textColor ?? Colors.white,
       icon: icon ?? Icons.info_rounded,
-      indicatorColor: (backgroundColor ?? Colors.black87).withOpacity(0.8),
-      shadowColor: (backgroundColor ?? Colors.black87).withOpacity(0.3),
+      indicatorColor:
+          (backgroundColor ?? Colors.black87).withValues(alpha: 0.8),
+      shadowColor: (backgroundColor ?? Colors.black87).withValues(alpha: 0.3),
     );
 
     Get.rawSnackbar(
@@ -149,7 +150,7 @@ class AppToast {
           message,
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: config.textColor.withOpacity(0.95),
+            color: config.textColor.withValues(alpha: 0.95),
             fontSize: 14,
             height: 1.4,
           ),
@@ -167,7 +168,7 @@ class AppToast {
           textColor: Colors.white,
           icon: Icons.check_circle_rounded,
           indicatorColor: const Color(0xFF059669),
-          shadowColor: const Color(0xFF10B981).withOpacity(0.3),
+          shadowColor: const Color(0xFF10B981).withValues(alpha: 0.3),
         );
       case ToastType.error:
         return _ToastConfig(
@@ -175,7 +176,7 @@ class AppToast {
           textColor: Colors.white,
           icon: Icons.error_rounded,
           indicatorColor: const Color(0xFFDC2626),
-          shadowColor: const Color(0xFFEF4444).withOpacity(0.3),
+          shadowColor: const Color(0xFFEF4444).withValues(alpha: 0.3),
         );
       case ToastType.warning:
         return _ToastConfig(
@@ -183,7 +184,7 @@ class AppToast {
           textColor: Colors.white,
           icon: Icons.warning_rounded,
           indicatorColor: const Color(0xFFD97706),
-          shadowColor: const Color(0xFFF59E0B).withOpacity(0.3),
+          shadowColor: const Color(0xFFF59E0B).withValues(alpha: 0.3),
         );
       case ToastType.info:
         return _ToastConfig(
@@ -191,7 +192,7 @@ class AppToast {
           textColor: Colors.white,
           icon: Icons.info_rounded,
           indicatorColor: const Color(0xFF2563EB),
-          shadowColor: const Color(0xFF3B82F6).withOpacity(0.3),
+          shadowColor: const Color(0xFF3B82F6).withValues(alpha: 0.3),
         );
     }
   }

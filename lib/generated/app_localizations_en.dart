@@ -105,7 +105,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get city => 'City';
 
   @override
-  String get cities => 'Cities';
+  String get citiesList => 'Cities';
 
   @override
   String get cityDetail => 'City Detail';
@@ -567,7 +567,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get startComparison => 'Start Comparison';
 
   @override
-  String get selectCity => 'Select City';
+  String get selectCity => 'Select city';
 
   @override
   String get selectCities => 'Select Cities';
@@ -663,10 +663,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get yourRating => 'Your Rating';
 
   @override
-  String get selectDate => 'Select Date';
+  String get selectDate => 'Select date';
 
   @override
-  String get selectTime => 'Select Time';
+  String get selectTime => 'Select time';
 
   @override
   String get startDate => 'Start Date';
@@ -905,7 +905,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get uploadPhoto => 'Upload Photo';
 
   @override
-  String get takePhoto => 'Take Photo';
+  String get takePhoto => 'Take a Photo';
 
   @override
   String get chooseFromGallery => 'Choose from Gallery';
@@ -2029,6 +2029,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get failedToOpenMap => 'Failed to open map';
 
   @override
+  String get cities => 'Cities';
+
+  @override
+  String get coworks => 'Coworks';
+
+  @override
   String get countries => 'Countries';
 
   @override
@@ -2527,7 +2533,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Auto-detected based on your current location';
 
   @override
-  String get meetupType => 'Meetup Type';
+  String get meetupType => 'Type';
 
   @override
   String get maximumAttendees => 'Maximum Attendees';
@@ -2760,6 +2766,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sharingPlan => 'Sharing your travel plan...';
+
+  @override
+  String get noCitiesYet => 'No Cities Yet';
+
+  @override
+  String get browseCities => 'Browse Cities';
 
   @override
   String get info => 'Info';
@@ -3156,5 +3168,91 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String failedToSubmitCoworking(String error) {
     return 'Failed to submit coworking space: $error';
+  }
+
+  @override
+  String get meetupTitle => 'Title';
+
+  @override
+  String get enterMeetupTitle => 'Enter meetup title';
+
+  @override
+  String get meetupTypeHint =>
+      'e.g., Casual Meetup, Business Networking, Cultural Exchange';
+
+  @override
+  String get pleaseEnterType => 'Please enter a type';
+
+  @override
+  String get selectCountry => 'Select country';
+
+  @override
+  String get enterVenue => 'Enter venue or select from map';
+
+  @override
+  String get pleaseEnterVenue => 'Please enter a venue';
+
+  @override
+  String get maxAttendees => 'Max Attendees';
+
+  @override
+  String get enterMeetupDescription => 'Enter meetup description';
+
+  @override
+  String get venuePhotos => 'Venue Photos';
+
+  @override
+  String addVenuePhotosCount(int count) {
+    return 'Add photos of the meetup venue ($count/10)';
+  }
+
+  @override
+  String get coverPhoto => 'Cover';
+
+  @override
+  String get addVenuePhotos => 'Add Venue Photos';
+
+  @override
+  String get tapToSelectPhoto => 'Tap to select from gallery or camera';
+
+  @override
+  String selectMultiplePhotos(int count) {
+    return 'Select multiple photos ($count/10)';
+  }
+
+  @override
+  String get useCameraToTakePhoto => 'Use camera to take a new photo';
+
+  @override
+  String get maximumImagesAllowed => 'Maximum 10 images allowed';
+
+  @override
+  String get notice => 'Notice';
+
+  @override
+  String get pleaseFillAllFields => 'Please fill in all required fields';
+
+  @override
+  String get meetupCreatedSuccess => 'Meetup created successfully!';
+
+  @override
+  String get addToCalendar => 'Add to Calendar?';
+
+  @override
+  String get addToCalendarMessage =>
+      'Would you like to add this meetup to your system calendar?';
+
+  @override
+  String get notNow => 'Not Now';
+
+  @override
+  String get addToCalendarButton => 'Add to Calendar';
+
+  @override
+  String get eventAddedToCalendar => 'Event has been added to your calendar!';
+
+  @override
+  String failedToAddEvent(String error) {
+    return 'Failed to add event to calendar: $error';
   }
 }

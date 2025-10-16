@@ -290,11 +290,11 @@ abstract class AppLocalizations {
   /// **'城市'**
   String get city;
 
-  /// No description provided for @cities.
+  /// No description provided for @citiesList.
   ///
   /// In zh, this message translates to:
-  /// **'城市'**
-  String get cities;
+  /// **'城市列表'**
+  String get citiesList;
 
   /// No description provided for @cityDetail.
   ///
@@ -4100,6 +4100,18 @@ abstract class AppLocalizations {
   /// **'打开地图失败'**
   String get failedToOpenMap;
 
+  /// No description provided for @cities.
+  ///
+  /// In zh, this message translates to:
+  /// **'城市群'**
+  String get cities;
+
+  /// No description provided for @coworks.
+  ///
+  /// In zh, this message translates to:
+  /// **'共享空间'**
+  String get coworks;
+
   /// No description provided for @countries.
   ///
   /// In zh, this message translates to:
@@ -5063,7 +5075,7 @@ abstract class AppLocalizations {
   /// No description provided for @meetupType.
   ///
   /// In zh, this message translates to:
-  /// **'聚会类型'**
+  /// **'类型'**
   String get meetupType;
 
   /// No description provided for @maximumAttendees.
@@ -5210,10 +5222,10 @@ abstract class AppLocalizations {
   /// **'提交评价失败: {error}'**
   String failedToSubmitReview(String error);
 
-  /// No description provided for @failedToPickImages.
+  /// 选择图片失败提示
   ///
   /// In zh, this message translates to:
-  /// **'选择图片失败: {error}'**
+  /// **'选择图片失败：{error}'**
   String failedToPickImages(String error);
 
   /// No description provided for @loginToContinue.
@@ -5497,6 +5509,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'正在分享您的旅行计划...'**
   String get sharingPlan;
+
+  /// No description provided for @noCitiesYet.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无城市'**
+  String get noCitiesYet;
+
+  /// No description provided for @browseCities.
+  ///
+  /// In zh, this message translates to:
+  /// **'浏览城市群'**
+  String get browseCities;
 
   /// No description provided for @info.
   ///
@@ -6229,6 +6253,162 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'提交共享办公空间失败：{error}'**
   String failedToSubmitCoworking(String error);
+
+  /// No description provided for @meetupTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'标题'**
+  String get meetupTitle;
+
+  /// No description provided for @enterMeetupTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'输入聚会标题'**
+  String get enterMeetupTitle;
+
+  /// No description provided for @meetupTypeHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'例如：休闲聚会、商务社交、文化交流'**
+  String get meetupTypeHint;
+
+  /// No description provided for @pleaseEnterType.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入类型'**
+  String get pleaseEnterType;
+
+  /// No description provided for @selectCountry.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择国家'**
+  String get selectCountry;
+
+  /// No description provided for @enterVenue.
+  ///
+  /// In zh, this message translates to:
+  /// **'输入场地或从地图选择'**
+  String get enterVenue;
+
+  /// No description provided for @pleaseEnterVenue.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入场地'**
+  String get pleaseEnterVenue;
+
+  /// No description provided for @maxAttendees.
+  ///
+  /// In zh, this message translates to:
+  /// **'最大参与人数'**
+  String get maxAttendees;
+
+  /// No description provided for @enterMeetupDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'输入聚会描述'**
+  String get enterMeetupDescription;
+
+  /// No description provided for @venuePhotos.
+  ///
+  /// In zh, this message translates to:
+  /// **'场地照片'**
+  String get venuePhotos;
+
+  /// 添加场地照片计数
+  ///
+  /// In zh, this message translates to:
+  /// **'添加聚会场地照片（{count}/10）'**
+  String addVenuePhotosCount(int count);
+
+  /// No description provided for @coverPhoto.
+  ///
+  /// In zh, this message translates to:
+  /// **'封面'**
+  String get coverPhoto;
+
+  /// No description provided for @addVenuePhotos.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加场地照片'**
+  String get addVenuePhotos;
+
+  /// No description provided for @tapToSelectPhoto.
+  ///
+  /// In zh, this message translates to:
+  /// **'点击从相册或相机选择'**
+  String get tapToSelectPhoto;
+
+  /// 选择多张照片计数
+  ///
+  /// In zh, this message translates to:
+  /// **'选择多张照片（{count}/10）'**
+  String selectMultiplePhotos(int count);
+
+  /// No description provided for @useCameraToTakePhoto.
+  ///
+  /// In zh, this message translates to:
+  /// **'使用相机拍摄新照片'**
+  String get useCameraToTakePhoto;
+
+  /// No description provided for @maximumImagesAllowed.
+  ///
+  /// In zh, this message translates to:
+  /// **'最多允许 10 张图片'**
+  String get maximumImagesAllowed;
+
+  /// No description provided for @notice.
+  ///
+  /// In zh, this message translates to:
+  /// **'提示'**
+  String get notice;
+
+  /// No description provided for @pleaseFillAllFields.
+  ///
+  /// In zh, this message translates to:
+  /// **'请填写所有必填字段'**
+  String get pleaseFillAllFields;
+
+  /// No description provided for @meetupCreatedSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'聚会创建成功！'**
+  String get meetupCreatedSuccess;
+
+  /// No description provided for @addToCalendar.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加到日历？'**
+  String get addToCalendar;
+
+  /// No description provided for @addToCalendarMessage.
+  ///
+  /// In zh, this message translates to:
+  /// **'是否要将此聚会添加到系统日历？'**
+  String get addToCalendarMessage;
+
+  /// No description provided for @notNow.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂不'**
+  String get notNow;
+
+  /// No description provided for @addToCalendarButton.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加到日历'**
+  String get addToCalendarButton;
+
+  /// No description provided for @eventAddedToCalendar.
+  ///
+  /// In zh, this message translates to:
+  /// **'事件已添加到您的日历！'**
+  String get eventAddedToCalendar;
+
+  /// 添加事件失败提示
+  ///
+  /// In zh, this message translates to:
+  /// **'添加事件到日历失败：{error}'**
+  String failedToAddEvent(String error);
 }
 
 class _AppLocalizationsDelegate

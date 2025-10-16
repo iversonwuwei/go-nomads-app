@@ -11,10 +11,10 @@ import '../widgets/app_toast.dart';
 
 // 地图瓦片源枚举
 enum MapTileSource {
-  cartoDB,      // CartoDB (默认)
+  cartoDB, // CartoDB (默认)
   openStreetMap, // OpenStreetMap 官方
-  amap,         // 高德地图
-  mapbox,       // Mapbox
+  amap, // 高德地图
+  mapbox, // Mapbox
 }
 
 // 地图瓦片配置
@@ -62,7 +62,8 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
     // CartoDB - 清晰美观，免费无限制（推荐）
     MapTileSource.cartoDB: MapTileConfig(
       name: 'CartoDB',
-      urlTemplate: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+      urlTemplate:
+          'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
       subdomains: ['a', 'b', 'c', 'd'],
       maxZoom: 20,
       description: '清晰美观 • 免费 • 速度快',
@@ -77,7 +78,8 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
     // 高德地图 - 国内速度快，中文地名
     MapTileSource.amap: MapTileConfig(
       name: '高德地图',
-      urlTemplate: 'https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}',
+      urlTemplate:
+          'https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}',
       subdomains: ['1', '2', '3', '4'],
       maxZoom: 18,
       description: '国内快 • 中文标注',
@@ -85,7 +87,8 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
     // Mapbox - 需要 API Key（这里使用演示 token）
     MapTileSource.mapbox: MapTileConfig(
       name: 'Mapbox',
-      urlTemplate: 'https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',
+      urlTemplate:
+          'https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',
       maxZoom: 22,
       requiresApiKey: true,
       description: '高质量 • 需要 Token',
@@ -187,87 +190,94 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
   // 切换地图源
   void _changeTileSource() {
     final l10n = AppLocalizations.of(context)!;
-    
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.selectMapSource,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+      builder: (context) => SingleChildScrollView(
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.selectMapSource,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            ...MapTileSource.values.map((source) {
-              final config = _tileConfigs[source]!;
-              final isSelected = _currentTileSource == source;
-              
-              return ListTile(
-                leading: Icon(
-                  isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                  color: isSelected ? const Color(0xFFFF4458) : Colors.grey,
-                ),
-                title: Text(
-                  config.name,
-                  style: TextStyle(
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              const SizedBox(height: 16),
+              ...MapTileSource.values.map((source) {
+                final config = _tileConfigs[source]!;
+                final isSelected = _currentTileSource == source;
+
+                return ListTile(
+                  leading: Icon(
+                    isSelected
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_unchecked,
+                    color: isSelected ? const Color(0xFFFF4458) : Colors.grey,
                   ),
-                ),
-                subtitle: config.description != null
-                    ? Text(
-                        config.description!,
-                        style: const TextStyle(fontSize: 12),
-                      )
-                    : null,
-                trailing: config.requiresApiKey
-                    ? const Icon(Icons.vpn_key, size: 16, color: Colors.orange)
-                    : null,
-                onTap: () {
-                  setState(() {
-                    _currentTileSource = source;
-                  });
-                  Navigator.pop(context);
-                  
-                  // 显示提示
-                  AppToast.success(l10n.switchedToMapSource(config.name));
-                },
-              );
-            }),
-            const SizedBox(height: 8),
-            if (_tileConfigs[_currentTileSource]!.requiresApiKey)
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.info_outline, color: Colors.orange, size: 20),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        l10n.mapboxTokenWarning,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.orange[900],
+                  title: Text(
+                    config.name,
+                    style: TextStyle(
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                  subtitle: config.description != null
+                      ? Text(
+                          config.description!,
+                          style: const TextStyle(fontSize: 12),
+                        )
+                      : null,
+                  trailing: config.requiresApiKey
+                      ? const Icon(Icons.vpn_key,
+                          size: 16, color: Colors.orange)
+                      : null,
+                  onTap: () {
+                    setState(() {
+                      _currentTileSource = source;
+                    });
+                    Navigator.pop(context);
+
+                    // 显示提示
+                    AppToast.success(l10n.switchedToMapSource(config.name));
+                  },
+                );
+              }),
+              const SizedBox(height: 8),
+              if (_tileConfigs[_currentTileSource]!.requiresApiKey)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.info_outline,
+                          color: Colors.orange, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          l10n.mapboxTokenWarning,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.orange[900],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -299,7 +309,8 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
               // OpenStreetMap 瓦片层 - 使用动态配置
               TileLayer(
                 urlTemplate: _tileConfigs[_currentTileSource]!.urlTemplate,
-                subdomains: _tileConfigs[_currentTileSource]!.subdomains ?? const [],
+                subdomains:
+                    _tileConfigs[_currentTileSource]!.subdomains ?? const [],
                 userAgentPackageName: 'com.example.df_admin_mobile',
                 maxZoom: _tileConfigs[_currentTileSource]!.maxZoom.toDouble(),
               ),
@@ -688,7 +699,7 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
       ),
       poi.position,
     );
-    
+
     showDialog(
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.5),
@@ -781,7 +792,7 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
                   ],
                 ),
               ),
-              
+
               // 信息内容
               Padding(
                 padding: const EdgeInsets.all(24),
@@ -803,7 +814,8 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: _getPOIColor(poi.type).withValues(alpha: 0.1),
+                              color:
+                                  _getPOIColor(poi.type).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Icon(
@@ -839,9 +851,9 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
                         ],
                       ),
                     ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     // 位置坐标信息
                     Container(
                       padding: const EdgeInsets.all(16),
@@ -873,9 +885,9 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
                         ],
                       ),
                     ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     // 快捷提示
                     Container(
                       padding: const EdgeInsets.all(12),
@@ -906,7 +918,7 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
                   ],
                 ),
               ),
-              
+
               // 底部操作按钮
               Padding(
                 padding: const EdgeInsets.only(
@@ -973,7 +985,7 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
       ),
     );
   }
-  
+
   // 构建信息行
   Widget _buildInfoRow({
     required IconData icon,
@@ -1004,7 +1016,7 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
       ],
     );
   }
-  
+
   // 聚焦到指定位置
   void _focusOnLocation(LatLng position) {
     _mapController.move(position, 17.0);

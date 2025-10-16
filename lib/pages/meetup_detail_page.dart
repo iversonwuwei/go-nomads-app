@@ -6,7 +6,9 @@ import 'package:intl/intl.dart';
 import '../config/app_colors.dart';
 import '../generated/app_localizations.dart';
 import '../models/meetup_model.dart';
+import '../models/user_model.dart';
 import '../widgets/app_toast.dart';
+import 'direct_chat_page.dart';
 
 /// Meetup 详情页面
 class MeetupDetailPage extends StatefulWidget {
@@ -645,11 +647,24 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
   }
 
   void _contactOrganizer() {
-    final l10n = AppLocalizations.of(context)!;
-    AppToast.info(
-      l10n.openingChatWith(_meetup.value.organizerName),
-      title: l10n.message,
+    // 创建组织者的 UserModel 对象
+    final organizerUser = UserModel(
+      id: _meetup.value.organizerId,
+      name: _meetup.value.organizerName,
+      username: _meetup.value.organizerName.toLowerCase().replaceAll(' ', '_'),
+      avatarUrl: _meetup.value.organizerAvatar,
+      stats: TravelStats(
+        countriesVisited: 0,
+        citiesLived: 0,
+        daysNomading: 0,
+        meetupsAttended: 0,
+        tripsCompleted: 0,
+      ),
+      joinedDate: DateTime.now(),
     );
+
+    // 跳转到一对一聊天页面
+    Get.to(() => DirectChatPage(user: organizerUser));
   }
 
   void _showAllAttendees() {

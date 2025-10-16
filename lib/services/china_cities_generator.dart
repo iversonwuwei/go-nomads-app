@@ -100,7 +100,7 @@ class ChinaCitiesGenerator {
       
       try {
         final cityId = await _cityDao.insertCity(city);
-        print('✅ 插入城市: $cityName (${province}) - ID: $cityId');
+        print('✅ 插入城市: $cityName ($province) - ID: $cityId');
         
         // 为每个城市生成4-5个共享办公空间
         await _generateCoworkingSpaces(cityId, cityName, now);
@@ -143,9 +143,8 @@ class ChinaCitiesGenerator {
       'country': 'China',
       'region': region,
       'climate': climate,
-      'description': '$cityName是${province}的重要城市，拥有丰富的文化底蕴和现代化设施。',
-      'image_url': imageTemplates[_random.nextInt(imageTemplates.length)] +
-          '?w=800&h=600&fit=crop&city=$cityName',
+      'description': '$cityName是$province的重要城市，拥有丰富的文化底蕴和现代化设施。',
+      'image_url': '${imageTemplates[_random.nextInt(imageTemplates.length)]}?w=800&h=600&fit=crop&city=$cityName',
       'weather': _getWeatherByClimate(climate),
       'temperature': temperature,
       'cost_of_living': costOfLiving,
@@ -207,7 +206,7 @@ class ChinaCitiesGenerator {
     // 生成地址
     final districts = ['中心区', '高新区', '商务区', '科技园区', 'CBD'];
     final district = districts[_random.nextInt(districts.length)];
-    final address = '$cityName${district}创业大厦${_random.nextInt(50) + 1}号楼';
+    final address = '$cityName$district创业大厦${_random.nextInt(50) + 1}号楼';
 
     // 生成经纬度（在城市附近）
     double latitude = 18 + _random.nextDouble() * 36;
@@ -233,7 +232,7 @@ class ChinaCitiesGenerator {
       'latitude': latitude,
       'longitude': longitude,
       'phone': _generatePhoneNumber(),
-      'email': '${_generateEmail(name)}',
+      'email': _generateEmail(name),
       'website': 'https://www.${_generateDomain(prefix)}.com',
       'opening_hours': openingHours,
       'created_at': now,
@@ -352,7 +351,7 @@ class ChinaCitiesGenerator {
   /// 生成邮箱
   String _generateEmail(String name) {
     final cleanName = name.replaceAll(' ', '').replaceAll('联合办公', '').replaceAll('共享空间', '').toLowerCase();
-    return 'info@${cleanName}.com';
+    return 'info@$cleanName.com';
   }
 
   /// 生成域名

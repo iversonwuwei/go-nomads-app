@@ -35,7 +35,7 @@
   "success": "Success",
   "error": "Error",
   "city": "City",
-  "cities": "Cities",
+  "citiesList": "Cities",
   "cityDetail": "City Detail",
   "cityCompare": "City Compare",
   "weather": "Weather",
@@ -784,6 +784,7 @@
   "badges": "Badges",
   "stats": "Stats",
   "cities": "Cities",
+  "coworks": "Coworks",
   "countries": "Countries",
   "meetups": "Meetups",
   "connections": "Connections",
@@ -1223,6 +1224,8 @@
   "asyncWithMap": "Async with Map feature coming soon!",
   "planSaved": "Plan saved to your profile!",
   "sharingPlan": "Sharing your travel plan...",
+  "noCitiesYet": "No Cities Yet",
+  "browseCities": "Browse Cities",
   "info": "Info",
   "download": "Download",
   "currencyUSD": "US Dollar",
@@ -1481,6 +1484,77 @@
   "failedToSubmitCoworking": "Failed to submit coworking space: {error}",
   "@failedToSubmitCoworking": {
     "description": "Failed to submit error",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "meetupTitle": "Title",
+  "enterMeetupTitle": "Enter meetup title",
+  "pleaseEnterTitle": "Please enter a title",
+  "meetupType": "Type",
+  "meetupTypeHint": "e.g., Casual Meetup, Business Networking, Cultural Exchange",
+  "pleaseEnterType": "Please enter a type",
+  "selectCity": "Select city",
+  "country": "Country",
+  "selectCountry": "Select country",
+  "enterVenue": "Enter venue or select from map",
+  "pleaseEnterVenue": "Please enter a venue",
+  "date": "Date",
+  "selectDate": "Select date",
+  "time": "Time",
+  "selectTime": "Select time",
+  "maxAttendees": "Max Attendees",
+  "description": "Description",
+  "enterMeetupDescription": "Enter meetup description",
+  "venuePhotos": "Venue Photos",
+  "addVenuePhotosCount": "Add photos of the meetup venue ({count}/10)",
+  "@addVenuePhotosCount": {
+    "description": "Add venue photos with count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "addPhoto": "Add Photo",
+  "coverPhoto": "Cover",
+  "addVenuePhotos": "Add Venue Photos",
+  "tapToSelectPhoto": "Tap to select from gallery or camera",
+  "chooseFromGallery": "Choose from Gallery",
+  "selectMultiplePhotos": "Select multiple photos ({count}/10)",
+  "@selectMultiplePhotos": {
+    "description": "Select multiple photos with count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "takePhoto": "Take a Photo",
+  "useCameraToTakePhoto": "Use camera to take a new photo",
+  "maximumImagesAllowed": "Maximum 10 images allowed",
+  "notice": "Notice",
+  "failedToPickImages": "Failed to pick images: {error}",
+  "@failedToPickImages": {
+    "description": "Failed to pick images error",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "pleaseFillAllFields": "Please fill in all required fields",
+  "meetupCreatedSuccess": "Meetup created successfully!",
+  "addToCalendar": "Add to Calendar?",
+  "addToCalendarMessage": "Would you like to add this meetup to your system calendar?",
+  "notNow": "Not Now",
+  "addToCalendarButton": "Add to Calendar",
+  "eventAddedToCalendar": "Event has been added to your calendar!",
+  "failedToAddEvent": "Failed to add event to calendar: {error}",
+  "@failedToAddEvent": {
+    "description": "Failed to add event error",
     "placeholders": {
       "error": {
         "type": "String"
