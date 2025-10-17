@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../generated/app_localizations.dart';
-import 'global_map_page.dart';
+import 'osm_navigation_page.dart';
 
 /// Coworking Detail Page
 /// 共享办公空间详情页面
@@ -241,8 +241,8 @@ class CoworkingDetailPage extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 onPressed: () {
-                  // 跳转到 Global Map 页面进行导航
-                  Get.to(() => const GlobalMapPage());
+                  // 跳转到 OSM Navigation 页面进行导航
+                  Get.to(() => OSMNavigationPage(coworkingSpace: space));
                 },
               ),
             ),
@@ -665,4 +665,3 @@ class CoworkingDetailPage extends StatelessWidget {
     }
   }
 }
-

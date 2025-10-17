@@ -266,7 +266,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                             activeColor: NomadsLoginPage.nomadsRed,
                           ),
                           Text(
-                            l10n.login,
+                            l10n.rememberMe,
                             style: const TextStyle(
                               fontSize: 14,
                               color: Colors.black87,
