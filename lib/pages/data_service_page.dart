@@ -1616,12 +1616,12 @@ class _DetailOverlay extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _buildMetricBar(
-                      '�?Overall', data['overall'], const Color(0xFFFBBF24)),
+                      '⭐ Overall', data['overall'], const Color(0xFFFBBF24)),
                   const SizedBox(height: 6),
                   _buildMetricBar(
                       '💰 Cost', data['cost'], const Color(0xFF4ADE80)),
                   const SizedBox(height: 6),
-                  _buildMetricBar('�?Internet', data['internetScore'],
+                  _buildMetricBar('📡 Internet', data['internetScore'],
                       const Color(0xFFFBBF24)),
                   const SizedBox(height: 6),
                   _buildMetricBar(
