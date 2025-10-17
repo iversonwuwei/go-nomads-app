@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:get/get.dart';
 
 import '../models/user_model.dart';
+import '../routes/app_routes.dart';
 import '../services/database/account_dao.dart';
 import '../widgets/app_toast.dart';
 import 'user_state_controller.dart';
@@ -15,7 +16,34 @@ class UserProfileController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadUserProfile();
+    _checkLoginAndLoadProfile();
+  }
+
+  // 检查登录状态并加载用户资料
+  Future<void> _checkLoginAndLoadProfile() async {
+    try {
+      print('🔐 检查用户登录状态...');
+      final userStateController = Get.find<UserStateController>();
+      print('   当前登录状态: ${userStateController.isLoggedIn}');
+
+      if (!userStateController.isLoggedIn) {
+        print('❌ 用户未登录，跳转到登录页面');
+        // 延迟一点点以确保UI准备好
+        Future.microtask(() {
+          Get.offAllNamed(AppRoutes.login);
+        });
+        return;
+      }
+
+      print('✅ 用户已登录，开始加载资料');
+      await loadUserProfile();
+    } catch (e) {
+      print('❌ 检查登录状态失败: $e');
+      // 出错时也跳转到登录页
+      Future.microtask(() {
+        Get.offAllNamed(AppRoutes.login);
+      });
+    }
   }
 
   // 加载用户资料
@@ -32,12 +60,16 @@ class UserProfileController extends GetxController {
       print('   当前账户ID: $accountId');
 
       if (accountId == null) {
-        print('! 未找到登录用户，使用示例数据');
-        print('💡 提示：请先登录以查看您的个人资料');
-        print('   测试账号: sarah_chen / 123456');
-        print('   或邮箱: sarah.chen@nomads.com / 123456');
-        currentUser.value = _generateMockUser();
+        print('❌ 未找到登录用户ID');
+        AppToast.error(
+          'Please login to view your profile',
+          title: 'Not Logged In',
+        );
         isLoading.value = false;
+        // 跳转到登录页
+        Future.microtask(() {
+          Get.offAllNamed(AppRoutes.login);
+        });
         return;
       }
 
@@ -49,12 +81,20 @@ class UserProfileController extends GetxController {
         currentUser.value = _parseUserFromDatabase(accountData);
         print('✅ 已加载用户资料: ${accountData['username']}');
       } else {
-        print('⚠️ 未找到用户数据，使用示例数据');
-        currentUser.value = _generateMockUser();
+        print('⚠️ 未找到用户数据');
+        AppToast.error(
+          'User profile not found',
+          title: 'Error',
+        );
+        currentUser.value = null;
       }
     } catch (e) {
       print('❌ 加载用户资料失败: $e');
-      currentUser.value = _generateMockUser();
+      AppToast.error(
+        'Failed to load user profile: $e',
+        title: 'Error',
+      );
+      currentUser.value = null;
     } finally {
       isLoading.value = false;
     }
@@ -146,126 +186,6 @@ class UserProfileController extends GetxController {
       joinedDate:
           DateTime.tryParse(data['joined_date'] ?? '') ?? DateTime.now(),
       isVerified: (data['is_verified'] ?? 0) == 1,
-    );
-  }
-
-  // 生成示例用户数据
-  UserModel _generateMockUser() {
-    return UserModel(
-      id: 'user_001',
-      name: 'Alex Chen',
-      username: '@alexchen',
-      bio:
-          '🌍 Digital nomad & full-stack developer\n💻 Building products remotely\n📍 Currently exploring Southeast Asia',
-      avatarUrl: 'https://i.pravatar.cc/300?img=33',
-      currentCity: 'Chiang Mai',
-      currentCountry: 'Thailand',
-      skills: [
-        'Flutter',
-        'React',
-        'Node.js',
-        'Python',
-        'UI/UX Design',
-        'Product Management'
-      ],
-      interests: [
-        'Remote Work',
-        'Startup',
-        'Travel',
-        'Photography',
-        'Hiking',
-        'Local Food'
-      ],
-      socialLinks: {
-        'twitter': 'https://twitter.com/alexchen',
-        'github': 'https://github.com/alexchen',
-        'linkedin': 'https://linkedin.com/in/alexchen',
-        'website': 'https://alexchen.dev'
-      },
-      badges: [
-        Badge(
-          id: 'badge_001',
-          name: 'Early Adopter',
-          icon: '🚀',
-          description: 'Joined in the first year',
-          earnedDate: DateTime(2023, 1, 15),
-        ),
-        Badge(
-          id: 'badge_002',
-          name: 'Globe Trotter',
-          icon: '🌏',
-          description: 'Visited 20+ countries',
-          earnedDate: DateTime(2024, 6, 20),
-        ),
-        Badge(
-          id: 'badge_003',
-          name: 'Community Leader',
-          icon: '👥',
-          description: 'Organized 10+ meetups',
-          earnedDate: DateTime(2024, 8, 10),
-        ),
-        Badge(
-          id: 'badge_004',
-          name: 'Top Contributor',
-          icon: '⭐',
-          description: 'Shared 50+ helpful reviews',
-          earnedDate: DateTime(2024, 9, 5),
-        ),
-      ],
-      stats: TravelStats(
-        countriesVisited: 23,
-        citiesLived: 12,
-        daysNomading: 487,
-        meetupsAttended: 28,
-        tripsCompleted: 15,
-      ),
-      travelHistory: [
-        TravelHistory(
-          city: 'Chiang Mai',
-          country: 'Thailand',
-          startDate: DateTime(2024, 11, 1),
-          endDate: null, // 当前所在地
-          rating: 4.8,
-        ),
-        TravelHistory(
-          city: 'Bali',
-          country: 'Indonesia',
-          startDate: DateTime(2024, 8, 15),
-          endDate: DateTime(2024, 10, 31),
-          review:
-              'Amazing coworking spaces and digital nomad community. Canggu is perfect for remote work!',
-          rating: 4.9,
-        ),
-        TravelHistory(
-          city: 'Lisbon',
-          country: 'Portugal',
-          startDate: DateTime(2024, 5, 1),
-          endDate: DateTime(2024, 8, 14),
-          review:
-              'Beautiful city with great weather. Fast internet and affordable living costs.',
-          rating: 4.7,
-        ),
-        TravelHistory(
-          city: 'Mexico City',
-          country: 'Mexico',
-          startDate: DateTime(2024, 2, 1),
-          endDate: DateTime(2024, 4, 30),
-          review:
-              'Incredible food scene and vibrant culture. Roma Norte is ideal for nomads.',
-          rating: 4.6,
-        ),
-        TravelHistory(
-          city: 'Tokyo',
-          country: 'Japan',
-          startDate: DateTime(2023, 11, 1),
-          endDate: DateTime(2024, 1, 31),
-          review:
-              'Super fast internet everywhere. Expensive but worth it for the experience.',
-          rating: 4.5,
-        ),
-      ],
-      joinedDate: DateTime(2023, 1, 15),
-      isVerified: true,
     );
   }
 
