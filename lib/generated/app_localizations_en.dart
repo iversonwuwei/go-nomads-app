@@ -1076,7 +1076,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get required => '*';
 
   @override
-  String get optional => '(Optional)';
+  String get optional => 'Optional';
 
   @override
   String get invalidEmail => 'Invalid Email';
@@ -3380,4 +3380,126 @@ class AppLocalizationsEn extends AppLocalizations {
   String monthsAgo(int count) {
     return '$count months ago';
   }
+
+  @override
+  String get createInnovationProject => 'Create Innovation Project';
+
+  @override
+  String get shareYourInnovation =>
+      'Share your innovative project and find like-minded partners and investors';
+
+  @override
+  String get projectName => 'Project Name';
+
+  @override
+  String get projectNameHint => 'Give your project a catchy name';
+
+  @override
+  String get pleaseEnterProjectName => 'Please enter project name';
+
+  @override
+  String get elevatorPitchHint => 'Describe your project in one sentence';
+
+  @override
+  String get pleaseEnterElevatorPitch => 'Please enter elevator pitch';
+
+  @override
+  String get projectCover => 'Project Cover';
+
+  @override
+  String get clickToSelectCover => 'Click to select project cover image';
+
+  @override
+  String get recommendedSize => 'Recommended size: 1920x1080';
+
+  @override
+  String get problemAndSolution => 'Problem & Solution';
+
+  @override
+  String get problemHint =>
+      'What problem are you trying to solve? Why is it important?';
+
+  @override
+  String get pleaseDescribeProblem => 'Please describe the problem';
+
+  @override
+  String get solutionHint =>
+      'What is your solution? How does it solve the problem?';
+
+  @override
+  String get pleaseDescribeSolution => 'Please describe the solution';
+
+  @override
+  String get marketPositioning => 'Market Positioning';
+
+  @override
+  String get targetAudienceHint => 'Who are your target users?';
+
+  @override
+  String get pleaseDescribeTargetAudience => 'Please describe target audience';
+
+  @override
+  String get productTypeHint =>
+      'e.g.: Mobile app, Website, Hardware device, etc.';
+
+  @override
+  String get keyFeaturesHint =>
+      'Core features, separated by commas\ne.g.: AI Q&A, Learning plan, Progress tracking';
+
+  @override
+  String get pleaseEnterKeyFeatures => 'Please enter key features';
+
+  @override
+  String get competitionAndBusiness => 'Competition & Business';
+
+  @override
+  String get competitiveAdvantageHint =>
+      'What is your advantage compared to competitors?';
+
+  @override
+  String get businessModelHint => 'What is your revenue model?';
+
+  @override
+  String get marketOpportunityHint =>
+      'What is the market size and growth potential?';
+
+  @override
+  String get progressAndNeeds => 'Progress & Needs';
+
+  @override
+  String get currentStatusHint =>
+      'Current development progress and completed work';
+
+  @override
+  String get pleaseDescribeCurrentStatus => 'Please describe current status';
+
+  @override
+  String get askHint =>
+      'What help do you need? e.g.: Technical co-founder, Seed funding, Marketing, etc.';
+
+  @override
+  String get pleaseSpecifyNeeds => 'Please specify what support you need';
+
+  @override
+  String get teamInformation => 'Team Information';
+
+  @override
+  String get teamMembers => 'Team Members';
+
+  @override
+  String get teamMembersHint =>
+      'Introduce your team members\nFormat: Name - Position - Bio\nSeparate multiple members with semicolons';
+
+  @override
+  String get publishProject => 'Publish Project';
+
+  @override
+  String get projectCreatedSuccessfully =>
+      'Innovation project created successfully!';
+
+  @override
+  String get creationFailed => 'Creation failed';
+
+  @override
+  String get imageSelectionFailed => 'Image selection failed';
 }

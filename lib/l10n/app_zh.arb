@@ -1639,7 +1639,47 @@
         "type": "int"
       }
     }
-  }
+  },
+  "createInnovationProject": "创建创意项目",
+  "shareYourInnovation": "分享你的创意项目,找到志同道合的伙伴和投资人",
+  "basicInformation": "基本信息",
+  "projectName": "项目名称",
+  "projectNameHint": "为你的项目起一个响亮的名字",
+  "pleaseEnterProjectName": "请输入项目名称",
+  "elevatorPitch": "一句话定位",
+  "elevatorPitchHint": "用一句话描述你的项目",
+  "pleaseEnterElevatorPitch": "请输入项目定位",
+  "projectCover": "项目封面",
+  "optional": "可选",
+  "clickToSelectCover": "点击选择项目封面图片",
+  "recommendedSize": "建议尺寸: 1920x1080",
+  "problemAndSolution": "问题与解决方案",
+  "problemHint": "你想解决什么问题?这个问题为什么重要?",
+  "pleaseDescribeProblem": "请描述要解决的问题",
+  "solutionHint": "你的解决方案是什么?如何解决这个问题?",
+  "pleaseDescribeSolution": "请描述解决方案",
+  "marketPositioning": "市场定位",
+  "targetAudienceHint": "你的目标用户是谁?",
+  "pleaseDescribeTargetAudience": "请描述目标用户",
+  "productTypeHint": "例如: 移动应用、网站、硬件设备等",
+  "keyFeaturesHint": "核心功能,用逗号分隔\n例如: AI问答, 学习计划, 进度追踪",
+  "pleaseEnterKeyFeatures": "请输入核心功能",
+  "competitionAndBusiness": "竞争与商业",
+  "competitiveAdvantageHint": "相比竞品,你的优势是什么?",
+  "businessModelHint": "你的盈利模式是什么?",
+  "marketOpportunityHint": "市场规模和增长潜力如何?",
+  "progressAndNeeds": "进展与需求",
+  "currentStatusHint": "目前的开发进度和已完成的工作",
+  "pleaseDescribeCurrentStatus": "请描述当前进展",
+  "askHint": "你需要什么帮助?例如: 技术合伙人、种子资金、市场推广等",
+  "pleaseSpecifyNeeds": "请说明所需支持",
+  "teamInformation": "团队信息",
+  "teamMembers": "团队成员",
+  "teamMembersHint": "介绍你的团队成员\n格式: 姓名 - 职位 - 简介\n多个成员用分号分隔",
+  "publishProject": "发布创意项目",
+  "projectCreatedSuccessfully": "创意项目创建成功!",
+  "creationFailed": "创建失败",
+  "imageSelectionFailed": "选择图片失败"
 }
 
 

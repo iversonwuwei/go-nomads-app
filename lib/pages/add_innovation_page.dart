@@ -80,7 +80,8 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
       }
     } catch (e) {
       if (mounted) {
-        AppToast.error('选择图片失败: $e');
+        final l10n = AppLocalizations.of(context)!;
+        AppToast.error('${l10n.imageSelectionFailed}: $e');
       }
     }
   }
@@ -94,23 +95,26 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
 
     try {
       // 处理核心功能列表
-      final keyFeatures = _keyFeaturesController.text
-          .split(',')
-          .map((e) => e.trim())
-          .where((e) => e.isNotEmpty)
-          .toList();
+      // final keyFeatures = _keyFeaturesController.text
+      //     .split(',')
+      //     .map((e) => e.trim())
+      //     .where((e) => e.isNotEmpty)
+      //     .toList();
 
       // 这里应该调用 API 保存项目
+      // TODO: 实现项目保存逻辑，使用表单数据包括 keyFeatures
       // 暂时只显示成功消息
       await Future.delayed(const Duration(seconds: 2));
 
       if (mounted) {
-        AppToast.success('创意项目创建成功!');
+        final l10n = AppLocalizations.of(context)!;
+        AppToast.success(l10n.projectCreatedSuccessfully);
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        AppToast.error('创建失败: $e');
+        final l10n = AppLocalizations.of(context)!;
+        AppToast.error('${l10n.creationFailed}: $e');
       }
     } finally {
       _isSubmitting.value = false;
@@ -128,7 +132,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF8B5CF6),
         foregroundColor: Colors.white,
-        title: const Text('创建创意项目'),
+        title: Text(l10n.createInnovationProject),
         elevation: 0,
       ),
       body: Form(
@@ -157,7 +161,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        '分享你的创意项目,找到志同道合的伙伴和投资人',
+                        l10n.shareYourInnovation,
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey[700],
@@ -173,19 +177,19 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
               // 1. 基本信息
               _buildSectionTitle(
                 icon: Icons.rocket_launch,
-                title: '基本信息',
+                title: l10n.basicInformation,
                 color: const Color(0xFF8B5CF6),
               ),
               const SizedBox(height: 16),
 
               _buildTextField(
                 controller: _projectNameController,
-                label: '项目名称',
-                hint: '为你的项目起一个响亮的名字',
+                label: l10n.projectName,
+                hint: l10n.projectNameHint,
                 icon: Icons.title,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return '请输入项目名称';
+                    return l10n.pleaseEnterProjectName;
                   }
                   return null;
                 },
@@ -195,13 +199,13 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
 
               _buildTextField(
                 controller: _elevatorPitchController,
-                label: '一句话定位',
-                hint: '用一句话描述你的项目',
+                label: l10n.elevatorPitch,
+                hint: l10n.elevatorPitchHint,
                 icon: Icons.chat_bubble_outline,
                 maxLines: 2,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return '请输入项目定位';
+                    return l10n.pleaseEnterElevatorPitch;
                   }
                   return null;
                 },
@@ -217,7 +221,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
               // 2. 问题与解决方案
               _buildSectionTitle(
                 icon: Icons.lightbulb_outline,
-                title: '问题与解决方案',
+                title: l10n.problemAndSolution,
                 color: const Color(0xFFEF4444),
               ),
               const SizedBox(height: 16),
@@ -225,12 +229,12 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
               _buildTextField(
                 controller: _problemController,
                 label: l10n.problem,
-                hint: '你想解决什么问题?这个问题为什么重要?',
+                hint: l10n.problemHint,
                 icon: Icons.error_outline,
                 maxLines: 5,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return '请描述要解决的问题';
+                    return l10n.pleaseDescribeProblem;
                   }
                   return null;
                 },
@@ -241,12 +245,12 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
               _buildTextField(
                 controller: _solutionController,
                 label: l10n.solution,
-                hint: '你的解决方案是什么?如何解决这个问题?',
+                hint: l10n.solutionHint,
                 icon: Icons.check_circle_outline,
                 maxLines: 5,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return '请描述解决方案';
+                    return l10n.pleaseDescribeSolution;
                   }
                   return null;
                 },
@@ -257,7 +261,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
               // 3. 市场定位
               _buildSectionTitle(
                 icon: Icons.people_outline,
-                title: '市场定位',
+                title: l10n.marketPositioning,
                 color: const Color(0xFF3B82F6),
               ),
               const SizedBox(height: 16),
@@ -265,12 +269,12 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
               _buildTextField(
                 controller: _targetAudienceController,
                 label: l10n.targetAudience,
-                hint: '你的目标用户是谁?',
+                hint: l10n.targetAudienceHint,
                 icon: Icons.people,
                 maxLines: 3,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return '请描述目标用户';
+                    return l10n.pleaseDescribeTargetAudience;
                   }
                   return null;
                 },
@@ -281,7 +285,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
               _buildTextField(
                 controller: _productTypeController,
                 label: l10n.productType,
-                hint: '例如: 移动应用、网站、硬件设备等',
+                hint: l10n.productTypeHint,
                 icon: Icons.devices,
               ),
 
@@ -290,12 +294,12 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
               _buildTextField(
                 controller: _keyFeaturesController,
                 label: l10n.keyFeatures,
-                hint: '核心功能,用逗号分隔\n例如: AI问答, 学习计划, 进度追踪',
+                hint: l10n.keyFeaturesHint,
                 icon: Icons.star_outline,
                 maxLines: 4,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return '请输入核心功能';
+                    return l10n.pleaseEnterKeyFeatures;
                   }
                   return null;
                 },
@@ -306,7 +310,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
               // 4. 竞争与商业
               _buildSectionTitle(
                 icon: Icons.trending_up,
-                title: '竞争与商业',
+                title: l10n.competitionAndBusiness,
                 color: const Color(0xFF10B981),
               ),
               const SizedBox(height: 16),
@@ -314,7 +318,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
               _buildTextField(
                 controller: _competitiveAdvantageController,
                 label: l10n.competitiveAdvantage,
-                hint: '相比竞品,你的优势是什么?',
+                hint: l10n.competitiveAdvantageHint,
                 icon: Icons.emoji_events,
                 maxLines: 4,
               ),
@@ -324,7 +328,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
               _buildTextField(
                 controller: _businessModelController,
                 label: l10n.businessModel,
-                hint: '你的盈利模式是什么?',
+                hint: l10n.businessModelHint,
                 icon: Icons.attach_money,
                 maxLines: 4,
               ),
@@ -334,7 +338,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
               _buildTextField(
                 controller: _marketOpportunityController,
                 label: l10n.marketOpportunity,
-                hint: '市场规模和增长潜力如何?',
+                hint: l10n.marketOpportunityHint,
                 icon: Icons.analytics_outlined,
                 maxLines: 4,
               ),
@@ -344,7 +348,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
               // 5. 进展与需求
               _buildSectionTitle(
                 icon: Icons.timeline,
-                title: '进展与需求',
+                title: l10n.progressAndNeeds,
                 color: const Color(0xFFF59E0B),
               ),
               const SizedBox(height: 16),
@@ -352,12 +356,12 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
               _buildTextField(
                 controller: _currentStatusController,
                 label: l10n.currentStatus,
-                hint: '目前的开发进度和已完成的工作',
+                hint: l10n.currentStatusHint,
                 icon: Icons.flag,
                 maxLines: 4,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return '请描述当前进展';
+                    return l10n.pleaseDescribeCurrentStatus;
                   }
                   return null;
                 },
@@ -368,12 +372,12 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
               _buildTextField(
                 controller: _askController,
                 label: l10n.ask,
-                hint: '你需要什么帮助?例如: 技术合伙人、种子资金、市场推广等',
+                hint: l10n.askHint,
                 icon: Icons.handshake_outlined,
                 maxLines: 4,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return '请说明所需支持';
+                    return l10n.pleaseSpecifyNeeds;
                   }
                   return null;
                 },
@@ -384,15 +388,15 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
               // 6. 团队信息 (可选)
               _buildSectionTitle(
                 icon: Icons.groups,
-                title: '团队信息 (可选)',
+                title: '${l10n.teamInformation} (${l10n.optional})',
                 color: const Color(0xFF8B5CF6),
               ),
               const SizedBox(height: 16),
 
               _buildTextField(
                 controller: _teamMembersController,
-                label: '团队成员',
-                hint: '介绍你的团队成员\n格式: 姓名 - 职位 - 简介\n多个成员用分号分隔',
+                label: l10n.teamMembers,
+                hint: l10n.teamMembersHint,
                 icon: Icons.people,
                 maxLines: 6,
               ),
@@ -423,9 +427,9 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
                                     AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             )
-                          : const Text(
-                              '发布创意项目',
-                              style: TextStyle(
+                          : Text(
+                              l10n.publishProject,
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -508,6 +512,8 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
   }
 
   Widget _buildImagePicker() {
+    final l10n = AppLocalizations.of(context)!;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -515,16 +521,16 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
           children: [
             const Icon(Icons.image, size: 20, color: Color(0xFF8B5CF6)),
             const SizedBox(width: 8),
-            const Text(
-              '项目封面',
-              style: TextStyle(
+            Text(
+              l10n.projectCover,
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
             ),
             const SizedBox(width: 8),
             Text(
-              '(可选)',
+              '(${l10n.optional})',
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.grey[600],
@@ -588,7 +594,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '点击选择项目封面图片',
+                        l10n.clickToSelectCover,
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey[600],
@@ -596,7 +602,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '建议尺寸: 1920x1080',
+                        l10n.recommendedSize,
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey[500],

@@ -2219,7 +2219,7 @@ abstract class AppLocalizations {
   /// No description provided for @optional.
   ///
   /// In zh, this message translates to:
-  /// **'(可选)'**
+  /// **'可选'**
   String get optional;
 
   /// No description provided for @invalidEmail.
@@ -6631,6 +6631,228 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'{count}月前'**
   String monthsAgo(int count);
+
+  /// No description provided for @createInnovationProject.
+  ///
+  /// In zh, this message translates to:
+  /// **'创建创意项目'**
+  String get createInnovationProject;
+
+  /// No description provided for @shareYourInnovation.
+  ///
+  /// In zh, this message translates to:
+  /// **'分享你的创意项目,找到志同道合的伙伴和投资人'**
+  String get shareYourInnovation;
+
+  /// No description provided for @projectName.
+  ///
+  /// In zh, this message translates to:
+  /// **'项目名称'**
+  String get projectName;
+
+  /// No description provided for @projectNameHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'为你的项目起一个响亮的名字'**
+  String get projectNameHint;
+
+  /// No description provided for @pleaseEnterProjectName.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入项目名称'**
+  String get pleaseEnterProjectName;
+
+  /// No description provided for @elevatorPitchHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'用一句话描述你的项目'**
+  String get elevatorPitchHint;
+
+  /// No description provided for @pleaseEnterElevatorPitch.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入项目定位'**
+  String get pleaseEnterElevatorPitch;
+
+  /// No description provided for @projectCover.
+  ///
+  /// In zh, this message translates to:
+  /// **'项目封面'**
+  String get projectCover;
+
+  /// No description provided for @clickToSelectCover.
+  ///
+  /// In zh, this message translates to:
+  /// **'点击选择项目封面图片'**
+  String get clickToSelectCover;
+
+  /// No description provided for @recommendedSize.
+  ///
+  /// In zh, this message translates to:
+  /// **'建议尺寸: 1920x1080'**
+  String get recommendedSize;
+
+  /// No description provided for @problemAndSolution.
+  ///
+  /// In zh, this message translates to:
+  /// **'问题与解决方案'**
+  String get problemAndSolution;
+
+  /// No description provided for @problemHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'你想解决什么问题?这个问题为什么重要?'**
+  String get problemHint;
+
+  /// No description provided for @pleaseDescribeProblem.
+  ///
+  /// In zh, this message translates to:
+  /// **'请描述要解决的问题'**
+  String get pleaseDescribeProblem;
+
+  /// No description provided for @solutionHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'你的解决方案是什么?如何解决这个问题?'**
+  String get solutionHint;
+
+  /// No description provided for @pleaseDescribeSolution.
+  ///
+  /// In zh, this message translates to:
+  /// **'请描述解决方案'**
+  String get pleaseDescribeSolution;
+
+  /// No description provided for @marketPositioning.
+  ///
+  /// In zh, this message translates to:
+  /// **'市场定位'**
+  String get marketPositioning;
+
+  /// No description provided for @targetAudienceHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'你的目标用户是谁?'**
+  String get targetAudienceHint;
+
+  /// No description provided for @pleaseDescribeTargetAudience.
+  ///
+  /// In zh, this message translates to:
+  /// **'请描述目标用户'**
+  String get pleaseDescribeTargetAudience;
+
+  /// No description provided for @productTypeHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'例如: 移动应用、网站、硬件设备等'**
+  String get productTypeHint;
+
+  /// No description provided for @keyFeaturesHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'核心功能,用逗号分隔\n例如: AI问答, 学习计划, 进度追踪'**
+  String get keyFeaturesHint;
+
+  /// No description provided for @pleaseEnterKeyFeatures.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入核心功能'**
+  String get pleaseEnterKeyFeatures;
+
+  /// No description provided for @competitionAndBusiness.
+  ///
+  /// In zh, this message translates to:
+  /// **'竞争与商业'**
+  String get competitionAndBusiness;
+
+  /// No description provided for @competitiveAdvantageHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'相比竞品,你的优势是什么?'**
+  String get competitiveAdvantageHint;
+
+  /// No description provided for @businessModelHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'你的盈利模式是什么?'**
+  String get businessModelHint;
+
+  /// No description provided for @marketOpportunityHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'市场规模和增长潜力如何?'**
+  String get marketOpportunityHint;
+
+  /// No description provided for @progressAndNeeds.
+  ///
+  /// In zh, this message translates to:
+  /// **'进展与需求'**
+  String get progressAndNeeds;
+
+  /// No description provided for @currentStatusHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'目前的开发进度和已完成的工作'**
+  String get currentStatusHint;
+
+  /// No description provided for @pleaseDescribeCurrentStatus.
+  ///
+  /// In zh, this message translates to:
+  /// **'请描述当前进展'**
+  String get pleaseDescribeCurrentStatus;
+
+  /// No description provided for @askHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'你需要什么帮助?例如: 技术合伙人、种子资金、市场推广等'**
+  String get askHint;
+
+  /// No description provided for @pleaseSpecifyNeeds.
+  ///
+  /// In zh, this message translates to:
+  /// **'请说明所需支持'**
+  String get pleaseSpecifyNeeds;
+
+  /// No description provided for @teamInformation.
+  ///
+  /// In zh, this message translates to:
+  /// **'团队信息'**
+  String get teamInformation;
+
+  /// No description provided for @teamMembers.
+  ///
+  /// In zh, this message translates to:
+  /// **'团队成员'**
+  String get teamMembers;
+
+  /// No description provided for @teamMembersHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'介绍你的团队成员\n格式: 姓名 - 职位 - 简介\n多个成员用分号分隔'**
+  String get teamMembersHint;
+
+  /// No description provided for @publishProject.
+  ///
+  /// In zh, this message translates to:
+  /// **'发布创意项目'**
+  String get publishProject;
+
+  /// No description provided for @projectCreatedSuccessfully.
+  ///
+  /// In zh, this message translates to:
+  /// **'创意项目创建成功!'**
+  String get projectCreatedSuccessfully;
+
+  /// No description provided for @creationFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'创建失败'**
+  String get creationFailed;
+
+  /// No description provided for @imageSelectionFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择图片失败'**
+  String get imageSelectionFailed;
 }
 
 class _AppLocalizationsDelegate

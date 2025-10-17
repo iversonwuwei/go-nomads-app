@@ -1076,7 +1076,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get required => '*';
 
   @override
-  String get optional => '(可选)';
+  String get optional => '可选';
 
   @override
   String get invalidEmail => '无效的邮箱地址';
@@ -3349,4 +3349,115 @@ class AppLocalizationsZh extends AppLocalizations {
   String monthsAgo(int count) {
     return '$count月前';
   }
+
+  @override
+  String get createInnovationProject => '创建创意项目';
+
+  @override
+  String get shareYourInnovation => '分享你的创意项目,找到志同道合的伙伴和投资人';
+
+  @override
+  String get projectName => '项目名称';
+
+  @override
+  String get projectNameHint => '为你的项目起一个响亮的名字';
+
+  @override
+  String get pleaseEnterProjectName => '请输入项目名称';
+
+  @override
+  String get elevatorPitchHint => '用一句话描述你的项目';
+
+  @override
+  String get pleaseEnterElevatorPitch => '请输入项目定位';
+
+  @override
+  String get projectCover => '项目封面';
+
+  @override
+  String get clickToSelectCover => '点击选择项目封面图片';
+
+  @override
+  String get recommendedSize => '建议尺寸: 1920x1080';
+
+  @override
+  String get problemAndSolution => '问题与解决方案';
+
+  @override
+  String get problemHint => '你想解决什么问题?这个问题为什么重要?';
+
+  @override
+  String get pleaseDescribeProblem => '请描述要解决的问题';
+
+  @override
+  String get solutionHint => '你的解决方案是什么?如何解决这个问题?';
+
+  @override
+  String get pleaseDescribeSolution => '请描述解决方案';
+
+  @override
+  String get marketPositioning => '市场定位';
+
+  @override
+  String get targetAudienceHint => '你的目标用户是谁?';
+
+  @override
+  String get pleaseDescribeTargetAudience => '请描述目标用户';
+
+  @override
+  String get productTypeHint => '例如: 移动应用、网站、硬件设备等';
+
+  @override
+  String get keyFeaturesHint => '核心功能,用逗号分隔\n例如: AI问答, 学习计划, 进度追踪';
+
+  @override
+  String get pleaseEnterKeyFeatures => '请输入核心功能';
+
+  @override
+  String get competitionAndBusiness => '竞争与商业';
+
+  @override
+  String get competitiveAdvantageHint => '相比竞品,你的优势是什么?';
+
+  @override
+  String get businessModelHint => '你的盈利模式是什么?';
+
+  @override
+  String get marketOpportunityHint => '市场规模和增长潜力如何?';
+
+  @override
+  String get progressAndNeeds => '进展与需求';
+
+  @override
+  String get currentStatusHint => '目前的开发进度和已完成的工作';
+
+  @override
+  String get pleaseDescribeCurrentStatus => '请描述当前进展';
+
+  @override
+  String get askHint => '你需要什么帮助?例如: 技术合伙人、种子资金、市场推广等';
+
+  @override
+  String get pleaseSpecifyNeeds => '请说明所需支持';
+
+  @override
+  String get teamInformation => '团队信息';
+
+  @override
+  String get teamMembers => '团队成员';
+
+  @override
+  String get teamMembersHint => '介绍你的团队成员\n格式: 姓名 - 职位 - 简介\n多个成员用分号分隔';
+
+  @override
+  String get publishProject => '发布创意项目';
+
+  @override
+  String get projectCreatedSuccessfully => '创意项目创建成功!';
+
+  @override
+  String get creationFailed => '创建失败';
+
+  @override
+  String get imageSelectionFailed => '选择图片失败';
 }

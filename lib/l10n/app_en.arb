@@ -1655,7 +1655,47 @@
         "type": "int"
       }
     }
-  }
+  },
+  "createInnovationProject": "Create Innovation Project",
+  "shareYourInnovation": "Share your innovative project and find like-minded partners and investors",
+  "basicInformation": "Basic Information",
+  "projectName": "Project Name",
+  "projectNameHint": "Give your project a catchy name",
+  "pleaseEnterProjectName": "Please enter project name",
+  "elevatorPitch": "Elevator Pitch",
+  "elevatorPitchHint": "Describe your project in one sentence",
+  "pleaseEnterElevatorPitch": "Please enter elevator pitch",
+  "projectCover": "Project Cover",
+  "optional": "Optional",
+  "clickToSelectCover": "Click to select project cover image",
+  "recommendedSize": "Recommended size: 1920x1080",
+  "problemAndSolution": "Problem & Solution",
+  "problemHint": "What problem are you trying to solve? Why is it important?",
+  "pleaseDescribeProblem": "Please describe the problem",
+  "solutionHint": "What is your solution? How does it solve the problem?",
+  "pleaseDescribeSolution": "Please describe the solution",
+  "marketPositioning": "Market Positioning",
+  "targetAudienceHint": "Who are your target users?",
+  "pleaseDescribeTargetAudience": "Please describe target audience",
+  "productTypeHint": "e.g.: Mobile app, Website, Hardware device, etc.",
+  "keyFeaturesHint": "Core features, separated by commas\ne.g.: AI Q&A, Learning plan, Progress tracking",
+  "pleaseEnterKeyFeatures": "Please enter key features",
+  "competitionAndBusiness": "Competition & Business",
+  "competitiveAdvantageHint": "What is your advantage compared to competitors?",
+  "businessModelHint": "What is your revenue model?",
+  "marketOpportunityHint": "What is the market size and growth potential?",
+  "progressAndNeeds": "Progress & Needs",
+  "currentStatusHint": "Current development progress and completed work",
+  "pleaseDescribeCurrentStatus": "Please describe current status",
+  "askHint": "What help do you need? e.g.: Technical co-founder, Seed funding, Marketing, etc.",
+  "pleaseSpecifyNeeds": "Please specify what support you need",
+  "teamInformation": "Team Information",
+  "teamMembers": "Team Members",
+  "teamMembersHint": "Introduce your team members\nFormat: Name - Position - Bio\nSeparate multiple members with semicolons",
+  "publishProject": "Publish Project",
+  "projectCreatedSuccessfully": "Innovation project created successfully!",
+  "creationFailed": "Creation failed",
+  "imageSelectionFailed": "Image selection failed"
 }
 
 
