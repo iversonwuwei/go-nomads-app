@@ -1,5 +1,6 @@
 import 'china_cities_generator.dart';
 import 'database/city_dao.dart';
+import 'database/hotel_data_initializer.dart';
 import 'database/meetup_dao.dart';
 import 'database/user_dao.dart';
 import 'database_service.dart';
@@ -8,6 +9,7 @@ import 'database_service.dart';
 /// 严格按照 DataServiceController 中的测试数据格式创建
 class DatabaseInitializer {
   final DatabaseService _dbService = DatabaseService();
+  final HotelDataInitializer _hotelInitializer = HotelDataInitializer();
   final UserDao _userDao = UserDao();
   final CityDao _cityDao = CityDao();
   final MeetupDao _meetupDao = MeetupDao();
@@ -20,7 +22,7 @@ class DatabaseInitializer {
       print('🔄 强制重置数据库...');
       await _dbService.deleteDatabase();
     }
-    
+
     // 确保数据库已创建(如果删除了会自动重新创建)
     await _dbService.database;
 
@@ -38,12 +40,16 @@ class DatabaseInitializer {
 
     // 插入示例城市（严格按照 DataServiceController 格式）
     await _insertCitiesFromController();
-    
+
     // 生成中国50个城市及其共享办公空间
     await _chinaGenerator.generateChineseCities();
 
     // 插入示例活动（严格按照 DataServiceController 格式）
     await _insertMeetupsFromController();
+
+    // 初始化酒店示例数据
+    print('🏨 开始初始化酒店数据...');
+    await _hotelInitializer.initializeHotelData();
 
     print('✅ 数据库初始化完成！');
   }
@@ -51,7 +57,7 @@ class DatabaseInitializer {
   /// 插入示例用户
   Future<void> _insertSampleUsers() async {
     final now = DateTime.now().toIso8601String();
-    
+
     final users = [
       {
         'phone': '13800138000',
@@ -172,15 +178,17 @@ class DatabaseInitializer {
   /// 插入城市数据 - 严格按照 DataServiceController._generateMockData_deprecated 格式
   Future<void> _insertCitiesFromController() async {
     final now = DateTime.now().toIso8601String();
-    
+
     final cities = [
       {
         'name': 'Bangkok',
         'country': 'Thailand',
         'region': 'Asia',
         'climate': 'Hot',
-        'image_url': 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=400',
-        'description': 'Bangkok is a vibrant digital nomad hub with incredible food, affordable living, and a thriving expat community. Great coworking spaces and fast internet make it perfect for remote work.',
+        'image_url':
+            'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=400',
+        'description':
+            'Bangkok is a vibrant digital nomad hub with incredible food, affordable living, and a thriving expat community. Great coworking spaces and fast internet make it perfect for remote work.',
         'temperature': 32.0,
         'cost_of_living': 1561.0,
         'internet_speed': 24.0,
@@ -200,8 +208,10 @@ class DatabaseInitializer {
         'country': 'Thailand',
         'region': 'Asia',
         'climate': 'Warm',
-        'image_url': 'https://images.unsplash.com/photo-1598970434795-0c54fe7c0648?w=400',
-        'description': 'Chiang Mai offers a perfect blend of affordability, nature, and digital nomad infrastructure. The Old City is filled with temples, cafes, and coworking spaces.',
+        'image_url':
+            'https://images.unsplash.com/photo-1598970434795-0c54fe7c0648?w=400',
+        'description':
+            'Chiang Mai offers a perfect blend of affordability, nature, and digital nomad infrastructure. The Old City is filled with temples, cafes, and coworking spaces.',
         'temperature': 29.0,
         'cost_of_living': 1271.0,
         'internet_speed': 20.0,
@@ -221,8 +231,10 @@ class DatabaseInitializer {
         'country': 'Indonesia',
         'region': 'Asia',
         'climate': 'Hot',
-        'image_url': 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=400',
-        'description': 'Surf, work, and wellness paradise. Canggu has become the ultimate digital nomad destination with amazing beaches, healthy food, and vibrant coworking scene.',
+        'image_url':
+            'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=400',
+        'description':
+            'Surf, work, and wellness paradise. Canggu has become the ultimate digital nomad destination with amazing beaches, healthy food, and vibrant coworking scene.',
         'temperature': 27.0,
         'cost_of_living': 1896.0,
         'internet_speed': 24.0,
@@ -242,8 +254,10 @@ class DatabaseInitializer {
         'country': 'Japan',
         'region': 'Asia',
         'climate': 'Mild',
-        'image_url': 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400',
-        'description': 'Ultra-modern city with incredible infrastructure, safety, and food. Expensive but worth it for the unique culture and unmatched efficiency.',
+        'image_url':
+            'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400',
+        'description':
+            'Ultra-modern city with incredible infrastructure, safety, and food. Expensive but worth it for the unique culture and unmatched efficiency.',
         'temperature': 23.0,
         'cost_of_living': 3321.0,
         'internet_speed': 27.0,
@@ -263,8 +277,10 @@ class DatabaseInitializer {
         'country': 'South Korea',
         'region': 'Asia',
         'climate': 'Cool',
-        'image_url': 'https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=400',
-        'description': 'Tech-forward city with blazing fast internet, incredible food scene, and efficient public transport. Great for digital nomads who love urban energy.',
+        'image_url':
+            'https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=400',
+        'description':
+            'Tech-forward city with blazing fast internet, incredible food scene, and efficient public transport. Great for digital nomads who love urban energy.',
         'temperature': 18.0,
         'cost_of_living': 2519.0,
         'internet_speed': 32.0,
@@ -284,8 +300,10 @@ class DatabaseInitializer {
         'country': 'Portugal',
         'region': 'Europe',
         'climate': 'Mild',
-        'image_url': 'https://images.unsplash.com/photo-1585208798174-6cedd86e019a?w=400',
-        'description': 'Beautiful coastal city with amazing weather, great food, and a booming startup scene. Perfect balance of European culture and beach lifestyle.',
+        'image_url':
+            'https://images.unsplash.com/photo-1585208798174-6cedd86e019a?w=400',
+        'description':
+            'Beautiful coastal city with amazing weather, great food, and a booming startup scene. Perfect balance of European culture and beach lifestyle.',
         'temperature': 23.0,
         'cost_of_living': 3857.0,
         'internet_speed': 28.0,
@@ -305,8 +323,10 @@ class DatabaseInitializer {
         'country': 'Mexico',
         'region': 'Americas',
         'climate': 'Mild',
-        'image_url': 'https://images.unsplash.com/photo-1518638150340-f706e86654de?w=400',
-        'description': 'Vibrant cultural capital with incredible food, art, and nightlife. Large digital nomad community and affordable living, though internet can be spotty.',
+        'image_url':
+            'https://images.unsplash.com/photo-1518638150340-f706e86654de?w=400',
+        'description':
+            'Vibrant cultural capital with incredible food, art, and nightlife. Large digital nomad community and affordable living, though internet can be spotty.',
         'temperature': 21.0,
         'cost_of_living': 2057.0,
         'internet_speed': 13.0,
@@ -326,8 +346,10 @@ class DatabaseInitializer {
         'country': 'Singapore',
         'region': 'Asia',
         'climate': 'Hot',
-        'image_url': 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=400',
-        'description': 'Ultra-clean, safe, and efficient city-state with world-class infrastructure. Expensive but perfect for business-minded nomads.',
+        'image_url':
+            'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=400',
+        'description':
+            'Ultra-clean, safe, and efficient city-state with world-class infrastructure. Expensive but perfect for business-minded nomads.',
         'temperature': 31.0,
         'cost_of_living': 4520.0,
         'internet_speed': 50.0,
@@ -365,11 +387,13 @@ class DatabaseInitializer {
     final meetups = [
       {
         'title': 'Digital Nomad Happy Hour',
-        'description': 'Join us for drinks and networking with fellow digital nomads in Bangkok!',
+        'description':
+            'Join us for drinks and networking with fellow digital nomads in Bangkok!',
         'category': 'Drinks',
         'city_id': cityIdMap['Bangkok'],
         'location': 'Octave Rooftop Bar',
-        'image_url': 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400',
+        'image_url':
+            'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400',
         'start_time': now.add(const Duration(days: 2)).toIso8601String(),
         'max_participants': 30,
         'current_participants': 24,
@@ -380,11 +404,13 @@ class DatabaseInitializer {
       },
       {
         'title': 'Morning Coworking Session',
-        'description': 'Start your day with focused work alongside other remote workers.',
+        'description':
+            'Start your day with focused work alongside other remote workers.',
         'category': 'Coworking',
         'city_id': cityIdMap['Chiang Mai'],
         'location': 'Punspace Nimman',
-        'image_url': 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=400',
+        'image_url':
+            'https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=400',
         'start_time': now.add(const Duration(days: 3)).toIso8601String(),
         'max_participants': 20,
         'current_participants': 12,
@@ -395,11 +421,13 @@ class DatabaseInitializer {
       },
       {
         'title': 'Sunset Surf Session',
-        'description': 'Catch some waves and watch the sunset with the nomad community!',
+        'description':
+            'Catch some waves and watch the sunset with the nomad community!',
         'category': 'Activity',
         'city_id': cityIdMap['Canggu, Bali'],
         'location': 'Batu Bolong Beach',
-        'image_url': 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=400',
+        'image_url':
+            'https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=400',
         'start_time': now.add(const Duration(days: 4)).toIso8601String(),
         'max_participants': 15,
         'current_participants': 8,
@@ -410,11 +438,13 @@ class DatabaseInitializer {
       },
       {
         'title': 'Portuguese Food Experience',
-        'description': 'Taste the best of Portuguese cuisine with fellow food lovers!',
+        'description':
+            'Taste the best of Portuguese cuisine with fellow food lovers!',
         'category': 'Dinner',
         'city_id': cityIdMap['Lisbon'],
         'location': 'Time Out Market',
-        'image_url': 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400',
+        'image_url':
+            'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400',
         'start_time': now.add(const Duration(days: 5)).toIso8601String(),
         'max_participants': 20,
         'current_participants': 16,
@@ -425,11 +455,13 @@ class DatabaseInitializer {
       },
       {
         'title': 'Japanese Language Exchange',
-        'description': 'Practice Japanese with locals and learn about the culture.',
+        'description':
+            'Practice Japanese with locals and learn about the culture.',
         'category': 'Workshop',
         'city_id': cityIdMap['Tokyo'],
         'location': 'WeWork Shibuya',
-        'image_url': 'https://images.unsplash.com/photo-1528164344705-47542687000d?w=400',
+        'image_url':
+            'https://images.unsplash.com/photo-1528164344705-47542687000d?w=400',
         'start_time': now.add(const Duration(days: 6)).toIso8601String(),
         'max_participants': 15,
         'current_participants': 10,
@@ -440,11 +472,13 @@ class DatabaseInitializer {
       },
       {
         'title': 'Startup Founders Meetup',
-        'description': 'Connect with startup founders and entrepreneurs in CDMX.',
+        'description':
+            'Connect with startup founders and entrepreneurs in CDMX.',
         'category': 'Networking',
         'city_id': cityIdMap['Mexico City'],
         'location': 'Curators',
-        'image_url': 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400',
+        'image_url':
+            'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400',
         'start_time': now.add(const Duration(days: 7)).toIso8601String(),
         'max_participants': 25,
         'current_participants': 20,
@@ -455,11 +489,13 @@ class DatabaseInitializer {
       },
       {
         'title': 'Temple Tour & Photography',
-        'description': 'Explore Bangkok\'s beautiful temples with a local photographer.',
+        'description':
+            'Explore Bangkok\'s beautiful temples with a local photographer.',
         'category': 'Activity',
         'city_id': cityIdMap['Bangkok'],
         'location': 'Wat Pho',
-        'image_url': 'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=400',
+        'image_url':
+            'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=400',
         'start_time': now.add(const Duration(days: 8)).toIso8601String(),
         'max_participants': 20,
         'current_participants': 15,
@@ -470,11 +506,13 @@ class DatabaseInitializer {
       },
       {
         'title': 'K-BBQ & Drinks Night',
-        'description': 'Experience authentic Korean BBQ and nightlife in Gangnam!',
+        'description':
+            'Experience authentic Korean BBQ and nightlife in Gangnam!',
         'category': 'Drinks',
         'city_id': cityIdMap['Seoul'],
         'location': 'Gangnam District',
-        'image_url': 'https://images.unsplash.com/photo-1498654896293-37aacf113fd9?w=400',
+        'image_url':
+            'https://images.unsplash.com/photo-1498654896293-37aacf113fd9?w=400',
         'start_time': now.add(const Duration(days: 9)).toIso8601String(),
         'max_participants': 22,
         'current_participants': 18,

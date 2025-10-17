@@ -1,0 +1,303 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+
+import '../config/app_colors.dart';
+import '../models/hotel_model.dart';
+import '../services/database/hotel_dao.dart';
+import '../widgets/app_toast.dart';
+
+/// 房型列表页面
+class RoomTypeListPage extends StatefulWidget {
+  final int hotelId;
+  final String hotelName;
+
+  const RoomTypeListPage({
+    super.key,
+    required this.hotelId,
+    required this.hotelName,
+  });
+
+  @override
+  State<RoomTypeListPage> createState() => _RoomTypeListPageState();
+}
+
+class _RoomTypeListPageState extends State<RoomTypeListPage> {
+  final RxBool _isLoading = false.obs;
+  final RxList<RoomType> _roomTypes = <RoomType>[].obs;
+
+  final HotelDao _hotelDao = HotelDao();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRoomTypes();
+  }
+
+  // 加载房型数据
+  Future<void> _loadRoomTypes() async {
+    _isLoading.value = true;
+    try {
+      final roomTypesData =
+          await _hotelDao.getRoomTypesByHotelId(widget.hotelId);
+      final roomTypes =
+          roomTypesData.map((data) => RoomType.fromMap(data)).toList();
+      _roomTypes.value = roomTypes;
+    } catch (e) {
+      AppToast.error('加载房型失败: $e');
+    } finally {
+      _isLoading.value = false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: Text(widget.hotelName),
+        elevation: 0,
+      ),
+      body: Obx(() {
+        if (_isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (_roomTypes.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.hotel, size: 48.w, color: Colors.grey),
+                SizedBox(height: 12.h),
+                Text(
+                  '暂无房型',
+                  style: TextStyle(fontSize: 16.sp, color: Colors.grey),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return ListView.builder(
+          padding: EdgeInsets.all(16.w),
+          itemCount: _roomTypes.length,
+          itemBuilder: (context, index) {
+            final roomType = _roomTypes[index];
+            return _buildRoomTypeCard(roomType);
+          },
+        );
+      }),
+    );
+  }
+
+  Widget _buildRoomTypeCard(RoomType roomType) {
+    return Card(
+      margin: EdgeInsets.only(bottom: 16.h),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12.r),
+        onTap: () {
+          // TODO: 跳转到房型详情页或预订页
+          AppToast.info('房型: ${roomType.name}');
+        },
+        child: Padding(
+          padding: EdgeInsets.all(16.w),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 房型图片
+              if (roomType.images.isNotEmpty)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8.r),
+                  child: Image.network(
+                    roomType.images.first,
+                    height: 180.h,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        height: 180.h,
+                        color: Colors.grey[300],
+                        child: Icon(Icons.image_not_supported,
+                            size: 48.w, color: Colors.grey),
+                      );
+                    },
+                  ),
+                ),
+              SizedBox(height: 12.h),
+
+              // 房型名称
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      roomType.name,
+                      style: TextStyle(
+                        fontSize: 20.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  if (!roomType.isAvailable)
+                    Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(4.r),
+                      ),
+                      child: Text(
+                        '已满',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12.sp,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              SizedBox(height: 8.h),
+
+              // 房型描述
+              if (roomType.description.isNotEmpty)
+                Text(
+                  roomType.description,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    color: Colors.grey[600],
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              SizedBox(height: 12.h),
+
+              // 房型信息
+              Wrap(
+                spacing: 16.w,
+                runSpacing: 8.h,
+                children: [
+                  _buildInfoChip(
+                    icon: Icons.single_bed,
+                    label: roomType.bedType,
+                  ),
+                  _buildInfoChip(
+                    icon: Icons.people,
+                    label: '最多${roomType.maxOccupancy}人',
+                  ),
+                  _buildInfoChip(
+                    icon: Icons.square_foot,
+                    label: '${roomType.size.toStringAsFixed(0)}㎡',
+                  ),
+                  if (roomType.isAvailable)
+                    _buildInfoChip(
+                      icon: Icons.hotel,
+                      label: '${roomType.availableRooms}间可用',
+                      color: Colors.green,
+                    ),
+                ],
+              ),
+              SizedBox(height: 12.h),
+
+              // 设施列表
+              if (roomType.amenities.isNotEmpty)
+                Wrap(
+                  spacing: 8.w,
+                  runSpacing: 6.h,
+                  children: roomType.amenities.take(6).map((amenity) {
+                    return Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                      decoration: BoxDecoration(
+                        color: Colors.blue[50],
+                        borderRadius: BorderRadius.circular(4.r),
+                      ),
+                      child: Text(
+                        amenity,
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          color: Colors.blue[700],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              SizedBox(height: 12.h),
+
+              // 价格和预订按钮
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${roomType.currency} ${roomType.pricePerNight.toStringAsFixed(0)}',
+                        style: TextStyle(
+                          fontSize: 24.sp,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue,
+                        ),
+                      ),
+                      Text(
+                        '每晚',
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                  ElevatedButton(
+                    onPressed: roomType.isAvailable
+                        ? () {
+                            // TODO: 跳转到预订页面
+                            AppToast.info('预订 ${roomType.name}');
+                          }
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 24.w, vertical: 12.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                    ),
+                    child: Text(
+                      roomType.isAvailable ? '立即预订' : '已满',
+                      style: TextStyle(fontSize: 14.sp),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoChip({
+    required IconData icon,
+    required String label,
+    Color? color,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 16.w, color: color ?? Colors.grey[600]),
+        SizedBox(width: 4.w),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 13.sp,
+            color: color ?? Colors.grey[700],
+          ),
+        ),
+      ],
+    );
+  }
+}

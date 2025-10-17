@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart' hide Badge;
 import 'package:get/get.dart';
 
+import '../config/app_colors.dart';
 import '../controllers/locale_controller.dart';
 import '../controllers/user_profile_controller.dart';
 import '../generated/app_localizations.dart';
@@ -21,7 +22,7 @@ class ProfilePage extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       body: Obx(() {
         if (controller.isLoading.value) {
           return const ProfileSkeleton();

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
+import '../config/app_colors.dart';
 import '../generated/app_localizations.dart';
 import '../widgets/app_toast.dart';
 
@@ -25,7 +26,7 @@ class _AddCostPageState extends State<AddCostPage> {
 
   // Currency selection
   String _selectedCurrency = 'USD';
-  
+
   // Get localized currency list
   List<Map<String, String>> _getCurrencies(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -207,9 +208,9 @@ class _AddCostPageState extends State<AddCostPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.close, color: Colors.black),

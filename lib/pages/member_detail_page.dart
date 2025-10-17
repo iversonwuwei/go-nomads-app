@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../config/app_colors.dart';
 import '../generated/app_localizations.dart';
 import '../models/user_model.dart' as models;
 import '../widgets/app_toast.dart';
@@ -15,7 +16,7 @@ class MemberDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       body: CustomScrollView(
         slivers: [
           // App Bar with User Avatar

@@ -14,6 +14,7 @@ import 'add_coworking_page.dart';
 import 'add_review_page.dart';
 import 'coworking_detail_page.dart';
 import 'create_travel_plan_page.dart';
+import 'hotel_list_page.dart';
 
 /// 城市详情�?- 完整�?Nomads.com 风格标签页系�?
 class CityDetailPage extends StatefulWidget {
@@ -95,7 +96,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
 
     return DefaultTabController(
       length:
-          9, // 修正�?个标�?Scores, Guide, Pros&Cons, Reviews, Cost, Photos, Weather, Neighborhoods, Coworking)
+          10, // 10个标签(Scores, Guide, Pros&Cons, Reviews, Cost, Photos, Weather, Hotels, Neighborhoods, Coworking)
       child: Scaffold(
         body: Stack(
           children: [
@@ -359,6 +360,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
                             ),
                           ),
                           Tab(text: l10n.weather),
+                          Tab(text: l10n.hotels),
                           Tab(text: l10n.neighborhoods),
                           Tab(
                             child: Row(
@@ -397,6 +399,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
                     _buildCostTab(controller),
                     _buildPhotosTab(controller),
                     _buildWeatherTab(controller),
+                    _buildHotelsTab(controller),
                     _buildNeighborhoodsTab(controller),
                     _buildCoworkingTab(controller),
                   ],
@@ -1469,6 +1472,18 @@ class _CityDetailPageState extends State<CityDetailPage> {
           ],
         ),
       ),
+    );
+  }
+
+  // Hotels Tab - 显示城市的酒店列表
+  Widget _buildHotelsTab(CityDetailController controller) {
+    final cityId = int.tryParse(widget.cityId);
+    print(
+        '🏨 Hotels Tab - widget.cityId: ${widget.cityId}, parsed: $cityId, cityName: ${widget.cityName}');
+
+    return HotelListPage(
+      cityId: cityId,
+      cityName: widget.cityName,
     );
   }
 

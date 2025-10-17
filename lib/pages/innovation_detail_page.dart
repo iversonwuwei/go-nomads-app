@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../generated/app_localizations.dart';
 import '../models/innovation_project_model.dart';
+import '../models/user_model.dart';
+import 'direct_chat_page.dart';
 
 /// Innovation Project Detail Page
 /// 创意项目详情页面
@@ -262,12 +265,79 @@ class InnovationDetailPage extends StatelessWidget {
                 ),
 
                 const SizedBox(height: 32),
+
+                // 底部留白,为底部栏留出空间
+                const SizedBox(height: 80),
               ]),
             ),
           ),
         ],
       ),
+      // 底部栏
+      bottomNavigationBar: _buildBottomBar(context),
     );
+  }
+
+  /// 构建底部栏
+  Widget _buildBottomBar(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: ElevatedButton.icon(
+          onPressed: () => _contactCreator(context),
+          icon: const Icon(Icons.chat_bubble_outline, size: 20),
+          label: Text(
+            l10n.message,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF8B5CF6),
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            elevation: 0,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 联系创建者
+  void _contactCreator(BuildContext context) {
+    // 创建发布者的 UserModel 对象
+    final creatorUser = UserModel(
+      id: project.creatorId,
+      name: project.creatorName,
+      username: project.creatorName.toLowerCase().replaceAll(' ', '_'),
+      avatarUrl: null, // 可以从项目中获取,如果有的话
+      stats: TravelStats(
+        countriesVisited: 0,
+        citiesLived: 0,
+        daysNomading: 0,
+        meetupsAttended: 0,
+        tripsCompleted: 0,
+      ),
+      joinedDate: DateTime.now(),
+    );
+
+    // 跳转到一对一聊天页面
+    Get.to(() => DirectChatPage(user: creatorUser));
   }
 
   Widget _buildSection({

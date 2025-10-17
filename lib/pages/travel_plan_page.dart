@@ -95,7 +95,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
 
   Widget _buildLoadingSkeleton() {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: AppColors.background,
       body: CustomScrollView(
         slivers: [
           // App Bar Skeleton
@@ -269,7 +269,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
   Widget _buildErrorPage() {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(l10n.travelPlan),
         leading: IconButton(
@@ -318,7 +318,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
 
   Widget _buildPlanContent(TravelPlan plan) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: AppColors.background,
       body: CustomScrollView(
         slivers: [
           // App Bar

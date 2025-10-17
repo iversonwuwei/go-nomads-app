@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+import '../config/app_colors.dart';
 import '../controllers/auth_controller.dart';
 import '../generated/app_localizations.dart';
 import '../widgets/app_toast.dart';
@@ -17,7 +18,7 @@ class LoginPage extends StatelessWidget {
     final isLargeScreen = screenWidth > 800;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: isLargeScreen
             ? _buildDesktopLayout(controller)

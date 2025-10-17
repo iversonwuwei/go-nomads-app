@@ -121,10 +121,11 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
@@ -235,7 +236,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
 
                   const SizedBox(height: 32),
 
-                                    // Pricing
+                  // Pricing
                   _buildSectionTitle(l10n.pricing, Icons.attach_money),
                   const SizedBox(height: 16),
                   _buildCurrencyDropdown(l10n),
@@ -292,13 +293,13 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                   if (_hasFreeTrial) ...[
                     const SizedBox(height: 16),
                     _buildTextField(
-                  controller: _trialDurationController,
-                  label: l10n.trialDuration,
-                  hint: l10n.trialDurationHint,
-                ),
-              ],
+                      controller: _trialDurationController,
+                      label: l10n.trialDuration,
+                      hint: l10n.trialDurationHint,
+                    ),
+                  ],
 
-              const SizedBox(height: 32),                  // Specifications
+                  const SizedBox(height: 32), // Specifications
                   _buildSectionTitle(l10n.specifications, Icons.settings),
                   const SizedBox(height: 16),
                   Row(
@@ -348,14 +349,22 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                   _buildDropdown(
                     l10n.noiseLevel,
                     _noiseLevel,
-                    [l10n.noiseLevelQuiet, l10n.noiseLevelModerate, l10n.noiseLevelLoud],
+                    [
+                      l10n.noiseLevelQuiet,
+                      l10n.noiseLevelModerate,
+                      l10n.noiseLevelLoud
+                    ],
                     (value) => setState(() => _noiseLevel = value),
                   ),
                   const SizedBox(height: 16),
                   _buildDropdown(
                     l10n.spaceType,
                     _spaceType,
-                    [l10n.spaceTypeOpen, l10n.spaceTypePrivate, l10n.spaceTypeMixed],
+                    [
+                      l10n.spaceTypeOpen,
+                      l10n.spaceTypePrivate,
+                      l10n.spaceTypeMixed
+                    ],
                     (value) => setState(() => _spaceType = value),
                   ),
                   const SizedBox(height: 16),
@@ -440,7 +449,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
     TextInputType? keyboardType,
   }) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return TextFormField(
       controller: controller,
       maxLines: maxLines,
@@ -524,7 +533,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
 
   Widget _buildLocationPicker() {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Card(
       elevation: 0,
       color: Colors.grey[50],
@@ -559,7 +568,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
 
   Widget _buildImageSection() {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return GestureDetector(
       onTap: _showImageSourceDialog,
       child: Container(
@@ -629,7 +638,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
 
   Future<void> _showImageSourceDialog() async {
     final l10n = AppLocalizations.of(context)!;
-    
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -697,7 +706,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
 
   Future<void> _pickImage(ImageSource source) async {
     final l10n = AppLocalizations.of(context)!;
-    
+
     try {
       final XFile? image = await _picker.pickImage(
         source: source,
@@ -722,7 +731,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
   /// 底部提交按钮栏
   Widget _buildBottomBar() {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -779,7 +788,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
 
   Future<void> _submitCoworking() async {
     final l10n = AppLocalizations.of(context)!;
-    
+
     if (!_formKey.currentState!.validate()) {
       return;
     }

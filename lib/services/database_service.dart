@@ -30,7 +30,7 @@ class DatabaseService {
     // 打开数据库,如果不存在则创建
     return await openDatabase(
       path,
-      version: 2, // 升级到版本2 - 添加 cities.region 字段支持
+      version: 3, // 升级到版本3 - 添加酒店相关表
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -155,6 +155,92 @@ class DatabaseService {
       )
     ''');
 
+    // 酒店表
+    await db.execute('''
+      CREATE TABLE hotels (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        city_id INTEGER NOT NULL,
+        address TEXT NOT NULL,
+        latitude REAL,
+        longitude REAL,
+        rating REAL DEFAULT 0.0,
+        review_count INTEGER DEFAULT 0,
+        description TEXT,
+        amenities TEXT,
+        images TEXT,
+        category TEXT DEFAULT 'mid-range',
+        price_per_night REAL DEFAULT 0.0,
+        currency TEXT DEFAULT 'USD',
+        is_featured INTEGER DEFAULT 0,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        FOREIGN KEY (city_id) REFERENCES cities (id)
+      )
+    ''');
+
+    // 房型表
+    await db.execute('''
+      CREATE TABLE room_types (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        hotel_id INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        description TEXT,
+        max_occupancy INTEGER DEFAULT 2,
+        size REAL DEFAULT 25.0,
+        bed_type TEXT DEFAULT 'Queen',
+        price_per_night REAL NOT NULL,
+        currency TEXT DEFAULT 'USD',
+        available_rooms INTEGER DEFAULT 0,
+        amenities TEXT,
+        images TEXT,
+        is_available INTEGER DEFAULT 1,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (hotel_id) REFERENCES hotels (id) ON DELETE CASCADE
+      )
+    ''');
+
+    // 酒店预订表
+    await db.execute('''
+      CREATE TABLE hotel_bookings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        hotel_id INTEGER NOT NULL,
+        room_type_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        check_in_date TEXT NOT NULL,
+        check_out_date TEXT NOT NULL,
+        number_of_rooms INTEGER DEFAULT 1,
+        number_of_guests INTEGER DEFAULT 1,
+        total_price REAL NOT NULL,
+        currency TEXT DEFAULT 'USD',
+        status TEXT DEFAULT 'pending',
+        special_requests TEXT,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (hotel_id) REFERENCES hotels (id),
+        FOREIGN KEY (room_type_id) REFERENCES room_types (id),
+        FOREIGN KEY (user_id) REFERENCES users (id)
+      )
+    ''');
+
+    // 酒店相关索引
+    await db.execute('CREATE INDEX idx_hotels_city_id ON hotels (city_id)');
+    await db
+        .execute('CREATE INDEX idx_hotels_is_featured ON hotels (is_featured)');
+    await db.execute('CREATE INDEX idx_hotels_rating ON hotels (rating DESC)');
+    await db.execute('CREATE INDEX idx_hotels_category ON hotels (category)');
+    await db.execute(
+        'CREATE INDEX idx_room_types_hotel_id ON room_types (hotel_id)');
+    await db.execute(
+        'CREATE INDEX idx_room_types_is_available ON room_types (is_available)');
+    await db.execute(
+        'CREATE INDEX idx_hotel_bookings_user_id ON hotel_bookings (user_id)');
+    await db.execute(
+        'CREATE INDEX idx_hotel_bookings_status ON hotel_bookings (status)');
+    await db.execute(
+        'CREATE INDEX idx_hotel_bookings_check_in ON hotel_bookings (check_in_date)');
+    await db.execute(
+        'CREATE INDEX idx_hotel_bookings_hotel_id ON hotel_bookings (hotel_id)');
+
     // 评论表
     await db.execute('''
       CREATE TABLE reviews (
@@ -247,6 +333,106 @@ class DatabaseService {
         }
       } catch (e) {
         print('⚠️ 升级数据库时出错: $e');
+      }
+    }
+
+    if (oldVersion < 3 && newVersion >= 3) {
+      // 版本 2 -> 3: 添加酒店相关表
+      try {
+        print('🏨 开始添加酒店相关表...');
+
+        // 酒店表
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS hotels (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            city_id INTEGER NOT NULL,
+            address TEXT NOT NULL,
+            latitude REAL,
+            longitude REAL,
+            rating REAL DEFAULT 0.0,
+            review_count INTEGER DEFAULT 0,
+            description TEXT,
+            amenities TEXT,
+            images TEXT,
+            category TEXT DEFAULT 'mid-range',
+            price_per_night REAL DEFAULT 0.0,
+            currency TEXT DEFAULT 'USD',
+            is_featured INTEGER DEFAULT 0,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            FOREIGN KEY (city_id) REFERENCES cities (id)
+          )
+        ''');
+
+        // 房型表
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS room_types (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            hotel_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            description TEXT,
+            max_occupancy INTEGER DEFAULT 2,
+            size REAL DEFAULT 25.0,
+            bed_type TEXT DEFAULT 'Queen',
+            price_per_night REAL NOT NULL,
+            currency TEXT DEFAULT 'USD',
+            available_rooms INTEGER DEFAULT 0,
+            amenities TEXT,
+            images TEXT,
+            is_available INTEGER DEFAULT 1,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY (hotel_id) REFERENCES hotels (id) ON DELETE CASCADE
+          )
+        ''');
+
+        // 酒店预订表
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS hotel_bookings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            hotel_id INTEGER NOT NULL,
+            room_type_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            check_in_date TEXT NOT NULL,
+            check_out_date TEXT NOT NULL,
+            number_of_rooms INTEGER DEFAULT 1,
+            number_of_guests INTEGER DEFAULT 1,
+            total_price REAL NOT NULL,
+            currency TEXT DEFAULT 'USD',
+            status TEXT DEFAULT 'pending',
+            special_requests TEXT,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY (hotel_id) REFERENCES hotels (id),
+            FOREIGN KEY (room_type_id) REFERENCES room_types (id),
+            FOREIGN KEY (user_id) REFERENCES users (id)
+          )
+        ''');
+
+        // 创建索引
+        await db.execute(
+            'CREATE INDEX IF NOT EXISTS idx_hotels_city_id ON hotels (city_id)');
+        await db.execute(
+            'CREATE INDEX IF NOT EXISTS idx_hotels_is_featured ON hotels (is_featured)');
+        await db.execute(
+            'CREATE INDEX IF NOT EXISTS idx_hotels_rating ON hotels (rating DESC)');
+        await db.execute(
+            'CREATE INDEX IF NOT EXISTS idx_hotels_category ON hotels (category)');
+        await db.execute(
+            'CREATE INDEX IF NOT EXISTS idx_room_types_hotel_id ON room_types (hotel_id)');
+        await db.execute(
+            'CREATE INDEX IF NOT EXISTS idx_room_types_is_available ON room_types (is_available)');
+        await db.execute(
+            'CREATE INDEX IF NOT EXISTS idx_hotel_bookings_user_id ON hotel_bookings (user_id)');
+        await db.execute(
+            'CREATE INDEX IF NOT EXISTS idx_hotel_bookings_status ON hotel_bookings (status)');
+        await db.execute(
+            'CREATE INDEX IF NOT EXISTS idx_hotel_bookings_check_in ON hotel_bookings (check_in_date)');
+        await db.execute(
+            'CREATE INDEX IF NOT EXISTS idx_hotel_bookings_hotel_id ON hotel_bookings (hotel_id)');
+
+        print('✅ 酒店相关表创建完成');
+      } catch (e) {
+        print('⚠️ 创建酒店表时出错: $e');
       }
     }
   }
