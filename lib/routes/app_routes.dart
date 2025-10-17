@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 
+import '../middlewares/auth_middleware.dart';
 import '../pages/ai_chat_page.dart';
 import '../pages/analytics_tool_page.dart';
 import '../pages/api_marketplace_page.dart';
@@ -55,26 +56,32 @@ class AppRoutes {
     GetPage(
       name: aiChat,
       page: () => const AiChatPage(),
+      middlewares: [AuthMiddleware()], // 需要登录
     ),
     GetPage(
       name: snakeGame,
       page: () => const SnakeGamePage(),
+      // 游戏不需要登录
     ),
     GetPage(
       name: apiMarketplace,
       page: () => const ApiMarketplacePage(),
+      middlewares: [AuthMiddleware()], // 需要登录
     ),
     GetPage(
       name: analyticsTool,
       page: () => const AnalyticsToolPage(),
+      middlewares: [AuthMiddleware()], // 需要登录
     ),
     GetPage(
       name: dataService,
       page: () => const DataServicePage(),
+      middlewares: [AuthMiddleware()], // 需要登录
     ),
     GetPage(
       name: coworking,
       page: () => const CoworkingHomePage(),
+      middlewares: [AuthMiddleware()], // 需要登录
     ),
     GetPage(
       name: cityDetail,
@@ -85,18 +92,22 @@ class AppRoutes {
         overallScore: 0,
         reviewCount: 0,
       ),
+      middlewares: [AuthMiddleware()], // 需要登录
     ),
     GetPage(
       name: cityChat,
       page: () => const CityChatPage(),
+      middlewares: [AuthMiddleware()], // 需要登录
     ),
     GetPage(
       name: createMeetup,
       page: () => const CreateMeetupPage(),
+      middlewares: [AuthMiddleware()], // 需要登录
     ),
     GetPage(
       name: meetupsList,
       page: () => const MeetupsListPage(),
+      middlewares: [AuthMiddleware()], // 需要登录
     ),
     GetPage(
       name: locationDemo,

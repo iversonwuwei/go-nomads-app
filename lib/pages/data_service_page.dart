@@ -4,8 +4,10 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/data_service_controller.dart';
+import '../controllers/user_state_controller.dart';
 import '../generated/app_localizations.dart';
 import '../models/meetup_model.dart';
+import '../routes/app_routes.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/copyright_widget.dart';
 import '../widgets/skeletons/skeletons.dart';
@@ -41,11 +43,33 @@ class _DataServicePageState extends State<DataServicePage> {
     super.dispose();
   }
 
+  /// 检查登录状态，未登录则跳转到登录页
+  bool _checkLoginAndNavigate(VoidCallback onLoggedIn) {
+    final userStateController = Get.find<UserStateController>();
+    
+    print('🔒 DataServicePage: 检查登录状态');
+    print('   当前登录状态: ${userStateController.isLoggedIn}');
+    
+    if (!userStateController.isLoggedIn) {
+      print('�?用户未登录，跳转到登录页');
+      AppToast.info(
+        'Please login to access this feature',
+        title: 'Login Required',
+      );
+      Get.toNamed(AppRoutes.login);
+      return false;
+    }
+    
+    print('�?用户已登录，执行操作');
+    onLoggedIn();
+    return true;
+  }
+
   void _scrollToCitiesList() {
     if (_hasScrolled) return;
     _hasScrolled = true;
 
-    // 等待布局完成后滚动
+    // 等待布局完成后滚�?
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(milliseconds: 500), () {
         if (!mounted) return;
@@ -83,7 +107,7 @@ class _DataServicePageState extends State<DataServicePage> {
           return const DataServiceListSkeleton();
         }
 
-        // 数据加载完成后,如果需要滚动则执行滚动
+        // 数据加载完成�?如果需要滚动则执行滚动
         if (widget.scrollToCities && !_hasScrolled) {
           _scrollToCitiesList();
         }
@@ -150,7 +174,7 @@ class _DataServicePageState extends State<DataServicePage> {
 
             const SliverToBoxAdapter(child: SizedBox(height: 60)),
 
-            // 特性列表
+            // 特性列�?
             SliverToBoxAdapter(
               child: Container(
                 padding: EdgeInsets.symmetric(
@@ -201,7 +225,7 @@ class _DataServicePageState extends State<DataServicePage> {
               ),
               child: Column(
                 children: [
-                  // Logo和标题区域
+                  // Logo和标题区�?
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -232,7 +256,7 @@ class _DataServicePageState extends State<DataServicePage> {
 
                   SizedBox(height: isMobile ? 24 : 32),
 
-                  // 副标题
+                  // 副标�?
                   Text(
                     l10n.joinGlobalCommunity,
                     textAlign: TextAlign.center,
@@ -268,15 +292,15 @@ class _DataServicePageState extends State<DataServicePage> {
     );
   }
 
-  // 紧凑型服务卡片 - 响应式网格布局
+  // 紧凑型服务卡�?- 响应式网格布局
   Widget _buildServiceCards(bool isMobile, AppLocalizations l10n) {
     final screenWidth = MediaQuery.of(context).size.width;
 
     // 根据屏幕宽度决定布局
-    // 超小屏(<400px): 2列2行
-    // 小屏(400-768px): 2列2行
-    // 中屏(768-1024px): 4列1行
-    // 大屏(>1024px): 4列1行
+    // 超小�?<400px): 2�?�?
+    // 小屏(400-768px): 2�?�?
+    // 中屏(768-1024px): 4�?�?
+    // 大屏(>1024px): 4�?�?
     final isVerySmall = screenWidth < 400;
     final useGridLayout = screenWidth < 768;
 
@@ -286,7 +310,7 @@ class _DataServicePageState extends State<DataServicePage> {
         constraints: const BoxConstraints(maxWidth: 600),
         child: Column(
           children: [
-            // 第一行: Cities + Coworkings
+            // 第一�? Cities + Coworkings
             Row(
               children: [
                 Expanded(
@@ -295,7 +319,7 @@ class _DataServicePageState extends State<DataServicePage> {
                     icon: Icons.location_city_rounded,
                     title: l10n.cities,
                     color: const Color(0xFFFF4458),
-                    onTap: () => Get.to(() => const CityListPage()),
+                    onTap: () => _checkLoginAndNavigate(() => Get.to(() => const CityListPage())),
                     isCompact: isVerySmall,
                   ),
                 ),
@@ -306,14 +330,14 @@ class _DataServicePageState extends State<DataServicePage> {
                     icon: Icons.business_center_rounded,
                     title: l10n.coworks,
                     color: const Color(0xFF6366F1),
-                    onTap: () => Get.to(() => const CoworkingHomePage()),
+                    onTap: () => _checkLoginAndNavigate(() => Get.to(() => const CoworkingHomePage())),
                     isCompact: isVerySmall,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            // 第二行: Meetups + Innovation
+            // 第二�? Meetups + Innovation
             Row(
               children: [
                 Expanded(
@@ -325,7 +349,7 @@ class _DataServicePageState extends State<DataServicePage> {
                         icon: Icons.groups_rounded,
                         title: l10n.meetups,
                         color: const Color(0xFF10B981),
-                        onTap: () => Get.toNamed('/meetups-list'),
+                        onTap: () => _checkLoginAndNavigate(() => Get.toNamed('/meetups-list')),
                         isCompact: isVerySmall,
                       );
                     },
@@ -341,7 +365,7 @@ class _DataServicePageState extends State<DataServicePage> {
                         icon: Icons.lightbulb_outline,
                         title: l10n.innovation,
                         color: const Color(0xFF8B5CF6),
-                        onTap: () => Get.to(() => const InnovationListPage()),
+                        onTap: () => _checkLoginAndNavigate(() => Get.to(() => const InnovationListPage())),
                         isCompact: isVerySmall,
                       );
                     },
@@ -353,7 +377,7 @@ class _DataServicePageState extends State<DataServicePage> {
         ),
       );
     } else {
-      // 1x4 横向布局(桌面端)
+      // 1x4 横向布局(桌面�?
       return Container(
         constraints: const BoxConstraints(maxWidth: 900),
         child: Row(
@@ -366,7 +390,7 @@ class _DataServicePageState extends State<DataServicePage> {
                 icon: Icons.location_city_rounded,
                 title: l10n.cities,
                 color: const Color(0xFFFF4458),
-                onTap: () => Get.to(() => const CityListPage()),
+                onTap: () => _checkLoginAndNavigate(() => Get.to(() => const CityListPage())),
               ),
             ),
 
@@ -379,7 +403,7 @@ class _DataServicePageState extends State<DataServicePage> {
                 icon: Icons.business_center_rounded,
                 title: l10n.coworks,
                 color: const Color(0xFF6366F1),
-                onTap: () => Get.to(() => const CoworkingHomePage()),
+                onTap: () => _checkLoginAndNavigate(() => Get.to(() => const CoworkingHomePage())),
               ),
             ),
 
@@ -395,7 +419,7 @@ class _DataServicePageState extends State<DataServicePage> {
                     icon: Icons.groups_rounded,
                     title: l10n.meetups,
                     color: const Color(0xFF10B981),
-                    onTap: () => Get.toNamed('/meetups-list'),
+                    onTap: () => _checkLoginAndNavigate(() => Get.toNamed('/meetups-list')),
                   );
                 },
               ),
@@ -413,7 +437,7 @@ class _DataServicePageState extends State<DataServicePage> {
                     icon: Icons.lightbulb_outline,
                     title: l10n.innovation,
                     color: const Color(0xFF8B5CF6),
-                    onTap: () => Get.to(() => const InnovationListPage()),
+                    onTap: () => _checkLoginAndNavigate(() => Get.to(() => const InnovationListPage())),
                   );
                 },
               ),
@@ -424,7 +448,7 @@ class _DataServicePageState extends State<DataServicePage> {
     }
   }
 
-  // 紧凑型卡片组件
+  // 紧凑型卡片组�?
   Widget _buildCompactCard({
     required bool isMobile,
     required IconData icon,
@@ -492,7 +516,7 @@ class _DataServicePageState extends State<DataServicePage> {
     );
   }
 
-  // 底部特性亮点列表
+  // 底部特性亮点列�?
   Widget _buildFeatureHighlights(bool isMobile) {
     final l10n = AppLocalizations.of(context)!;
     final features = [
@@ -555,7 +579,7 @@ class _DataServicePageState extends State<DataServicePage> {
     );
   }
 
-  // 工具栏 - 视图切换和排序
+  // 工具�?- 视图切换和排�?
   Widget _buildToolbar(DataServiceController controller) {
     final l10n = AppLocalizations.of(context)!;
     return Row(
@@ -571,7 +595,7 @@ class _DataServicePageState extends State<DataServicePage> {
         ),
         Row(
           children: [
-            // 筛选按钮 - Nomads.com 风格
+            // 筛选按�?- Nomads.com 风格
             Obx(() => Container(
                   margin: const EdgeInsets.only(right: 8),
                   decoration: BoxDecoration(
@@ -646,7 +670,7 @@ class _DataServicePageState extends State<DataServicePage> {
     );
   }
 
-  // 显示筛选抽屉
+  // 显示筛选抽�?
   void _showFilterDrawer(DataServiceController controller) {
     showModalBottomSheet(
       context: Get.context!,
@@ -656,8 +680,8 @@ class _DataServicePageState extends State<DataServicePage> {
     );
   }
 
-  // 显示创建 Meetup 对话框
-  // 搜索栏
+  // 显示创建 Meetup 对话�?
+  // 搜索�?
   Widget _buildSearchBar(DataServiceController controller, bool isMobile) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
@@ -726,20 +750,20 @@ class _DataServicePageState extends State<DataServicePage> {
       final isGrid = controller.isGridView.value;
       final crossAxisCount = isMobile ? 2 : 4;
 
-      // 如果城市列表为空，显示空状态
+      // 如果城市列表为空，显示空状�?
       if (items.isEmpty) {
         return SliverToBoxAdapter(
           child: _buildEmptyCitiesState(isMobile, l10n),
         );
       }
 
-      // 限制最多显示6个城市 (暂时改成6,方便测试)
+      // 限制最多显�?个城�?(暂时改成6,方便测试)
       final displayItems = items.length > 6 ? items.sublist(0, 6) : items;
       final hasMore = items.length > 6;
 
       // 调试信息
       debugPrint(
-          '城市总数: ${items.length}, 显示数: ${displayItems.length}, 显示按钮: $hasMore');
+          '城市总数: ${items.length}, 显示�? ${displayItems.length}, 显示按钮: $hasMore');
 
       if (isGrid) {
         return SliverList(
@@ -762,7 +786,7 @@ class _DataServicePageState extends State<DataServicePage> {
               const SizedBox(height: 24),
               Center(
                 child: OutlinedButton.icon(
-                  onPressed: () => Get.to(() => const CityListPage()),
+                  onPressed: () => _checkLoginAndNavigate(() => Get.to(() => const CityListPage())),
                   icon: const Icon(
                     Icons.location_city_outlined,
                     size: 20,
@@ -809,7 +833,7 @@ class _DataServicePageState extends State<DataServicePage> {
               const SizedBox(height: 24),
               Center(
                 child: OutlinedButton.icon(
-                  onPressed: () => Get.to(() => const CityListPage()),
+                  onPressed: () => _checkLoginAndNavigate(() => Get.to(() => const CityListPage())),
                   icon: const Icon(
                     Icons.location_city_outlined,
                     size: 20,
@@ -850,7 +874,7 @@ class _DataServicePageState extends State<DataServicePage> {
     return Obx(() {
       final upcomingMeetups = controller.upcomingMeetups;
 
-      // 如果活动列表为空，显示空状态
+      // 如果活动列表为空，显示空状�?
       if (upcomingMeetups.isEmpty) {
         return _buildEmptyMeetupsState(isMobile);
       }
@@ -1020,7 +1044,7 @@ class _DataServicePageState extends State<DataServicePage> {
     });
   }
 
-  // 空城市列表状态
+  // 空城市列表状�?
   Widget _buildEmptyCitiesState(bool isMobile, AppLocalizations l10n) {
     return Container(
       padding: EdgeInsets.symmetric(
@@ -1103,7 +1127,7 @@ class _DataServicePageState extends State<DataServicePage> {
     );
   }
 
-  // 空活动列表状态
+  // 空活动列表状�?
   Widget _buildEmptyMeetupsState(bool isMobile) {
     return Container(
       padding: EdgeInsets.symmetric(
@@ -1207,7 +1231,7 @@ class _DataCardState extends State<_DataCard> {
 
     return GestureDetector(
       onTap: () {
-        // 单击跳转到城市详情页面
+        // 单击跳转到城市详情页�?
         Get.to(() => CityDetailPage(
               cityId: widget.data['id']?.toString() ??
                   widget.data['city']?.toString() ??
@@ -1269,7 +1293,7 @@ class _DataCardState extends State<_DataCard> {
             // 内容 - 完全复刻 Nomads.com 设计
             Stack(
               children: [
-                // 顶部：排名、徽章和网速 - 防止溢出
+                // 顶部：排名、徽章和网�?- 防止溢出
                 Positioned(
                   top: 8,
                   left: 8,
@@ -1277,7 +1301,7 @@ class _DataCardState extends State<_DataCard> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // 左侧：排名 + 徽章 - 使用 Flexible 防止溢出
+                      // 左侧：排�?+ 徽章 - 使用 Flexible 防止溢出
                       Flexible(
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -1328,7 +1352,7 @@ class _DataCardState extends State<_DataCard> {
                         ),
                       ),
                       SizedBox(width: isMobile ? 3 : 8),
-                      // 右侧：网速 - 移动端简化显示
+                      // 右侧：网�?- 移动端简化显�?
                       Container(
                         padding: EdgeInsets.symmetric(
                             horizontal: isMobile ? 3 : 6,
@@ -1385,7 +1409,7 @@ class _DataCardState extends State<_DataCard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // 城市名
+                        // 城市�?
                         Text(
                           widget.data['city'] ?? '',
                           style: TextStyle(
@@ -1438,7 +1462,7 @@ class _DataCardState extends State<_DataCard> {
                           ],
                         ),
                         SizedBox(height: isMobile ? 4 : 8),
-                        // 天气和价格
+                        // 天气和价�?
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -1506,18 +1530,24 @@ class _DataCardState extends State<_DataCard> {
 
   // 获取天气图标
   String _getWeatherIcon(String? weather) {
-    if (weather == null) return '☀️';
+    if (weather == null) {
+      return '☀️';
+    }
     final w = weather.toLowerCase();
-    if (w.contains('sun') || w.contains('clear')) return '☀️';
+    if (w.contains('sun') || w.contains('clear')) {
+      return '☀️';
+    }
     if (w.contains('cloud')) return '☁️';
-    if (w.contains('rain')) return '🌧️';
+    if (w.contains('rain')) {
+      return '🌧️';
+    }
     if (w.contains('storm')) return '⛈️';
     if (w.contains('snow')) return '❄️';
     return '☀️';
   }
 }
 
-// 详情悬浮层 - 透明蒙层风格
+// 详情悬浮�?- 透明蒙层风格
 class _DetailOverlay extends StatelessWidget {
   final Map<String, dynamic> data;
   final VoidCallback onClose;
@@ -1577,7 +1607,7 @@ class _DetailOverlay extends StatelessWidget {
               ),
             ),
 
-            // 底部 - 评分条
+            // 底部 - 评分�?
             Positioned(
               left: 16,
               right: 16,
@@ -1586,19 +1616,19 @@ class _DetailOverlay extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _buildMetricBar(
-                      '⭐ Overall', data['overall'], const Color(0xFFFBBF24)),
+                      '�?Overall', data['overall'], const Color(0xFFFBBF24)),
                   const SizedBox(height: 6),
                   _buildMetricBar(
                       '💰 Cost', data['cost'], const Color(0xFF4ADE80)),
                   const SizedBox(height: 6),
-                  _buildMetricBar('� Internet', data['internetScore'],
+                  _buildMetricBar('�?Internet', data['internetScore'],
                       const Color(0xFFFBBF24)),
                   const SizedBox(height: 6),
                   _buildMetricBar(
                       '👍 Liked', data['liked'], const Color(0xFF4ADE80)),
                   const SizedBox(height: 6),
                   _buildMetricBar(
-                      '🛡️ Safety', data['safety'], const Color(0xFF4ADE80)),
+                      '🛡�?Safety', data['safety'], const Color(0xFF4ADE80)),
                 ],
               ),
             ),
@@ -1632,7 +1662,7 @@ class _DetailOverlay extends StatelessWidget {
         Expanded(
           child: Stack(
             children: [
-              // 背景条 - 深色半透明
+              // 背景�?- 深色半透明
               Container(
                 height: 18,
                 decoration: BoxDecoration(
@@ -1640,10 +1670,10 @@ class _DetailOverlay extends StatelessWidget {
                   borderRadius: BorderRadius.circular(9),
                 ),
               ),
-              // 进度条
+              // 进度�?
               FractionallySizedBox(
                 alignment: Alignment.centerLeft,
-                widthFactor: value / 5.0, // 将 0-5 分转换为 0-1 比例
+                widthFactor: value / 5.0, // �?0-5 分转换为 0-1 比例
                 child: Container(
                   height: 18,
                   decoration: BoxDecoration(
@@ -1660,7 +1690,7 @@ class _DetailOverlay extends StatelessWidget {
   }
 }
 
-// 列表项（列表视图）
+// 列表项（列表视图�?
 class _DataListItem extends StatelessWidget {
   final Map<String, dynamic> data;
 
@@ -1671,7 +1701,7 @@ class _DataListItem extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: () {
-        // 单击跳转到城市详情页面
+        // 单击跳转到城市详情页�?
         Get.to(() => CityDetailPage(
               cityId: data['id']?.toString() ?? data['city']?.toString() ?? '',
               cityName: data['city']?.toString() ?? 'Unknown City',
@@ -1697,7 +1727,7 @@ class _DataListItem extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // 缩略图
+            // 缩略�?
             ClipRRect(
               borderRadius: BorderRadius.circular(6),
               child: Image.network(
@@ -1762,7 +1792,7 @@ class _DataListItem extends StatelessWidget {
   }
 }
 
-// 筛选抽屉 - Nomads.com 风格
+// 筛选抽�?- Nomads.com 风格
 class _FilterDrawer extends StatelessWidget {
   final DataServiceController controller;
 
@@ -1781,7 +1811,7 @@ class _FilterDrawer extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // 顶部栏
+          // 顶部�?
           Container(
             padding: const EdgeInsets.all(20),
             decoration: const BoxDecoration(
@@ -1824,14 +1854,14 @@ class _FilterDrawer extends StatelessWidget {
             ),
           ),
 
-          // 筛选选项（可滚动）
+          // 筛选选项（可滚动�?
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 地区筛选
+                  // 地区筛�?
                   _buildSectionTitle(l10n.region),
                   const SizedBox(height: 12),
                   Obx(() => Wrap(
@@ -1872,7 +1902,7 @@ class _FilterDrawer extends StatelessWidget {
 
                   const SizedBox(height: 24),
 
-                  // 价格筛选
+                  // 价格筛�?
                   _buildSectionTitle(l10n.monthlyCost),
                   const SizedBox(height: 12),
                   Obx(() => Column(
@@ -1918,7 +1948,7 @@ class _FilterDrawer extends StatelessWidget {
 
                   const SizedBox(height: 24),
 
-                  // 网速筛选
+                  // 网速筛�?
                   _buildSectionTitle(l10n.minimumInternetSpeed),
                   const SizedBox(height: 12),
                   Obx(() => Column(
@@ -1948,7 +1978,7 @@ class _FilterDrawer extends StatelessWidget {
 
                   const SizedBox(height: 24),
 
-                  // 评分筛选
+                  // 评分筛�?
                   _buildSectionTitle(l10n.minimumOverallRating),
                   const SizedBox(height: 12),
                   Obx(() => Column(
@@ -1987,7 +2017,7 @@ class _FilterDrawer extends StatelessWidget {
 
                   const SizedBox(height: 24),
 
-                  // 气候筛选
+                  // 气候筛�?
                   _buildSectionTitle(l10n.climate),
                   const SizedBox(height: 12),
                   Obx(() => Wrap(
@@ -2028,7 +2058,7 @@ class _FilterDrawer extends StatelessWidget {
 
                   const SizedBox(height: 24),
 
-                  // AQI筛选
+                  // AQI筛�?
                   _buildSectionTitle(l10n.maximumAirQualityIndex),
                   const SizedBox(height: 12),
                   Obx(() => Column(
@@ -2173,12 +2203,12 @@ class _MeetupCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 图片和类型标签 - 可点击跳转到详情页
+          // 图片和类型标�?- 可点击跳转到详情�?
           GestureDetector(
             onTap: () {
-              // 将 Map 转换为 MeetupModel
+              // �?Map 转换�?MeetupModel
               final meetupModel = _convertToMeetupModel(meetup);
-              // 跳转到 meetup 详情页
+              // 跳转�?meetup 详情�?
               Get.to(() => MeetupDetailPage(meetup: meetupModel));
             },
             child: Stack(
@@ -2224,7 +2254,7 @@ class _MeetupCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 城市和日期
+                // 城市和日�?
                 Row(
                   children: [
                     const Icon(
@@ -2325,12 +2355,12 @@ class _MeetupCard extends StatelessWidget {
 
                 const SizedBox(height: 24),
 
-                // RSVP 按钮或 Going/Join Chat 按钮
+                // RSVP 按钮�?Going/Join Chat 按钮
                 Obx(() {
                   final isRSVPed =
                       controller.rsvpedMeetups.contains(meetup['id']);
 
-                  // 如果已 RSVP，显示两个按钮
+                  // 如果�?RSVP，显示两个按�?
                   if (isRSVPed) {
                     return Row(
                       children: [
@@ -2386,7 +2416,7 @@ class _MeetupCard extends StatelessWidget {
                             height: 36,
                             child: ElevatedButton(
                               onPressed: () {
-                                // 跳转到聊天页面并加入该城市的聊天室
+                                // 跳转到聊天页面并加入该城市的聊天�?
                                 Get.toNamed(
                                   '/city-chat',
                                   arguments: {
@@ -2435,7 +2465,7 @@ class _MeetupCard extends StatelessWidget {
                     );
                   }
 
-                  // 如果未 RSVP，显示单个 RSVP 按钮
+                  // 如果�?RSVP，显示单�?RSVP 按钮
                   return SizedBox(
                     width: double.infinity,
                     height: 36,
@@ -2514,12 +2544,12 @@ class _MeetupCard extends StatelessWidget {
     return '${months[date.month - 1]} ${date.day}';
   }
 
-  // 将 Map 转换为 MeetupModel
+  // �?Map 转换�?MeetupModel
   MeetupModel _convertToMeetupModel(Map<String, dynamic> meetup) {
     final date = meetup['date'] as DateTime;
     final time = meetup['time'] as String;
 
-    // 合并日期和时间
+    // 合并日期和时�?
     final timeParts = time.split(':');
     final dateTime = DateTime(
       date.year,

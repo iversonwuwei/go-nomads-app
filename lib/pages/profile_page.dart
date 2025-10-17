@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../config/app_colors.dart';
 import '../controllers/locale_controller.dart';
 import '../controllers/user_profile_controller.dart';
+import '../controllers/user_state_controller.dart';
 import '../generated/app_localizations.dart';
 import '../models/user_model.dart';
 import '../routes/app_routes.dart';
@@ -14,9 +15,78 @@ import 'city_list_page.dart';
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
+  /// 处理退出登录
+  void _handleLogout(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    // 显示确认对话框
+    Get.dialog(
+      AlertDialog(
+        title: Text(l10n.logoutConfirmTitle),
+        content: Text(l10n.logoutConfirmMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              Get.back(); // 关闭对话框
+              _performLogout();
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFFFF4458),
+            ),
+            child: Text(l10n.logout),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 执行退出登录操作
+  void _performLogout() {
+    try {
+      print('🚪 开始执行退出登录...');
+
+      // 获取用户状态控制器
+      final userStateController = Get.find<UserStateController>();
+
+      print('   当前登录状态: ${userStateController.isLoggedIn}');
+      print('   当前用户: ${userStateController.username}');
+      print('   当前账户ID: ${userStateController.currentAccountId}');
+
+      // 清除用户状态
+      userStateController.logout();
+
+      print('✅ 用户状态已清除');
+      print('   登录状态: ${userStateController.isLoggedIn}');
+      print('   账户ID: ${userStateController.currentAccountId}');
+
+      // 显示退出成功提示
+      AppToast.success(
+        'You have been logged out successfully',
+        title: 'Logout Success',
+      );
+
+      // 延迟一小段时间让用户看到提示，然后跳转到登录页
+      Future.delayed(const Duration(milliseconds: 500), () {
+        print('🔄 跳转到登录页...');
+        Get.offAllNamed(AppRoutes.login);
+      });
+    } catch (e) {
+      print('❌ 退出登录失败: $e');
+      AppToast.error(
+        'An error occurred during logout',
+        title: 'Error',
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(UserProfileController());
+    final userStateController = Get.find<UserStateController>();
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
     final l10n = AppLocalizations.of(context)!;
@@ -78,6 +148,10 @@ class ProfilePage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Login Notice (if not logged in)
+                    if (!userStateController.isLoggedIn)
+                      _buildLoginNotice(context, isMobile),
+
                     // Profile Header
                     _buildProfileHeader(context, user, isMobile),
                     const SizedBox(height: 32),
@@ -683,8 +757,7 @@ class ProfilePage extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () {
-                  // 退出登录并跳转到登录页面
-                  Get.offAllNamed(AppRoutes.login);
+                  _handleLogout(context);
                 },
                 child: Text(l10n.logout,
                     style: const TextStyle(color: Color(0xFFFF4458))),
@@ -940,6 +1013,81 @@ class ProfilePage extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  // 登录提示卡片
+  Widget _buildLoginNotice(BuildContext context, bool isMobile) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF4E6),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFFFFB84D),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.info_outline,
+            color: Color(0xFFFF8C00),
+            size: 24,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '示例数据预览',
+                  style: TextStyle(
+                    fontSize: isMobile ? 14 : 16,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF1a1a1a),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '您当前查看的是示例用户资料。登录后可查看您的真实个人信息。',
+                  style: TextStyle(
+                    fontSize: isMobile ? 12 : 14,
+                    color: const Color(0xFF6B7280),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          TextButton(
+            onPressed: () {
+              Get.toNamed(AppRoutes.login);
+            },
+            style: TextButton.styleFrom(
+              backgroundColor: const Color(0xFFFF4458),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              '去登录',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: isMobile ? 12 : 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

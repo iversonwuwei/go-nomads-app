@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
+import '../controllers/user_state_controller.dart';
 import '../generated/app_localizations.dart';
+import '../services/database/account_dao.dart';
 import '../widgets/app_toast.dart';
 import 'main_page.dart';
 
@@ -31,16 +33,61 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
     super.dispose();
   }
 
-  void _login() {
+  void _login() async {
     if (_formKey.currentState!.validate()) {
-      // TODO: 实际的登录逻辑
-      AppToast.success(
-        'Successfully logged in to Nomads.com!',
-        title: 'Welcome Back',
-      );
+      try {
+        print('🔐 开始登录验证...');
+        print('   邮箱/用户名: ${_emailController.text.trim()}');
 
-      // 登录成功后跳转到主页
-      Get.offAllNamed('/');
+        // 获取全局控制器
+        final accountDao = Get.find<AccountDao>();
+        final userStateController = Get.find<UserStateController>();
+
+        // 验证登录信息
+        final account = await accountDao.validateLogin(
+          _emailController.text.trim(),
+          _passwordController.text,
+        );
+
+        if (account != null) {
+          // 保存用户状态
+          print('🔐 登录验证成功，准备保存用户状态...');
+          print('   账户ID: ${account['id']}');
+          print('   用户名: ${account['username']}');
+          print('   邮箱: ${account['email']}');
+
+          userStateController.login(
+            account['id'] as int,
+            account['username'] as String,
+            email: account['email'] as String?,
+          );
+
+          print('✅ 用户状态已保存到 UserStateController');
+          print('   当前登录状态: ${userStateController.isLoggedIn}');
+          print('   当前账户ID: ${userStateController.currentAccountId}');
+
+          AppToast.success(
+            'Welcome back, ${account['username']}!',
+            title: 'Login Successful',
+          );
+
+          // 登录成功后跳转到主页
+          print('🚀 准备跳转到主页...');
+          Get.offAllNamed('/');
+        } else {
+          print('❌ 登录验证失败：用户名/邮箱或密码错误');
+          AppToast.error(
+            'Invalid email/username or password',
+            title: 'Login Failed',
+          );
+        }
+      } catch (e) {
+        print('❌ 登录错误: $e');
+        AppToast.error(
+          'An error occurred. Please try again.',
+          title: 'Error',
+        );
+      }
     }
   }
 

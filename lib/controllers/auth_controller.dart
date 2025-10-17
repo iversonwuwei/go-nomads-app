@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../services/database/account_dao.dart';
 import '../widgets/app_toast.dart';
+import 'user_state_controller.dart';
 
 enum LoginType {
   phonePassword,
@@ -112,17 +114,14 @@ class AuthController extends GetxController {
     canSendCode.value = true;
   }
 
-  // 手机号验证
+  // 用户名/邮箱/手机号验证
   bool _validatePhone() {
-    final phone = phoneController.text.trim();
-    if (phone.isEmpty) {
-      AppToast.error('请输入手机号', title: '错误');
+    final input = phoneController.text.trim();
+    if (input.isEmpty) {
+      AppToast.error('请输入用户名、邮箱或手机号', title: '错误');
       return false;
     }
-    if (!RegExp(r'^1[3-9]\d{9}$').hasMatch(phone)) {
-      AppToast.error('请输入正确的手机号', title: '错误');
-      return false;
-    }
+    // 接受任何非空输入（用户名、邮箱或手机号都可以）
     return true;
   }
 
@@ -176,17 +175,47 @@ class AuthController extends GetxController {
     isLoading.value = true;
 
     try {
-      // 模拟登录请求
-      await Future.delayed(const Duration(seconds: 2));
+      // 导入必要的类
+      final accountDao = Get.find<AccountDao>();
+      final userStateController = Get.find<UserStateController>();
 
-      AppToast.success(
-        '欢迎回来！',
-        title: '登录成功',
+      // 验证登录信息
+      final account = await accountDao.validateLogin(
+        phoneController.text.trim(),
+        passwordController.text,
       );
 
-      // 跳转到主页
-      Get.offAllNamed('/');
+      if (account != null) {
+        // 保存用户状态
+        print('🔐 登录验证成功，准备保存用户状态...');
+        print('   账户ID: ${account['id']}');
+        print('   用户名: ${account['username']}');
+        print('   邮箱: ${account['email']}');
+
+        userStateController.login(
+          account['id'] as int,
+          account['username'] as String,
+          email: account['email'] as String?,
+        );
+
+        print('✅ 用户状态已保存到 UserStateController');
+        print('   当前登录状态: ${userStateController.isLoggedIn}');
+        print('   当前账户ID: ${userStateController.currentAccountId}');
+
+        AppToast.success(
+          '欢迎回来！',
+          title: '登录成功',
+        );
+
+        // 跳转到主页
+        print('🚀 准备跳转到主页...');
+        Get.offAllNamed('/');
+      } else {
+        print('❌ 登录验证失败：用户名/邮箱或密码错误');
+        AppToast.error('手机号或密码错误', title: '登录失败');
+      }
     } catch (e) {
+      print('登录错误: $e');
       AppToast.error('请检查网络连接后重试', title: '登录失败');
     } finally {
       isLoading.value = false;
@@ -303,11 +332,9 @@ class AuthController extends GetxController {
   // 表单验证器
   String? phoneValidator(String? value) {
     if (value == null || value.isEmpty) {
-      return '请输入手机号';
+      return '请输入用户名/邮箱/手机号';
     }
-    if (!RegExp(r'^1[3-9]\d{9}$').hasMatch(value)) {
-      return '请输入正确的手机号';
-    }
+    // 接受任何格式：用户名、邮箱或手机号
     return null;
   }
 

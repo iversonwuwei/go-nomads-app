@@ -2,7 +2,9 @@ import 'china_cities_generator.dart';
 import 'database/city_dao.dart';
 import 'database/hotel_data_initializer.dart';
 import 'database/meetup_dao.dart';
+import 'database/test_account_initializer.dart';
 import 'database/user_dao.dart';
+import 'database/user_profile_dao.dart';
 import 'database_service.dart';
 
 /// 数据库初始化服务
@@ -10,10 +12,12 @@ import 'database_service.dart';
 class DatabaseInitializer {
   final DatabaseService _dbService = DatabaseService();
   final HotelDataInitializer _hotelInitializer = HotelDataInitializer();
+  final TestAccountInitializer _accountInitializer = TestAccountInitializer();
   final UserDao _userDao = UserDao();
   final CityDao _cityDao = CityDao();
   final MeetupDao _meetupDao = MeetupDao();
   final ChinaCitiesGenerator _chinaGenerator = ChinaCitiesGenerator();
+  final UserProfileDao _userProfileDao = UserProfileDao();
 
   /// 初始化数据库并插入示例数据
   Future<void> initializeDatabase({bool forceReset = false}) async {
@@ -26,6 +30,12 @@ class DatabaseInitializer {
     // 确保数据库已创建(如果删除了会自动重新创建)
     await _dbService.database;
 
+    // 初始化用户资料模块表（8个独立的表）
+    // 注意：即使数据库已有数据，也需要确保用户资料表存在
+    print('👤 初始化用户资料模块表...');
+    await _userProfileDao.createUserProfileTables();
+    print('✅ 用户资料模块表创建完成');
+
     // 检查是否已有数据
     final cities = await _cityDao.getAllCities();
     if (cities.isNotEmpty && !forceReset) {
@@ -34,6 +44,9 @@ class DatabaseInitializer {
     }
 
     print('🚀 开始初始化数据库...');
+
+    // 初始化测试账户和Profile数据
+    await _accountInitializer.initializeTestAccounts();
 
     // 插入示例用户
     await _insertSampleUsers();
@@ -50,6 +63,9 @@ class DatabaseInitializer {
     // 初始化酒店示例数据
     print('🏨 开始初始化酒店数据...');
     await _hotelInitializer.initializeHotelData();
+
+    // 显示测试账户信息
+    await _accountInitializer.printAllAccounts();
 
     print('✅ 数据库初始化完成！');
   }

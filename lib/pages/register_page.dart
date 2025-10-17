@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../generated/app_localizations.dart';
+import '../services/database/account_dao.dart';
 import '../widgets/app_toast.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -21,10 +22,12 @@ class _RegisterPageState extends State<RegisterPage> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _usernameController = TextEditingController();
+  final _accountDao = AccountDao();
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _agreeToTerms = false;
+  bool _isRegistering = false;
 
   @override
   void dispose() {
@@ -35,7 +38,7 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
-  void _register() {
+  Future<void> _register() async {
     if (_formKey.currentState!.validate()) {
       if (!_agreeToTerms) {
         final l10n = AppLocalizations.of(context)!;
@@ -46,15 +49,54 @@ class _RegisterPageState extends State<RegisterPage> {
         return;
       }
 
-      // TODO: 实际的注册逻辑
-      final l10n = AppLocalizations.of(context)!;
-      AppToast.success(
-        l10n.welcomeToCommunity,
-        title: l10n.success,
-      );
+      setState(() {
+        _isRegistering = true;
+      });
 
-      // 注册成功后跳转
-      Get.offAllNamed('/main');
+      try {
+        final l10n = AppLocalizations.of(context)!;
+
+        // 调用注册方法
+        final accountId = await _accountDao.registerAccount(
+          email: _emailController.text.trim(),
+          username: _usernameController.text.trim(),
+          password: _passwordController.text,
+          name: _usernameController.text.trim(),
+        );
+
+        if (accountId != null) {
+          // 注册成功
+          AppToast.success(
+            l10n.welcomeToCommunity,
+            title: l10n.success,
+          );
+
+          // 延迟一下让用户看到成功提示
+          await Future.delayed(const Duration(milliseconds: 500));
+
+          // 注册成功后跳转到登录页面
+          Get.offAllNamed('/login');
+        } else {
+          // 注册失败（邮箱或用户名已存在）
+          AppToast.error(
+            '该邮箱或用户名已被注册，请使用其他邮箱或用户名',
+            title: '注册失败',
+          );
+        }
+      } catch (e) {
+        // 发生错误
+        AppToast.error(
+          '注册过程中发生错误，请稍后重试',
+          title: '错误',
+        );
+        print('注册错误: $e');
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isRegistering = false;
+          });
+        }
+      }
     }
   }
 
@@ -347,7 +389,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                   // 注册按钮
                   ElevatedButton(
-                    onPressed: _register,
+                    onPressed: _isRegistering ? null : _register,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: RegisterPage.nomadsRed,
                       foregroundColor: Colors.white,
@@ -356,14 +398,25 @@ class _RegisterPageState extends State<RegisterPage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       elevation: 0,
+                      disabledBackgroundColor: Colors.grey.shade400,
                     ),
-                    child: Text(
-                      l10n.joinNomads,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    child: _isRegistering
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : Text(
+                            l10n.joinNomads,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                   ),
 
                   const SizedBox(height: 24),

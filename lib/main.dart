@@ -7,8 +7,10 @@ import 'controllers/auth_controller.dart';
 import 'controllers/data_service_controller.dart';
 import 'controllers/locale_controller.dart';
 import 'controllers/shopping_controller.dart';
+import 'controllers/user_state_controller.dart';
 import 'generated/app_localizations.dart';
 import 'routes/app_routes.dart';
+import 'services/database/account_dao.dart';
 import 'services/database_initializer.dart';
 import 'services/location_service.dart';
 
@@ -33,6 +35,12 @@ void main() async {
     print('❌ 数据库初始化失败: $e');
   }
 
+  // 🔥 关键修复：在main中初始化全局控制器，避免路由跳转时被清除
+  print('🎯 初始化全局控制器...');
+  Get.put(UserStateController(), permanent: true);
+  Get.put(AccountDao(), permanent: true);
+  print('✅ 全局控制器初始化完成');
+
   runApp(const MyApp());
 }
 
@@ -41,7 +49,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 初始化全局控制器
+    // 初始化页面级控制器（全局控制器已在main()中初始化）
     Get.put(AuthController());
     Get.put(ShoppingController());
     Get.put(DataServiceController());

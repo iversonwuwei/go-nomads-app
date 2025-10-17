@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../controllers/shopping_controller.dart';
+import '../controllers/user_state_controller.dart';
 import '../generated/app_localizations.dart';
 import '../routes/app_routes.dart';
 import 'data_service_page.dart';
@@ -13,6 +14,7 @@ class MainPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ShoppingController controller = Get.put(ShoppingController());
+    final userStateController = Get.find<UserStateController>();
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
@@ -21,9 +23,16 @@ class MainPage extends StatelessWidget {
           case 0:
             return const DataServicePage();
           case 1:
-            // AI助手页面 - 直接跳转到聊天页�?
+            // AI助手页面 - 检查登录状态后跳转
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              Get.toNamed(AppRoutes.aiChat);
+              if (userStateController.isLoggedIn) {
+                // 已登录,跳转到AI聊天页面
+                Get.toNamed(AppRoutes.aiChat);
+              } else {
+                // 未登录,跳转到登录页
+                print('🔒 需要登录才能使用AI助手');
+                Get.toNamed(AppRoutes.login);
+              }
               // 重置导航栏到首页
               controller.changeTab(0);
             });
