@@ -1628,7 +1628,7 @@ class _DetailOverlay extends StatelessWidget {
                       '👍 Liked', data['liked'], const Color(0xFF4ADE80)),
                   const SizedBox(height: 6),
                   _buildMetricBar(
-                      '🛡�?Safety', data['safety'], const Color(0xFF4ADE80)),
+                      '🛡️ Safety', data['safety'], const Color(0xFF4ADE80)),
                 ],
               ),
             ),
