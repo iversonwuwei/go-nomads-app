@@ -1130,7 +1130,11 @@ class _CityDetailPageState extends State<CityDetailPage> {
   /// Coworking 标签�?
   Widget _buildCoworkingTab(CityDetailController controller) {
     final coworkingController = Get.put(CoworkingController());
-    coworkingController.filterByCity(widget.cityName);
+
+    // 延迟执行筛选,避免在 build 期间修改状态
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      coworkingController.filterByCity(widget.cityName);
+    });
 
     return Obx(() {
       if (coworkingController.isLoading.value) {

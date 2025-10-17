@@ -832,91 +832,114 @@ class _GlobalMapPageState extends State<GlobalMapPage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 标题
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
+      builder: (context) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 可滚动的地图列表区域
+          Flexible(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  const FaIcon(FontAwesomeIcons.map,
-                      color: Colors.blue, size: 20),
-                  const SizedBox(width: 12),
-                  const Text(
-                    '选择导航应用',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                  const SizedBox(height: 20),
+                  // 标题
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      children: [
+                        const FaIcon(FontAwesomeIcons.map,
+                            color: Colors.blue, size: 20),
+                        const SizedBox(width: 12),
+                        const Text(
+                          '选择导航应用',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
+                  const Divider(height: 32),
+                  // 谷歌地图
+                  ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withAlpha(25),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const FaIcon(FontAwesomeIcons.map,
+                          color: Colors.blue, size: 20),
+                    ),
+                    title: const Text('谷歌地图'),
+                    subtitle: const Text('Google Maps'),
+                    trailing:
+                        const FaIcon(FontAwesomeIcons.arrowRight, size: 16),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _openGoogleMaps(locationName, coords);
+                    },
+                  ),
+                  // 高德地图
+                  ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withAlpha(25),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const FaIcon(FontAwesomeIcons.locationDot,
+                          color: Colors.green, size: 20),
+                    ),
+                    title: const Text('高德地图'),
+                    subtitle: const Text('Amap'),
+                    trailing:
+                        const FaIcon(FontAwesomeIcons.arrowRight, size: 16),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _openAmap(locationName, coords);
+                    },
+                  ),
+                  // 百度地图
+                  ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withAlpha(25),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const FaIcon(FontAwesomeIcons.mapLocationDot,
+                          color: Colors.orange, size: 20),
+                    ),
+                    title: const Text('百度地图'),
+                    subtitle: const Text('Baidu Maps'),
+                    trailing:
+                        const FaIcon(FontAwesomeIcons.arrowRight, size: 16),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _openBaiduMaps(locationName, coords);
+                    },
+                  ),
+                  const SizedBox(height: 8),
                 ],
               ),
             ),
-            const Divider(height: 32),
-            // 谷歌地图
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.blue.withAlpha(25),
-                  borderRadius: BorderRadius.circular(8),
+          ),
+          // 固定在底部的取消按钮
+          Container(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border(
+                top: BorderSide(
+                  color: Colors.grey.withOpacity(0.2),
+                  width: 1,
                 ),
-                child: const FaIcon(FontAwesomeIcons.map,
-                    color: Colors.blue, size: 20),
               ),
-              title: const Text('谷歌地图'),
-              subtitle: const Text('Google Maps'),
-              trailing: const FaIcon(FontAwesomeIcons.arrowRight, size: 16),
-              onTap: () {
-                Navigator.pop(context);
-                _openGoogleMaps(locationName, coords);
-              },
             ),
-            // 高德地图
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.green.withAlpha(25),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const FaIcon(FontAwesomeIcons.locationDot,
-                    color: Colors.green, size: 20),
-              ),
-              title: const Text('高德地图'),
-              subtitle: const Text('Amap'),
-              trailing: const FaIcon(FontAwesomeIcons.arrowRight, size: 16),
-              onTap: () {
-                Navigator.pop(context);
-                _openAmap(locationName, coords);
-              },
-            ),
-            // 百度地图
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withAlpha(25),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const FaIcon(FontAwesomeIcons.mapLocationDot,
-                    color: Colors.orange, size: 20),
-              ),
-              title: const Text('百度地图'),
-              subtitle: const Text('Baidu Maps'),
-              trailing: const FaIcon(FontAwesomeIcons.arrowRight, size: 16),
-              onTap: () {
-                Navigator.pop(context);
-                _openBaiduMaps(locationName, coords);
-              },
-            ),
-            const SizedBox(height: 8),
-            // 取消按钮
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: SafeArea(
+              top: false,
               child: SizedBox(
                 width: double.infinity,
                 child: OutlinedButton(
@@ -931,9 +954,8 @@ class _GlobalMapPageState extends State<GlobalMapPage> {
                 ),
               ),
             ),
-            const SizedBox(height: 10),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
