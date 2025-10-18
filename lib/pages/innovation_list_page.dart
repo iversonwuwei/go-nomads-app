@@ -17,6 +17,9 @@ class InnovationListPage extends StatefulWidget {
 }
 
 class _InnovationListPageState extends State<InnovationListPage> {
+  // 关注状态管理 - 用项目ID作为key
+  final Map<String, bool> _followedProjects = {};
+  
   // 模拟数据
   final List<InnovationProject> _projects = [
     InnovationProject(
@@ -293,18 +296,28 @@ class _InnovationListPageState extends State<InnovationListPage> {
         children: [
           // 项目封面
           if (project.imageUrl != null)
-            AspectRatio(
-              aspectRatio: 16 / 9,
-              child: Image.network(
-                project.imageUrl!,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey[300],
-                    child: const Icon(Icons.lightbulb, size: 50),
-                  );
-                },
-              ),
+            Stack(
+              children: [
+                AspectRatio(
+                  aspectRatio: 16 / 9,
+                  child: Image.network(
+                    project.imageUrl!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Colors.grey[300],
+                        child: const Icon(Icons.lightbulb, size: 50),
+                      );
+                    },
+                  ),
+                ),
+                // 关注按钮 - 右上角
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: _buildFollowButton(project.id),
+                ),
+              ],
             ),
 
           Padding(
@@ -494,5 +507,73 @@ class _InnovationListPageState extends State<InnovationListPage> {
     if (diff.inDays < 7) return l10n.daysAgo(diff.inDays);
     if (diff.inDays < 30) return l10n.weeksAgo((diff.inDays / 7).floor());
     return l10n.monthsAgo((diff.inDays / 30).floor());
+  }
+
+  /// 构建关注按钮
+  Widget _buildFollowButton(String projectId) {
+    final isFollowed = _followedProjects[projectId] ?? false;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _toggleFollow(projectId),
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: isFollowed
+                ? const Color(0xFF8B5CF6)
+                : Colors.white.withAlpha(230),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(26),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                isFollowed ? Icons.favorite : Icons.favorite_border,
+                size: 16,
+                color: isFollowed ? Colors.white : const Color(0xFF8B5CF6),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                isFollowed ? '已关注' : '关注',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: isFollowed ? Colors.white : const Color(0xFF8B5CF6),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 切换关注状态
+  void _toggleFollow(String projectId) {
+    setState(() {
+      _followedProjects[projectId] = !(_followedProjects[projectId] ?? false);
+    });
+
+    // 显示提示
+    final isFollowed = _followedProjects[projectId] ?? false;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(isFollowed ? '已关注该项目' : '已取消关注'),
+        duration: const Duration(seconds: 1),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        backgroundColor:
+            isFollowed ? const Color(0xFF10B981) : Colors.grey[700],
+      ),
+    );
   }
 }

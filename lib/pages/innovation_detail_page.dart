@@ -8,10 +8,41 @@ import 'direct_chat_page.dart';
 
 /// Innovation Project Detail Page
 /// 创意项目详情页面
-class InnovationDetailPage extends StatelessWidget {
+class InnovationDetailPage extends StatefulWidget {
   final InnovationProject project;
 
   const InnovationDetailPage({super.key, required this.project});
+
+  @override
+  State<InnovationDetailPage> createState() => _InnovationDetailPageState();
+}
+
+class _InnovationDetailPageState extends State<InnovationDetailPage> {
+  // 关注状态
+  bool _isFollowed = false;
+
+  /// 切换关注状态
+  void _toggleFollow() {
+    setState(() {
+      _isFollowed = !_isFollowed;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          _isFollowed ? '已关注项目' : '已取消关注',
+          style: const TextStyle(fontSize: 15),
+        ),
+        backgroundColor:
+            _isFollowed ? const Color(0xFF8B5CF6) : Colors.grey[700],
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +65,7 @@ class InnovationDetailPage extends StatelessWidget {
             ),
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
-                project.projectName,
+                widget.project.projectName,
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -47,12 +78,12 @@ class InnovationDetailPage extends StatelessWidget {
                   ],
                 ),
               ),
-              background: project.imageUrl != null
+              background: widget.project.imageUrl != null
                   ? Stack(
                       fit: StackFit.expand,
                       children: [
                         Image.network(
-                          project.imageUrl!,
+                          widget.project.imageUrl!,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
                             return Container(
@@ -99,7 +130,7 @@ class InnovationDetailPage extends StatelessWidget {
                 _buildSection(
                   icon: Icons.rocket_launch,
                   title: l10n.elevatorPitch,
-                  content: project.elevatorPitch,
+                  content: widget.project.elevatorPitch,
                   color: const Color(0xFF8B5CF6),
                 ),
 
@@ -109,7 +140,7 @@ class InnovationDetailPage extends StatelessWidget {
                 _buildSection(
                   icon: Icons.error_outline,
                   title: l10n.problem,
-                  content: project.problem,
+                  content: widget.project.problem,
                   color: const Color(0xFFEF4444),
                 ),
 
@@ -119,7 +150,7 @@ class InnovationDetailPage extends StatelessWidget {
                 _buildSection(
                   icon: Icons.lightbulb_outline,
                   title: l10n.solution,
-                  content: project.solution,
+                  content: widget.project.solution,
                   color: const Color(0xFF10B981),
                 ),
 
@@ -129,7 +160,7 @@ class InnovationDetailPage extends StatelessWidget {
                 _buildSection(
                   icon: Icons.people_outline,
                   title: l10n.targetAudience,
-                  content: project.targetAudience,
+                  content: widget.project.targetAudience,
                   color: const Color(0xFF3B82F6),
                 ),
 
@@ -139,7 +170,7 @@ class InnovationDetailPage extends StatelessWidget {
                 _buildSection(
                   icon: Icons.devices,
                   title: l10n.productType,
-                  content: project.productType,
+                  content: widget.project.productType,
                   color: const Color(0xFFF59E0B),
                 ),
 
@@ -149,7 +180,7 @@ class InnovationDetailPage extends StatelessWidget {
                 _buildListSection(
                   icon: Icons.star_outline,
                   title: l10n.keyFeatures,
-                  items: project.keyFeatures,
+                  items: widget.project.keyFeatures,
                   color: const Color(0xFF8B5CF6),
                 ),
 
@@ -159,7 +190,7 @@ class InnovationDetailPage extends StatelessWidget {
                 _buildSection(
                   icon: Icons.trending_up,
                   title: l10n.competitiveAdvantage,
-                  content: project.competitiveAdvantage,
+                  content: widget.project.competitiveAdvantage,
                   color: const Color(0xFF6366F1),
                 ),
 
@@ -169,7 +200,7 @@ class InnovationDetailPage extends StatelessWidget {
                 _buildSection(
                   icon: Icons.attach_money,
                   title: l10n.businessModel,
-                  content: project.businessModel,
+                  content: widget.project.businessModel,
                   color: const Color(0xFF10B981),
                 ),
 
@@ -179,7 +210,7 @@ class InnovationDetailPage extends StatelessWidget {
                 _buildSection(
                   icon: Icons.analytics_outlined,
                   title: l10n.marketOpportunity,
-                  content: project.marketOpportunity,
+                  content: widget.project.marketOpportunity,
                   color: const Color(0xFF3B82F6),
                 ),
 
@@ -189,7 +220,7 @@ class InnovationDetailPage extends StatelessWidget {
                 _buildSection(
                   icon: Icons.timeline,
                   title: l10n.currentStatus,
-                  content: project.currentStatus,
+                  content: widget.project.currentStatus,
                   color: const Color(0xFFF59E0B),
                 ),
 
@@ -199,7 +230,7 @@ class InnovationDetailPage extends StatelessWidget {
                 _buildTeamSection(
                   icon: Icons.groups,
                   title: l10n.team,
-                  team: project.team,
+                  team: widget.project.team,
                   color: const Color(0xFF8B5CF6),
                 ),
 
@@ -209,7 +240,7 @@ class InnovationDetailPage extends StatelessWidget {
                 _buildSection(
                   icon: Icons.handshake_outlined,
                   title: l10n.ask,
-                  content: project.ask,
+                  content: widget.project.ask,
                   color: const Color(0xFFEF4444),
                 ),
 
@@ -228,7 +259,7 @@ class InnovationDetailPage extends StatelessWidget {
                         radius: 24,
                         backgroundColor: const Color(0xFF8B5CF6),
                         child: Text(
-                          project.creatorName.substring(0, 1),
+                          widget.project.creatorName.substring(0, 1),
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 20,
@@ -242,7 +273,7 @@ class InnovationDetailPage extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              project.creatorName,
+                              widget.project.creatorName,
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -251,7 +282,7 @@ class InnovationDetailPage extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '${l10n.createdAt} ${_formatDate(project.createdAt)}',
+                              '${l10n.createdAt} ${_formatDate(widget.project.createdAt)}',
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.grey[600],
@@ -294,25 +325,66 @@ class InnovationDetailPage extends StatelessWidget {
         ],
       ),
       child: SafeArea(
-        child: ElevatedButton.icon(
-          onPressed: () => _contactCreator(context),
-          icon: const Icon(Icons.chat_bubble_outline, size: 20),
-          label: Text(
-            l10n.message,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
+        child: Row(
+          children: [
+            // 关注按钮
+            Expanded(
+              flex: 1,
+              child: OutlinedButton.icon(
+                onPressed: _toggleFollow,
+                icon: Icon(
+                  _isFollowed ? Icons.favorite : Icons.favorite_border,
+                  size: 20,
+                ),
+                label: Text(
+                  _isFollowed ? '已关注' : '关注',
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor:
+                      _isFollowed ? const Color(0xFF8B5CF6) : Colors.grey[700],
+                  side: BorderSide(
+                    color: _isFollowed
+                        ? const Color(0xFF8B5CF6)
+                        : Colors.grey[300]!,
+                    width: 1.5,
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
             ),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF8B5CF6),
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+            const SizedBox(width: 12),
+            // 联系按钮
+            Expanded(
+              flex: 2,
+              child: ElevatedButton.icon(
+                onPressed: () => _contactCreator(context),
+                icon: const Icon(Icons.chat_bubble_outline, size: 20),
+                label: Text(
+                  l10n.message,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF8B5CF6),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 0,
+                ),
+              ),
             ),
-            elevation: 0,
-          ),
+          ],
         ),
       ),
     );
@@ -322,9 +394,9 @@ class InnovationDetailPage extends StatelessWidget {
   void _contactCreator(BuildContext context) {
     // 创建发布者的 UserModel 对象
     final creatorUser = UserModel(
-      id: project.creatorId,
-      name: project.creatorName,
-      username: project.creatorName.toLowerCase().replaceAll(' ', '_'),
+      id: widget.project.creatorId,
+      name: widget.project.creatorName,
+      username: widget.project.creatorName.toLowerCase().replaceAll(' ', '_'),
       avatarUrl: null, // 可以从项目中获取,如果有的话
       stats: TravelStats(
         countriesVisited: 0,
