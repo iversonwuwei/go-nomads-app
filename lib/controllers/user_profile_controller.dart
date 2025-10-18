@@ -253,4 +253,54 @@ class UserProfileController extends GetxController {
       );
     }
   }
+
+  // 添加兴趣爱好
+  void addInterest(String interest) {
+    if (currentUser.value != null &&
+        !currentUser.value!.interests.contains(interest)) {
+      final updatedInterests = [...currentUser.value!.interests, interest];
+      currentUser.value = UserModel(
+        id: currentUser.value!.id,
+        name: currentUser.value!.name,
+        username: currentUser.value!.username,
+        bio: currentUser.value!.bio,
+        avatarUrl: currentUser.value!.avatarUrl,
+        currentCity: currentUser.value!.currentCity,
+        currentCountry: currentUser.value!.currentCountry,
+        skills: currentUser.value!.skills,
+        interests: updatedInterests,
+        socialLinks: currentUser.value!.socialLinks,
+        badges: currentUser.value!.badges,
+        stats: currentUser.value!.stats,
+        travelHistory: currentUser.value!.travelHistory,
+        joinedDate: currentUser.value!.joinedDate,
+        isVerified: currentUser.value!.isVerified,
+      );
+    }
+  }
+
+  // 移除兴趣爱好
+  void removeInterest(String interest) {
+    if (currentUser.value != null) {
+      final updatedInterests =
+          currentUser.value!.interests.where((i) => i != interest).toList();
+      currentUser.value = UserModel(
+        id: currentUser.value!.id,
+        name: currentUser.value!.name,
+        username: currentUser.value!.username,
+        bio: currentUser.value!.bio,
+        avatarUrl: currentUser.value!.avatarUrl,
+        currentCity: currentUser.value!.currentCity,
+        currentCountry: currentUser.value!.currentCountry,
+        skills: currentUser.value!.skills,
+        interests: updatedInterests,
+        socialLinks: currentUser.value!.socialLinks,
+        badges: currentUser.value!.badges,
+        stats: currentUser.value!.stats,
+        travelHistory: currentUser.value!.travelHistory,
+        joinedDate: currentUser.value!.joinedDate,
+        isVerified: currentUser.value!.isVerified,
+      );
+    }
+  }
 }

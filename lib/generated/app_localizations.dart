@@ -902,6 +902,42 @@ abstract class AppLocalizations {
   /// **'资料编辑功能即将推出'**
   String get profileEditingComingSoon;
 
+  /// No description provided for @editModeEnabled.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑模式已启用，您可以添加或删除技能和兴趣爱好'**
+  String get editModeEnabled;
+
+  /// No description provided for @editModeSaved.
+  ///
+  /// In zh, this message translates to:
+  /// **'更改已保存'**
+  String get editModeSaved;
+
+  /// No description provided for @addSkill.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加技能'**
+  String get addSkill;
+
+  /// No description provided for @addInterest.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加兴趣'**
+  String get addInterest;
+
+  /// No description provided for @enterSkillName.
+  ///
+  /// In zh, this message translates to:
+  /// **'输入技能名称'**
+  String get enterSkillName;
+
+  /// No description provided for @enterInterestName.
+  ///
+  /// In zh, this message translates to:
+  /// **'输入兴趣名称'**
+  String get enterInterestName;
+
   /// No description provided for @myTravelPlans.
   ///
   /// In zh, this message translates to:

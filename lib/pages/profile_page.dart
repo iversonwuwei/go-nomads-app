@@ -2,6 +2,7 @@ import 'package:flutter/material.dart' hide Badge;
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
+import '../config/profile_presets.dart';
 import '../controllers/locale_controller.dart';
 import '../controllers/user_profile_controller.dart';
 import '../controllers/user_state_controller.dart';
@@ -128,10 +129,17 @@ class ProfilePage extends StatelessWidget {
                   ),
                   onPressed: () {
                     controller.toggleEditMode();
-                    AppToast.info(
-                      l10n.profileEditingComingSoon,
-                      title: l10n.editProfile,
-                    );
+                    if (controller.isEditMode.value) {
+                      AppToast.info(
+                        l10n.editModeEnabled,
+                        title: l10n.editProfile,
+                      );
+                    } else {
+                      AppToast.success(
+                        l10n.editModeSaved,
+                        title: l10n.editProfile,
+                      );
+                    }
                   },
                 ),
                 const SizedBox(width: 8),
@@ -477,14 +485,31 @@ class ProfilePage extends StatelessWidget {
   Widget _buildSkillsAndInterests(BuildContext context, UserModel user,
       UserProfileController controller, bool isMobile) {
     final l10n = AppLocalizations.of(context)!;
+    final isEditMode = controller.isEditMode.value;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(l10n.skills,
-            style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1a1a1a))),
+        // Skills Section
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(l10n.skills,
+                style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1a1a1a))),
+            if (isEditMode)
+              TextButton.icon(
+                onPressed: () => _showAddSkillDialog(context, controller),
+                icon: const Icon(Icons.add_circle_outline, size: 20),
+                label: Text(l10n.addSkill),
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFFFF4458),
+                ),
+              ),
+          ],
+        ),
         const SizedBox(height: 12),
         Wrap(
           spacing: 8,
@@ -498,22 +523,54 @@ class ProfilePage extends StatelessWidget {
                 border: Border.all(
                     color: const Color(0xFFFF4458).withValues(alpha: 0.3)),
               ),
-              child: Text(
-                skill,
-                style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFFFF4458)),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    skill,
+                    style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFFFF4458)),
+                  ),
+                  if (isEditMode) ...[
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () => controller.removeSkill(skill),
+                      child: const Icon(
+                        Icons.close,
+                        size: 16,
+                        color: Color(0xFFFF4458),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             );
           }).toList(),
         ),
         const SizedBox(height: 24),
-        Text(l10n.interests,
-            style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1a1a1a))),
+
+        // Interests Section
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(l10n.interests,
+                style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1a1a1a))),
+            if (isEditMode)
+              TextButton.icon(
+                onPressed: () => _showAddInterestDialog(context, controller),
+                icon: const Icon(Icons.add_circle_outline, size: 20),
+                label: Text(l10n.addInterest),
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFF374151),
+                ),
+              ),
+          ],
+        ),
         const SizedBox(height: 12),
         Wrap(
           spacing: 8,
@@ -526,17 +583,63 @@ class ProfilePage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: const Color(0xFFE5E7EB)),
               ),
-              child: Text(
-                interest,
-                style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF374151)),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    interest,
+                    style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF374151)),
+                  ),
+                  if (isEditMode) ...[
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () => controller.removeInterest(interest),
+                      child: const Icon(
+                        Icons.close,
+                        size: 16,
+                        color: Color(0xFF374151),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             );
           }).toList(),
         ),
       ],
+    );
+  }
+
+  // Show Add Skill Dialog with Presets
+  void _showAddSkillDialog(
+      BuildContext context, UserProfileController controller) {
+    final l10n = AppLocalizations.of(context)!;
+
+    Get.bottomSheet(
+      _SkillSelectorSheet(
+        controller: controller,
+        l10n: l10n,
+      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+    );
+  }
+
+  // Show Add Interest Dialog with Presets
+  void _showAddInterestDialog(
+      BuildContext context, UserProfileController controller) {
+    final l10n = AppLocalizations.of(context)!;
+
+    Get.bottomSheet(
+      _InterestSelectorSheet(
+        controller: controller,
+        l10n: l10n,
+      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
     );
   }
 
@@ -1088,6 +1191,500 @@ class ProfilePage extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// 技能选择器底部弹窗
+class _SkillSelectorSheet extends StatefulWidget {
+  final UserProfileController controller;
+  final AppLocalizations l10n;
+
+  const _SkillSelectorSheet({
+    required this.controller,
+    required this.l10n,
+  });
+
+  @override
+  State<_SkillSelectorSheet> createState() => _SkillSelectorSheetState();
+}
+
+class _SkillSelectorSheetState extends State<_SkillSelectorSheet> {
+  final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _customController = TextEditingController();
+  String _searchQuery = '';
+  bool _showCustomInput = false;
+
+  List<String> get _availableSkills {
+    final currentSkills = widget.controller.currentUser.value?.skills ?? [];
+    final allSkills = ProfilePresets.skills;
+
+    // 过滤掉已经添加的技能
+    var filtered =
+        allSkills.where((skill) => !currentSkills.contains(skill)).toList();
+
+    // 如果有搜索词，进一步过滤
+    if (_searchQuery.isNotEmpty) {
+      filtered = filtered
+          .where((skill) =>
+              skill.toLowerCase().contains(_searchQuery.toLowerCase()))
+          .toList();
+    }
+
+    return filtered;
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _customController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.75,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: Colors.grey.shade200),
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.l10n.addSkill,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Get.back(),
+                ),
+              ],
+            ),
+          ),
+
+          // Search Bar
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: '搜索技能...',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          setState(() {
+                            _searchController.clear();
+                            _searchQuery = '';
+                          });
+                        },
+                      )
+                    : null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                });
+              },
+            ),
+          ),
+
+          // Custom Input Toggle
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        _showCustomInput = !_showCustomInput;
+                      });
+                    },
+                    icon: Icon(_showCustomInput ? Icons.grid_view : Icons.edit),
+                    label: Text(_showCustomInput ? '选择预设' : '自定义输入'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFFF4458),
+                      side: const BorderSide(color: Color(0xFFFF4458)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Content
+          Expanded(
+            child: _showCustomInput ? _buildCustomInput() : _buildPresetList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCustomInput() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          TextField(
+            controller: _customController,
+            decoration: InputDecoration(
+              hintText: widget.l10n.enterSkillName,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              contentPadding: const EdgeInsets.all(16),
+            ),
+            textCapitalization: TextCapitalization.words,
+            autofocus: true,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+              if (_customController.text.trim().isNotEmpty) {
+                widget.controller.addSkill(_customController.text.trim());
+                Get.back();
+                AppToast.success('已添加：${_customController.text.trim()}');
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFF4458),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(widget.l10n.add),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPresetList() {
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: _availableSkills.map((skill) {
+            return InkWell(
+              onTap: () {
+                widget.controller.addSkill(skill);
+                Get.back();
+                AppToast.success('已添加：$skill');
+              },
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF4458).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: const Color(0xFFFF4458).withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      skill,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFFFF4458),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(
+                      Icons.add_circle_outline,
+                      size: 18,
+                      color: Color(0xFFFF4458),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 80),
+      ],
+    );
+  }
+}
+
+// 兴趣选择器底部弹窗
+class _InterestSelectorSheet extends StatefulWidget {
+  final UserProfileController controller;
+  final AppLocalizations l10n;
+
+  const _InterestSelectorSheet({
+    required this.controller,
+    required this.l10n,
+  });
+
+  @override
+  State<_InterestSelectorSheet> createState() => _InterestSelectorSheetState();
+}
+
+class _InterestSelectorSheetState extends State<_InterestSelectorSheet> {
+  final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _customController = TextEditingController();
+  String _searchQuery = '';
+  bool _showCustomInput = false;
+
+  List<String> get _availableInterests {
+    final currentInterests =
+        widget.controller.currentUser.value?.interests ?? [];
+    final allInterests = ProfilePresets.interests;
+
+    // 过滤掉已经添加的兴趣
+    var filtered = allInterests
+        .where((interest) => !currentInterests.contains(interest))
+        .toList();
+
+    // 如果有搜索词，进一步过滤
+    if (_searchQuery.isNotEmpty) {
+      filtered = filtered
+          .where((interest) =>
+              interest.toLowerCase().contains(_searchQuery.toLowerCase()))
+          .toList();
+    }
+
+    return filtered;
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _customController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.75,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: Colors.grey.shade200),
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.l10n.addInterest,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Get.back(),
+                ),
+              ],
+            ),
+          ),
+
+          // Search Bar
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: '搜索兴趣...',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          setState(() {
+                            _searchController.clear();
+                            _searchQuery = '';
+                          });
+                        },
+                      )
+                    : null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                });
+              },
+            ),
+          ),
+
+          // Custom Input Toggle
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        _showCustomInput = !_showCustomInput;
+                      });
+                    },
+                    icon: Icon(_showCustomInput ? Icons.grid_view : Icons.edit),
+                    label: Text(_showCustomInput ? '选择预设' : '自定义输入'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF374151),
+                      side: const BorderSide(color: Color(0xFF374151)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Content
+          Expanded(
+            child: _showCustomInput ? _buildCustomInput() : _buildPresetList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCustomInput() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          TextField(
+            controller: _customController,
+            decoration: InputDecoration(
+              hintText: widget.l10n.enterInterestName,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              contentPadding: const EdgeInsets.all(16),
+            ),
+            textCapitalization: TextCapitalization.words,
+            autofocus: true,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+              if (_customController.text.trim().isNotEmpty) {
+                widget.controller.addInterest(_customController.text.trim());
+                Get.back();
+                AppToast.success('已添加：${_customController.text.trim()}');
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF374151),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(widget.l10n.add),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPresetList() {
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: _availableInterests.map((interest) {
+            return InkWell(
+              onTap: () {
+                widget.controller.addInterest(interest);
+                Get.back();
+                AppToast.success('已添加：$interest');
+              },
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF3F4F6),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFFE5E7EB)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      interest,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF374151),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(
+                      Icons.add_circle_outline,
+                      size: 18,
+                      color: Color(0xFF374151),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 80),
+      ],
     );
   }
 }

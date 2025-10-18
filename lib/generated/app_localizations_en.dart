@@ -411,6 +411,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileEditingComingSoon => 'Profile editing coming soon';
 
   @override
+  String get editModeEnabled =>
+      'Edit mode enabled. You can now add or remove skills and interests';
+
+  @override
+  String get editModeSaved => 'Changes saved';
+
+  @override
+  String get addSkill => 'Add Skill';
+
+  @override
+  String get addInterest => 'Add Interest';
+
+  @override
+  String get enterSkillName => 'Enter skill name';
+
+  @override
+  String get enterInterestName => 'Enter interest name';
+
+  @override
   String get myTravelPlans => 'My Travel Plans';
 
   @override

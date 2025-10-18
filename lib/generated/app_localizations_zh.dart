@@ -411,6 +411,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get profileEditingComingSoon => '资料编辑功能即将推出';
 
   @override
+  String get editModeEnabled => '编辑模式已启用，您可以添加或删除技能和兴趣爱好';
+
+  @override
+  String get editModeSaved => '更改已保存';
+
+  @override
+  String get addSkill => '添加技能';
+
+  @override
+  String get addInterest => '添加兴趣';
+
+  @override
+  String get enterSkillName => '输入技能名称';
+
+  @override
+  String get enterInterestName => '输入兴趣名称';
+
+  @override
   String get myTravelPlans => '我的旅行计划';
 
   @override
