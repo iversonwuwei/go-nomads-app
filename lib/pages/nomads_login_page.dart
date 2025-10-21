@@ -96,20 +96,6 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: NomadsLoginPage.nomadsRed,
-          ),
-          onPressed: () {
-            // 跳转到主页面 (Home tab)
-            Get.off(() => const MainPage());
-          },
-        ),
-      ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -119,7 +105,21 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 40),
+                  // 返回按钮
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.arrow_back,
+                        color: NomadsLoginPage.nomadsRed,
+                      ),
+                      onPressed: () {
+                        // 跳转到主页面 (Home tab)
+                        Get.off(() => const MainPage());
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 20),
 
                   // Logo 和标题
                   Center(
@@ -392,20 +392,21 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          l10n.register,
-                          style: const TextStyle(
+                        const Text(
+                          "Let's Go",
+                          style: TextStyle(
                             color: Colors.black87,
                             fontSize: 15,
                           ),
                         ),
+                        const SizedBox(width: 8),
                         GestureDetector(
                           onTap: () {
                             Get.toNamed('/register');
                           },
-                          child: Text(
-                            l10n.register,
-                            style: const TextStyle(
+                          child: const Text(
+                            "Register",
+                            style: TextStyle(
                               color: NomadsLoginPage.nomadsRed,
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
