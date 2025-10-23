@@ -10,6 +10,7 @@ import 'controllers/shopping_controller.dart';
 import 'controllers/user_state_controller.dart';
 import 'generated/app_localizations.dart';
 import 'routes/app_routes.dart';
+import 'services/app_init_service.dart';
 import 'services/database/account_dao.dart';
 import 'services/database_initializer.dart';
 import 'services/location_service.dart';
@@ -27,9 +28,9 @@ void main() async {
   print('💾 初始化 SQLite 数据库...');
   try {
     final dbInitializer = DatabaseInitializer();
-    // 强制重新生成数据（包含8个原始城市 + 50个中国城市）
-    // 完成后请改回 forceReset: false
-    await dbInitializer.initializeDatabase(forceReset: true);
+    // forceReset: false - 不删除数据库，保留登录状态和用户数据
+    // forceReset: true - 仅在需要重置所有数据时使用
+    await dbInitializer.initializeDatabase(forceReset: false);
     print('✅ 数据库初始化成功');
   } catch (e) {
     print('❌ 数据库初始化失败: $e');
@@ -40,6 +41,11 @@ void main() async {
   Get.put(UserStateController(), permanent: true);
   Get.put(AccountDao(), permanent: true);
   print('✅ 全局控制器初始化完成');
+
+  // 🔑 初始化应用，从 SQLite 恢复登录状态
+  print('🔑 开始恢复登录状态...');
+  await AppInitService().initialize();
+  print('✅ 登录状态恢复完成');
 
   runApp(const MyApp());
 }

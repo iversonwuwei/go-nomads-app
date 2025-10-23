@@ -4,9 +4,9 @@ import 'package:get/get.dart';
 import '../config/app_colors.dart';
 import '../controllers/user_state_controller.dart';
 import '../generated/app_localizations.dart';
-import '../services/database/account_dao.dart';
+import '../services/http_service.dart';
+import '../services/nomads_auth_service.dart';
 import '../widgets/app_toast.dart';
-import 'main_page.dart';
 
 class NomadsLoginPage extends StatefulWidget {
   const NomadsLoginPage({super.key});
@@ -35,39 +35,59 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
 
   void _login() async {
     if (_formKey.currentState!.validate()) {
+      // 显示加载指示器
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(
+            color: NomadsLoginPage.nomadsRed,
+          ),
+        ),
+      );
+
       try {
         print('🔐 开始登录验证...');
-        print('   邮箱/用户名: ${_emailController.text.trim()}');
+        print('   邮箱: ${_emailController.text.trim()}');
 
-        // 获取全局控制器
-        final accountDao = Get.find<AccountDao>();
-        final userStateController = Get.find<UserStateController>();
-
-        // 验证登录信息
-        final account = await accountDao.validateLogin(
-          _emailController.text.trim(),
-          _passwordController.text,
+        // 调用后端登录接口
+        final nomadsAuthService = NomadsAuthService();
+        final loginResponse = await nomadsAuthService.login(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
         );
 
-        if (account != null) {
-          // 保存用户状态
-          print('🔐 登录验证成功，准备保存用户状态...');
-          print('   账户ID: ${account['id']}');
-          print('   用户名: ${account['username']}');
-          print('   邮箱: ${account['email']}');
+        // 关闭加载指示器
+        if (mounted) {
+          Navigator.pop(context);
+        }
 
-          userStateController.login(
-            account['id'] as int,
-            account['username'] as String,
-            email: account['email'] as String?,
-          );
+        if (loginResponse.success && loginResponse.data != null) {
+          // 登录成功
+          final user = loginResponse.data!.user;
 
-          print('✅ 用户状态已保存到 UserStateController');
-          print('   当前登录状态: ${userStateController.isLoggedIn}');
-          print('   当前账户ID: ${userStateController.currentAccountId}');
+          print('🎉 登录成功！');
+          print('   用户ID: ${user.id}');
+          print('   用户名: ${user.name}');
+          print('   邮箱: ${user.email}');
+
+          // 保存用户状态到全局控制器
+          try {
+            final userStateController = Get.find<UserStateController>();
+            // 注意：后端返回的是 String ID，需要转换或修改控制器
+            // 这里暂时使用 hashCode 作为临时方案
+            userStateController.login(
+              user.id.hashCode,
+              user.name,
+              email: user.email,
+            );
+            print('✅ 用户状态已保存');
+          } catch (e) {
+            print('⚠️ 保存用户状态失败: $e');
+          }
 
           AppToast.success(
-            'Welcome back, ${account['username']}!',
+            'Welcome back, ${user.name}!',
             title: 'Login Successful',
           );
 
@@ -75,13 +95,30 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
           print('🚀 准备跳转到主页...');
           Get.offAllNamed('/');
         } else {
-          print('❌ 登录验证失败：用户名/邮箱或密码错误');
+          // 登录失败
+          print('❌ 登录失败: ${loginResponse.message}');
           AppToast.error(
-            'Invalid email/username or password',
+            loginResponse.message,
             title: 'Login Failed',
           );
         }
+      } on HttpException catch (e) {
+        // 关闭加载指示器
+        if (mounted) {
+          Navigator.pop(context);
+        }
+
+        print('❌ HTTP 错误: ${e.message}');
+        AppToast.error(
+          e.message,
+          title: 'Network Error',
+        );
       } catch (e) {
+        // 关闭加载指示器
+        if (mounted) {
+          Navigator.pop(context);
+        }
+        
         print('❌ 登录错误: $e');
         AppToast.error(
           'An error occurred. Please try again.',
@@ -114,8 +151,8 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                         color: NomadsLoginPage.nomadsRed,
                       ),
                       onPressed: () {
-                        // 跳转到主页面 (Home tab)
-                        Get.off(() => const MainPage());
+                        // 返回到主页
+                        Get.back();
                       },
                     ),
                   ),

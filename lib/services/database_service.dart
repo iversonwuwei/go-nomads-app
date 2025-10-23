@@ -30,7 +30,7 @@ class DatabaseService {
     // 打开数据库,如果不存在则创建
     return await openDatabase(
       path,
-      version: 3, // 升级到版本3 - 添加酒店相关表
+      version: 5, // 升级到版本5 - tokens 表添加用户信息字段
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -303,6 +303,22 @@ class DatabaseService {
       )
     ''');
 
+    // Token 认证表
+    await db.execute('''
+      CREATE TABLE tokens (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT NOT NULL,
+        access_token TEXT NOT NULL,
+        refresh_token TEXT NOT NULL,
+        token_type TEXT NOT NULL,
+        expires_in INTEGER NOT NULL,
+        user_name TEXT,
+        user_email TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      )
+    ''');
+
     // 创建索引以提高查询性能
     await db.execute('CREATE INDEX idx_users_phone ON users(phone)');
     await db.execute('CREATE INDEX idx_cities_name ON cities(name)');
@@ -312,6 +328,7 @@ class DatabaseService {
         'CREATE INDEX idx_reviews_target ON reviews(target_type, target_id)');
     await db.execute('CREATE INDEX idx_chat_room ON chat_messages(room_id)');
     await db.execute('CREATE INDEX idx_favorites_user ON favorites(user_id)');
+    await db.execute('CREATE INDEX idx_tokens_user ON tokens(user_id)');
 
     print('Database created successfully');
   }
@@ -433,6 +450,59 @@ class DatabaseService {
         print('✅ 酒店相关表创建完成');
       } catch (e) {
         print('⚠️ 创建酒店表时出错: $e');
+      }
+    }
+
+    if (oldVersion < 4 && newVersion >= 4) {
+      // 版本 3 -> 4: 添加 tokens 表
+      try {
+        print('🔑 开始添加 tokens 表...');
+
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS tokens (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT NOT NULL,
+            access_token TEXT NOT NULL,
+            refresh_token TEXT NOT NULL,
+            token_type TEXT NOT NULL,
+            expires_in INTEGER NOT NULL,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+          )
+        ''');
+
+        await db.execute(
+            'CREATE INDEX IF NOT EXISTS idx_tokens_user ON tokens(user_id)');
+
+        print('✅ tokens 表创建完成');
+      } catch (e) {
+        print('⚠️ 创建 tokens 表时出错: $e');
+      }
+    }
+
+    if (oldVersion < 5 && newVersion >= 5) {
+      // 版本 4 -> 5: 为 tokens 表添加用户信息字段
+      try {
+        print('🔑 开始为 tokens 表添加用户信息字段...');
+
+        // 检查字段是否已存在
+        final result = await db.rawQuery("PRAGMA table_info(tokens)");
+        final hasUserName = result.any((col) => col['name'] == 'user_name');
+        final hasUserEmail = result.any((col) => col['name'] == 'user_email');
+
+        if (!hasUserName) {
+          await db.execute('ALTER TABLE tokens ADD COLUMN user_name TEXT');
+          print('✅ 添加 user_name 字段');
+        }
+
+        if (!hasUserEmail) {
+          await db.execute('ALTER TABLE tokens ADD COLUMN user_email TEXT');
+          print('✅ 添加 user_email 字段');
+        }
+
+        print('✅ tokens 表字段升级完成');
+      } catch (e) {
+        print('⚠️ 升级 tokens 表时出错: $e');
       }
     }
   }

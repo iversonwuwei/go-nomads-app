@@ -40,18 +40,22 @@ class AppRoutes {
     GetPage(
       name: home,
       page: () => const MainPage(),
+      // 首页不需要登录
     ),
     GetPage(
       name: second,
       page: () => const SecondPage(),
+      middlewares: [AuthMiddleware()], // 需要登录
     ),
     GetPage(
       name: login,
       page: () => const NomadsLoginPage(),
+      // 登录页不需要认证
     ),
     GetPage(
       name: register,
       page: () => const RegisterPage(),
+      // 注册页不需要认证
     ),
     GetPage(
       name: aiChat,
@@ -61,7 +65,7 @@ class AppRoutes {
     GetPage(
       name: snakeGame,
       page: () => const SnakeGamePage(),
-      // 游戏不需要登录
+      middlewares: [AuthMiddleware()], // 需要登录
     ),
     GetPage(
       name: apiMarketplace,
@@ -112,10 +116,12 @@ class AppRoutes {
     GetPage(
       name: locationDemo,
       page: () => const LocationDemoPage(),
+      middlewares: [AuthMiddleware()], // 需要登录
     ),
     GetPage(
       name: languageSettings,
       page: () => const LanguageSettingsPage(),
+      middlewares: [AuthMiddleware()], // 需要登录
     ),
   ];
 }
