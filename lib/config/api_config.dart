@@ -19,10 +19,10 @@ class ApiConfig {
   static const String refreshTokenKey = 'refresh_token';
   
   // API 端点
-  static const String loginEndpoint = '/Users/login';
+  static const String loginEndpoint = '/auth/login';
   static const String registerEndpoint = '/auth/register';
   static const String logoutEndpoint = '/auth/logout';
-  static const String refreshTokenEndpoint = '/Users/refresh';
+  static const String refreshTokenEndpoint = '/auth/refresh';
   
   // 首页相关
   static const String homeDataEndpoint = '/home/data';
