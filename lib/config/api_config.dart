@@ -49,6 +49,11 @@ class ApiConfig {
   static const String meetupDetailEndpoint = '/meetups/{id}';
   static const String meetupJoinEndpoint = '/meetups/{id}/join';
   
+  // Events 相关 (新的后端服务)
+  static const String eventsEndpoint = '/api/v1/Events';
+  static const String eventDetailEndpoint = '/api/v1/Events/{id}';
+  static const String eventJoinEndpoint = '/api/v1/Events/{id}/join';
+  
   // 聊天相关
   static const String chatsEndpoint = '/chats';
   static const String messagesEndpoint = '/chats/{chatId}/messages';

@@ -307,7 +307,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
     );
   }
 
-  void _createMeetup() {
+  void _createMeetup() async {
     if (_formKey.currentState!.validate()) {
       if (_selectedCity == null ||
           _selectedDate == null ||
@@ -324,7 +324,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
       final timeString =
           '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}';
 
-      controller.createMeetup(
+      await controller.createMeetup(
         title: _titleController.text,
         type: _typeController.text,
         city: _selectedCity!,
@@ -334,6 +334,14 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
         time: timeString,
         maxAttendees: _maxAttendees.toInt(),
         description: _descriptionController.text,
+        images: _selectedImages.map((image) => image.path).toList(),
+        // TODO: 如果有地址信息，可以在这里添加
+        // address: _addressController.text,
+        // TODO: 如果有GPS坐标，可以在这里添加
+        // latitude: _latitude,
+        // longitude: _longitude,
+        // TODO: 如果有标签，可以在这里添加
+        // tags: _selectedTags,
       );
 
       Get.back();

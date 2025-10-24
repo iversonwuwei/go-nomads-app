@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 
 import '../services/data/city_data_service.dart';
 import '../services/data/meetup_data_service.dart';
+import '../services/events_api_service.dart';
 import '../widgets/app_toast.dart';
 
 class DataServiceController extends GetxController {
@@ -831,67 +832,214 @@ class DataServiceController extends GetxController {
     required int maxAttendees,
     required String description,
     String? imageUrl,
+    List<String>? images,
+    String? address,
+    double? latitude,
+    double? longitude,
+    List<String>? tags,
   }) async {
     try {
-      // 获取城市ID
-      final cityId = await _getCityIdByName(city);
-      if (cityId == null) {
-        AppToast.error('City not found in database');
-        return;
-      }
-
-      // 准备数据库数据
-      final meetupData = {
+      // 首先尝试使用新的 Events API
+      await _createMeetupViaAPI({
         'title': title,
-        'description': description,
-        'city_id': cityId,
-        'location': venue,
-        'start_time': date.toIso8601String(),
-        'category': type,
-        'max_participants': maxAttendees,
-        'current_participants': 1, // 创建者自动加入
-        'image_url': imageUrl ??
-            'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400',
-        'status': 'upcoming',
-        'organizer_id': 1, // TODO: 从当前用户获取
-      };
-
-      // 保存到数据库
-      final newId = await _meetupService.createMeetup(meetupData);
-
-      // 更新内存中的列表
-      final newMeetup = {
-        'id': newId,
         'city': city,
         'country': country,
         'type': type,
-        'title': title,
         'venue': venue,
         'date': date,
         'time': time,
-        'attendees': 1, // 创建者自动加入
         'maxAttendees': maxAttendees,
-        'organizer': 'You', // 在实际应用中从用户资料获取
-        'organizerAvatar': 'https://i.pravatar.cc/150?img=68',
-        'image': imageUrl ??
-            'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400',
         'description': description,
-      };
+        'imageUrl': imageUrl,
+        'images': images,
+        'address': address,
+        'latitude': latitude,
+        'longitude': longitude,
+        'tags': tags,
+      });
+    } catch (apiError) {
+      print('⚠️ Events API failed, falling back to local storage: $apiError');
 
-      meetups.add(newMeetup);
-      meetups.refresh();
+      // 如果 API 失败，回退到本地数据库存储
+      await _createMeetupLocally({
+        'title': title,
+        'city': city,
+        'country': country,
+        'type': type,
+        'venue': venue,
+        'date': date,
+        'time': time,
+        'maxAttendees': maxAttendees,
+        'description': description,
+        'imageUrl': imageUrl,
+      });
+    }
+  }
 
-      // 自动 RSVP
-      rsvpedMeetups.add(newId);
+  /// 通过 Events API 创建活动
+  Future<void> _createMeetupViaAPI(Map<String, dynamic> params) async {
+    // 获取 Events API 服务
+    final eventsApiService = _getEventsApiService();
 
-      Get.back(); // 关闭对话框
-      AppToast.success(
-        'Your meetup "$title" has been created successfully',
-        title: 'Meetup Created!',
-      );
-    } catch (e) {
-      print('Error creating meetup: $e');
-      AppToast.error('Failed to create meetup: $e');
+    // 转换数据格式
+    final eventData = _convertToEventData(params);
+
+    // 调用 API
+    final response = await eventsApiService.createEvent(eventData);
+
+    // 更新内存中的列表
+    final newMeetup = {
+      'id': response['id'],
+      'city': params['city'],
+      'country': params['country'],
+      'type': params['type'],
+      'title': params['title'],
+      'venue': params['venue'],
+      'date': params['date'],
+      'time': params['time'],
+      'attendees': 1, // 创建者自动加入
+      'maxAttendees': params['maxAttendees'],
+      'organizer': 'You',
+      'organizerAvatar': 'https://i.pravatar.cc/150?img=68',
+      'image': params['imageUrl'] ??
+          'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400',
+      'description': params['description'],
+    };
+
+    meetups.add(newMeetup);
+    meetups.refresh();
+
+    // 自动 RSVP (如果需要的话)
+    final eventId = response['id'];
+    if (eventId != null) {
+      rsvpedMeetups.add(eventId is String
+          ? int.tryParse(eventId) ?? eventId.hashCode
+          : eventId);
+    }
+
+    AppToast.success(
+      'Your meetup "${params['title']}" has been created successfully',
+      title: 'Meetup Created!',
+    );
+  }
+
+  /// 通过本地数据库创建活动（回退方案）
+  Future<void> _createMeetupLocally(Map<String, dynamic> params) async {
+    // 获取城市ID
+    final cityId = await _getCityIdByName(params['city']);
+    if (cityId == null) {
+      AppToast.error('City not found in database');
+      return;
+    }
+
+    // 准备数据库数据
+    final meetupData = {
+      'title': params['title'],
+      'description': params['description'],
+      'city_id': cityId,
+      'location': params['venue'],
+      'start_time': (params['date'] as DateTime).toIso8601String(),
+      'category': params['type'],
+      'max_participants': params['maxAttendees'],
+      'current_participants': 1, // 创建者自动加入
+      'image_url': params['imageUrl'] ??
+          'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400',
+      'status': 'upcoming',
+      'organizer_id': 1, // TODO: 从当前用户获取
+    };
+
+    // 保存到数据库
+    final newId = await _meetupService.createMeetup(meetupData);
+
+    // 更新内存中的列表
+    final newMeetup = {
+      'id': newId,
+      'city': params['city'],
+      'country': params['country'],
+      'type': params['type'],
+      'title': params['title'],
+      'venue': params['venue'],
+      'date': params['date'],
+      'time': params['time'],
+      'attendees': 1, // 创建者自动加入
+      'maxAttendees': params['maxAttendees'],
+      'organizer': 'You', // 在实际应用中从用户资料获取
+      'organizerAvatar': 'https://i.pravatar.cc/150?img=68',
+      'image': params['imageUrl'] ??
+          'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400',
+      'description': params['description'],
+    };
+
+    meetups.add(newMeetup);
+    meetups.refresh();
+
+    // 自动 RSVP
+    rsvpedMeetups.add(newId);
+
+    AppToast.success(
+      'Your meetup "${params['title']}" has been created successfully (saved locally)',
+      title: 'Meetup Created!',
+    );
+  }
+
+  /// 获取 Events API 服务实例
+  EventsApiService _getEventsApiService() {
+    return EventsApiService();
+  }
+
+  /// 转换数据格式为 Events API 格式
+  Map<String, dynamic> _convertToEventData(Map<String, dynamic> params) {
+    // 组合日期和时间为完整的 DateTime
+    final time = params['time'] as String;
+    final date = params['date'] as DateTime;
+    final timeParts = time.split(':');
+    final startDateTime = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      int.parse(timeParts[0]),
+      int.parse(timeParts[1]),
+    );
+
+    return {
+      'title': params['title'],
+      'description': (params['description'] as String).isNotEmpty
+          ? params['description']
+          : null,
+      'cityId': null, // TODO: 需要根据城市名称获取ID或者后端支持城市名称
+      'location': params['venue'],
+      'address': params['address'],
+      'imageUrl': params['imageUrl'],
+      'images': params['images'] ?? [],
+      'category': _mapTypeToCategory(params['type']),
+      'startTime': startDateTime.toIso8601String(),
+      'endTime': null, // 可以根据需要添加结束时间
+      'maxParticipants': params['maxAttendees'],
+      'locationType': 'physical', // 默认为实体活动
+      'meetingLink': null, // 如果是线上活动可以添加
+      'latitude': params['latitude'],
+      'longitude': params['longitude'],
+      'tags': params['tags'] ?? [],
+    };
+  }
+
+  /// 将前端的 type 映射到后端的 category
+  String _mapTypeToCategory(String type) {
+    switch (type.toLowerCase()) {
+      case 'drinks':
+        return 'social';
+      case 'coworking':
+        return 'business';
+      case 'dinner':
+        return 'social';
+      case 'activity':
+        return 'other';
+      case 'workshop':
+        return 'tech';
+      case 'networking':
+        return 'business';
+      default:
+        return 'other';
     }
   }
 
