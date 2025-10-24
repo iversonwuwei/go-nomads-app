@@ -2,16 +2,22 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
 import '../config/api_config.dart';
+import '../models/api_response_meta.dart';
 
 /// HTTP 服务类
 /// 基于 Dio 封装的 HTTP 请求服务
 class HttpService {
   static final HttpService _instance = HttpService._internal();
   factory HttpService() => _instance;
-  
+
   late Dio _dio;
   String? _authToken;
-  
+
+  static const String apiResponseMetaKey = '__apiResponseMeta';
+  static const String apiResponseRawKey = '__apiResponseRaw';
+  static const String disableApiResponseUnwrapKey =
+      '__disableApiResponseUnwrap';
+
   HttpService._internal() {
     _dio = Dio(
       BaseOptions(
@@ -25,10 +31,10 @@ class HttpService {
         },
       ),
     );
-    
+
     _setupInterceptors();
   }
-  
+
   /// 设置拦截器
   void _setupInterceptors() {
     // 请求拦截器
@@ -39,7 +45,7 @@ class HttpService {
           if (_authToken != null && _authToken!.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $_authToken';
           }
-          
+
           // 打印请求日志 (仅开发环境)
           if (kDebugMode) {
             print('🚀 REQUEST[${options.method}] => ${options.uri}');
@@ -51,28 +57,82 @@ class HttpService {
               print('Query: ${options.queryParameters}');
             }
           }
-          
+
           return handler.next(options);
         },
         onResponse: (response, handler) {
           // 打印响应日志 (仅开发环境)
           if (kDebugMode) {
-            print('✅ RESPONSE[${response.statusCode}] => ${response.requestOptions.uri}');
+            print(
+                '✅ RESPONSE[${response.statusCode}] => ${response.requestOptions.uri}');
             print('Data: ${response.data}');
           }
-          
+
+          final disableUnwrap =
+              response.requestOptions.extra[disableApiResponseUnwrapKey] ==
+                  true;
+          if (!disableUnwrap) {
+            final envelope = _unwrapApiResponse(response);
+
+            if (envelope != null) {
+              if (envelope.meta.success) {
+                response.data = envelope.data;
+              } else {
+                return handler.reject(
+                  DioException(
+                    requestOptions: response.requestOptions,
+                    response: response,
+                    type: DioExceptionType.badResponse,
+                    error: HttpException(
+                      envelope.meta.message.isNotEmpty
+                          ? envelope.meta.message
+                          : _handleStatusCode(response.statusCode),
+                      response.statusCode,
+                      envelope.meta.errors.isEmpty
+                          ? null
+                          : envelope.meta.errors,
+                    ),
+                  ),
+                );
+              }
+            }
+          }
+
           return handler.next(response);
         },
         onError: (error, handler) async {
           // 打印错误日志
           if (kDebugMode) {
-            print('❌ ERROR[${error.response?.statusCode}] => ${error.requestOptions.uri}');
+            print(
+                '❌ ERROR[${error.response?.statusCode}] => ${error.requestOptions.uri}');
             print('Message: ${error.message}');
             if (error.response?.data != null) {
               print('Response: ${error.response?.data}');
             }
           }
-          
+
+          final response = error.response;
+          if (response != null) {
+            final envelope = _unwrapApiResponse(response);
+            if (envelope != null) {
+              return handler.reject(
+                DioException(
+                  requestOptions: error.requestOptions,
+                  response: response,
+                  type: error.type,
+                  error: HttpException(
+                    envelope.meta.message.isNotEmpty
+                        ? envelope.meta.message
+                        : _handleStatusCode(response.statusCode),
+                    response.statusCode,
+                    envelope.meta.errors.isEmpty ? null : envelope.meta.errors,
+                  ),
+                  stackTrace: error.stackTrace,
+                ),
+              );
+            }
+          }
+
           // 401 未授权 - token 过期或无效
           if (error.response?.statusCode == 401) {
             // TODO: 实现 token 刷新逻辑
@@ -81,31 +141,31 @@ class HttpService {
               print('⚠️ 401 Unauthorized - Token may be expired');
             }
           }
-          
+
           return handler.next(error);
         },
       ),
     );
   }
-  
+
   /// 设置认证 Token
   void setAuthToken(String? token) {
     _authToken = token;
   }
-  
+
   /// 获取当前 Token
   String? get authToken => _authToken;
-  
+
   /// 清除 Token
   void clearAuthToken() {
     _authToken = null;
   }
-  
+
   /// 更新基础 URL
   void updateBaseUrl(String baseUrl) {
     _dio.options.baseUrl = baseUrl;
   }
-  
+
   /// GET 请求
   Future<Response<T>> get<T>(
     String path, {
@@ -126,7 +186,7 @@ class HttpService {
       throw _handleError(e);
     }
   }
-  
+
   /// POST 请求
   Future<Response<T>> post<T>(
     String path, {
@@ -151,7 +211,7 @@ class HttpService {
       throw _handleError(e);
     }
   }
-  
+
   /// PUT 请求
   Future<Response<T>> put<T>(
     String path, {
@@ -176,7 +236,7 @@ class HttpService {
       throw _handleError(e);
     }
   }
-  
+
   /// DELETE 请求
   Future<Response<T>> delete<T>(
     String path, {
@@ -197,7 +257,7 @@ class HttpService {
       throw _handleError(e);
     }
   }
-  
+
   /// PATCH 请求
   Future<Response<T>> patch<T>(
     String path, {
@@ -222,7 +282,7 @@ class HttpService {
       throw _handleError(e);
     }
   }
-  
+
   /// 下载文件
   Future<Response> download(
     String urlPath,
@@ -249,7 +309,7 @@ class HttpService {
       throw _handleError(e);
     }
   }
-  
+
   /// 上传文件
   Future<Response<T>> upload<T>(
     String path,
@@ -270,11 +330,15 @@ class HttpService {
       throw _handleError(e);
     }
   }
-  
+
   /// 统一错误处理
   Exception _handleError(DioException error) {
+    if (error.error is HttpException) {
+      return error.error as HttpException;
+    }
+
     String errorMessage;
-    
+
     switch (error.type) {
       case DioExceptionType.connectionTimeout:
         errorMessage = '连接超时，请检查网络设置';
@@ -301,10 +365,10 @@ class HttpService {
       default:
         errorMessage = '网络请求失败';
     }
-    
+
     return HttpException(errorMessage, error.response?.statusCode);
   }
-  
+
   /// 处理 HTTP 状态码
   String _handleStatusCode(int? statusCode) {
     switch (statusCode) {
@@ -338,14 +402,77 @@ class HttpService {
 class HttpException implements Exception {
   final String message;
   final int? statusCode;
-  
-  HttpException(this.message, [this.statusCode]);
-  
+  final List<String> errors;
+
+  HttpException(this.message, [this.statusCode, List<String>? errors])
+      : errors = errors ?? const [];
+
+  bool get hasErrors => errors.isNotEmpty;
+
   @override
   String toString() {
+    final buffer = StringBuffer('HttpException: $message');
     if (statusCode != null) {
-      return 'HttpException: $message (Status Code: $statusCode)';
+      buffer.write(' (Status Code: $statusCode)');
     }
-    return 'HttpException: $message';
+    if (errors.isNotEmpty) {
+      buffer.write(' Errors: ${errors.join(', ')}');
+    }
+    return buffer.toString();
   }
+}
+
+class _ApiResponseEnvelope {
+  _ApiResponseEnvelope(this.meta, this.data);
+
+  final ApiResponseMeta meta;
+  final dynamic data;
+}
+
+_ApiResponseEnvelope? _unwrapApiResponse(Response response) {
+  final body = response.data;
+
+  if (body is! Map<String, dynamic>) {
+    return null;
+  }
+
+  final success = body['success'];
+  if (success is! bool) {
+    return null;
+  }
+
+  final message = body['message']?.toString() ?? '';
+  final rawErrors = body['errors'];
+  final errors = <String>[];
+
+  if (rawErrors is Iterable) {
+    for (final item in rawErrors) {
+      if (item == null) {
+        continue;
+      }
+      errors.add(item.toString());
+    }
+  } else if (rawErrors is Map) {
+    rawErrors.forEach((key, value) {
+      if (value != null) {
+        errors.add(value.toString());
+      } else if (key != null) {
+        errors.add(key.toString());
+      }
+    });
+  }
+
+  final meta = ApiResponseMeta(
+    success: success,
+    message: message,
+    errors: errors,
+    statusCode: response.statusCode,
+  );
+
+  response.extra[HttpService.apiResponseMetaKey] = meta;
+  response.extra[HttpService.apiResponseRawKey] = body;
+
+  final data = body.containsKey('data') ? body['data'] : null;
+
+  return _ApiResponseEnvelope(meta, data);
 }
