@@ -11,7 +11,7 @@ class LoginDebugHelper {
 
   /// 打印当前登录状态的详细信息
   static Future<void> printLoginStatus() async {
-    print('\n' + '=' * 60);
+    print('\n${'=' * 60}');
     print('🔍 登录状态调试信息');
     print('=' * 60);
 
@@ -90,8 +90,8 @@ class LoginDebugHelper {
           );
         }
       },
-      child: const Icon(Icons.bug_report),
       tooltip: '查看登录状态',
+      child: const Icon(Icons.bug_report),
     );
   }
 }
