@@ -591,6 +591,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get selectCities => '选择城市';
 
   @override
+  String get selectCountryFirst => '请先选择国家';
+
+  @override
   String get clearAll => '清空全部';
 
   @override

@@ -592,6 +592,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectCities => 'Select Cities';
 
   @override
+  String get selectCountryFirst => 'Please select a country first';
+
+  @override
   String get clearAll => 'Clear All';
 
   @override

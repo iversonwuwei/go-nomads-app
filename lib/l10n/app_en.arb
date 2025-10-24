@@ -201,6 +201,10 @@
   "startComparison": "Start Comparison",
   "selectCity": "Select City",
   "selectCities": "Select Cities",
+  "selectCountryFirst": "Please select a country first",
+  "@selectCountryFirst": {
+    "description": "Prompt shown when a user attempts to choose a city before selecting a country"
+  },
   "clearAll": "Clear All",
   "apply": "Apply",
   "reset": "Reset",

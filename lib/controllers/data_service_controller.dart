@@ -1,20 +1,29 @@
 import 'package:get/get.dart';
 
+import '../models/city_option.dart';
+import '../models/country_option.dart';
 import '../services/data/city_data_service.dart';
 import '../services/data/meetup_data_service.dart';
 import '../services/events_api_service.dart';
+import '../services/location_api_service.dart';
 import '../widgets/app_toast.dart';
 
 class DataServiceController extends GetxController {
   // 数据服务
   final CityDataService _cityService = CityDataService();
   final MeetupDataService _meetupService = MeetupDataService();
+  final LocationApiService _locationApiService = LocationApiService();
   // 响应式数据
   final RxBool isLoading = true.obs;
   final RxBool isGridView = true.obs;
   final RxString sortBy = 'popular'.obs;
   final RxString searchQuery = ''.obs;
   final RxList<Map<String, dynamic>> dataItems = <Map<String, dynamic>>[].obs;
+  final RxList<CountryOption> countries = <CountryOption>[].obs;
+  final RxMap<String, List<CityOption>> citiesByCountry =
+      <String, List<CityOption>>{}.obs;
+  final RxBool isLoadingCountries = false.obs;
+  final RxMap<String, bool> cityLoadingStates = <String, bool>{}.obs;
 
   // 用户登录状态 (模拟)
   final RxBool isLoggedIn = true.obs; // 在实际应用中，这应该从认证服务获取
@@ -63,13 +72,71 @@ class DataServiceController extends GetxController {
 
   // 可用的城市列表（从数据中提取）
   List<String> get availableCities {
+    if (countries.isNotEmpty && citiesByCountry.isNotEmpty) {
+      final remoteCities = citiesByCountry.values
+          .expand((cityList) => cityList)
+          .map((city) => city.name)
+          .where((name) => name.isNotEmpty)
+          .toSet()
+          .toList()
+        ..sort();
+
+      if (remoteCities.isNotEmpty) {
+        return remoteCities;
+      }
+    }
+
     return dataItems.map((item) => item['city'] as String).toSet().toList()
       ..sort();
   }
 
   // 可用的国家列表（从数据中提取）
   List<String> get availableCountries {
+    if (countries.isNotEmpty) {
+      final remoteCountries = countries
+          .where((country) => country.isActive)
+          .map((country) => country.name)
+          .where((name) => name.isNotEmpty)
+          .toSet()
+          .toList()
+        ..sort();
+
+      if (remoteCountries.isNotEmpty) {
+        return remoteCountries;
+      }
+    }
+
     return dataItems.map((item) => item['country'] as String).toSet().toList()
+      ..sort();
+  }
+
+  List<String> getCitiesByCountry(String country) {
+    if (country.isEmpty) {
+      return <String>[];
+    }
+
+    final matchedCountry = countries.firstWhereOrNull((item) =>
+        item.id == country ||
+        item.name == country ||
+        (item.nameZh?.isNotEmpty ?? false) && item.nameZh == country);
+
+    if (matchedCountry != null) {
+      final cachedRemoteCities = citiesByCountry[matchedCountry.id];
+      if (cachedRemoteCities != null && cachedRemoteCities.isNotEmpty) {
+        return cachedRemoteCities
+            .map((city) => city.name)
+            .where((name) => name.isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
+      }
+    }
+
+    return dataItems
+        .where((item) => (item['country'] as String?) == country)
+        .map((item) => item['city'] as String)
+        .toSet()
+        .toList()
       ..sort();
   }
 
@@ -90,6 +157,7 @@ class DataServiceController extends GetxController {
     isLoading.value = true;
 
     try {
+      await loadCountries();
       // 从数据库加载城市数据
       await _loadCitiesFromDatabase();
 
@@ -100,6 +168,75 @@ class DataServiceController extends GetxController {
       // AppToast.showError('加载数据失败: $e');
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  Future<void> loadCountries({bool forceRefresh = false}) async {
+    if (isLoadingCountries.value) {
+      return;
+    }
+
+    if (countries.isNotEmpty && !forceRefresh) {
+      return;
+    }
+
+    try {
+      isLoadingCountries.value = true;
+      final fetchedCountries = await _locationApiService.fetchCountries();
+      fetchedCountries
+          .sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+      countries.assignAll(
+        fetchedCountries.where((country) => country.isActive).toList(),
+      );
+    } catch (e) {
+      print('Error loading countries: $e');
+      AppToast.error('无法获取国家列表');
+    } finally {
+      isLoadingCountries.value = false;
+    }
+  }
+
+  Future<List<CityOption>> loadCitiesByCountry(
+    String countryId, {
+    bool forceRefresh = false,
+  }) async {
+    if (countryId.isEmpty) {
+      return <CityOption>[];
+    }
+
+    if (!forceRefresh) {
+      final cached = citiesByCountry[countryId];
+      if (cached != null && cached.isNotEmpty) {
+        return cached;
+      }
+    }
+
+    if (cityLoadingStates[countryId] == true) {
+      // Waiting for existing request to complete.
+      while (cityLoadingStates[countryId] == true) {
+        await Future.delayed(const Duration(milliseconds: 50));
+      }
+      return citiesByCountry[countryId] ?? <CityOption>[];
+    }
+
+    try {
+      cityLoadingStates[countryId] = true;
+      cityLoadingStates.refresh();
+
+      final fetchedCities =
+          await _locationApiService.fetchCitiesByCountry(countryId);
+      fetchedCities
+          .sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+      citiesByCountry[countryId] = fetchedCities;
+      citiesByCountry.refresh();
+      return fetchedCities;
+    } catch (e) {
+      print('Error loading cities for country $countryId: $e');
+      AppToast.error('无法获取城市列表');
+      return <CityOption>[];
+    } finally {
+      cityLoadingStates[countryId] = false;
+      cityLoadingStates.refresh();
     }
   }
 
@@ -831,6 +968,8 @@ class DataServiceController extends GetxController {
     required String time,
     required int maxAttendees,
     required String description,
+    String? cityId,
+    String? countryId,
     String? imageUrl,
     List<String>? images,
     String? address,
@@ -850,6 +989,8 @@ class DataServiceController extends GetxController {
         'time': time,
         'maxAttendees': maxAttendees,
         'description': description,
+        'cityId': cityId,
+        'countryId': countryId,
         'imageUrl': imageUrl,
         'images': images,
         'address': address,
@@ -871,6 +1012,8 @@ class DataServiceController extends GetxController {
         'time': time,
         'maxAttendees': maxAttendees,
         'description': description,
+        'cityId': cityId,
+        'countryId': countryId,
         'imageUrl': imageUrl,
       });
     }
@@ -899,6 +1042,8 @@ class DataServiceController extends GetxController {
       'time': params['time'],
       'attendees': 1, // 创建者自动加入
       'maxAttendees': params['maxAttendees'],
+      'cityId': params['cityId'],
+      'countryId': params['countryId'],
       'organizer': 'You',
       'organizerAvatar': 'https://i.pravatar.cc/150?img=68',
       'image': params['imageUrl'] ??
@@ -926,7 +1071,15 @@ class DataServiceController extends GetxController {
   /// 通过本地数据库创建活动（回退方案）
   Future<void> _createMeetupLocally(Map<String, dynamic> params) async {
     // 获取城市ID
-    final cityId = await _getCityIdByName(params['city']);
+    int? cityId;
+    final providedCityId = params['cityId'];
+    if (providedCityId is int) {
+      cityId = providedCityId;
+    } else if (providedCityId is String) {
+      cityId = int.tryParse(providedCityId);
+    }
+
+    cityId ??= await _getCityIdByName(params['city']);
     if (cityId == null) {
       AppToast.error('City not found in database');
       return;
@@ -963,6 +1116,8 @@ class DataServiceController extends GetxController {
       'time': params['time'],
       'attendees': 1, // 创建者自动加入
       'maxAttendees': params['maxAttendees'],
+      'cityId': params['cityId'],
+      'countryId': params['countryId'],
       'organizer': 'You', // 在实际应用中从用户资料获取
       'organizerAvatar': 'https://i.pravatar.cc/150?img=68',
       'image': params['imageUrl'] ??
@@ -1006,7 +1161,8 @@ class DataServiceController extends GetxController {
       'description': (params['description'] as String).isNotEmpty
           ? params['description']
           : null,
-      'cityId': null, // TODO: 需要根据城市名称获取ID或者后端支持城市名称
+      'cityId': params['cityId'],
+      'countryId': params['countryId'],
       'location': params['venue'],
       'address': params['address'],
       'imageUrl': params['imageUrl'],

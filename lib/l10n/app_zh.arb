@@ -201,6 +201,10 @@
   "startComparison": "开始对比",
   "selectCity": "选择城市",
   "selectCities": "选择城市",
+  "selectCountryFirst": "请先选择国家",
+  "@selectCountryFirst": {
+    "description": "在用户选择城市前提示先选择国家"
+  },
   "clearAll": "清空全部",
   "apply": "应用",
   "reset": "重置",

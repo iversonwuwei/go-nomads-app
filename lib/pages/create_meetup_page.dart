@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:add_2_calendar/add_2_calendar.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -8,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import '../config/app_colors.dart';
 import '../controllers/data_service_controller.dart';
 import '../generated/app_localizations.dart';
+import '../models/city_option.dart';
 import '../widgets/app_toast.dart';
 import 'venue_map_picker_page.dart';
 
@@ -27,15 +29,28 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
   String? _venueErrorText;
   String? _selectedCity;
   String? _selectedCountry;
+  String? _selectedCityId;
+  String? _selectedCountryId;
+  bool _isLoadingCityOptions = false;
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   double _maxAttendees = 10;
+  final GlobalKey<FormFieldState<String>> _cityFieldKey =
+      GlobalKey<FormFieldState<String>>();
+  final GlobalKey<FormFieldState<String>> _countryFieldKey =
+      GlobalKey<FormFieldState<String>>();
 
   // 图片相关
   final List<XFile> _selectedImages = [];
   final ImagePicker _imagePicker = ImagePicker();
 
   final DataServiceController controller = Get.find<DataServiceController>();
+
+  @override
+  void initState() {
+    super.initState();
+    controller.loadCountries();
+  }
 
   @override
   void dispose() {
@@ -307,6 +322,96 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
     );
   }
 
+  void _showOptionPicker({
+    required List<String> options,
+    required String title,
+    String? initialValue,
+    required ValueChanged<String> onSelected,
+  }) {
+    if (options.isEmpty) {
+      final l10n = AppLocalizations.of(context)!;
+      AppToast.info(l10n.noData, title: l10n.notice);
+      return;
+    }
+
+    var initialIndex = 0;
+    if (initialValue != null) {
+      final foundIndex = options.indexOf(initialValue);
+      if (foundIndex >= 0) {
+        initialIndex = foundIndex;
+      }
+    }
+    final controller = FixedExtentScrollController(initialItem: initialIndex);
+    var tempIndex = initialIndex;
+    final l10n = AppLocalizations.of(context)!;
+
+    showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetContext) {
+        final theme = Theme.of(sheetContext);
+        return SafeArea(
+          top: false,
+          child: SizedBox(
+            height: 280,
+            child: Column(
+              children: [
+                SizedBox(
+                  height: 52,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.of(sheetContext).pop(),
+                        child: Text(l10n.cancel),
+                      ),
+                      Text(
+                        title,
+                        style: theme.textTheme.titleMedium,
+                      ),
+                      TextButton(
+                        onPressed: () =>
+                            Navigator.of(sheetContext).pop(options[tempIndex]),
+                        child: Text(l10n.confirm),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                Expanded(
+                  child: CupertinoPicker(
+                    scrollController: controller,
+                    itemExtent: 44,
+                    onSelectedItemChanged: (index) {
+                      tempIndex = index;
+                    },
+                    children: options
+                        .map(
+                          (value) => Center(
+                            child: Text(
+                              value,
+                              style: theme.textTheme.bodyLarge,
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    ).then((selectedValue) {
+      if (selectedValue != null) {
+        onSelected(selectedValue);
+      }
+    });
+  }
+
   void _createMeetup() async {
     if (_formKey.currentState!.validate()) {
       if (_selectedCity == null ||
@@ -329,6 +434,8 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
         type: _typeController.text,
         city: _selectedCity!,
         country: _selectedCountry ?? '',
+        cityId: _selectedCityId,
+        countryId: _selectedCountryId,
         venue: _venueController.text,
         date: _selectedDate!,
         time: timeString,
@@ -614,49 +721,6 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
 
             const SizedBox(height: 20),
 
-            // City
-            Text(
-              AppLocalizations.of(context)!.city,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Obx(() => DropdownButtonFormField<String>(
-                  initialValue: _selectedCity,
-                  isExpanded: true,
-                  decoration: InputDecoration(
-                    hintText: AppLocalizations.of(context)!.selectCity,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide:
-                          const BorderSide(color: AppColors.borderLight),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                  ),
-                  items: controller.availableCities
-                      .map((city) => DropdownMenuItem(
-                            value: city,
-                            child: Text(city),
-                          ))
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedCity = value;
-                      if (value != null) {
-                        _selectedCountry = controller.getCountryByCity(value);
-                      }
-                    });
-                  },
-                )),
-
-            const SizedBox(height: 20),
-
             // Country
             Text(
               AppLocalizations.of(context)!.country,
@@ -667,33 +731,273 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
               ),
             ),
             const SizedBox(height: 8),
-            Obx(() => DropdownButtonFormField<String>(
-                  initialValue: _selectedCountry,
-                  isExpanded: true,
-                  decoration: InputDecoration(
-                    hintText: AppLocalizations.of(context)!.selectCountry,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide:
-                          const BorderSide(color: AppColors.borderLight),
+            Obx(() {
+              final countryList = controller.countries;
+              final _ = countryList.length;
+              final isLoadingCountries = controller.isLoadingCountries.value;
+              final localeCode =
+                  Localizations.localeOf(context).languageCode.toLowerCase();
+
+              final countryEntries = countryList
+                  .where((country) => country.isActive)
+                  .map((country) => MapEntry(
+                        country,
+                        country.displayName(localeCode),
+                      ))
+                  .where((entry) => entry.value.isNotEmpty)
+                  .toList()
+                ..sort((a, b) => a.value.compareTo(b.value));
+
+              final countries =
+                  countryEntries.map((entry) => entry.value).toList();
+
+              return FormField<String>(
+                key: _countryFieldKey,
+                initialValue: _selectedCountry,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return AppLocalizations.of(context)!.selectCountry;
+                  }
+                  return null;
+                },
+                builder: (field) {
+                  final displayCountry = field.value ?? _selectedCountry;
+                  return GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      final l10n = AppLocalizations.of(context)!;
+
+                      if (isLoadingCountries) {
+                        AppToast.info(l10n.loading, title: l10n.notice);
+                        return;
+                      }
+
+                      if (countries.isEmpty) {
+                        AppToast.info(l10n.noData, title: l10n.notice);
+                        controller.loadCountries(forceRefresh: true);
+                        return;
+                      }
+
+                      FocusScope.of(context).unfocus();
+                      _showOptionPicker(
+                        options: countries,
+                        title: l10n.selectCountry,
+                        initialValue: _selectedCountry,
+                        onSelected: (value) {
+                          final selectedEntry = countryEntries.firstWhereOrNull(
+                              (entry) => entry.value == value);
+                          if (selectedEntry == null) {
+                            return;
+                          }
+
+                          setState(() {
+                            _selectedCountry = value;
+                            _selectedCountryId = selectedEntry.key.id;
+                            _selectedCity = null;
+                            _selectedCityId = null;
+                          });
+                          field.didChange(value);
+
+                          final cityFieldState = _cityFieldKey.currentState;
+                          cityFieldState?.didChange(null);
+
+                          controller.loadCitiesByCountry(selectedEntry.key.id);
+                        },
+                      );
+                    },
+                    child: InputDecorator(
+                      decoration: InputDecoration(
+                        hintText: AppLocalizations.of(context)!.selectCountry,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide:
+                              const BorderSide(color: AppColors.borderLight),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        suffixIcon: isLoadingCountries
+                            ? const Padding(
+                                padding: EdgeInsets.all(8),
+                                child: SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              )
+                            : const Icon(Icons.keyboard_arrow_down),
+                        errorText: field.errorText,
+                      ),
+                      isEmpty: displayCountry == null || displayCountry.isEmpty,
+                      child: Text(
+                        displayCountry ??
+                            AppLocalizations.of(context)!.selectCountry,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: displayCountry == null ||
+                                      displayCountry.isEmpty
+                                  ? Theme.of(context).hintColor
+                                  : Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.color,
+                            ),
+                      ),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
+                  );
+                },
+              );
+            }),
+
+            const SizedBox(height: 20),
+
+            // City
+            Text(
+              AppLocalizations.of(context)!.city,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Obx(() {
+              final selectedCountryId = _selectedCountryId;
+              final cityMap = controller.citiesByCountry;
+              final _ = cityMap.length;
+              final cachedCities = selectedCountryId == null
+                  ? const <CityOption>[]
+                  : (cityMap[selectedCountryId] ?? const <CityOption>[]);
+
+              final cachedCityNames = cachedCities
+                  .map((city) => city.name)
+                  .where((name) => name.isNotEmpty)
+                  .toSet()
+                  .toList()
+                ..sort();
+
+              return FormField<String>(
+                key: _cityFieldKey,
+                initialValue: _selectedCity,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return AppLocalizations.of(context)!.selectCity;
+                  }
+                  return null;
+                },
+                builder: (field) {
+                  final displayCity = field.value ?? _selectedCity;
+                  return GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () async {
+                      final l10n = AppLocalizations.of(context)!;
+
+                      if (_selectedCountryId == null) {
+                        AppToast.info(
+                          l10n.selectCountryFirst,
+                          title: l10n.notice,
+                        );
+                        return;
+                      }
+
+                      setState(() {
+                        _isLoadingCityOptions = true;
+                      });
+
+                      try {
+                        List<String> options = List<String>.from(
+                          cachedCityNames,
+                        );
+                        List<CityOption> selectionSource = cachedCities;
+
+                        final fetchedCities = await controller
+                            .loadCitiesByCountry(_selectedCountryId!);
+                        final fetchedCityNames = fetchedCities
+                            .map((city) => city.name)
+                            .where((name) => name.isNotEmpty)
+                            .toSet()
+                            .toList()
+                          ..sort();
+
+                        if (fetchedCityNames.isNotEmpty) {
+                          options = fetchedCityNames;
+                          selectionSource = fetchedCities;
+                        }
+
+                        if (options.isEmpty) {
+                          AppToast.info(l10n.noData, title: l10n.notice);
+                          return;
+                        }
+
+                        FocusScope.of(context).unfocus();
+                        _showOptionPicker(
+                          options: options,
+                          title: l10n.selectCity,
+                          initialValue: _selectedCity,
+                          onSelected: (value) {
+                            final selectedCity = selectionSource
+                                .firstWhereOrNull((city) => city.name == value);
+
+                            setState(() {
+                              _selectedCity = value;
+                              _selectedCityId = selectedCity?.id;
+                            });
+                            field.didChange(value);
+                          },
+                        );
+                      } finally {
+                        if (mounted) {
+                          setState(() {
+                            _isLoadingCityOptions = false;
+                          });
+                        }
+                      }
+                    },
+                    child: InputDecorator(
+                      decoration: InputDecoration(
+                        hintText: AppLocalizations.of(context)!.selectCity,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide:
+                              const BorderSide(color: AppColors.borderLight),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        suffixIcon: _isLoadingCityOptions
+                            ? const Padding(
+                                padding: EdgeInsets.all(8),
+                                child: SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              )
+                            : const Icon(Icons.keyboard_arrow_down),
+                        errorText: field.errorText,
+                      ),
+                      isEmpty: displayCity == null || displayCity.isEmpty,
+                      child: Text(
+                        displayCity ?? AppLocalizations.of(context)!.selectCity,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: displayCity == null || displayCity.isEmpty
+                                  ? Theme.of(context).hintColor
+                                  : Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.color,
+                            ),
+                      ),
                     ),
-                  ),
-                  items: controller.availableCountries
-                      .map((country) => DropdownMenuItem(
-                            value: country,
-                            child: Text(country),
-                          ))
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedCountry = value;
-                    });
-                  },
-                )),
+                  );
+                },
+              );
+            }),
 
             const SizedBox(height: 20),
 

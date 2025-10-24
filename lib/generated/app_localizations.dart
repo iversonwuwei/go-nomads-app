@@ -1262,6 +1262,12 @@ abstract class AppLocalizations {
   /// **'选择城市'**
   String get selectCities;
 
+  /// 在用户选择城市前提示先选择国家
+  ///
+  /// In zh, this message translates to:
+  /// **'请先选择国家'**
+  String get selectCountryFirst;
+
   /// No description provided for @clearAll.
   ///
   /// In zh, this message translates to:
