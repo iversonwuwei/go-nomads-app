@@ -833,8 +833,9 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                       ),
                       isEmpty: displayCountry == null || displayCountry.isEmpty,
                       child: Text(
-                        displayCountry ??
-                            AppLocalizations.of(context)!.selectCountry,
+                        displayCountry ?? '',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: displayCountry == null ||
                                       displayCountry.isEmpty
@@ -983,7 +984,9 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                       ),
                       isEmpty: displayCity == null || displayCity.isEmpty,
                       child: Text(
-                        displayCity ?? AppLocalizations.of(context)!.selectCity,
+                        displayCity ?? '',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: displayCity == null || displayCity.isEmpty
                                   ? Theme.of(context).hintColor
