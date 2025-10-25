@@ -425,50 +425,54 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
         return;
       }
 
-      // 将 TimeOfDay 转换为字符串格式 "HH:mm"
-      final timeString =
-          '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}';
+      try {
+        // 将 TimeOfDay 转换为字符串格式 "HH:mm"
+        final timeString =
+            '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}';
 
-      await controller.createMeetup(
-        title: _titleController.text,
-        type: _typeController.text,
-        city: _selectedCity!,
-        country: _selectedCountry ?? '',
-        cityId: _selectedCityId,
-        countryId: _selectedCountryId,
-        venue: _venueController.text,
-        date: _selectedDate!,
-        time: timeString,
-        maxAttendees: _maxAttendees.toInt(),
-        description: _descriptionController.text,
-        images: _selectedImages.map((image) => image.path).toList(),
-        // TODO: 如果有地址信息，可以在这里添加
-        // address: _addressController.text,
-        // TODO: 如果有GPS坐标，可以在这里添加
-        // latitude: _latitude,
-        // longitude: _longitude,
-        // TODO: 如果有标签，可以在这里添加
-        // tags: _selectedTags,
-      );
+        await controller.createMeetup(
+          title: _titleController.text,
+          type: _typeController.text,
+          city: _selectedCity!,
+          country: _selectedCountry ?? '',
+          cityId: _selectedCityId,
+          countryId: _selectedCountryId,
+          venue: _venueController.text,
+          date: _selectedDate!,
+          time: timeString,
+          maxAttendees: _maxAttendees.toInt(),
+          description: _descriptionController.text,
+          images: _selectedImages.map((image) => image.path).toList(),
+          // TODO: 如果有地址信息，可以在这里添加
+          // address: _addressController.text,
+          // TODO: 如果有GPS坐标，可以在这里添加
+          // latitude: _latitude,
+          // longitude: _longitude,
+          // TODO: 如果有标签，可以在这里添加
+          // tags: _selectedTags,
+        );
 
-      Get.back();
+        // 显示成功消息
+        final l10n = AppLocalizations.of(context)!;
+        AppToast.success(
+          l10n.meetupCreatedSuccess,
+          title: l10n.success,
+        );
 
-      // 显示成功消息
-      final l10n = AppLocalizations.of(context)!;
-      AppToast.success(
-        l10n.meetupCreatedSuccess,
-        title: l10n.success,
-      );
+        // 先显示添加到日历的对话框
+        await _showAddToCalendarDialog();
 
-      // 询问是否添加到系统日历
-      Future.delayed(const Duration(milliseconds: 500), () {
-        _showAddToCalendarDialog();
-      });
+        // 对话框关闭后，返回到列表页并触发刷新
+        Get.back(result: true);
+      } catch (e) {
+        print('❌ 创建 meetup 失败: $e');
+        // 错误已经在 controller 中通过 AppToast 显示了
+      }
     }
   }
 
-  void _showAddToCalendarDialog() {
-    Get.dialog(
+  Future<void> _showAddToCalendarDialog() async {
+    return Get.dialog(
       Dialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),

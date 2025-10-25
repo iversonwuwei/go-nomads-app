@@ -7,7 +7,7 @@ import '../config/app_colors.dart';
 import '../controllers/location_controller.dart';
 import '../generated/app_localizations.dart';
 import '../models/meetup_model.dart';
-import '../services/database/meetup_dao.dart';
+import '../services/events_api_service.dart';
 import '../widgets/app_toast.dart';
 import 'meetup_detail_page.dart';
 
@@ -60,9 +60,9 @@ class _MeetupsListPageState extends State<MeetupsListPage>
 
   // 位置控制器
   final LocationController _locationController = Get.put(LocationController());
-
-  // 数据访问对象
-  final MeetupDao _meetupDao = MeetupDao();
+  
+  // Events API 服务
+  final EventsApiService _eventsApiService = EventsApiService();
 
   @override
   void initState() {
@@ -113,41 +113,91 @@ class _MeetupsListPageState extends State<MeetupsListPage>
     _isLoading.value = true;
 
     try {
-      // 从数据库加载活动数据
-      final meetupsData = await _meetupDao.getAllMeetups();
+      // 从后端API加载活动数据
+      final response = await _eventsApiService.getEvents(
+        status: 'upcoming',
+        pageSize: 100, // 获取更多数据
+      );
+
+      // HttpService 的拦截器已经解包了 API 响应
+      // response 现在直接是 data 对象: {items: [], totalCount: 3, page: 1, ...}
+      print('📦 Response data: $response');
+
+      final items = response['items'] as List<dynamic>? ?? [];
+
+      // 打印第一个活动的完整数据结构（用于调试）
+      if (items.isNotEmpty) {
+        print('🔍 第一个活动的完整数据:');
+        print(items[0]);
+      }
 
       // 转换为 MeetupModel 列表
-      _meetups.value = meetupsData.map((data) {
-        return MeetupModel(
-          id: data['id'].toString(),
-          title: data['title'] as String,
-          type: data['category'] as String? ?? 'Other',
-          description: data['description'] as String? ?? '',
-          city: '', // 需要关联查询城市表
-          country: '', // 需要关联查询国家表
-          venue: data['location'] as String? ?? '',
-          venueAddress: data['address'] as String? ?? '',
-          dateTime: DateTime.parse(data['start_time'] as String),
-          maxAttendees: data['max_participants'] as int? ?? 20,
-          currentAttendees: data['current_participants'] as int? ?? 0,
-          organizerId: data['organizer_id']?.toString() ?? '0',
-          organizerName: 'Organizer', // 需要关联查询用户表
-          organizerAvatar: 'https://i.pravatar.cc/150',
-          images: (data['image_url'] as String?)?.isNotEmpty == true
-              ? [data['image_url'] as String]
-              : [],
-          attendeeIds: [], // 需要单独查询参与者表
-          isJoined: false, // 需要查询当前用户是否已加入
-          createdAt: DateTime.parse(data['created_at'] as String),
-        );
+      _meetups.value = items.map((item) {
+        return _convertApiEventToMeetupModel(item as Map<String, dynamic>);
       }).toList();
-    } catch (e) {
-      print('Error loading meetups: $e');
-      AppToast.error('Failed to load meetups: $e');
+
+      print(
+          '✅ 从后端API加载了 ${_meetups.length} 个活动 (总数: ${response['totalCount']})');
+    } catch (e, stackTrace) {
+      print('❌ 从API加载失败: $e');
+      print('Stack trace: $stackTrace');
+      AppToast.error('加载活动失败');
       _meetups.value = [];
     } finally {
       _isLoading.value = false;
     }
+  }
+  
+  /// 将后端API的Event数据转换为MeetupModel
+  MeetupModel _convertApiEventToMeetupModel(Map<String, dynamic> event) {
+    // 解析城市信息
+    final cityData = event['city'] as Map<String, dynamic>?;
+    final cityName = cityData?['name'] as String? ?? '';
+    final country = cityData?['country'] as String? ?? '';
+
+    // 解析组织者信息
+    final organizerData = event['organizer'] as Map<String, dynamic>?;
+    final organizerName = organizerData?['name'] as String? ?? 'Unknown';
+    final organizerId = organizerData?['id']?.toString() ??
+        event['organizerId']?.toString() ??
+        '0';
+
+    // 获取 imageUrl（用于列表页的封面图）
+    final imageUrl = event['imageUrl']?.toString();
+
+    // 获取 images 数组（用于详情页的图片轮播）
+    List<String> images = [];
+    final imagesList = event['images'];
+    if (imagesList is List) {
+      images = imagesList
+          .where((img) => img != null && img.toString().isNotEmpty)
+          .map((img) => img.toString())
+          .toList();
+    }
+
+    return MeetupModel(
+      id: event['id']?.toString() ?? '',
+      title: event['title'] as String? ?? '',
+      type: event['category'] as String? ?? 'Meetup',
+      description: event['description'] as String? ?? '',
+      city: cityName,
+      country: country,
+      venue: event['location'] as String? ?? '',
+      venueAddress: event['address'] as String? ?? '',
+      dateTime: DateTime.parse(
+          event['startTime'] as String? ?? DateTime.now().toIso8601String()),
+      maxAttendees: event['maxParticipants'] as int? ?? 20,
+      currentAttendees: event['currentParticipants'] as int? ?? 0,
+      organizerId: organizerId,
+      organizerName: organizerName,
+      organizerAvatar: 'https://i.pravatar.cc/150?u=$organizerId',
+      imageUrl: imageUrl, // 封面图（列表页使用）
+      images: images, // 完整图片数组（详情页使用）
+      attendeeIds: [], // 需要单独查询
+      isJoined: event['isParticipant'] as bool? ?? false,
+      createdAt: DateTime.parse(
+          event['createdAt'] as String? ?? DateTime.now().toIso8601String()),
+    );
   }
 
   List<MeetupModel> get _filteredMeetups {
@@ -276,8 +326,13 @@ class _MeetupsListPageState extends State<MeetupsListPage>
           IconButton(
             icon: Icon(Icons.add_circle_outline,
                 color: const Color(0xFFFF4458), size: 24.sp),
-            onPressed: () {
-              Get.toNamed('/create-meetup');
+            onPressed: () async {
+              // 跳转到创建页面，等待返回结果
+              final result = await Get.toNamed('/create-meetup');
+              // 如果创建成功，刷新列表
+              if (result == true) {
+                _loadMeetups();
+              }
             },
           ),
           SizedBox(width: 8.w),
@@ -431,6 +486,10 @@ class _MeetupsListPageState extends State<MeetupsListPage>
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(
+            color: AppColors.borderLight,
+            width: 1,
+          ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),
@@ -442,26 +501,21 @@ class _MeetupsListPageState extends State<MeetupsListPage>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 图片
-            if (meetup.images.isNotEmpty)
-              ClipRRect(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
-                child: Image.network(
-                  meetup.images.first,
-                  width: double.infinity,
-                  height: 180.h,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
+            // 图片 - 列表页只使用 imageUrl，如果为空显示占位图标
+            ClipRRect(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+              child: meetup.imageUrl != null && meetup.imageUrl!.isNotEmpty
+                  ? Image.network(
+                      meetup.imageUrl!,
                       width: double.infinity,
                       height: 180.h,
-                      color: AppColors.borderLight,
-                      child: Icon(Icons.image_not_supported,
-                          size: 48.sp, color: AppColors.textTertiary),
-                    );
-                  },
-                ),
-              ),
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return _buildPlaceholderImage();
+                      },
+                    )
+                  : _buildPlaceholderImage(),
+            ),
 
             Padding(
               padding: EdgeInsets.all(16.w),
@@ -546,21 +600,46 @@ class _MeetupsListPageState extends State<MeetupsListPage>
 
   Widget _buildTypeChip(String type) {
     Color color;
+    // 根据后端返回的 category 类型设置颜色
     switch (type.toLowerCase()) {
       case 'coffee':
         color = Colors.brown;
         break;
       case 'coworking':
+      case 'business':
         color = Colors.blue;
         break;
       case 'activity':
+      case 'outdoor':
         color = Colors.green;
         break;
       case 'language':
         color = Colors.purple;
         break;
-      default:
+      case 'social':
+        color = Colors.orange;
+        break;
+      case 'tech':
+      case 'workshop':
+        color = Colors.indigo;
+        break;
+      case 'food':
+      case 'dinner':
+        color = Colors.red;
+        break;
+      case 'sports':
+        color = Colors.teal;
+        break;
+      case 'culture':
+      case 'art':
+        color = Colors.pink;
+        break;
+      case 'other':
         color = AppColors.textSecondary;
+        break;
+      default:
+        // 为其他未知类型使用紫色调
+        color = const Color(0xFF9C27B0);
     }
 
     return Container(
@@ -575,6 +654,25 @@ class _MeetupsListPageState extends State<MeetupsListPage>
           fontSize: 12.sp,
           fontWeight: FontWeight.w600,
           color: color,
+        ),
+      ),
+    );
+  }
+
+  // 占位图片 - 当 imageUrl 为空时显示
+  Widget _buildPlaceholderImage() {
+    return Container(
+      width: double.infinity,
+      height: 180.h,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+      ),
+      child: Center(
+        child: Icon(
+          Icons.event,
+          size: 64.sp,
+          color: const Color(0xFFBDBDBD),
         ),
       ),
     );
@@ -679,27 +777,49 @@ class _MeetupsListPageState extends State<MeetupsListPage>
     );
   }
 
-  void _toggleJoin(MeetupModel meetup) {
+  Future<void> _toggleJoin(MeetupModel meetup) async {
     final l10n = AppLocalizations.of(context)!;
-    final index = _meetups.indexWhere((m) => m.id == meetup.id);
-    if (index != -1) {
-      final updated = meetup.copyWith(
-        isJoined: !meetup.isJoined,
-        currentAttendees: meetup.currentAttendees + (meetup.isJoined ? -1 : 1),
-      );
-      _meetups[index] = updated;
+    
+    try {
+      // 判断是加入还是退出
+      final isJoining = !meetup.isJoined;
 
-      if (updated.isJoined) {
-        AppToast.success(
-          l10n.youHaveJoined(meetup.title),
-          title: l10n.joined,
-        );
+      // 调用 API
+      if (isJoining) {
+        await _eventsApiService.joinEvent(meetup.id);
+        print('✅ 成功加入活动: ${meetup.title}');
       } else {
-        AppToast.info(
-          l10n.youLeft(meetup.title),
-          title: l10n.leftMeetup,
-        );
+        await _eventsApiService.leaveEvent(meetup.id);
+        print('✅ 成功退出活动: ${meetup.title}');
       }
+
+      // API 调用成功后,更新本地状态
+      final index = _meetups.indexWhere((m) => m.id == meetup.id);
+      if (index != -1) {
+        final updated = meetup.copyWith(
+          isJoined: isJoining,
+          currentAttendees: meetup.currentAttendees + (isJoining ? 1 : -1),
+        );
+        _meetups[index] = updated;
+
+        // 显示成功消息
+        if (isJoining) {
+          AppToast.success(
+            l10n.youHaveJoined(meetup.title),
+            title: l10n.joined,
+          );
+        } else {
+          AppToast.info(
+            l10n.youLeft(meetup.title),
+            title: l10n.leftMeetup,
+          );
+        }
+      }
+    } catch (e) {
+      print('❌ 加入/退出活动失败: $e');
+      AppToast.error(
+        meetup.isJoined ? '退出活动失败' : '加入活动失败',
+      );
     }
   }
 

@@ -7,6 +7,7 @@ import '../config/app_colors.dart';
 import '../generated/app_localizations.dart';
 import '../models/meetup_model.dart';
 import '../models/user_model.dart';
+import '../services/events_api_service.dart';
 import '../widgets/app_toast.dart';
 import 'direct_chat_page.dart';
 
@@ -25,11 +26,102 @@ class MeetupDetailPage extends StatefulWidget {
 
 class _MeetupDetailPageState extends State<MeetupDetailPage> {
   late Rx<MeetupModel> _meetup;
+  final EventsApiService _eventsApiService = EventsApiService();
+  final RxBool _isLoading = true.obs;
+  final RxList<Map<String, dynamic>> _participants = <Map<String, dynamic>>[].obs;
 
   @override
   void initState() {
     super.initState();
     _meetup = widget.meetup.obs;
+    _loadEventDetails();
+  }
+
+  /// 从后端加载活动详情
+  Future<void> _loadEventDetails() async {
+    try {
+      _isLoading.value = true;
+
+      // 调用 API 获取详情
+      final response = await _eventsApiService.getEvent(widget.meetup.id);
+
+      // 解析响应数据
+      final eventData = response;
+
+      // 更新 meetup 数据
+      _meetup.value = _convertApiEventToMeetupModel(eventData);
+
+      // 从响应中提取参与者列表
+      final participantsList = eventData['participants'];
+      if (participantsList is List) {
+        _participants.value = List<Map<String, dynamic>>.from(
+          participantsList.map((p) => p as Map<String, dynamic>)
+        );
+        print('✅ 成功加载 ${_participants.length} 个参与者');
+      } else {
+        _participants.value = [];
+        print('⚠️ 响应中没有参与者列表数据');
+      }
+
+      print('✅ 成功加载活动详情: ${_meetup.value.title}');
+    } catch (e) {
+      print('❌ 加载活动详情失败: $e');
+      AppToast.error('加载活动详情失败');
+    } finally {
+      _isLoading.value = false;
+    }
+  }
+
+  /// 将后端API的Event数据转换为MeetupModel
+  MeetupModel _convertApiEventToMeetupModel(Map<String, dynamic> event) {
+    // 解析城市信息
+    final cityData = event['city'] as Map<String, dynamic>?;
+    final cityName = cityData?['name'] as String? ?? '';
+    final country = cityData?['country'] as String? ?? '';
+
+    // 解析组织者信息
+    final organizerData = event['organizer'] as Map<String, dynamic>?;
+    final organizerName = organizerData?['name'] as String? ?? 'Unknown';
+    final organizerId = organizerData?['id']?.toString() ??
+        event['organizerId']?.toString() ??
+        '0';
+
+    // 获取 imageUrl（用于列表页的封面图）
+    final imageUrl = event['imageUrl']?.toString();
+
+    // 获取 images 数组（用于详情页的图片轮播）
+    List<String> images = [];
+    final imagesList = event['images'];
+    if (imagesList is List) {
+      images = imagesList
+          .where((img) => img != null && img.toString().isNotEmpty)
+          .map((img) => img.toString())
+          .toList();
+    }
+
+    return MeetupModel(
+      id: event['id']?.toString() ?? widget.meetup.id,
+      title: event['title'] as String? ?? '',
+      type: event['category'] as String? ?? 'Meetup',
+      description: event['description'] as String? ?? '',
+      city: cityName,
+      country: country,
+      venue: event['location'] as String? ?? '',
+      venueAddress: event['address'] as String? ?? '',
+      dateTime: DateTime.parse(
+          event['startTime'] as String? ?? DateTime.now().toIso8601String()),
+      maxAttendees: event['maxParticipants'] as int? ?? 20,
+      currentAttendees: event['currentParticipants'] as int? ?? 0,
+      organizerId: organizerId,
+      organizerName: organizerName,
+      organizerAvatar: 'https://i.pravatar.cc/150?u=$organizerId',
+      imageUrl: imageUrl,
+      images: images,
+      attendeeIds: [],
+      isJoined: event['isParticipant'] as bool? ?? false,
+      createdAt: DateTime.parse(
+          event['createdAt'] as String? ?? DateTime.now().toIso8601String()),
+    );
   }
 
   @override
@@ -97,35 +189,49 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
 
           // 内容区域
           SliverToBoxAdapter(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 基本信息
-                _buildBasicInfo(),
+            child: Obx(() {
+              // 显示加载指示器
+              if (_isLoading.value) {
+                return Container(
+                  padding: EdgeInsets.all(40.w),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: const Color(0xFFFF4458),
+                    ),
+                  ),
+                );
+              }
 
-                SizedBox(height: 16.h),
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 基本信息
+                  _buildBasicInfo(),
 
-                // 时间地点
-                _buildTimeLocationInfo(),
+                  SizedBox(height: 16.h),
 
-                SizedBox(height: 16.h),
+                  // 时间地点
+                  _buildTimeLocationInfo(),
 
-                // 描述
-                _buildDescription(),
+                  SizedBox(height: 16.h),
 
-                SizedBox(height: 16.h),
+                  // 描述
+                  _buildDescription(),
 
-                // 组织者信息
-                _buildOrganizerInfo(),
+                  SizedBox(height: 16.h),
 
-                SizedBox(height: 16.h),
+                  // 组织者信息
+                  _buildOrganizerInfo(),
 
-                // 参与者列表
-                _buildAttendeesList(),
+                  SizedBox(height: 16.h),
 
-                SizedBox(height: 100.h),
-              ],
-            ),
+                  // 参与者列表
+                  _buildAttendeesList(),
+
+                  SizedBox(height: 100.h),
+                ],
+              );
+            }),
           ),
         ],
       ),
@@ -237,6 +343,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
   Widget _buildDescription() {
     final l10n = AppLocalizations.of(context)!;
     return Container(
+      width: double.infinity, // 占据整个屏幕宽度
       padding: EdgeInsets.all(20.w),
       color: Colors.white,
       child: Column(
@@ -372,38 +479,44 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
             ],
           ),
           SizedBox(height: 16.h),
-          if (_meetup.value.currentAttendees == 0)
-            Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 20.h),
-                child: Text(
-                  l10n.noAttendeesYet,
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    color: AppColors.textSecondary,
+          Obx(() {
+            if (_participants.isEmpty) {
+              return Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20.h),
+                  child: Text(
+                    l10n.noAttendeesYet,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ),
-              ),
-            )
-          else
-            SizedBox(
+              );
+            }
+            
+            return SizedBox(
               height: 40.h,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                itemCount: _meetup.value.currentAttendees.clamp(0, 10),
+                itemCount: _participants.length.clamp(0, 10),
                 itemBuilder: (context, index) {
+                  final participant = _participants[index];
+                  final userId = participant['userId']?.toString() ?? '';
+                  
                   return Padding(
                     padding: EdgeInsets.only(right: 12.w),
                     child: CircleAvatar(
                       radius: 20.r,
                       backgroundImage: NetworkImage(
-                        'https://i.pravatar.cc/150?img=${index + 10}',
+                        'https://i.pravatar.cc/150?u=$userId',
                       ),
                     ),
                   );
                 },
               ),
-            ),
+            );
+          }),
         ],
       ),
     );
@@ -597,24 +710,41 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     );
   }
 
-  void _toggleJoin() {
+  Future<void> _toggleJoin() async {
     final l10n = AppLocalizations.of(context)!;
-    final updated = _meetup.value.copyWith(
-      isJoined: !_meetup.value.isJoined,
-      currentAttendees:
-          _meetup.value.currentAttendees + (_meetup.value.isJoined ? -1 : 1),
-    );
-    _meetup.value = updated;
+    
+    try {
+      // 判断是加入还是退出
+      final isJoining = !_meetup.value.isJoined;
 
-    if (updated.isJoined) {
-      AppToast.success(
-        l10n.joinedSuccessfully,
-        title: l10n.joined,
-      );
-    } else {
-      AppToast.info(
-        l10n.youLeftMeetup,
-        title: l10n.leftMeetup,
+      // 调用 API
+      if (isJoining) {
+        await _eventsApiService.joinEvent(_meetup.value.id);
+        print('✅ 成功加入活动: ${_meetup.value.title}');
+      } else {
+        await _eventsApiService.leaveEvent(_meetup.value.id);
+        print('✅ 成功退出活动: ${_meetup.value.title}');
+      }
+
+      // API 调用成功后,重新加载活动详情以获取最新数据
+      await _loadEventDetails();
+
+      // 显示成功消息
+      if (isJoining) {
+        AppToast.success(
+          l10n.joinedSuccessfully,
+          title: l10n.joined,
+        );
+      } else {
+        AppToast.info(
+          l10n.youLeftMeetup,
+          title: l10n.leftMeetup,
+        );
+      }
+    } catch (e) {
+      print('❌ 加入/退出活动失败: $e');
+      AppToast.error(
+        _meetup.value.isJoined ? '退出活动失败' : '加入活动失败',
       );
     }
   }

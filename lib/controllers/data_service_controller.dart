@@ -401,388 +401,7 @@ class DataServiceController extends GetxController {
   }
 
   // 旧的生成模拟数据方法(保留以防需要)
-  void _generateMockData_deprecated() {
-    final cities = [
-      {
-        'city': 'Bangkok',
-        'country': 'Thailand',
-        'region': 'Asia', // 地区
-        'climate': 'Hot', // 气候
-        'image':
-            'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=400',
-        'temperature': 32,
-        'feelsLike': 41, // 体感温度
-        'weather': 'sunny',
-        'internet': 24,
-        'price': 1561,
-        'rank': 1,
-        'badge': 'Popular', // 徽章：Popular, Best Value, Hidden Gem等
-        'ratings': ['🔥', '🎉', '😊'],
-        'overall': 4.8, // 改为5分制评分
-        'cost': 4.9,
-        'internetScore': 3.5,
-        'liked': 4.0,
-        'safety': 4.5,
-        'aqi': 56, // 空气质量指数
-        'aqiLevel': '😷', // 空气质量等级emoji
-        'population': '10.5M',
-        'timezone': 'GMT+7',
-        'humidity': 75,
-        'about':
-            'Bangkok is a vibrant digital nomad hub with incredible food, affordable living, and a thriving expat community. Great coworking spaces and fast internet make it perfect for remote work.',
-      },
-      {
-        'city': 'Chiang Mai',
-        'country': 'Thailand',
-        'region': 'Asia',
-        'climate': 'Warm',
-        'image':
-            'https://images.unsplash.com/photo-1598970434795-0c54fe7c0648?w=400',
-        'temperature': 29,
-        'feelsLike': 35,
-        'weather': 'cloudy',
-        'internet': 20,
-        'price': 1271,
-        'rank': 2,
-        'badge': 'Best Value',
-        'ratings': ['☁️', '💪', '😊'],
-        'overall': 4.6,
-        'cost': 4.8,
-        'internetScore': 3.2,
-        'liked': 3.9,
-        'safety': 4.7,
-        'aqi': 252,
-        'aqiLevel': '😷',
-        'population': '1.2M',
-        'timezone': 'GMT+7',
-        'humidity': 68,
-        'about':
-            'Chiang Mai offers a perfect blend of affordability, nature, and digital nomad infrastructure. The Old City is filled with temples, cafes, and coworking spaces.',
-      },
-      {
-        'city': 'Canggu, Bali',
-        'country': 'Indonesia',
-        'region': 'Asia',
-        'climate': 'Hot',
-        'image':
-            'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=400',
-        'temperature': 27,
-        'feelsLike': 30,
-        'weather': 'sunny',
-        'internet': 24,
-        'price': 1896,
-        'rank': 3,
-        'badge': 'Trending',
-        'ratings': ['🌴', '😍', '☺️'],
-        'overall': 4.7,
-        'cost': 4.5,
-        'internetScore': 3.5,
-        'liked': 4.8,
-        'safety': 4.4,
-        'aqi': 177,
-        'aqiLevel': '😷',
-        'population': '50K',
-        'timezone': 'GMT+8',
-        'humidity': 82,
-        'about':
-            'Surf, work, and wellness paradise. Canggu has become the ultimate digital nomad destination with amazing beaches, healthy food, and vibrant coworking scene.',
-      },
-      {
-        'city': 'Tokyo',
-        'country': 'Japan',
-        'region': 'Asia',
-        'climate': 'Mild',
-        'image':
-            'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400',
-        'temperature': 23,
-        'feelsLike': 23,
-        'weather': 'cloudy',
-        'internet': 27,
-        'price': 3321,
-        'rank': 4,
-        'badge': '',
-        'ratings': ['🏮', '🍜', '😊'],
-        'overall': 4.2,
-        'cost': 3.0,
-        'internetScore': 4.0,
-        'liked': 4.5,
-        'safety': 5.0,
-        'aqi': 38,
-        'aqiLevel': '',
-        'population': '14M',
-        'timezone': 'GMT+9',
-        'humidity': 65,
-        'about':
-            'Ultra-modern city with incredible infrastructure, safety, and food. Expensive but worth it for the unique culture and unmatched efficiency.',
-      },
-      {
-        'city': 'Seoul',
-        'country': 'South Korea',
-        'region': 'Asia',
-        'climate': 'Cool',
-        'image':
-            'https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=400',
-        'temperature': 18,
-        'feelsLike': 19,
-        'weather': 'rainy',
-        'internet': 32,
-        'price': 2519,
-        'rank': 5,
-        'badge': '',
-        'ratings': ['🌃', '🎮', '😊'],
-        'overall': 4.0,
-        'cost': 3.8,
-        'internetScore': 4.5,
-        'liked': 4.2,
-        'safety': 4.8,
-        'aqi': 31,
-        'aqiLevel': '',
-        'population': '10M',
-        'timezone': 'GMT+9',
-        'humidity': 70,
-        'about':
-            'Tech-forward city with blazing fast internet, incredible food scene, and efficient public transport. Great for digital nomads who love urban energy.',
-      },
-      {
-        'city': 'Lisbon',
-        'country': 'Portugal',
-        'region': 'Europe',
-        'climate': 'Mild',
-        'image':
-            'https://images.unsplash.com/photo-1585208798174-6cedd86e019a?w=400',
-        'temperature': 23,
-        'feelsLike': 23,
-        'weather': 'sunny',
-        'internet': 28,
-        'price': 3857,
-        'rank': 6,
-        'badge': 'Hot Spot',
-        'ratings': ['🌉', '🍷', '😊'],
-        'overall': 4.6,
-        'cost': 3.2,
-        'internetScore': 4.0,
-        'liked': 4.7,
-        'safety': 4.5,
-        'aqi': 38,
-        'aqiLevel': '',
-        'population': '2.8M',
-        'timezone': 'GMT+1',
-        'humidity': 72,
-        'about':
-            'Beautiful coastal city with amazing weather, great food, and a booming startup scene. Perfect balance of European culture and beach lifestyle.',
-      },
-      {
-        'city': 'Mexico City',
-        'country': 'Mexico',
-        'region': 'Americas',
-        'climate': 'Mild',
-        'image':
-            'https://images.unsplash.com/photo-1518638150340-f706e86654de?w=400',
-        'temperature': 21,
-        'feelsLike': 21,
-        'weather': 'sunny',
-        'internet': 13,
-        'price': 2057,
-        'rank': 7,
-        'badge': '',
-        'ratings': ['🌮', '🎨', '☺️'],
-        'overall': 3.8,
-        'cost': 4.2,
-        'internetScore': 2.5,
-        'liked': 4.0,
-        'safety': 3.5,
-        'aqi': 55,
-        'aqiLevel': '😷',
-        'population': '9M',
-        'timezone': 'GMT-6',
-        'humidity': 58,
-        'about':
-            'Vibrant cultural capital with incredible food, art, and nightlife. Large digital nomad community and affordable living, though internet can be spotty.',
-      },
-      {
-        'city': 'Singapore',
-        'country': 'Singapore',
-        'region': 'Asia',
-        'climate': 'Hot',
-        'image':
-            'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=400',
-        'temperature': 31,
-        'feelsLike': 37,
-        'weather': 'sunny',
-        'internet': 50,
-        'price': 4520,
-        'rank': 8,
-        'badge': '',
-        'ratings': ['🏙️', '🌟', '😊'],
-        'overall': 4.3,
-        'cost': 2.5,
-        'internetScore': 5.0,
-        'liked': 4.0,
-        'safety': 5.0,
-        'aqi': 25,
-        'aqiLevel': '',
-        'population': '5.7M',
-        'timezone': 'GMT+8',
-        'humidity': 85,
-        'about':
-            'Ultra-clean, safe, and efficient city-state with world-class infrastructure. Expensive but perfect for business-minded nomads.',
-      },
-    ];
 
-    dataItems.value = cities;
-  }
-
-  // 生成 Meetup 模拟数据 - Nomads.com 风格
-  void _generateMeetupData() {
-    final now = DateTime.now();
-
-    meetups.value = [
-      {
-        'id': 1,
-        'city': 'Bangkok',
-        'country': 'Thailand',
-        'type': 'Drinks',
-        'title': 'Digital Nomad Happy Hour',
-        'venue': 'Octave Rooftop Bar',
-        'date': now.add(const Duration(days: 2)),
-        'time': '18:00',
-        'attendees': 24,
-        'maxAttendees': 30,
-        'organizer': 'Sarah Chen',
-        'organizerAvatar': 'https://i.pravatar.cc/150?img=1',
-        'image':
-            'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400',
-        'description':
-            'Join us for drinks and networking with fellow digital nomads in Bangkok!',
-      },
-      {
-        'id': 2,
-        'city': 'Chiang Mai',
-        'country': 'Thailand',
-        'type': 'Coworking',
-        'title': 'Morning Coworking Session',
-        'venue': 'Punspace Nimman',
-        'date': now.add(const Duration(days: 3)),
-        'time': '09:00',
-        'attendees': 12,
-        'maxAttendees': 20,
-        'organizer': 'Alex Wong',
-        'organizerAvatar': 'https://i.pravatar.cc/150?img=12',
-        'image':
-            'https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=400',
-        'description':
-            'Start your day with focused work alongside other remote workers.',
-      },
-      {
-        'id': 3,
-        'city': 'Canggu, Bali',
-        'country': 'Indonesia',
-        'type': 'Activity',
-        'title': 'Sunset Surf Session',
-        'venue': 'Batu Bolong Beach',
-        'date': now.add(const Duration(days: 4)),
-        'time': '16:30',
-        'attendees': 8,
-        'maxAttendees': 15,
-        'organizer': 'Mike Johnson',
-        'organizerAvatar': 'https://i.pravatar.cc/150?img=33',
-        'image':
-            'https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=400',
-        'description':
-            'Catch some waves and watch the sunset with the nomad community!',
-      },
-      {
-        'id': 4,
-        'city': 'Lisbon',
-        'country': 'Portugal',
-        'type': 'Dinner',
-        'title': 'Portuguese Food Experience',
-        'venue': 'Time Out Market',
-        'date': now.add(const Duration(days: 5)),
-        'time': '19:30',
-        'attendees': 16,
-        'maxAttendees': 20,
-        'organizer': 'Emma Silva',
-        'organizerAvatar': 'https://i.pravatar.cc/150?img=5',
-        'image':
-            'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400',
-        'description':
-            'Taste the best of Portuguese cuisine with fellow food lovers!',
-      },
-      {
-        'id': 5,
-        'city': 'Tokyo',
-        'country': 'Japan',
-        'type': 'Workshop',
-        'title': 'Japanese Language Exchange',
-        'venue': 'WeWork Shibuya',
-        'date': now.add(const Duration(days: 6)),
-        'time': '15:00',
-        'attendees': 10,
-        'maxAttendees': 15,
-        'organizer': 'Yuki Tanaka',
-        'organizerAvatar': 'https://i.pravatar.cc/150?img=47',
-        'image':
-            'https://images.unsplash.com/photo-1528164344705-47542687000d?w=400',
-        'description':
-            'Practice Japanese with locals and learn about the culture.',
-      },
-      {
-        'id': 6,
-        'city': 'Mexico City',
-        'country': 'Mexico',
-        'type': 'Networking',
-        'title': 'Startup Founders Meetup',
-        'venue': 'Curators',
-        'date': now.add(const Duration(days: 7)),
-        'time': '17:00',
-        'attendees': 20,
-        'maxAttendees': 25,
-        'organizer': 'Carlos Rodriguez',
-        'organizerAvatar': 'https://i.pravatar.cc/150?img=15',
-        'image':
-            'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400',
-        'description':
-            'Connect with startup founders and entrepreneurs in CDMX.',
-      },
-      {
-        'id': 7,
-        'city': 'Bangkok',
-        'country': 'Thailand',
-        'type': 'Activity',
-        'title': 'Temple Tour & Photography',
-        'venue': 'Wat Pho',
-        'date': now.add(const Duration(days: 8)),
-        'time': '08:00',
-        'attendees': 15,
-        'maxAttendees': 20,
-        'organizer': 'Lisa Park',
-        'organizerAvatar': 'https://i.pravatar.cc/150?img=9',
-        'image':
-            'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=400',
-        'description':
-            'Explore Bangkok\'s beautiful temples with a local photographer.',
-      },
-      {
-        'id': 8,
-        'city': 'Seoul',
-        'country': 'South Korea',
-        'type': 'Drinks',
-        'title': 'K-BBQ & Drinks Night',
-        'venue': 'Gangnam District',
-        'date': now.add(const Duration(days: 9)),
-        'time': '19:00',
-        'attendees': 18,
-        'maxAttendees': 22,
-        'organizer': 'Ji-woo Kim',
-        'organizerAvatar': 'https://i.pravatar.cc/150?img=20',
-        'image':
-            'https://images.unsplash.com/photo-1498654896293-37aacf113fd9?w=400',
-        'description':
-            'Experience authentic Korean BBQ and nightlife in Gangnam!',
-      },
-    ];
-  }
 
   // RSVP to a meetup
   void toggleRSVP(int meetupId) {
@@ -1021,120 +640,288 @@ class DataServiceController extends GetxController {
 
   /// 通过 Events API 创建活动
   Future<void> _createMeetupViaAPI(Map<String, dynamic> params) async {
-    // 获取 Events API 服务
-    final eventsApiService = _getEventsApiService();
+    try {
+      // 获取 Events API 服务
+      final eventsApiService = _getEventsApiService();
 
-    // 转换数据格式
-    final eventData = _convertToEventData(params);
+      // 确保有城市ID - 如果没有提供则尝试查找
+      String? cityId = params['cityId'];
+      if (cityId == null || cityId.isEmpty) {
+        final cityName = params['city'] as String?;
+        if (cityName != null && cityName.isNotEmpty) {
+          // 尝试从已加载的城市列表中查找
+          CityOption? matchedCity;
+          for (final cityList in citiesByCountry.values) {
+            for (final city in cityList) {
+              if (city.name.toLowerCase() == cityName.toLowerCase()) {
+                matchedCity = city;
+                break;
+              }
+            }
+            if (matchedCity != null) break;
+          }
 
-    // 调用 API
-    final response = await eventsApiService.createEvent(eventData);
+          if (matchedCity != null) {
+            cityId = matchedCity.id;
+            print('✅ 找到匹配的城市ID: $cityId for $cityName');
+          } else {
+            print('⚠️ 未找到城市 $cityName 的ID，将以null提交');
+          }
+        }
+      }
 
-    // 更新内存中的列表
-    final newMeetup = {
-      'id': response['id'],
-      'city': params['city'],
-      'country': params['country'],
-      'type': params['type'],
-      'title': params['title'],
-      'venue': params['venue'],
-      'date': params['date'],
-      'time': params['time'],
-      'attendees': 1, // 创建者自动加入
-      'maxAttendees': params['maxAttendees'],
-      'cityId': params['cityId'],
-      'countryId': params['countryId'],
-      'organizer': 'You',
-      'organizerAvatar': 'https://i.pravatar.cc/150?img=68',
-      'image': params['imageUrl'] ??
-          'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400',
-      'description': params['description'],
-    };
+      // 转换数据格式
+      final eventData = _convertToEventData(params);
+      // 更新城市ID
+      if (cityId != null && cityId.isNotEmpty) {
+        eventData['cityId'] = cityId;
+      } else {
+        eventData['cityId'] = null;
+      }
 
-    meetups.add(newMeetup);
-    meetups.refresh();
+      print('📤 正在创建活动: ${eventData['title']}');
+      print('📍 城市ID: ${eventData['cityId']}');
+      print('� 城市ID类型: ${eventData['cityId'].runtimeType}');
+      print('�📅 开始时间: ${eventData['startTime']}');
+      print('📊 完整请求数据: $eventData');
 
-    // 自动 RSVP (如果需要的话)
-    final eventId = response['id'];
-    if (eventId != null) {
-      rsvpedMeetups.add(eventId is String
-          ? int.tryParse(eventId) ?? eventId.hashCode
-          : eventId);
+      // 调用 API
+      final apiResponse = await eventsApiService.createEvent(eventData);
+
+      print('✅ Events API 响应成功');
+
+      // 从响应中提取数据
+      final responseData =
+          apiResponse['data'] as Map<String, dynamic>? ?? apiResponse;
+
+      final eventId = responseData['id'];
+      print('✅ Event ID: $eventId');
+
+      // 持久化到本地数据库以便离线访问
+      await _persistMeetupSnapshot(responseData, params);
+
+      // 更新内存中的列表
+      final newMeetup = {
+        'id': eventId,
+        'city': params['city'],
+        'country': params['country'],
+        'type': params['type'],
+        'title': params['title'],
+        'venue': params['venue'],
+        'date': params['date'],
+        'time': params['time'],
+        'attendees': responseData['currentParticipants'] ?? 1,
+        'maxAttendees': params['maxAttendees'],
+        'cityId': cityId,
+        'countryId': params['countryId'],
+        'organizer': 'You',
+        'organizerAvatar': 'https://i.pravatar.cc/150?img=68',
+        'image': responseData['imageUrl'] ??
+            params['imageUrl'] ??
+            'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400',
+        'description': params['description'],
+        'status': responseData['status'] ?? 'upcoming',
+      };
+
+      meetups.add(newMeetup);
+      meetups.refresh();
+
+      // 自动 RSVP (因为创建者自动成为参与者)
+      if (eventId != null) {
+        final eventIdInt = eventId is String
+            ? int.tryParse(eventId) ?? eventId.hashCode
+            : (eventId is int ? eventId : eventId.hashCode);
+        rsvpedMeetups.add(eventIdInt);
+      }
+
+      AppToast.success(
+        'Your meetup "${params['title']}" has been created successfully',
+        title: 'Meetup Created!',
+      );
+    } catch (e) {
+      print('❌ Events API 创建失败: $e');
+      // 重新抛出异常以便上层捕获并回退到本地存储
+      rethrow;
+    }
+  }
+
+  /// 将远程创建的 meetup 同步保存到本地数据库
+  Future<void> _persistMeetupSnapshot(
+    Map<String, dynamic> responseData,
+    Map<String, dynamic> originalParams,
+  ) async {
+    try {
+      // 获取城市ID
+      int? cityIdInt;
+      final cityId = originalParams['cityId'];
+      if (cityId is int) {
+        cityIdInt = cityId;
+      } else if (cityId is String) {
+        cityIdInt = int.tryParse(cityId);
+      }
+
+      // 如果还是没有城市ID,尝试从城市名称查找
+      cityIdInt ??= await _ensureCityIdForLocalMeetup(originalParams['city']);
+      if (cityIdInt == null) {
+        print('⚠️ 无法获取城市ID,跳过本地持久化');
+        return;
+      }
+
+      // 准备数据库数据
+      final meetupData = {
+        'title': originalParams['title'],
+        'description': originalParams['description'] ?? '',
+        'city_id': cityIdInt,
+        'location': originalParams['venue'],
+        'start_time': responseData['startTime'] ??
+            (originalParams['date'] as DateTime).toIso8601String(),
+        'category': originalParams['type'],
+        'max_participants': originalParams['maxAttendees'],
+        'current_participants': responseData['currentParticipants'] ?? 1,
+        'image_url': responseData['imageUrl'] ??
+            originalParams['imageUrl'] ??
+            'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400',
+        'status': responseData['status'] ?? 'upcoming',
+        'organizer_id': 1, // TODO: 从当前用户获取
+        'remote_id': responseData['id']?.toString(), // 保存远程ID以便后续同步
+      };
+
+      // 保存到数据库
+      await _meetupService.createMeetup(meetupData);
+      print('✅ Meetup 已同步到本地数据库');
+    } catch (e) {
+      print('⚠️ 保存到本地数据库失败,但远程创建成功: $e');
+      // 不抛出异常,因为远程创建已经成功
+    }
+  }
+
+  /// 确保本地有城市ID,如果没有则创建占位符
+  Future<int?> _ensureCityIdForLocalMeetup(String? cityName) async {
+    if (cityName == null || cityName.isEmpty) {
+      return null;
     }
 
-    AppToast.success(
-      'Your meetup "${params['title']}" has been created successfully',
-      title: 'Meetup Created!',
-    );
+    try {
+      // 先尝试从数据库查找
+      final existingCityId = await _getCityIdByName(cityName);
+      if (existingCityId != null) {
+        return existingCityId;
+      }
+
+      // 如果找不到,返回null让上层处理
+      print('⚠️ 本地数据库中未找到城市: $cityName');
+      return null;
+    } catch (e) {
+      print('❌ 查找城市ID失败: $e');
+      return null;
+    }
   }
 
   /// 通过本地数据库创建活动（回退方案）
   Future<void> _createMeetupLocally(Map<String, dynamic> params) async {
-    // 获取城市ID
-    int? cityId;
-    final providedCityId = params['cityId'];
-    if (providedCityId is int) {
-      cityId = providedCityId;
-    } else if (providedCityId is String) {
-      cityId = int.tryParse(providedCityId);
+    try {
+      // 获取城市ID
+      int? cityId;
+      final providedCityId = params['cityId'];
+      if (providedCityId is int) {
+        cityId = providedCityId;
+      } else if (providedCityId is String && providedCityId.isNotEmpty) {
+        cityId = int.tryParse(providedCityId);
+      }
+
+      // 如果没有城市ID,尝试从城市名称查找
+      cityId ??= await _ensureCityIdForLocalMeetup(params['city']);
+      if (cityId == null) {
+        AppToast.error('City not found in database. Please try again.');
+        return;
+      }
+
+      // 组合日期和时间
+      final time = params['time'] as String;
+      final date = params['date'] as DateTime;
+      final timeParts = time.split(':');
+      final startDateTime = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        int.parse(timeParts[0]),
+        int.parse(timeParts[1]),
+      );
+
+      // 处理图片
+      String mainImageUrl = params['imageUrl'] as String? ?? '';
+      if (mainImageUrl.isEmpty) {
+        final images = params['images'];
+        if (images is List && images.isNotEmpty) {
+          mainImageUrl = images.first.toString();
+        }
+      }
+      if (mainImageUrl.isEmpty) {
+        mainImageUrl =
+            'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400';
+      }
+
+      // 准备数据库数据
+      final meetupData = {
+        'title': params['title'],
+        'description': params['description'] ?? '',
+        'city_id': cityId,
+        'location': params['venue'],
+        'start_time': startDateTime.toIso8601String(),
+        'category': params['type'],
+        'max_participants': params['maxAttendees'],
+        'current_participants': 1, // 创建者自动加入
+        'image_url': mainImageUrl,
+        'status': 'upcoming',
+        'organizer_id': 1, // TODO: 从当前用户获取
+      };
+
+      print('💾 保存到本地数据库: ${meetupData['title']}');
+
+      // 保存到数据库
+      final newId = await _meetupService.createMeetup(meetupData);
+
+      print('✅ 本地数据库保存成功，ID: $newId');
+
+      // 更新内存中的列表
+      final newMeetup = {
+        'id': newId,
+        'city': params['city'],
+        'country': params['country'] ?? 'Unknown',
+        'type': params['type'],
+        'title': params['title'],
+        'venue': params['venue'],
+        'date': params['date'],
+        'time': params['time'],
+        'attendees': 1, // 创建者自动加入
+        'maxAttendees': params['maxAttendees'],
+        'cityId': params['cityId'],
+        'countryId': params['countryId'],
+        'organizer': 'You',
+        'organizerAvatar': 'https://i.pravatar.cc/150?img=68',
+        'image': mainImageUrl,
+        'description': params['description'] ?? '',
+        'status': 'upcoming',
+      };
+
+      meetups.add(newMeetup);
+      meetups.refresh();
+
+      // 自动 RSVP
+      rsvpedMeetups.add(newId);
+
+      AppToast.success(
+        'Your meetup "${params['title']}" has been created successfully (saved locally)',
+        title: 'Meetup Created!',
+      );
+    } catch (e) {
+      print('❌ 本地保存失败: $e');
+      AppToast.error(
+        'Failed to create meetup: ${e.toString()}',
+        title: 'Error',
+      );
+      rethrow;
     }
-
-    cityId ??= await _getCityIdByName(params['city']);
-    if (cityId == null) {
-      AppToast.error('City not found in database');
-      return;
-    }
-
-    // 准备数据库数据
-    final meetupData = {
-      'title': params['title'],
-      'description': params['description'],
-      'city_id': cityId,
-      'location': params['venue'],
-      'start_time': (params['date'] as DateTime).toIso8601String(),
-      'category': params['type'],
-      'max_participants': params['maxAttendees'],
-      'current_participants': 1, // 创建者自动加入
-      'image_url': params['imageUrl'] ??
-          'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400',
-      'status': 'upcoming',
-      'organizer_id': 1, // TODO: 从当前用户获取
-    };
-
-    // 保存到数据库
-    final newId = await _meetupService.createMeetup(meetupData);
-
-    // 更新内存中的列表
-    final newMeetup = {
-      'id': newId,
-      'city': params['city'],
-      'country': params['country'],
-      'type': params['type'],
-      'title': params['title'],
-      'venue': params['venue'],
-      'date': params['date'],
-      'time': params['time'],
-      'attendees': 1, // 创建者自动加入
-      'maxAttendees': params['maxAttendees'],
-      'cityId': params['cityId'],
-      'countryId': params['countryId'],
-      'organizer': 'You', // 在实际应用中从用户资料获取
-      'organizerAvatar': 'https://i.pravatar.cc/150?img=68',
-      'image': params['imageUrl'] ??
-          'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400',
-      'description': params['description'],
-    };
-
-    meetups.add(newMeetup);
-    meetups.refresh();
-
-    // 自动 RSVP
-    rsvpedMeetups.add(newId);
-
-    AppToast.success(
-      'Your meetup "${params['title']}" has been created successfully (saved locally)',
-      title: 'Meetup Created!',
-    );
   }
 
   /// 获取 Events API 服务实例
@@ -1156,27 +943,72 @@ class DataServiceController extends GetxController {
       int.parse(timeParts[1]),
     );
 
-    return {
+    // 准备图片数据
+    List<String> imagesList = [];
+    if (params['images'] != null) {
+      final images = params['images'];
+      if (images is List) {
+        imagesList = images.map((img) => img.toString()).toList();
+      }
+    }
+
+    // 第一张图片作为主图
+    String? mainImageUrl = params['imageUrl'] as String?;
+    if ((mainImageUrl == null || mainImageUrl.isEmpty) &&
+        imagesList.isNotEmpty) {
+      mainImageUrl = imagesList.first;
+    }
+
+    // 构建标准的 Events API 请求体
+    final eventData = <String, dynamic>{
       'title': params['title'],
-      'description': (params['description'] as String).isNotEmpty
+      'description': (params['description'] as String?)?.isNotEmpty == true
           ? params['description']
           : null,
-      'cityId': params['cityId'],
-      'countryId': params['countryId'],
       'location': params['venue'],
       'address': params['address'],
-      'imageUrl': params['imageUrl'],
-      'images': params['images'] ?? [],
       'category': _mapTypeToCategory(params['type']),
-      'startTime': startDateTime.toIso8601String(),
+      'startTime': startDateTime.toUtc().toIso8601String(),
       'endTime': null, // 可以根据需要添加结束时间
       'maxParticipants': params['maxAttendees'],
       'locationType': 'physical', // 默认为实体活动
-      'meetingLink': null, // 如果是线上活动可以添加
-      'latitude': params['latitude'],
-      'longitude': params['longitude'],
-      'tags': params['tags'] ?? [],
+      'meetingLink': null,
     };
+
+    // 只在有值时添加可选字段
+    final cityIdValue = params['cityId'];
+    if (cityIdValue != null &&
+        cityIdValue is String &&
+        cityIdValue.isNotEmpty &&
+        cityIdValue.contains('-')) {
+      // 确保是有效的 GUID 格式（包含至少一个'-'符号）
+      eventData['cityId'] = cityIdValue;
+    } else {
+      // 如果 cityId 无效，传递 null
+      eventData['cityId'] = null;
+    }
+
+    if (mainImageUrl != null && mainImageUrl.isNotEmpty) {
+      eventData['imageUrl'] = mainImageUrl;
+    }
+
+    if (imagesList.isNotEmpty) {
+      eventData['images'] = imagesList;
+    }
+
+    if (params['latitude'] != null) {
+      eventData['latitude'] = params['latitude'];
+    }
+
+    if (params['longitude'] != null) {
+      eventData['longitude'] = params['longitude'];
+    }
+
+    if (params['tags'] != null && (params['tags'] as List).isNotEmpty) {
+      eventData['tags'] = params['tags'];
+    }
+
+    return eventData;
   }
 
   /// 将前端的 type 映射到后端的 category

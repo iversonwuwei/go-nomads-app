@@ -116,11 +116,30 @@ class EventsApiService {
   /// 获取活动详情
   Future<Map<String, dynamic>> getEvent(String eventId) async {
     try {
+      // 获取认证头（可选,但用于判断参与状态）
+      Map<String, String>? authHeaders;
+      try {
+        authHeaders = await _getAuthHeaders();
+      } catch (e) {
+        print('⚠️ 未登录,获取活动详情时不包含用户状态: $e');
+        // 继续执行,不抛出异常
+      }
+
       final endpoint = ApiConfig.eventDetailEndpoint.replaceAll('{id}', eventId);
-      final response = await _httpService.get<Map<String, dynamic>>(endpoint);
+      final response = await _httpService.get<Map<String, dynamic>>(
+        endpoint,
+        options: authHeaders != null ? Options(headers: authHeaders) : null,
+      );
       
       if (response.statusCode == 200 && response.data != null) {
-        return response.data!;
+        // 后端返回的是 ApiResponse 格式: {success, message, data, errors}
+        // 需要提取 data 字段
+        final apiResponse = response.data!;
+        if (apiResponse['success'] == true && apiResponse['data'] != null) {
+          return apiResponse['data'] as Map<String, dynamic>;
+        }
+        throw Exception(
+            'API returned unsuccessful response: ${apiResponse['message']}');
       } else {
         throw Exception('Failed to get event: Invalid response');
       }
@@ -198,20 +217,22 @@ class EventsApiService {
   }
   
   /// 参加活动
-  Future<Map<String, dynamic>> joinEvent(String eventId) async {
+  Future<bool> joinEvent(String eventId) async {
     try {
       // 获取认证头
       final authHeaders = await _getAuthHeaders();
       
       final endpoint = ApiConfig.eventJoinEndpoint.replaceAll('{id}', eventId);
-      final response = await _httpService.post<Map<String, dynamic>>(
+      final response = await _httpService.post<dynamic>(
         endpoint,
-        data: {}, // 空的请求体
+        data: {}, // 发送空的 JSON 对象作为 request body
         options: Options(headers: authHeaders),
       );
       
-      if (response.statusCode == 200 && response.data != null) {
-        return response.data!;
+      if (response.statusCode == 200) {
+        // 响应拦截器已经提取了 data 字段,所以 response.data 就是 data 的值
+        // 后端返回的 data 字段是 ParticipantResponse 对象
+        return true;
       } else {
         throw Exception('Failed to join event: Invalid response');
       }
@@ -224,19 +245,21 @@ class EventsApiService {
   }
   
   /// 取消参加活动
-  Future<Map<String, dynamic>> leaveEvent(String eventId) async {
+  Future<bool> leaveEvent(String eventId) async {
     try {
       // 获取认证头
       final authHeaders = await _getAuthHeaders();
       
       final endpoint = ApiConfig.eventJoinEndpoint.replaceAll('{id}', eventId);
-      final response = await _httpService.delete<Map<String, dynamic>>(
+      final response = await _httpService.delete<dynamic>(
         endpoint,
         options: Options(headers: authHeaders),
       );
       
-      if (response.statusCode == 200 && response.data != null) {
-        return response.data!;
+      if (response.statusCode == 200) {
+        // 响应拦截器已经提取了 data 字段,所以 response.data 就是 data 的值
+        // 后端返回的 data 字段是 bool 类型
+        return response.data == true || response.data is bool;
       } else {
         throw Exception('Failed to leave event: Invalid response');
       }
@@ -252,10 +275,14 @@ class EventsApiService {
   Future<List<Map<String, dynamic>>> getEventParticipants(String eventId) async {
     try {
       final endpoint = '${ApiConfig.eventDetailEndpoint.replaceAll('{id}', eventId)}/participants';
-      final response = await _httpService.get<List<dynamic>>(endpoint);
+      final response = await _httpService.get<Map<String, dynamic>>(endpoint);
       
       if (response.statusCode == 200 && response.data != null) {
-        return List<Map<String, dynamic>>.from(response.data!);
+        final data = response.data!['data'];
+        if (data is List) {
+          return List<Map<String, dynamic>>.from(data);
+        }
+        return [];
       } else {
         throw Exception('Failed to get event participants: Invalid response');
       }

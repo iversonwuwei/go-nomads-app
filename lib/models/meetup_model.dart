@@ -14,7 +14,8 @@ class MeetupModel {
   final String organizerId;
   final String organizerName;
   final String organizerAvatar;
-  final List<String> images;
+  final String? imageUrl; // 封面图片URL（用于列表页）
+  final List<String> images; // 完整图片数组（用于详情页）
   final List<String> attendeeIds;
   final bool isJoined;
   final DateTime createdAt;
@@ -34,6 +35,7 @@ class MeetupModel {
     required this.organizerId,
     required this.organizerName,
     required this.organizerAvatar,
+    this.imageUrl,
     required this.images,
     required this.attendeeIds,
     required this.isJoined,
@@ -56,6 +58,7 @@ class MeetupModel {
       organizerId: json['organizerId'] ?? '',
       organizerName: json['organizerName'] ?? '',
       organizerAvatar: json['organizerAvatar'] ?? '',
+      imageUrl: json['imageUrl'],
       images: List<String>.from(json['images'] ?? []),
       attendeeIds: List<String>.from(json['attendeeIds'] ?? []),
       isJoined: json['isJoined'] ?? false,
@@ -79,6 +82,7 @@ class MeetupModel {
       'organizerId': organizerId,
       'organizerName': organizerName,
       'organizerAvatar': organizerAvatar,
+      'imageUrl': imageUrl,
       'images': images,
       'attendeeIds': attendeeIds,
       'isJoined': isJoined,
@@ -101,6 +105,7 @@ class MeetupModel {
     String? organizerId,
     String? organizerName,
     String? organizerAvatar,
+    String? imageUrl,
     List<String>? images,
     List<String>? attendeeIds,
     bool? isJoined,
@@ -121,6 +126,7 @@ class MeetupModel {
       organizerId: organizerId ?? this.organizerId,
       organizerName: organizerName ?? this.organizerName,
       organizerAvatar: organizerAvatar ?? this.organizerAvatar,
+      imageUrl: imageUrl ?? this.imageUrl,
       images: images ?? this.images,
       attendeeIds: attendeeIds ?? this.attendeeIds,
       isJoined: isJoined ?? this.isJoined,
