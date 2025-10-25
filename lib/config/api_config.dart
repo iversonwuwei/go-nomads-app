@@ -83,9 +83,10 @@ class ApiConfig {
   static const String userDeleteEndpoint = '/users/{id}';
   static String get userProfileEndpoint => userMeEndpoint;
 
-  // 首页相关 (待后端实现)
+  // 首页相关
   static const String homeDataEndpoint = '/home/data';
   static const String homeBannersEndpoint = '/home/banners';
+  static const String homeFeedEndpoint = '/home/feed';
 
   // ============================================================
   // City Endpoints - /api/v1/cities

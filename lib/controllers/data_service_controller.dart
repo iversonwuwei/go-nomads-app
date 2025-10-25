@@ -5,6 +5,7 @@ import '../models/country_option.dart';
 import '../services/data/city_data_service.dart';
 import '../services/data/meetup_data_service.dart';
 import '../services/events_api_service.dart';
+import '../services/home_api_service.dart';
 import '../services/location_api_service.dart';
 import '../widgets/app_toast.dart';
 
@@ -13,6 +14,7 @@ class DataServiceController extends GetxController {
   final CityDataService _cityService = CityDataService();
   final MeetupDataService _meetupService = MeetupDataService();
   final LocationApiService _locationApiService = LocationApiService();
+  final HomeApiService _homeApiService = HomeApiService();
   // 响应式数据
   final RxBool isLoading = true.obs;
   final RxBool isGridView = true.obs;
@@ -157,18 +159,183 @@ class DataServiceController extends GetxController {
     isLoading.value = true;
 
     try {
-      await loadCountries();
-      // 从数据库加载城市数据
-      await _loadCitiesFromDatabase();
+      print('🔄 开始加载首页数据...');
 
-      // 从数据库加载活动数据
-      await _loadMeetupsFromDatabase();
+      // 优先从 Home API 加载聚合数据
+      try {
+        await _loadFromHomeApi();
+        print('✅ Home API 数据加载成功');
+      } catch (apiError) {
+        print('⚠️ Home API 失败，回退到本地数据库: $apiError');
+        // 回退到本地数据库
+        await loadCountries();
+        await _loadCitiesFromDatabase();
+        await _loadMeetupsFromDatabase();
+      }
     } catch (e) {
-      print('Error loading data: $e');
-      // AppToast.showError('加载数据失败: $e');
+      print('❌ 数据加载失败: $e');
+      AppToast.error('数据加载失败，请稍后重试');
     } finally {
       isLoading.value = false;
     }
+  }
+
+  /// 从 Home API 加载聚合数据
+  Future<void> _loadFromHomeApi() async {
+    try {
+      print('📡 调用 Home API...');
+
+      // 调用 API
+      final homeFeed = await _homeApiService.getHomeFeed(
+        cityLimit: 20,
+        meetupLimit: 30,
+      );
+
+      print(
+          '✅ Home API 返回: ${homeFeed.cityCount} 城市, ${homeFeed.meetupCount} 活动');
+
+      // 转换城市数据到 dataItems 格式（用于现有UI）
+      print('📊 开始转换城市数据...');
+      final convertedCities = <Map<String, dynamic>>[];
+
+      for (var i = 0; i < homeFeed.cities.length; i++) {
+        try {
+          final city = homeFeed.cities[i];
+          final weather = city.weather;
+
+          convertedCities.add({
+            'city': city.name,
+            'country': city.country,
+            'region': _guessRegion(city.country),
+            'climate': _guessClimate(weather?.temperature),
+            'image': city.imageUrl ??
+                'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=400',
+            'temperature': weather?.temperature.toInt() ?? 25,
+            'feelsLike': weather?.feelsLike.toInt() ?? 25,
+            'weather': _getWeatherFromCode(weather?.weather),
+            'internet': 20, // 默认值，后续可从其他API获取
+            'price': 1500, // 默认值
+            'rank': i + 1,
+            'badge': city.meetupCount > 5 ? 'Popular' : '',
+            'ratings': ['😊', '👍', '🌟'],
+            'overall': 4.0,
+            'cost': 4.0,
+            'internetScore': 4.0,
+            'liked': 4.0,
+            'safety': 4.0,
+            'aqi': weather?.airQualityIndex ?? 50,
+            'aqiLevel': _getAqiLevel(weather?.airQualityIndex),
+            'population': '1M',
+            'timezone': 'GMT',
+            'humidity': weather?.humidity ?? 70,
+            'about': city.description ?? '',
+          });
+        } catch (e) {
+          print('❌ 转换城市数据失败 [索引 $i]: $e');
+          rethrow;
+        }
+      }
+
+      dataItems.value = convertedCities;
+      print('✅ 城市数据转换完成: ${dataItems.length} 条');
+
+      // 转换活动数据到 meetups 格式（用于现有UI）
+      print('📊 开始转换活动数据...');
+      final convertedMeetups = <Map<String, dynamic>>[];
+
+      for (var i = 0; i < homeFeed.meetups.length; i++) {
+        try {
+          final meetup = homeFeed.meetups[i];
+
+          convertedMeetups.add({
+            'id': meetup.id,
+            'city': meetup.cityName ?? 'Unknown',
+            'country': 'Unknown', // TODO: 从城市数据中查找
+            'type': _guessMeetupType(meetup.title),
+            'title': meetup.title,
+            'venue': meetup.location,
+            'date': meetup.startTime,
+            'time': _formatTime(meetup.startTime.toIso8601String()),
+            'attendees': meetup.participantCount,
+            'maxAttendees': meetup.maxParticipants ?? 20,
+            'organizer': meetup.creatorName ?? 'Organizer',
+            'organizerAvatar': 'https://i.pravatar.cc/150?img=1',
+            'image': meetup.imageUrl ??
+                'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=400',
+            'description': meetup.description ?? '',
+          });
+        } catch (e) {
+          print('❌ 转换活动数据失败 [索引 $i]: $e');
+          rethrow;
+        }
+      }
+
+      meetups.value = convertedMeetups;
+      print('✅ 活动数据转换完成: ${meetups.length} 条');
+
+      print('✅ 数据转换完成');
+    } catch (e, stackTrace) {
+      print('❌ Home API 加载失败: $e');
+      print('   堆栈跟踪: $stackTrace');
+      rethrow;
+    }
+  }
+
+  /// 辅助方法: 根据国家猜测地区
+  String _guessRegion(String country) {
+    // 简单的地区映射
+    const asianCountries = [
+      'Thailand',
+      'Vietnam',
+      'Indonesia',
+      'Japan',
+      'China',
+      'Singapore'
+    ];
+    const europeanCountries = [
+      'Portugal',
+      'Spain',
+      'Italy',
+      'France',
+      'Germany',
+      'UK'
+    ];
+
+    if (asianCountries.contains(country)) return 'Asia';
+    if (europeanCountries.contains(country)) return 'Europe';
+    return 'Asia';
+  }
+
+  /// 辅助方法: 根据温度猜测气候
+  String _guessClimate(double? temperature) {
+    if (temperature == null) return 'Warm';
+    if (temperature > 30) return 'Hot';
+    if (temperature > 20) return 'Warm';
+    if (temperature > 10) return 'Mild';
+    if (temperature > 0) return 'Cool';
+    return 'Cold';
+  }
+
+  /// 辅助方法: 根据天气代码获取天气状态
+  String _getWeatherFromCode(String? weather) {
+    if (weather == null) return 'sunny';
+    final w = weather.toLowerCase();
+    if (w.contains('clear') || w.contains('sun')) return 'sunny';
+    if (w.contains('cloud')) return 'cloudy';
+    if (w.contains('rain')) return 'rainy';
+    if (w.contains('snow')) return 'snowy';
+    return 'sunny';
+  }
+
+  /// 辅助方法: 猜测活动类型
+  String _guessMeetupType(String title) {
+    final lower = title.toLowerCase();
+    if (lower.contains('drink') || lower.contains('beer')) return 'Drinks';
+    if (lower.contains('cowork')) return 'Coworking';
+    if (lower.contains('dinner') || lower.contains('lunch')) return 'Dinner';
+    if (lower.contains('workshop')) return 'Workshop';
+    if (lower.contains('network')) return 'Networking';
+    return 'Activity';
   }
 
   Future<void> loadCountries({bool forceRefresh = false}) async {
