@@ -24,10 +24,12 @@ import CoreLocation
     AMapServices.shared().enableHTTPS = true
 
     // 设置 Platform Channel
-    let controller = window?.rootViewController as! FlutterViewController
+    guard let flutterViewController = window?.rootViewController as? FlutterViewController else {
+      fatalError("Unable to bootstrap Flutter root view controller")
+    }
     let amapChannel = FlutterMethodChannel(
       name: CHANNEL_NAME,
-      binaryMessenger: controller.binaryMessenger
+      binaryMessenger: flutterViewController.binaryMessenger
     )
 
     amapChannel.setMethodCallHandler { [weak self] (call, result) in
@@ -38,7 +40,7 @@ import CoreLocation
         result("Native iOS Amap connected ✅")
 
       case "openMapPicker":
-        self.openMapPicker(call: call, result: result, controller: controller)
+        self.openMapPicker(call: call, result: result, controller: flutterViewController)
 
       case "getCurrentLocation":
         self.getCurrentLocation(result: result)
@@ -47,6 +49,9 @@ import CoreLocation
         result(FlutterMethodNotImplemented)
       }
     }
+
+    // Register the platform view factory so Flutter can create `amap_city_view` on iOS.
+    registerAmapPlatformView()
 
     GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
@@ -93,6 +98,19 @@ import CoreLocation
       "province": "Beijing",
     ]
     result(locationData)
+  }
+
+  /// Registers the iOS platform view factory for embedding AMap in Flutter.
+  private func registerAmapPlatformView() {
+    guard let registrar = registrar(forPlugin: "AmapCityPlatformView") else {
+      NSLog("⚠️ Unable to obtain registrar for AmapCityPlatformView")
+      return
+    }
+
+    registrar.register(
+      AmapCityViewFactory(messenger: registrar.messenger()),
+      withId: "amap_city_view"
+    )
   }
 }
 
