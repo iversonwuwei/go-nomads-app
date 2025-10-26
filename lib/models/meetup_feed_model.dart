@@ -14,6 +14,7 @@ class MeetupFeedModel {
   final String status;
   final String? creatorId;
   final String? creatorName;
+  final bool isParticipant; // 当前用户是否已参加
 
   MeetupFeedModel({
     required this.id,
@@ -30,9 +31,34 @@ class MeetupFeedModel {
     required this.status,
     this.creatorId,
     this.creatorName,
+    this.isParticipant = false, // 默认未参加
   });
 
   factory MeetupFeedModel.fromJson(Map<String, dynamic> json) {
+    // 调试：打印 organizer 数据
+    print('🔍 [MeetupFeedModel] 解析 JSON:');
+    print('   title: ${json['title']}');
+    print('   organizer type: ${json['organizer']?.runtimeType}');
+    print('   organizer value: ${json['organizer']}');
+    
+    // 尝试从 organizer 对象中获取名称，如果没有则使用 creatorName
+    String? organizerName;
+    if (json['organizer'] != null && json['organizer'] is Map) {
+      organizerName =
+          (json['organizer'] as Map<String, dynamic>)['name'] as String?;
+      print('   ✅ 从 organizer.name 获取: $organizerName');
+    }
+    organizerName ??= json['creatorName'] as String?;
+    print('   最终 organizerName: $organizerName');
+
+    // 尝试从 organizer 对象中获取 ID，如果没有则使用 creatorId
+    String? organizerId;
+    if (json['organizer'] != null && json['organizer'] is Map) {
+      organizerId =
+          (json['organizer'] as Map<String, dynamic>)['id'] as String?;
+    }
+    organizerId ??= json['creatorId'] as String?;
+    
     return MeetupFeedModel(
       id: json['id'] as String? ?? '',
       title: json['title'] as String? ?? '',
@@ -50,8 +76,9 @@ class MeetupFeedModel {
       maxParticipants: (json['maxParticipants'] as num?)?.toInt(),
       imageUrl: json['imageUrl'] as String?,
       status: json['status'] as String? ?? 'upcoming',
-      creatorId: json['creatorId'] as String?,
-      creatorName: json['creatorName'] as String?,
+      creatorId: organizerId,
+      creatorName: organizerName,
+      isParticipant: json['isParticipant'] as bool? ?? false,
     );
   }
 
@@ -71,6 +98,7 @@ class MeetupFeedModel {
       'status': status,
       'creatorId': creatorId,
       'creatorName': creatorName,
+      'isParticipant': isParticipant,
     };
   }
 

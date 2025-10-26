@@ -16,12 +16,18 @@ class UserStateController extends GetxController {
 
   // 是否已登录
   final _isLoggedIn = false.obs;
+  
+  // 登录状态变化事件流（用于通知其他控制器）
+  final _loginStateChanged = false.obs;
 
   // Getters
   int? get currentAccountId => _accountId.value;
   String? get username => _username.value;
   String? get email => _email.value;
   bool get isLoggedIn => _isLoggedIn.value;
+  
+  // 获取登录状态变化的响应式变量（用于监听）
+  RxBool get loginStateChanged => _loginStateChanged;
 
   /// 登录成功后保存用户信息
   void login(int accountId, String username, {String? email}) {
@@ -29,8 +35,12 @@ class UserStateController extends GetxController {
     _username.value = username;
     _email.value = email;
     _isLoggedIn.value = true;
+    
+    // 触发登录状态变化事件
+    _loginStateChanged.toggle();
 
     print('✅ 用户登录成功: ID=$accountId, 用户名=$username');
+    print('🔔 登录状态变化事件已触发');
   }
 
   /// 登出
@@ -39,8 +49,12 @@ class UserStateController extends GetxController {
     _username.value = null;
     _email.value = null;
     _isLoggedIn.value = false;
+    
+    // 触发登录状态变化事件
+    _loginStateChanged.toggle();
 
     print('✅ 用户已登出');
+    print('🔔 登出状态变化事件已触发');
   }
 
   /// 更新用户名

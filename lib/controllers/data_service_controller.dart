@@ -8,6 +8,7 @@ import '../services/events_api_service.dart';
 import '../services/home_api_service.dart';
 import '../services/location_api_service.dart';
 import '../widgets/app_toast.dart';
+import 'user_state_controller.dart';
 
 class DataServiceController extends GetxController {
   // 数据服务
@@ -152,6 +153,64 @@ class DataServiceController extends GetxController {
   void onInit() {
     super.onInit();
     initializeData();
+    
+    // 监听登录状态变化，登录成功后重新加载数据
+    _setupLoginStateListener();
+  }
+
+  /// 设置登录状态监听器
+  void _setupLoginStateListener() {
+    try {
+      final userStateController = Get.find<UserStateController>();
+
+      // 监听登录状态变化
+      ever(userStateController.loginStateChanged, (_) {
+        if (userStateController.isLoggedIn) {
+          print('🔔 检测到用户登录，重新加载所有数据...');
+          refreshAllData();
+        } else {
+          print('🔔 检测到用户登出，清空数据...');
+          _clearData();
+        }
+      });
+
+      print('✅ 登录状态监听器已设置');
+    } catch (e) {
+      print('⚠️ 设置登录状态监听器失败: $e');
+    }
+  }
+
+  /// 清空数据（登出时调用）
+  void _clearData() {
+    meetups.clear();
+    dataItems.clear();
+    countries.clear();
+    print('✅ 数据已清空');
+  }
+
+  /// 刷新所有数据（登录成功时调用）
+  Future<void> refreshAllData() async {
+    print('🔄 开始刷新所有数据...');
+    isLoading.value = true;
+
+    try {
+      // 优先从 Home API 加载聚合数据
+      try {
+        await _loadFromHomeApi();
+        print('✅ Home API 数据刷新成功');
+      } catch (apiError) {
+        print('⚠️ Home API 失败，回退到本地数据库: $apiError');
+        // 回退到本地数据库
+        await loadCountries();
+        await _loadCitiesFromDatabase();
+        await _loadMeetupsFromDatabase();
+      }
+    } catch (e) {
+      print('❌ 数据刷新失败: $e');
+      AppToast.error('数据刷新失败，请稍后重试');
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   // 初始化数据
@@ -246,6 +305,13 @@ class DataServiceController extends GetxController {
       for (var i = 0; i < homeFeed.meetups.length; i++) {
         try {
           final meetup = homeFeed.meetups[i];
+          
+          // 调试：打印每个 meetup 的数据
+          print('   Meetup [$i]: ${meetup.title}');
+          print('      participantCount: ${meetup.participantCount}');
+          print('      maxParticipants: ${meetup.maxParticipants}');
+          print('      isParticipant: ${meetup.isParticipant}');
+          print('      creatorName: ${meetup.creatorName}');
 
           convertedMeetups.add({
             'id': meetup.id,
@@ -263,6 +329,7 @@ class DataServiceController extends GetxController {
             'image': meetup.imageUrl ??
                 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=400',
             'description': meetup.description ?? '',
+            'isParticipant': meetup.isParticipant, // 从 API 获取的参与状态
           });
         } catch (e) {
           print('❌ 转换活动数据失败 [索引 $i]: $e');
@@ -575,15 +642,48 @@ class DataServiceController extends GetxController {
     if (rsvpedMeetups.contains(meetupId)) {
       // Cancel RSVP
       rsvpedMeetups.remove(meetupId);
-      final meetup = meetups.firstWhere((m) => m['id'] == meetupId);
-      meetup['attendees'] = (meetup['attendees'] as int) - 1;
+      // 尝试更新 meetups 列表中的 attendees（如果存在）
+      try {
+        final meetup = meetups.firstWhere(
+          (m) {
+            final mId = m['id'];
+            if (mId is int) {
+              return mId == meetupId;
+            } else if (mId is String) {
+              return int.tryParse(mId) == meetupId;
+            }
+            return false;
+          },
+        );
+        meetup['attendees'] = (meetup['attendees'] as int) - 1;
+        meetups.refresh(); // 刷新列表
+      } catch (e) {
+        // meetup 不在列表中，跳过更新（使用本地状态）
+        print('⚠️ Meetup $meetupId 不在 controller.meetups 中，使用本地状态');
+      }
     } else {
       // Add RSVP
       rsvpedMeetups.add(meetupId);
-      final meetup = meetups.firstWhere((m) => m['id'] == meetupId);
-      meetup['attendees'] = (meetup['attendees'] as int) + 1;
+      // 尝试更新 meetups 列表中的 attendees（如果存在）
+      try {
+        final meetup = meetups.firstWhere(
+          (m) {
+            final mId = m['id'];
+            if (mId is int) {
+              return mId == meetupId;
+            } else if (mId is String) {
+              return int.tryParse(mId) == meetupId;
+            }
+            return false;
+          },
+        );
+        meetup['attendees'] = (meetup['attendees'] as int) + 1;
+        meetups.refresh(); // 刷新列表
+      } catch (e) {
+        // meetup 不在列表中，跳过更新（使用本地状态）
+        print('⚠️ Meetup $meetupId 不在 controller.meetups 中，使用本地状态');
+      }
     }
-    meetups.refresh(); // 刷新列表
   }
 
   // 获取即将到来的meetups（下个月内）

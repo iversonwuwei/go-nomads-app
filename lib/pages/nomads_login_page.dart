@@ -82,6 +82,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
               email: user.email,
             );
             print('✅ 用户状态已保存');
+            print('🔔 登录状态变化事件将触发数据重新加载');
           } catch (e) {
             print('⚠️ 保存用户状态失败: $e');
           }
@@ -91,6 +92,9 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
             title: 'Login Successful',
           );
 
+          // 等待一小段时间，确保登录状态事件已被处理
+          await Future.delayed(const Duration(milliseconds: 300));
+          
           // 登录成功后跳转到主页
           print('🚀 准备跳转到主页...');
           Get.offAllNamed('/');

@@ -201,12 +201,16 @@ class AuthController extends GetxController {
         print('✅ 用户状态已保存到 UserStateController');
         print('   当前登录状态: ${userStateController.isLoggedIn}');
         print('   当前账户ID: ${userStateController.currentAccountId}');
+        print('🔔 登录状态变化事件将触发数据重新加载');
 
         AppToast.success(
           '欢迎回来！',
           title: '登录成功',
         );
 
+        // 等待一小段时间，确保登录状态事件已被处理
+        await Future.delayed(const Duration(milliseconds: 300));
+        
         // 跳转到主页
         print('🚀 准备跳转到主页...');
         Get.offAllNamed('/');

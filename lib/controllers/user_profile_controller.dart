@@ -17,6 +17,21 @@ class UserProfileController extends GetxController {
   void onInit() {
     super.onInit();
     _checkLoginAndLoadProfile();
+    _setupLoginStateListener();
+  }
+
+  // 监听登录状态变化
+  void _setupLoginStateListener() {
+    final userStateController = Get.find<UserStateController>();
+    ever(userStateController.loginStateChanged, (_) {
+      if (userStateController.isLoggedIn) {
+        print('🔔 UserProfileController: 检测到用户登录，重新加载用户资料...');
+        loadUserProfile();
+      } else {
+        print('🔔 UserProfileController: 检测到用户登出，清空用户资料...');
+        currentUser.value = null;
+      }
+    });
   }
 
   // 检查登录状态并加载用户资料

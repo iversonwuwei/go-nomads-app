@@ -70,6 +70,9 @@ class NomadsAuthService {
 
         // 设置 HttpService 的认证 token
         _httpService.setAuthToken(loginData.accessToken);
+        
+        // 设置用户ID到 HttpService（用于 X-User-Id header）
+        _httpService.setUserId(loginData.user.id);
 
         // 持久化保存 token 到 SQLite
         await _saveTokenToDatabase(loginData);
@@ -139,6 +142,9 @@ class NomadsAuthService {
       // 恢复 token 到 HttpService
       final accessToken = tokenData['access_token'] as String;
       _httpService.setAuthToken(accessToken);
+      
+      // 恢复用户ID到 HttpService
+      _httpService.setUserId(userId);
 
       // 恢复 UserStateController 状态
       _restoreUserState(tokenData);
@@ -161,6 +167,7 @@ class NomadsAuthService {
 
       // 清除 HttpService 的 token
       _httpService.clearAuthToken();
+      _httpService.clearUserId();
 
       // 删除数据库中的所有 token
       await _tokenDao.deleteAllTokens();
@@ -232,6 +239,7 @@ class NomadsAuthService {
       // 4. Token 有效，恢复到内存
       final accessToken = tokenData['access_token'] as String;
       _httpService.setAuthToken(accessToken);
+      _httpService.setUserId(userId); // 使用前面已定义的 userId
       print('✅ Token 已从 SQLite 恢复到内存');
 
       // 5. 同时恢复 UserStateController 状态
@@ -356,6 +364,9 @@ class NomadsAuthService {
 
         // 设置新的 access_token
         _httpService.setAuthToken(loginData.accessToken);
+        
+        // 设置用户ID
+        _httpService.setUserId(loginData.user.id);
 
         // 更新数据库中的 token
         await _saveTokenToDatabase(loginData);

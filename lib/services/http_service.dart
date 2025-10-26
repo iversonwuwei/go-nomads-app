@@ -12,6 +12,7 @@ class HttpService {
 
   late Dio _dio;
   String? _authToken;
+  String? _userId;
 
   static const String apiResponseMetaKey = '__apiResponseMeta';
   static const String apiResponseRawKey = '__apiResponseRaw';
@@ -44,6 +45,11 @@ class HttpService {
           // 添加认证 token
           if (_authToken != null && _authToken!.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $_authToken';
+          }
+          
+          // 添加用户ID header
+          if (_userId != null && _userId!.isNotEmpty) {
+            options.headers['X-User-Id'] = _userId;
           }
 
           // 打印请求日志 (仅开发环境)
@@ -159,6 +165,19 @@ class HttpService {
   /// 清除 Token
   void clearAuthToken() {
     _authToken = null;
+  }
+  
+  /// 设置用户ID
+  void setUserId(String? userId) {
+    _userId = userId;
+  }
+
+  /// 获取当前用户ID
+  String? get userId => _userId;
+
+  /// 清除用户ID
+  void clearUserId() {
+    _userId = null;
   }
 
   /// 更新基础 URL
