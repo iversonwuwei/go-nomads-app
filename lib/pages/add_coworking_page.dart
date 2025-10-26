@@ -9,6 +9,7 @@ import '../controllers/add_coworking_controller.dart';
 import '../generated/app_localizations.dart';
 import '../models/city_option.dart';
 import '../models/coworking_space_model.dart';
+import '../services/coworking_api_service.dart';
 import '../widgets/app_toast.dart';
 import 'amap_native_picker_page.dart';
 
@@ -797,84 +798,128 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
     _isSubmitting.value = true;
 
     try {
-      // Create CoworkingSpace object
-      final coworkingSpace = CoworkingSpace(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+      // 构建 amenities 列表
+      final amenities = <String>[];
+      if (_hasWifi) amenities.add('wifi');
+      if (_hasCoffee) amenities.add('coffee');
+      if (_hasPrinter) amenities.add('printer');
+      if (_hasMeetingRoom) amenities.add('meeting_room');
+      if (_hasPhoneBooth) amenities.add('phone_booth');
+      if (_hasKitchen) amenities.add('kitchen');
+      if (_hasParking) amenities.add('parking');
+      if (_hasLocker) amenities.add('locker');
+      if (_has24HourAccess) amenities.add('24h_access');
+      if (_hasAirConditioning) amenities.add('air_conditioning');
+      if (_hasStandingDesk) amenities.add('standing_desk');
+      if (_hasShower) amenities.add('shower');
+      if (_hasBike) amenities.add('bike');
+      if (_hasEventSpace) amenities.add('event_space');
+      if (_hasPetFriendly) amenities.add('pet_friendly');
+
+      // 创建请求对象
+      final request = CreateCoworkingRequest(
         name: _nameController.text,
+        description: _descriptionController.text,
         address: _addressController.text,
-        city: _selectedCity ?? '',
-        country: _selectedCountry ?? '',
         latitude: _latitude,
         longitude: _longitude,
-        imageUrl: _selectedImage?.path ?? '',
-        description: _descriptionController.text,
-        pricing: CoworkingPricing(
-          hourlyRate: _hourlyRateController.text.isNotEmpty
-              ? double.tryParse(_hourlyRateController.text)
-              : null,
-          dailyRate: _dailyRateController.text.isNotEmpty
-              ? double.tryParse(_dailyRateController.text)
-              : null,
-          weeklyRate: _weeklyRateController.text.isNotEmpty
-              ? double.tryParse(_weeklyRateController.text)
-              : null,
-          monthlyRate: _monthlyRateController.text.isNotEmpty
-              ? double.tryParse(_monthlyRateController.text)
-              : null,
-          currency: _currency,
-          hasFreeTrial: _hasFreeTrial,
-          trialDuration: _hasFreeTrial ? _trialDurationController.text : null,
-        ),
-        amenities: CoworkingAmenities(
-          hasWifi: _hasWifi,
-          hasCoffee: _hasCoffee,
-          hasPrinter: _hasPrinter,
-          hasMeetingRoom: _hasMeetingRoom,
-          hasPhoneBooth: _hasPhoneBooth,
-          hasKitchen: _hasKitchen,
-          hasParking: _hasParking,
-          hasLocker: _hasLocker,
-          has24HourAccess: _has24HourAccess,
-          hasAirConditioning: _hasAirConditioning,
-          hasStandingDesk: _hasStandingDesk,
-          hasShower: _hasShower,
-          hasBike: _hasBike,
-          hasEventSpace: _hasEventSpace,
-          hasPetFriendly: _hasPetFriendly,
-        ),
-        specs: CoworkingSpecs(
-          wifiSpeed: _wifiSpeedController.text.isNotEmpty
-              ? double.tryParse(_wifiSpeedController.text)
-              : null,
-          numberOfDesks: _numberOfDesksController.text.isNotEmpty
-              ? int.tryParse(_numberOfDesksController.text)
-              : null,
-          numberOfMeetingRooms: _numberOfMeetingRoomsController.text.isNotEmpty
-              ? int.tryParse(_numberOfMeetingRoomsController.text)
-              : null,
-          capacity: _capacityController.text.isNotEmpty
-              ? int.tryParse(_capacityController.text)
-              : null,
-          noiseLevel: _noiseLevel?.toLowerCase(),
-          hasNaturalLight: _hasNaturalLight,
-          spaceType: _spaceType?.toLowerCase(),
-        ),
-        phone: _phoneController.text,
-        email: _emailController.text,
-        website: _websiteController.text,
-        openingHours: _openingHours,
-        lastUpdated: DateTime.now(),
+        pricePerDay: _dailyRateController.text.isNotEmpty
+            ? double.tryParse(_dailyRateController.text)
+            : null,
+        amenities: amenities.isNotEmpty ? amenities : null,
+        imageUrl: _selectedImage?.path, // TODO: 上传图片到 Supabase Storage
+        phone: _phoneController.text.isNotEmpty ? _phoneController.text : null,
+        email: _emailController.text.isNotEmpty ? _emailController.text : null,
+        openingHours:
+            _openingHours.isNotEmpty ? _openingHours.join(', ') : null,
       );
 
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
+      // 调用真实 API
+      final apiService = CoworkingApiService();
+      final response = await apiService.createCoworkingSpace(request);
 
-      // Show success message
-      Get.back(result: coworkingSpace);
-      AppToast.success(
-        l10n.coworkingSubmittedSuccess,
-        title: l10n.success,
-      );
+      if (response.success && response.data != null) {
+        // API 成功，转换为 CoworkingSpace 对象返回
+        final coworkingSpace = CoworkingSpace(
+          id: response.data!.id,
+          name: response.data!.name,
+          address: response.data!.address,
+          city: _selectedCity ?? '',
+          country: _selectedCountry ?? '',
+          latitude: response.data!.latitude ?? 0.0,
+          longitude: response.data!.longitude ?? 0.0,
+          imageUrl: response.data!.imageUrl ?? '',
+          description: response.data!.description ?? '',
+          pricing: CoworkingPricing(
+            hourlyRate: _hourlyRateController.text.isNotEmpty
+                ? double.tryParse(_hourlyRateController.text)
+                : null,
+            dailyRate: response.data!.pricePerDay,
+            weeklyRate: _weeklyRateController.text.isNotEmpty
+                ? double.tryParse(_weeklyRateController.text)
+                : null,
+            monthlyRate: _monthlyRateController.text.isNotEmpty
+                ? double.tryParse(_monthlyRateController.text)
+                : null,
+            currency: _currency,
+            hasFreeTrial: _hasFreeTrial,
+            trialDuration: _hasFreeTrial ? _trialDurationController.text : null,
+          ),
+          amenities: CoworkingAmenities(
+            hasWifi: _hasWifi,
+            hasCoffee: _hasCoffee,
+            hasPrinter: _hasPrinter,
+            hasMeetingRoom: _hasMeetingRoom,
+            hasPhoneBooth: _hasPhoneBooth,
+            hasKitchen: _hasKitchen,
+            hasParking: _hasParking,
+            hasLocker: _hasLocker,
+            has24HourAccess: _has24HourAccess,
+            hasAirConditioning: _hasAirConditioning,
+            hasStandingDesk: _hasStandingDesk,
+            hasShower: _hasShower,
+            hasBike: _hasBike,
+            hasEventSpace: _hasEventSpace,
+            hasPetFriendly: _hasPetFriendly,
+          ),
+          specs: CoworkingSpecs(
+            wifiSpeed: _wifiSpeedController.text.isNotEmpty
+                ? double.tryParse(_wifiSpeedController.text)
+                : null,
+            numberOfDesks: _numberOfDesksController.text.isNotEmpty
+                ? int.tryParse(_numberOfDesksController.text)
+                : null,
+            numberOfMeetingRooms:
+                _numberOfMeetingRoomsController.text.isNotEmpty
+                    ? int.tryParse(_numberOfMeetingRoomsController.text)
+                    : null,
+            capacity: _capacityController.text.isNotEmpty
+                ? int.tryParse(_capacityController.text)
+                : null,
+            noiseLevel: _noiseLevel?.toLowerCase(),
+            hasNaturalLight: _hasNaturalLight,
+            spaceType: _spaceType?.toLowerCase(),
+          ),
+          phone: response.data!.phone ?? '',
+          email: response.data!.email ?? '',
+          website: _websiteController.text,
+          openingHours: response.data!.openingHours?.split(', ') ?? [],
+          lastUpdated: response.data!.updatedAt,
+        );
+
+        // 返回结果
+        Get.back(result: coworkingSpace);
+        AppToast.success(
+          l10n.coworkingSubmittedSuccess,
+          title: l10n.success,
+        );
+      } else {
+        // API 返回失败
+        AppToast.error(
+          response.message,
+          title: l10n.error,
+        );
+      }
     } catch (e) {
       AppToast.error(
         l10n.failedToSubmitCoworking(e.toString()),
