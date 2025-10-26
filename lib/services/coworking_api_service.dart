@@ -189,32 +189,62 @@ class PaginatedResponse<T> {
 class CoworkingSpaceDto {
   final String id;
   final String name;
+  final String? cityId;
   final String? description;
   final String address;
   final double? latitude;
   final double? longitude;
   final double? pricePerDay;
+  final double? pricePerMonth;
+  final double? pricePerHour;
+  final String currency;
+  final double rating;
+  final int reviewCount;
+  final double? wifiSpeed;
+  final bool hasMeetingRoom;
+  final bool hasCoffee;
+  final bool hasParking;
+  final bool has247Access;
   final List<String>? amenities;
+  final int? capacity;
   final String? imageUrl;
+  final List<String>? images;
   final String? phone;
   final String? email;
+  final String? website;
   final String? openingHours;
+  final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
 
   CoworkingSpaceDto({
     required this.id,
     required this.name,
+    this.cityId,
     this.description,
     required this.address,
     this.latitude,
     this.longitude,
     this.pricePerDay,
+    this.pricePerMonth,
+    this.pricePerHour,
+    this.currency = 'USD',
+    this.rating = 0.0,
+    this.reviewCount = 0,
+    this.wifiSpeed,
+    this.hasMeetingRoom = false,
+    this.hasCoffee = false,
+    this.hasParking = false,
+    this.has247Access = false,
     this.amenities,
+    this.capacity,
     this.imageUrl,
+    this.images,
     this.phone,
     this.email,
+    this.website,
     this.openingHours,
+    this.isActive = true,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -223,18 +253,34 @@ class CoworkingSpaceDto {
     return CoworkingSpaceDto(
       id: json['id'] as String,
       name: json['name'] as String,
+      cityId: json['cityId'] as String?,
       description: json['description'] as String?,
       address: json['address'] as String,
       latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: (json['longitude'] as num?)?.toDouble(),
       pricePerDay: (json['pricePerDay'] as num?)?.toDouble(),
+      pricePerMonth: (json['pricePerMonth'] as num?)?.toDouble(),
+      pricePerHour: (json['pricePerHour'] as num?)?.toDouble(),
+      currency: json['currency'] as String? ?? 'USD',
+      rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
+      reviewCount: json['reviewCount'] as int? ?? 0,
+      wifiSpeed: (json['wifiSpeed'] as num?)?.toDouble(),
+      hasMeetingRoom: json['hasMeetingRoom'] as bool? ?? false,
+      hasCoffee: json['hasCoffee'] as bool? ?? false,
+      hasParking: json['hasParking'] as bool? ?? false,
+      has247Access: json['has247Access'] as bool? ?? false,
       amenities: (json['amenities'] as List<dynamic>?)
           ?.map((e) => e.toString())
           .toList(),
+      capacity: json['capacity'] as int?,
       imageUrl: json['imageUrl'] as String?,
+      images:
+          (json['images'] as List<dynamic>?)?.map((e) => e.toString()).toList(),
       phone: json['phone'] as String?,
       email: json['email'] as String?,
+      website: json['website'] as String?,
       openingHours: json['openingHours'] as String?,
+      isActive: json['isActive'] as bool? ?? true,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
@@ -246,42 +292,78 @@ class CreateCoworkingRequest {
   final String name;
   final String? description;
   final String address;
+  final String? cityId;
   final double? latitude;
   final double? longitude;
   final double? pricePerDay;
+  final double? pricePerMonth;
+  final double? pricePerHour;
+  final String? currency;
+  final double? wifiSpeed;
+  final bool? hasMeetingRoom;
+  final bool? hasCoffee;
+  final bool? hasParking;
+  final bool? has247Access;
   final List<String>? amenities;
+  final int? capacity;
   final String? imageUrl;
+  final List<String>? images;
   final String? phone;
   final String? email;
+  final String? website;
   final String? openingHours;
 
   CreateCoworkingRequest({
     required this.name,
     this.description,
     required this.address,
+    this.cityId,
     this.latitude,
     this.longitude,
     this.pricePerDay,
+    this.pricePerMonth,
+    this.pricePerHour,
+    this.currency,
+    this.wifiSpeed,
+    this.hasMeetingRoom,
+    this.hasCoffee,
+    this.hasParking,
+    this.has247Access,
     this.amenities,
+    this.capacity,
     this.imageUrl,
+    this.images,
     this.phone,
     this.email,
+    this.website,
     this.openingHours,
   });
 
   Map<String, dynamic> toJson() {
     return {
       'name': name,
-      'description': description,
+      if (description != null) 'description': description,
       'address': address,
-      'latitude': latitude,
-      'longitude': longitude,
-      'pricePerDay': pricePerDay,
-      'amenities': amenities,
-      'imageUrl': imageUrl,
-      'phone': phone,
-      'email': email,
-      'openingHours': openingHours,
+      if (cityId != null) 'cityId': cityId,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
+      if (pricePerDay != null) 'pricePerDay': pricePerDay,
+      if (pricePerMonth != null) 'pricePerMonth': pricePerMonth,
+      if (pricePerHour != null) 'pricePerHour': pricePerHour,
+      if (currency != null) 'currency': currency,
+      if (wifiSpeed != null) 'wifiSpeed': wifiSpeed,
+      if (hasMeetingRoom != null) 'hasMeetingRoom': hasMeetingRoom,
+      if (hasCoffee != null) 'hasCoffee': hasCoffee,
+      if (hasParking != null) 'hasParking': hasParking,
+      if (has247Access != null) 'has247Access': has247Access,
+      if (amenities != null) 'amenities': amenities,
+      if (capacity != null) 'capacity': capacity,
+      if (imageUrl != null) 'imageUrl': imageUrl,
+      if (images != null) 'images': images,
+      if (phone != null) 'phone': phone,
+      if (email != null) 'email': email,
+      if (website != null) 'website': website,
+      if (openingHours != null) 'openingHours': openingHours,
     };
   }
 }

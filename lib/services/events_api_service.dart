@@ -132,14 +132,9 @@ class EventsApiService {
       );
       
       if (response.statusCode == 200 && response.data != null) {
-        // 后端返回的是 ApiResponse 格式: {success, message, data, errors}
-        // 需要提取 data 字段
-        final apiResponse = response.data!;
-        if (apiResponse['success'] == true && apiResponse['data'] != null) {
-          return apiResponse['data'] as Map<String, dynamic>;
-        }
-        throw Exception(
-            'API returned unsuccessful response: ${apiResponse['message']}');
+        // HttpService 拦截器已经自动解包了 ApiResponse
+        // response.data 现在直接是事件数据,而不是 {success, message, data} 包装
+        return response.data as Map<String, dynamic>;
       } else {
         throw Exception('Failed to get event: Invalid response');
       }

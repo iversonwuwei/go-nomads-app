@@ -748,7 +748,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
       ),
       child: SafeArea(
         child: Obx(() => ElevatedButton(
-              onPressed: _isSubmitting.value ? null : _submitCoworking,
+              onPressed: _isSubmitting.value ? () {} : _submitCoworking,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFF4458),
                 foregroundColor: Colors.white,
@@ -757,32 +757,31 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 elevation: 0,
-                disabledBackgroundColor:
-                    const Color(0xFFFF4458).withValues(alpha: 0.5),
               ),
-              child: _isSubmitting.value
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.check_circle_outline, size: 20),
-                        const SizedBox(width: 8),
-                        Text(
-                          l10n.submitCoworkingSpace,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _isSubmitting.value
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
-                        ),
-                      ],
+                        )
+                      : const Icon(Icons.check_circle_outline, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    l10n.submitCoworkingSpace,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
+                  ),
+                ],
+              ),
             )),
       ),
     );
@@ -794,6 +793,24 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
     if (!_formKey.currentState!.validate()) {
       return;
     }
+
+    // 验证必填字段
+    if (_selectedCityId == null || _selectedCityId!.isEmpty) {
+      AppToast.error(
+        l10n.selectCity,
+        title: l10n.error,
+      );
+      return;
+    }
+
+    // 地图位置暂时设置为可选，不做强制检查
+    // if (_latitude == 0.0 || _longitude == 0.0) {
+    //   AppToast.error(
+    //     l10n.pickLocationOnMap,
+    //     title: l10n.error,
+    //   );
+    //   return;
+    // }
 
     _isSubmitting.value = true;
 
@@ -819,17 +836,40 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
       // 创建请求对象
       final request = CreateCoworkingRequest(
         name: _nameController.text,
-        description: _descriptionController.text,
+        description: _descriptionController.text.isNotEmpty
+            ? _descriptionController.text
+            : null,
         address: _addressController.text,
-        latitude: _latitude,
-        longitude: _longitude,
+        cityId: _selectedCityId,
+        // 只有在用户真正设置了位置时才发送坐标（非 0 值）
+        latitude: _latitude != 0.0 ? _latitude : null,
+        longitude: _longitude != 0.0 ? _longitude : null,
         pricePerDay: _dailyRateController.text.isNotEmpty
             ? double.tryParse(_dailyRateController.text)
             : null,
+        pricePerMonth: _monthlyRateController.text.isNotEmpty
+            ? double.tryParse(_monthlyRateController.text)
+            : null,
+        pricePerHour: _hourlyRateController.text.isNotEmpty
+            ? double.tryParse(_hourlyRateController.text)
+            : null,
+        currency: _currency,
+        wifiSpeed: _wifiSpeedController.text.isNotEmpty
+            ? double.tryParse(_wifiSpeedController.text)
+            : null,
+        hasMeetingRoom: _hasMeetingRoom,
+        hasCoffee: _hasCoffee,
+        hasParking: _hasParking,
+        has247Access: _has24HourAccess,
         amenities: amenities.isNotEmpty ? amenities : null,
+        capacity: _capacityController.text.isNotEmpty
+            ? int.tryParse(_capacityController.text)
+            : null,
         imageUrl: _selectedImage?.path, // TODO: 上传图片到 Supabase Storage
         phone: _phoneController.text.isNotEmpty ? _phoneController.text : null,
         email: _emailController.text.isNotEmpty ? _emailController.text : null,
+        website:
+            _websiteController.text.isNotEmpty ? _websiteController.text : null,
         openingHours:
             _openingHours.isNotEmpty ? _openingHours.join(', ') : null,
       );
@@ -851,17 +891,13 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
           imageUrl: response.data!.imageUrl ?? '',
           description: response.data!.description ?? '',
           pricing: CoworkingPricing(
-            hourlyRate: _hourlyRateController.text.isNotEmpty
-                ? double.tryParse(_hourlyRateController.text)
-                : null,
+            hourlyRate: response.data!.pricePerHour,
             dailyRate: response.data!.pricePerDay,
             weeklyRate: _weeklyRateController.text.isNotEmpty
                 ? double.tryParse(_weeklyRateController.text)
                 : null,
-            monthlyRate: _monthlyRateController.text.isNotEmpty
-                ? double.tryParse(_monthlyRateController.text)
-                : null,
-            currency: _currency,
+            monthlyRate: response.data!.pricePerMonth,
+            currency: response.data!.currency,
             hasFreeTrial: _hasFreeTrial,
             trialDuration: _hasFreeTrial ? _trialDurationController.text : null,
           ),
@@ -883,9 +919,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
             hasPetFriendly: _hasPetFriendly,
           ),
           specs: CoworkingSpecs(
-            wifiSpeed: _wifiSpeedController.text.isNotEmpty
-                ? double.tryParse(_wifiSpeedController.text)
-                : null,
+            wifiSpeed: response.data!.wifiSpeed,
             numberOfDesks: _numberOfDesksController.text.isNotEmpty
                 ? int.tryParse(_numberOfDesksController.text)
                 : null,
@@ -893,16 +927,14 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                 _numberOfMeetingRoomsController.text.isNotEmpty
                     ? int.tryParse(_numberOfMeetingRoomsController.text)
                     : null,
-            capacity: _capacityController.text.isNotEmpty
-                ? int.tryParse(_capacityController.text)
-                : null,
+            capacity: response.data!.capacity,
             noiseLevel: _noiseLevel?.toLowerCase(),
             hasNaturalLight: _hasNaturalLight,
             spaceType: _spaceType?.toLowerCase(),
           ),
           phone: response.data!.phone ?? '',
           email: response.data!.email ?? '',
-          website: _websiteController.text,
+          website: response.data!.website ?? '',
           openingHours: response.data!.openingHours?.split(', ') ?? [],
           lastUpdated: response.data!.updatedAt,
         );
@@ -915,8 +947,11 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
         );
       } else {
         // API 返回失败
+        final errorMessage = response.errors.isNotEmpty
+            ? response.errors.join('\n')
+            : response.message;
         AppToast.error(
-          response.message,
+          errorMessage,
           title: l10n.error,
         );
       }

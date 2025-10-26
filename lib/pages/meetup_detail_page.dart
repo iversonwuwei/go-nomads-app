@@ -111,7 +111,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
       dateTime: DateTime.parse(
           event['startTime'] as String? ?? DateTime.now().toIso8601String()),
       maxAttendees: event['maxParticipants'] as int? ?? 20,
-      currentAttendees: event['currentParticipants'] as int? ?? 0,
+      currentAttendees: event['participantCount'] as int? ?? 0,
       organizerId: organizerId,
       organizerName: organizerName,
       organizerAvatar: 'https://i.pravatar.cc/150?u=$organizerId',
