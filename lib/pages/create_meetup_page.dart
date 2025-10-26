@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:add_2_calendar/add_2_calendar.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -334,82 +333,94 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
       return;
     }
 
-    var initialIndex = 0;
-    if (initialValue != null) {
-      final foundIndex = options.indexOf(initialValue);
-      if (foundIndex >= 0) {
-        initialIndex = foundIndex;
-      }
-    }
-    final controller = FixedExtentScrollController(initialItem: initialIndex);
-    var tempIndex = initialIndex;
     final l10n = AppLocalizations.of(context)!;
 
-    showModalBottomSheet<String>(
-      context: context,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (sheetContext) {
-        final theme = Theme.of(sheetContext);
-        return SafeArea(
-          top: false,
-          child: SizedBox(
-            height: 280,
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 52,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      TextButton(
-                        onPressed: () => Navigator.of(sheetContext).pop(),
-                        child: Text(l10n.cancel),
-                      ),
-                      Text(
-                        title,
-                        style: theme.textTheme.titleMedium,
-                      ),
-                      TextButton(
-                        onPressed: () =>
-                            Navigator.of(sheetContext).pop(options[tempIndex]),
-                        child: Text(l10n.confirm),
-                      ),
-                    ],
-                  ),
-                ),
-                const Divider(height: 1),
-                Expanded(
-                  child: CupertinoPicker(
-                    scrollController: controller,
-                    itemExtent: 44,
-                    onSelectedItemChanged: (index) {
-                      tempIndex = index;
-                    },
-                    children: options
-                        .map(
-                          (value) => Center(
-                            child: Text(
-                              value,
-                              style: theme.textTheme.bodyLarge,
-                            ),
-                          ),
-                        )
-                        .toList(),
-                  ),
-                ),
-              ],
-            ),
+    Get.bottomSheet(
+      Container(
+        height: 300,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
           ),
-        );
-      },
-    ).then((selectedValue) {
-      if (selectedValue != null) {
-        onSelected(selectedValue);
-      }
-    });
+        ),
+        child: Column(
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(color: Colors.grey[300]!),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    onPressed: () => Get.back(),
+                    child: Text(
+                      l10n.cancel,
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+                  ),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Get.back();
+                    },
+                    child: Text(
+                      l10n.confirm,
+                      style: const TextStyle(color: Color(0xFFFF4458)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Picker
+            Expanded(
+              child: ListView.builder(
+                itemCount: options.length,
+                itemBuilder: (context, index) {
+                  final option = options[index];
+                  final isSelected = option == initialValue;
+                  return ListTile(
+                    title: Text(
+                      option,
+                      style: TextStyle(
+                        color: isSelected
+                            ? const Color(0xFFFF4458)
+                            : Colors.black87,
+                        fontWeight:
+                            isSelected ? FontWeight.w600 : FontWeight.normal,
+                      ),
+                    ),
+                    trailing: isSelected
+                        ? const Icon(
+                            Icons.check,
+                            color: Color(0xFFFF4458),
+                          )
+                        : null,
+                    onTap: () {
+                      onSelected(option);
+                      Get.back();
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
+    );
   }
 
   void _createMeetup() async {

@@ -3524,4 +3524,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get imageSelectionFailed => 'Image selection failed';
+
+  @override
+  String get call => 'Call';
+
+  @override
+  String get cannotMakeCall => 'Cannot make phone call';
 }

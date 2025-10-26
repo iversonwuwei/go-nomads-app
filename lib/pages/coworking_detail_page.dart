@@ -632,29 +632,296 @@ class CoworkingDetailPage extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           if (space.phone.isNotEmpty)
-            ListTile(
-              leading: const Icon(Icons.phone, color: Colors.blue),
-              title: Text(space.phone),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () => _launchURL('tel:${space.phone}'),
+            InkWell(
+              onTap: () => _makePhoneCall(context, space.phone),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.blue[50],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.blue[100]!),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.phone,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.phone,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            space.phone,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.blue,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.call,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            l10n.call,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
+          if (space.phone.isNotEmpty && space.email.isNotEmpty)
+            const SizedBox(height: 12),
           if (space.email.isNotEmpty)
-            ListTile(
-              leading: const Icon(Icons.email, color: Colors.red),
-              title: Text(space.email),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            InkWell(
               onTap: () => _launchURL('mailto:${space.email}'),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.red[50],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.red[100]!),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.email,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.email,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            space.email,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.red,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 16,
+                      color: Colors.red,
+                    ),
+                  ],
+                ),
+              ),
             ),
+          if ((space.phone.isNotEmpty || space.email.isNotEmpty) &&
+              space.website.isNotEmpty)
+            const SizedBox(height: 12),
           if (space.website.isNotEmpty)
-            ListTile(
-              leading: const Icon(Icons.language, color: Colors.green),
-              title: Text(space.website),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            InkWell(
               onTap: () => _launchURL(space.website),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.green[50],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.green[100]!),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.green,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.language,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.website,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            space.website,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.green,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 16,
+                      color: Colors.green,
+                    ),
+                  ],
+                ),
+              ),
             ),
         ],
       ),
     );
+  }
+
+  /// 拨打电话
+  Future<void> _makePhoneCall(BuildContext context, String phoneNumber) async {
+    final l10n = AppLocalizations.of(context)!;
+    final uri = Uri.parse('tel:$phoneNumber');
+
+    try {
+      // 在模拟器上，即使不能真正拨打，也尝试打开拨号界面
+      final canLaunch = await canLaunchUrl(uri);
+
+      if (canLaunch) {
+        // 使用 LaunchMode.externalApplication 确保在外部应用中打开
+        await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
+      } else {
+        // 在模拟器上可能会失败，提供更友好的提示
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.cannotMakeCall,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    phoneNumber,
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    '💡 提示：在真机上可以正常拨打',
+                    style: TextStyle(fontSize: 11),
+                  ),
+                ],
+              ),
+              backgroundColor: Colors.orange,
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 4),
+              action: SnackBarAction(
+                label: '复制',
+                textColor: Colors.white,
+                onPressed: () {
+                  // 这里可以添加复制到剪贴板的功能
+                },
+              ),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      // 捕获异常并显示错误信息
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${l10n.error}: ${e.toString()}',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  phoneNumber,
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
   }
 
   /// 启动URL

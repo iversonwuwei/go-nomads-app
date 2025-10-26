@@ -1705,7 +1705,9 @@
   "publishProject": "Publish Project",
   "projectCreatedSuccessfully": "Innovation project created successfully!",
   "creationFailed": "Creation failed",
-  "imageSelectionFailed": "Image selection failed"
+  "imageSelectionFailed": "Image selection failed",
+  "call": "Call",
+  "cannotMakeCall": "Cannot make phone call"
 }
 
 

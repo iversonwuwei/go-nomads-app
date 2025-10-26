@@ -5,7 +5,9 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../config/app_colors.dart';
+import '../controllers/add_coworking_controller.dart';
 import '../generated/app_localizations.dart';
+import '../models/city_option.dart';
 import '../models/coworking_space_model.dart';
 import '../widgets/app_toast.dart';
 import 'amap_native_picker_page.dart';
@@ -29,13 +31,25 @@ class AddCoworkingPage extends StatefulWidget {
 class _AddCoworkingPageState extends State<AddCoworkingPage> {
   final _formKey = GlobalKey<FormState>();
   final RxBool _isSubmitting = false.obs;
+  
+  // Controller for managing countries and cities
+  final AddCoworkingController _addCoworkingController =
+      Get.put(AddCoworkingController());
 
   // Basic Info
   final _nameController = TextEditingController();
   final _addressController = TextEditingController();
-  final _cityController = TextEditingController();
-  final _countryController = TextEditingController();
   final _descriptionController = TextEditingController();
+
+  // Selected country and city
+  String? _selectedCountry;
+  String? _selectedCity;
+  String? _selectedCountryId;
+  String? _selectedCityId;
+  final GlobalKey<FormFieldState<String>> _cityFieldKey =
+      GlobalKey<FormFieldState<String>>();
+  final GlobalKey<FormFieldState<String>> _countryFieldKey =
+      GlobalKey<FormFieldState<String>>();
 
   // Location
   double _latitude = 0.0;
@@ -91,8 +105,9 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
   @override
   void initState() {
     super.initState();
+    // 如果从城市详情页传入了城市名称，设置为选中
     if (widget.cityName != null) {
-      _cityController.text = widget.cityName!;
+      _selectedCity = widget.cityName;
     }
   }
 
@@ -100,8 +115,6 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
   void dispose() {
     _nameController.dispose();
     _addressController.dispose();
-    _cityController.dispose();
-    _countryController.dispose();
     _descriptionController.dispose();
     _phoneController.dispose();
     _emailController.dispose();
@@ -183,27 +196,15 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                     required: true,
                   ),
                   const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildTextField(
-                          controller: _cityController,
-                          label: l10n.city,
-                          hint: l10n.cityHint,
-                          required: true,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _buildTextField(
-                          controller: _countryController,
-                          label: l10n.country,
-                          hint: l10n.countryHint,
-                          required: true,
-                        ),
-                      ),
-                    ],
-                  ),
+                  
+                  // Country Dropdown
+                  _buildCountryDropdown(l10n),
+
+                  const SizedBox(height: 16),
+
+                  // City Dropdown
+                  _buildCityDropdown(l10n),
+                  
                   const SizedBox(height: 16),
                   _buildLocationPicker(),
 
@@ -801,8 +802,8 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         name: _nameController.text,
         address: _addressController.text,
-        city: _cityController.text,
-        country: _countryController.text,
+        city: _selectedCity ?? '',
+        country: _selectedCountry ?? '',
         latitude: _latitude,
         longitude: _longitude,
         imageUrl: _selectedImage?.path ?? '',
@@ -882,5 +883,352 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
     } finally {
       _isSubmitting.value = false;
     }
+  }
+
+  /// 构建国家下拉选择器
+  Widget _buildCountryDropdown(AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '${l10n.country} *',
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Obx(() {
+          final countryList = _addCoworkingController.countries;
+          final isLoadingCountries =
+              _addCoworkingController.isLoadingCountries.value;
+          final localeCode =
+              Localizations.localeOf(context).languageCode.toLowerCase();
+
+          final countryEntries = countryList
+              .where((country) => country.isActive)
+              .map((country) => MapEntry(
+                    country,
+                    country.displayName(localeCode),
+                  ))
+              .where((entry) => entry.value.isNotEmpty)
+              .toList()
+            ..sort((a, b) => a.value.compareTo(b.value));
+
+          final countries = countryEntries.map((entry) => entry.value).toList();
+
+          return FormField<String>(
+            key: _countryFieldKey,
+            initialValue: _selectedCountry,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return l10n.selectCountry;
+              }
+              return null;
+            },
+            builder: (field) {
+              final displayCountry = field.value ?? _selectedCountry;
+              return GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  if (isLoadingCountries) {
+                    AppToast.info(l10n.loading, title: l10n.notice);
+                    return;
+                  }
+
+                  if (countries.isEmpty) {
+                    AppToast.info(l10n.noData, title: l10n.notice);
+                    _addCoworkingController.loadCountries(forceRefresh: true);
+                    return;
+                  }
+
+                  FocusScope.of(context).unfocus();
+                  _showOptionPicker(
+                    options: countries,
+                    title: l10n.selectCountry,
+                    initialValue: _selectedCountry,
+                    onSelected: (value) {
+                      final selectedEntry = countryEntries
+                          .firstWhereOrNull((entry) => entry.value == value);
+                      if (selectedEntry == null) {
+                        return;
+                      }
+
+                      setState(() {
+                        _selectedCountry = value;
+                        _selectedCountryId = selectedEntry.key.id;
+                        _selectedCity = null;
+                        _selectedCityId = null;
+                      });
+                      field.didChange(value);
+
+                      final cityFieldState = _cityFieldKey.currentState;
+                      cityFieldState?.didChange(null);
+
+                      _addCoworkingController
+                          .loadCitiesByCountry(selectedEntry.key.id);
+                    },
+                  );
+                },
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    hintText: l10n.selectCountry,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[50],
+                    suffixIcon: isLoadingCountries
+                        ? const Padding(
+                            padding: EdgeInsets.all(8),
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          )
+                        : const Icon(Icons.keyboard_arrow_down),
+                    errorText: field.errorText,
+                  ),
+                  isEmpty: displayCountry == null || displayCountry.isEmpty,
+                  child: Text(
+                    displayCountry ?? '',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: displayCountry == null ||
+                                  displayCountry.isEmpty
+                              ? Theme.of(context).hintColor
+                              : Theme.of(context).textTheme.bodyMedium?.color,
+                        ),
+                  ),
+                ),
+              );
+            },
+          );
+        }),
+      ],
+    );
+  }
+
+  /// 构建城市下拉选择器
+  Widget _buildCityDropdown(AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '${l10n.city} *',
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Obx(() {
+          final selectedCountryId = _selectedCountryId;
+          final cityMap = _addCoworkingController.citiesByCountry;
+          final _ = cityMap.length; // 触发 Obx 监听
+          final cachedCities = selectedCountryId == null
+              ? const <CityOption>[]
+              : (cityMap[selectedCountryId] ?? const <CityOption>[]);
+
+          final cachedCityNames = cachedCities
+              .map((city) => city.name)
+              .where((name) => name.isNotEmpty)
+              .toSet()
+              .toList()
+            ..sort();
+
+          return FormField<String>(
+            key: _cityFieldKey,
+            initialValue: _selectedCity,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return l10n.selectCity;
+              }
+              return null;
+            },
+            builder: (field) {
+              final displayCity = field.value ?? _selectedCity;
+              final isLoadingCities =
+                  _addCoworkingController.isLoadingCities.value;
+
+              return GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () async {
+                  if (_selectedCountryId == null) {
+                    AppToast.info(
+                      l10n.selectCountryFirst,
+                      title: l10n.notice,
+                    );
+                    return;
+                  }
+
+                  if (isLoadingCities) {
+                    AppToast.info(l10n.loading, title: l10n.notice);
+                    return;
+                  }
+
+                  FocusScope.of(context).unfocus();
+
+                  // 使用缓存的城市列表
+                  List<String> options = List<String>.from(cachedCityNames);
+
+                  if (options.isEmpty) {
+                    AppToast.info(l10n.noData, title: l10n.notice);
+                    return;
+                  }
+
+                  _showOptionPicker(
+                    options: options,
+                    title: l10n.selectCity,
+                    initialValue: _selectedCity,
+                    onSelected: (value) {
+                      final selectedCity = cachedCities
+                          .firstWhereOrNull((city) => city.name == value);
+
+                      setState(() {
+                        _selectedCity = value;
+                        _selectedCityId = selectedCity?.id;
+                      });
+                      field.didChange(value);
+                    },
+                  );
+                },
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    hintText: l10n.selectCity,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[50],
+                    suffixIcon: isLoadingCities
+                        ? const Padding(
+                            padding: EdgeInsets.all(8),
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          )
+                        : const Icon(Icons.keyboard_arrow_down),
+                    errorText: field.errorText,
+                  ),
+                  isEmpty: displayCity == null || displayCity.isEmpty,
+                  child: Text(
+                    displayCity ?? '',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: displayCity == null || displayCity.isEmpty
+                              ? Theme.of(context).hintColor
+                              : Theme.of(context).textTheme.bodyMedium?.color,
+                        ),
+                  ),
+                ),
+              );
+            },
+          );
+        }),
+      ],
+    );
+  }
+
+  /// 显示选项选择器（iOS风格）
+  void _showOptionPicker({
+    required List<String> options,
+    required String title,
+    String? initialValue,
+    required Function(String) onSelected,
+  }) {
+    Get.bottomSheet(
+      Container(
+        height: 300,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        child: Column(
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(color: Colors.grey[300]!),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    onPressed: () => Get.back(),
+                    child: Text(
+                      AppLocalizations.of(context)!.cancel,
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+                  ),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Get.back();
+                    },
+                    child: Text(
+                      AppLocalizations.of(context)!.done,
+                      style: const TextStyle(color: Color(0xFFFF4458)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Picker
+            Expanded(
+              child: ListView.builder(
+                itemCount: options.length,
+                itemBuilder: (context, index) {
+                  final option = options[index];
+                  final isSelected = option == initialValue;
+                  return ListTile(
+                    title: Text(
+                      option,
+                      style: TextStyle(
+                        color: isSelected
+                            ? const Color(0xFFFF4458)
+                            : Colors.black87,
+                        fontWeight:
+                            isSelected ? FontWeight.w600 : FontWeight.normal,
+                      ),
+                    ),
+                    trailing: isSelected
+                        ? const Icon(
+                            Icons.check,
+                            color: Color(0xFFFF4458),
+                          )
+                        : null,
+                    onTap: () {
+                      onSelected(option);
+                      Get.back();
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
+    );
   }
 }

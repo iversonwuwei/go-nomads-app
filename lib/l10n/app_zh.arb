@@ -1689,7 +1689,9 @@
   "publishProject": "发布创意项目",
   "projectCreatedSuccessfully": "创意项目创建成功!",
   "creationFailed": "创建失败",
-  "imageSelectionFailed": "选择图片失败"
+  "imageSelectionFailed": "选择图片失败",
+  "call": "拨打",
+  "cannotMakeCall": "无法拨打电话"
 }
 
 

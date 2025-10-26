@@ -3481,4 +3481,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get imageSelectionFailed => '选择图片失败';
+
+  @override
+  String get call => '拨打';
+
+  @override
+  String get cannotMakeCall => '无法拨打电话';
 }

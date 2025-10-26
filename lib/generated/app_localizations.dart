@@ -6895,6 +6895,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'选择图片失败'**
   String get imageSelectionFailed;
+
+  /// No description provided for @call.
+  ///
+  /// In zh, this message translates to:
+  /// **'拨打'**
+  String get call;
+
+  /// No description provided for @cannotMakeCall.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法拨打电话'**
+  String get cannotMakeCall;
 }
 
 class _AppLocalizationsDelegate
