@@ -86,7 +86,7 @@ class CitiesApiService {
   }
 
   /// 获取城市列表（含 Coworking 数量）- 专门为 coworking_home 页面设计
-  /// 调用 Gateway 的 /api/v1/home/cities-with-coworking 接口
+  /// 调用 CityService 的 /api/v1/cities/with-coworking-count 接口
   Future<Map<String, dynamic>> getCitiesWithCoworkingCount({
     int page = 1,
     int pageSize = 100,
@@ -97,9 +97,9 @@ class CitiesApiService {
         'pageSize': pageSize,
       };
 
-      // 调用 Gateway 的专用接口
+      // 调用 CityService 的专用接口
       final response = await _httpService.get(
-        '${ApiConfig.baseUrl}/home/cities-with-coworking',
+        '/cities/with-coworking-count',
         queryParameters: queryParameters,
       );
 

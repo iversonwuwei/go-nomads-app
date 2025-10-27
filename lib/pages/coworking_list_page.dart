@@ -9,7 +9,7 @@ import '../generated/app_localizations.dart';
 /// Coworking List Page
 /// 共享办公空间列表页面
 class CoworkingListPage extends StatefulWidget {
-  final int cityId;
+  final String cityId;
   final String cityName;
 
   const CoworkingListPage({

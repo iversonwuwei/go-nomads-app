@@ -1,4 +1,3 @@
-import '../config/api_config.dart';
 import 'http_service.dart';
 
 /// Coworking API Service
@@ -6,12 +5,14 @@ import 'http_service.dart';
 class CoworkingApiService {
   static final CoworkingApiService _instance = CoworkingApiService._internal();
   factory CoworkingApiService() => _instance;
-  
+
   final HttpService _httpService = HttpService();
   late final String baseUrl;
 
   CoworkingApiService._internal() {
-    baseUrl = '${ApiConfig.baseUrl}/coworking';
+    // HttpService 已经配置了 baseUrl 为 /api/v1
+    // 所以这里只需要添加 /coworking 路径
+    baseUrl = '/coworking';
   }
 
   /// 获取 Coworking 空间列表（分页,支持按城市过滤）
@@ -25,7 +26,7 @@ class CoworkingApiService {
         'page': page,
         'pageSize': pageSize,
       };
-      
+
       if (cityId != null && cityId.isNotEmpty) {
         queryParameters['cityId'] = cityId;
       }
@@ -38,6 +39,32 @@ class CoworkingApiService {
       return response.data as Map<String, dynamic>;
     } catch (e) {
       throw Exception('获取列表失败: ${e.toString()}');
+    }
+  }
+
+  /// 根据城市ID获取 Coworking 空间列表（专用路由）
+  Future<Map<String, dynamic>> getCoworkingSpacesByCity(
+    String cityId, {
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    try {
+      print(
+          '🏢 调用 API: /coworking/city/$cityId (page=$page, pageSize=$pageSize)');
+
+      final response = await _httpService.get(
+        '/coworking/city/$cityId',
+        queryParameters: {
+          'page': page,
+          'pageSize': pageSize,
+        },
+      );
+
+      print('🏢 API 响应成功');
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      print('❌ 获取城市 Coworking 列表失败: $e');
+      throw Exception('获取城市 Coworking 列表失败: ${e.toString()}');
     }
   }
 
@@ -62,10 +89,11 @@ class CoworkingApiService {
   }
 
   /// 批量获取多个城市的 Coworking 空间数量
-  /// 
+  ///
   /// [cityIds] - 城市 ID 列表
   /// 返回: Map<String, int> - key 为城市 ID, value 为该城市的 Coworking 数量
-  Future<Map<String, int>> getCoworkingCountByCities(List<String> cityIds) async {
+  Future<Map<String, int>> getCoworkingCountByCities(
+      List<String> cityIds) async {
     try {
       if (cityIds.isEmpty) {
         return {};
@@ -83,7 +111,7 @@ class CoworkingApiService {
 
       // 响应格式: Map<String, int> (城市ID -> 数量)
       final data = response.data as Map<String, dynamic>;
-      
+
       // 转换为 Map<String, int>
       return data.map((key, value) => MapEntry(key, value as int));
     } catch (e) {

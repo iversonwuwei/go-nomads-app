@@ -1,4 +1,5 @@
 import 'package:df_admin_mobile/models/coworking_space_model.dart';
+import 'package:df_admin_mobile/services/coworking_api_service.dart';
 import 'package:df_admin_mobile/services/data/coworking_data_service.dart';
 import 'package:get/get.dart';
 
@@ -6,6 +7,7 @@ import 'package:get/get.dart';
 /// 管理共享办公空间的控制器
 class CoworkingController extends GetxController {
   final CoworkingDataService _coworkingService = CoworkingDataService();
+  final CoworkingApiService _apiService = CoworkingApiService();
 
   // 观察变量
   var coworkingSpaces = <CoworkingSpace>[].obs;
@@ -367,72 +369,101 @@ class CoworkingController extends GetxController {
   }
 
   /// 按城市ID加载共享办公空间
-  Future<void> loadCoworkingsByCity(int cityId, {String? cityName}) async {
+  Future<void> loadCoworkingsByCity(String cityId, {String? cityName}) async {
     try {
       isLoading.value = true;
       print('🏢 Loading coworkings for city ID: $cityId');
 
-      final coworkings = await _coworkingService.getCoworkingsByCity(cityId);
-      print('🏢 Found ${coworkings.length} coworkings');
+      // 调用后端 API 获取指定城市的 coworking 数据
+      // 注意: HttpService 拦截器已自动解包响应,response 直接是 data 部分
+      final response = await _apiService.getCoworkingSpacesByCity(
+        cityId,
+        page: 1,
+        pageSize: 100, // 获取所有数据
+      );
 
-      // 转换数据库数据为 CoworkingSpace 模型
-      coworkingSpaces.value = coworkings.map((data) {
-        return CoworkingSpace(
-          id: data['id'].toString(),
-          name: data['name'] ?? '',
-          address: data['address'] ?? '',
-          city: cityName ?? _getCityNameById(data['city_id']),
-          country: data['country'] ?? 'Thailand', // 使用数据库中的国家或默认值
-          latitude: (data['latitude'] as num?)?.toDouble() ?? 0.0,
-          longitude: (data['longitude'] as num?)?.toDouble() ?? 0.0,
-          imageUrl: data['image_url'] ?? '',
-          images: [data['image_url'] ?? ''],
-          rating: (data['rating'] as num?)?.toDouble() ?? 4.0,
-          reviewCount: 0,
-          description: data['description'] ?? '',
-          pricing: CoworkingPricing(
-            dailyRate: (data['price_per_day'] as num?)?.toDouble(),
-            monthlyRate: (data['price_per_month'] as num?)?.toDouble(),
-            currency: 'USD',
-            hasFreeTrial: false,
-          ),
-          amenities: CoworkingAmenities(
-            hasWifi: ((data['wifi_speed'] as num?)?.toDouble() ?? 0) > 0,
-            hasCoffee: (data['has_coffee'] as int?) == 1,
-            hasPrinter: true,
-            hasMeetingRoom: (data['has_meeting_room'] as int?) == 1,
-            hasAirConditioning: true,
-          ),
-          specs: CoworkingSpecs(
-            wifiSpeed: (data['wifi_speed'] as num?)?.toDouble() ?? 0.0,
-            numberOfDesks: 50,
-            numberOfMeetingRooms:
-                (data['has_meeting_room'] as int?) == 1 ? 2 : 0,
-            capacity: 50,
-            noiseLevel: 'moderate',
-            hasNaturalLight: true,
-            spaceType: 'mixed',
-          ),
-          openingHours: [
-            data['opening_hours'] ?? 'Mon-Fri: 9:00 AM - 6:00 PM',
-          ],
-          phone: data['phone'] ?? '',
-          email: data['email'] ?? '',
-          website: data['website'] ?? '',
-          isVerified: true,
-          lastUpdated: DateTime.now(),
-        );
+      print('📦 API 响应数据: $response');
+
+      // HttpService 已经解包了 API 响应,response 直接是 data 对象
+      // 原始格式: {success: true, data: {items: [...], ...}}
+      // 解包后格式: {items: [...], totalCount: ..., ...}
+      final items = response['items'] as List<dynamic>? ?? [];
+
+      print('🏢 Found ${items.length} coworkings from API');
+
+      // 转换 API 数据为 CoworkingSpace 模型
+      coworkingSpaces.value = items.map((item) {
+        final itemData = item as Map<String, dynamic>;
+        return _convertApiDataToModel(itemData, cityName);
       }).toList();
 
       filteredSpaces.value = coworkingSpaces;
-      print('🏢 Loaded ${coworkingSpaces.length} coworking spaces');
+      print('✅ Loaded ${coworkingSpaces.length} coworking spaces from API');
     } catch (e) {
-      print('❌ Error loading coworkings by city: $e');
-      coworkingSpaces.value = [];
-      filteredSpaces.value = [];
+      print('❌ Error loading coworkings by city from API: $e');
+      // API 调用失败,降级到模拟数据
+      print('⚠️ 降级使用本地模拟数据');
+      loadMockData();
     } finally {
       isLoading.value = false;
     }
+  }
+
+  /// 将 API 数据转换为 CoworkingSpace 模型
+  CoworkingSpace _convertApiDataToModel(
+      Map<String, dynamic> data, String? cityName) {
+    return CoworkingSpace(
+      id: data['id']?.toString() ?? '',
+      name: data['name'] ?? '',
+      address: data['address'] ?? '',
+      city: cityName ?? 'Unknown',
+      country: 'China', // 默认国家
+      latitude: (data['latitude'] as num?)?.toDouble() ?? 0.0,
+      longitude: (data['longitude'] as num?)?.toDouble() ?? 0.0,
+      imageUrl: data['imageUrl'] ?? '',
+      images: data['images'] != null
+          ? List<String>.from(data['images'])
+          : [data['imageUrl'] ?? ''],
+      rating: (data['rating'] as num?)?.toDouble() ?? 4.0,
+      reviewCount: data['reviewCount'] as int? ?? 0,
+      description: data['description'] ?? '',
+      pricing: CoworkingPricing(
+        hourlyRate: (data['pricePerHour'] as num?)?.toDouble(),
+        dailyRate: (data['pricePerDay'] as num?)?.toDouble(),
+        monthlyRate: (data['pricePerMonth'] as num?)?.toDouble(),
+        currency: data['currency'] ?? 'USD',
+        hasFreeTrial: false,
+      ),
+      amenities: CoworkingAmenities(
+        hasWifi: ((data['wifiSpeed'] as num?)?.toDouble() ?? 0) > 0,
+        hasCoffee: data['hasCoffee'] == true,
+        hasPrinter: true,
+        hasMeetingRoom: data['hasMeetingRoom'] == true,
+        hasParking: data['hasParking'] == true,
+        has24HourAccess: data['has247Access'] == true,
+        hasAirConditioning: true,
+        additionalAmenities: data['amenities'] != null
+            ? List<String>.from(data['amenities'])
+            : [],
+      ),
+      specs: CoworkingSpecs(
+        wifiSpeed: (data['wifiSpeed'] as num?)?.toDouble() ?? 0.0,
+        numberOfDesks: data['capacity'] as int? ?? 50,
+        numberOfMeetingRooms: data['hasMeetingRoom'] == true ? 2 : 0,
+        capacity: data['capacity'] as int? ?? 50,
+        noiseLevel: 'moderate',
+        hasNaturalLight: true,
+        spaceType: 'mixed',
+      ),
+      openingHours: [
+        data['openingHours'] ?? 'Mon-Fri: 9:00 AM - 6:00 PM',
+      ],
+      phone: data['phone'] ?? '',
+      email: data['email'] ?? '',
+      website: data['website'] ?? '',
+      isVerified: data['isActive'] == true,
+      lastUpdated: DateTime.now(),
+    );
   }
 
   /// 按城市筛选

@@ -57,10 +57,22 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
       List<Map<String, dynamic>> citiesWithCount = [];
 
       for (var city in cities) {
-        final count = city['coworkingCount'] as int? ?? 0;
+        // 处理 coworkingCount 可能是字符串或整数的情况
+        final coworkingCountValue = city['coworkingCount'];
+        final count = coworkingCountValue is int
+            ? coworkingCountValue
+            : (coworkingCountValue is String
+                ? int.tryParse(coworkingCountValue) ?? 0
+                : 0);
 
         // 只添加有 coworking 空间的城市
         if (count > 0) {
+          // 提取天气信息
+          final weather = city['weather'] as Map<String, dynamic>?;
+          final temperature = weather?['temperature']?.toDouble();
+          final weatherIcon = weather?['weatherIcon'] as String?;
+          final weatherDesc = weather?['weatherDescription'] as String?;
+
           citiesWithCount.add({
             'id': city['id'] as String,
             'name': city['name'] as String,
@@ -68,6 +80,9 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
             'image': city['imageUrl'] as String? ??
                 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000',
             'spaces': count,
+            'temperature': temperature,
+            'weatherIcon': weatherIcon,
+            'weatherDescription': weatherDesc,
           });
         }
       }
@@ -360,6 +375,65 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
                       ),
                     ],
                   ),
+                  // 天气信息
+                  if (city['temperature'] != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Row(
+                        children: [
+                          if (city['weatherIcon'] != null)
+                            Image.network(
+                              'https://openweathermap.org/img/wn/${city['weatherIcon']}@2x.png',
+                              width: 20,
+                              height: 20,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(
+                                  Icons.wb_sunny,
+                                  size: 14,
+                                  color: Colors.orange[600],
+                                );
+                              },
+                            )
+                          else
+                            Icon(
+                              Icons.wb_sunny,
+                              size: 14,
+                              color: Colors.orange[600],
+                            ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${city['temperature']?.toStringAsFixed(1)}°C',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey[700],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          if (city['weatherDescription'] != null) ...[
+                            const SizedBox(width: 4),
+                            Text(
+                              '·',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey[500],
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                city['weatherDescription'],
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
                 ],
               ),
             ),
