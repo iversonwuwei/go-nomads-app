@@ -6,7 +6,7 @@ import 'http_service.dart';
 class CitiesApiService {
   static final CitiesApiService _instance = CitiesApiService._internal();
   factory CitiesApiService() => _instance;
-  
+
   final HttpService _httpService = HttpService();
   late final String baseUrl;
 
@@ -25,7 +25,7 @@ class CitiesApiService {
         'page': page,
         'pageSize': pageSize,
       };
-      
+
       if (countryId != null && countryId.isNotEmpty) {
         queryParameters['countryId'] = countryId;
       }
@@ -82,6 +82,30 @@ class CitiesApiService {
       return response.data as List<dynamic>;
     } catch (e) {
       throw Exception('获取国家列表失败: ${e.toString()}');
+    }
+  }
+
+  /// 获取城市列表（含 Coworking 数量）- 专门为 coworking_home 页面设计
+  /// 调用 Gateway 的 /api/v1/home/cities-with-coworking 接口
+  Future<Map<String, dynamic>> getCitiesWithCoworkingCount({
+    int page = 1,
+    int pageSize = 100,
+  }) async {
+    try {
+      final queryParameters = <String, dynamic>{
+        'page': page,
+        'pageSize': pageSize,
+      };
+
+      // 调用 Gateway 的专用接口
+      final response = await _httpService.get(
+        '${ApiConfig.baseUrl}/home/cities-with-coworking',
+        queryParameters: queryParameters,
+      );
+
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('获取城市列表(含Coworking数量)失败: ${e.toString()}');
     }
   }
 }

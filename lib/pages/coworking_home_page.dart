@@ -1,7 +1,6 @@
 import 'package:df_admin_mobile/pages/add_coworking_page.dart';
 import 'package:df_admin_mobile/pages/coworking_list_page.dart';
 import 'package:df_admin_mobile/services/cities_api_service.dart';
-import 'package:df_admin_mobile/services/coworking_api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -20,7 +19,6 @@ class CoworkingHomePage extends StatefulWidget {
 
 class _CoworkingHomePageState extends State<CoworkingHomePage> {
   final CitiesApiService _citiesApiService = CitiesApiService();
-  final CoworkingApiService _coworkingApiService = CoworkingApiService();
   List<Map<String, dynamic>> _cities = [];
   bool _isLoading = true;
 
@@ -31,18 +29,20 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
   }
 
   /// 加载城市及其coworking空间数量
+  /// 使用新的后端接口: /api/v1/home/cities-with-coworking
   Future<void> _loadCitiesWithCoworkingCount() async {
     try {
       setState(() => _isLoading = true);
 
-      // 1. 获取所有城市 (分页获取,这里先获取前100个)
-      print('🏙️ 开始获取城市列表...');
-      final citiesResponse = await _citiesApiService.getCities(
+      print('🏙️ 开始获取城市列表(含Coworking数量)...');
+
+      // 调用新的一体化接口,后端已经聚合了 coworking 数量
+      final response = await _citiesApiService.getCitiesWithCoworkingCount(
         page: 1,
         pageSize: 100,
       );
 
-      final cities = citiesResponse['items'] as List<dynamic>;
+      final cities = response['items'] as List<dynamic>;
       print('✅ 获取到 ${cities.length} 个城市');
 
       if (cities.isEmpty) {
@@ -53,24 +53,16 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
         return;
       }
 
-      // 2. 批量获取所有城市的 coworking 数量 (性能优化: 1次API调用代替N次)
-      final cityIds = cities.map((c) => c['id'] as String).toList();
-      print('📊 批量获取 ${cityIds.length} 个城市的 Coworking 数量...');
-      
-      final countMap = await _coworkingApiService.getCoworkingCountByCities(cityIds);
-      print('✅ 成功获取批量统计数据: ${countMap.length} 个城市有 Coworking 空间');
-
-      // 3. 组装城市数据,只保留有 coworking 空间的城市
+      // 组装城市数据,只保留有 coworking 空间的城市
       List<Map<String, dynamic>> citiesWithCount = [];
 
       for (var city in cities) {
-        final cityId = city['id'] as String;
-        final count = countMap[cityId] ?? 0;
+        final count = city['coworkingCount'] as int? ?? 0;
 
         // 只添加有 coworking 空间的城市
         if (count > 0) {
           citiesWithCount.add({
-            'id': cityId,
+            'id': city['id'] as String,
             'name': city['name'] as String,
             'country': city['country'] as String? ?? '',
             'image': city['imageUrl'] as String? ??

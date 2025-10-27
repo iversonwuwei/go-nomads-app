@@ -15,7 +15,7 @@
     <application
 android:label="行途"
         android:name="com.example.df_admin_mobile.MyApplication"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/go_nomads"
         android:networkSecurityConfig="@xml/network_security_config">
 
         <activity
