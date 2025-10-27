@@ -177,14 +177,16 @@ class _MeetupsListPageState extends State<MeetupsListPage>
 
     // 🔍 调试日志:打印所有可能的参与者字段
     print('🔍 Event ${event['id']} - isParticipant: ${event['isParticipant']}');
+    print('  participantCount: ${event['participantCount']}');
     print('  currentParticipants: ${event['currentParticipants']}');
     print('  participantsCount: ${event['participantsCount']}');
     print('  attendeesCount: ${event['attendeesCount']}');
     print('  participants: ${event['participants']}');
     print('  maxParticipants: ${event['maxParticipants']}');
 
-    // 获取当前参与者数量 - 支持多个可能的字段名
-    final currentParticipants = (event['currentParticipants'] as int?) ??
+    // 获取当前参与者数量 - 支持多个可能的字段名（优先使用 participantCount，与 detail page 保持一致）
+    final currentParticipants = (event['participantCount'] as int?) ??
+        (event['currentParticipants'] as int?) ??
         (event['participantsCount'] as int?) ??
         (event['attendeesCount'] as int?) ??
         (event['participants'] as int?) ??
@@ -500,9 +502,183 @@ class _MeetupsListPageState extends State<MeetupsListPage>
   }
 
   Widget _buildMeetupCard(MeetupModel meetup) {
+    // 使用自管理生命周期的 StatefulWidget，参考 data_service_page 的设计
+    return _MeetupListCard(
+      meetup: meetup,
+      eventsApiService: _eventsApiService,
+      onUpdated: (updatedMeetup) {
+        // 回调更新父级的 _meetups 列表
+        final index = _meetups.indexWhere((m) => m.id == updatedMeetup.id);
+        if (index != -1) {
+          _meetups[index] = updatedMeetup;
+          _meetups.refresh();
+        }
+      },
+    );
+  }
+
+  void _showFilterDrawer() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _MeetupFilterDrawer(
+        selectedCountries: _selectedCountries,
+        selectedCities: _selectedCities,
+        selectedTypes: _selectedTypes,
+        timeFilter: _timeFilter,
+        maxAttendees: _maxAttendees,
+        availableCountries: availableCountries,
+        availableCities: availableCities,
+        availableTypes: availableTypes,
+        onReset: _resetFilters,
+      ),
+    );
+  }
+}
+
+// 自管理生命周期的 Meetup Card - 参考 data_service_page 的设计
+class _MeetupListCard extends StatefulWidget {
+  final MeetupModel meetup;
+  final EventsApiService eventsApiService;
+  final Function(MeetupModel) onUpdated;
+
+  const _MeetupListCard({
+    required this.meetup,
+    required this.eventsApiService,
+    required this.onUpdated,
+  });
+
+  @override
+  State<_MeetupListCard> createState() => _MeetupListCardState();
+}
+
+class _MeetupListCardState extends State<_MeetupListCard> {
+  // 卡片自己的状态 - 符合 DDD 原则
+  late bool _isJoined;
+  late int _currentAttendees;
+  late int _maxAttendees;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // 初始化本地状态
+    _isJoined = widget.meetup.isJoined;
+    _currentAttendees = widget.meetup.currentAttendees;
+    _maxAttendees = widget.meetup.maxAttendees;
+
+    print('🔍 MeetupListCard initState:');
+    print('   ID: ${widget.meetup.id}');
+    print('   Title: ${widget.meetup.title}');
+    print('   isJoined: $_isJoined');
+    print('   Attendees: $_currentAttendees / $_maxAttendees');
+  }
+
+  @override
+  void didUpdateWidget(_MeetupListCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // 当 widget 更新时，检查数据是否变化
+    if (oldWidget.meetup.id == widget.meetup.id) {
+      // 同一个 meetup，更新状态
+      if (_isJoined != widget.meetup.isJoined ||
+          _currentAttendees != widget.meetup.currentAttendees) {
+        print('🔄 Meetup ${widget.meetup.title} 数据更新:');
+        print('   isJoined: $_isJoined -> ${widget.meetup.isJoined}');
+        print(
+            '   Attendees: $_currentAttendees -> ${widget.meetup.currentAttendees}');
+        setState(() {
+          _isJoined = widget.meetup.isJoined;
+          _currentAttendees = widget.meetup.currentAttendees;
+          _maxAttendees = widget.meetup.maxAttendees;
+        });
+      }
+    }
+  }
+
+  Future<void> _handleToggleJoin() async {
+    final l10n = AppLocalizations.of(context)!;
+
+    // 判断是加入还是退出
+    final isJoining = !_isJoined;
+
+    try {
+      // 调用 API
+      if (isJoining) {
+        await widget.eventsApiService.joinEvent(widget.meetup.id);
+        print('✅ 成功加入活动: ${widget.meetup.title}');
+      } else {
+        await widget.eventsApiService.leaveEvent(widget.meetup.id);
+        print('✅ 成功退出活动: ${widget.meetup.title}');
+      }
+
+      // API 调用成功，更新本地状态
+      setState(() {
+        _isJoined = isJoining;
+        _currentAttendees = _currentAttendees + (isJoining ? 1 : -1);
+      });
+
+      // 通知父级更新全局列表
+      final updatedMeetup = widget.meetup.copyWith(
+        isJoined: isJoining,
+        currentAttendees: _currentAttendees,
+      );
+      widget.onUpdated(updatedMeetup);
+
+      // 显示成功消息
+      if (isJoining) {
+        AppToast.success(
+          l10n.youHaveJoined(widget.meetup.title),
+          title: l10n.joined,
+        );
+      } else {
+        AppToast.info(
+          l10n.youLeft(widget.meetup.title),
+          title: l10n.leftMeetup,
+        );
+      }
+    } catch (e) {
+      print('❌ 加入/退出活动失败: $e');
+      AppToast.error(
+        _isJoined ? '退出活动失败' : '加入活动失败',
+      );
+    }
+  }
+
+  void _openChat() {
+    final l10n = AppLocalizations.of(context)!;
+
+    if (!_isJoined) {
+      AppToast.warning(
+        l10n.joinToAccessChat,
+        title: l10n.joinRequired,
+      );
+      return;
+    }
+
+    // 跳转到群聊页面
+    Get.toNamed(
+      '/city-chat',
+      arguments: {
+        'city': widget.meetup.title,
+        'country': '${widget.meetup.type} Meetup',
+        'meetupId': widget.meetup.id,
+        'isMeetupChat': true,
+      },
+    );
+  }
+
+  int get _remainingSlots => _maxAttendees - _currentAttendees;
+  bool get _isFull => _remainingSlots <= 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return GestureDetector(
       onTap: () {
-        Get.to(() => MeetupDetailPage(meetup: meetup));
+        Get.to(() => MeetupDetailPage(meetup: widget.meetup));
       },
       child: Container(
         margin: EdgeInsets.only(bottom: 16.h),
@@ -527,9 +703,10 @@ class _MeetupsListPageState extends State<MeetupsListPage>
             // 图片 - 列表页只使用 imageUrl，如果为空显示占位图标
             ClipRRect(
               borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
-              child: meetup.imageUrl != null && meetup.imageUrl!.isNotEmpty
+              child: widget.meetup.imageUrl != null &&
+                      widget.meetup.imageUrl!.isNotEmpty
                   ? Image.network(
-                      meetup.imageUrl!,
+                      widget.meetup.imageUrl!,
                       width: double.infinity,
                       height: 180.h,
                       fit: BoxFit.cover,
@@ -550,7 +727,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
                     children: [
                       Expanded(
                         child: Text(
-                          meetup.title,
+                          widget.meetup.title,
                           style: TextStyle(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.bold,
@@ -561,7 +738,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
                         ),
                       ),
                       SizedBox(width: 8.w),
-                      _buildTypeChip(meetup.type),
+                      _buildTypeChip(widget.meetup.type),
                     ],
                   ),
 
@@ -570,24 +747,26 @@ class _MeetupsListPageState extends State<MeetupsListPage>
                   // 时间
                   _buildInfoRow(
                     Icons.schedule,
-                    _formatDateTime(meetup.dateTime),
-                    meetup.isStartingSoon ? const Color(0xFFFF4458) : null,
+                    _formatDateTime(widget.meetup.dateTime),
+                    widget.meetup.isStartingSoon
+                        ? const Color(0xFFFF4458)
+                        : null,
                   ),
 
                   SizedBox(height: 8.h),
 
                   // 地点
-                  _buildInfoRow(Icons.location_on, meetup.venue, null),
+                  _buildInfoRow(Icons.location_on, widget.meetup.venue, null),
 
                   SizedBox(height: 8.h),
 
-                  // 参与人数和剩余名额
+                  // 参与人数和剩余名额 - 使用本地状态
                   _buildInfoRow(
                     Icons.people,
-                    '${meetup.currentAttendees}/${meetup.maxAttendees} attendees • ${meetup.remainingSlots} spots left',
-                    meetup.isFull
+                    '$_currentAttendees/$_maxAttendees attendees • $_remainingSlots spots left',
+                    _isFull
                         ? Colors.orange
-                        : (meetup.remainingSlots <= 3 ? Colors.red : null),
+                        : (_remainingSlots <= 3 ? Colors.red : null),
                   ),
 
                   SizedBox(height: 16.h),
@@ -597,27 +776,46 @@ class _MeetupsListPageState extends State<MeetupsListPage>
                     children: [
                       CircleAvatar(
                         radius: 16.r,
-                        backgroundImage: NetworkImage(meetup.organizerAvatar),
+                        backgroundImage:
+                            NetworkImage(widget.meetup.organizerAvatar),
                       ),
                       SizedBox(width: 8.w),
                       Expanded(
                         child: Text(
-                          meetup.organizerName,
+                          widget.meetup.organizerName,
                           style: TextStyle(
                             fontSize: 13.sp,
                             color: AppColors.textSecondary,
                           ),
                         ),
                       ),
-                      _buildJoinButton(meetup),
+                      _buildJoinButton(l10n),
                       SizedBox(width: 8.w),
-                      _buildChatButton(meetup),
+                      _buildChatButton(),
                     ],
                   ),
                 ],
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholderImage() {
+    return Container(
+      width: double.infinity,
+      height: 180.h,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+      ),
+      child: Center(
+        child: Icon(
+          Icons.event,
+          size: 64.sp,
+          color: const Color(0xFFBDBDBD),
         ),
       ),
     );
@@ -684,25 +882,6 @@ class _MeetupsListPageState extends State<MeetupsListPage>
     );
   }
 
-  // 占位图片 - 当 imageUrl 为空时显示
-  Widget _buildPlaceholderImage() {
-    return Container(
-      width: double.infinity,
-      height: 180.h,
-      decoration: BoxDecoration(
-        color: const Color(0xFFF5F5F5),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
-      ),
-      child: Center(
-        child: Icon(
-          Icons.event,
-          size: 64.sp,
-          color: const Color(0xFFBDBDBD),
-        ),
-      ),
-    );
-  }
-
   Widget _buildInfoRow(IconData icon, String text, Color? color) {
     return Row(
       children: [
@@ -723,10 +902,8 @@ class _MeetupsListPageState extends State<MeetupsListPage>
     );
   }
 
-  Widget _buildJoinButton(MeetupModel meetup) {
-    final l10n = AppLocalizations.of(context)!;
-
-    if (meetup.isEnded) {
+  Widget _buildJoinButton(AppLocalizations l10n) {
+    if (widget.meetup.isEnded) {
       return Container(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
         decoration: BoxDecoration(
@@ -744,7 +921,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
       );
     }
 
-    if (meetup.isFull && !meetup.isJoined) {
+    if (_isFull && !_isJoined) {
       return Container(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
         decoration: BoxDecoration(
@@ -763,20 +940,20 @@ class _MeetupsListPageState extends State<MeetupsListPage>
     }
 
     return GestureDetector(
-      onTap: () => _toggleJoin(meetup),
+      onTap: _handleToggleJoin,
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
         decoration: BoxDecoration(
-          color: meetup.isJoined
+          color: _isJoined
               ? const Color(0xFFFF4458).withValues(alpha: 0.1)
               : const Color(0xFFFF4458),
           borderRadius: BorderRadius.circular(20.r),
         ),
         child: Text(
-          meetup.isJoined ? l10n.joined : l10n.join,
+          _isJoined ? l10n.joined : l10n.join,
           style: TextStyle(
             fontSize: 12.sp,
-            color: meetup.isJoined ? const Color(0xFFFF4458) : Colors.white,
+            color: _isJoined ? const Color(0xFFFF4458) : Colors.white,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -784,9 +961,9 @@ class _MeetupsListPageState extends State<MeetupsListPage>
     );
   }
 
-  Widget _buildChatButton(MeetupModel meetup) {
+  Widget _buildChatButton() {
     return GestureDetector(
-      onTap: () => _openChat(meetup),
+      onTap: _openChat,
       child: Container(
         padding: EdgeInsets.all(8.w),
         decoration: BoxDecoration(
@@ -798,96 +975,6 @@ class _MeetupsListPageState extends State<MeetupsListPage>
           size: 18.sp,
           color: Colors.blue,
         ),
-      ),
-    );
-  }
-
-  Future<void> _toggleJoin(MeetupModel meetup) async {
-    final l10n = AppLocalizations.of(context)!;
-
-    try {
-      // 判断是加入还是退出
-      final isJoining = !meetup.isJoined;
-
-      // 调用 API
-      if (isJoining) {
-        await _eventsApiService.joinEvent(meetup.id);
-        print('✅ 成功加入活动: ${meetup.title}');
-      } else {
-        await _eventsApiService.leaveEvent(meetup.id);
-        print('✅ 成功退出活动: ${meetup.title}');
-      }
-
-      // API 调用成功后,更新本地状态
-      final index = _meetups.indexWhere((m) => m.id == meetup.id);
-      if (index != -1) {
-        final updated = meetup.copyWith(
-          isJoined: isJoining,
-          currentAttendees: meetup.currentAttendees + (isJoining ? 1 : -1),
-        );
-        // 使用响应式更新方法触发UI刷新
-        _meetups[index] = updated;
-        _meetups.refresh(); // 🔥 关键:触发 RxList 的 UI 更新
-
-        // 显示成功消息
-        if (isJoining) {
-          AppToast.success(
-            l10n.youHaveJoined(meetup.title),
-            title: l10n.joined,
-          );
-        } else {
-          AppToast.info(
-            l10n.youLeft(meetup.title),
-            title: l10n.leftMeetup,
-          );
-        }
-      }
-    } catch (e) {
-      print('❌ 加入/退出活动失败: $e');
-      AppToast.error(
-        meetup.isJoined ? '退出活动失败' : '加入活动失败',
-      );
-    }
-  }
-
-  void _openChat(MeetupModel meetup) {
-    final l10n = AppLocalizations.of(context)!;
-
-    if (!meetup.isJoined) {
-      AppToast.warning(
-        l10n.joinToAccessChat,
-        title: l10n.joinRequired,
-      );
-      return;
-    }
-
-    // 跳转到群聊页面
-    Get.toNamed(
-      '/city-chat',
-      arguments: {
-        'city': meetup.title,
-        'country': '${meetup.type} Meetup',
-        'meetupId': meetup.id,
-        'isMeetupChat': true,
-      },
-    );
-  }
-
-  void _showFilterDrawer() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _MeetupFilterDrawer(
-        selectedCountries: _selectedCountries,
-        selectedCities: _selectedCities,
-        selectedTypes: _selectedTypes,
-        timeFilter: _timeFilter,
-        maxAttendees: _maxAttendees,
-        availableCountries: availableCountries,
-        availableCities: availableCities,
-        availableTypes: availableTypes,
-        onReset: _resetFilters,
       ),
     );
   }
