@@ -3,7 +3,8 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../generated/app_localizations.dart';
-import '../services/database/account_dao.dart';
+import '../services/auth_service.dart';
+import '../services/http_service.dart';
 import '../widgets/app_toast.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -22,7 +23,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _usernameController = TextEditingController();
-  final _accountDao = AccountDao();
+  final _authService = AuthService();
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -56,40 +57,43 @@ class _RegisterPageState extends State<RegisterPage> {
       try {
         final l10n = AppLocalizations.of(context)!;
 
-        // 调用注册方法
-        final accountId = await _accountDao.registerAccount(
-          email: _emailController.text.trim(),
+        // 调用后端注册 API
+        // 注意：后端 RegisterDto 不需要 confirmPassword 字段
+        final response = await _authService.register(
           username: _usernameController.text.trim(),
+          email: _emailController.text.trim(),
           password: _passwordController.text,
-          name: _usernameController.text.trim(),
+          confirmPassword: _confirmPasswordController.text,
         );
 
-        if (accountId != null) {
-          // 注册成功
-          AppToast.success(
-            l10n.welcomeToCommunity,
-            title: l10n.success,
-          );
+        // 注册成功 - response 包含 {accessToken, refreshToken, user}
+        print('✅ 注册成功: ${response['user']}');
 
-          // 延迟一下让用户看到成功提示
-          await Future.delayed(const Duration(milliseconds: 500));
+        AppToast.success(
+          l10n.welcomeToCommunity,
+          title: l10n.success,
+        );
 
-          // 注册成功后跳转到登录页面
-          Get.offAllNamed('/login');
-        } else {
-          // 注册失败（邮箱或用户名已存在）
-          AppToast.error(
-            '该邮箱或用户名已被注册，请使用其他邮箱或用户名',
-            title: '注册失败',
-          );
-        }
+        // 延迟一下让用户看到成功提示
+        await Future.delayed(const Duration(milliseconds: 500));
+
+        // 注册成功后跳转到登录页面
+        Get.offAllNamed('/login');
+        
+      } on HttpException catch (e) {
+        // HTTP 异常 - 显示后端返回的错误信息
+        print('❌ 注册失败 (HttpException): ${e.message}');
+        AppToast.error(
+          e.message,
+          title: '注册失败',
+        );
       } catch (e) {
-        // 发生错误
+        // 其他错误
+        print('❌ 注册错误: $e');
         AppToast.error(
           '注册过程中发生错误，请稍后重试',
           title: '错误',
         );
-        print('注册错误: $e');
       } finally {
         if (mounted) {
           setState(() {

@@ -51,31 +51,53 @@ class AuthService {
   /// 注册
   ///
   /// 参数:
-  /// - [username] 用户名
+  /// - [username] 用户名 (后端使用此字段作为 Name)
   /// - [email] 邮箱
   /// - [password] 密码
-  /// - [confirmPassword] 确认密码
+  /// - [confirmPassword] 确认密码 (前端验证用，不发送到后端)
+  /// - [phone] 手机号 (可选)
   ///
-  /// 返回: Map 包含注册结果
+  /// 返回: Map 包含注册结果 {accessToken, refreshToken, user}
   Future<Map<String, dynamic>> register({
     required String username,
     required String email,
     required String password,
     required String confirmPassword,
+    String? phone,
   }) async {
+    // 前端验证密码确认
+    if (password != confirmPassword) {
+      throw HttpException('两次输入的密码不一致');
+    }
+
     try {
       final response = await _httpService.post(
         ApiConfig.registerEndpoint,
         data: {
-          'username': username,
+          'name': username, // 后端 RegisterDto 使用 'name' 字段
           'email': email,
           'password': password,
-          'confirmPassword': confirmPassword,
+          if (phone != null && phone.isNotEmpty) 'phone': phone,
         },
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return response.data as Map<String, dynamic>;
+        // HttpService 拦截器已经解包了 ApiResponse
+        // response.data 现在直接是 AuthResponseDto 对象
+        final data = response.data as Map<String, dynamic>;
+        
+        // 如果注册成功后返回了 token，自动设置 token
+        final accessToken = _extractAccessToken(data);
+        if (accessToken != null) {
+          _httpService.setAuthToken(accessToken);
+          final refreshToken = _extractRefreshToken(data);
+          await _persistTokens(
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+          );
+        }
+        
+        return data;
       } else {
         throw HttpException('注册失败');
       }
