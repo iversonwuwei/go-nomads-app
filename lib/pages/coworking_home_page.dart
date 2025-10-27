@@ -1,12 +1,13 @@
 import 'package:df_admin_mobile/pages/add_coworking_page.dart';
 import 'package:df_admin_mobile/pages/coworking_list_page.dart';
-import 'package:df_admin_mobile/services/data/city_data_service.dart';
-import 'package:df_admin_mobile/services/data/coworking_data_service.dart';
+import 'package:df_admin_mobile/services/cities_api_service.dart';
+import 'package:df_admin_mobile/services/coworking_api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../generated/app_localizations.dart';
+import '../widgets/app_toast.dart';
 
 /// Coworking Home Page
 /// 共享办公空间首页 - 城市选择
@@ -18,8 +19,8 @@ class CoworkingHomePage extends StatefulWidget {
 }
 
 class _CoworkingHomePageState extends State<CoworkingHomePage> {
-  final CityDataService _cityService = CityDataService();
-  final CoworkingDataService _coworkingService = CoworkingDataService();
+  final CitiesApiService _citiesApiService = CitiesApiService();
+  final CoworkingApiService _coworkingApiService = CoworkingApiService();
   List<Map<String, dynamic>> _cities = [];
   bool _isLoading = true;
 
@@ -34,63 +35,62 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
     try {
       setState(() => _isLoading = true);
 
-      // 获取所有城市
-      final cities = await _cityService.getAllCities();
+      // 1. 获取所有城市 (分页获取,这里先获取前100个)
+      print('🏙️ 开始获取城市列表...');
+      final citiesResponse = await _citiesApiService.getCities(
+        page: 1,
+        pageSize: 100,
+      );
 
-      // 为每个城市统计coworking空间数量
+      final cities = citiesResponse['items'] as List<dynamic>;
+      print('✅ 获取到 ${cities.length} 个城市');
+
+      if (cities.isEmpty) {
+        setState(() {
+          _cities = [];
+          _isLoading = false;
+        });
+        return;
+      }
+
+      // 2. 批量获取所有城市的 coworking 数量 (性能优化: 1次API调用代替N次)
+      final cityIds = cities.map((c) => c['id'] as String).toList();
+      print('📊 批量获取 ${cityIds.length} 个城市的 Coworking 数量...');
+      
+      final countMap = await _coworkingApiService.getCoworkingCountByCities(cityIds);
+      print('✅ 成功获取批量统计数据: ${countMap.length} 个城市有 Coworking 空间');
+
+      // 3. 组装城市数据,只保留有 coworking 空间的城市
       List<Map<String, dynamic>> citiesWithCount = [];
 
       for (var city in cities) {
-        final coworkings =
-            await _coworkingService.getCoworkingsByCity(city['id']);
+        final cityId = city['id'] as String;
+        final count = countMap[cityId] ?? 0;
 
-        // 只添加有coworking空间的城市
-        if (coworkings.isNotEmpty) {
+        // 只添加有 coworking 空间的城市
+        if (count > 0) {
           citiesWithCount.add({
-            'id': city['id'], // 保持为整数
-            'name': city['name'],
-            'country': city['country'],
-            'image': city['image_url'],
-            'spaces': coworkings.length,
+            'id': cityId,
+            'name': city['name'] as String,
+            'country': city['country'] as String? ?? '',
+            'image': city['imageUrl'] as String? ??
+                'https://images.unsplash.com/photo-1449824913935-59a10b8d2000',
+            'spaces': count,
           });
         }
       }
+
+      print('✅ 找到 ${citiesWithCount.length} 个有 Coworking 空间的城市');
 
       setState(() {
         _cities = citiesWithCount;
         _isLoading = false;
       });
     } catch (e) {
-      print('Error loading cities: $e');
+      print('❌ 加载城市数据失败: $e');
       setState(() => _isLoading = false);
-      // 使用备用数据
-      _loadMockData();
+      AppToast.error('加载失败,请稍后重试');
     }
-  }
-
-  /// 加载模拟数据(备用)
-  void _loadMockData() {
-    setState(() {
-      _cities = [
-        {
-          'id': '1',
-          'name': 'Bangkok',
-          'country': 'Thailand',
-          'image':
-              'https://images.unsplash.com/photo-1508009603885-50cf7c579365',
-          'spaces': 0,
-        },
-        {
-          'id': '2',
-          'name': 'Chiang Mai',
-          'country': 'Thailand',
-          'image':
-              'https://images.unsplash.com/photo-1598963166121-c4ec0d7c0179',
-          'spaces': 0,
-        },
-      ];
-      _isLoading = false;
-    });
   }
 
   @override
