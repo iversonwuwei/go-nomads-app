@@ -19,7 +19,22 @@ class InnovationListPage extends StatefulWidget {
 class _InnovationListPageState extends State<InnovationListPage> {
   // 关注状态管理 - 用项目ID作为key
   final Map<String, bool> _followedProjects = {};
-  
+
+  // 数据刷新方法 - 仅重新加载数据,不重建整个页面
+  Future<void> _refreshData() async {
+    // TODO: 当接入真实API后,在这里调用API重新加载项目列表
+    // 示例: await innovationController.loadProjects();
+
+    // 暂时使用模拟延迟
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    if (mounted) {
+      setState(() {
+        // 数据已刷新
+      });
+    }
+  }
+
   // 模拟数据
   final List<InnovationProject> _projects = [
     InnovationProject(
@@ -28,7 +43,8 @@ class _InnovationListPageState extends State<InnovationListPage> {
       elevatorPitch: '我们是面向大学生的AI学习伙伴，像私人tutor一样个性化辅导，但完全自动化且价格更低。',
       problem: '大学生备考四六级时缺乏个性化练习和及时反馈，导致复习效率低下、通过率不高。',
       solution: '我们开发了一款基于AI的备考App，能根据用户错题自动推荐学习路径，并生成每日训练计划，提升学习效率30%以上。',
-      targetAudience: '主要用户：一二线城市的大二至大四本科生\n次要用户：考研学生、语言培训机构\n用户画像：年龄18-24岁，手机使用频繁，愿意为提分付费',
+      targetAudience:
+          '主要用户：一二线城市的大二至大四本科生\n次要用户：考研学生、语言培训机构\n用户画像：年龄18-24岁，手机使用频繁，愿意为提分付费',
       productType: '微信小程序 + 后台管理系统',
       keyFeatures: [
         '智能错题分析与知识点定位',
@@ -37,10 +53,12 @@ class _InnovationListPageState extends State<InnovationListPage> {
         '语音口语练习与评分',
         '学习进度可视化报告',
       ],
-      competitiveAdvantage: '竞品A：题库大但无个性化推荐 → 我们有AI自适应引擎\n竞品B：价格高 → 我们采用订阅制，性价比更高\n我们的优势：团队有教育+AI背景，已获得某高校试点合作',
+      competitiveAdvantage:
+          '竞品A：题库大但无个性化推荐 → 我们有AI自适应引擎\n竞品B：价格高 → 我们采用订阅制，性价比更高\n我们的优势：团队有教育+AI背景，已获得某高校试点合作',
       businessModel: '基础功能免费，高级功能月费19元，支持学期/年费套餐',
       marketOpportunity: '中国大学生人数超3000万，每年四六级考生约1000万人次，备考工具市场规模预计2025年达50亿元。',
-      currentStatus: '已完成MVP原型\n正在进行小范围内测（50名用户）\n已注册公司，申请软件著作权\n寻求种子轮融资50万元，用于产品迭代和推广',
+      currentStatus:
+          '已完成MVP原型\n正在进行小范围内测（50名用户）\n已注册公司，申请软件著作权\n寻求种子轮融资50万元，用于产品迭代和推广',
       team: [
         TeamMember(
           name: '张三',
@@ -71,7 +89,8 @@ class _InnovationListPageState extends State<InnovationListPage> {
       elevatorPitch: '我们是个人碳足迹管理工具，帮助用户追踪和减少日常碳排放，但更注重游戏化和社交互动。',
       problem: '随着环保意识提升，人们想减少碳排放，但不知道从何下手，也缺乏持续动力。',
       solution: '通过App记录出行、饮食、购物等行为，自动计算碳排放量，提供减排建议，并通过积分、排行榜等机制激励用户。',
-      targetAudience: '主要用户：25-40岁中产阶级，关注环保和可持续生活\n次要用户：企业ESG部门、环保组织\n用户画像：有环保意识，愿意为绿色产品付费',
+      targetAudience:
+          '主要用户：25-40岁中产阶级，关注环保和可持续生活\n次要用户：企业ESG部门、环保组织\n用户画像：有环保意识，愿意为绿色产品付费',
       productType: 'App（iOS + Android）',
       keyFeatures: [
         '自动碳足迹计算',
@@ -224,13 +243,18 @@ class _InnovationListPageState extends State<InnovationListPage> {
             width: double.infinity,
             height: 56,
             child: ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
+              onPressed: () async {
+                final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => const AddInnovationPage(),
                   ),
                 );
+
+                // 如果添加成功,刷新数据
+                if (result == true && mounted) {
+                  await _refreshData();
+                }
               },
               icon: const Icon(Icons.add_circle_outline, size: 24),
               label: Text(
@@ -284,7 +308,7 @@ class _InnovationListPageState extends State<InnovationListPage> {
 
   Widget _buildProjectCard(InnovationProject project, bool isMobile) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       clipBehavior: Clip.antiAlias,
@@ -357,10 +381,8 @@ class _InnovationListPageState extends State<InnovationListPage> {
                   runSpacing: 8,
                   children: [
                     _buildTag(project.productType, const Color(0xFF8B5CF6)),
-                    ...project.keyFeatures
-                        .take(2)
-                        .map((feature) =>
-                            _buildTag(feature, const Color(0xFF6366F1))),
+                    ...project.keyFeatures.take(2).map((feature) =>
+                        _buildTag(feature, const Color(0xFF6366F1))),
                   ],
                 ),
 

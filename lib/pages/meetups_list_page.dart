@@ -60,7 +60,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
 
   // 位置控制器
   final LocationController _locationController = Get.put(LocationController());
-  
+
   // Events API 服务
   final EventsApiService _eventsApiService = EventsApiService();
 
@@ -147,7 +147,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
       _isLoading.value = false;
     }
   }
-  
+
   /// 将后端API的Event数据转换为MeetupModel
   MeetupModel _convertApiEventToMeetupModel(Map<String, dynamic> event) {
     // 解析城市信息
@@ -175,6 +175,29 @@ class _MeetupsListPageState extends State<MeetupsListPage>
           .toList();
     }
 
+    // 🔍 调试日志:打印所有可能的参与者字段
+    print('🔍 Event ${event['id']} - isParticipant: ${event['isParticipant']}');
+    print('  currentParticipants: ${event['currentParticipants']}');
+    print('  participantsCount: ${event['participantsCount']}');
+    print('  attendeesCount: ${event['attendeesCount']}');
+    print('  participants: ${event['participants']}');
+    print('  maxParticipants: ${event['maxParticipants']}');
+
+    // 获取当前参与者数量 - 支持多个可能的字段名
+    final currentParticipants = (event['currentParticipants'] as int?) ??
+        (event['participantsCount'] as int?) ??
+        (event['attendeesCount'] as int?) ??
+        (event['participants'] as int?) ??
+        0;
+
+    // 确保参与者数量不为负数
+    final maxParticipants = event['maxParticipants'] as int? ?? 20;
+    final validCurrentParticipants =
+        currentParticipants.clamp(0, maxParticipants);
+
+    print(
+        '  ✅ 最终使用: currentAttendees=$validCurrentParticipants, maxAttendees=$maxParticipants');
+
     return MeetupModel(
       id: event['id']?.toString() ?? '',
       title: event['title'] as String? ?? '',
@@ -186,8 +209,8 @@ class _MeetupsListPageState extends State<MeetupsListPage>
       venueAddress: event['address'] as String? ?? '',
       dateTime: DateTime.parse(
           event['startTime'] as String? ?? DateTime.now().toIso8601String()),
-      maxAttendees: event['maxParticipants'] as int? ?? 20,
-      currentAttendees: event['currentParticipants'] as int? ?? 0,
+      maxAttendees: maxParticipants,
+      currentAttendees: validCurrentParticipants,
       organizerId: organizerId,
       organizerName: organizerName,
       organizerAvatar: 'https://i.pravatar.cc/150?u=$organizerId',
@@ -558,11 +581,13 @@ class _MeetupsListPageState extends State<MeetupsListPage>
 
                   SizedBox(height: 8.h),
 
-                  // 参与人数
+                  // 参与人数和剩余名额
                   _buildInfoRow(
                     Icons.people,
-                    '${meetup.currentAttendees}/${meetup.maxAttendees} ${AppLocalizations.of(context)!.attendees}',
-                    meetup.isFull ? Colors.orange : null,
+                    '${meetup.currentAttendees}/${meetup.maxAttendees} attendees • ${meetup.remainingSlots} spots left',
+                    meetup.isFull
+                        ? Colors.orange
+                        : (meetup.remainingSlots <= 3 ? Colors.red : null),
                   ),
 
                   SizedBox(height: 16.h),
@@ -779,7 +804,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
 
   Future<void> _toggleJoin(MeetupModel meetup) async {
     final l10n = AppLocalizations.of(context)!;
-    
+
     try {
       // 判断是加入还是退出
       final isJoining = !meetup.isJoined;
@@ -800,7 +825,9 @@ class _MeetupsListPageState extends State<MeetupsListPage>
           isJoined: isJoining,
           currentAttendees: meetup.currentAttendees + (isJoining ? 1 : -1),
         );
+        // 使用响应式更新方法触发UI刷新
         _meetups[index] = updated;
+        _meetups.refresh(); // 🔥 关键:触发 RxList 的 UI 更新
 
         // 显示成功消息
         if (isJoining) {

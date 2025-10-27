@@ -1,5 +1,6 @@
 import 'package:df_admin_mobile/controllers/coworking_controller.dart';
 import 'package:df_admin_mobile/models/coworking_space_model.dart';
+import 'package:df_admin_mobile/pages/add_coworking_page.dart';
 import 'package:df_admin_mobile/pages/coworking_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -30,8 +31,20 @@ class _CoworkingListPageState extends State<CoworkingListPage> {
   void initState() {
     super.initState();
     controller = Get.put(CoworkingController());
-    // 按城市ID加载数据，并传递城市名称
+    // 按城市ID加载数据,并传递城市名称
     controller.loadCoworkingsByCity(widget.cityId, cityName: widget.cityName);
+  }
+
+  /// 刷新数据(仅重新加载数据,不重建整个页面)
+  Future<void> _refreshData() async {
+    await controller.loadCoworkingsByCity(widget.cityId,
+        cityName: widget.cityName);
+  }
+
+  @override
+  void dispose() {
+    // 不删除 controller,因为可能其他页面还在使用
+    super.dispose();
   }
 
   @override
@@ -49,6 +62,31 @@ class _CoworkingListPageState extends State<CoworkingListPage> {
             },
           ),
         ],
+      ),
+      // 添加浮动按钮用于快速添加 Coworking
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          // 跳转到添加页面,预填充当前城市信息
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddCoworkingPage(
+                cityId: widget.cityId,
+                cityName: widget.cityName,
+              ),
+            ),
+          );
+
+          // 如果成功添加,刷新列表并通知上级页面
+          if (result == true && mounted) {
+            await _refreshData();
+            // 通知 CoworkingHomePage 也需要刷新
+            if (mounted) {
+              Navigator.pop(context, true);
+            }
+          }
+        },
+        child: const Icon(Icons.add),
       ),
       body: Column(
         children: [
@@ -263,13 +301,19 @@ class _CoworkingListPageState extends State<CoworkingListPage> {
       margin: const EdgeInsets.only(bottom: 16),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () {
-          Navigator.push(
+        onTap: () async {
+          // 等待详情页返回,如果返回 true 则刷新数据
+          final result = await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => CoworkingDetailPage(space: space),
             ),
           );
+
+          // 如果详情页有数据变化(编辑/删除),刷新列表
+          if (result == true && mounted) {
+            await _refreshData();
+          }
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

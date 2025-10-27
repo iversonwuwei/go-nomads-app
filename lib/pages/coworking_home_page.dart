@@ -28,6 +28,11 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
     _loadCitiesWithCoworkingCount();
   }
 
+  /// 刷新数据(仅重新加载数据,不重建整个页面)
+  Future<void> _refreshData() async {
+    await _loadCitiesWithCoworkingCount();
+  }
+
   /// 加载城市及其coworking空间数量
   /// 使用新的后端接口: /api/v1/home/cities-with-coworking
   Future<void> _loadCitiesWithCoworkingCount() async {
@@ -183,13 +188,19 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
                   width: double.infinity,
                   height: 56,
                   child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
+                    onPressed: () async {
+                      // 等待添加页面返回,如果返回 true 则刷新数据
+                      final result = await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => const AddCoworkingPage(),
                         ),
                       );
+
+                      // 如果成功添加了 Coworking,刷新城市列表
+                      if (result == true && mounted) {
+                        await _refreshData();
+                      }
                     },
                     icon: const Icon(Icons.add_circle_outline, size: 24),
                     label: Builder(
@@ -283,8 +294,9 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
         borderRadius: BorderRadius.circular(16),
       ),
       child: InkWell(
-        onTap: () {
-          Navigator.push(
+        onTap: () async {
+          // 等待列表页返回,如果返回 true 则刷新数据
+          final result = await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => CoworkingListPage(
@@ -293,6 +305,11 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
               ),
             ),
           );
+
+          // 如果列表页有数据变化,刷新城市列表
+          if (result == true && mounted) {
+            await _refreshData();
+          }
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

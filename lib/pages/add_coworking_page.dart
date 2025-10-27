@@ -8,7 +8,6 @@ import '../config/app_colors.dart';
 import '../controllers/add_coworking_controller.dart';
 import '../generated/app_localizations.dart';
 import '../models/city_option.dart';
-import '../models/coworking_space_model.dart';
 import '../services/coworking_api_service.dart';
 import '../widgets/app_toast.dart';
 import 'amap_native_picker_page.dart';
@@ -870,71 +869,10 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
 
       // 调用真实 API(拦截器已自动解包 ApiResponse)
       final apiService = CoworkingApiService();
-      final data = await apiService.createCoworkingSpace(request);
+      await apiService.createCoworkingSpace(request);
 
-      // data 已经是解包后的实际数据,直接使用
-      final coworkingSpace = CoworkingSpace(
-        id: data['id'] as String? ?? '',
-        name: data['name'] as String? ?? '',
-        address: data['address'] as String? ?? '',
-        city: _selectedCity ?? '',
-        country: _selectedCountry ?? '',
-        latitude: (data['latitude'] as num?)?.toDouble() ?? 0.0,
-        longitude: (data['longitude'] as num?)?.toDouble() ?? 0.0,
-        imageUrl: data['imageUrl'] as String? ?? '',
-        description: data['description'] as String? ?? '',
-        pricing: CoworkingPricing(
-          hourlyRate: (data['pricePerHour'] as num?)?.toDouble(),
-          dailyRate: (data['pricePerDay'] as num?)?.toDouble(),
-          weeklyRate: _weeklyRateController.text.isNotEmpty
-              ? double.tryParse(_weeklyRateController.text)
-              : null,
-          monthlyRate: (data['pricePerMonth'] as num?)?.toDouble(),
-          currency: data['currency'] as String? ?? _currency,
-          hasFreeTrial: _hasFreeTrial,
-          trialDuration: _hasFreeTrial ? _trialDurationController.text : null,
-        ),
-        amenities: CoworkingAmenities(
-          hasWifi: _hasWifi,
-          hasCoffee: _hasCoffee,
-          hasPrinter: _hasPrinter,
-          hasMeetingRoom: _hasMeetingRoom,
-          hasPhoneBooth: _hasPhoneBooth,
-          hasKitchen: _hasKitchen,
-          hasParking: _hasParking,
-          hasLocker: _hasLocker,
-          has24HourAccess: _has24HourAccess,
-          hasAirConditioning: _hasAirConditioning,
-          hasStandingDesk: _hasStandingDesk,
-          hasShower: _hasShower,
-          hasBike: _hasBike,
-          hasEventSpace: _hasEventSpace,
-          hasPetFriendly: _hasPetFriendly,
-        ),
-        specs: CoworkingSpecs(
-          wifiSpeed: (data['wifiSpeed'] as num?)?.toDouble(),
-          numberOfDesks: _numberOfDesksController.text.isNotEmpty
-              ? int.tryParse(_numberOfDesksController.text)
-              : null,
-          numberOfMeetingRooms: _numberOfMeetingRoomsController.text.isNotEmpty
-              ? int.tryParse(_numberOfMeetingRoomsController.text)
-              : null,
-          capacity: data['capacity'] as int?,
-          noiseLevel: _noiseLevel?.toLowerCase(),
-          hasNaturalLight: _hasNaturalLight,
-          spaceType: _spaceType?.toLowerCase(),
-        ),
-        phone: data['phone'] as String? ?? '',
-        email: data['email'] as String? ?? '',
-        website: data['website'] as String? ?? '',
-        openingHours: (data['openingHours'] as String?)?.split(', ') ?? [],
-        lastUpdated: data['updatedAt'] != null
-            ? DateTime.parse(data['updatedAt'] as String)
-            : null,
-      );
-
-      // 返回结果
-      Get.back(result: coworkingSpace);
+      // 返回结果,传递 true 表示需要刷新数据
+      Navigator.pop(context, true);
       AppToast.success(
         l10n.coworkingSubmittedSuccess,
         title: l10n.success,

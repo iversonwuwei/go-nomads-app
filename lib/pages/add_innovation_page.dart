@@ -109,7 +109,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
         AppToast.success(l10n.projectCreatedSuccessfully);
-        Navigator.pop(context);
+        Navigator.pop(context, true); // 返回 true 通知父页面刷新数据
       }
     } catch (e) {
       if (mounted) {
