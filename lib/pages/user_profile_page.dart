@@ -5,6 +5,7 @@ import '../config/app_colors.dart';
 import '../controllers/locale_controller.dart';
 import '../controllers/user_profile_controller.dart';
 import '../generated/app_localizations.dart';
+import '../models/user_model.dart' as user_model;
 import '../models/user_profile_models.dart';
 import '../routes/app_routes.dart';
 import '../widgets/app_toast.dart';
@@ -20,7 +21,7 @@ class UserProfilePage extends StatefulWidget {
 class _UserProfilePageState extends State<UserProfilePage> {
   final UserProfileController _profileController =
       Get.find<UserProfileController>();
-  
+
   // 用户信息
   final Map<String, dynamic> _userInfo = {
     'name': 'Digital Nomad',
@@ -84,6 +85,16 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
           // 统计信息
           _buildStatsSection(isMobile),
+
+          const SizedBox(height: 24),
+
+          // 勋章 (Badges)
+          _buildBadgesSection(isMobile),
+
+          const SizedBox(height: 24),
+
+          // 旅行历史 (Travel History)
+          _buildTravelHistorySection(isMobile),
 
           const SizedBox(height: 24),
 
@@ -275,6 +286,558 @@ class _UserProfilePageState extends State<UserProfilePage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildBadgesSection(bool isMobile) {
+    return Obx(() {
+      final user = _profileController.currentUser.value;
+
+      // 如果用户数据还未加载，显示加载状态
+      if (user == null) {
+        return Container(
+          padding: EdgeInsets.all(isMobile ? 16 : 20),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1a1a1a),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.1),
+            ),
+          ),
+          child: const Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+      }
+
+      final badges = user.badges;
+
+      return Container(
+        padding: EdgeInsets.all(isMobile ? 16 : 20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              const Color(0xFFFFF8E1),
+              const Color(0xFFFFECB3),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: const Color(0xFFFFB020),
+            width: 2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFFFB020).withValues(alpha: 0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.emoji_events,
+                    color: const Color(0xFFFF6F00), size: isMobile ? 24 : 28),
+                const SizedBox(width: 8),
+                Text(
+                  'Achievements & Badges',
+                  style: TextStyle(
+                    color: const Color(0xFF1a1a1a),
+                    fontSize: isMobile ? 18 : 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: isMobile ? 16 : 20),
+            if (badges.isEmpty)
+              Container(
+                padding: EdgeInsets.symmetric(
+                  vertical: isMobile ? 40 : 60,
+                  horizontal: isMobile ? 20 : 40,
+                ),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFFFFF3E0),
+                      const Color(0xFFFFE0B2),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  border: Border.all(
+                    color: const Color(0xFFFFB020),
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.emoji_events_outlined,
+                        size: isMobile ? 48 : 64,
+                        color: const Color(0xFFFF6F00),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No badges earned yet',
+                        style: TextStyle(
+                          color: const Color(0xFF6D4C41),
+                          fontSize: isMobile ? 16 : 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Start exploring and attending events to earn badges!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: const Color(0xFF8D6E63),
+                          fontSize: isMobile ? 12 : 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: isMobile ? 3 : 5,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 1,
+                ),
+                itemCount: badges.length,
+                itemBuilder: (context, index) {
+                  final badge = badges[index];
+                  return _buildBadgeCard(badge, isMobile);
+                },
+              ),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildBadgeCard(user_model.Badge badge, bool isMobile) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFFFFD700).withValues(alpha: 0.3),
+            const Color(0xFFFFA500).withValues(alpha: 0.3),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFFFF9800),
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFF9800).withValues(alpha: 0.3),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            badge.icon,
+            style: TextStyle(fontSize: isMobile ? 32 : 40),
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              badge.name,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: isMobile ? 10 : 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTravelHistorySection(bool isMobile) {
+    return Obx(() {
+      final user = _profileController.currentUser.value;
+
+      // 如果用户数据还未加载，显示加载状态
+      if (user == null) {
+        return Container(
+          padding: EdgeInsets.all(isMobile ? 16 : 20),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1a1a1a),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.1),
+            ),
+          ),
+          child: const Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+      }
+
+      final travelHistory = user.travelHistory;
+
+      return Container(
+        padding: EdgeInsets.all(isMobile ? 16 : 20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              const Color(0xFFE3F2FD),
+              const Color(0xFFBBDEFB),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: const Color(0xFF2196F3),
+            width: 2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF2196F3).withValues(alpha: 0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.travel_explore,
+                        color: const Color(0xFF1976D2),
+                        size: isMobile ? 24 : 28),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Travel History',
+                      style: TextStyle(
+                        color: const Color(0xFF1a1a1a),
+                        fontSize: isMobile ? 18 : 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                if (travelHistory.isNotEmpty)
+                  IconButton(
+                    icon: const Icon(Icons.add, color: Color(0xFF1976D2)),
+                    onPressed: () => _showAddTravelHistoryDialog(),
+                  ),
+              ],
+            ),
+            SizedBox(height: isMobile ? 16 : 20),
+            if (travelHistory.isEmpty)
+              Container(
+                padding: EdgeInsets.symmetric(
+                  vertical: isMobile ? 40 : 60,
+                  horizontal: isMobile ? 20 : 40,
+                ),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFFE8F5E9),
+                      const Color(0xFFC8E6C9),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  border: Border.all(
+                    color: const Color(0xFF4CAF50),
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.flight_takeoff,
+                        size: isMobile ? 48 : 64,
+                        color: const Color(0xFF2E7D32),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No travel history yet',
+                        style: TextStyle(
+                          color: const Color(0xFF1B5E20),
+                          fontSize: isMobile ? 16 : 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Record your nomadic journey here!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: const Color(0xFF388E3C),
+                          fontSize: isMobile ? 12 : 14,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton.icon(
+                        onPressed: () => _showAddTravelHistoryDialog(),
+                        icon: const Icon(Icons.add),
+                        label: const Text('Add Travel Record'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF4CAF50),
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isMobile ? 24 : 32,
+                            vertical: isMobile ? 12 : 16,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: travelHistory.length > 5 ? 5 : travelHistory.length,
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final travel = travelHistory[index];
+                  return _buildTravelHistoryCard(travel, isMobile);
+                },
+              ),
+            if (travelHistory.length > 5)
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Center(
+                  child: TextButton(
+                    onPressed: () {
+                      AppToast.info('View all travel history coming soon');
+                    },
+                    child: Text(
+                      'View all ${travelHistory.length} trips →',
+                      style: TextStyle(
+                        color: AppColors.accent,
+                        fontSize: isMobile ? 14 : 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildTravelHistoryCard(
+      user_model.TravelHistory travel, bool isMobile) {
+    return Container(
+      padding: EdgeInsets.all(isMobile ? 12 : 16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFFFFF8E1),
+            const Color(0xFFFFF3CD),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFFFF9800),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFF9800).withValues(alpha: 0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // 城市国旗/图标
+          Container(
+            width: isMobile ? 50 : 60,
+            height: isMobile ? 50 : 60,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFFFFE082),
+                  const Color(0xFFFFD54F),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: const Color(0xFFFFA726),
+                width: 1,
+              ),
+            ),
+            child: Center(
+              child: Text(
+                _getCountryFlag(travel.country),
+                style: TextStyle(fontSize: isMobile ? 24 : 32),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // 城市信息
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  travel.city,
+                  style: TextStyle(
+                    color: const Color(0xFF1a1a1a),
+                    fontSize: isMobile ? 16 : 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  travel.country,
+                  style: TextStyle(
+                    color: const Color(0xFF6b7280),
+                    fontSize: isMobile ? 12 : 14,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.calendar_today,
+                      size: isMobile ? 12 : 14,
+                      color: const Color(0xFFFF6F00),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      _formatDateRange(travel.startDate.toIso8601String(),
+                          travel.endDate?.toIso8601String()),
+                      style: TextStyle(
+                        color: const Color(0xFF9ca3af),
+                        fontSize: isMobile ? 11 : 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          // 评分
+          if (travel.rating != null)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF9800).withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: const Color(0xFFFF9800),
+                  width: 1.5,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.star, color: Color(0xFFFF9800), size: 14),
+                  const SizedBox(width: 4),
+                  Text(
+                    travel.rating!.toStringAsFixed(1),
+                    style: const TextStyle(
+                      color: Color(0xFFFF6F00),
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  String _getCountryFlag(String country) {
+    // 简单的国家到国旗emoji映射
+    final Map<String, String> countryFlags = {
+      'Thailand': '🇹🇭',
+      'Indonesia': '🇮🇩',
+      'Vietnam': '🇻🇳',
+      'Portugal': '🇵🇹',
+      'Mexico': '🇲🇽',
+      'Japan': '🇯🇵',
+      'China': '🇨🇳',
+      'USA': '🇺🇸',
+      'UK': '🇬🇧',
+      'Spain': '🇪🇸',
+      'France': '🇫🇷',
+      'Germany': '🇩🇪',
+      'Italy': '🇮🇹',
+      'Brazil': '🇧🇷',
+      'Australia': '🇦🇺',
+    };
+    return countryFlags[country] ?? '🌍';
+  }
+
+  String _formatDateRange(String startDate, String? endDate) {
+    try {
+      final start = DateTime.parse(startDate);
+      final startFormatted = '${start.month}/${start.year}';
+
+      if (endDate == null || endDate.isEmpty) {
+        return '$startFormatted - Present';
+      }
+
+      final end = DateTime.parse(endDate);
+      final endFormatted = '${end.month}/${end.year}';
+
+      return '$startFormatted - $endFormatted';
+    } catch (e) {
+      return startDate;
+    }
+  }
+
+  void _showAddTravelHistoryDialog() {
+    AppToast.info(
+      'Add travel history feature coming soon',
+      title: 'Coming Soon',
     );
   }
 

@@ -3487,4 +3487,16 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get cannotMakeCall => '无法拨打电话';
+
+  @override
+  String get noBadgesYet => '还没有获得勋章';
+
+  @override
+  String get noTravelHistoryYet => '还没有旅行记录';
+
+  @override
+  String get viewAllTrips => '查看所有旅行';
+
+  @override
+  String get noMembersOnline => '暂无在线成员';
 }

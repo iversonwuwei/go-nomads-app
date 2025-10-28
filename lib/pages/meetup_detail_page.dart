@@ -10,6 +10,7 @@ import '../models/user_model.dart';
 import '../services/events_api_service.dart';
 import '../widgets/app_toast.dart';
 import 'direct_chat_page.dart';
+import 'member_detail_page.dart';
 
 /// Meetup 详情页面
 class MeetupDetailPage extends StatefulWidget {
@@ -28,7 +29,8 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
   late Rx<MeetupModel> _meetup;
   final EventsApiService _eventsApiService = EventsApiService();
   final RxBool _isLoading = true.obs;
-  final RxList<Map<String, dynamic>> _participants = <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> _participants =
+      <Map<String, dynamic>>[].obs;
 
   @override
   void initState() {
@@ -51,16 +53,16 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
       // 更新 meetup 数据
       _meetup.value = _convertApiEventToMeetupModel(eventData);
 
-      // 从响应中提取参与者列表
-      final participantsList = eventData['participants'];
-      if (participantsList is List) {
-        _participants.value = List<Map<String, dynamic>>.from(
-          participantsList.map((p) => p as Map<String, dynamic>)
-        );
-        print('✅ 成功加载 ${_participants.length} 个参与者');
+      // 🔧 从 eventData 中提取参与者列表（后端已经通过 gRPC 填充了用户信息）
+      // ParticipantResponse 包含: id, eventId, userId, status, registeredAt, user{id, name, email, avatar, phone}
+      final participantsData = eventData['participants'] as List?;
+      if (participantsData != null) {
+        _participants.value =
+            participantsData.map((p) => p as Map<String, dynamic>).toList();
+        print('✅ 成功从活动详情中加载 ${_participants.length} 个参与者(包含用户信息)');
       } else {
         _participants.value = [];
-        print('⚠️ 响应中没有参与者列表数据');
+        print('⚠️ 活动详情中无参与者数据');
       }
 
       print('✅ 成功加载活动详情: ${_meetup.value.title}');
@@ -390,9 +392,20 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
           SizedBox(height: 16.h),
           Row(
             children: [
-              CircleAvatar(
-                radius: 30.r,
-                backgroundImage: NetworkImage(_meetup.value.organizerAvatar),
+              GestureDetector(
+                onTap: () {
+                  // 跳转到 Organizer 的个人详情页
+                  final organizerUser = _createBasicUserModel(
+                    _meetup.value.organizerId,
+                    _meetup.value.organizerName,
+                    _meetup.value.organizerAvatar,
+                  );
+                  Get.to(() => MemberDetailPage(user: organizerUser));
+                },
+                child: CircleAvatar(
+                  radius: 30.r,
+                  backgroundImage: NetworkImage(_meetup.value.organizerAvatar),
+                ),
               ),
               SizedBox(width: 16.w),
               Expanded(
@@ -494,7 +507,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                 ),
               );
             }
-            
+
             return SizedBox(
               height: 40.h,
               child: ListView.builder(
@@ -503,13 +516,32 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                 itemBuilder: (context, index) {
                   final participant = _participants[index];
                   final userId = participant['userId']?.toString() ?? '';
-                  
+
+                  // 从嵌套的 user 对象中获取头像
+                  final userInfo = participant['user'] as Map<String, dynamic>?;
+                  final userAvatar = userInfo?['avatar'] as String?;
+                  final userName = userInfo?['name'] as String? ?? 'User';
+
                   return Padding(
                     padding: EdgeInsets.only(right: 12.w),
-                    child: CircleAvatar(
-                      radius: 20.r,
-                      backgroundImage: NetworkImage(
-                        'https://i.pravatar.cc/150?u=$userId',
+                    child: GestureDetector(
+                      onTap: () {
+                        // 跳转到参与者的个人详情页
+                        final participantUser = _createBasicUserModel(
+                          userId,
+                          userName,
+                          userAvatar ?? 'https://i.pravatar.cc/150?u=$userId',
+                        );
+                        Get.to(() => MemberDetailPage(user: participantUser));
+                      },
+                      child: Tooltip(
+                        message: userName,
+                        child: CircleAvatar(
+                          radius: 20.r,
+                          backgroundImage: NetworkImage(
+                            userAvatar ?? 'https://i.pravatar.cc/150?u=$userId',
+                          ),
+                        ),
                       ),
                     ),
                   );
@@ -712,7 +744,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
 
   Future<void> _toggleJoin() async {
     final l10n = AppLocalizations.of(context)!;
-    
+
     try {
       // 判断是加入还是退出
       final isJoining = !_meetup.value.isJoined;
@@ -804,23 +836,61 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
         title: Text(l10n.allAttendees, style: TextStyle(fontSize: 18.sp)),
         content: SizedBox(
           width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: _meetup.value.currentAttendees,
-            itemBuilder: (context, index) {
-              return ListTile(
-                leading: CircleAvatar(
-                  backgroundImage: NetworkImage(
-                    'https://i.pravatar.cc/150?img=${index + 10}',
+          child: Obx(() {
+            if (_participants.isEmpty) {
+              return Padding(
+                padding: EdgeInsets.symmetric(vertical: 20.h),
+                child: Center(
+                  child: Text(
+                    l10n.noAttendeesYet,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ),
-                title: Text('${l10n.user} ${index + 1}',
-                    style: TextStyle(fontSize: 14.sp)),
-                subtitle:
-                    Text(l10n.digitalNomad, style: TextStyle(fontSize: 12.sp)),
               );
-            },
-          ),
+            }
+
+            return ListView.builder(
+              shrinkWrap: true,
+              itemCount: _participants.length,
+              itemBuilder: (context, index) {
+                final participant = _participants[index];
+                final userId = participant['userId']?.toString() ?? '';
+
+                // 🔧 从嵌套的 user 对象中获取用户信息
+                final userInfo = participant['user'] as Map<String, dynamic>?;
+                final userName =
+                    userInfo?['name'] as String? ?? '${l10n.user} ${index + 1}';
+                final userEmail = userInfo?['email'] as String?;
+                final userAvatar = userInfo?['avatar'] as String?;
+
+                return ListTile(
+                  onTap: () {
+                    // 跳转到参与者的个人详情页
+                    final participantUser = _createBasicUserModel(
+                      userId,
+                      userName,
+                      userAvatar ?? 'https://i.pravatar.cc/150?u=$userId',
+                    );
+                    Get.back(); // 关闭对话框
+                    Get.to(() => MemberDetailPage(user: participantUser));
+                  },
+                  leading: CircleAvatar(
+                    backgroundImage: NetworkImage(
+                      userAvatar ?? 'https://i.pravatar.cc/150?u=$userId',
+                    ),
+                  ),
+                  title: Text(userName, style: TextStyle(fontSize: 14.sp)),
+                  subtitle: Text(
+                    userEmail ?? l10n.digitalNomad,
+                    style: TextStyle(fontSize: 12.sp),
+                  ),
+                );
+              },
+            );
+          }),
         ),
         actions: [
           TextButton(
@@ -834,5 +904,23 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
 
   String _formatDateTime(DateTime dateTime) {
     return DateFormat('EEEE, MMMM dd, yyyy \'at\' HH:mm').format(dateTime);
+  }
+
+  /// 创建基本的 UserModel 用于跳转到详情页
+  UserModel _createBasicUserModel(String id, String name, String avatarUrl) {
+    return UserModel(
+      id: id,
+      name: name,
+      username: name, // 使用 name 作为 username
+      avatarUrl: avatarUrl,
+      stats: TravelStats(
+        countriesVisited: 0,
+        citiesLived: 0,
+        daysNomading: 0,
+        meetupsAttended: 0,
+        tripsCompleted: 0,
+      ),
+      joinedDate: DateTime.now(),
+    );
   }
 }

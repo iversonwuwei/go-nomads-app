@@ -6907,6 +6907,30 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'无法拨打电话'**
   String get cannotMakeCall;
+
+  /// No description provided for @noBadgesYet.
+  ///
+  /// In zh, this message translates to:
+  /// **'还没有获得勋章'**
+  String get noBadgesYet;
+
+  /// No description provided for @noTravelHistoryYet.
+  ///
+  /// In zh, this message translates to:
+  /// **'还没有旅行记录'**
+  String get noTravelHistoryYet;
+
+  /// No description provided for @viewAllTrips.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看所有旅行'**
+  String get viewAllTrips;
+
+  /// No description provided for @noMembersOnline.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无在线成员'**
+  String get noMembersOnline;
 }
 
 class _AppLocalizationsDelegate

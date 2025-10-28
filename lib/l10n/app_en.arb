@@ -1707,7 +1707,11 @@
   "creationFailed": "Creation failed",
   "imageSelectionFailed": "Image selection failed",
   "call": "Call",
-  "cannotMakeCall": "Cannot make phone call"
+  "cannotMakeCall": "Cannot make phone call",
+  "noBadgesYet": "No badges earned yet",
+  "noTravelHistoryYet": "No travel history yet",
+  "viewAllTrips": "View All Trips",
+  "noMembersOnline": "No members online"
 }
 
 

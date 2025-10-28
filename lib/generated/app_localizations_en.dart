@@ -3530,4 +3530,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cannotMakeCall => 'Cannot make phone call';
+
+  @override
+  String get noBadgesYet => 'No badges earned yet';
+
+  @override
+  String get noTravelHistoryYet => 'No travel history yet';
+
+  @override
+  String get viewAllTrips => 'View All Trips';
+
+  @override
+  String get noMembersOnline => 'No members online';
 }

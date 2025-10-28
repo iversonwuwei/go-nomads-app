@@ -81,6 +81,7 @@ class ApiConfig {
   static const String userUpdateEndpoint = '/users/{id}';
   static const String userUpdateMeEndpoint = '/users/me';
   static const String userDeleteEndpoint = '/users/{id}';
+  static const String userBatchEndpoint = '/users/batch';
   static String get userProfileEndpoint => userMeEndpoint;
 
   // 首页相关
@@ -136,6 +137,7 @@ class ApiConfig {
   static const String eventJoinEndpoint = '/events/{id}/join';
   static const String eventLeaveEndpoint = '/events/{id}/leave';
   static const String eventParticipantsEndpoint = '/events/{id}/participants';
+  static const String eventFollowersEndpoint = '/events/{id}/followers';
 
   // ============================================================
   // Meetup Endpoints - /api/v1/meetups (待后端实现)

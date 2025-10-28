@@ -1691,7 +1691,11 @@
   "creationFailed": "创建失败",
   "imageSelectionFailed": "选择图片失败",
   "call": "拨打",
-  "cannotMakeCall": "无法拨打电话"
+  "cannotMakeCall": "无法拨打电话",
+  "noBadgesYet": "还没有获得勋章",
+  "noTravelHistoryYet": "还没有旅行记录",
+  "viewAllTrips": "查看所有旅行",
+  "noMembersOnline": "暂无在线成员"
 }
 
 
