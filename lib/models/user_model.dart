@@ -122,6 +122,7 @@ class TravelStats {
   final int daysNomading;
   final int meetupsAttended;
   final int tripsCompleted;
+  final int favorites; // 收藏数量
 
   TravelStats({
     required this.countriesVisited,
@@ -129,6 +130,7 @@ class TravelStats {
     required this.daysNomading,
     required this.meetupsAttended,
     required this.tripsCompleted,
+    this.favorites = 0, // 默认值为 0
   });
 
   factory TravelStats.fromJson(Map<String, dynamic> json) {
@@ -138,6 +140,7 @@ class TravelStats {
       daysNomading: json['daysNomading'] as int,
       meetupsAttended: json['meetupsAttended'] as int,
       tripsCompleted: json['tripsCompleted'] as int,
+      favorites: json['favorites'] as int? ?? 0,
     );
   }
 
@@ -148,6 +151,7 @@ class TravelStats {
       'daysNomading': daysNomading,
       'meetupsAttended': meetupsAttended,
       'tripsCompleted': tripsCompleted,
+      'favorites': favorites,
     };
   }
 }

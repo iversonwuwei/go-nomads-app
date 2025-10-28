@@ -244,10 +244,10 @@ class DataServiceController extends GetxController {
     try {
       print('📡 调用 Home API...');
 
-      // 调用 API
+      // 调用 API - 加载所有城市，不限制数量
       final homeFeed = await _homeApiService.getHomeFeed(
-        cityLimit: 20,
-        meetupLimit: 30,
+        cityLimit: 1000, // 增加限制以获取所有城市
+        meetupLimit: 100, // 同时增加活动限制
       );
 
       print(
@@ -478,6 +478,8 @@ class DataServiceController extends GetxController {
   Future<void> _loadCitiesFromDatabase() async {
     try {
       final cities = await _cityService.getAllCities();
+      
+      print('🏙️ 从数据库加载了 ${cities.length} 个城市');
 
       // 转换数据格式以匹配现有的UI结构
       dataItems.value = cities.map((city) {

@@ -28,7 +28,7 @@ class _CityListPageState extends State<CityListPage> {
   String _sortBy = 'popular'; // popular, cost, internet, safety
 
   // 分页相关
-  static const int _pageSize = 20; // 每页显示20条
+  static const int _pageSize = 50; // 每页显示50条，增加初始加载量
   int _currentPage = 1;
   bool _isLoadingMore = false;
   bool _hasMoreData = true;
@@ -37,6 +37,24 @@ class _CityListPageState extends State<CityListPage> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    
+    // 监听筛选器变化，重置分页
+    ever(controller.selectedRegions, (_) => _resetPagination());
+    ever(controller.selectedCountries, (_) => _resetPagination());
+    ever(controller.minPrice, (_) => _resetPagination());
+    ever(controller.maxPrice, (_) => _resetPagination());
+    ever(controller.minInternet, (_) => _resetPagination());
+    ever(controller.minRating, (_) => _resetPagination());
+  }
+
+  // 重置分页
+  void _resetPagination() {
+    if (mounted) {
+      setState(() {
+        _currentPage = 1;
+        _hasMoreData = true;
+      });
+    }
   }
 
   @override
@@ -48,9 +66,13 @@ class _CityListPageState extends State<CityListPage> {
 
   // 滚动监听
   void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      // 距离底部200像素时开始加载
+    if (!_scrollController.hasClients) return;
+
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.position.pixels;
+
+    // 当滚动到距离底部300像素时开始加载更多
+    if (currentScroll >= maxScroll - 300) {
       _loadMoreCities();
     }
   }
@@ -59,22 +81,37 @@ class _CityListPageState extends State<CityListPage> {
   Future<void> _loadMoreCities() async {
     if (_isLoadingMore || !_hasMoreData) return;
 
+    final allCities = _allFilteredCities;
+    final currentDisplayed = _currentPage * _pageSize;
+
+    // 如果已经显示了所有数据，不再加载
+    if (currentDisplayed >= allCities.length) {
+      setState(() {
+        _hasMoreData = false;
+      });
+      return;
+    }
+
     setState(() {
       _isLoadingMore = true;
     });
 
-    // 模拟网络延迟
-    await Future.delayed(const Duration(milliseconds: 500));
+    // 模拟网络延迟（可以根据需要调整或移除）
+    await Future.delayed(const Duration(milliseconds: 300));
 
     setState(() {
       _currentPage++;
       _isLoadingMore = false;
 
       // 检查是否还有更多数据
-      if (_displayedCities.length >= _allFilteredCities.length) {
+      final newDisplayed = _currentPage * _pageSize;
+      if (newDisplayed >= allCities.length) {
         _hasMoreData = false;
       }
     });
+
+    print(
+        '📊 加载更多: 当前页=$_currentPage, 已显示=${_currentPage * _pageSize}/${allCities.length}');
   }
 
   // 获取所有筛选后的城市列表（不分页）
@@ -105,13 +142,14 @@ class _CityListPageState extends State<CityListPage> {
 
     print('📊 DEBUG - 当前页: $_currentPage, 每页数量: $_pageSize, 结束索引: $endIndex');
     print(
-        '📊 DEBUG - 总城市数: ${allCities.length}, 显示城市数: ${endIndex > allCities.length ? allCities.length : endIndex}');
+        '📊 DEBUG - 总城市数: ${allCities.length}, 将显示: ${endIndex > allCities.length ? allCities.length : endIndex} 个城市');
 
+    // 如果结束索引超过总数，返回全部
     if (endIndex >= allCities.length) {
-      _hasMoreData = false;
       return allCities;
     }
 
+    // 返回从开始到当前页的所有数据
     return allCities.sublist(0, endIndex);
   }
 

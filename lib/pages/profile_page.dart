@@ -277,6 +277,69 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
+  // 构建头像内容 - 如果没有头像URL则显示用户名首字母
+  Widget _buildAvatarContent(UserModel user, bool isMobile) {
+    final hasAvatar = user.avatarUrl != null && 
+                      user.avatarUrl!.isNotEmpty && 
+                      user.avatarUrl != 'https://i.pravatar.cc/300';
+    
+    if (hasAvatar) {
+      return Image.network(
+        user.avatarUrl!,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          // 如果图片加载失败，显示首字母
+          return _buildInitialsAvatar(user, isMobile);
+        },
+      );
+    } else {
+      return _buildInitialsAvatar(user, isMobile);
+    }
+  }
+
+  // 构建首字母头像
+  Widget _buildInitialsAvatar(UserModel user, bool isMobile) {
+    // 获取用户名首字母
+    String initials = '';
+    if (user.name.isNotEmpty) {
+      final nameParts = user.name.trim().split(' ');
+      if (nameParts.length >= 2) {
+        // 如果有多个单词，取前两个单词的首字母
+        initials = nameParts[0][0].toUpperCase() + 
+                   nameParts[1][0].toUpperCase();
+      } else {
+        // 如果只有一个单词，取前两个字母（如果有）
+        initials = user.name.substring(0, user.name.length >= 2 ? 2 : 1).toUpperCase();
+      }
+    } else {
+      initials = '?';
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFFFF4458),
+            const Color(0xFFFF6B7A),
+          ],
+        ),
+      ),
+      child: Center(
+        child: Text(
+          initials,
+          style: TextStyle(
+            fontSize: isMobile ? 32 : 48,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            letterSpacing: 1,
+          ),
+        ),
+      ),
+    );
+  }
+
   // Profile Header
   Widget _buildProfileHeader(
       BuildContext context, UserModel user,
@@ -302,10 +365,7 @@ class ProfilePage extends StatelessWidget {
                   ),
                 ),
                 child: ClipOval(
-                  child: Image.network(
-                    user.avatarUrl ?? 'https://i.pravatar.cc/300',
-                    fit: BoxFit.cover,
-                  ),
+                  child: _buildAvatarContent(user, isMobile),
                 ),
               ),
               // 相机图标覆盖层 - 仅在编辑模式下显示
@@ -457,6 +517,8 @@ class ProfilePage extends StatelessWidget {
                 '🤝', stats.meetupsAttended.toString(), 'Meetups', isMobile),
             _buildStatCard(
                 '✈️', stats.tripsCompleted.toString(), 'Trips', isMobile),
+            _buildStatCard(
+                '❤️', stats.favorites.toString(), 'Favorites', isMobile),
           ],
         ),
       ],
@@ -848,7 +910,6 @@ class ProfilePage extends StatelessWidget {
   Widget _buildTravelHistory(
       BuildContext context, List<TravelHistory> history, bool isMobile) {
     final l10n = AppLocalizations.of(context)!;
-    if (history.isEmpty) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -859,7 +920,54 @@ class ProfilePage extends StatelessWidget {
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF1a1a1a))),
         const SizedBox(height: 16),
-        ...history.map((trip) => _buildTravelHistoryCard(trip)),
+        history.isEmpty
+            ? Container(
+                padding: EdgeInsets.symmetric(
+                  vertical: isMobile ? 40 : 60,
+                  horizontal: isMobile ? 20 : 40,
+                ),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.grey.withValues(alpha: 0.3),
+                    width: 1,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.explore_outlined,
+                        size: isMobile ? 48 : 64,
+                        color: Colors.grey.withValues(alpha: 0.4),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No travel history yet',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: isMobile ? 16 : 18,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Start your digital nomad journey!',
+                        style: TextStyle(
+                          color: Colors.grey[500],
+                          fontSize: isMobile ? 14 : 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            : Column(
+                children: history
+                    .map((trip) => _buildTravelHistoryCard(trip))
+                    .toList(),
+              ),
       ],
     );
   }

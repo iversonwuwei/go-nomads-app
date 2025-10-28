@@ -174,6 +174,7 @@ class UserProfileController extends GetxController {
         meetupsAttended:
             data['meetupsAttended'] ?? data['meetups_attended'] ?? 0,
         tripsCompleted: data['tripsCompleted'] ?? data['trips_completed'] ?? 0,
+        favorites: data['favorites'] ?? 0,
       ),
       travelHistory: [], // TODO: 后端返回 travel_history 时解析
       joinedDate:
