@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart' hide Badge;
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../config/app_colors.dart';
 import '../config/profile_presets.dart';
@@ -84,6 +85,75 @@ class ProfilePage extends StatelessWidget {
     }
   }
 
+  Future<void> _handleAvatarUpload(BuildContext context) async {
+    try {
+      final ImagePicker picker = ImagePicker();
+
+      // 显示选择对话框：相册或相机
+      final source = await showDialog<ImageSource>(
+        context: context,
+        builder: (BuildContext context) {
+          final l10n = AppLocalizations.of(context)!;
+          return AlertDialog(
+            title: Text(l10n.chooseImageSource),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.photo_library),
+                  title: Text(l10n.gallery),
+                  onTap: () => Navigator.of(context).pop(ImageSource.gallery),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.camera_alt),
+                  title: Text(l10n.camera),
+                  onTap: () => Navigator.of(context).pop(ImageSource.camera),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+
+      if (source == null) return;
+
+      // 选择图片
+      final XFile? image = await picker.pickImage(
+        source: source,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+
+      if (image == null) return;
+
+      // TODO: 这里需要上传图片到服务器并获取URL
+      // 暂时显示上传成功提示
+      if (context.mounted) {
+        AppToast.success(
+          'Avatar image selected: ${image.name}',
+          title: 'Success',
+        );
+      }
+
+      // 后续需要：
+      // 1. 上传图片到云存储服务（如 Supabase Storage）
+      // 2. 获取上传后的 URL
+      // 3. 调用 UserProfileController 更新头像 URL
+      // 例如:
+      // final controller = Get.find<UserProfileController>();
+      // await controller.updateAvatar(imageUrl);
+    } catch (e) {
+      print('❌ 上传头像失败: $e');
+      if (context.mounted) {
+        AppToast.error(
+          'Failed to upload avatar',
+          title: 'Error',
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(UserProfileController());
@@ -161,7 +231,7 @@ class ProfilePage extends StatelessWidget {
                       _buildLoginNotice(context, isMobile),
 
                     // Profile Header
-                    _buildProfileHeader(context, user, isMobile),
+                    _buildProfileHeader(context, user, controller, isMobile),
                     const SizedBox(height: 32),
 
                     // My Travel Plans (AI Generated)
@@ -209,49 +279,70 @@ class ProfilePage extends StatelessWidget {
 
   // Profile Header
   Widget _buildProfileHeader(
-      BuildContext context, UserModel user, bool isMobile) {
+      BuildContext context, UserModel user,
+      UserProfileController controller, bool isMobile) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Avatar
-        Stack(
-          children: [
-            Container(
-              width: isMobile ? 80 : 120,
-              height: isMobile ? 80 : 120,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFFFF4458),
-                  width: 3,
-                ),
-              ),
-              child: ClipOval(
-                child: Image.network(
-                  user.avatarUrl ?? 'https://i.pravatar.cc/300',
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-            if (user.isVerified)
-              Positioned(
-                right: 0,
-                bottom: 0,
-                child: Container(
-                  width: isMobile ? 24 : 32,
-                  height: isMobile ? 24 : 32,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFF4458),
-                    shape: BoxShape.circle,
+        GestureDetector(
+          onTap: controller.isEditMode.value
+              ? () => _handleAvatarUpload(context)
+              : null,
+          child: Stack(
+            children: [
+              Container(
+                width: isMobile ? 80 : 120,
+                height: isMobile ? 80 : 120,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: const Color(0xFFFF4458),
+                    width: 3,
                   ),
-                  child: const Icon(
-                    Icons.check,
-                    color: Colors.white,
-                    size: 16,
+                ),
+                child: ClipOval(
+                  child: Image.network(
+                    user.avatarUrl ?? 'https://i.pravatar.cc/300',
+                    fit: BoxFit.cover,
                   ),
                 ),
               ),
-          ],
+              // 相机图标覆盖层 - 仅在编辑模式下显示
+              if (controller.isEditMode.value)
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black.withValues(alpha: 0.4),
+                    ),
+                    child: Icon(
+                      Icons.camera_alt,
+                      color: Colors.white.withValues(alpha: 0.8),
+                      size: isMobile ? 32 : 40,
+                    ),
+                  ),
+                ),
+              if (user.isVerified)
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    width: isMobile ? 24 : 32,
+                    height: isMobile ? 24 : 32,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFF4458),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
 
         const SizedBox(width: 20),
@@ -511,10 +602,65 @@ class ProfilePage extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 12),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: user.skills.map((skill) {
+        user.skills.isEmpty
+            ? Container(
+                padding: EdgeInsets.symmetric(
+                  vertical: isMobile ? 40 : 60,
+                  horizontal: isMobile ? 20 : 40,
+                ),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.grey.withValues(alpha: 0.3),
+                    width: 1,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.lightbulb_outline,
+                        size: isMobile ? 48 : 64,
+                        color: Colors.grey.withValues(alpha: 0.4),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No skills added yet',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: isMobile ? 16 : 18,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      if (isEditMode) ...[
+                        const SizedBox(height: 24),
+                        ElevatedButton.icon(
+                          onPressed: () =>
+                              _showAddSkillDialog(context, controller),
+                          icon: const Icon(Icons.add),
+                          label: Text(l10n.addSkill),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFFF4458),
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isMobile ? 24 : 32,
+                              vertical: isMobile ? 12 : 16,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              )
+            : Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: user.skills.map((skill) {
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
@@ -572,10 +718,65 @@ class ProfilePage extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 12),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: user.interests.map((interest) {
+        user.interests.isEmpty
+            ? Container(
+                padding: EdgeInsets.symmetric(
+                  vertical: isMobile ? 40 : 60,
+                  horizontal: isMobile ? 20 : 40,
+                ),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.grey.withValues(alpha: 0.3),
+                    width: 1,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.favorite_outline,
+                        size: isMobile ? 48 : 64,
+                        color: Colors.grey.withValues(alpha: 0.4),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No interests added yet',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: isMobile ? 16 : 18,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      if (isEditMode) ...[
+                        const SizedBox(height: 24),
+                        ElevatedButton.icon(
+                          onPressed: () =>
+                              _showAddInterestDialog(context, controller),
+                          icon: const Icon(Icons.add),
+                          label: Text(l10n.addInterest),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF374151),
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isMobile ? 24 : 32,
+                              vertical: isMobile ? 12 : 16,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              )
+            : Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: user.interests.map((interest) {
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
@@ -1121,8 +1322,6 @@ class ProfilePage extends StatelessWidget {
 
   // 登录提示卡片
   Widget _buildLoginNotice(BuildContext context, bool isMobile) {
-    final l10n = AppLocalizations.of(context)!;
-
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
