@@ -1,0 +1,579 @@
+{
+  "generated_travel_plans": [
+    {
+      "id": "gtp-001-tokyo-sakura",
+      "cityId": "tokyo",
+      "cityName": "Tokyo",
+      "cityImage": "https://cdn.example.com/images/tiles/tokyo-sakura.jpg",
+      "createdAt": "2025-10-29T08:00:00Z",
+      "duration": 5,
+      "budget": "medium",
+      "travelStyle": "culture",
+      "interests": ["culture", "food", "nightlife"],
+      "transportation": {
+        "arrivalMethod": "flight",
+        "arrivalDetails": "NH920 · PEK → HND · 2025-12-20 09:30",
+        "estimatedCost": 620.0,
+        "localTransport": "metro",
+        "localTransportDetails": "Suica 5-day unlimited metro/bus pass",
+        "dailyTransportCost": 12.5
+      },
+      "accommodation": {
+        "type": "hotel",
+        "recommendation": "Shinjuku Granbell Hotel",
+        "area": "Shinjuku",
+        "pricePerNight": 145.0,
+        "amenities": ["free-wifi", "rooftop-bar", "24h-reception"],
+        "bookingTips": "Book at least 45 days early for peak sakura pricing."
+      },
+      "dailyItineraries": [
+        {
+          "day": 1,
+          "theme": "City orientation",
+          "activities": [
+            {
+              "time": "10:00",
+              "name": "明治神宫参观",
+              "description": "Walk through the forested shrine complex and write a prayer board.",
+              "location": "Harajuku",
+              "estimatedCost": 0.0,
+              "duration": 120
+            },
+            {
+              "time": "14:00",
+              "name": "涉谷Scramble观景",
+              "description": "Capture time-lapse from Shibuya Sky observation deck.",
+              "location": "Shibuya",
+              "estimatedCost": 18.0,
+              "duration": 90
+            }
+          ],
+          "notes": "Activate metro pass after landing; reserve evening for rest."
+        },
+        {
+          "day": 2,
+          "theme": "传统文化",
+          "activities": [
+            {
+              "time": "09:30",
+              "name": "浅草和服体验",
+              "description": "Wear rental kimono and walk around Sensō-ji temple.",
+              "location": "Asakusa",
+              "estimatedCost": 35.0,
+              "duration": 180
+            },
+            {
+              "time": "13:30",
+              "name": "隅田川游船",
+              "description": "One-hour river cruise with sakura views (seasonal).",
+              "location": "Sumida River",
+              "estimatedCost": 14.0,
+              "duration": 75
+            }
+          ],
+          "notes": "预定午餐于浅草今半，尝试和牛寿喜烧。"
+        },
+        {
+          "day": 3,
+          "theme": "未来城市与夜生活",
+          "activities": [
+            {
+              "time": "11:00",
+              "name": "TeamLab Planets",
+              "description": "Immersive digital art with mirrored water surfaces.",
+              "location": "Toyosu",
+              "estimatedCost": 32.0,
+              "duration": 120
+            },
+            {
+              "time": "19:30",
+              "name": "歌舞伎町夜间酒吧巡礼",
+              "description": "Guided izakaya hopping with local host.",
+              "location": "Kabukichō",
+              "estimatedCost": 55.0,
+              "duration": 150
+            }
+          ],
+          "notes": "可选深夜拉面：一兰歌舞伎町门店。"
+        }
+      ],
+      "attractions": [
+        {
+          "name": "东京国立博物馆",
+          "description": "Japan's oldest national museum showcasing art and antiquities.",
+          "category": "museum",
+          "rating": 4.8,
+          "location": "Ueno Park",
+          "entryFee": 6.5,
+          "bestTime": "morning",
+          "image": "https://cdn.example.com/attractions/tnm.jpg"
+        },
+        {
+          "name": "筑地场外市场",
+          "description": "Street-food heaven with fresh sashimi and tamagoyaki.",
+          "category": "market",
+          "rating": 4.6,
+          "location": "Tsukiji",
+          "entryFee": 0.0,
+          "bestTime": "early-morning",
+          "image": "https://cdn.example.com/attractions/tsukiji.jpg"
+        }
+      ],
+      "restaurants": [
+        {
+          "name": "一风堂银座",
+          "cuisine": "ramen",
+          "description": "Creamy tonkotsu ramen with limited seasonal toppings.",
+          "rating": 4.5,
+          "priceRange": "$$",
+          "location": "Ginza",
+          "specialty": "white tonkotsu",
+          "image": "https://cdn.example.com/restaurants/ippudo.jpg"
+        },
+        {
+          "name": "寿司さいとう",
+          "cuisine": "sushi",
+          "description": "Michelin-starred omakase experience (reservation required).",
+          "rating": 4.9,
+          "priceRange": "$$$$",
+          "location": "Minato",
+          "specialty": "omakase",
+          "image": "https://cdn.example.com/restaurants/saito.jpg"
+        }
+      ],
+      "tips": [
+        "购买随身Wi-Fi或eSIM以便随时翻译",
+        "现金与IC卡混合支付，部分小店不支持信用卡",
+        "高峰时段地铁拥挤，尽量避开 8:00-9:30"
+      ],
+      "budgetBreakdown": {
+        "transportation": 925.0,
+        "accommodation": 725.0,
+        "food": 340.0,
+        "activities": 220.0,
+        "miscellaneous": 80.0,
+        "total": 2290.0,
+        "currency": "USD"
+      }
+    },
+
+    {
+      "id": "gtp-002-paris-art-week",
+      "cityId": "paris",
+      "cityName": "Paris",
+      "cityImage": "https://cdn.example.com/images/tiles/paris-louvre.jpg",
+      "createdAt": "2025-10-29T08:30:00Z",
+      "duration": 4,
+      "budget": "high",
+      "travelStyle": "luxury",
+      "interests": ["art", "wine", "architecture"],
+      "transportation": {
+        "arrivalMethod": "flight",
+        "arrivalDetails": "AF379 · JFK → CDG · 2026-04-12 07:20",
+        "estimatedCost": 980.0,
+        "localTransport": "metro",
+        "localTransportDetails": "Paris Visite 5-day pass + Seine cruise",
+        "dailyTransportCost": 18.0
+      },
+      "accommodation": {
+        "type": "boutique-hotel",
+        "recommendation": "Le Roch Hotel & Spa",
+        "area": "1st arrondissement",
+        "pricePerNight": 420.0,
+        "amenities": ["spa", "indoor-pool", "gourmet-restaurant"],
+        "bookingTips": "Request courtyard-view rooms for quieter nights."
+      },
+      "dailyItineraries": [
+        {
+          "day": 1,
+          "theme": "经典艺术",
+          "activities": [
+            {
+              "time": "09:00",
+              "name": "卢浮宫VIP导览",
+              "description": "Private curator-led tour covering highlights in 3 hours.",
+              "location": "Rue de Rivoli",
+              "estimatedCost": 200.0,
+              "duration": 180
+            },
+            {
+              "time": "15:00",
+              "name": "塞纳河香槟巡游",
+              "description": "Sunset cruise with champagne tasting.",
+              "location": "Pont Neuf",
+              "estimatedCost": 120.0,
+              "duration": 90
+            }
+          ],
+          "notes": "提前打印预约确认信，享受免排队入口。"
+        },
+        {
+          "day": 2,
+          "theme": "现代艺术与购物",
+          "activities": [
+            {
+              "time": "10:30",
+              "name": "蓬皮杜艺术中心",
+              "description": "Focus on contemporary collections and design exhibits.",
+              "location": "Beaubourg",
+              "estimatedCost": 16.0,
+              "duration": 150
+            },
+            {
+              "time": "17:00",
+              "name": "老佛爷百货VIP休息室",
+              "description": "Duty-free designer shopping with personal stylist.",
+              "location": "Boulevard Haussmann",
+              "estimatedCost": 0.0,
+              "duration": 120
+            }
+          ],
+          "notes": "预约三星餐厅 Le Cinq 晚餐。"
+        }
+      ],
+      "attractions": [
+        {
+          "name": "奥赛博物馆",
+          "description": "Impressionist masterpieces housed in a beaux-arts railway station.",
+          "category": "museum",
+          "rating": 4.7,
+          "location": "Left Bank",
+          "entryFee": 16.0,
+          "bestTime": "late-morning",
+          "image": "https://cdn.example.com/attractions/orsay.jpg"
+        }
+      ],
+      "restaurants": [
+        {
+          "name": "Le Cinq",
+          "cuisine": "French fine dining",
+          "description": "Three-Michelin-starred tasting menu with seasonal produce.",
+          "rating": 4.9,
+          "priceRange": "$$$$",
+          "location": "Georges V",
+          "specialty": "multi-course tasting",
+          "image": "https://cdn.example.com/restaurants/le-cinq.jpg"
+        }
+      ],
+      "tips": [
+        "巴黎多数景点周一或周二闭馆，提前确认开放日",
+        "地铁口常有小偷，保管好随身物品"
+      ],
+      "budgetBreakdown": {
+        "transportation": 1180.0,
+        "accommodation": 1680.0,
+        "food": 900.0,
+        "activities": 680.0,
+        "miscellaneous": 240.0,
+        "total": 4680.0,
+        "currency": "EUR"
+      }
+    },
+
+    {
+      "id": "gtp-003-bali-nomad",
+      "cityId": "bali",
+      "cityName": "Bali",
+      "cityImage": "https://cdn.example.com/images/tiles/bali-uluwatu.jpg",
+      "createdAt": "2025-10-29T09:10:00Z",
+      "duration": 14,
+      "budget": "medium",
+      "travelStyle": "relaxation",
+      "interests": ["wellness", "surfing", "remote-work"],
+      "transportation": {
+        "arrivalMethod": "flight",
+        "arrivalDetails": "GA889 · SIN → DPS · 2026-02-02 14:15",
+        "estimatedCost": 240.0,
+        "localTransport": "scooter",
+        "localTransportDetails": "Monthly rental with helmet & insurance",
+        "dailyTransportCost": 8.0
+      },
+      "accommodation": {
+        "type": "villa",
+        "recommendation": "Canggu CoLiving Villa",
+        "area": "Canggu",
+        "pricePerNight": 95.0,
+        "amenities": ["fast-wifi", "cowork-space", "pool"],
+        "bookingTips": "Ask for pool-view rooms, best natural light for work calls."
+      },
+      "dailyItineraries": [
+        {
+          "day": 1,
+          "theme": "适应与远程办公",
+          "activities": [
+            {
+              "time": "09:00",
+              "name": "Co-working onboarding",
+              "description": "Tour coworking space, set up locker & printing access.",
+              "location": "Dojo Bali",
+              "estimatedCost": 15.0,
+              "duration": 120
+            },
+            {
+              "time": "17:30",
+              "name": "Echo Beach 日落",
+              "description": "Sunset surf session with instructor (beginner friendly).",
+              "location": "Echo Beach",
+              "estimatedCost": 25.0,
+              "duration": 120
+            }
+          ],
+          "notes": "白天安排视频会议，时区 GMT+8。"
+        },
+        {
+          "day": 3,
+          "theme": "乌布文化探访",
+          "activities": [
+            {
+              "time": "08:00",
+              "name": "德格拉朗梯田",
+              "description": "Private driver to visit rice terraces & swing.",
+              "location": "Tegalalang",
+              "estimatedCost": 45.0,
+              "duration": 180
+            },
+            {
+              "time": "13:00",
+              "name": "乌布瑜伽课",
+              "description": "90-minute vinyasa at Yoga Barn.",
+              "location": "Ubud",
+              "estimatedCost": 18.0,
+              "duration": 90
+            }
+          ],
+          "notes": "午餐推荐 Clear Cafe。"
+        }
+      ],
+      "attractions": [
+        {
+          "name": "乌鲁瓦图海神庙",
+          "description": "Clifftop temple with dramatic sunset Kecak dance.",
+          "category": "temple",
+          "rating": 4.6,
+          "location": "Uluwatu",
+          "entryFee": 5.0,
+          "bestTime": "sunset",
+          "image": "https://cdn.example.com/attractions/uluwatu.jpg"
+        }
+      ],
+      "restaurants": [
+        {
+          "name": "Crate Cafe",
+          "cuisine": "brunch",
+          "description": "Popular smoothie bowls and specialty coffee.",
+          "rating": 4.4,
+          "priceRange": "$$",
+          "location": "Canggu",
+          "specialty": "smoothie bowl",
+          "image": "https://cdn.example.com/restaurants/crate-cafe.jpg"
+        }
+      ],
+      "tips": [
+        "雨季骑行注意暴雨，随身携带轻便雨衣",
+        "可使用Grab或Gojek叫车作为替代",
+        "远程办公时备份4G热点，网络偶尔抖动"
+      ],
+      "budgetBreakdown": {
+        "transportation": 460.0,
+        "accommodation": 1330.0,
+        "food": 420.0,
+        "activities": 290.0,
+        "miscellaneous": 180.0,
+        "total": 2680.0,
+        "currency": "USD"
+      }
+    },
+
+    {
+      "id": "gtp-004-bangkok-budget",
+      "cityId": "bangkok",
+      "cityName": "Bangkok",
+      "cityImage": "https://cdn.example.com/images/tiles/bangkok-night.jpg",
+      "createdAt": "2025-10-29T09:30:00Z",
+      "duration": 3,
+      "budget": "low",
+      "travelStyle": "adventure",
+      "interests": ["street-food", "temples", "night-markets"],
+      "transportation": {
+        "arrivalMethod": "train",
+        "arrivalDetails": "SP32 · Chiang Mai → Bangkok · sleeper cabin",
+        "estimatedCost": 38.0,
+        "localTransport": "bts+boat",
+        "localTransportDetails": "One-day Rabbit Card + Chao Phraya tourist boat",
+        "dailyTransportCost": 6.0
+      },
+      "accommodation": {
+        "type": "hostel",
+        "recommendation": "Lub d Bangkok Siam",
+        "area": "Siam",
+        "pricePerNight": 24.0,
+        "amenities": ["co-working", "laundry", "social-events"],
+        "bookingTips": "选择8人混合宿舍性价比最高。"
+      },
+      "dailyItineraries": [
+        {
+          "day": 1,
+          "theme": "寺庙与河上风光",
+          "activities": [
+            {
+              "time": "08:30",
+              "name": "大皇宫与玉佛寺",
+              "description": "Self-guided tour with audio guide app.",
+              "location": "Na Phra Lan Road",
+              "estimatedCost": 16.0,
+              "duration": 150
+            },
+            {
+              "time": "17:00",
+              "name": "Asiatique夜市",
+              "description": "Ride the Ferris wheel and sample grilled seafood.",
+              "location": "Chao Phraya Riverside",
+              "estimatedCost": 12.0,
+              "duration": 180
+            }
+          ],
+          "notes": "衣着需覆盖肩膀和膝盖。"
+        }
+      ],
+      "attractions": [
+        {
+          "name": "郑王庙",
+          "description": "Iconic riverside temple, stunning sunset reflections.",
+          "category": "temple",
+          "rating": 4.5,
+          "location": "Thonburi",
+          "entryFee": 1.5,
+          "bestTime": "sunrise",
+          "image": "https://cdn.example.com/attractions/wat-arun.jpg"
+        }
+      ],
+      "restaurants": [
+        {
+          "name": "Jay Fai",
+          "cuisine": "street food",
+          "description": "Michelin-star street food, try the crab omelette.",
+          "rating": 4.6,
+          "priceRange": "$$$",
+          "location": "Mahachai Road",
+          "specialty": "crab omelette",
+          "image": "https://cdn.example.com/restaurants/jay-fai.jpg"
+        },
+        {
+          "name": "Thipsamai",
+          "cuisine": "thai",
+          "description": "Legendary Pad Thai with charcoal wok aroma.",
+          "rating": 4.4,
+          "priceRange": "$$",
+          "location": "Mahachai Road",
+          "specialty": "pad thai",
+          "image": "https://cdn.example.com/restaurants/thipsamai.jpg"
+        }
+      ],
+      "tips": [
+        "寺庙内禁止无人机航拍",
+        "高温潮湿，多准备止汗湿巾",
+        "夜市消费可适度砍价"
+      ],
+      "budgetBreakdown": {
+        "transportation": 80.0,
+        "accommodation": 72.0,
+        "food": 120.0,
+        "activities": 60.0,
+        "miscellaneous": 30.0,
+        "total": 362.0,
+        "currency": "USD"
+      }
+    },
+
+    {
+      "id": "gtp-005-dubai-weekender",
+      "cityId": "dubai",
+      "cityName": "Dubai",
+      "cityImage": "https://cdn.example.com/images/tiles/dubai-marina.jpg",
+      "createdAt": "2025-10-29T10:00:00Z",
+      "duration": 3,
+      "budget": "high",
+      "travelStyle": "adventure",
+      "interests": ["desert", "shopping", "architecture"],
+      "transportation": {
+        "arrivalMethod": "flight",
+        "arrivalDetails": "EK203 · JFK → DXB · 2026-01-18 07:45",
+        "estimatedCost": 1150.0,
+        "localTransport": "metro+ride-hailing",
+        "localTransportDetails": "NOL day pass + Careem app",
+        "dailyTransportCost": 28.0
+      },
+      "accommodation": {
+        "type": "resort",
+        "recommendation": "Atlantis The Royal",
+        "area": "Palm Jumeirah",
+        "pricePerNight": 690.0,
+        "amenities": ["aquaventure-access", "private-beach", "fine-dining"],
+        "bookingTips": "选择sky view房型，含早餐与水世界门票。"
+      },
+      "dailyItineraries": [
+        {
+          "day": 1,
+          "theme": "现代都市探索",
+          "activities": [
+            {
+              "time": "10:00",
+              "name": "哈利法塔观景台",
+              "description": "Fast-track ticket to Level 148 lounge.",
+              "location": "Downtown Dubai",
+              "estimatedCost": 130.0,
+              "duration": 120
+            },
+            {
+              "time": "16:00",
+              "name": "沙漠越野与营地晚宴",
+              "description": "6-hour premium desert safari with stargazing and BBQ dinner.",
+              "location": "Dubai Desert Conservation Reserve",
+              "estimatedCost": 210.0,
+              "duration": 360
+            }
+          ],
+          "notes": "带外套，沙漠夜间温差大。"
+        }
+      ],
+      "attractions": [
+        {
+          "name": "未来博物馆",
+          "description": "Immersive exhibits on future cities and ecology.",
+          "category": "museum",
+          "rating": 4.7,
+          "location": "Sheikh Zayed Road",
+          "entryFee": 40.0,
+          "bestTime": "afternoon",
+          "image": "https://cdn.example.com/attractions/museum-of-the-future.jpg"
+        }
+      ],
+      "restaurants": [
+        {
+          "name": "Ossiano",
+          "cuisine": "seafood",
+          "description": "Underwater fine dining with aquarium views.",
+          "rating": 4.8,
+          "priceRange": "$$$$",
+          "location": "Atlantis The Palm",
+          "specialty": "tasting menu",
+          "image": "https://cdn.example.com/restaurants/ossiano.jpg"
+        }
+      ],
+      "tips": [
+        "商场内空调强，记得携带薄外套",
+        "周五是当地休息日，注意景点开放时间",
+        "多数高级餐厅需提前至少两周预约"
+      ],
+      "budgetBreakdown": {
+        "transportation": 1380.0,
+        "accommodation": 2070.0,
+        "food": 620.0,
+        "activities": 520.0,
+        "miscellaneous": 260.0,
+        "total": 4850.0,
+        "currency": "AED"
+      }
+    }
+  ]
+}

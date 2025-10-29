@@ -385,7 +385,12 @@ class _CityListPageState extends State<CityListPage> {
   Widget _buildCityList(bool isMobile) {
     return Obx(() => ListView.builder(
           controller: _scrollController,
-          padding: EdgeInsets.all(isMobile ? 16 : 20),
+          padding: EdgeInsets.fromLTRB(
+            isMobile ? 16 : 20,
+            isMobile ? 16 : 20,
+            isMobile ? 16 : 20,
+            100, // 底部留白给导航栏
+          ),
           itemCount: controller.cities.length +
               (controller.hasMoreData ? 1 : 0), // +1 for loading indicator
           itemBuilder: (context, index) {

@@ -66,6 +66,7 @@ class MyHomePage extends StatelessWidget {
         }
 
         return SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 100),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

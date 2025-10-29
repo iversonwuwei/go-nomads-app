@@ -60,7 +60,12 @@ class CommunityPage extends StatelessWidget {
   // Trip Reports Tab
   Widget _buildTripReportsTab(CommunityController controller, bool isMobile) {
     return Obx(() => ListView.builder(
-          padding: EdgeInsets.all(isMobile ? 16 : 24),
+          padding: EdgeInsets.fromLTRB(
+            isMobile ? 16 : 24,
+            isMobile ? 16 : 24,
+            isMobile ? 16 : 24,
+            100, // 底部留白给导航栏
+          ),
           itemCount: controller.tripReports.length,
           itemBuilder: (context, index) {
             final report = controller.tripReports[index];
@@ -593,7 +598,12 @@ class CommunityPage extends StatelessWidget {
   // Q&A Tab
   Widget _buildQATab(CommunityController controller, bool isMobile) {
     return Obx(() => ListView.builder(
-          padding: EdgeInsets.all(isMobile ? 16 : 24),
+          padding: EdgeInsets.fromLTRB(
+            isMobile ? 16 : 24,
+            isMobile ? 16 : 24,
+            isMobile ? 16 : 24,
+            100, // 底部留白给导航栏
+          ),
           itemCount: controller.questions.length,
           itemBuilder: (context, index) {
             final question = controller.questions[index];

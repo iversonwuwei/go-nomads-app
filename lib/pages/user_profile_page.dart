@@ -76,7 +76,12 @@ class _UserProfilePageState extends State<UserProfilePage> {
         ],
       ),
       body: ListView(
-        padding: EdgeInsets.all(isMobile ? 16 : 24),
+        padding: EdgeInsets.fromLTRB(
+          isMobile ? 16 : 24,
+          isMobile ? 16 : 24,
+          isMobile ? 16 : 24,
+          100, // 底部留白给导航栏
+        ),
         children: [
           // 用户信息卡片
           _buildUserInfoCard(isMobile),

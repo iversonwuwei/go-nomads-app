@@ -1,0 +1,195 @@
+{
+  "travel_plans": [
+    {
+      "id": "tp-001-minimal",
+      "title": "周末短途游",
+      "description": "仅包含必填字段的最小计划",
+      "start_date": "2025-11-08",
+      "end_date": "2025-11-09",
+      "destinations": [
+        { "city": "苏州", "country": "中国", "lat": 31.2989, "lng": 120.5853 }
+      ],
+      "travelers": [ { "name": "张三", "age": 30, "type": "adult" } ],
+      "budget": { "currency": "CNY", "amount": 500 },
+      "preferences": {},
+      "activities": [],
+      "accommodations": [],
+      "transport": [],
+      "privacy": "public",
+      "status": "submitted",
+      "created_at": "2025-10-29T09:00:00Z"
+    },
+
+    {
+      "id": "tp-002-full-multicity",
+      "title": "环欧十日游",
+      "description": "经典线路：巴黎-巴塞罗那-罗马，包含航班、火车与酒店信息，以及每日行程安排。",
+      "start_date": "2026-03-01",
+      "end_date": "2026-03-10",
+      "destinations": [
+        { "city": "Paris", "country": "France", "lat": 48.8566, "lng": 2.3522, "arrival": "2026-03-01T10:00:00Z", "departure": "2026-03-03T18:00:00Z" },
+        { "city": "Barcelona", "country": "Spain", "lat": 41.3851, "lng": 2.1734, "arrival": "2026-03-04T09:00:00Z", "departure": "2026-03-06T20:00:00Z" },
+        { "city": "Rome", "country": "Italy", "lat": 41.9028, "lng": 12.4964, "arrival": "2026-03-07T08:00:00Z", "departure": "2026-03-10T23:00:00Z" }
+      ],
+      "travelers": [ { "name": "Li Hua", "age": 34, "type": "adult" }, { "name": "Xiao Ming", "age": 8, "type": "child" } ],
+      "budget": { "currency": "EUR", "amount": 4500 },
+      "preferences": { "transport": ["flight","train"], "accommodation": ["hotel"], "activities": ["museum","food"] },
+      "activities": [
+        { "day": 1, "time": "14:00", "name": "卢浮宫参观", "notes": "提前购票" },
+        { "day": 3, "time": "10:00", "name": "巴塞罗那高迪徒步", "notes": "步行路线30min" }
+      ],
+      "accommodations": [
+        { "name": "Hotel de Paris", "check_in": "2026-03-01T15:00:00Z", "check_out": "2026-03-03T11:00:00Z", "address": "Paris, France" }
+      ],
+      "transport": [
+        { "type": "flight", "from": "PEK", "to": "CDG", "departure": "2026-03-01T02:00:00Z", "arrival": "2026-03-01T09:30:00Z", "carrier": "AirExample" },
+        { "type": "train", "from": "Paris", "to": "Barcelona", "departure": "2026-03-03T08:00:00Z", "arrival": "2026-03-04T12:00:00Z", "carrier": "EuroRail" }
+      ],
+      "visa_required": ["Schengen"],
+      "privacy": "friends",
+      "status": "submitted",
+      "created_at": "2025-10-29T10:15:00Z"
+    },
+
+    {
+      "id": "tp-003-one-day-local",
+      "title": "城市观光一日游",
+      "description": "单日行程（观光、晚餐），适合快速发布与分享",
+      "start_date": "2025-12-05",
+      "end_date": "2025-12-05",
+      "destinations": [ { "city": "上海", "country": "中国", "lat": 31.2304, "lng": 121.4737 } ],
+      "travelers": [ { "name": "王五", "age": 28, "type": "adult" } ],
+      "budget": { "currency": "CNY", "amount": 200 },
+      "preferences": { "activities": ["food","photo"] },
+      "activities": [ { "day": 1, "time": "12:00", "name": "外滩散步", "notes": "带相机" } ],
+      "privacy": "public",
+      "status": "submitted",
+      "created_at": "2025-10-29T11:00:00Z"
+    },
+
+    {
+      "id": "tp-004-long-trip",
+      "title": "环球工作假期",
+      "description": "长时段旅行（60 天），测试长时间跨度与大数据量字段",
+      "start_date": "2026-01-10",
+      "end_date": "2026-03-10",
+      "destinations": [
+        { "city": "Bangkok", "country": "Thailand", "lat": 13.7563, "lng": 100.5018 },
+        { "city": "Bali", "country": "Indonesia", "lat": -8.3405, "lng": 115.0920 },
+        { "city": "Sydney", "country": "Australia", "lat": -33.8688, "lng": 151.2093 }
+      ],
+      "travelers": [ { "name": "Alice", "age": 29, "type": "adult" } ],
+      "budget": { "currency": "USD", "amount": 12000 },
+      "preferences": { "accommodation": ["apartment","hostel"] },
+      "activities": [],
+      "privacy": "private",
+      "status": "draft",
+      "created_at": "2025-10-28T22:00:00Z"
+    },
+
+    {
+      "id": "tp-005-zero-budget",
+      "title": "背包穷游",
+      "description": "预算为 0（测试是否允许 0 或 null），注重低成本活动",
+      "start_date": "2026-04-01",
+      "end_date": "2026-04-10",
+      "destinations": [ { "city": "丽江", "country": "中国", "lat": 26.8721, "lng": 100.2290 } ],
+      "travelers": [ { "name": "Tom", "age": 25, "type": "adult" } ],
+      "budget": { "currency": "CNY", "amount": 0 },
+      "preferences": { "activities": ["hike","camp"] },
+      "privacy": "public",
+      "status": "submitted",
+      "created_at": "2025-10-29T12:30:00Z"
+    },
+
+    {
+      "id": "tp-006-international-visa",
+      "title": "签证敏感城市",
+      "description": "包含需要特别签证或健康证明的国际目的地",
+      "start_date": "2026-06-15",
+      "end_date": "2026-06-25",
+      "destinations": [ { "city": "Moscow", "country": "Russia", "lat": 55.7558, "lng": 37.6173 } ],
+      "travelers": [ { "name": "赵六", "age": 40, "type": "adult" } ],
+      "budget": { "currency": "RUB", "amount": 80000 },
+      "visa_required": ["Russia Visa"],
+      "preferences": { "transport": ["flight"] },
+      "privacy": "friends",
+      "status": "submitted",
+      "created_at": "2025-10-29T13:00:00Z"
+    },
+
+    {
+      "id": "tp-007-invalid-overlap",
+      "title": "日期重叠测试(无效)",
+      "description": "目的地间日期不连续/重叠，用于测试后台校验",
+      "start_date": "2026-05-01",
+      "end_date": "2026-05-10",
+      "destinations": [
+        { "city": "A City", "country": "Country A", "arrival": "2026-05-01", "departure": "2026-05-05" },
+        { "city": "B City", "country": "Country B", "arrival": "2026-05-04", "departure": "2026-05-09" }
+      ],
+      "travelers": [ { "name": "Test", "age": 30, "type": "adult" } ],
+      "budget": { "currency": "CNY", "amount": 1500 },
+      "privacy": "public",
+      "status": "submitted",
+      "invalid_reason": "destinations dates overlap (arrival of B before departure of A)",
+      "created_at": "2025-10-29T14:00:00Z"
+    },
+
+    {
+      "id": "tp-008-invalid-end_before_start",
+      "title": "结束早于开始(无效)",
+      "description": "end_date 早于 start_date，用于校验",
+      "start_date": "2026-08-10",
+      "end_date": "2026-08-05",
+      "destinations": [ { "city": "X", "country": "Y" } ],
+      "travelers": [ { "name": "Bad Date", "age": 20, "type": "adult" } ],
+      "budget": { "currency": "CNY", "amount": 800 },
+      "privacy": "private",
+      "status": "submitted",
+      "invalid_reason": "end_date is before start_date",
+      "created_at": "2025-10-29T14:15:00Z"
+    },
+
+    {
+      "id": "tp-009-heavy-activities",
+      "title": "活动密集型测试",
+      "description": "测试大量 activities 字段（压力/性能测试）",
+      "start_date": "2026-09-01",
+      "end_date": "2026-09-07",
+      "destinations": [ { "city": "Tokyo", "country": "Japan", "lat": 35.6762, "lng": 139.6503 } ],
+      "travelers": [ { "name": "Group", "age": 30, "type": "adult" } ],
+      "budget": { "currency": "JPY", "amount": 200000 },
+      "activities": [
+        { "day": 1, "time": "09:00", "name": "活动1", "notes": "说明..." },
+        { "day": 1, "time": "11:00", "name": "活动2", "notes": "说明..." },
+        { "day": 1, "time": "13:00", "name": "活动3", "notes": "说明..." },
+        { "day": 2, "time": "09:00", "name": "活动4", "notes": "说明..." },
+        { "day": 2, "time": "11:00", "name": "活动5", "notes": "说明..." },
+        { "day": 2, "time": "13:00", "name": "活动6", "notes": "说明..." },
+        { "day": 3, "time": "09:00", "name": "活动7", "notes": "说明..." },
+        { "day": 3, "time": "11:00", "name": "活动8", "notes": "说明..." },
+        { "day": 3, "time": "13:00", "name": "活动9", "notes": "说明..." },
+        { "day": 4, "time": "09:00", "name": "活动10", "notes": "说明..." }
+      ],
+      "privacy": "public",
+      "status": "submitted",
+      "created_at": "2025-10-29T15:00:00Z"
+    },
+
+    {
+      "id": "tp-010-missing-required",
+      "title": "缺少必填字段(无效)",
+      "description": "缺少 start_date 或 destinations 等必填字段，用于测试后端必填校验",
+      "start_date": null,
+      "end_date": null,
+      "destinations": [],
+      "travelers": [],
+      "budget": null,
+      "privacy": "public",
+      "status": "submitted",
+      "invalid_reason": "missing required fields: start_date, destinations, travelers",
+      "created_at": "2025-10-29T15:30:00Z"
+    }
+  ]
+}

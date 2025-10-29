@@ -224,16 +224,8 @@ class AiApiService {
         }
       }
 
-      // 获取基础 URL
-      final baseUrl = 'http://192.168.110.54:5000'; // AIService 基础地址
-      final url = '$baseUrl/ai/travel-plan/stream';
-
-      print('📡 连接到流式 API: $url');
-
-      // 创建 HTTP 客户端用于 SSE
-      final dio = Dio();
-      final response = await dio.post<ResponseBody>(
-        url,
+      final response = await _httpService.post<ResponseBody>(
+        '/ai/travel-plan/stream',
         data: {
           'cityId': cityId,
           'cityName': cityName,
@@ -255,7 +247,9 @@ class AiApiService {
             'Accept': 'text/event-stream',
             'Cache-Control': 'no-cache',
           },
-          receiveTimeout: const Duration(minutes: 5),
+          extra: {
+            HttpService.disableApiResponseUnwrapKey: true,
+          },
         ),
       );
 

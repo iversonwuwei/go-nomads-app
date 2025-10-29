@@ -35,7 +35,7 @@ class ApiConfig {
 
   // 是否使用真机测试地址(手动切换)
   // ⚠️ 雷电模拟器用户请设置为 true
-  static const bool usePhysicalDevice = true;
+  static const bool usePhysicalDevice = false;
 
   // 基础 URL - 智能选择
   static String get baseUrl {

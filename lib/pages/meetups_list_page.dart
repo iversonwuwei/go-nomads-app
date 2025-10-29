@@ -465,7 +465,8 @@ class _MeetupsListPageState extends State<MeetupsListPage>
               // Meetups list
               Expanded(
                 child: ListView.builder(
-                  padding: EdgeInsets.all(16.w),
+                  padding:
+                      EdgeInsets.fromLTRB(16.w, 16.w, 16.w, 100), // 底部留白给导航栏
                   itemCount: meetups.length,
                   itemBuilder: (context, index) {
                     return _buildMeetupCard(meetups[index]);

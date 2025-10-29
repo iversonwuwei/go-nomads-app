@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -124,87 +126,119 @@ class _ModernBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 获取屏幕宽度信息用于响应式布局
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    // 根据屏幕宽度计算响应式尺寸
+    // 基准: 390px (iPhone 14 标准尺寸)
+    final scaleFactor = (screenWidth / 390).clamp(0.85, 1.3);
+
+    // 紧凑的导航栏尺寸 - 只包裹图标,更小更透明
+    final iconSize = (30 * scaleFactor).clamp(28.0, 34.0); // 更大
+    final navBarHeight = (48 * scaleFactor).clamp(42.0, 54.0); // 更小
+    final indicatorSize = (44 * scaleFactor).clamp(40.0, 50.0); // 用于选中背景/容器高度
+    final borderRadius = (36 * scaleFactor).clamp(30.0, 40.0); // 更圆
+    final horizontalMargin = (14 * scaleFactor).clamp(10.0, 18.0); // 更窄
+    final bottomMargin = (18 * scaleFactor).clamp(12.0, 22.0); // 更窄
+
     return Container(
-      margin: const EdgeInsets.fromLTRB(12, 0, 12, 20),
+      margin: EdgeInsets.fromLTRB(
+        horizontalMargin,
+        0,
+        horizontalMargin,
+        bottomMargin,
+      ),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(borderRadius),
         boxShadow: [
-          // 主阴影 - 更强的深度
+          // 更强更立体的阴影
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 32,
-            offset: const Offset(0, -8),
-            spreadRadius: 0,
+            color: Colors.black.withOpacity(0.18),
+            blurRadius: 48,
+            offset: const Offset(0, 12),
+            spreadRadius: 2,
           ),
-          // 辅助阴影 - 增加立体感
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 16,
-            offset: const Offset(0, -4),
-            spreadRadius: -2,
+            color: Colors.white.withOpacity(0.10),
+            blurRadius: 0,
+            offset: const Offset(0, -1),
+            spreadRadius: 0,
           ),
         ],
       ),
-      child: SafeArea(
-        top: false,
-        child: Container(
-          height: 64,
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: List.generate(items.length, (index) {
-              final item = items[index];
-              final isSelected = currentIndex == index;
-
-              return Expanded(
-                child: GestureDetector(
-                  onTap: () => onTap(index),
-                  behavior: HitTestBehavior.opaque,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // 图标
-                      Icon(
-                        item.icon,
-                        size: 24,
-                        color: isSelected
-                            ? const Color(0xFF2196F3) // 蓝色
-                            : const Color(0xFF9E9E9E), // 灰色
-                      ),
-                      const SizedBox(height: 2),
-                      // 文字标签
-                      Text(
-                        item.label,
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight:
-                              isSelected ? FontWeight.w600 : FontWeight.normal,
-                          color: isSelected
-                              ? const Color(0xFF2196F3) // 蓝色
-                              : const Color(0xFF9E9E9E), // 灰色
-                          height: 1.0,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(borderRadius),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 56, sigmaY: 56), // 更强毛玻璃
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.36), // 更透明
+              borderRadius: BorderRadius.circular(borderRadius),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.5),
+                width: 0.5,
+              ),
+            ),
+            child: SafeArea(
+              top: false,
+              child: SizedBox(
+                height: navBarHeight,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: List.generate(items.length, (index) {
+                    final item = items[index];
+                    final isSelected = currentIndex == index;
+                    return Expanded(
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => onTap(index),
+                          borderRadius: BorderRadius.circular(28 * scaleFactor),
+                          splashColor:
+                              const Color(0xFF2196F3).withOpacity(0.10),
+                          highlightColor:
+                              const Color(0xFF2196F3).withOpacity(0.05),
+                          child: Center(
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              curve: Curves.easeInOut,
+                              width: indicatorSize,
+                              height: navBarHeight * 0.9, // 保证垂直居中
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? const Color(0xFF2196F3).withOpacity(0.13)
+                                    : Colors.transparent,
+                                borderRadius:
+                                    BorderRadius.circular(18 * scaleFactor),
+                                boxShadow: isSelected
+                                    ? [
+                                        BoxShadow(
+                                          color: const Color(0xFF2196F3)
+                                              .withOpacity(0.10),
+                                          blurRadius: 16,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ]
+                                    : [],
+                              ),
+                              child: Icon(
+                                item.icon,
+                                size: iconSize,
+                                color: isSelected
+                                    ? const Color(0xFF2196F3)
+                                    : const Color(0xFF8E8E93),
+                              ),
+                            ),
+                          ),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 2),
-                      // 底部指示器
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        height: 2,
-                        width: isSelected ? 28 : 0,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF2196F3), // 蓝色指示器
-                          borderRadius: BorderRadius.circular(1),
-                        ),
-                      ),
-                    ],
-                  ),
+                    );
+                  }),
                 ),
-              );
-            }),
+              ),
+            ),
           ),
         ),
       ),
