@@ -31,6 +31,36 @@ class DataServiceController extends GetxController {
   // 用户登录状态 (模拟)
   final RxBool isLoggedIn = true.obs; // 在实际应用中，这应该从认证服务获取
 
+  /// 检查用户是否已登录，如果未登录则显示提示并返回 false
+  bool _requireLogin({String? action}) {
+    try {
+      final userStateController = Get.find<UserStateController>();
+      if (!userStateController.isLoggedIn) {
+        final actionText = action ?? '此操作';
+        AppToast.warning('请先登录后再进行$actionText');
+        // 可选：跳转到登录页面
+        // Get.toNamed('/login');
+        return false;
+      }
+      return true;
+    } catch (e) {
+      print('⚠️ 获取用户登录状态失败: $e');
+      AppToast.warning('请先登录');
+      return false;
+    }
+  }
+
+  /// 获取当前登录用户的ID，如果未登录返回 null
+  int? _getCurrentUserId() {
+    try {
+      final userStateController = Get.find<UserStateController>();
+      return userStateController.getAccountIdOrNull();
+    } catch (e) {
+      print('⚠️ 获取用户ID失败: $e');
+      return null;
+    }
+  }
+
   // 筛选状态 - Nomads.com 风格
   final RxList<String> selectedRegions = <String>[].obs; // 地区筛选
   final RxList<String> selectedCountries = <String>[].obs; // 国家筛选
@@ -45,7 +75,7 @@ class DataServiceController extends GetxController {
   // 分页状态
   final RxBool hasMoreCities = true.obs; // 是否还有更多城市可加载
   final RxBool isLoadingMore = false.obs; // 是否正在加载更多
-  int _currentCityPage = 1; // 当前加载的城市页数
+  final int _currentCityPage = 1; // 当前加载的城市页数
   final int _citiesPerPage = 50; // 每页城市数量
 
   // 可用的筛选选项
@@ -159,7 +189,7 @@ class DataServiceController extends GetxController {
   void onInit() {
     super.onInit();
     initializeData();
-    
+
     // 监听登录状态变化，登录成功后重新加载数据
     _setupLoginStateListener();
   }
@@ -312,7 +342,7 @@ class DataServiceController extends GetxController {
       for (var i = 0; i < homeFeed.meetups.length; i++) {
         try {
           final meetup = homeFeed.meetups[i];
-          
+
           // 调试：打印每个 meetup 的数据
           print('   Meetup [$i]: ${meetup.title}');
           print('      participantCount: ${meetup.participantCount}');
@@ -485,7 +515,7 @@ class DataServiceController extends GetxController {
   Future<void> _loadCitiesFromDatabase() async {
     try {
       final cities = await _cityService.getAllCities();
-      
+
       print('🏙️ 从数据库加载了 ${cities.length} 个城市');
 
       // 转换数据格式以匹配现有的UI结构
@@ -645,9 +675,13 @@ class DataServiceController extends GetxController {
 
   // 旧的生成模拟数据方法(保留以防需要)
 
-
   // RSVP to a meetup
   void toggleRSVP(int meetupId) {
+    // 检查登录状态
+    if (!_requireLogin(action: 'RSVP活动')) {
+      return;
+    }
+
     if (rsvpedMeetups.contains(meetupId)) {
       // Cancel RSVP
       rsvpedMeetups.remove(meetupId);
@@ -872,6 +906,11 @@ class DataServiceController extends GetxController {
     double? longitude,
     List<String>? tags,
   }) async {
+    // 检查登录状态
+    if (!_requireLogin(action: '创建活动')) {
+      return;
+    }
+
     try {
       // 首先尝试使用新的 Events API
       await _createMeetupViaAPI({

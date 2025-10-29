@@ -1267,10 +1267,22 @@ class _DataCardState extends State<_DataCard> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
+    final userStateController = Get.find<UserStateController>();
+    final l10n = AppLocalizations.of(context)!;
 
     return GestureDetector(
       onTap: () {
         // 单击跳转到城市详情页�?
+
+        // 检查登录状态
+        if (!userStateController.isLoggedIn) {
+          AppToast.warning(
+            l10n.pleaseLoginToCreateMeetup,
+            title: l10n.loginRequired,
+          );
+          Get.toNamed(AppRoutes.login);
+          return;
+        }
         Get.to(() => CityDetailPage(
               cityId: widget.data['id']?.toString() ??
                   widget.data['city']?.toString() ??
@@ -2651,6 +2663,18 @@ class _MeetupCardState extends State<_MeetupCard> {
                           child: ElevatedButton(
                             onPressed: () {
                               // 跳转到聊天页面并加入该城市的聊天室
+                              // 检查登录状态
+                              final userStateController = Get.find<UserStateController>();
+                              final l10n = AppLocalizations.of(context)!;
+                              if (!userStateController.isLoggedIn) {
+                                AppToast.warning(
+                                  l10n.pleaseLoginToCreateMeetup,
+                                  title: l10n.loginRequired,
+                                );
+                                Get.toNamed(AppRoutes.login);
+                                return;
+                              }
+
                               Get.toNamed(
                                 '/city-chat',
                                 arguments: {

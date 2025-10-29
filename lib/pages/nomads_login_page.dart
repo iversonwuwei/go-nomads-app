@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
+import '../controllers/shopping_controller.dart';
 import '../controllers/user_state_controller.dart';
 import '../generated/app_localizations.dart';
 import '../services/http_service.dart';
@@ -94,7 +95,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
 
           // 等待一小段时间，确保登录状态事件已被处理
           await Future.delayed(const Duration(milliseconds: 300));
-          
+
           // 登录成功后跳转到主页
           print('🚀 准备跳转到主页...');
           Get.offAllNamed('/');
@@ -122,7 +123,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
         if (mounted) {
           Navigator.pop(context);
         }
-        
+
         print('❌ 登录错误: $e');
         AppToast.error(
           'An error occurred. Please try again.',
@@ -155,8 +156,15 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                         color: NomadsLoginPage.nomadsRed,
                       ),
                       onPressed: () {
-                        // 返回到主页
-                        Get.back();
+                        // 返回到主页的 home tab
+                        try {
+                          final shoppingController =
+                              Get.find<ShoppingController>();
+                          shoppingController.changeTab(0); // 切换到 home tab
+                        } catch (e) {
+                          print('⚠️ 未找到 ShoppingController: $e');
+                        }
+                        Get.offAllNamed('/'); // 跳转到主页
                       },
                     ),
                   ),
