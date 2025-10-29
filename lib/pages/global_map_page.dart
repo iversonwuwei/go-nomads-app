@@ -771,7 +771,10 @@ class _GlobalMapPageState extends State<GlobalMapPage> {
                   child: OutlinedButton.icon(
                     onPressed: () {
                       Navigator.pop(context);
-                      Get.to(() => CityDetailPage(
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CityDetailPage(
                             cityId: cityData['id']?.toString() ?? cityName,
                             cityName: cityName,
                             cityImage: cityData['image'],
@@ -779,7 +782,9 @@ class _GlobalMapPageState extends State<GlobalMapPage> {
                                 (cityData['overall'] as num?)?.toDouble() ??
                                     0.0,
                             reviewCount: cityData['reviews'] ?? 0,
-                          ));
+                          ),
+                        ),
+                      );
                     },
                     icon: const FaIcon(FontAwesomeIcons.circleInfo, size: 18),
                     label: Text(l10n.viewDetails),

@@ -2,7 +2,6 @@ import 'package:df_admin_mobile/pages/add_coworking_page.dart';
 import 'package:df_admin_mobile/pages/coworking_list_page.dart';
 import 'package:df_admin_mobile/services/cities_api_service.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../generated/app_localizations.dart';
@@ -107,26 +106,15 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
+        title: Text(l10n.coworkingSpaces),
+        backgroundColor: AppColors.background,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => Get.back(),
-        ),
-        title: Builder(
-          builder: (context) {
-            final l10n = AppLocalizations.of(context)!;
-            return Text(
-              l10n.coworkingSpaces,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            );
-          },
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: _isLoading
@@ -246,7 +234,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
       ),
       child: InkWell(
         onTap: () async {
-          // 等待列表页返回,如果返回 true 则刷新数据
+          // 等待列表页返回,如果返回 true 则刷新城市列表
           final result = await Navigator.push(
             context,
             MaterialPageRoute(
@@ -257,7 +245,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
             ),
           );
 
-          // 如果列表页有数据变化,刷新城市列表
+          // 如果在列表页添加了新的 Coworking,刷新城市列表
           if (result == true && mounted) {
             await _refreshData();
           }

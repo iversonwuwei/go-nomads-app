@@ -12,7 +12,6 @@ import '../models/user_model.dart';
 import '../routes/app_routes.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/skeletons/skeletons.dart';
-import 'city_list_page.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -279,10 +278,10 @@ class ProfilePage extends StatelessWidget {
 
   // 构建头像内容 - 如果没有头像URL则显示用户名首字母
   Widget _buildAvatarContent(UserModel user, bool isMobile) {
-    final hasAvatar = user.avatarUrl != null && 
-                      user.avatarUrl!.isNotEmpty && 
-                      user.avatarUrl != 'https://i.pravatar.cc/300';
-    
+    final hasAvatar = user.avatarUrl != null &&
+        user.avatarUrl!.isNotEmpty &&
+        user.avatarUrl != 'https://i.pravatar.cc/300';
+
     if (hasAvatar) {
       return Image.network(
         user.avatarUrl!,
@@ -305,11 +304,12 @@ class ProfilePage extends StatelessWidget {
       final nameParts = user.name.trim().split(' ');
       if (nameParts.length >= 2) {
         // 如果有多个单词，取前两个单词的首字母
-        initials = nameParts[0][0].toUpperCase() + 
-                   nameParts[1][0].toUpperCase();
+        initials =
+            nameParts[0][0].toUpperCase() + nameParts[1][0].toUpperCase();
       } else {
         // 如果只有一个单词，取前两个字母（如果有）
-        initials = user.name.substring(0, user.name.length >= 2 ? 2 : 1).toUpperCase();
+        initials =
+            user.name.substring(0, user.name.length >= 2 ? 2 : 1).toUpperCase();
       }
     } else {
       initials = '?';
@@ -341,8 +341,7 @@ class ProfilePage extends StatelessWidget {
   }
 
   // Profile Header
-  Widget _buildProfileHeader(
-      BuildContext context, UserModel user,
+  Widget _buildProfileHeader(BuildContext context, UserModel user,
       UserProfileController controller, bool isMobile) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -723,40 +722,42 @@ class ProfilePage extends StatelessWidget {
                 spacing: 8,
                 runSpacing: 8,
                 children: user.skills.map((skill) {
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                    color: const Color(0xFFFF4458).withValues(alpha: 0.3)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    skill,
-                    style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFFFF4458)),
-                  ),
-                  if (isEditMode) ...[
-                    const SizedBox(width: 8),
-                    GestureDetector(
-                      onTap: () => controller.removeSkill(skill),
-                      child: const Icon(
-                        Icons.close,
-                        size: 16,
-                        color: Color(0xFFFF4458),
-                      ),
+                  return Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFF4458).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                          color:
+                              const Color(0xFFFF4458).withValues(alpha: 0.3)),
                     ),
-                  ],
-                ],
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          skill,
+                          style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFFFF4458)),
+                        ),
+                        if (isEditMode) ...[
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: () => controller.removeSkill(skill),
+                            child: const Icon(
+                              Icons.close,
+                              size: 16,
+                              color: Color(0xFFFF4458),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  );
+                }).toList(),
               ),
-            );
-          }).toList(),
-        ),
         const SizedBox(height: 24),
 
         // Interests Section
@@ -839,39 +840,40 @@ class ProfilePage extends StatelessWidget {
                 spacing: 8,
                 runSpacing: 8,
                 children: user.interests.map((interest) {
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF3F4F6),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFFE5E7EB)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    interest,
-                    style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF374151)),
-                  ),
-                  if (isEditMode) ...[
-                    const SizedBox(width: 8),
-                    GestureDetector(
-                      onTap: () => controller.removeInterest(interest),
-                      child: const Icon(
-                        Icons.close,
-                        size: 16,
-                        color: Color(0xFF374151),
-                      ),
+                  return Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF3F4F6),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: const Color(0xFFE5E7EB)),
                     ),
-                  ],
-                ],
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          interest,
+                          style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF374151)),
+                        ),
+                        if (isEditMode) ...[
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: () => controller.removeInterest(interest),
+                            child: const Icon(
+                              Icons.close,
+                              size: 16,
+                              color: Color(0xFF374151),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  );
+                }).toList(),
               ),
-            );
-          }).toList(),
-        ),
       ],
     );
   }
@@ -1267,7 +1269,7 @@ class ProfilePage extends StatelessWidget {
                 const SizedBox(height: 20),
                 ElevatedButton.icon(
                   onPressed: () {
-                    Get.to(() => const CityListPage());
+                    Get.toNamed(AppRoutes.cityList);
                   },
                   icon: const Icon(Icons.explore, size: 18),
                   label: Text(l10n.exploreCities),

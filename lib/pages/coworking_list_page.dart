@@ -49,16 +49,14 @@ class _CoworkingListPageState extends State<CoworkingListPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.cityName} - ${l10n.coworkingSpaces}'),
+        title: Text(widget.cityName),
         actions: [
           IconButton(
             icon: const Icon(Icons.filter_list),
             onPressed: () {
-              // Show filter drawer
+              // TODO: 实现筛选功能
             },
           ),
         ],

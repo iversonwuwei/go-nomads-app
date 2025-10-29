@@ -5,6 +5,7 @@ import '../config/app_colors.dart';
 import '../generated/app_localizations.dart';
 import '../routes/app_routes.dart';
 import '../widgets/app_toast.dart';
+import 'city_detail_page.dart';
 
 /// 收藏夹页面 - 管理收藏的城市
 class FavoritesPage extends StatefulWidget {
@@ -256,7 +257,18 @@ class _FavoritesPageState extends State<FavoritesPage> {
       ),
       child: InkWell(
         onTap: () {
-          Get.toNamed(AppRoutes.cityDetail, arguments: city);
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CityDetailPage(
+                cityId: city['city']?.toString() ?? '',
+                cityName: city['city']?.toString() ?? '',
+                cityImage: city['image']?.toString() ?? '',
+                overallScore: (city['overall'] as num?)?.toDouble() ?? 0.0,
+                reviewCount: 0,
+              ),
+            ),
+          );
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
@@ -397,7 +409,19 @@ class _FavoritesPageState extends State<FavoritesPage> {
                       color: Colors.white70,
                     ),
                     onPressed: () {
-                      Get.toNamed(AppRoutes.cityDetail, arguments: city);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CityDetailPage(
+                            cityId: city['city']?.toString() ?? '',
+                            cityName: city['city']?.toString() ?? '',
+                            cityImage: city['image']?.toString() ?? '',
+                            overallScore:
+                                (city['overall'] as num?)?.toDouble() ?? 0.0,
+                            reviewCount: 0,
+                          ),
+                        ),
+                      );
                     },
                   ),
                 ],

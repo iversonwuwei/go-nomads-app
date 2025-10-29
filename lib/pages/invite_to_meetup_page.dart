@@ -5,6 +5,7 @@ import '../controllers/data_service_controller.dart';
 import '../generated/app_localizations.dart';
 import '../models/user_model.dart' as models;
 import '../widgets/app_toast.dart';
+import 'create_meetup_page.dart';
 
 class InviteToMeetupPage extends StatelessWidget {
   final models.UserModel user;
@@ -64,7 +65,7 @@ class InviteToMeetupPage extends StatelessWidget {
     );
   }
 
-  // 空状态
+  // 空状�?
   Widget _buildEmptyMeetupState() {
     return Builder(
       builder: (context) {
@@ -101,8 +102,13 @@ class InviteToMeetupPage extends StatelessWidget {
                 const SizedBox(height: 24),
                 ElevatedButton.icon(
                   onPressed: () {
-                    Navigator.pop(Get.context!);
-                    Get.toNamed('/create-meetup');
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CreateMeetupPage(),
+                      ),
+                    );
                   },
                   icon: const Icon(Icons.add),
                   label: Text(l10n.createMeetup),
@@ -126,7 +132,7 @@ class InviteToMeetupPage extends StatelessWidget {
     );
   }
 
-  // Meetup 邀请卡片
+  // Meetup 邀请卡�?
   Widget _buildMeetupInviteCard(
     BuildContext context,
     Map<String, dynamic> meetup,
@@ -372,7 +378,7 @@ class InviteToMeetupPage extends StatelessWidget {
                           '${user.name} ${l10n.sendInvitation}',
                           title: l10n.success,
                         );
-                        // 返回上一页
+                        // 返回上一�?
                         Navigator.pop(Get.context!);
                       },
                       icon: const Icon(Icons.send, size: 18),

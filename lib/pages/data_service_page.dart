@@ -13,10 +13,8 @@ import '../widgets/app_toast.dart';
 import '../widgets/copyright_widget.dart';
 import '../widgets/skeletons/skeletons.dart';
 import 'city_detail_page.dart';
-import 'city_list_page.dart';
-import 'coworking_home_page.dart';
+import 'create_meetup_page.dart';
 import 'global_map_page.dart';
-import 'innovation_list_page.dart';
 import 'meetup_detail_page.dart';
 
 class DataServicePage extends StatefulWidget {
@@ -55,14 +53,14 @@ class _DataServicePageState extends State<DataServicePage>
 
     // 当应用回到前台时刷新数据
     if (state == AppLifecycleState.resumed) {
-      print('📱 应用回到前台，刷新首页数据');
+      print('📱 应用回到前台,刷新首页数据');
       final controller = Get.find<DataServiceController>();
       controller.refreshData();
     }
   }
 
-  // 页面回退时的刷新逻辑会在路由导航时处理
-  // 我们在每次页面可见时都刷新数据
+  // 页面回退时的刷新逻辑会在路由导航时处�?
+  // 我们在每次页面可见时都刷新数�?
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -70,12 +68,12 @@ class _DataServicePageState extends State<DataServicePage>
     // 检查页面是否从其他页面回退
     final route = ModalRoute.of(context);
     if (route != null && route.isCurrent) {
-      // 延迟执行，避免在build过程中调用
+      // 延迟执行，避免在build过程中调�?
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        // 只在非首次加载时刷新（首次加载已经在controller初始化时执行）
+        // 只在非首次加载时刷新（首次加载已经在controller初始化时执行�?
         final controller = Get.find<DataServiceController>();
         if (controller.dataItems.isNotEmpty || controller.meetups.isNotEmpty) {
-          print('🔄 页面回到前台，刷新数据');
+          print('🔄 页面回到前台,刷新数据');
           controller.refreshData();
         }
       });
@@ -85,10 +83,10 @@ class _DataServicePageState extends State<DataServicePage>
   /// 检查登录状态，未登录则跳转到登录页
   bool _checkLoginAndNavigate(VoidCallback onLoggedIn) {
     final userStateController = Get.find<UserStateController>();
-    
+
     print('🔒 DataServicePage: 检查登录状态');
     print('   当前登录状态: ${userStateController.isLoggedIn}');
-    
+
     if (!userStateController.isLoggedIn) {
       print('�?用户未登录，跳转到登录页');
       AppToast.info(
@@ -98,7 +96,7 @@ class _DataServicePageState extends State<DataServicePage>
       Get.toNamed(AppRoutes.login);
       return false;
     }
-    
+
     print('�?用户已登录，执行操作');
     onLoggedIn();
     return true;
@@ -358,7 +356,8 @@ class _DataServicePageState extends State<DataServicePage>
                     icon: Icons.location_city_rounded,
                     title: l10n.cities,
                     color: const Color(0xFFFF4458),
-                    onTap: () => _checkLoginAndNavigate(() => Get.to(() => const CityListPage())),
+                    onTap: () => _checkLoginAndNavigate(
+                        () => Get.toNamed(AppRoutes.cityList)),
                     isCompact: isVerySmall,
                   ),
                 ),
@@ -369,7 +368,8 @@ class _DataServicePageState extends State<DataServicePage>
                     icon: Icons.business_center_rounded,
                     title: l10n.coworks,
                     color: const Color(0xFF6366F1),
-                    onTap: () => _checkLoginAndNavigate(() => Get.to(() => const CoworkingHomePage())),
+                    onTap: () => _checkLoginAndNavigate(
+                        () => Get.toNamed(AppRoutes.coworking)),
                     isCompact: isVerySmall,
                   ),
                 ),
@@ -388,7 +388,8 @@ class _DataServicePageState extends State<DataServicePage>
                         icon: Icons.groups_rounded,
                         title: l10n.meetups,
                         color: const Color(0xFF10B981),
-                        onTap: () => _checkLoginAndNavigate(() => Get.toNamed('/meetups-list')),
+                        onTap: () => _checkLoginAndNavigate(
+                            () => Get.toNamed(AppRoutes.meetupsList)),
                         isCompact: isVerySmall,
                       );
                     },
@@ -404,7 +405,8 @@ class _DataServicePageState extends State<DataServicePage>
                         icon: Icons.lightbulb_outline,
                         title: l10n.innovation,
                         color: const Color(0xFF8B5CF6),
-                        onTap: () => _checkLoginAndNavigate(() => Get.to(() => const InnovationListPage())),
+                        onTap: () => _checkLoginAndNavigate(
+                            () => Get.toNamed(AppRoutes.innovation)),
                         isCompact: isVerySmall,
                       );
                     },
@@ -429,7 +431,8 @@ class _DataServicePageState extends State<DataServicePage>
                 icon: Icons.location_city_rounded,
                 title: l10n.cities,
                 color: const Color(0xFFFF4458),
-                onTap: () => _checkLoginAndNavigate(() => Get.to(() => const CityListPage())),
+                onTap: () => _checkLoginAndNavigate(
+                    () => Get.toNamed(AppRoutes.cityList)),
               ),
             ),
 
@@ -442,7 +445,8 @@ class _DataServicePageState extends State<DataServicePage>
                 icon: Icons.business_center_rounded,
                 title: l10n.coworks,
                 color: const Color(0xFF6366F1),
-                onTap: () => _checkLoginAndNavigate(() => Get.to(() => const CoworkingHomePage())),
+                onTap: () => _checkLoginAndNavigate(
+                    () => Get.toNamed(AppRoutes.coworking)),
               ),
             ),
 
@@ -458,7 +462,8 @@ class _DataServicePageState extends State<DataServicePage>
                     icon: Icons.groups_rounded,
                     title: l10n.meetups,
                     color: const Color(0xFF10B981),
-                    onTap: () => _checkLoginAndNavigate(() => Get.toNamed('/meetups-list')),
+                    onTap: () => _checkLoginAndNavigate(
+                        () => Get.toNamed(AppRoutes.meetupsList)),
                   );
                 },
               ),
@@ -476,7 +481,8 @@ class _DataServicePageState extends State<DataServicePage>
                     icon: Icons.lightbulb_outline,
                     title: l10n.innovation,
                     color: const Color(0xFF8B5CF6),
-                    onTap: () => _checkLoginAndNavigate(() => Get.to(() => const InnovationListPage())),
+                    onTap: () => _checkLoginAndNavigate(
+                        () => Get.toNamed(AppRoutes.innovation)),
                   );
                 },
               ),
@@ -825,7 +831,8 @@ class _DataServicePageState extends State<DataServicePage>
               const SizedBox(height: 24),
               Center(
                 child: OutlinedButton.icon(
-                  onPressed: () => _checkLoginAndNavigate(() => Get.to(() => const CityListPage())),
+                  onPressed: () => _checkLoginAndNavigate(
+                      () => Get.toNamed(AppRoutes.cityList)),
                   icon: const Icon(
                     Icons.location_city_outlined,
                     size: 20,
@@ -872,7 +879,8 @@ class _DataServicePageState extends State<DataServicePage>
               const SizedBox(height: 24),
               Center(
                 child: OutlinedButton.icon(
-                  onPressed: () => _checkLoginAndNavigate(() => Get.to(() => const CityListPage())),
+                  onPressed: () => _checkLoginAndNavigate(
+                      () => Get.toNamed(AppRoutes.cityList)),
                   icon: const Icon(
                     Icons.location_city_outlined,
                     size: 20,
@@ -955,7 +963,13 @@ class _DataServicePageState extends State<DataServicePage>
                       // Create Meetup 按钮
                       Obx(() => ElevatedButton.icon(
                             onPressed: controller.isLoggedIn.value
-                                ? () => Get.toNamed('/create-meetup')
+                                ? () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const CreateMeetupPage(),
+                                      ),
+                                    )
                                 : () {
                                     AppToast.warning(
                                       l10n.pleaseLoginToCreateMeetup,
@@ -981,7 +995,7 @@ class _DataServicePageState extends State<DataServicePage>
                       if (!isMobile)
                         OutlinedButton.icon(
                           onPressed: () {
-                            Get.toNamed('/meetups-list');
+                            Get.toNamed(AppRoutes.meetupsList);
                           },
                           icon: const Icon(
                             Icons.arrow_forward,
@@ -1043,7 +1057,7 @@ class _DataServicePageState extends State<DataServicePage>
                     return Center(
                       child: OutlinedButton.icon(
                         onPressed: () {
-                          Get.toNamed('/meetups-list');
+                          Get.toNamed(AppRoutes.meetupsList);
                         },
                         icon: const Icon(
                           Icons.arrow_forward,
@@ -1138,7 +1152,7 @@ class _DataServicePageState extends State<DataServicePage>
           // 添加按钮
           ElevatedButton.icon(
             onPressed: () {
-              Get.toNamed('/city-list');
+              Get.toNamed(AppRoutes.cityList);
             },
             icon: const Icon(Icons.add_circle_outline, size: 20),
             label: Text(
@@ -1221,7 +1235,12 @@ class _DataServicePageState extends State<DataServicePage>
           // 添加按钮
           ElevatedButton.icon(
             onPressed: () {
-              Get.toNamed('/create-meetup');
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const CreateMeetupPage(),
+                ),
+              );
             },
             icon: const Icon(Icons.add_circle_outline, size: 20),
             label: const Text(
@@ -1272,7 +1291,7 @@ class _DataCardState extends State<_DataCard> {
 
     return GestureDetector(
       onTap: () {
-        // 单击跳转到城市详情页�?
+        // 单击跳转到城市详情页面
 
         // 检查登录状态
         if (!userStateController.isLoggedIn) {
@@ -1283,7 +1302,10 @@ class _DataCardState extends State<_DataCard> {
           Get.toNamed(AppRoutes.login);
           return;
         }
-        Get.to(() => CityDetailPage(
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CityDetailPage(
               cityId: widget.data['id']?.toString() ??
                   widget.data['city']?.toString() ??
                   '',
@@ -1291,7 +1313,9 @@ class _DataCardState extends State<_DataCard> {
               cityImage: widget.data['image']?.toString() ?? '',
               overallScore: (widget.data['overall'] as num?)?.toDouble() ?? 0.0,
               reviewCount: (widget.data['reviews'] as num?)?.toInt() ?? 0,
-            ));
+            ),
+          ),
+        );
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
@@ -1667,7 +1691,7 @@ class _DetailOverlay extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _buildMetricBar(
-                      '⭐ Overall', data['overall'], const Color(0xFFFBBF24)),
+                      '�?Overall', data['overall'], const Color(0xFFFBBF24)),
                   const SizedBox(height: 6),
                   _buildMetricBar(
                       '💰 Cost', data['cost'], const Color(0xFF4ADE80)),
@@ -1679,7 +1703,7 @@ class _DetailOverlay extends StatelessWidget {
                       '👍 Liked', data['liked'], const Color(0xFF4ADE80)),
                   const SizedBox(height: 6),
                   _buildMetricBar(
-                      '🛡️ Safety', data['safety'], const Color(0xFF4ADE80)),
+                      '🛡�?Safety', data['safety'], const Color(0xFF4ADE80)),
                 ],
               ),
             ),
@@ -1752,14 +1776,19 @@ class _DataListItem extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: () {
-        // 单击跳转到城市详情页�?
-        Get.to(() => CityDetailPage(
+        // 单击跳转到城市详情页面
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CityDetailPage(
               cityId: data['id']?.toString() ?? data['city']?.toString() ?? '',
               cityName: data['city']?.toString() ?? 'Unknown City',
               cityImage: data['image']?.toString() ?? '',
               overallScore: (data['score'] as num?)?.toDouble() ?? 0.0,
               reviewCount: (data['reviews'] as num?)?.toInt() ?? 0,
-            ));
+            ),
+          ),
+        );
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
@@ -2233,10 +2262,10 @@ class _MeetupCard extends StatefulWidget {
 }
 
 class _MeetupCardState extends State<_MeetupCard> {
-  // 卡片自己的状态 - 符合 DDD 原则
+  // 卡片自己的状�?- 符合 DDD 原则
   late bool _isJoined;
 
-  // 从 widget.meetup 获取最新的参与人数（getter方式，始终读取最新值）
+  // �?widget.meetup 获取最新的参与人数（getter方式，始终读取最新值）
   int get _currentAttendees {
     final value = widget.meetup['attendees'];
     print('🔍 Getting _currentAttendees: $value (type: ${value.runtimeType})');
@@ -2253,7 +2282,7 @@ class _MeetupCardState extends State<_MeetupCard> {
   void initState() {
     super.initState();
 
-    // 调试：打印 meetup 数据
+    // 调试：打�?meetup 数据
     print('🔍 MeetupCard initState:');
     print('   ID: ${widget.meetup['id']}');
     print('   Title: ${widget.meetup['title']}');
@@ -2269,12 +2298,12 @@ class _MeetupCardState extends State<_MeetupCard> {
       print('   isParticipant: ${widget.meetup['isParticipant']}');
     }
 
-    // 从 API 数据获取参与状态（优先）或从 controller 的 rsvpedMeetups 获取
+    // �?API 数据获取参与状态（优先）或�?controller �?rsvpedMeetups 获取
     if (widget.meetup.containsKey('isParticipant')) {
       _isJoined = widget.meetup['isParticipant'] as bool? ?? false;
-      print('   ✅ 从 API 数据读取 isParticipant: $_isJoined');
+      print('   �?�?API 数据读取 isParticipant: $_isJoined');
     } else {
-      // 降级方案：从 controller 获取初始的 joined 状态
+      // 降级方案：从 controller 获取初始�?joined 状�?
       final meetupId = widget.meetup['id'];
       final int meetupIdInt;
       if (meetupId is int) {
@@ -2285,25 +2314,25 @@ class _MeetupCardState extends State<_MeetupCard> {
         meetupIdInt = 0;
       }
       _isJoined = widget.controller.rsvpedMeetups.contains(meetupIdInt);
-      print('   ⚠️ API 无 isParticipant，从 controller 读取: $_isJoined');
+      print('   ⚠️ API �?isParticipant，从 controller 读取: $_isJoined');
     }
 
-    print('   最终状态 _isJoined: $_isJoined');
+    print('   最终状�?_isJoined: $_isJoined');
   }
 
   @override
   void didUpdateWidget(_MeetupCard oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    // 当 widget 更新时，检查数据是否变化
+    // �?widget 更新时，检查数据是否变�?
     if (oldWidget.meetup['id'] == widget.meetup['id']) {
-      // 同一个 meetup，更新参与状态
+      // 同一�?meetup，更新参与状�?
       if (widget.meetup.containsKey('isParticipant')) {
         final newIsParticipant =
             widget.meetup['isParticipant'] as bool? ?? false;
         if (_isJoined != newIsParticipant) {
           print(
-              '🔄 Meetup ${widget.meetup['title']} 参与状态更新: $_isJoined -> $newIsParticipant');
+              '🔄 Meetup ${widget.meetup['title']} 参与状态更�? $_isJoined -> $newIsParticipant');
           setState(() {
             _isJoined = newIsParticipant;
           });
@@ -2320,7 +2349,7 @@ class _MeetupCardState extends State<_MeetupCard> {
     final l10n = AppLocalizations.of(context)!;
     final userStateController = Get.find<UserStateController>();
 
-    // 检查登录状态
+    // 检查登录状�?
     if (!userStateController.isLoggedIn) {
       AppToast.warning(
         l10n.pleaseLoginToCreateMeetup,
@@ -2343,7 +2372,7 @@ class _MeetupCardState extends State<_MeetupCard> {
       meetupIdString = meetupId;
       meetupIdInt = int.tryParse(meetupId) ?? 0;
     } else {
-      print('❌ 无效的 meetup id 类型: ${meetupId.runtimeType}');
+      print('�?无效�?meetup id 类型: ${meetupId.runtimeType}');
       AppToast.error('Invalid meetup ID');
       return;
     }
@@ -2351,26 +2380,26 @@ class _MeetupCardState extends State<_MeetupCard> {
     final isJoining = !_isJoined;
 
     try {
-      // 调用真实的 API
+      // 调用真实�?API
       final eventsApiService = EventsApiService();
 
       if (isJoining) {
         // 加入活动
         await eventsApiService.joinEvent(meetupIdString);
       } else {
-        // 退出活动
+        // 退出活�?
         await eventsApiService.leaveEvent(meetupIdString);
       }
 
       // API 调用成功，更新全局 rsvpedMeetups 列表
       widget.controller.toggleRSVP(meetupIdInt);
 
-      // 更新 widget.meetup 中的数据（这样 getter 就能获取最新值）
+      // 更新 widget.meetup 中的数据（这�?getter 就能获取最新值）
       widget.meetup['isParticipant'] = isJoining;
       widget.meetup['attendees'] =
           (widget.meetup['attendees'] as int) + (isJoining ? 1 : -1);
 
-      // 更新卡片自己的状态
+      // 更新卡片自己的状�?
       setState(() {
         _isJoined = isJoining;
       });
@@ -2395,7 +2424,7 @@ class _MeetupCardState extends State<_MeetupCard> {
       );
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final date = widget.meetup['date'] as DateTime;
@@ -2484,11 +2513,11 @@ class _MeetupCardState extends State<_MeetupCard> {
 
                 const SizedBox(height: 6),
 
-                // 日期、地点、组织者 - 合并为紧凑显示
+                // 日期、地点、组织�?- 合并为紧凑显�?
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 日期和时间
+                    // 日期和时�?
                     Row(
                       children: [
                         const Icon(
@@ -2541,7 +2570,7 @@ class _MeetupCardState extends State<_MeetupCard> {
 
                 const SizedBox(height: 8),
 
-                // 参加人数和组织者 - 合并为一行
+                // 参加人数和组织�?- 合并为一�?
                 Row(
                   children: [
                     // 参加人数
@@ -2576,7 +2605,7 @@ class _MeetupCardState extends State<_MeetupCard> {
                         ),
                       ),
                     const Spacer(),
-                    // 组织者
+                    // 组织�?
                     Flexible(
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -2606,7 +2635,7 @@ class _MeetupCardState extends State<_MeetupCard> {
 
                 const SizedBox(height: 10),
 
-                // Going/RSVP+Chat 按钮逻辑 - 使用本地状态
+                // Going/RSVP+Chat 按钮逻辑 - 使用本地状�?
                 // 如果已加入，显示 RSVP（已确认状态）+ Join Chat 两个按钮
                 if (_isJoined)
                   Row(
@@ -2662,9 +2691,10 @@ class _MeetupCardState extends State<_MeetupCard> {
                           height: 32,
                           child: ElevatedButton(
                             onPressed: () {
-                              // 跳转到聊天页面并加入该城市的聊天室
-                              // 检查登录状态
-                              final userStateController = Get.find<UserStateController>();
+                              // 跳转到聊天页面并加入该城市的聊天�?
+                              // 检查登录状�?
+                              final userStateController =
+                                  Get.find<UserStateController>();
                               final l10n = AppLocalizations.of(context)!;
                               if (!userStateController.isLoggedIn) {
                                 AppToast.warning(
@@ -2676,7 +2706,7 @@ class _MeetupCardState extends State<_MeetupCard> {
                               }
 
                               Get.toNamed(
-                                '/city-chat',
+                                AppRoutes.cityChat,
                                 arguments: {
                                   'city': widget.meetup['city'],
                                   'country': widget.meetup['country'],
@@ -2815,7 +2845,7 @@ class _MeetupCardState extends State<_MeetupCard> {
       int.parse(timeParts[1]),
     );
 
-    // 处理 meetup id 的类型转换
+    // 处理 meetup id 的类型转�?
     final meetupId = meetup['id'];
     final int meetupIdInt;
     if (meetupId is int) {

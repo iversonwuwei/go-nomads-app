@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../config/app_colors.dart';
 import '../routes/app_routes.dart';
 import '../widgets/app_toast.dart';
+import 'city_detail_page.dart';
 
 /// 城市对比页面 - 并排比较多个城市
 class CityComparePage extends StatefulWidget {
@@ -370,7 +371,19 @@ class _CityComparePageState extends State<CityComparePage> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  Get.toNamed(AppRoutes.cityDetail, arguments: city);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CityDetailPage(
+                        cityId: city['city']?.toString() ?? '',
+                        cityName: city['city']?.toString() ?? '',
+                        cityImage: city['image']?.toString() ?? '',
+                        overallScore:
+                            (city['overall'] as num?)?.toDouble() ?? 0.0,
+                        reviewCount: 0,
+                      ),
+                    ),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,

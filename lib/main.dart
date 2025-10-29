@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import 'controllers/auth_controller.dart';
+import 'controllers/bottom_nav_controller.dart';
 import 'controllers/data_service_controller.dart';
 import 'controllers/locale_controller.dart';
 import 'controllers/shopping_controller.dart';
@@ -40,6 +41,7 @@ void main() async {
   print('🎯 初始化全局控制器...');
   Get.put(UserStateController(), permanent: true);
   Get.put(AccountDao(), permanent: true);
+  Get.put(BottomNavController(), permanent: true);
   print('✅ 全局控制器初始化完成');
 
   // 🔑 初始化应用，从 SQLite 恢复登录状态
@@ -67,7 +69,7 @@ class MyApp extends StatelessWidget {
       splitScreenMode: true,
       builder: (context, child) {
         return Obx(() => GetMaterialApp(
-              title: '行途 - Xingtu',
+              title: '行途 - GO-NOMADS',
 
               // 国际化配置
               locale: localeController.locale.value,
@@ -83,6 +85,7 @@ class MyApp extends StatelessWidget {
                 colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
                 useMaterial3: true,
               ),
+
               initialRoute: AppRoutes.home,
               getPages: AppRoutes.getPages,
             ));

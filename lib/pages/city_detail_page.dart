@@ -26,11 +26,11 @@ class CityDetailPage extends StatefulWidget {
 
   const CityDetailPage({
     super.key,
-    required this.cityId,
-    required this.cityName,
-    required this.cityImage,
-    required this.overallScore,
-    required this.reviewCount,
+    this.cityId = '',
+    this.cityName = '',
+    this.cityImage = '',
+    this.overallScore = 0.0,
+    this.reviewCount = 0,
   });
 
   @override
@@ -41,13 +41,35 @@ class _CityDetailPageState extends State<CityDetailPage> {
   late PageController _pageController;
   int _currentPage = 0;
 
+  // �?Get.arguments 或构造函数获取参�?
+  late final String cityId;
+  late final String cityName;
+  late final String cityImage;
+  late final double overallScore;
+  late final int reviewCount;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // 优先从 Get.arguments 获取参数,如果没有则使用构造函数参数
+    final args = Get.arguments as Map<String, dynamic>?;
+    cityId = args?['cityId'] ?? widget.cityId;
+    cityName = args?['cityName'] ?? widget.cityName;
+    cityImage = args?['cityImage'] ?? widget.cityImage;
+    overallScore = args?['overallScore'] ?? widget.overallScore;
+    reviewCount = args?['reviewCount'] ?? widget.reviewCount;
+
+    _pageController = PageController();
+  }
+
   // 获取城市展示图片列表
   List<String> _getCityImages() {
-    // 基于城市主图片生成多张展示图片
-    // 使用不同的Unsplash参数来获取该城市的不同视角图片
-    final baseImage = widget.cityImage;
+    // 基于城市主图片生成多张展示图�?
+    // 使用不同的Unsplash参数来获取该城市的不同视角图�?
+    final baseImage = cityImage;
 
-    // 如果主图片是Unsplash链接，生成系列图片
+    // 如果主图片是Unsplash链接，生成系列图�?
     if (baseImage.contains('unsplash.com')) {
       // 提取图片ID
       final uri = Uri.parse(baseImage);
@@ -59,7 +81,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
           .replaceAll('photo-', '');
 
       return [
-        baseImage, // 主图片
+        baseImage, // 主图�?
         'https://images.unsplash.com/$photoId?w=800&h=600&fit=crop&crop=entropy&q=80',
         'https://images.unsplash.com/$photoId?w=800&h=600&fit=crop&crop=edges&q=80',
         'https://images.unsplash.com/$photoId?w=800&h=600&fit=crop&crop=faces&q=80',
@@ -75,15 +97,9 @@ class _CityDetailPageState extends State<CityDetailPage> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    _pageController = PageController();
-  }
-
-  @override
   void dispose() {
     _pageController.dispose();
-    print('🗑️ City detail page disposed');
+    print('🗑�?City detail page disposed');
     super.dispose();
   }
 
@@ -91,12 +107,12 @@ class _CityDetailPageState extends State<CityDetailPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final controller = Get.put(CityDetailController());
-    controller.currentCityId.value = widget.cityId;
-    controller.currentCityName.value = widget.cityName;
+    controller.currentCityId.value = cityId;
+    controller.currentCityName.value = cityName;
 
     return DefaultTabController(
       length:
-          10, // 10个标签(Scores, Guide, Pros&Cons, Reviews, Cost, Photos, Weather, Hotels, Neighborhoods, Coworking)
+          10, // 10个标�?Scores, Guide, Pros&Cons, Reviews, Cost, Photos, Weather, Hotels, Neighborhoods, Coworking)
       child: Scaffold(
         body: Stack(
           children: [
@@ -114,7 +130,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
                     ),
                     flexibleSpace: FlexibleSpaceBar(
                       title: Text(
-                        widget.cityName,
+                        cityName,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           shadows: [
@@ -179,7 +195,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
                                       );
                                     },
                                   ),
-                                  // 渐变遮罩层
+                                  // 渐变遮罩�?
                                   Container(
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
@@ -196,7 +212,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
                               );
                             },
                           ),
-                          // Page indicators - 动态生成
+                          // Page indicators - 动态生�?
                           Positioned(
                             bottom: 8,
                             left: 0,
@@ -245,7 +261,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  widget.overallScore.toStringAsFixed(1),
+                                  overallScore.toStringAsFixed(1),
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
@@ -256,7 +272,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
                           ),
                           const SizedBox(width: 12),
                           Text(
-                            '${widget.reviewCount} reviews',
+                            '$reviewCount reviews',
                             style: TextStyle(
                               color: Colors.grey[600],
                               fontSize: 14,
@@ -420,8 +436,8 @@ class _CityDetailPageState extends State<CityDetailPage> {
                     // 跳转到创建旅行计划页�?
                     Get.to(
                       () => CreateTravelPlanPage(
-                        cityId: widget.cityId,
-                        cityName: widget.cityName,
+                        cityId: cityId,
+                        cityName: cityName,
                       ),
                     );
                   },
@@ -695,7 +711,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('•',
+                  const Text('💡',
                       style: TextStyle(fontSize: 18, color: Color(0xFFFF4458))),
                   const SizedBox(width: 8),
                   Expanded(
@@ -1131,9 +1147,9 @@ class _CityDetailPageState extends State<CityDetailPage> {
   Widget _buildCoworkingTab(CityDetailController controller) {
     final coworkingController = Get.put(CoworkingController());
 
-    // 延迟执行筛选,避免在 build 期间修改状态
+    // 延迟执行筛�?避免�?build 期间修改状�?
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      coworkingController.filterByCity(widget.cityName);
+      coworkingController.filterByCity(cityName);
     });
 
     return Obx(() {
@@ -1481,13 +1497,13 @@ class _CityDetailPageState extends State<CityDetailPage> {
 
   // Hotels Tab - 显示城市的酒店列表
   Widget _buildHotelsTab(CityDetailController controller) {
-    final cityId = int.tryParse(widget.cityId);
+    final parsedCityId = int.tryParse(cityId);
     print(
-        '🏨 Hotels Tab - widget.cityId: ${widget.cityId}, parsed: $cityId, cityName: ${widget.cityName}');
+        '🏨 Hotels Tab - cityId: $cityId, parsed: $parsedCityId, cityName: $cityName');
 
     return HotelListPage(
-      cityId: cityId,
-      cityName: widget.cityName,
+      cityId: parsedCityId,
+      cityName: cityName,
     );
   }
 
@@ -1536,7 +1552,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Help the community by rating different aspects of ${widget.cityName}',
+                'Help the community by rating different aspects of $cityName',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.grey[600]),
               ),
@@ -1569,11 +1585,11 @@ class _CityDetailPageState extends State<CityDetailPage> {
   }
 
   /// 分享指南信息
-  /// 分享评论 - 跳转到独立页面
+  /// 分享评论 - 跳转到独立页�?
   void _showShareReviewDialog() async {
     final result = await Get.to(() => AddReviewPage(
-          cityId: widget.cityId,
-          cityName: widget.cityName,
+          cityId: cityId,
+          cityName: cityName,
         ));
 
     // 如果提交成功,刷新评论列表
@@ -1582,7 +1598,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
       // final controller = Get.find<CityDetailController>();
       // controller.refreshReviews();
 
-      // 显示成功消息已经在 AddReviewPage 中处理
+      // 显示成功消息已经�?AddReviewPage 中处�?
       print('Review submitted successfully: $result');
     }
   }
@@ -1591,8 +1607,8 @@ class _CityDetailPageState extends State<CityDetailPage> {
   void _showShareCostDialog() {
     Get.to(
       () => AddCostPage(
-        cityId: widget.cityId,
-        cityName: widget.cityName,
+        cityId: cityId,
+        cityName: cityName,
       ),
     );
   }
@@ -1616,7 +1632,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Share your favorite photos from ${widget.cityName}',
+                'Share your favorite photos from $cityName',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.grey[600]),
               ),
@@ -1698,8 +1714,8 @@ class _CityDetailPageState extends State<CityDetailPage> {
   /// 添加 Coworking Space
   void _showAddCoworkingPage() async {
     final result = await Get.to(() => AddCoworkingPage(
-          cityName: widget.cityName,
-          cityId: widget.cityId,
+          cityName: cityName,
+          cityId: cityId,
         ));
     if (result != null) {
       AppToast.success(

@@ -7,8 +7,10 @@ import '../config/app_colors.dart';
 import '../controllers/location_controller.dart';
 import '../generated/app_localizations.dart';
 import '../models/meetup_model.dart';
+import '../routes/app_routes.dart';
 import '../services/events_api_service.dart';
 import '../widgets/app_toast.dart';
+import 'create_meetup_page.dart';
 import 'meetup_detail_page.dart';
 
 /// Meetups 列表页面
@@ -25,7 +27,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
   final RxBool _isLoading = false.obs;
   final RxList<MeetupModel> _meetups = <MeetupModel>[].obs;
 
-  // 筛选条件
+  // 筛选条�?
   final RxList<String> _selectedCountries = <String>[].obs;
   final RxList<String> _selectedCities = <String>[].obs;
   final RxList<String> _selectedTypes = <String>[].obs;
@@ -58,7 +60,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
     'Workshop'
   ];
 
-  // 位置控制器
+  // 位置控制�?
   final LocationController _locationController = Get.put(LocationController());
 
   // Events API 服务
@@ -90,7 +92,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
     });
   }
 
-  // 重置筛选条件
+  // 重置筛选条�?
   void _resetFilters() {
     _selectedCountries.clear();
     _selectedCities.clear();
@@ -100,7 +102,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
     _autoSelectCurrentCountry();
   }
 
-  // 是否有活动筛选条件
+  // 是否有活动筛选条�?
   bool get _hasActiveFilters {
     return _selectedCountries.isNotEmpty ||
         _selectedCities.isNotEmpty ||
@@ -119,8 +121,8 @@ class _MeetupsListPageState extends State<MeetupsListPage>
         pageSize: 100, // 获取更多数据
       );
 
-      // HttpService 的拦截器已经解包了 API 响应
-      // response 现在直接是 data 对象: {items: [], totalCount: 3, page: 1, ...}
+      // HttpService 的拦截器已经解包�?API 响应
+      // response 现在直接�?data 对象: {items: [], totalCount: 3, page: 1, ...}
       print('📦 Response data: $response');
 
       final items = response['items'] as List<dynamic>? ?? [];
@@ -131,15 +133,15 @@ class _MeetupsListPageState extends State<MeetupsListPage>
         print(items[0]);
       }
 
-      // 转换为 MeetupModel 列表
+      // 转换�?MeetupModel 列表
       _meetups.value = items.map((item) {
         return _convertApiEventToMeetupModel(item as Map<String, dynamic>);
       }).toList();
 
       print(
-          '✅ 从后端API加载了 ${_meetups.length} 个活动 (总数: ${response['totalCount']})');
+          '�?从后端API加载�?${_meetups.length} 个活�?(总数: ${response['totalCount']})');
     } catch (e, stackTrace) {
-      print('❌ 从API加载失败: $e');
+      print('�?从API加载失败: $e');
       print('Stack trace: $stackTrace');
       AppToast.error('加载活动失败');
       _meetups.value = [];
@@ -155,14 +157,14 @@ class _MeetupsListPageState extends State<MeetupsListPage>
     final cityName = cityData?['name'] as String? ?? '';
     final country = cityData?['country'] as String? ?? '';
 
-    // 解析组织者信息
+    // 解析组织者信�?
     final organizerData = event['organizer'] as Map<String, dynamic>?;
     final organizerName = organizerData?['name'] as String? ?? 'Unknown';
     final organizerId = organizerData?['id']?.toString() ??
         event['organizerId']?.toString() ??
         '0';
 
-    // 获取 imageUrl（用于列表页的封面图）
+    // 获取 imageUrl（用于列表页的封面图�?
     final imageUrl = event['imageUrl']?.toString();
 
     // 获取 images 数组（用于详情页的图片轮播）
@@ -175,7 +177,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
           .toList();
     }
 
-    // 🔍 调试日志:打印所有可能的参与者字段
+    // 🔍 调试日志:打印所有可能的参与者字�?
     print('🔍 Event ${event['id']} - isParticipant: ${event['isParticipant']}');
     print('  participantCount: ${event['participantCount']}');
     print('  currentParticipants: ${event['currentParticipants']}');
@@ -184,7 +186,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
     print('  participants: ${event['participants']}');
     print('  maxParticipants: ${event['maxParticipants']}');
 
-    // 获取当前参与者数量 - 支持多个可能的字段名（优先使用 participantCount，与 detail page 保持一致）
+    // 获取当前参与者数�?- 支持多个可能的字段名（优先使�?participantCount，与 detail page 保持一致）
     final currentParticipants = (event['participantCount'] as int?) ??
         (event['currentParticipants'] as int?) ??
         (event['participantsCount'] as int?) ??
@@ -192,13 +194,13 @@ class _MeetupsListPageState extends State<MeetupsListPage>
         (event['participants'] as int?) ??
         0;
 
-    // 确保参与者数量不为负数
+    // 确保参与者数量不为负�?
     final maxParticipants = event['maxParticipants'] as int? ?? 20;
     final validCurrentParticipants =
         currentParticipants.clamp(0, maxParticipants);
 
     print(
-        '  ✅ 最终使用: currentAttendees=$validCurrentParticipants, maxAttendees=$maxParticipants');
+        '  �?最终使�? currentAttendees=$validCurrentParticipants, maxAttendees=$maxParticipants');
 
     return MeetupModel(
       id: event['id']?.toString() ?? '',
@@ -217,8 +219,8 @@ class _MeetupsListPageState extends State<MeetupsListPage>
       organizerName: organizerName,
       organizerAvatar: 'https://i.pravatar.cc/150?u=$organizerId',
       imageUrl: imageUrl, // 封面图（列表页使用）
-      images: images, // 完整图片数组（详情页使用）
-      attendeeIds: [], // 需要单独查询
+      images: images, // 完整图片数组（详情页使用�?
+      attendeeIds: [], // 需要单独查�?
       isJoined: event['isParticipant'] as bool? ?? false,
       createdAt: DateTime.parse(
           event['createdAt'] as String? ?? DateTime.now().toIso8601String()),
@@ -229,7 +231,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
     final now = DateTime.now();
     List<MeetupModel> filtered = [];
 
-    // 先按标签页筛选
+    // 先按标签页筛�?
     switch (_tabController.index) {
       case 0: // All
         filtered = _meetups.where((m) => m.dateTime.isAfter(now)).toList();
@@ -246,26 +248,26 @@ class _MeetupsListPageState extends State<MeetupsListPage>
         filtered = _meetups.toList();
     }
 
-    // 按国家筛选
+    // 按国家筛�?
     if (_selectedCountries.isNotEmpty) {
       filtered = filtered
           .where((m) => _selectedCountries.contains(m.country))
           .toList();
     }
 
-    // 按城市筛选
+    // 按城市筛�?
     if (_selectedCities.isNotEmpty) {
       filtered =
           filtered.where((m) => _selectedCities.contains(m.city)).toList();
     }
 
-    // 按类型筛选
+    // 按类型筛�?
     if (_selectedTypes.isNotEmpty) {
       filtered =
           filtered.where((m) => _selectedTypes.contains(m.type)).toList();
     }
 
-    // 按时间范围筛选
+    // 按时间范围筛�?
     if (_timeFilter.value != 'all') {
       switch (_timeFilter.value) {
         case 'today':
@@ -289,7 +291,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
       }
     }
 
-    // 按最大人数筛选
+    // 按最大人数筛�?
     if (_maxAttendees.value < 100) {
       filtered =
           filtered.where((m) => m.maxAttendees <= _maxAttendees.value).toList();
@@ -353,7 +355,12 @@ class _MeetupsListPageState extends State<MeetupsListPage>
                 color: const Color(0xFFFF4458), size: 24.sp),
             onPressed: () async {
               // 跳转到创建页面，等待返回结果
-              final result = await Get.toNamed('/create-meetup');
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const CreateMeetupPage(),
+                ),
+              );
               // 如果创建成功，刷新列表
               if (result == true) {
                 _loadMeetups();
@@ -398,7 +405,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
           onRefresh: _loadMeetups,
           child: Column(
             children: [
-              // 工具栏
+              // 工具�?
               Container(
                 color: Colors.white,
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
@@ -502,12 +509,12 @@ class _MeetupsListPageState extends State<MeetupsListPage>
   }
 
   Widget _buildMeetupCard(MeetupModel meetup) {
-    // 使用自管理生命周期的 StatefulWidget，参考 data_service_page 的设计
+    // 使用自管理生命周期的 StatefulWidget，参�?data_service_page 的设�?
     return _MeetupListCard(
       meetup: meetup,
       eventsApiService: _eventsApiService,
       onUpdated: (updatedMeetup) {
-        // 回调更新父级的 _meetups 列表
+        // 回调更新父级�?_meetups 列表
         final index = _meetups.indexWhere((m) => m.id == updatedMeetup.id);
         if (index != -1) {
           _meetups[index] = updatedMeetup;
@@ -537,7 +544,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
   }
 }
 
-// 自管理生命周期的 Meetup Card - 参考 data_service_page 的设计
+// 自管理生命周期的 Meetup Card - 参�?data_service_page 的设�?
 class _MeetupListCard extends StatefulWidget {
   final MeetupModel meetup;
   final EventsApiService eventsApiService;
@@ -554,7 +561,7 @@ class _MeetupListCard extends StatefulWidget {
 }
 
 class _MeetupListCardState extends State<_MeetupListCard> {
-  // 卡片自己的状态 - 符合 DDD 原则
+  // 卡片自己的状�?- 符合 DDD 原则
   late bool _isJoined;
   late int _currentAttendees;
   late int _maxAttendees;
@@ -563,7 +570,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
   void initState() {
     super.initState();
 
-    // 初始化本地状态
+    // 初始化本地状�?
     _isJoined = widget.meetup.isJoined;
     _currentAttendees = widget.meetup.currentAttendees;
     _maxAttendees = widget.meetup.maxAttendees;
@@ -579,9 +586,9 @@ class _MeetupListCardState extends State<_MeetupListCard> {
   void didUpdateWidget(_MeetupListCard oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    // 当 widget 更新时，检查数据是否变化
+    // �?widget 更新时，检查数据是否变�?
     if (oldWidget.meetup.id == widget.meetup.id) {
-      // 同一个 meetup，更新状态
+      // 同一�?meetup，更新状�?
       if (_isJoined != widget.meetup.isJoined ||
           _currentAttendees != widget.meetup.currentAttendees) {
         print('🔄 Meetup ${widget.meetup.title} 数据更新:');
@@ -600,20 +607,20 @@ class _MeetupListCardState extends State<_MeetupListCard> {
   Future<void> _handleToggleJoin() async {
     final l10n = AppLocalizations.of(context)!;
 
-    // 判断是加入还是退出
+    // 判断是加入还是退�?
     final isJoining = !_isJoined;
 
     try {
       // 调用 API
       if (isJoining) {
         await widget.eventsApiService.joinEvent(widget.meetup.id);
-        print('✅ 成功加入活动: ${widget.meetup.title}');
+        print('�?成功加入活动: ${widget.meetup.title}');
       } else {
         await widget.eventsApiService.leaveEvent(widget.meetup.id);
-        print('✅ 成功退出活动: ${widget.meetup.title}');
+        print('�?成功退出活�? ${widget.meetup.title}');
       }
 
-      // API 调用成功，更新本地状态
+      // API 调用成功，更新本地状�?
       setState(() {
         _isJoined = isJoining;
         _currentAttendees = _currentAttendees + (isJoining ? 1 : -1);
@@ -657,9 +664,9 @@ class _MeetupListCardState extends State<_MeetupListCard> {
       return;
     }
 
-    // 跳转到群聊页面
+    // 跳转到群聊页�?
     Get.toNamed(
-      '/city-chat',
+      AppRoutes.cityChat,
       arguments: {
         'city': widget.meetup.title,
         'country': '${widget.meetup.type} Meetup',
@@ -675,7 +682,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return GestureDetector(
       onTap: () {
         Get.to(() => MeetupDetailPage(meetup: widget.meetup));
@@ -700,7 +707,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 图片 - 列表页只使用 imageUrl，如果为空显示占位图标
+            // 图片 - 列表页只使用 imageUrl，如果为空显示占位图�?
             ClipRRect(
               borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
               child: widget.meetup.imageUrl != null &&
@@ -722,7 +729,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 标题和类型
+                  // 标题和类�?
                   Row(
                     children: [
                       Expanded(
@@ -760,10 +767,10 @@ class _MeetupListCardState extends State<_MeetupListCard> {
 
                   SizedBox(height: 8.h),
 
-                  // 参与人数和剩余名额 - 使用本地状态
+                  // 参与人数和剩余名�?- 使用本地状�?
                   _buildInfoRow(
                     Icons.people,
-                    '$_currentAttendees/$_maxAttendees attendees • $_remainingSlots spots left',
+                    '$_currentAttendees/$_maxAttendees attendees �?$_remainingSlots spots left',
                     _isFull
                         ? Colors.orange
                         : (_remainingSlots <= 3 ? Colors.red : null),
@@ -823,7 +830,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
 
   Widget _buildTypeChip(String type) {
     Color color;
-    // 根据后端返回的 category 类型设置颜色
+    // 根据后端返回�?category 类型设置颜色
     switch (type.toLowerCase()) {
       case 'coffee':
         color = Colors.brown;
@@ -994,7 +1001,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
   }
 }
 
-// Meetup 筛选抽屉组件
+// Meetup 筛选抽屉组�?
 class _MeetupFilterDrawer extends StatelessWidget {
   final RxList<String> selectedCountries;
   final RxList<String> selectedCities;
@@ -1031,7 +1038,7 @@ class _MeetupFilterDrawer extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // 顶部栏
+          // 顶部�?
           Container(
             padding: EdgeInsets.all(20.w),
             decoration: const BoxDecoration(
@@ -1073,14 +1080,14 @@ class _MeetupFilterDrawer extends StatelessWidget {
             ),
           ),
 
-          // 筛选选项（可滚动）
+          // 筛选选项（可滚动�?
           Expanded(
             child: SingleChildScrollView(
               padding: EdgeInsets.all(20.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 国家筛选
+                  // 国家筛�?
                   _buildSectionTitle(l10n.country),
                   SizedBox(height: 12.h),
                   Text(
@@ -1131,7 +1138,7 @@ class _MeetupFilterDrawer extends StatelessWidget {
 
                   SizedBox(height: 24.h),
 
-                  // 城市筛选
+                  // 城市筛�?
                   _buildSectionTitle(l10n.city),
                   SizedBox(height: 12.h),
                   Obx(() => Wrap(
@@ -1172,7 +1179,7 @@ class _MeetupFilterDrawer extends StatelessWidget {
 
                   SizedBox(height: 24.h),
 
-                  // 类型筛选
+                  // 类型筛�?
                   _buildSectionTitle(l10n.meetupType),
                   SizedBox(height: 12.h),
                   Obx(() => Wrap(
@@ -1213,7 +1220,7 @@ class _MeetupFilterDrawer extends StatelessWidget {
 
                   SizedBox(height: 24.h),
 
-                  // 时间筛选
+                  // 时间筛�?
                   _buildSectionTitle(l10n.timeRange),
                   SizedBox(height: 12.h),
                   Obx(() => Wrap(
@@ -1229,7 +1236,7 @@ class _MeetupFilterDrawer extends StatelessWidget {
 
                   SizedBox(height: 24.h),
 
-                  // 最大人数筛选
+                  // 最大人数筛�?
                   _buildSectionTitle(l10n.maximumAttendees),
                   SizedBox(height: 12.h),
                   Obx(() => Column(

@@ -1,19 +1,20 @@
 import 'package:get/get.dart';
 
+import '../layouts/bottom_nav_layout.dart';
 import '../middlewares/auth_middleware.dart';
 import '../pages/ai_chat_page.dart';
 import '../pages/analytics_tool_page.dart';
 import '../pages/api_marketplace_page.dart';
 import '../pages/city_chat_page.dart';
-import '../pages/city_detail_page.dart';
+import '../pages/city_list_page.dart';
 import '../pages/coworking_home_page.dart';
-import '../pages/create_meetup_page.dart';
 import '../pages/data_service_page.dart';
+import '../pages/innovation_list_page.dart';
 import '../pages/language_settings_page.dart';
 import '../pages/location_demo_page.dart';
-import '../pages/main_page.dart';
 import '../pages/meetups_list_page.dart';
 import '../pages/nomads_login_page.dart';
+import '../pages/profile_page.dart';
 import '../pages/register_page.dart';
 import '../pages/second_page.dart';
 import '../pages/snake_game_page.dart';
@@ -29,99 +30,96 @@ class AppRoutes {
   static const String dataService = '/data-service';
   static const String analyticsTool = '/analytics-tool';
   static const String coworking = '/coworking';
-  static const String cityDetail = '/city-detail';
   static const String cityChat = '/city-chat';
-  static const String createMeetup = '/create-meetup';
+  static const String cityList = '/city-list';
   static const String meetupsList = '/meetups-list';
+  static const String innovation = '/innovation';
   static const String locationDemo = '/location-demo';
   static const String languageSettings = '/language-settings';
+  static const String profile = '/profile';
 
   static List<GetPage> getPages = [
     GetPage(
       name: home,
-      page: () => const MainPage(),
-      // 首页不需要登录
+      page: () => const BottomNavLayout(child: DataServicePage()),
+    ),
+    GetPage(
+      name: profile,
+      page: () => const BottomNavLayout(child: ProfilePage()),
+      middlewares: [AuthMiddleware()],
     ),
     GetPage(
       name: second,
-      page: () => const SecondPage(),
-      middlewares: [AuthMiddleware()], // 需要登录
+      page: () => const BottomNavLayout(child: SecondPage()),
+      middlewares: [AuthMiddleware()],
     ),
     GetPage(
       name: login,
       page: () => const NomadsLoginPage(),
-      // 登录页不需要认证
     ),
     GetPage(
       name: register,
       page: () => const RegisterPage(),
-      // 注册页不需要认证
     ),
     GetPage(
       name: aiChat,
       page: () => const AiChatPage(),
-      middlewares: [AuthMiddleware()], // 需要登录
+      middlewares: [AuthMiddleware()],
     ),
     GetPage(
       name: snakeGame,
-      page: () => const SnakeGamePage(),
-      middlewares: [AuthMiddleware()], // 需要登录
+      page: () => const BottomNavLayout(child: SnakeGamePage()),
+      middlewares: [AuthMiddleware()],
     ),
     GetPage(
       name: apiMarketplace,
-      page: () => const ApiMarketplacePage(),
-      middlewares: [AuthMiddleware()], // 需要登录
+      page: () => const BottomNavLayout(child: ApiMarketplacePage()),
+      middlewares: [AuthMiddleware()],
     ),
     GetPage(
       name: analyticsTool,
-      page: () => const AnalyticsToolPage(),
-      middlewares: [AuthMiddleware()], // 需要登录
+      page: () => const BottomNavLayout(child: AnalyticsToolPage()),
+      middlewares: [AuthMiddleware()],
     ),
     GetPage(
       name: dataService,
-      page: () => const DataServicePage(),
-      middlewares: [AuthMiddleware()], // 需要登录
+      page: () => const BottomNavLayout(child: DataServicePage()),
+      middlewares: [AuthMiddleware()],
     ),
     GetPage(
       name: coworking,
       page: () => const CoworkingHomePage(),
-      middlewares: [AuthMiddleware()], // 需要登录
-    ),
-    GetPage(
-      name: cityDetail,
-      page: () => const CityDetailPage(
-        cityId: '',
-        cityName: '',
-        cityImage: '',
-        overallScore: 0,
-        reviewCount: 0,
-      ),
-      middlewares: [AuthMiddleware()], // 需要登录
+      middlewares: [AuthMiddleware()],
     ),
     GetPage(
       name: cityChat,
-      page: () => const CityChatPage(),
-      middlewares: [AuthMiddleware()], // 需要登录
+      page: () => const BottomNavLayout(child: CityChatPage()),
+      middlewares: [AuthMiddleware()],
     ),
     GetPage(
-      name: createMeetup,
-      page: () => const CreateMeetupPage(),
-      middlewares: [AuthMiddleware()], // 需要登录
+      name: cityList,
+      page: () => const CityListPage(),
+      middlewares: [AuthMiddleware()],
     ),
     GetPage(
       name: meetupsList,
       page: () => const MeetupsListPage(),
-      middlewares: [AuthMiddleware()], // 需要登录
+      middlewares: [AuthMiddleware()],
+    ),
+    GetPage(
+      name: innovation,
+      page: () => const InnovationListPage(),
+      middlewares: [AuthMiddleware()],
     ),
     GetPage(
       name: locationDemo,
-      page: () => const LocationDemoPage(),
-      middlewares: [AuthMiddleware()], // 需要登录
+      page: () => const BottomNavLayout(child: LocationDemoPage()),
+      middlewares: [AuthMiddleware()],
     ),
     GetPage(
       name: languageSettings,
-      page: () => const LanguageSettingsPage(),
-      middlewares: [AuthMiddleware()], // 需要登录
+      page: () => const BottomNavLayout(child: LanguageSettingsPage()),
+      middlewares: [AuthMiddleware()],
     ),
   ];
 }

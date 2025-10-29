@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../generated/app_localizations.dart';
+import '../routes/app_routes.dart';
 import '../services/auth_service.dart';
 import '../services/http_service.dart';
 import '../widgets/app_toast.dart';
@@ -58,7 +59,7 @@ class _RegisterPageState extends State<RegisterPage> {
         final l10n = AppLocalizations.of(context)!;
 
         // 调用后端注册 API
-        // 注意：后端 RegisterDto 不需要 confirmPassword 字段
+        // 注意：后�?RegisterDto 不需�?confirmPassword 字段
         final response = await _authService.register(
           username: _usernameController.text.trim(),
           email: _emailController.text.trim(),
@@ -67,7 +68,7 @@ class _RegisterPageState extends State<RegisterPage> {
         );
 
         // 注册成功 - response 包含 {accessToken, refreshToken, user}
-        print('✅ 注册成功: ${response['user']}');
+        print('�?注册成功: ${response['user']}');
 
         AppToast.success(
           l10n.welcomeToCommunity,
@@ -81,17 +82,17 @@ class _RegisterPageState extends State<RegisterPage> {
         Get.offAllNamed('/login');
         
       } on HttpException catch (e) {
-        // HTTP 异常 - 显示后端返回的错误信息
-        print('❌ 注册失败 (HttpException): ${e.message}');
+        // HTTP 异常 - 显示后端返回的错误信�?
+        print('�?注册失败 (HttpException): ${e.message}');
         AppToast.error(
           e.message,
           title: '注册失败',
         );
       } catch (e) {
         // 其他错误
-        print('❌ 注册错误: $e');
+        print('�?注册错误: $e');
         AppToast.error(
-          '注册过程中发生错误，请稍后重试',
+          '注册过程中发生错误，请稍后重�?',
           title: '错误',
         );
       } finally {
@@ -120,7 +121,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 children: [
                   const SizedBox(height: 40),
 
-                  // Logo 和标题
+                  // Logo 和标�?
                   Center(
                     child: Column(
                       children: [
@@ -152,7 +153,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         const SizedBox(height: 12),
 
-                        // 副标题
+                        // 副标�?
                         Text(
                           l10n.joinGlobalCommunity,
                           textAlign: TextAlign.center,
@@ -168,7 +169,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                   const SizedBox(height: 48),
 
-                  // 用户名输入
+                  // 用户名输�?
                   TextFormField(
                     controller: _usernameController,
                     decoration: InputDecoration(
@@ -425,7 +426,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                   const SizedBox(height: 24),
 
-                  // 分隔线
+                  // 分隔�?
                   Row(
                     children: [
                       Expanded(child: Divider(color: Colors.grey.shade300)),
@@ -508,7 +509,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         GestureDetector(
                           onTap: () {
-                            Get.toNamed('/login');
+                            Get.toNamed(AppRoutes.login);
                           },
                           child: Text(
                             l10n.login,
@@ -629,3 +630,4 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 }
+

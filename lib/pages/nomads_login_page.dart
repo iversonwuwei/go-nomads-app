@@ -5,6 +5,7 @@ import '../config/app_colors.dart';
 import '../controllers/shopping_controller.dart';
 import '../controllers/user_state_controller.dart';
 import '../generated/app_localizations.dart';
+import '../routes/app_routes.dart';
 import '../services/http_service.dart';
 import '../services/nomads_auth_service.dart';
 import '../widgets/app_toast.dart';
@@ -36,7 +37,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
 
   void _login() async {
     if (_formKey.currentState!.validate()) {
-      // 显示加载指示器
+      // 显示加载指示�?
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -48,7 +49,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
       );
 
       try {
-        print('🔐 开始登录验证...');
+        print('🔐 开始登录验�?..');
         print('   邮箱: ${_emailController.text.trim()}');
 
         // 调用后端登录接口
@@ -58,7 +59,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
           password: _passwordController.text,
         );
 
-        // 关闭加载指示器
+        // 关闭加载指示�?
         if (mounted) {
           Navigator.pop(context);
         }
@@ -67,25 +68,25 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
           // 登录成功
           final user = loginResponse.data!.user;
 
-          print('🎉 登录成功！');
+          print('🎉 登录成功');
           print('   用户ID: ${user.id}');
           print('   用户名: ${user.name}');
           print('   邮箱: ${user.email}');
 
-          // 保存用户状态到全局控制器
+          // 保存用户状态到全局控制�?
           try {
             final userStateController = Get.find<UserStateController>();
-            // 注意：后端返回的是 String ID，需要转换或修改控制器
+            // 注意：后端返回的�?String ID，需要转换或修改控制�?
             // 这里暂时使用 hashCode 作为临时方案
             userStateController.login(
               user.id.hashCode,
               user.name,
               email: user.email,
             );
-            print('✅ 用户状态已保存');
+            print('�?用户状态已保存');
             print('🔔 登录状态变化事件将触发数据重新加载');
           } catch (e) {
-            print('⚠️ 保存用户状态失败: $e');
+            print('⚠️ 保存用户状态失�? $e');
           }
 
           AppToast.success(
@@ -93,38 +94,38 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
             title: 'Login Successful',
           );
 
-          // 等待一小段时间，确保登录状态事件已被处理
+          // 等待一小段时间，确保登录状态事件已被处�?
           await Future.delayed(const Duration(milliseconds: 300));
 
           // 登录成功后跳转到主页
-          print('🚀 准备跳转到主页...');
+          print('🚀 准备跳转到主�?..');
           Get.offAllNamed('/');
         } else {
           // 登录失败
-          print('❌ 登录失败: ${loginResponse.message}');
+          print('�?登录失败: ${loginResponse.message}');
           AppToast.error(
             loginResponse.message,
             title: 'Login Failed',
           );
         }
       } on HttpException catch (e) {
-        // 关闭加载指示器
+        // 关闭加载指示�?
         if (mounted) {
           Navigator.pop(context);
         }
 
-        print('❌ HTTP 错误: ${e.message}');
+        print('�?HTTP 错误: ${e.message}');
         AppToast.error(
           e.message,
           title: 'Network Error',
         );
       } catch (e) {
-        // 关闭加载指示器
+        // 关闭加载指示�?
         if (mounted) {
           Navigator.pop(context);
         }
 
-        print('❌ 登录错误: $e');
+        print('�?登录错误: $e');
         AppToast.error(
           'An error occurred. Please try again.',
           title: 'Error',
@@ -160,17 +161,17 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                         try {
                           final shoppingController =
                               Get.find<ShoppingController>();
-                          shoppingController.changeTab(0); // 切换到 home tab
+                          shoppingController.changeTab(0); // 切换�?home tab
                         } catch (e) {
-                          print('⚠️ 未找到 ShoppingController: $e');
+                          print('⚠️ 未找�?ShoppingController: $e');
                         }
-                        Get.offAllNamed('/'); // 跳转到主页
+                        Get.offAllNamed('/'); // 跳转到主�?
                       },
                     ),
                   ),
                   const SizedBox(height: 20),
 
-                  // Logo 和标题
+                  // Logo 和标�?
                   Center(
                     child: Column(
                       children: [
@@ -202,7 +203,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                         ),
                         const SizedBox(height: 12),
 
-                        // 副标题
+                        // 副标�?
                         Text(
                           l10n.login,
                           textAlign: TextAlign.center,
@@ -299,7 +300,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
 
                   const SizedBox(height: 16),
 
-                  // 记住我 & 忘记密码
+                  // 记住�?& 忘记密码
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -367,7 +368,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
 
                   const SizedBox(height: 24),
 
-                  // 分隔线
+                  // 分隔�?
                   Row(
                     children: [
                       Expanded(child: Divider(color: Colors.grey.shade300)),
@@ -451,7 +452,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                         const SizedBox(width: 8),
                         GestureDetector(
                           onTap: () {
-                            Get.toNamed('/register');
+                            Get.toNamed(AppRoutes.register);
                           },
                           child: const Text(
                             "Register",

@@ -7,6 +7,7 @@ import '../config/app_colors.dart';
 import '../generated/app_localizations.dart';
 import '../models/meetup_model.dart';
 import '../models/user_model.dart';
+import '../routes/app_routes.dart';
 import '../services/events_api_service.dart';
 import '../widgets/app_toast.dart';
 import 'direct_chat_page.dart';
@@ -39,7 +40,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     _loadEventDetails();
   }
 
-  /// 从后端加载活动详情
+  /// 从后端加载活动详�?
   Future<void> _loadEventDetails() async {
     try {
       _isLoading.value = true;
@@ -53,13 +54,13 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
       // 更新 meetup 数据
       _meetup.value = _convertApiEventToMeetupModel(eventData);
 
-      // 🔧 从 eventData 中提取参与者列表（后端已经通过 gRPC 填充了用户信息）
+      // 🔧 �?eventData 中提取参与者列表（后端已经通过 gRPC 填充了用户信息）
       // ParticipantResponse 包含: id, eventId, userId, status, registeredAt, user{id, name, email, avatar, phone}
       final participantsData = eventData['participants'] as List?;
       if (participantsData != null) {
         _participants.value =
             participantsData.map((p) => p as Map<String, dynamic>).toList();
-        print('✅ 成功从活动详情中加载 ${_participants.length} 个参与者(包含用户信息)');
+        print('�?成功从活动详情中加载 ${_participants.length} 个参与�?包含用户信息)');
       } else {
         _participants.value = [];
         print('⚠️ 活动详情中无参与者数据');
@@ -67,7 +68,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
 
       print('✅ 成功加载活动详情: ${_meetup.value.title}');
     } catch (e) {
-      print('❌ 加载活动详情失败: $e');
+      print('�?加载活动详情失败: $e');
       AppToast.error('加载活动详情失败');
     } finally {
       _isLoading.value = false;
@@ -81,14 +82,14 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     final cityName = cityData?['name'] as String? ?? '';
     final country = cityData?['country'] as String? ?? '';
 
-    // 解析组织者信息
+    // 解析组织者信�?
     final organizerData = event['organizer'] as Map<String, dynamic>?;
     final organizerName = organizerData?['name'] as String? ?? 'Unknown';
     final organizerId = organizerData?['id']?.toString() ??
         event['organizerId']?.toString() ??
         '0';
 
-    // 获取 imageUrl（用于列表页的封面图）
+    // 获取 imageUrl（用于列表页的封面图�?
     final imageUrl = event['imageUrl']?.toString();
 
     // 获取 images 数组（用于详情页的图片轮播）
@@ -192,7 +193,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
           // 内容区域
           SliverToBoxAdapter(
             child: Obx(() {
-              // 显示加载指示器
+              // 显示加载指示�?
               if (_isLoading.value) {
                 return Container(
                   padding: EdgeInsets.all(40.w),
@@ -222,12 +223,12 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
 
                   SizedBox(height: 16.h),
 
-                  // 组织者信息
+                  // 组织者信�?
                   _buildOrganizerInfo(),
 
                   SizedBox(height: 16.h),
 
-                  // 参与者列表
+                  // 参与者列�?
                   _buildAttendeesList(),
 
                   SizedBox(height: 100.h),
@@ -394,7 +395,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
             children: [
               GestureDetector(
                 onTap: () {
-                  // 跳转到 Organizer 的个人详情页
+                  // 跳转�?Organizer 的个人详情页
                   final organizerUser = _createBasicUserModel(
                     _meetup.value.organizerId,
                     _meetup.value.organizerName,
@@ -517,7 +518,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                   final participant = _participants[index];
                   final userId = participant['userId']?.toString() ?? '';
 
-                  // 从嵌套的 user 对象中获取头像
+                  // 从嵌套的 user 对象中获取头�?
                   final userInfo = participant['user'] as Map<String, dynamic>?;
                   final userAvatar = userInfo?['avatar'] as String?;
                   final userName = userInfo?['name'] as String? ?? 'User';
@@ -526,7 +527,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                     padding: EdgeInsets.only(right: 12.w),
                     child: GestureDetector(
                       onTap: () {
-                        // 跳转到参与者的个人详情页
+                        // 跳转到参与者的个人详情�?
                         final participantUser = _createBasicUserModel(
                           userId,
                           userName,
@@ -571,7 +572,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
           child: SafeArea(
             child: Row(
               children: [
-                // Chat Button - 只有参与了才能点击
+                // Chat Button - 只有参与了才能点�?
                 OutlinedButton.icon(
                   onPressed: _meetup.value.isJoined ? _openChat : null,
                   icon: Icon(Icons.chat_bubble_outline, size: 20.sp),
@@ -746,19 +747,19 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     final l10n = AppLocalizations.of(context)!;
 
     try {
-      // 判断是加入还是退出
+      // 判断是加入还是退�?
       final isJoining = !_meetup.value.isJoined;
 
       // 调用 API
       if (isJoining) {
         await _eventsApiService.joinEvent(_meetup.value.id);
-        print('✅ 成功加入活动: ${_meetup.value.title}');
+        print('�?成功加入活动: ${_meetup.value.title}');
       } else {
         await _eventsApiService.leaveEvent(_meetup.value.id);
-        print('✅ 成功退出活动: ${_meetup.value.title}');
+        print('�?成功退出活�? ${_meetup.value.title}');
       }
 
-      // API 调用成功后,重新加载活动详情以获取最新数据
+      // API 调用成功�?重新加载活动详情以获取最新数�?
       await _loadEventDetails();
 
       // 显示成功消息
@@ -791,9 +792,9 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
       return;
     }
 
-    // 跳转到群聊页面
+    // 跳转到群聊页�?
     Get.toNamed(
-      '/city-chat',
+      AppRoutes.cityChat,
       arguments: {
         'city': _meetup.value.title,
         'country': '${_meetup.value.type} ${l10n.meetup}',
@@ -859,7 +860,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                 final participant = _participants[index];
                 final userId = participant['userId']?.toString() ?? '';
 
-                // 🔧 从嵌套的 user 对象中获取用户信息
+                // 🔧 从嵌套的 user 对象中获取用户信�?
                 final userInfo = participant['user'] as Map<String, dynamic>?;
                 final userName =
                     userInfo?['name'] as String? ?? '${l10n.user} ${index + 1}';
@@ -868,13 +869,13 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
 
                 return ListTile(
                   onTap: () {
-                    // 跳转到参与者的个人详情页
+                    // 跳转到参与者的个人详情�?
                     final participantUser = _createBasicUserModel(
                       userId,
                       userName,
                       userAvatar ?? 'https://i.pravatar.cc/150?u=$userId',
                     );
-                    Get.back(); // 关闭对话框
+                    Get.back(); // 关闭对话�?
                     Get.to(() => MemberDetailPage(user: participantUser));
                   },
                   leading: CircleAvatar(
@@ -906,7 +907,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     return DateFormat('EEEE, MMMM dd, yyyy \'at\' HH:mm').format(dateTime);
   }
 
-  /// 创建基本的 UserModel 用于跳转到详情页
+  /// 创建基本�?UserModel 用于跳转到详情页
   UserModel _createBasicUserModel(String id, String name, String avatarUrl) {
     return UserModel(
       id: id,

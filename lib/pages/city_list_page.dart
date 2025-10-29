@@ -31,7 +31,7 @@ class _CityListPageState extends State<CityListPage> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    
+
     // 监听筛选器变化
     ever(controller.selectedRegions, (_) => setState(() {}));
     ever(controller.selectedCountries, (_) => setState(() {}));
@@ -384,19 +384,19 @@ class _CityListPageState extends State<CityListPage> {
   // 城市列表
   Widget _buildCityList(bool isMobile) {
     return Obx(() => ListView.builder(
-      controller: _scrollController,
-      padding: EdgeInsets.all(isMobile ? 16 : 20),
+          controller: _scrollController,
+          padding: EdgeInsets.all(isMobile ? 16 : 20),
           itemCount: controller.cities.length +
               (controller.hasMoreData ? 1 : 0), // +1 for loading indicator
-      itemBuilder: (context, index) {
-        // 加载指示器
+          itemBuilder: (context, index) {
+            // 加载指示器
             if (index == controller.cities.length) {
-          return _buildLoadingIndicator();
-        }
+              return _buildLoadingIndicator();
+            }
 
             final city = controller.cities[index];
-        return _buildCityCard(city, isMobile);
-      },
+            return _buildCityCard(city, isMobile);
+          },
         ));
   }
 
@@ -450,13 +450,16 @@ class _CityListPageState extends State<CityListPage> {
       ),
       child: InkWell(
         onTap: () {
-          Get.to(
-            () => CityDetailPage(
-              cityId: city['id']?.toString() ?? city['city'],
-              cityName: city['city'],
-              cityImage: city['image'],
-              overallScore: (city['overall'] as num?)?.toDouble() ?? 0.0,
-              reviewCount: city['reviews'] ?? 0,
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CityDetailPage(
+                cityId: city['id']?.toString() ?? city['city'],
+                cityName: city['city'],
+                cityImage: city['image'],
+                overallScore: (city['overall'] as num?)?.toDouble() ?? 0.0,
+                reviewCount: city['reviews'] ?? 0,
+              ),
             ),
           );
         },

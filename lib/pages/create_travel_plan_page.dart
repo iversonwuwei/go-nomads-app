@@ -318,24 +318,49 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                         ),
                         child: Column(
                           children: [
-                            Slider(
-                              value: duration.toDouble(),
-                              min: 1,
-                              max: 30,
-                              divisions: 29,
-                              label: l10n.days(duration),
-                              activeColor: const Color(0xFFFF4458),
-                              inactiveColor: Colors.grey[300],
-                              onChanged: (value) {
-                                setState(() => duration = value.toInt());
-                              },
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Slider(
+                                    value: duration.toDouble(),
+                                    min: 1,
+                                    max: 30,
+                                    divisions: 29,
+                                    label: l10n.days(duration),
+                                    activeColor: const Color(0xFFFF4458),
+                                    inactiveColor: Colors.grey[300],
+                                    onChanged: (value) {
+                                      setState(() => duration = value.toInt());
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Container(
+                                  width: 60,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFF4458),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    duration.toString(),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
+                            const SizedBox(height: 8),
                             Text(
                               duration == 1 ? l10n.day(1) : l10n.days(duration),
                               style: const TextStyle(
                                 color: Color(0xFFFF4458),
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],

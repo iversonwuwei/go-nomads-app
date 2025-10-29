@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 
 import '../models/city_detail_model.dart';
 import '../models/travel_plan_model.dart';
+import '../services/ai_api_service.dart';
 import '../widgets/app_toast.dart';
 
 /// 城市详情页控制器
@@ -477,12 +478,15 @@ class CityDetailController extends GetxController {
     isGeneratingPlan.value = true;
 
     try {
-      // 模拟AI生成延迟
-      await Future.delayed(const Duration(seconds: 3));
+      print('🎯 开始调用AI服务生成旅行计划...');
 
-      // 这里应该调用AI API生成计划
-      // 暂时使用模拟数据
-      final plan = _generateMockTravelPlan(
+      // 调用AI API生成旅行计划
+      final aiService = AiApiService();
+      final plan = await aiService.generateTravelPlan(
+        cityId: currentCityId.value,
+        cityName: currentCityName.value,
+        cityImage:
+            'https://images.unsplash.com/photo-1528181304800-259b08848526?w=800',
         duration: duration,
         budget: budget,
         travelStyle: travelStyle,
@@ -492,6 +496,8 @@ class CityDetailController extends GetxController {
 
       generatedPlan.value = plan;
 
+      print('✅ AI旅行计划生成成功!');
+
       // 显示成功消息
       AppToast.success(
         'Travel plan generated successfully!',
@@ -500,6 +506,8 @@ class CityDetailController extends GetxController {
 
       return plan;
     } catch (e) {
+      print('❌ AI旅行计划生成失败: $e');
+
       AppToast.error(
         'Failed to generate travel plan: ${e.toString()}',
         title: 'Error',
@@ -510,7 +518,7 @@ class CityDetailController extends GetxController {
     }
   }
 
-  /// 生成模拟旅行计划
+  /// 生成模拟旅行计划 (备用方法,仅用于开发测试)
   TravelPlan _generateMockTravelPlan({
     required int duration,
     required String budget,
