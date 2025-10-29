@@ -39,7 +39,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
   TravelPlan? _plan;
   bool _isLoading = true;
   late AnimationController _shimmerController;
-  
+
   // 流式进度状态
   String _progressMessage = '正在准备...';
   int _progressValue = 0;
@@ -69,7 +69,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
   /// 使用流式 API 生成旅行计划
   Future<void> _generatePlanStream() async {
     final controller = Get.find<CityDetailController>();
-    
+
     try {
       await controller.generateTravelPlanStream(
         duration: widget.duration ?? 7,
@@ -101,7 +101,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
             setState(() {
               _isLoading = false;
             });
-            
+
             AppToast.error(error);
             Get.back();
           }
@@ -113,7 +113,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
         setState(() {
           _isLoading = false;
         });
-        
+
         AppToast.error('生成失败,请稍后重试');
         Get.back();
       }
@@ -211,7 +211,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                     ),
                   ),
                   const SizedBox(height: 24),
-                  
+
                   // 进度文本
                   Text(
                     _progressMessage,
@@ -223,7 +223,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // 进度条
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
@@ -237,7 +237,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                     ),
                   ),
                   const SizedBox(height: 8),
-                  
+
                   // 进度百分比
                   Text(
                     '$_progressValue%',
