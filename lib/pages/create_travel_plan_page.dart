@@ -628,12 +628,8 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                               Icons.landscape_outlined),
                           _buildStyleChip(l10n.relaxation, 'relaxation',
                               Icons.spa_outlined),
-                          _buildStyleChip(
-                              l10n.foodie, 'food', Icons.restaurant_outlined),
                           _buildStyleChip(l10n.nightlife, 'nightlife',
                               Icons.nightlife_outlined),
-                          _buildStyleChip(l10n.shopping, 'shopping',
-                              Icons.shopping_bag_outlined),
                         ],
                       ),
 

@@ -1,3 +1,7 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
 
 import '../models/travel_plan_model.dart';
@@ -45,9 +49,42 @@ class AiApiService {
       print('🤖 正在生成AI旅行计划...');
       print('   城市: $cityName');
       print('   天数: $duration');
-      print('   预算: $budget');
+      print('   预算(原始): $budget');
       print('   风格: $travelStyle');
       print('   兴趣: ${interests.join(', ')}');
+
+      // 处理自定义预算格式 (e.g., "CNY:5000")
+      String finalBudget = budget;
+      String? finalCurrency = currency;
+      double? finalCustomBudget = customBudget;
+
+      if (budget.contains(':')) {
+        // 解析自定义预算格式: "CURRENCY:AMOUNT"
+        final parts = budget.split(':');
+        if (parts.length == 2) {
+          finalCurrency = parts[0]; // e.g., "CNY"
+          final amount = double.tryParse(parts[1]);
+
+          if (amount != null) {
+            finalCustomBudget = amount;
+
+            // 根据金额范围映射到 budget 级别
+            // 这些阈值可以根据需要调整
+            if (amount < 3000) {
+              finalBudget = 'low';
+            } else if (amount < 10000) {
+              finalBudget = 'medium';
+            } else {
+              finalBudget = 'high';
+            }
+
+            print(
+                '   💰 解析自定义预算: $finalCurrency $finalCustomBudget → $finalBudget');
+          }
+        }
+      }
+
+      print('   预算(最终): $finalBudget');
 
       // 设置较长的超时时间,因为AI生成需要时间
       final response = await _httpService.post(
@@ -57,12 +94,13 @@ class AiApiService {
           'cityName': cityName,
           'cityImage': cityImage,
           'duration': duration,
-          'budget': budget,
+          'budget': finalBudget, // 使用映射后的预算级别 (low/medium/high)
           'travelStyle': travelStyle,
           'interests': interests,
           if (departureLocation != null) 'departureLocation': departureLocation,
-          if (customBudget != null) 'customBudget': customBudget,
-          if (currency != null) 'currency': currency,
+          if (finalCustomBudget != null)
+            'customBudget': finalCustomBudget.toString(),
+          if (finalCurrency != null) 'currency': finalCurrency,
           if (selectedAttractions != null)
             'selectedAttractions': selectedAttractions,
         },
@@ -124,6 +162,185 @@ class AiApiService {
       print('❌ 生成旅行计划失败: $e');
       print('   堆栈跟踪: $stackTrace');
       rethrow;
+    }
+  }
+
+  /// 流式生成旅行计划 (使用 Server-Sent Events)
+  ///
+  /// 通过 [onProgress] 回调实时接收进度更新
+  /// 通过 [onData] 回调接收最终的旅行计划
+  /// 通过 [onError] 回调接收错误信息
+  ///
+  /// [cityId] 城市ID
+  /// [cityName] 城市名称
+  /// [cityImage] 城市图片URL
+  /// [duration] 旅行天数 (1-30)
+  /// [budget] 预算级别: 'low', 'medium', 'high'
+  /// [travelStyle] 旅行风格: 'adventure', 'relaxation', 'culture', 'nightlife'
+  /// [interests] 兴趣列表
+  /// [onProgress] 进度回调 (message: 提示信息, progress: 进度 0-100)
+  /// [onData] 数据回调 (返回完整的旅行计划)
+  /// [onError] 错误回调
+  Future<void> generateTravelPlanStream({
+    required String cityId,
+    required String cityName,
+    required String cityImage,
+    required int duration,
+    required String budget,
+    required String travelStyle,
+    required List<String> interests,
+    String? departureLocation,
+    double? customBudget,
+    String? currency,
+    List<String>? selectedAttractions,
+    required Function(String message, int progress) onProgress,
+    required Function(TravelPlan plan) onData,
+    required Function(String error) onError,
+  }) async {
+    try {
+      print('🤖 [流式] 正在生成AI旅行计划...');
+
+      // 处理预算格式 (与普通方法相同)
+      String finalBudget = budget;
+      String? finalCurrency = currency;
+      double? finalCustomBudget = customBudget;
+
+      if (budget.contains(':')) {
+        final parts = budget.split(':');
+        if (parts.length == 2) {
+          finalCurrency = parts[0];
+          final amount = double.tryParse(parts[1]);
+
+          if (amount != null) {
+            finalCustomBudget = amount;
+            if (amount < 3000) {
+              finalBudget = 'low';
+            } else if (amount < 10000) {
+              finalBudget = 'medium';
+            } else {
+              finalBudget = 'high';
+            }
+          }
+        }
+      }
+
+      // 获取基础 URL
+      final baseUrl = 'http://192.168.110.54:5000'; // AIService 基础地址
+      final url = '$baseUrl/ai/travel-plan/stream';
+
+      print('📡 连接到流式 API: $url');
+
+      // 创建 HTTP 客户端用于 SSE
+      final dio = Dio();
+      final response = await dio.post<ResponseBody>(
+        url,
+        data: {
+          'cityId': cityId,
+          'cityName': cityName,
+          'cityImage': cityImage,
+          'duration': duration,
+          'budget': finalBudget,
+          'travelStyle': travelStyle,
+          'interests': interests,
+          if (departureLocation != null) 'departureLocation': departureLocation,
+          if (finalCustomBudget != null)
+            'customBudget': finalCustomBudget.toString(),
+          if (finalCurrency != null) 'currency': finalCurrency,
+          if (selectedAttractions != null)
+            'selectedAttractions': selectedAttractions,
+        },
+        options: Options(
+          responseType: ResponseType.stream,
+          headers: {
+            'Accept': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+          },
+          receiveTimeout: const Duration(minutes: 5),
+        ),
+      );
+
+      // 读取 SSE 流
+      String buffer = '';
+
+      await for (final Uint8List data in response.data!.stream) {
+        final chunk = utf8.decode(data);
+        buffer += chunk;
+
+        // SSE 格式: data: {...}\n\n
+        while (buffer.contains('\n\n')) {
+          final index = buffer.indexOf('\n\n');
+          final message = buffer.substring(0, index);
+          buffer = buffer.substring(index + 2);
+
+          // 解析 SSE 消息
+          if (message.startsWith('data: ')) {
+            final jsonStr = message.substring(6).trim();
+            try {
+              final event = json.decode(jsonStr) as Map<String, dynamic>;
+              final type = event['type'] as String;
+              final payload = event['payload'] as Map<String, dynamic>;
+
+              print('📨 收到事件: $type');
+
+              switch (type) {
+                case 'start':
+                case 'analyzing':
+                case 'generating':
+                  // 进度更新
+                  final msg = payload['message'] as String;
+                  final progress = (payload['progress'] as num).toInt();
+                  onProgress(msg, progress);
+                  break;
+
+                case 'success':
+                  // 生成成功,返回数据
+                  final msg = payload['message'] as String;
+                  final progress = (payload['progress'] as num).toInt();
+                  onProgress(msg, progress);
+
+                  final data = payload['data'] as Map<String, dynamic>;
+                  final plan = TravelPlan.fromJson(data);
+                  onData(plan);
+                  print('✅ [流式] 旅行计划接收完成');
+                  break;
+
+                case 'error':
+                  // 错误
+                  final errorMsg = payload['message'] as String;
+                  onError(errorMsg);
+                  print('❌ [流式] 生成失败: $errorMsg');
+                  break;
+
+                default:
+                  print('⚠️ 未知事件类型: $type');
+              }
+            } catch (e) {
+              print('⚠️ 解析事件失败: $e');
+            }
+          }
+        }
+      }
+
+      print('📡 流式连接已关闭');
+    } on DioException catch (e) {
+      print('❌ [流式] Dio错误: ${e.type}');
+      print('   错误信息: ${e.message}');
+
+      String errorMessage = '流式请求失败';
+      if (e.response != null) {
+        errorMessage = 'HTTP ${e.response!.statusCode}: ${e.message}';
+      } else if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        errorMessage = 'AI生成超时,请稍后重试';
+      } else if (e.type == DioExceptionType.connectionError) {
+        errorMessage = '网络连接失败,请检查网络';
+      }
+
+      onError(errorMessage);
+    } catch (e, stackTrace) {
+      print('❌ [流式] 生成旅行计划失败: $e');
+      print('   堆栈跟踪: $stackTrace');
+      onError('生成失败: $e');
     }
   }
 }

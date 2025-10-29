@@ -39,6 +39,10 @@ class _TravelPlanPageState extends State<TravelPlanPage>
   TravelPlan? _plan;
   bool _isLoading = true;
   late AnimationController _shimmerController;
+  
+  // 流式进度状态
+  String _progressMessage = '正在准备...';
+  int _progressValue = 0;
 
   @override
   void initState() {
@@ -52,7 +56,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
       _plan = widget.plan;
       _isLoading = false;
     } else {
-      _generatePlan();
+      _generatePlanStream(); // 使用流式生成
     }
   }
 
@@ -62,6 +66,61 @@ class _TravelPlanPageState extends State<TravelPlanPage>
     super.dispose();
   }
 
+  /// 使用流式 API 生成旅行计划
+  Future<void> _generatePlanStream() async {
+    final controller = Get.find<CityDetailController>();
+    
+    try {
+      await controller.generateTravelPlanStream(
+        duration: widget.duration ?? 7,
+        budget: widget.budget ?? 'medium',
+        travelStyle: widget.travelStyle ?? 'culture',
+        interests: widget.interests ?? [],
+        departureLocation: widget.departureLocation,
+        onProgress: (String message, int progress) {
+          // 实时更新进度
+          if (mounted) {
+            setState(() {
+              _progressMessage = message;
+              _progressValue = progress;
+            });
+          }
+        },
+        onData: (TravelPlan plan) {
+          // 接收到完整数据
+          if (mounted) {
+            setState(() {
+              _plan = plan;
+              _isLoading = false;
+            });
+          }
+        },
+        onError: (String error) {
+          // 处理错误
+          if (mounted) {
+            setState(() {
+              _isLoading = false;
+            });
+            
+            AppToast.error(error);
+            Get.back();
+          }
+        },
+      );
+    } catch (e) {
+      print('❌ 生成旅行计划异常: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        
+        AppToast.error('生成失败,请稍后重试');
+        Get.back();
+      }
+    }
+  }
+
+  /// 旧的同步生成方法 (保留作为备用)
   Future<void> _generatePlan() async {
     final controller = Get.find<CityDetailController>();
     final plan = await controller.generateTravelPlan(
@@ -127,6 +186,68 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                     ),
                   );
                 },
+              ),
+            ),
+          ),
+
+          // 进度提示
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                children: [
+                  // AI 图标
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: AppColors.containerMedium.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.auto_awesome,
+                      size: 40,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  
+                  // 进度文本
+                  Text(
+                    _progressMessage,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textPrimary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // 进度条
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: LinearProgressIndicator(
+                      value: _progressValue / 100,
+                      minHeight: 8,
+                      backgroundColor: Colors.grey[200],
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AppColors.textPrimary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  
+                  // 进度百分比
+                  Text(
+                    '$_progressValue%',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

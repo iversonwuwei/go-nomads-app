@@ -518,13 +518,63 @@ class CityDetailController extends GetxController {
     }
   }
 
+  /// 流式生成AI旅行计划 (支持实时进度更新)
+  Future<void> generateTravelPlanStream({
+    required int duration,
+    required String budget,
+    required String travelStyle,
+    required List<String> interests,
+    String? departureLocation,
+    required Function(String message, int progress) onProgress,
+    required Function(TravelPlan plan) onData,
+    required Function(String error) onError,
+  }) async {
+    isGeneratingPlan.value = true;
+
+    try {
+      print('🎯 [流式] 开始调用AI服务生成旅行计划...');
+
+      final aiService = AiApiService();
+      await aiService.generateTravelPlanStream(
+        cityId: currentCityId.value,
+        cityName: currentCityName.value,
+        cityImage:
+            'https://images.unsplash.com/photo-1528181304800-259b08848526?w=800',
+        duration: duration,
+        budget: budget,
+        travelStyle: travelStyle,
+        interests: interests,
+        departureLocation: departureLocation,
+        onProgress: onProgress,
+        onData: (TravelPlan plan) {
+          // 保存到状态
+          generatedPlan.value = plan;
+
+          // 显示成功消息
+          AppToast.success(
+            'Travel plan generated successfully!',
+            title: 'Success',
+          );
+
+          // 回调
+          onData(plan);
+        },
+        onError: onError,
+      );
+    } catch (e) {
+      print('❌ [流式] AI旅行计划生成失败: $e');
+      onError('Failed to generate: ${e.toString()}');
+    } finally {
+      isGeneratingPlan.value = false;
+    }
+  }
+
   /// 生成模拟旅行计划 (备用方法,仅用于开发测试)
   TravelPlan _generateMockTravelPlan({
     required int duration,
     required String budget,
     required String travelStyle,
     required List<String> interests,
-    String? departureLocation,
   }) {
     final cityName = currentCityName.value;
 

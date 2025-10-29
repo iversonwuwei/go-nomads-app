@@ -17,10 +17,11 @@ class ApiConfig {
       return 'http://localhost:5000';
     } else if (Platform.isAndroid) {
       // Android 模拟器使用特殊地址 10.0.2.2
+      // 雷电/Android 模拟器应该通过 10.0.2.2 访问宿主机映射端口
       return 'http://10.0.2.2:5000';
     } else if (Platform.isIOS) {
       // iOS 模拟器可以使用 localhost
-      return 'http://localhost:5000';
+      return 'http://127.0.0.1:5000';
     } else {
       // 其他平台（Desktop等）使用 localhost
       return 'http://localhost:5000';
@@ -29,10 +30,12 @@ class ApiConfig {
 
   // 真机测试地址 - 使用电脑局域网 IP
   // 通过 ipconfig (Windows) 或 ifconfig (Mac/Linux) 查看
-  static const String physicalDeviceUrl = 'http://192.168.1.100:5000';
+  // ⚠️ 雷电模拟器也需要使用这个地址(雷电使用 VirtualBox 网络,10.0.2.2 无效)
+  static const String physicalDeviceUrl = 'http://192.168.110.54:5000';
 
-  // 是否使用真机测试地址（手动切换）
-  static const bool usePhysicalDevice = false;
+  // 是否使用真机测试地址(手动切换)
+  // ⚠️ 雷电模拟器用户请设置为 true
+  static const bool usePhysicalDevice = true;
 
   // 基础 URL - 智能选择
   static String get baseUrl {
