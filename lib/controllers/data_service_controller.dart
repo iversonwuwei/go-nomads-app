@@ -42,6 +42,12 @@ class DataServiceController extends GetxController {
   final RxInt maxAqi = 500.obs; // 最大AQI
   final RxList<String> selectedClimates = <String>[].obs; // 气候筛选
 
+  // 分页状态
+  final RxBool hasMoreCities = true.obs; // 是否还有更多城市可加载
+  final RxBool isLoadingMore = false.obs; // 是否正在加载更多
+  int _currentCityPage = 1; // 当前加载的城市页数
+  final int _citiesPerPage = 50; // 每页城市数量
+
   // 可用的筛选选项
   final List<String> availableRegions = [
     'Asia',
@@ -244,10 +250,11 @@ class DataServiceController extends GetxController {
     try {
       print('📡 调用 Home API...');
 
-      // 调用 API - 加载所有城市，不限制数量
+      // 调用 API - 初始加载适量数据，提高启动速度
+      // 城市列表页面会通过分页机制按需加载更多
       final homeFeed = await _homeApiService.getHomeFeed(
-        cityLimit: 1000, // 增加限制以获取所有城市
-        meetupLimit: 100, // 同时增加活动限制
+        cityLimit: 20, // data_service_page 只显示6个城市,20已足够
+        meetupLimit: 20, // 只显示未来30天的meetups,20足够
       );
 
       print(

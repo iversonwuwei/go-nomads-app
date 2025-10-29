@@ -3,7 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
-import '../controllers/data_service_controller.dart';
+import '../controllers/city_list_controller.dart';
 import '../generated/app_localizations.dart';
 import '../widgets/skeletons/skeletons.dart';
 import 'city_detail_page.dart';
@@ -18,7 +18,7 @@ class CityListPage extends StatefulWidget {
 }
 
 class _CityListPageState extends State<CityListPage> {
-  final DataServiceController controller = Get.find<DataServiceController>();
+  final CityListController controller = Get.put(CityListController());
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
@@ -27,34 +27,18 @@ class _CityListPageState extends State<CityListPage> {
   // 排序状态
   String _sortBy = 'popular'; // popular, cost, internet, safety
 
-  // 分页相关
-  static const int _pageSize = 50; // 每页显示50条，增加初始加载量
-  int _currentPage = 1;
-  bool _isLoadingMore = false;
-  bool _hasMoreData = true;
-
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
     
-    // 监听筛选器变化，重置分页
-    ever(controller.selectedRegions, (_) => _resetPagination());
-    ever(controller.selectedCountries, (_) => _resetPagination());
-    ever(controller.minPrice, (_) => _resetPagination());
-    ever(controller.maxPrice, (_) => _resetPagination());
-    ever(controller.minInternet, (_) => _resetPagination());
-    ever(controller.minRating, (_) => _resetPagination());
-  }
-
-  // 重置分页
-  void _resetPagination() {
-    if (mounted) {
-      setState(() {
-        _currentPage = 1;
-        _hasMoreData = true;
-      });
-    }
+    // 监听筛选器变化
+    ever(controller.selectedRegions, (_) => setState(() {}));
+    ever(controller.selectedCountries, (_) => setState(() {}));
+    ever(controller.minPrice, (_) => setState(() {}));
+    ever(controller.maxPrice, (_) => setState(() {}));
+    ever(controller.minInternet, (_) => setState(() {}));
+    ever(controller.minRating, (_) => setState(() {}));
   }
 
   @override
@@ -73,53 +57,13 @@ class _CityListPageState extends State<CityListPage> {
 
     // 当滚动到距离底部300像素时开始加载更多
     if (currentScroll >= maxScroll - 300) {
-      _loadMoreCities();
+      controller.loadMoreCities();
     }
   }
 
-  // 加载更多城市
-  Future<void> _loadMoreCities() async {
-    if (_isLoadingMore || !_hasMoreData) return;
-
-    final allCities = _allFilteredCities;
-    final currentDisplayed = _currentPage * _pageSize;
-
-    // 如果已经显示了所有数据，不再加载
-    if (currentDisplayed >= allCities.length) {
-      setState(() {
-        _hasMoreData = false;
-      });
-      return;
-    }
-
-    setState(() {
-      _isLoadingMore = true;
-    });
-
-    // 模拟网络延迟（可以根据需要调整或移除）
-    await Future.delayed(const Duration(milliseconds: 300));
-
-    setState(() {
-      _currentPage++;
-      _isLoadingMore = false;
-
-      // 检查是否还有更多数据
-      final newDisplayed = _currentPage * _pageSize;
-      if (newDisplayed >= allCities.length) {
-        _hasMoreData = false;
-      }
-    });
-
-    print(
-        '📊 加载更多: 当前页=$_currentPage, 已显示=${_currentPage * _pageSize}/${allCities.length}');
-  }
-
-  // 获取所有筛选后的城市列表（不分页）
-  List<Map<String, dynamic>> get _allFilteredCities {
-    var items = controller.filteredItems;
-
-    print('📊 DEBUG - controller.dataItems 总数: ${controller.dataItems.length}');
-    print('📊 DEBUG - controller.filteredItems 数量: ${items.length}');
+  // 获取筛选后的城市列表
+  List<Map<String, dynamic>> get _filteredCities {
+    var items = controller.filteredCities;
 
     // 按搜索关键词筛选
     if (_searchQuery.isNotEmpty) {
@@ -131,26 +75,7 @@ class _CityListPageState extends State<CityListPage> {
       }).toList();
     }
 
-    print('📊 DEBUG - 最终筛选后城市数量: ${items.length}');
     return items;
-  }
-
-  // 获取当前显示的城市列表（已分页）
-  List<Map<String, dynamic>> get _displayedCities {
-    final allCities = _allFilteredCities;
-    final endIndex = _currentPage * _pageSize;
-
-    print('📊 DEBUG - 当前页: $_currentPage, 每页数量: $_pageSize, 结束索引: $endIndex');
-    print(
-        '📊 DEBUG - 总城市数: ${allCities.length}, 将显示: ${endIndex > allCities.length ? allCities.length : endIndex} 个城市');
-
-    // 如果结束索引超过总数，返回全部
-    if (endIndex >= allCities.length) {
-      return allCities;
-    }
-
-    // 返回从开始到当前页的所有数据
-    return allCities.sublist(0, endIndex);
   }
 
   void _clearFilters() {
@@ -158,8 +83,6 @@ class _CityListPageState extends State<CityListPage> {
       _searchQuery = '';
       _searchController.clear();
       controller.resetFilters();
-      _currentPage = 1; // 重置分页
-      _hasMoreData = true;
     });
   }
 
@@ -327,7 +250,7 @@ class _CityListPageState extends State<CityListPage> {
 
             // 城市列表
             Expanded(
-              child: _displayedCities.isEmpty
+              child: _filteredCities.isEmpty
                   ? _buildEmptyState()
                   : _buildCityList(isMobile),
             ),
@@ -355,12 +278,16 @@ class _CityListPageState extends State<CityListPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    '${_displayedCities.length}/${_allFilteredCities.length} ${l10n.citiesFound}',
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
+                  // 结果计数
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    child: Text(
+                      '${controller.cities.length} / ${controller.totalCitiesCount} ${l10n.citiesFound}',
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 14,
+                      ),
                     ),
                   ),
                   Obx(() {
@@ -430,8 +357,6 @@ class _CityListPageState extends State<CityListPage> {
                   onChanged: (value) {
                     setState(() {
                       _searchQuery = value;
-                      _currentPage = 1; // 重置分页
-                      _hasMoreData = true;
                     });
                   },
                 ),
@@ -446,8 +371,6 @@ class _CityListPageState extends State<CityListPage> {
                     setState(() {
                       _searchQuery = '';
                       _searchController.clear();
-                      _currentPage = 1; // 重置分页
-                      _hasMoreData = true;
                     });
                   },
                 ),
@@ -460,52 +383,54 @@ class _CityListPageState extends State<CityListPage> {
 
   // 城市列表
   Widget _buildCityList(bool isMobile) {
-    return ListView.builder(
+    return Obx(() => ListView.builder(
       controller: _scrollController,
       padding: EdgeInsets.all(isMobile ? 16 : 20),
-      itemCount: _displayedCities.length +
-          (_hasMoreData ? 1 : 0), // +1 for loading indicator
+          itemCount: controller.cities.length +
+              (controller.hasMoreData ? 1 : 0), // +1 for loading indicator
       itemBuilder: (context, index) {
         // 加载指示器
-        if (index == _displayedCities.length) {
+            if (index == controller.cities.length) {
           return _buildLoadingIndicator();
         }
 
-        final city = _displayedCities[index];
+            final city = controller.cities[index];
         return _buildCityCard(city, isMobile);
       },
-    );
+        ));
   }
 
   // 加载指示器
   Widget _buildLoadingIndicator() {
-    if (!_isLoadingMore) return const SizedBox.shrink();
+    return Obx(() {
+      if (!controller.isLoadingMore.value) return const SizedBox.shrink();
 
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Center(
-        child: Column(
-          children: [
-            SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[600]!),
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Center(
+          child: Column(
+            children: [
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[600]!),
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '加载更多城市...',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
+              const SizedBox(height: 8),
+              Text(
+                '加载更多城市...',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   // 城市卡片
@@ -777,7 +702,7 @@ class _CityListPageState extends State<CityListPage> {
 
 // 城市筛选抽屉
 class _CityFilterDrawer extends StatelessWidget {
-  final DataServiceController controller;
+  final CityListController controller;
 
   const _CityFilterDrawer({required this.controller});
 
@@ -1178,7 +1103,7 @@ class _CityFilterDrawer extends StatelessWidget {
               ),
             ),
             child: Obx(() {
-              final count = controller.filteredItems.length;
+              final count = controller.filteredCities.length;
               return SizedBox(
                 width: double.infinity,
                 height: 50,
