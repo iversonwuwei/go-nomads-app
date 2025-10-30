@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../models/city_detail_model.dart';
 import '../models/travel_plan_model.dart';
 import '../services/ai_api_service.dart';
+import '../services/async_task_service.dart';
 import '../widgets/app_toast.dart';
 
 /// 城市详情页控制器
@@ -38,6 +39,11 @@ class CityDetailController extends GetxController {
   // 旅行计划生成状态
   var isGeneratingPlan = false.obs;
   var generatedPlan = Rx<TravelPlan?>(null);
+
+  // 异步任务状态
+  var currentTaskId = ''.obs;
+  var taskProgress = 0.obs;
+  var taskProgressMessage = ''.obs;
 
   @override
   void onInit() {
@@ -569,8 +575,93 @@ class CityDetailController extends GetxController {
     }
   }
 
+  /// 异步生成AI旅行计划 (使用任务队列 + SignalR)
+  ///
+  /// 这是推荐的方式,使用后台任务队列异步处理
+  /// 支持 SignalR 实时进度更新和轮询回退机制
+  Future<String?> generateTravelPlanAsync({
+    required int duration,
+    required String budget, // "low", "medium", "high"
+    required String
+        travelStyle, // "adventure", "relaxation", "culture", "nightlife"
+    required List<String> interests,
+    required Function(int progress, String message) onProgress,
+  }) async {
+    isGeneratingPlan.value = true;
+    taskProgress.value = 0;
+    taskProgressMessage.value = '正在创建任务...';
+
+    try {
+      print('🚀 开始异步生成旅行计划...');
+
+      final asyncTaskService = AsyncTaskService();
+
+      // 连接 SignalR (如果尚未连接)
+      if (!asyncTaskService.signalR.isConnected) {
+        try {
+          await asyncTaskService.signalR.connect('http://localhost:8009');
+          print('✅ SignalR 已连接');
+        } catch (e) {
+          print('⚠️ SignalR 连接失败,将使用轮询模式: $e');
+        }
+      }
+
+      // 1. 创建任务并等待完成
+      final finalStatus = await asyncTaskService.createAndWaitForCompletion(
+        cityId: currentCityId.value,
+        cityName: currentCityName.value,
+        duration: duration,
+        budget: budget,
+        travelStyle: travelStyle,
+        interests: interests,
+        onProgress: (status) {
+          // 更新进度
+          taskProgress.value = status.progress;
+          taskProgressMessage.value = status.progressMessage ?? '';
+
+          print('📊 任务进度: ${status.progress}% - ${status.progressMessage}');
+
+          // 回调通知UI
+          onProgress(status.progress, status.progressMessage ?? '');
+        },
+      );
+
+      if (finalStatus.isCompleted && finalStatus.planId != null) {
+        print('✅ 旅行计划生成成功! PlanId: ${finalStatus.planId}');
+
+        // TODO: 从数据库加载完整的旅行计划数据
+        // 这里可以调用另一个 API 获取完整计划详情
+
+        AppToast.success(
+          'Travel plan generated successfully!',
+          title: 'Success',
+        );
+
+        return finalStatus.planId;
+      } else {
+        throw Exception('任务未完成或没有返回planId');
+      }
+    } catch (e) {
+      print('❌ 异步生成失败: $e');
+
+      AppToast.error(
+        'Failed to generate travel plan: ${e.toString()}',
+        title: 'Error',
+      );
+
+      return null;
+    } finally {
+      isGeneratingPlan.value = false;
+      // 注意：不要在这里重置进度值，因为对话框可能还在显示
+      // 让调用方（travel_plan_page）在关闭对话框后再重置
+      // taskProgress.value = 0;
+      // taskProgressMessage.value = '';
+    }
+  }
+
   /// 生成模拟旅行计划 (备用方法,仅用于开发测试)
-  TravelPlan _generateMockTravelPlan({
+  /// 注意: 改为 public 方法,供 TravelPlanPage 临时使用
+  TravelPlan generateMockTravelPlan({
     required int duration,
     required String budget,
     required String travelStyle,

@@ -337,4 +337,78 @@ class AiApiService {
       onError('生成失败: $e');
     }
   }
+
+  /// 根据 planId 获取旅行计划详情
+  ///
+  /// [planId] 旅行计划ID (从异步任务返回)
+  ///
+  /// 返回完整的旅行计划对象
+  Future<TravelPlan> getTravelPlanById(String planId) async {
+    try {
+      print('📥 正在获取旅行计划详情...');
+      print('   PlanId: $planId');
+
+      final response = await _httpService.get(
+        '/ai/travel-plans/$planId',
+        options: Options(
+          receiveTimeout: const Duration(seconds: 30),
+        ),
+      );
+
+      print('✅ 旅行计划详情获取成功');
+      print('   响应状态: ${response.statusCode}');
+
+      // HttpService 拦截器已经自动解包了 ApiResponse
+      if (response.data == null) {
+        print('❌ 响应数据为 null');
+        throw Exception('旅行计划数据为空');
+      }
+
+      final data = response.data as Map<String, dynamic>;
+      print('📊 开始解析 TravelPlan...');
+
+      final travelPlan = TravelPlan.fromJson(data);
+
+      print('✅ 旅行计划解析成功');
+      print('   计划ID: ${travelPlan.id}');
+      print('   城市: ${travelPlan.cityName}');
+      print('   天数: ${travelPlan.duration}');
+      print('   每日行程数: ${travelPlan.dailyItineraries.length}');
+      print('   景点数: ${travelPlan.attractions.length}');
+
+      return travelPlan;
+    } on DioException catch (e) {
+      print('❌ Dio错误: ${e.type}');
+      print('   错误信息: ${e.message}');
+      print('   响应数据: ${e.response?.data}');
+
+      if (e.response?.statusCode == 404) {
+        throw Exception('旅行计划不存在或已过期 (24小时有效期)');
+      }
+
+      if (e.response != null) {
+        final errorData = e.response!.data;
+        String errorMessage = '获取旅行计划失败';
+
+        if (errorData is Map<String, dynamic>) {
+          errorMessage = errorData['message'] ?? errorMessage;
+        }
+
+        throw Exception(errorMessage);
+      }
+
+      // 网络错误
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        throw Exception('请求超时,请稍后重试');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw Exception('网络连接失败,请检查网络');
+      }
+
+      throw Exception('获取旅行计划失败: ${e.message}');
+    } catch (e) {
+      print('❌ 解析旅行计划失败: $e');
+      rethrow;
+    }
+  }
 }
