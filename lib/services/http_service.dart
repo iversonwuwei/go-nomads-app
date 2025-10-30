@@ -46,7 +46,7 @@ class HttpService {
           if (_authToken != null && _authToken!.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $_authToken';
           }
-          
+
           // 添加用户ID header
           if (_userId != null && _userId!.isNotEmpty) {
             options.headers['X-User-Id'] = _userId;
@@ -166,7 +166,7 @@ class HttpService {
   void clearAuthToken() {
     _authToken = null;
   }
-  
+
   /// 设置用户ID
   void setUserId(String? userId) {
     _userId = userId;

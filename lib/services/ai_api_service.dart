@@ -85,8 +85,6 @@ class AiApiService {
       }
 
       print('   预算(最终): $finalBudget');
-
-      // 设置较长的超时时间,因为AI生成需要时间
       final response = await _httpService.post(
         '/ai/travel-plan',
         data: {
@@ -223,7 +221,6 @@ class AiApiService {
           }
         }
       }
-
       final response = await _httpService.post<ResponseBody>(
         '/ai/travel-plan/stream',
         data: {
