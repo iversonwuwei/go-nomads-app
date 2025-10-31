@@ -57,13 +57,16 @@ class UserCityContentApiService {
     try {
       final endpoint =
           ApiConfig.cityPhotosEndpoint.replaceAll('{cityId}', cityId);
+      final url = _buildUrl(endpoint);
+      print('🔍 [Photos API] Requesting: $url with cityId: $cityId');
       final response = await _httpService.get(
-        _buildUrl(endpoint),
+        url,
         queryParameters: {'onlyMine': onlyMine},
       );
       final List<dynamic> data = response.data;
       return data.map((json) => UserCityPhoto.fromJson(json)).toList();
     } catch (e) {
+      print('❌ [Photos API] Error: $e');
       throw _handleError(e);
     }
   }
@@ -207,10 +210,7 @@ class UserCityContentApiService {
         if (reviewText != null) 'reviewText': reviewText,
       };
 
-      // 调试日志
-      print('📝 提交评论数据:');
-      print('CityId: $cityId');
-      print('Data: $requestData');
+      print('📝 提交评论数据: $requestData');
 
       final response = await _httpService.post(
         _buildUrl(endpoint),
@@ -269,9 +269,12 @@ class UserCityContentApiService {
     try {
       final endpoint =
           ApiConfig.cityUserContentStatsEndpoint.replaceAll('{cityId}', cityId);
-      final response = await _httpService.get(_buildUrl(endpoint));
+      final url = _buildUrl(endpoint);
+      print('🔍 [Stats API] Requesting: $url');
+      final response = await _httpService.get(url);
       return CityUserContentStats.fromJson(response.data);
     } catch (e) {
+      print('❌ [Stats API] Error: $e');
       throw _handleError(e);
     }
   }
@@ -279,10 +282,13 @@ class UserCityContentApiService {
   /// 获取城市综合费用统计 - 基于用户提交的实际费用数据
   Future<CityCostSummary> getCityCostSummary(String cityId) async {
     try {
-      final endpoint = '/api/v1/cities/$cityId/user-content/cost-summary';
-      final response = await _httpService.get(_buildUrl(endpoint));
+      final endpoint = '/cities/$cityId/user-content/cost-summary';
+      final url = _buildUrl(endpoint);
+      print('🔍 [Cost Summary API] Requesting: $url with cityId: $cityId');
+      final response = await _httpService.get(url);
       return CityCostSummary.fromJson(response.data);
     } catch (e) {
+      print('❌ [Cost Summary API] Error: $e');
       throw _handleError(e);
     }
   }

@@ -110,7 +110,8 @@ class _CityDetailPageState extends State<CityDetailPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final controller = Get.put(CityDetailController());
-    controller.currentCityId.value = cityId;
+    // ✅ 使用城市 UUID 作为 cityId (后端 user_city_content API 需要 UUID)
+    controller.currentCityId.value = cityId; // ✅ 修复:使用 UUID 而不是 cityName
     controller.currentCityName.value = cityName;
 
     // 加载用户内容
@@ -828,16 +829,15 @@ class _CityDetailPageState extends State<CityDetailPage> {
   // Reviews 标签
   Widget _buildReviewsTab(CityDetailController controller) {
     return Obx(() {
-      final mockReviews = controller.reviews;
-      final realUserReviews = controller.userReviews;
+      final realUserReviews = controller.userReviews; // ✅ 只使用后端真实评论
 
       // 如果正在加载
       if (controller.isLoadingUserContent.value && realUserReviews.isEmpty) {
         return const Center(child: CircularProgressIndicator());
       }
 
-      // 如果都为空
-      if (mockReviews.isEmpty && realUserReviews.isEmpty) {
+      // 如果为空
+      if (realUserReviews.isEmpty) {
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -863,11 +863,9 @@ class _CityDetailPageState extends State<CityDetailPage> {
         child: ListView.builder(
           padding:
               const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
-          itemCount: mockReviews.length + realUserReviews.length,
+          itemCount: realUserReviews.length, // ✅ 只显示真实评论
           itemBuilder: (context, index) {
-            // 先显示真实用户评论
-            if (index < realUserReviews.length) {
-              final review = realUserReviews[index];
+            final review = realUserReviews[index]; // ✅ 直接使用真实评论
               return Card(
                 margin: const EdgeInsets.only(bottom: 16),
                 child: Padding(
@@ -958,91 +956,6 @@ class _CityDetailPageState extends State<CityDetailPage> {
                     ],
                   ),
                 ),
-              );
-            }
-
-            // 然后显示模拟评论
-            final mockIndex = index - realUserReviews.length;
-            final review = mockReviews[mockIndex];
-            return Card(
-              margin: const EdgeInsets.only(bottom: 16),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          backgroundImage: NetworkImage(review.userAvatar),
-                          radius: 20,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                review.userName,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                                '${review.stayDuration} days',
-                                style: TextStyle(
-                                    fontSize: 12, color: Colors.grey[600]),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Row(
-                          children: [
-                            const Icon(Icons.star,
-                                color: Colors.amber, size: 16),
-                            Text(' ${review.rating}'),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      review.title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      review.content,
-                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                    ),
-                    if (review.photos.isNotEmpty) ...[
-                      const SizedBox(height: 12),
-                      SizedBox(
-                        height: 100,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: review.photos.length,
-                          itemBuilder: (context, index) {
-                            return Container(
-                              width: 100,
-                              margin: const EdgeInsets.only(right: 8),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
-                                image: DecorationImage(
-                                  image: NetworkImage(review.photos[index]),
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
             );
           },
         ),
@@ -1052,273 +965,177 @@ class _CityDetailPageState extends State<CityDetailPage> {
 
   // Cost of Living 标签
   Widget _buildCostTab(CityDetailController controller) {
-    final cost = controller.costOfLiving.value;
-    final l10n = AppLocalizations.of(context)!;
-
     return Obx(() {
-      final userExpenses = controller.userExpenses;
-      final communityCost = controller.communityCostSummary.value; // ✅ 获取社区费用统计
+      final communityCost = controller.communityCostSummary.value; // ✅ 使用后端真实数据
 
-      return RefreshIndicator(
-        onRefresh: controller.refreshExpenses,
-        child: ListView(
-          padding:
-              const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
-          children: [
-            // 原有的生活成本信息 (Mock 数据)
-            if (cost != null) ...[
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFF4458),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      l10n.averageMonthlyCost,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '\$${cost.total.toStringAsFixed(0)}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              _buildCostItem('🏠 ${l10n.accommodation}', cost.accommodation),
-              _buildCostItem('🍔 ${l10n.food}', cost.food),
-              _buildCostItem('🚕 ${l10n.transportation}', cost.transportation),
-              _buildCostItem('🎭 ${l10n.entertainment}', cost.entertainment),
-              _buildCostItem('💪 ${l10n.gym}', cost.gym),
-              _buildCostItem('💻 ${l10n.coworking}', cost.coworking),
-              const SizedBox(height: 32),
-            ],
+      // 如果数据还在加载中
+      if (controller.isLoadingUserContent.value && communityCost == null) {
+        return const Center(child: CircularProgressIndicator());
+      }
 
-            // ✅ 新增:社区综合费用统计 (基于用户提交的真实数据)
-            if (communityCost != null &&
-                communityCost.totalExpenseCount > 0) ...[
-              const Divider(),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  const Text(
-                    'Community Cost Summary',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Spacer(),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '${communityCost.contributorCount} contributors',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.green[700],
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF6B73FF), Color(0xFF000DFF)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      'Average Community Cost',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '\$${communityCost.total.toStringAsFixed(0)}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Based on ${communityCost.totalExpenseCount} real expenses',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              if (communityCost.accommodation > 0)
-                _buildCostItem(
-                    '🏠 ${l10n.accommodation}', communityCost.accommodation),
-              if (communityCost.food > 0)
-                _buildCostItem('🍔 ${l10n.food}', communityCost.food),
-              if (communityCost.transportation > 0)
-                _buildCostItem(
-                    '🚕 ${l10n.transportation}', communityCost.transportation),
-              if (communityCost.activity > 0)
-                _buildCostItem('🎭 Activity', communityCost.activity),
-              if (communityCost.shopping > 0)
-                _buildCostItem('🛍️ Shopping', communityCost.shopping),
-              if (communityCost.other > 0)
-                _buildCostItem('📝 Other', communityCost.other),
-              const SizedBox(height: 32),
-            ],
+      // 使用默认值（如果为 null）
+      final total = communityCost?.total ?? 0.0;
+      final contributorCount = communityCost?.contributorCount ?? 0;
+      final totalExpenseCount = communityCost?.totalExpenseCount ?? 0;
+      final accommodation = communityCost?.accommodation ?? 0.0;
+      final food = communityCost?.food ?? 0.0;
+      final transportation = communityCost?.transportation ?? 0.0;
+      final activity = communityCost?.activity ?? 0.0;
+      final shopping = communityCost?.shopping ?? 0.0;
+      final other = communityCost?.other ?? 0.0;
 
-            // 用户提交的费用详情
-            if (userExpenses.isNotEmpty) ...[
-              const Divider(),
-              const SizedBox(height: 16),
-              const Text(
-                'Recent Community Expenses',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-              ...userExpenses.map((expense) => Card(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    child: ListTile(
-                      leading: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: _getCategoryColor(expense.category)
-                              .withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(
-                          _getCategoryIcon(expense.category),
-                          color: _getCategoryColor(expense.category),
-                        ),
-                      ),
-                      title: Text(
-                        expense.category.displayName,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (expense.description != null)
-                            Text(expense.description!),
-                          const SizedBox(height: 4),
-                          Text(
-                            _formatDate(expense.date),
-                            style: TextStyle(
-                                fontSize: 12, color: Colors.grey[600]),
-                          ),
-                        ],
-                      ),
-                      trailing: Text(
-                        '${expense.currency} ${expense.amount.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFFFF4458),
-                        ),
-                      ),
-                    ),
-                  )),
-            ] else if (controller.isLoadingUserContent.value) ...[
-              const Center(child: CircularProgressIndicator()),
-            ] else ...[
-              const SizedBox(height: 16),
-              Center(
-                child: Text(
-                  'No community expenses yet',
-                  style: TextStyle(color: Colors.grey[600]),
-                ),
-              ),
-            ],
-          ],
-        ),
-      );
-    });
-  }
-
-  IconData _getCategoryIcon(ExpenseCategory category) {
-    switch (category) {
-      case ExpenseCategory.food:
-        return Icons.restaurant;
-      case ExpenseCategory.transport:
-        return Icons.directions_car;
-      case ExpenseCategory.accommodation:
-        return Icons.hotel;
-      case ExpenseCategory.activity:
-        return Icons.local_activity;
-      case ExpenseCategory.shopping:
-        return Icons.shopping_bag;
-      case ExpenseCategory.other:
-        return Icons.more_horiz;
-    }
-  }
-
-  Color _getCategoryColor(ExpenseCategory category) {
-    switch (category) {
-      case ExpenseCategory.food:
-        return Colors.orange;
-      case ExpenseCategory.transport:
-        return Colors.blue;
-      case ExpenseCategory.accommodation:
-        return Colors.purple;
-      case ExpenseCategory.activity:
-        return Colors.green;
-      case ExpenseCategory.shopping:
-        return Colors.pink;
-      case ExpenseCategory.other:
-        return Colors.grey;
-    }
-  }
-
-  Widget _buildCostItem(String label, double amount) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Row(
+      return ListView(
+        padding:
+            const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
         children: [
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(fontSize: 15),
+          // ✅ 社区综合费用统计 - 始终显示
+          Row(
+            children: [
+              const Flexible(
+                child: Text(
+                  'Community Cost Summary',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '$contributorCount contributor${contributorCount != 1 ? 's' : ''}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.green[700],
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF6B73FF), Color(0xFF000DFF)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  'Average Community Cost',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '\$${total.toStringAsFixed(0)}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Based on $totalExpenseCount real expense${totalExpenseCount != 1 ? 's' : ''}',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.8),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
             ),
           ),
-          Text(
-            '\$${amount.toStringAsFixed(0)}',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+          const SizedBox(height: 24),
+          // 费用分类明细 - 始终显示所有分类（即使为 0）
+          _buildCostCategoryCard(
+            category: 'Accommodation',
+            amount: accommodation,
+            icon: Icons.hotel,
+            color: Colors.purple,
           ),
-        ],
+          _buildCostCategoryCard(
+            category: 'Food',
+            amount: food,
+            icon: Icons.restaurant,
+            color: Colors.orange,
+          ),
+          _buildCostCategoryCard(
+            category: 'Transportation',
+            amount: transportation,
+            icon: Icons.directions_car,
+            color: Colors.blue,
+          ),
+          _buildCostCategoryCard(
+            category: 'Activity',
+            amount: activity,
+            icon: Icons.local_activity,
+            color: Colors.green,
+          ),
+          _buildCostCategoryCard(
+            category: 'Shopping',
+            amount: shopping,
+            icon: Icons.shopping_bag,
+            color: Colors.pink,
+          ),
+          _buildCostCategoryCard(
+            category: 'Other',
+            amount: other,
+            icon: Icons.more_horiz,
+            color: Colors.grey,
+          ),
+          const SizedBox(height: 32),
+        ], // children 数组闭合
+      ); // ListView 闭合
+    }); // Obx 闭合
+  }
+
+  // 费用分类卡片 - 参照 Recent Community Expenses 的设计
+  Widget _buildCostCategoryCard({
+    required String category,
+    required double amount,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            color: color,
+          ),
+        ),
+        title: Text(
+          category,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        trailing: Text(
+          '\$${amount.toStringAsFixed(2)}',
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFFFF4458),
+          ),
+        ),
       ),
     );
   }
@@ -1326,17 +1143,15 @@ class _CityDetailPageState extends State<CityDetailPage> {
   // Photos 标签
   Widget _buildPhotosTab(CityDetailController controller) {
     return Obx(() {
-      // 合并模拟数据和真实用户数据
-      final mockPhotos = controller.photos;
-      final realUserPhotos = controller.userPhotos;
+      final realUserPhotos = controller.userPhotos; // ✅ 只使用后端真实照片
 
       // 如果正在加载
       if (controller.isLoadingUserContent.value && realUserPhotos.isEmpty) {
         return const Center(child: CircularProgressIndicator());
       }
 
-      // 如果两者都为空
-      if (mockPhotos.isEmpty && realUserPhotos.isEmpty) {
+      // 如果为空
+      if (realUserPhotos.isEmpty) {
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -1366,11 +1181,9 @@ class _CityDetailPageState extends State<CityDetailPage> {
             crossAxisSpacing: 8,
             mainAxisSpacing: 8,
           ),
-          itemCount: mockPhotos.length + realUserPhotos.length,
+          itemCount: realUserPhotos.length, // ✅ 只显示真实照片
           itemBuilder: (context, index) {
-            // 先显示真实用户照片
-            if (index < realUserPhotos.length) {
-              final photo = realUserPhotos[index];
+            final photo = realUserPhotos[index]; // ✅ 直接使用真实照片
               return GestureDetector(
                 onTap: () => _showPhotoDetail(photo),
                 child: Stack(
@@ -1402,20 +1215,6 @@ class _CityDetailPageState extends State<CityDetailPage> {
                       ),
                     ),
                   ],
-                ),
-              );
-            }
-
-            // 然后显示模拟照片
-            final mockIndex = index - realUserPhotos.length;
-            final photo = mockPhotos[mockIndex];
-            return Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                image: DecorationImage(
-                  image: NetworkImage(photo.url),
-                  fit: BoxFit.cover,
-                ),
               ),
             );
           },

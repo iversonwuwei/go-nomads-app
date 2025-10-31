@@ -62,33 +62,49 @@ class CityDetailController extends GetxController {
     loadCityData();
   }
 
-  /// 加载用户生成的内容 (照片、费用、评论)
+  /// 加载用户生成的内容 (照片、评论、费用统计)
   Future<void> loadUserContent() async {
     if (currentCityId.value.isEmpty) return;
 
+    print(
+        '🔍 [Controller] Loading user content for cityId: ${currentCityId.value}');
     isLoadingUserContent.value = true;
     try {
       final apiService = UserCityContentApiService();
 
-      // 并行加载所有用户内容
+      // 并行加载所有用户内容（移除 userExpenses，只保留 summary）
       final results = await Future.wait([
         apiService.getCityPhotos(cityId: currentCityId.value),
-        apiService.getCityExpenses(cityId: currentCityId.value),
         apiService.getCityReviews(currentCityId.value),
         apiService.getCityStats(currentCityId.value),
-        apiService.getCityCostSummary(currentCityId.value), // ✅ 新增:加载综合费用统计
+        apiService.getCityCostSummary(currentCityId.value), // ✅ 只加载综合费用统计
       ]);
 
       userPhotos.value = results[0] as List<UserCityPhoto>;
-      userExpenses.value = results[1] as List<UserCityExpense>;
-      userReviews.value = results[2] as List<UserCityReview>;
-      cityContentStats.value = results[3] as CityUserContentStats;
-      communityCostSummary.value = results[4] as CityCostSummary; // ✅ 保存综合费用统计
+      userReviews.value = results[1] as List<UserCityReview>;
+      cityContentStats.value = results[2] as CityUserContentStats;
+      communityCostSummary.value = results[3] as CityCostSummary; // ✅ 保存综合费用统计
 
       print(
-          '✅ 用户内容加载成功: ${userPhotos.length} photos, ${userExpenses.length} expenses, ${userReviews.length} reviews');
-      print(
-          '✅ 综合费用统计: 总计 \$${communityCostSummary.value?.total.toStringAsFixed(0)} (${communityCostSummary.value?.contributorCount} 贡献者)');
+          '✅ 用户内容加载成功: ${userPhotos.length} photos, ${userReviews.length} reviews');
+
+      // 🔍 详细打印 communityCostSummary 数据
+      if (communityCostSummary.value != null) {
+        final cost = communityCostSummary.value!;
+        print('✅ 综合费用统计详情:');
+        print('   - 城市ID: ${cost.cityId}');
+        print('   - 总计: \$${cost.total.toStringAsFixed(2)}');
+        print('   - 贡献者数: ${cost.contributorCount}');
+        print('   - 费用记录数: ${cost.totalExpenseCount}');
+        print('   - 住宿: \$${cost.accommodation.toStringAsFixed(2)}');
+        print('   - 食物: \$${cost.food.toStringAsFixed(2)}');
+        print('   - 交通: \$${cost.transportation.toStringAsFixed(2)}');
+        print('   - 活动: \$${cost.activity.toStringAsFixed(2)}');
+        print('   - 购物: \$${cost.shopping.toStringAsFixed(2)}');
+        print('   - 其他: \$${cost.other.toStringAsFixed(2)}');
+      } else {
+        print('⚠️ communityCostSummary 为 null');
+      }
     } catch (e) {
       print('❌ 加载用户内容失败: $e');
       AppToast.error('Failed to load user content: $e');
@@ -120,12 +136,19 @@ class CityDetailController extends GetxController {
 
     try {
       final apiService = UserCityContentApiService();
-      userExpenses.value =
-          await apiService.getCityExpenses(cityId: currentCityId.value);
+      
+      // 并行刷新费用列表、统计和综合费用摘要
+      final results = await Future.wait([
+        apiService.getCityExpenses(cityId: currentCityId.value),
+        apiService.getCityStats(currentCityId.value),
+        apiService.getCityCostSummary(currentCityId.value),
+      ]);
 
-      // 同时刷新统计
-      cityContentStats.value =
-          await apiService.getCityStats(currentCityId.value);
+      userExpenses.value = results[0] as List<UserCityExpense>;
+      cityContentStats.value = results[1] as CityUserContentStats;
+      communityCostSummary.value = results[2] as CityCostSummary;
+
+      print('✅ 费用数据刷新成功: ${userExpenses.length} expenses, 综合统计已更新');
     } catch (e) {
       print('❌ 刷新费用失败: $e');
     }
@@ -209,7 +232,7 @@ class CityDetailController extends GetxController {
   void loadCityData() {
     isLoading.value = true;
 
-    // 模拟加载数据
+    // 只加载部分 Mock 数据 (尚未实现后端 API 的部分)
     Future.delayed(const Duration(milliseconds: 500), () {
       _generateMockData();
       isLoading.value = false;
@@ -247,6 +270,11 @@ class CityDetailController extends GetxController {
 
   /// 生成模拟数据
   void _generateMockData() {
+    // ✅ 仅生成尚未实现后端 API 的数据
+    // ❌ 已移除: reviews (使用 userReviews)
+    // ❌ 已移除: costOfLiving (使用 communityCostSummary)
+    // ❌ 已移除: photos (使用 userPhotos)
+    
     // 生成评分数据
     scores.value = CityScores(
       overall: 4.55,
@@ -350,70 +378,8 @@ class CityDetailController extends GetxController {
       ),
     ];
 
-    // 生成评论
-    reviews.value = [
-      CityReview(
-        id: 'r1',
-        userId: 'user1',
-        userName: 'Sarah Johnson',
-        userAvatar: 'https://i.pravatar.cc/150?img=1',
-        rating: 4.5,
-        title: 'Amazing city for digital nomads!',
-        content:
-            'Spent 3 months here and absolutely loved it. The coworking scene is fantastic, food is incredible, and I met so many amazing people. The traffic is crazy though, but you get used to it.',
-        photos: [
-          'https://images.unsplash.com/photo-1528181304800-259b08848526?w=400',
-          'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=400',
-        ],
-        visitDate: DateTime.now().subtract(const Duration(days: 90)),
-        stayDuration: 90,
-        likes: 45,
-        comments: 12,
-        createdAt: DateTime.now().subtract(const Duration(days: 60)),
-        categoryRatings: {
-          'cost': 4.8,
-          'internet': 4.5,
-          'safety': 4.2,
-          'food': 4.9,
-          'community': 4.7,
-        },
-      ),
-      CityReview(
-        id: 'r2',
-        userId: 'user2',
-        userName: 'Mike Chen',
-        userAvatar: 'https://i.pravatar.cc/150?img=12',
-        rating: 4.0,
-        title: 'Great for short-term stays',
-        content:
-            'Perfect for a month or two. Very affordable and lots to do. The heat can be intense if you\'re not used to tropical weather.',
-        photos: [
-          'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=400',
-        ],
-        visitDate: DateTime.now().subtract(const Duration(days: 120)),
-        stayDuration: 60,
-        likes: 32,
-        comments: 8,
-        createdAt: DateTime.now().subtract(const Duration(days: 100)),
-      ),
-    ];
-
-    // 生成生活成本
-    costOfLiving.value = CostOfLiving(
-      total: 1563,
-      accommodation: 600,
-      food: 350,
-      transportation: 80,
-      entertainment: 200,
-      gym: 50,
-      coworking: 150,
-      utilities: 50,
-      groceries: 180,
-      diningOut: 170,
-      airbnbCost: 800,
-      hotelCost: 1200,
-      apartmentCost: 400,
-    );
+    // ❌ 已删除 Mock reviews - 使用后端 userReviews
+    // ❌ 已删除 Mock costOfLiving - 使用后端 communityCostSummary
 
     // 生成天气数据
     weather.value = WeatherData(
@@ -464,20 +430,7 @@ class CityDetailController extends GetxController {
       bestSeason: 'November to February',
     );
 
-    // 生成照片
-    photos.value = List.generate(
-        12,
-        (index) => CityPhoto(
-              id: 'photo$index',
-              url:
-                  'https://images.unsplash.com/photo-${1528181304800 + index * 100}?w=400',
-              userId: 'user${index % 5}',
-              userName: ['Alex', 'Sam', 'Jordan', 'Taylor', 'Casey'][index % 5],
-              caption: index % 3 == 0 ? 'Beautiful sunset view' : null,
-              location: index % 2 == 0 ? 'Sukhumvit' : 'Silom',
-              likes: 20 + index * 5,
-              uploadedAt: DateTime.now().subtract(Duration(days: index * 2)),
-            ));
+    // ❌ 已删除 Mock photos - 使用后端 userPhotos
 
     // 生成社区数据
     neighborhoods.value = [
