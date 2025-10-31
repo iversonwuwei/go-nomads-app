@@ -144,10 +144,27 @@ class AsyncTaskProgressDialog extends StatelessWidget {
     );
   }
 
-  /// 关闭进度对话框
+  /// 关闭对话框
   static void dismiss() {
-    if (Get.isDialogOpen ?? false) {
-      Get.back();
+    print('[AsyncTaskProgressDialog] 尝试关闭对话框...');
+
+    try {
+      // 只关闭最顶层的对话框，不影响 snackbar
+      if (Get.isDialogOpen == true) {
+        // 使用 closeAllDialogs 而不是 back，避免误关闭 snackbar
+        Get.until((route) => !Get.isDialogOpen!);
+        print('[AsyncTaskProgressDialog] ✅ 对话框已成功关闭');
+      } else {
+        print('[AsyncTaskProgressDialog] ✅ 对话框已经关闭');
+      }
+    } catch (e) {
+      print('[AsyncTaskProgressDialog] ❌ 关闭失败: $e');
     }
+  }
+
+  /// 安全地关闭对话框（带延迟）
+  static Future<void> dismissSafely({Duration delay = const Duration(milliseconds: 100)}) async {
+    await Future.delayed(delay);
+    dismiss();
   }
 }

@@ -68,24 +68,30 @@ class _TravelPlanPageState extends State<TravelPlanPage>
   @override
   void dispose() {
     _shimmerController.dispose();
+    // 确保页面销毁时关闭任何可能残留的对话框
+    print('[TravelPlanPage] dispose: 关闭可能残留的对话框');
+    AsyncTaskProgressDialog.dismiss();
     super.dispose();
   }
 
   /// 使用异步任务队列生成旅行计划 (推荐)
   Future<void> _generatePlanAsync() async {
     final controller = Get.find<CityDetailController>();
-
-    // 显示前先确保没有残留的进度对话框
-    print('[LOG] 尝试关闭残留进度对话框...');
-    AsyncTaskProgressDialog.dismiss();
+    bool dialogShown = false;
 
     try {
+      // 显示前先确保没有残留的进度对话框
+      print('[LOG] 尝试关闭残留进度对话框...');
+      AsyncTaskProgressDialog.dismiss();
+      await Future.delayed(const Duration(milliseconds: 100));
+
       print('[LOG] 显示进度对话框');
       AsyncTaskProgressDialog.show(
         title: 'Generating Travel Plan',
         progress: controller.taskProgress,
         message: controller.taskProgressMessage,
       );
+      dialogShown = true;
 
       // 调用异步任务生成
       final planId = await controller.generateTravelPlanAsync(
@@ -115,12 +121,10 @@ class _TravelPlanPageState extends State<TravelPlanPage>
           print('   天数: ${plan.duration}');
           print('   景点数: ${plan.attractions.length}');
 
-          print('[LOG] 关闭进度对话框（成功分支）');
+          // 立即关闭对话框
+          print('[LOG] 成功获取数据，立即关闭对话框');
           AsyncTaskProgressDialog.dismiss();
-
-          // 重置进度值
-          controller.taskProgress.value = 0;
-          controller.taskProgressMessage.value = '';
+          dialogShown = false; // 标记已关闭
 
           if (mounted) {
             setState(() {
@@ -133,12 +137,10 @@ class _TravelPlanPageState extends State<TravelPlanPage>
         } catch (e) {
           print('❌ 获取旅行计划详情失败: $e');
 
-          print('[LOG] 关闭进度对话框（获取详情失败分支）');
+          // 立即关闭对话框
+          print('[LOG] 获取详情失败，立即关闭对话框');
           AsyncTaskProgressDialog.dismiss();
-
-          // 重置进度值
-          controller.taskProgress.value = 0;
-          controller.taskProgressMessage.value = '';
+          dialogShown = false; // 标记已关闭
 
           // 如果获取失败,降级使用模拟数据
           if (mounted) {
@@ -157,35 +159,53 @@ class _TravelPlanPageState extends State<TravelPlanPage>
           }
         }
       } else {
-        print('[LOG] 关闭进度对话框（planId==null分支）');
-        AsyncTaskProgressDialog.dismiss();
+        print('⚠️ planId 为 null，生成失败');
 
-        // 重置进度值
-        controller.taskProgress.value = 0;
-        controller.taskProgressMessage.value = '';
+        // 立即关闭对话框
+        print('[LOG] planId 为 null，立即关闭对话框');
+        AsyncTaskProgressDialog.dismiss();
+        dialogShown = false; // 标记已关闭
 
         if (mounted) {
           setState(() {
             _isLoading = false;
           });
           AppToast.error('Failed to generate travel plan');
+          // 返回到上一页
+          Get.back();
         }
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       print('❌ 异步生成旅行计划失败: $e');
+      print('堆栈跟踪: $stackTrace');
 
-      print('[LOG] 关闭进度对话框（catch分支）');
+      // 立即关闭对话框
+      print('[LOG] 异常捕获，立即关闭对话框');
       AsyncTaskProgressDialog.dismiss();
-
-      // 重置进度值
-      controller.taskProgress.value = 0;
-      controller.taskProgressMessage.value = '';
+      dialogShown = false; // 标记已关闭
 
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
         AppToast.error('生成失败: ${e.toString()}');
+        // 返回到上一页
+        Get.back();
+      }
+    } finally {
+      // 确保对话框一定会被关闭
+      print('[LOG] finally 块：确保关闭进度对话框 (dialogShown=$dialogShown)');
+      
+      // 重置进度值
+      controller.taskProgress.value = 0;
+      controller.taskProgressMessage.value = '';
+      
+      if (dialogShown) {
+        // 延迟后关闭对话框，确保所有异步操作都完成
+        Future.delayed(const Duration(milliseconds: 500), () {
+          print('[LOG] 延迟后关闭对话框');
+          AsyncTaskProgressDialog.dismiss();
+        });
       }
     }
   }
