@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../generated/app_localizations.dart';
+import '../models/user_city_content_models.dart';
+import '../services/user_city_content_api_service.dart';
 import '../widgets/app_toast.dart';
 
 class AddCostPage extends StatefulWidget {
@@ -26,6 +28,34 @@ class _AddCostPageState extends State<AddCostPage> {
 
   // Currency selection
   String _selectedCurrency = 'USD';
+
+  @override
+  void initState() {
+    super.initState();
+    _validateCityId();
+  }
+
+  /// 验证 cityId 是否为有效的 UUID 格式
+  void _validateCityId() {
+    if (widget.cityId.isEmpty || !_isValidUuid(widget.cityId)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        AppToast.error(
+          '城市ID无效,无法提交费用',
+          title: '错误',
+        );
+        Get.back();
+      });
+    }
+  }
+
+  /// 检查是否为有效的 UUID 格式
+  bool _isValidUuid(String id) {
+    final uuidRegex = RegExp(
+      r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+      caseSensitive: false,
+    );
+    return uuidRegex.hasMatch(id);
+  }
 
   // Get localized currency list
   List<Map<String, String>> _getCurrencies(BuildContext context) {
@@ -175,33 +205,80 @@ class _AddCostPageState extends State<AddCostPage> {
 
     _isSubmitting.value = true;
 
-    // Prepare cost data
-    Map<String, dynamic> costData = {
-      'cityId': widget.cityId,
-      'currency': _selectedCurrency,
-      'costs': {},
-      'notes': _notesController.text.trim(),
-      'total': _totalCost,
-    };
+    try {
+      final apiService = UserCityContentApiService();
 
-    _controllers.forEach((key, controller) {
-      if (controller.text.isNotEmpty) {
-        costData['costs'][key] = double.parse(controller.text);
+      // 提交每个非空的费用项
+      final List<UserCityExpense> addedExpenses = [];
+
+      for (var entry in _controllers.entries) {
+        final controller = entry.value;
+        if (controller.text.isNotEmpty) {
+          final amount = double.parse(controller.text);
+
+          // 映射类别名称到 ExpenseCategory 枚举
+          final category = _mapToExpenseCategory(entry.key);
+
+          final expense = await apiService.addCityExpense(
+            cityId: widget.cityId,
+            category: category,
+            amount: amount,
+            currency: _selectedCurrency,
+            description: _notesController.text.trim().isEmpty
+                ? null
+                : _notesController.text.trim(),
+            date: DateTime.now(),
+          );
+
+          addedExpenses.add(expense);
+        }
       }
-    });
 
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 2));
+      _isSubmitting.value = false;
 
-    _isSubmitting.value = false;
+      // Show success message
+      final l10n = AppLocalizations.of(context)!;
+      Get.back(result: {
+        'success': true,
+        'expenses': addedExpenses,
+      });
 
-    // Show success message
-    final l10n = AppLocalizations.of(context)!;
-    Get.back(result: true);
-    AppToast.success(
-      l10n.costShared,
-      title: l10n.success,
-    );
+      AppToast.success(
+        l10n.costShared,
+        title: l10n.success,
+      );
+    } catch (e) {
+      _isSubmitting.value = false;
+
+      final l10n = AppLocalizations.of(context)!;
+      AppToast.error(
+        'Failed to submit expenses: $e',
+        title: l10n.error,
+      );
+      print('❌ 提交费用失败: $e');
+    }
+  }
+
+  // 映射表单类别到 ExpenseCategory 枚举
+  ExpenseCategory _mapToExpenseCategory(String key) {
+    switch (key) {
+      case 'food':
+        return ExpenseCategory.food;
+      case 'transportation':
+        return ExpenseCategory.transport;
+      case 'accommodation':
+        return ExpenseCategory.accommodation;
+      case 'entertainment':
+      case 'gym':
+      case 'coworking':
+      case 'utilities':
+      case 'healthcare':
+        return ExpenseCategory.activity;
+      case 'shopping':
+        return ExpenseCategory.shopping;
+      default:
+        return ExpenseCategory.other;
+    }
   }
 
   @override

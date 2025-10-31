@@ -1,4 +1,3 @@
-import '../config/api_config.dart';
 import 'http_service.dart';
 
 /// Cities API Service
@@ -11,7 +10,9 @@ class CitiesApiService {
   late final String baseUrl;
 
   CitiesApiService._internal() {
-    baseUrl = '${ApiConfig.baseUrl}/cities';
+    // HttpService 已经配置了 baseUrl 为 /api/v1
+    // 所以这里只需要路径,不需要完整URL
+    baseUrl = '/cities';
   }
 
   /// 获取城市列表（分页）

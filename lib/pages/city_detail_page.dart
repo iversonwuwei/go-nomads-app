@@ -925,6 +925,31 @@ class _CityDetailPageState extends State<CityDetailPage> {
                         review.content,
                         style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                       ),
+                      // ✅ 显示真实用户评论的照片
+                      if (review.photoUrls.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          height: 100,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: review.photoUrls.length,
+                            itemBuilder: (context, photoIndex) {
+                              return Container(
+                                width: 100,
+                                margin: const EdgeInsets.only(right: 8),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8),
+                                  image: DecorationImage(
+                                    image: NetworkImage(
+                                        review.photoUrls[photoIndex]),
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 8),
                       Text(
                         'Posted ${_formatDate(review.createdAt)}',
@@ -1032,6 +1057,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
 
     return Obx(() {
       final userExpenses = controller.userExpenses;
+      final communityCost = controller.communityCostSummary.value; // ✅ 获取社区费用统计
 
       return RefreshIndicator(
         onRefresh: controller.refreshExpenses,
@@ -1039,7 +1065,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
           padding:
               const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
           children: [
-            // 原有的生活成本信息
+            // 原有的生活成本信息 (Mock 数据)
             if (cost != null) ...[
               Container(
                 padding: const EdgeInsets.all(20),
@@ -1078,12 +1104,103 @@ class _CityDetailPageState extends State<CityDetailPage> {
               const SizedBox(height: 32),
             ],
 
-            // 用户提交的费用
+            // ✅ 新增:社区综合费用统计 (基于用户提交的真实数据)
+            if (communityCost != null &&
+                communityCost.totalExpenseCount > 0) ...[
+              const Divider(),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  const Text(
+                    'Community Cost Summary',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '${communityCost.contributorCount} contributors',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.green[700],
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF6B73FF), Color(0xFF000DFF)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      'Average Community Cost',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '\$${communityCost.total.toStringAsFixed(0)}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Based on ${communityCost.totalExpenseCount} real expenses',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.8),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              if (communityCost.accommodation > 0)
+                _buildCostItem(
+                    '🏠 ${l10n.accommodation}', communityCost.accommodation),
+              if (communityCost.food > 0)
+                _buildCostItem('🍔 ${l10n.food}', communityCost.food),
+              if (communityCost.transportation > 0)
+                _buildCostItem(
+                    '🚕 ${l10n.transportation}', communityCost.transportation),
+              if (communityCost.activity > 0)
+                _buildCostItem('🎭 Activity', communityCost.activity),
+              if (communityCost.shopping > 0)
+                _buildCostItem('🛍️ Shopping', communityCost.shopping),
+              if (communityCost.other > 0)
+                _buildCostItem('📝 Other', communityCost.other),
+              const SizedBox(height: 32),
+            ],
+
+            // 用户提交的费用详情
             if (userExpenses.isNotEmpty) ...[
               const Divider(),
               const SizedBox(height: 16),
               const Text(
-                'Community Expenses',
+                'Recent Community Expenses',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -1949,7 +2066,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
   }
 
   /// 分享指南信息
-  /// 分享评论 - 跳转到独立页�?
+  /// 分享评论 - 跳转到独立页面
   void _showShareReviewDialog() async {
     final result = await Get.to(() => AddReviewPage(
           cityId: cityId,
@@ -1957,24 +2074,30 @@ class _CityDetailPageState extends State<CityDetailPage> {
         ));
 
     // 如果提交成功,刷新评论列表
-    if (result != null) {
-      // TODO: 刷新评论列表
-      // final controller = Get.find<CityDetailController>();
-      // controller.refreshReviews();
+    if (result != null && result['success'] == true) {
+      final controller = Get.find<CityDetailController>();
+      controller.loadUserContent();
 
-      // 显示成功消息已经�?AddReviewPage 中处�?
-      print('Review submitted successfully: $result');
+      print('Review submitted successfully: ${result['review']}');
     }
   }
 
   /// 分享费用信息
-  void _showShareCostDialog() {
-    Get.to(
+  void _showShareCostDialog() async {
+    final result = await Get.to(
       () => AddCostPage(
         cityId: cityId,
         cityName: cityName,
       ),
     );
+
+    // 如果提交成功,刷新费用列表
+    if (result != null && result['success'] == true) {
+      final controller = Get.find<CityDetailController>();
+      controller.loadUserContent();
+
+      print('Expenses submitted successfully: ${result['expenses']}');
+    }
   }
 
   /// 分享照片

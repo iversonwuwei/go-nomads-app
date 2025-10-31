@@ -300,6 +300,7 @@ class DataServiceController extends GetxController {
           final weather = city.weather;
 
           convertedCities.add({
+            'id': city.id.toString(), // ✅ 添加 ID 字段 (UUID 字符串)
             'city': city.name,
             'country': city.country,
             'region': _guessRegion(city.country),
@@ -521,6 +522,7 @@ class DataServiceController extends GetxController {
       // 转换数据格式以匹配现有的UI结构
       dataItems.value = cities.map((city) {
         return {
+          'id': city['id']?.toString(), // ✅ 添加 ID 字段 (UUID 字符串)
           'city': city['name'],
           'country': city['country'],
           'region': city['region'] ?? 'Asia',

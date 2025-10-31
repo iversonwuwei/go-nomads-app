@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../config/app_colors.dart';
 import '../generated/app_localizations.dart';
+import '../services/user_city_content_api_service.dart';
 import '../widgets/app_toast.dart';
 
 /// 添加 Review 页面 - 独立页面形式
@@ -31,6 +32,34 @@ class _AddReviewPageState extends State<AddReviewPage> {
   final RxList<XFile> _selectedImages = <XFile>[].obs;
   final RxDouble _rating = 0.0.obs;
   final RxBool _isSubmitting = false.obs;
+
+  @override
+  void initState() {
+    super.initState();
+    _validateCityId();
+  }
+
+  /// 验证 cityId 是否为有效的 UUID 格式
+  void _validateCityId() {
+    if (widget.cityId.isEmpty || !_isValidUuid(widget.cityId)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        AppToast.error(
+          '城市ID无效,无法提交评论',
+          title: '错误',
+        );
+        Get.back();
+      });
+    }
+  }
+
+  /// 检查是否为有效的 UUID 格式
+  bool _isValidUuid(String id) {
+    final uuidRegex = RegExp(
+      r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+      caseSensitive: false,
+    );
+    return uuidRegex.hasMatch(id);
+  }
 
   @override
   void dispose() {
@@ -675,23 +704,20 @@ class _AddReviewPageState extends State<AddReviewPage> {
     _isSubmitting.value = true;
 
     try {
-      // 模拟网络请求
-      await Future.delayed(const Duration(seconds: 2));
+      // 实际的 API 调用
+      final apiService = UserCityContentApiService();
 
-      // TODO: 实际的 API 调用
-      // await reviewService.submitReview(
-      //   cityId: widget.cityId,
-      //   rating: _rating.value,
-      //   title: _titleController.text.trim(),
-      //   content: _contentController.text.trim(),
-      //   images: _selectedImages,
-      // );
+      final review = await apiService.upsertCityReview(
+        cityId: widget.cityId,
+        rating: _rating.value.round(),
+        title: _titleController.text.trim(),
+        content: _contentController.text.trim(),
+        // visitDate: 可以添加一个日期选择器
+      );
 
       Get.back(result: {
-        'rating': _rating.value,
-        'title': _titleController.text.trim(),
-        'content': _contentController.text.trim(),
-        'imageCount': _selectedImages.length,
+        'success': true,
+        'review': review,
       });
 
       AppToast.success(

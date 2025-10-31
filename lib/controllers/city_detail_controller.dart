@@ -52,6 +52,7 @@ class CityDetailController extends GetxController {
   var userExpenses = <UserCityExpense>[].obs;
   var userReviews = <UserCityReview>[].obs;
   var cityContentStats = Rx<CityUserContentStats?>(null);
+  var communityCostSummary = Rx<CityCostSummary?>(null); // ✅ 新增:综合费用统计
   var isLoadingUserContent = false.obs;
 
   @override
@@ -75,15 +76,19 @@ class CityDetailController extends GetxController {
         apiService.getCityExpenses(cityId: currentCityId.value),
         apiService.getCityReviews(currentCityId.value),
         apiService.getCityStats(currentCityId.value),
+        apiService.getCityCostSummary(currentCityId.value), // ✅ 新增:加载综合费用统计
       ]);
 
       userPhotos.value = results[0] as List<UserCityPhoto>;
       userExpenses.value = results[1] as List<UserCityExpense>;
       userReviews.value = results[2] as List<UserCityReview>;
       cityContentStats.value = results[3] as CityUserContentStats;
+      communityCostSummary.value = results[4] as CityCostSummary; // ✅ 保存综合费用统计
 
       print(
           '✅ 用户内容加载成功: ${userPhotos.length} photos, ${userExpenses.length} expenses, ${userReviews.length} reviews');
+      print(
+          '✅ 综合费用统计: 总计 \$${communityCostSummary.value?.total.toStringAsFixed(0)} (${communityCostSummary.value?.contributorCount} 贡献者)');
     } catch (e) {
       print('❌ 加载用户内容失败: $e');
       AppToast.error('Failed to load user content: $e');

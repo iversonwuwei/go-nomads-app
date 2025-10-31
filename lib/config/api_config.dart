@@ -35,7 +35,13 @@ class ApiConfig {
 
   // 是否使用真机测试地址(手动切换)
   // ⚠️ 雷电模拟器用户请设置为 true
-  static const bool usePhysicalDevice = false;
+  // ⚠️ Android 官方模拟器用户请设置为 false,使用 10.0.2.2
+  static const bool usePhysicalDevice = true;
+
+  // ============================================================
+  // CityService 直连配置 (端口 8002)
+  // ============================================================
+  // 注意: CityService 和主 API 使用同一个端口 5000,不需要单独配置
 
   // 基础 URL - 智能选择
   static String get baseUrl {
@@ -107,6 +113,34 @@ class ApiConfig {
   static const String cityCreateEndpoint = '/cities';
   static const String cityUpdateEndpoint = '/cities/{id}';
   static const String cityDeleteEndpoint = '/cities/{id}';
+
+  // ============================================================
+  // City User Content Endpoints - /api/v1/cities/{id}/user-content/*
+  // ============================================================
+
+  // 照片相关
+  static const String cityPhotosEndpoint =
+      '/cities/{cityId}/user-content/photos';
+  static const String cityPhotoDetailEndpoint =
+      '/cities/{cityId}/user-content/photos/{photoId}';
+  static const String myPhotosEndpoint = '/user/city-content/photos';
+
+  // 费用相关
+  static const String cityExpensesEndpoint =
+      '/cities/{cityId}/user-content/expenses';
+  static const String cityExpenseDetailEndpoint =
+      '/cities/{cityId}/user-content/expenses/{expenseId}';
+  static const String myExpensesEndpoint = '/user/city-content/expenses';
+
+  // 评论相关
+  static const String cityReviewsEndpoint =
+      '/cities/{cityId}/user-content/reviews';
+  static const String myCityReviewEndpoint =
+      '/cities/{cityId}/user-content/reviews/mine';
+
+  // 统计相关
+  static const String cityUserContentStatsEndpoint =
+      '/cities/{cityId}/user-content/stats';
 
   // ============================================================
   // Product Endpoints - /api/v1/products

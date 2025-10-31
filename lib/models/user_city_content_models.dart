@@ -149,8 +149,20 @@ class UserCityReview {
   final String title;
   final String content;
   final DateTime? visitDate;
+
+  // 详细评分字段(可选)
+  final int? internetQualityScore;
+  final int? safetyScore;
+  final int? costScore;
+  final int? communityScore;
+  final int? weatherScore;
+
+  final String? reviewText;
   final DateTime createdAt;
   final DateTime updatedAt;
+
+  /// 该用户在该城市上传的照片URL列表
+  final List<String> photoUrls;
 
   UserCityReview({
     required this.id,
@@ -160,8 +172,15 @@ class UserCityReview {
     required this.title,
     required this.content,
     this.visitDate,
+    this.internetQualityScore,
+    this.safetyScore,
+    this.costScore,
+    this.communityScore,
+    this.weatherScore,
+    this.reviewText,
     required this.createdAt,
     required this.updatedAt,
+    this.photoUrls = const [],
   });
 
   factory UserCityReview.fromJson(Map<String, dynamic> json) {
@@ -172,9 +191,20 @@ class UserCityReview {
       rating: json['rating'],
       title: json['title'],
       content: json['content'],
-      visitDate: json['visitDate'] != null ? DateTime.parse(json['visitDate']) : null,
+      visitDate:
+          json['visitDate'] != null ? DateTime.parse(json['visitDate']) : null,
+      internetQualityScore: json['internetQualityScore'],
+      safetyScore: json['safetyScore'],
+      costScore: json['costScore'],
+      communityScore: json['communityScore'],
+      weatherScore: json['weatherScore'],
+      reviewText: json['reviewText'],
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
+      photoUrls: (json['photoUrls'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
     );
   }
 
@@ -187,6 +217,12 @@ class UserCityReview {
       'title': title,
       'content': content,
       'visitDate': visitDate?.toIso8601String(),
+      'internetQualityScore': internetQualityScore,
+      'safetyScore': safetyScore,
+      'costScore': costScore,
+      'communityScore': communityScore,
+      'weatherScore': weatherScore,
+      'reviewText': reviewText,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
@@ -225,6 +261,56 @@ class CityUserContentStats {
       photoContributors: json['photoContributors'] ?? 0,
       expenseContributors: json['expenseContributors'] ?? 0,
       reviewContributors: json['reviewContributors'] ?? 0,
+    );
+  }
+}
+
+/// 城市综合费用统计模型 - 基于用户提交的实际费用计算
+class CityCostSummary {
+  final String cityId;
+  final double total;
+  final double accommodation;
+  final double food;
+  final double transportation;
+  final double activity;
+  final double shopping;
+  final double other;
+  final int contributorCount;
+  final int totalExpenseCount;
+  final String currency;
+  final DateTime updatedAt;
+
+  CityCostSummary({
+    required this.cityId,
+    required this.total,
+    required this.accommodation,
+    required this.food,
+    required this.transportation,
+    required this.activity,
+    required this.shopping,
+    required this.other,
+    required this.contributorCount,
+    required this.totalExpenseCount,
+    this.currency = 'USD',
+    required this.updatedAt,
+  });
+
+  factory CityCostSummary.fromJson(Map<String, dynamic> json) {
+    return CityCostSummary(
+      cityId: json['cityId'] ?? '',
+      total: (json['total'] as num?)?.toDouble() ?? 0.0,
+      accommodation: (json['accommodation'] as num?)?.toDouble() ?? 0.0,
+      food: (json['food'] as num?)?.toDouble() ?? 0.0,
+      transportation: (json['transportation'] as num?)?.toDouble() ?? 0.0,
+      activity: (json['activity'] as num?)?.toDouble() ?? 0.0,
+      shopping: (json['shopping'] as num?)?.toDouble() ?? 0.0,
+      other: (json['other'] as num?)?.toDouble() ?? 0.0,
+      contributorCount: json['contributorCount'] ?? 0,
+      totalExpenseCount: json['totalExpenseCount'] ?? 0,
+      currency: json['currency'] ?? 'USD',
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'])
+          : DateTime.now(),
     );
   }
 }

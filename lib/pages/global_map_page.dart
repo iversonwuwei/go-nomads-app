@@ -770,12 +770,25 @@ class _GlobalMapPageState extends State<GlobalMapPage> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () {
+                      final cityId = cityData['id']?.toString();
+
+                      // 验证 cityId 是否有效
+                      if (cityId == null || cityId.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('无法获取城市ID,请稍后重试'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
+
                       Navigator.pop(context);
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => CityDetailPage(
-                            cityId: cityData['id']?.toString() ?? cityName,
+                            cityId: cityId,
                             cityName: cityName,
                             cityImage: cityData['image'],
                             overallScore:
