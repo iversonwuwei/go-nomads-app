@@ -2,8 +2,10 @@ import 'package:get/get.dart';
 
 import '../models/city_detail_model.dart';
 import '../models/travel_plan_model.dart';
+import '../models/user_city_content_models.dart';
 import '../services/ai_api_service.dart';
 import '../services/async_task_service.dart';
+import '../services/user_city_content_api_service.dart';
 import '../widgets/app_toast.dart';
 
 /// 城市详情页控制器
@@ -45,11 +47,157 @@ class CityDetailController extends GetxController {
   var taskProgress = 0.obs;
   var taskProgressMessage = ''.obs;
 
+  // 用户生成内容 (新增)
+  var userPhotos = <UserCityPhoto>[].obs;
+  var userExpenses = <UserCityExpense>[].obs;
+  var userReviews = <UserCityReview>[].obs;
+  var cityContentStats = Rx<CityUserContentStats?>(null);
+  var isLoadingUserContent = false.obs;
+
   @override
   void onInit() {
     super.onInit();
     // 加载城市详情数据
     loadCityData();
+  }
+
+  /// 加载用户生成的内容 (照片、费用、评论)
+  Future<void> loadUserContent() async {
+    if (currentCityId.value.isEmpty) return;
+
+    isLoadingUserContent.value = true;
+    try {
+      final apiService = UserCityContentApiService();
+
+      // 并行加载所有用户内容
+      final results = await Future.wait([
+        apiService.getCityPhotos(cityId: currentCityId.value),
+        apiService.getCityExpenses(cityId: currentCityId.value),
+        apiService.getCityReviews(currentCityId.value),
+        apiService.getCityStats(currentCityId.value),
+      ]);
+
+      userPhotos.value = results[0] as List<UserCityPhoto>;
+      userExpenses.value = results[1] as List<UserCityExpense>;
+      userReviews.value = results[2] as List<UserCityReview>;
+      cityContentStats.value = results[3] as CityUserContentStats;
+
+      print(
+          '✅ 用户内容加载成功: ${userPhotos.length} photos, ${userExpenses.length} expenses, ${userReviews.length} reviews');
+    } catch (e) {
+      print('❌ 加载用户内容失败: $e');
+      AppToast.error('Failed to load user content: $e');
+    } finally {
+      isLoadingUserContent.value = false;
+    }
+  }
+
+  /// 刷新照片列表
+  Future<void> refreshPhotos() async {
+    if (currentCityId.value.isEmpty) return;
+
+    try {
+      final apiService = UserCityContentApiService();
+      userPhotos.value =
+          await apiService.getCityPhotos(cityId: currentCityId.value);
+
+      // 同时刷新统计
+      cityContentStats.value =
+          await apiService.getCityStats(currentCityId.value);
+    } catch (e) {
+      print('❌ 刷新照片失败: $e');
+    }
+  }
+
+  /// 刷新费用列表
+  Future<void> refreshExpenses() async {
+    if (currentCityId.value.isEmpty) return;
+
+    try {
+      final apiService = UserCityContentApiService();
+      userExpenses.value =
+          await apiService.getCityExpenses(cityId: currentCityId.value);
+
+      // 同时刷新统计
+      cityContentStats.value =
+          await apiService.getCityStats(currentCityId.value);
+    } catch (e) {
+      print('❌ 刷新费用失败: $e');
+    }
+  }
+
+  /// 刷新评论列表
+  Future<void> refreshReviews() async {
+    if (currentCityId.value.isEmpty) return;
+
+    try {
+      final apiService = UserCityContentApiService();
+      userReviews.value = await apiService.getCityReviews(currentCityId.value);
+
+      // 同时刷新统计
+      cityContentStats.value =
+          await apiService.getCityStats(currentCityId.value);
+    } catch (e) {
+      print('❌ 刷新评论失败: $e');
+    }
+  }
+
+  /// 删除照片
+  Future<void> deletePhoto(String photoId) async {
+    try {
+      final apiService = UserCityContentApiService();
+      await apiService.deleteCityPhoto(
+          cityId: currentCityId.value, photoId: photoId);
+
+      // 从列表中移除
+      userPhotos.removeWhere((photo) => photo.id == photoId);
+
+      AppToast.success('Photo deleted successfully');
+
+      // 刷新统计
+      cityContentStats.value =
+          await apiService.getCityStats(currentCityId.value);
+    } catch (e) {
+      print('❌ 删除照片失败: $e');
+      AppToast.error('Failed to delete photo: $e');
+    }
+  }
+
+  /// 删除费用
+  Future<void> deleteExpense(String expenseId) async {
+    try {
+      final apiService = UserCityContentApiService();
+      await apiService.deleteCityExpense(
+          cityId: currentCityId.value, expenseId: expenseId);
+
+      // 从列表中移除
+      userExpenses.removeWhere((expense) => expense.id == expenseId);
+
+      AppToast.success('Expense deleted successfully');
+
+      // 刷新统计
+      cityContentStats.value =
+          await apiService.getCityStats(currentCityId.value);
+    } catch (e) {
+      print('❌ 删除费用失败: $e');
+      AppToast.error('Failed to delete expense: $e');
+    }
+  }
+
+  /// 删除评论
+  Future<void> deleteReview() async {
+    try {
+      final apiService = UserCityContentApiService();
+      await apiService.deleteMyCityReview(currentCityId.value);
+
+      // 刷新评论列表
+      await refreshReviews();
+
+      AppToast.success('Review deleted successfully');
+    } catch (e) {
+      print('❌ 删除评论失败: $e');
+      AppToast.error('Failed to delete review: $e');
+    }
   }
 
   /// 加载城市数据

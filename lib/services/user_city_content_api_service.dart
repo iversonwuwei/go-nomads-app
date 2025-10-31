@@ -1,18 +1,45 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../models/user_city_content_models.dart';
-import 'http_service.dart';
 
 /// 用户城市内容 API 服务
+/// 直接连接到 CityService (端口 8002)
 class UserCityContentApiService {
   static final UserCityContentApiService _instance = UserCityContentApiService._internal();
   factory UserCityContentApiService() => _instance;
 
-  final HttpService _httpService = HttpService();
+  late final Dio _dio;
 
-  UserCityContentApiService._internal();
+  UserCityContentApiService._internal() {
+    // CityService 的 Base URL
+    final baseUrl = kIsWeb 
+        ? 'http://127.0.0.1:8002'  // Web 端使用 127.0.0.1
+        : 'http://localhost:8002';   // 其他平台使用 localhost
 
-  // ==================== 照片相关接口 ====================
+    _dio = Dio(BaseOptions(
+      baseUrl: baseUrl,
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 15),
+      sendTimeout: const Duration(seconds: 15),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    ));
+
+    // 添加日志拦截器
+    if (kDebugMode) {
+      _dio.interceptors.add(LogInterceptor(
+        requestBody: true,
+        responseBody: true,
+        error: true,
+        logPrint: (obj) => debugPrint('🌐 CityService: $obj'),
+      ));
+    }
+  }
+
+    // ==================== 照片相关接口 ====================
 
   /// 添加城市照片
   Future<UserCityPhoto> addCityPhoto({
@@ -23,8 +50,8 @@ class UserCityContentApiService {
     DateTime? takenAt,
   }) async {
     try {
-      final response = await _httpService.post(
-        '/api/cities/$cityId/user-content/photos',
+      final response = await _dio.post(
+        '/api/v1/cities/$cityId/user-content/photos',
         data: {
           'imageUrl': imageUrl,
           'caption': caption,
@@ -44,8 +71,8 @@ class UserCityContentApiService {
     bool onlyMine = false,
   }) async {
     try {
-      final response = await _httpService.get(
-        '/api/cities/$cityId/user-content/photos',
+      final response = await _dio.get(
+        '/api/v1/cities/$cityId/user-content/photos',
         queryParameters: {'onlyMine': onlyMine},
       );
       final List<dynamic> data = response.data;
@@ -61,16 +88,16 @@ class UserCityContentApiService {
     required String photoId,
   }) async {
     try {
-      await _httpService.delete('/api/cities/$cityId/user-content/photos/$photoId');
+      await _dio.delete('/api/v1/cities/$cityId/user-content/photos/$photoId');
     } catch (e) {
       throw _handleError(e);
     }
   }
 
-  /// 获取我的所有照片（跨城市）
+  /// 获取我的所有照片(跨城市)
   Future<List<UserCityPhoto>> getMyPhotos() async {
     try {
-      final response = await _httpService.get('/api/user/city-content/photos');
+      final response = await _dio.get('/api/v1/user/city-content/photos');
       final List<dynamic> data = response.data;
       return data.map((json) => UserCityPhoto.fromJson(json)).toList();
     } catch (e) {
@@ -90,8 +117,8 @@ class UserCityContentApiService {
     required DateTime date,
   }) async {
     try {
-      final response = await _httpService.post(
-        '/api/cities/$cityId/user-content/expenses',
+      final response = await _dio.post(
+        '/api/v1/cities/$cityId/user-content/expenses',
         data: {
           'category': category.value,
           'amount': amount,
@@ -112,8 +139,8 @@ class UserCityContentApiService {
     bool onlyMine = false,
   }) async {
     try {
-      final response = await _httpService.get(
-        '/api/cities/$cityId/user-content/expenses',
+      final response = await _dio.get(
+        '/api/v1/cities/$cityId/user-content/expenses',
         queryParameters: {'onlyMine': onlyMine},
       );
       final List<dynamic> data = response.data;
@@ -129,16 +156,16 @@ class UserCityContentApiService {
     required String expenseId,
   }) async {
     try {
-      await _httpService.delete('/api/cities/$cityId/user-content/expenses/$expenseId');
+      await _dio.delete('/api/v1/cities/$cityId/user-content/expenses/$expenseId');
     } catch (e) {
       throw _handleError(e);
     }
   }
 
-  /// 获取我的所有费用（跨城市）
+  /// 获取我的所有费用(跨城市)
   Future<List<UserCityExpense>> getMyExpenses() async {
     try {
-      final response = await _httpService.get('/api/user/city-content/expenses');
+      final response = await _dio.get('/api/v1/user/city-content/expenses');
       final List<dynamic> data = response.data;
       return data.map((json) => UserCityExpense.fromJson(json)).toList();
     } catch (e) {
@@ -146,9 +173,9 @@ class UserCityContentApiService {
     }
   }
 
-  // ==================== 评论相关接口 ====================
+    // ==================== 评论相关接口 ====================
 
-  /// 创建或更新城市评论（Upsert）
+  /// 创建或更新城市评论(Upsert)
   Future<UserCityReview> upsertCityReview({
     required String cityId,
     required int rating,
@@ -157,8 +184,8 @@ class UserCityContentApiService {
     DateTime? visitDate,
   }) async {
     try {
-      final response = await _httpService.post(
-        '/api/cities/$cityId/user-content/reviews',
+      final response = await _dio.post(
+        '/api/v1/cities/$cityId/user-content/reviews',
         data: {
           'rating': rating,
           'title': title,
@@ -172,10 +199,10 @@ class UserCityContentApiService {
     }
   }
 
-  /// 获取城市评论列表（公开，无需登录）
+  /// 获取城市评论列表(公开,无需登录)
   Future<List<UserCityReview>> getCityReviews(String cityId) async {
     try {
-      final response = await _httpService.get('/api/cities/$cityId/user-content/reviews');
+      final response = await _dio.get('/api/v1/cities/$cityId/user-content/reviews');
       final List<dynamic> data = response.data;
       return data.map((json) => UserCityReview.fromJson(json)).toList();
     } catch (e) {
@@ -186,7 +213,7 @@ class UserCityContentApiService {
   /// 获取我的城市评论
   Future<UserCityReview?> getMyCityReview(String cityId) async {
     try {
-      final response = await _httpService.get('/api/cities/$cityId/user-content/reviews/mine');
+      final response = await _dio.get('/api/v1/cities/$cityId/user-content/reviews/mine');
       if (response.data == null) return null;
       return UserCityReview.fromJson(response.data);
     } catch (e) {
@@ -200,7 +227,7 @@ class UserCityContentApiService {
   /// 删除我的城市评论
   Future<void> deleteMyCityReview(String cityId) async {
     try {
-      await _httpService.delete('/api/cities/$cityId/user-content/reviews');
+      await _dio.delete('/api/v1/cities/$cityId/user-content/reviews/mine');
     } catch (e) {
       throw _handleError(e);
     }
@@ -208,10 +235,10 @@ class UserCityContentApiService {
 
   // ==================== 统计相关接口 ====================
 
-  /// 获取城市用户内容统计（公开）
+  /// 获取城市用户内容统计(公开)
   Future<CityUserContentStats> getCityStats(String cityId) async {
     try {
-      final response = await _httpService.get('/api/cities/$cityId/user-content/stats');
+      final response = await _dio.get('/api/v1/cities/$cityId/user-content/stats');
       return CityUserContentStats.fromJson(response.data);
     } catch (e) {
       throw _handleError(e);

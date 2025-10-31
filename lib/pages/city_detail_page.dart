@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/city_detail_controller.dart';
 import '../controllers/coworking_controller.dart';
 import '../generated/app_localizations.dart';
 import '../models/coworking_space_model.dart';
+import '../models/user_city_content_models.dart';
+import '../services/user_city_content_api_service.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/skeletons/skeletons.dart';
 import 'add_cost_page.dart';
@@ -109,6 +112,9 @@ class _CityDetailPageState extends State<CityDetailPage> {
     final controller = Get.put(CityDetailController());
     controller.currentCityId.value = cityId;
     controller.currentCityName.value = cityName;
+
+    // 加载用户内容
+    controller.loadUserContent();
 
     return DefaultTabController(
       length:
@@ -821,140 +827,360 @@ class _CityDetailPageState extends State<CityDetailPage> {
 
   // Reviews 标签
   Widget _buildReviewsTab(CityDetailController controller) {
-    return ListView.builder(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
-      itemCount: controller.reviews.length,
-      itemBuilder: (context, index) {
-        final review = controller.reviews[index];
-        return Card(
-          margin: const EdgeInsets.only(bottom: 16),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    CircleAvatar(
-                      backgroundImage: NetworkImage(review.userAvatar),
-                      radius: 20,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+    return Obx(() {
+      final mockReviews = controller.reviews;
+      final realUserReviews = controller.userReviews;
+
+      // 如果正在加载
+      if (controller.isLoadingUserContent.value && realUserReviews.isEmpty) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      // 如果都为空
+      if (mockReviews.isEmpty && realUserReviews.isEmpty) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.rate_review, size: 64, color: Colors.grey[300]),
+              const SizedBox(height: 16),
+              Text(
+                'No reviews yet',
+                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Be the first to write a review!',
+                style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+              ),
+            ],
+          ),
+        );
+      }
+
+      return RefreshIndicator(
+        onRefresh: controller.refreshReviews,
+        child: ListView.builder(
+          padding:
+              const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
+          itemCount: mockReviews.length + realUserReviews.length,
+          itemBuilder: (context, index) {
+            // 先显示真实用户评论
+            if (index < realUserReviews.length) {
+              final review = realUserReviews[index];
+              return Card(
+                margin: const EdgeInsets.only(bottom: 16),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
                         children: [
-                          Text(
-                            review.userName,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          CircleAvatar(
+                            backgroundColor: const Color(0xFFFF4458),
+                            child: Text(
+                              review.userId.substring(0, 1).toUpperCase(),
+                              style: const TextStyle(color: Colors.white),
+                            ),
                           ),
-                          Text(
-                            '${review.stayDuration} days',
-                            style: TextStyle(
-                                fontSize: 12, color: Colors.grey[600]),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'User ${review.userId.substring(0, 8)}',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                if (review.visitDate != null)
+                                  Text(
+                                    'Visited ${_formatDate(review.visitDate!)}',
+                                    style: TextStyle(
+                                        fontSize: 12, color: Colors.grey[600]),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              const Icon(Icons.star,
+                                  color: Colors.amber, size: 16),
+                              Text(' ${review.rating}'),
+                            ],
                           ),
                         ],
                       ),
-                    ),
+                      const SizedBox(height: 12),
+                      Text(
+                        review.title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        review.content,
+                        style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Posted ${_formatDate(review.createdAt)}',
+                        style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            // 然后显示模拟评论
+            final mockIndex = index - realUserReviews.length;
+            final review = mockReviews[mockIndex];
+            return Card(
+              margin: const EdgeInsets.only(bottom: 16),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Row(
                       children: [
-                        const Icon(Icons.star, color: Colors.amber, size: 16),
-                        Text(' ${review.rating}'),
+                        CircleAvatar(
+                          backgroundImage: NetworkImage(review.userAvatar),
+                          radius: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                review.userName,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                '${review.stayDuration} days',
+                                style: TextStyle(
+                                    fontSize: 12, color: Colors.grey[600]),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            const Icon(Icons.star,
+                                color: Colors.amber, size: 16),
+                            Text(' ${review.rating}'),
+                          ],
+                        ),
                       ],
                     ),
+                    const SizedBox(height: 12),
+                    Text(
+                      review.title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      review.content,
+                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                    ),
+                    if (review.photos.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        height: 100,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: review.photos.length,
+                          itemBuilder: (context, index) {
+                            return Container(
+                              width: 100,
+                              margin: const EdgeInsets.only(right: 8),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                image: DecorationImage(
+                                  image: NetworkImage(review.photos[index]),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ],
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  review.title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  review.content,
-                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                ),
-                if (review.photos.isNotEmpty) ...[
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    height: 100,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: review.photos.length,
-                      itemBuilder: (context, index) {
-                        return Container(
-                          width: 100,
-                          margin: const EdgeInsets.only(right: 8),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            image: DecorationImage(
-                              image: NetworkImage(review.photos[index]),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        );
-      },
-    );
+              ),
+            );
+          },
+        ),
+      );
+    });
   }
 
   // Cost of Living 标签
   Widget _buildCostTab(CityDetailController controller) {
     final cost = controller.costOfLiving.value;
     final l10n = AppLocalizations.of(context)!;
-    if (cost == null) {
-      return Center(child: Text(l10n.noData));
-    }
 
-    return ListView(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
-      children: [
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: const Color(0xFFFF4458),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            children: [
-              Text(
-                l10n.averageMonthlyCost,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
+    return Obx(() {
+      final userExpenses = controller.userExpenses;
+
+      return RefreshIndicator(
+        onRefresh: controller.refreshExpenses,
+        child: ListView(
+          padding:
+              const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
+          children: [
+            // 原有的生活成本信息
+            if (cost != null) ...[
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF4458),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      l10n.averageMonthlyCost,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '\$${cost.total.toStringAsFixed(0)}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                '\$${cost.total.toStringAsFixed(0)}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 36,
+              const SizedBox(height: 24),
+              _buildCostItem('🏠 ${l10n.accommodation}', cost.accommodation),
+              _buildCostItem('🍔 ${l10n.food}', cost.food),
+              _buildCostItem('🚕 ${l10n.transportation}', cost.transportation),
+              _buildCostItem('🎭 ${l10n.entertainment}', cost.entertainment),
+              _buildCostItem('💪 ${l10n.gym}', cost.gym),
+              _buildCostItem('💻 ${l10n.coworking}', cost.coworking),
+              const SizedBox(height: 32),
+            ],
+
+            // 用户提交的费用
+            if (userExpenses.isNotEmpty) ...[
+              const Divider(),
+              const SizedBox(height: 16),
+              const Text(
+                'Community Expenses',
+                style: TextStyle(
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),
+              const SizedBox(height: 16),
+              ...userExpenses.map((expense) => Card(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    child: ListTile(
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: _getCategoryColor(expense.category)
+                              .withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          _getCategoryIcon(expense.category),
+                          color: _getCategoryColor(expense.category),
+                        ),
+                      ),
+                      title: Text(
+                        expense.category.displayName,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (expense.description != null)
+                            Text(expense.description!),
+                          const SizedBox(height: 4),
+                          Text(
+                            _formatDate(expense.date),
+                            style: TextStyle(
+                                fontSize: 12, color: Colors.grey[600]),
+                          ),
+                        ],
+                      ),
+                      trailing: Text(
+                        '${expense.currency} ${expense.amount.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFFF4458),
+                        ),
+                      ),
+                    ),
+                  )),
+            ] else if (controller.isLoadingUserContent.value) ...[
+              const Center(child: CircularProgressIndicator()),
+            ] else ...[
+              const SizedBox(height: 16),
+              Center(
+                child: Text(
+                  'No community expenses yet',
+                  style: TextStyle(color: Colors.grey[600]),
+                ),
+              ),
             ],
-          ),
+          ],
         ),
-        const SizedBox(height: 24),
-        _buildCostItem('🏠 ${l10n.accommodation}', cost.accommodation),
-        _buildCostItem('🍔 ${l10n.food}', cost.food),
-        _buildCostItem('🚕 ${l10n.transportation}', cost.transportation),
-        _buildCostItem('🎭 ${l10n.entertainment}', cost.entertainment),
-        _buildCostItem('💪 ${l10n.gym}', cost.gym),
-        _buildCostItem('💻 ${l10n.coworking}', cost.coworking),
-      ],
-    );
+      );
+    });
+  }
+
+  IconData _getCategoryIcon(ExpenseCategory category) {
+    switch (category) {
+      case ExpenseCategory.food:
+        return Icons.restaurant;
+      case ExpenseCategory.transport:
+        return Icons.directions_car;
+      case ExpenseCategory.accommodation:
+        return Icons.hotel;
+      case ExpenseCategory.activity:
+        return Icons.local_activity;
+      case ExpenseCategory.shopping:
+        return Icons.shopping_bag;
+      case ExpenseCategory.other:
+        return Icons.more_horiz;
+    }
+  }
+
+  Color _getCategoryColor(ExpenseCategory category) {
+    switch (category) {
+      case ExpenseCategory.food:
+        return Colors.orange;
+      case ExpenseCategory.transport:
+        return Colors.blue;
+      case ExpenseCategory.accommodation:
+        return Colors.purple;
+      case ExpenseCategory.activity:
+        return Colors.green;
+      case ExpenseCategory.shopping:
+        return Colors.pink;
+      case ExpenseCategory.other:
+        return Colors.grey;
+    }
   }
 
   Widget _buildCostItem(String label, double amount) {
@@ -982,26 +1208,164 @@ class _CityDetailPageState extends State<CityDetailPage> {
 
   // Photos 标签
   Widget _buildPhotosTab(CityDetailController controller) {
-    return GridView.builder(
-      padding: const EdgeInsets.only(left: 8, right: 8, top: 8, bottom: 96),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
-      ),
-      itemCount: controller.photos.length,
-      itemBuilder: (context, index) {
-        final photo = controller.photos[index];
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            image: DecorationImage(
-              image: NetworkImage(photo.url),
-              fit: BoxFit.cover,
-            ),
+    return Obx(() {
+      // 合并模拟数据和真实用户数据
+      final mockPhotos = controller.photos;
+      final realUserPhotos = controller.userPhotos;
+
+      // 如果正在加载
+      if (controller.isLoadingUserContent.value && realUserPhotos.isEmpty) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      // 如果两者都为空
+      if (mockPhotos.isEmpty && realUserPhotos.isEmpty) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.photo_library, size: 64, color: Colors.grey[300]),
+              const SizedBox(height: 16),
+              Text(
+                'No photos yet',
+                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Be the first to share a photo!',
+                style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+              ),
+            ],
           ),
         );
-      },
+      }
+
+      return RefreshIndicator(
+        onRefresh: controller.refreshPhotos,
+        child: GridView.builder(
+          padding: const EdgeInsets.only(left: 8, right: 8, top: 8, bottom: 96),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
+          ),
+          itemCount: mockPhotos.length + realUserPhotos.length,
+          itemBuilder: (context, index) {
+            // 先显示真实用户照片
+            if (index < realUserPhotos.length) {
+              final photo = realUserPhotos[index];
+              return GestureDetector(
+                onTap: () => _showPhotoDetail(photo),
+                child: Stack(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        image: DecorationImage(
+                          image: NetworkImage(photo.imageUrl),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    // 用户头像标识
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.5),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.person,
+                          size: 16,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            // 然后显示模拟照片
+            final mockIndex = index - realUserPhotos.length;
+            final photo = mockPhotos[mockIndex];
+            return Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                image: DecorationImage(
+                  image: NetworkImage(photo.url),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            );
+          },
+        ),
+      );
+    });
+  }
+
+  /// 显示照片详情对话框
+  void _showPhotoDetail(UserCityPhoto photo) {
+    Get.dialog(
+      Dialog(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 照片
+            ClipRRect(
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(12)),
+              child: Image.network(
+                photo.imageUrl,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
+            ),
+            // 信息
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (photo.caption != null) ...[
+                    Text(
+                      photo.caption!,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                  if (photo.location != null) ...[
+                    Row(
+                      children: [
+                        const Icon(Icons.location_on,
+                            size: 16, color: Colors.grey),
+                        const SizedBox(width: 4),
+                        Text(
+                          photo.location!,
+                          style:
+                              TextStyle(fontSize: 14, color: Colors.grey[600]),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                  Text(
+                    'Uploaded ${_formatDate(photo.createdAt)}',
+                    style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1614,8 +1978,9 @@ class _CityDetailPageState extends State<CityDetailPage> {
   }
 
   /// 分享照片
-  void _showSharePhotoDialog() {
-    Get.dialog(
+  void _showSharePhotoDialog() async {
+    // 显示选择对话框
+    final source = await Get.dialog<ImageSource>(
       Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Padding(
@@ -1641,10 +2006,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: () {
-                        Get.back();
-                        _pickImage(ImageSource.camera);
-                      },
+                      onPressed: () => Get.back(result: ImageSource.camera),
                       icon: const Icon(Icons.camera_alt),
                       label: Text(AppLocalizations.of(context)!.camera),
                       style: OutlinedButton.styleFrom(
@@ -1660,10 +2022,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () {
-                        Get.back();
-                        _pickImage(ImageSource.gallery);
-                      },
+                      onPressed: () => Get.back(result: ImageSource.gallery),
                       icon: const Icon(Icons.photo_library),
                       label: Text(AppLocalizations.of(context)!.gallery),
                       style: ElevatedButton.styleFrom(
@@ -1683,10 +2042,14 @@ class _CityDetailPageState extends State<CityDetailPage> {
         ),
       ),
     );
+
+    if (source == null) return;
+
+    await _pickAndUploadImage(source);
   }
 
-  /// 选择图片
-  Future<void> _pickImage(ImageSource source) async {
+  /// 选择并上传图片
+  Future<void> _pickAndUploadImage(ImageSource source) async {
     try {
       final ImagePicker picker = ImagePicker();
       final XFile? image = await picker.pickImage(
@@ -1697,17 +2060,58 @@ class _CityDetailPageState extends State<CityDetailPage> {
       );
 
       if (image != null) {
-        // TODO: 上传图片到服务器
+        // TODO: 实现图片上传功能
+        // 1. 上传图片到存储服务 (Supabase Storage 或 CDN)
+        // 2. 获取图片URL
+        // 3. 调用 API 保存照片记录
+
+        // 临时实现: 使用占位符 URL
+        final apiService = UserCityContentApiService();
+        await apiService.addCityPhoto(
+          cityId: cityId,
+          imageUrl:
+              'https://via.placeholder.com/800x600.png?text=${Uri.encodeComponent(image.name)}',
+          caption: null,
+          location: null,
+          takenAt: null,
+        );
+
+        // 刷新照片列表
+        final controller = Get.find<CityDetailController>();
+        await controller.refreshPhotos();
+
         AppToast.success(
-          'Photo selected: ${image.name}\nUpload feature coming soon!',
+          'Photo uploaded successfully!',
           title: 'Success',
         );
       }
     } catch (e) {
       AppToast.error(
-        'Failed to pick image: $e',
+        'Failed to upload photo: $e',
         title: 'Error',
       );
+    }
+  }
+
+  /// 格式化日期
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays == 0) {
+      return 'Today';
+    } else if (difference.inDays == 1) {
+      return 'Yesterday';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays} days ago';
+    } else if (difference.inDays < 30) {
+      final weeks = (difference.inDays / 7).floor();
+      return '$weeks ${weeks == 1 ? 'week' : 'weeks'} ago';
+    } else if (difference.inDays < 365) {
+      final months = (difference.inDays / 30).floor();
+      return '$months ${months == 1 ? 'month' : 'months'} ago';
+    } else {
+      return DateFormat('MMM d, yyyy').format(date);
     }
   }
 
