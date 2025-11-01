@@ -875,12 +875,24 @@ class _CityDetailPageState extends State<CityDetailPage> {
                     children: [
                       Row(
                         children: [
+                        // ✅ 有头像显示头像,没有头像显示用户名首字母
                           CircleAvatar(
                             backgroundColor: const Color(0xFFFF4458),
-                            child: Text(
-                              review.userId.substring(0, 1).toUpperCase(),
-                              style: const TextStyle(color: Colors.white),
-                            ),
+                          backgroundImage: review.userAvatar != null &&
+                                  review.userAvatar!.isNotEmpty
+                              ? NetworkImage(review.userAvatar!)
+                              : null,
+                          child: review.userAvatar == null ||
+                                  review.userAvatar!.isEmpty
+                              ? Text(
+                                  review.username.isNotEmpty
+                                      ? review.username
+                                          .substring(0, 1)
+                                          .toUpperCase()
+                                      : '?',
+                                  style: const TextStyle(color: Colors.white),
+                                )
+                              : null,
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -888,7 +900,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'User ${review.userId.substring(0, 8)}',
+                                review.username, // ✅ 使用真实用户名
                                   style: const TextStyle(
                                       fontWeight: FontWeight.bold),
                                 ),
@@ -923,31 +935,48 @@ class _CityDetailPageState extends State<CityDetailPage> {
                         review.content,
                         style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                       ),
-                      // ✅ 显示真实用户评论的照片
-                      if (review.photoUrls.isNotEmpty) ...[
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          height: 100,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: review.photoUrls.length,
-                            itemBuilder: (context, photoIndex) {
-                              return Container(
-                                width: 100,
-                                margin: const EdgeInsets.only(right: 8),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8),
-                                  image: DecorationImage(
-                                    image: NetworkImage(
-                                        review.photoUrls[photoIndex]),
-                                    fit: BoxFit.cover,
+                    // ✅ 始终显示图片区域（有图显示图片，无图显示占位符）
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 100,
+                      child: review.photoUrls.isNotEmpty
+                          ? ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: review.photoUrls.length,
+                              itemBuilder: (context, photoIndex) {
+                                return Container(
+                                  width: 100,
+                                  margin: const EdgeInsets.only(right: 8),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                    image: DecorationImage(
+                                      image: NetworkImage(
+                                          review.photoUrls[photoIndex]),
+                                      fit: BoxFit.cover,
+                                    ),
                                   ),
+                                );
+                              },
+                            )
+                          : Container(
+                              width: 100,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[200],
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: Colors.grey[300]!,
+                                  width: 1,
                                 ),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  Icons.image_not_supported,
+                                  color: Colors.grey[400],
+                                  size: 40,
+                                ),
+                              ),
+                            ),
+                    ),
                       const SizedBox(height: 8),
                       Text(
                         'Posted ${_formatDate(review.createdAt)}',

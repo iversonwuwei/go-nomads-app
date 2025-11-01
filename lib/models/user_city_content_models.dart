@@ -144,6 +144,8 @@ extension ExpenseCategoryExtension on ExpenseCategory {
 class UserCityReview {
   final String id;
   final String userId;
+  final String username; // ✅ 新增：从 UserService 获取的用户名
+  final String? userAvatar; // ✅ 新增：用户头像 URL
   final String cityId;
   final int rating;
   final String title;
@@ -159,7 +161,7 @@ class UserCityReview {
 
   final String? reviewText;
   final DateTime createdAt;
-  final DateTime updatedAt;
+  final DateTime? updatedAt; // ✅ 改为可选,与后端 DTO 一致
 
   /// 该用户在该城市上传的照片URL列表
   final List<String> photoUrls;
@@ -167,6 +169,8 @@ class UserCityReview {
   UserCityReview({
     required this.id,
     required this.userId,
+    required this.username,
+    this.userAvatar,
     required this.cityId,
     required this.rating,
     required this.title,
@@ -179,7 +183,7 @@ class UserCityReview {
     this.weatherScore,
     this.reviewText,
     required this.createdAt,
-    required this.updatedAt,
+    this.updatedAt, // ✅ 改为可选参数
     this.photoUrls = const [],
   });
 
@@ -187,6 +191,9 @@ class UserCityReview {
     return UserCityReview(
       id: json['id'],
       userId: json['userId'],
+      username: json['username'] ??
+          'User ${json['userId'].toString().substring(0, 8)}', // ✅ 新增
+      userAvatar: json['userAvatar'], // ✅ 新增
       cityId: json['cityId'],
       rating: json['rating'],
       title: json['title'],
@@ -200,7 +207,9 @@ class UserCityReview {
       weatherScore: json['weatherScore'],
       reviewText: json['reviewText'],
       createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'])
+          : null, // ✅ 修复: updatedAt 可能为 null
       photoUrls: (json['photoUrls'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
@@ -224,7 +233,7 @@ class UserCityReview {
       'weatherScore': weatherScore,
       'reviewText': reviewText,
       'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(), // ✅ 修复: 处理 null
     };
   }
 }
