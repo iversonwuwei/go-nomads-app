@@ -192,7 +192,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get currency => '货币';
 
   @override
-  String get food => '餐饮';
+  String get food => '饮食';
 
   @override
   String get transport => '交通';
@@ -713,7 +713,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get title => '标题';
 
   @override
-  String get name => '名称';
+  String get name => '姓名';
 
   @override
   String get address => '地址';
@@ -1131,6 +1131,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get networkError => '网络错误';
+
+  @override
+  String get loadFailed => '加载失败';
 
   @override
   String get noInternetConnection => '无网络连接';
@@ -1664,7 +1667,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get unverified => '未验证';
 
   @override
-  String get contributor => '贡献者';
+  String get contributor => '位贡献者';
 
   @override
   String get localExpert => '本地专家';
@@ -3499,4 +3502,87 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get noMembersOnline => '暂无在线成员';
+
+  @override
+  String get communityCostSummary => '社区费用汇总';
+
+  @override
+  String get contributors => '位贡献者';
+
+  @override
+  String get averageCommunityCost => '平均社区费用';
+
+  @override
+  String basedOnRealExpenses(int count, String plural) {
+    return '基于 $count 条真实费用$plural';
+  }
+
+  @override
+  String get activity => '活动';
+
+  @override
+  String get saveChanges => '保存更改';
+
+  @override
+  String get profileUpdatedSuccessfully => '资料更新成功';
+
+  @override
+  String get saved => '已保存';
+
+  @override
+  String get enterYourName => '请输入您的姓名';
+
+  @override
+  String get bio => '个人简介';
+
+  @override
+  String get tellUsAboutYourself => '介绍一下你自己...';
+
+  @override
+  String get noSkillsAddedYet => '还没有添加技能';
+
+  @override
+  String get noInterestsAddedYet => '还没有添加兴趣';
+
+  @override
+  String get enterInterest => '输入兴趣';
+
+  @override
+  String get notificationsPreference => '通知';
+
+  @override
+  String get receiveUpdatesAndAlerts => '接收更新和提醒';
+
+  @override
+  String get travelHistoryVisible => '旅行历史可见';
+
+  @override
+  String get showTravelHistoryToOthers => '向其他用户展示您的旅行历史';
+
+  @override
+  String get publicProfile => '公开资料';
+
+  @override
+  String get makeProfileVisibleToEveryone => '让所有人都能看到您的资料';
+
+  @override
+  String get celsius => '摄氏度';
+
+  @override
+  String get fahrenheit => '华氏度';
+
+  @override
+  String get changePasswordComingSoon => '修改密码功能即将推出';
+
+  @override
+  String get privacySettingsComingSoon => '隐私设置功能即将推出';
+
+  @override
+  String get deleteAccount => '删除账户';
+
+  @override
+  String get deleteAccountConfirmation => '确定要删除您的账户吗？此操作无法撤销。';
+
+  @override
+  String get accountDeletionCancelled => '已取消删除账户';
 }

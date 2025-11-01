@@ -467,7 +467,7 @@ abstract class AppLocalizations {
   /// No description provided for @food.
   ///
   /// In zh, this message translates to:
-  /// **'餐饮'**
+  /// **'饮食'**
   String get food;
 
   /// No description provided for @transport.
@@ -1505,7 +1505,7 @@ abstract class AppLocalizations {
   /// No description provided for @name.
   ///
   /// In zh, this message translates to:
-  /// **'名称'**
+  /// **'姓名'**
   String get name;
 
   /// No description provided for @address.
@@ -2329,6 +2329,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'网络错误'**
   String get networkError;
+
+  /// No description provided for @loadFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'加载失败'**
+  String get loadFailed;
 
   /// No description provided for @noInternetConnection.
   ///
@@ -3395,7 +3401,7 @@ abstract class AppLocalizations {
   /// No description provided for @contributor.
   ///
   /// In zh, this message translates to:
-  /// **'贡献者'**
+  /// **'位贡献者'**
   String get contributor;
 
   /// No description provided for @localExpert.
@@ -6931,6 +6937,168 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'暂无在线成员'**
   String get noMembersOnline;
+
+  /// No description provided for @communityCostSummary.
+  ///
+  /// In zh, this message translates to:
+  /// **'社区费用汇总'**
+  String get communityCostSummary;
+
+  /// No description provided for @contributors.
+  ///
+  /// In zh, this message translates to:
+  /// **'位贡献者'**
+  String get contributors;
+
+  /// No description provided for @averageCommunityCost.
+  ///
+  /// In zh, this message translates to:
+  /// **'平均社区费用'**
+  String get averageCommunityCost;
+
+  /// No description provided for @basedOnRealExpenses.
+  ///
+  /// In zh, this message translates to:
+  /// **'基于 {count} 条真实费用{plural}'**
+  String basedOnRealExpenses(int count, String plural);
+
+  /// No description provided for @activity.
+  ///
+  /// In zh, this message translates to:
+  /// **'活动'**
+  String get activity;
+
+  /// No description provided for @saveChanges.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存更改'**
+  String get saveChanges;
+
+  /// No description provided for @profileUpdatedSuccessfully.
+  ///
+  /// In zh, this message translates to:
+  /// **'资料更新成功'**
+  String get profileUpdatedSuccessfully;
+
+  /// No description provided for @saved.
+  ///
+  /// In zh, this message translates to:
+  /// **'已保存'**
+  String get saved;
+
+  /// No description provided for @enterYourName.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入您的姓名'**
+  String get enterYourName;
+
+  /// No description provided for @bio.
+  ///
+  /// In zh, this message translates to:
+  /// **'个人简介'**
+  String get bio;
+
+  /// No description provided for @tellUsAboutYourself.
+  ///
+  /// In zh, this message translates to:
+  /// **'介绍一下你自己...'**
+  String get tellUsAboutYourself;
+
+  /// No description provided for @noSkillsAddedYet.
+  ///
+  /// In zh, this message translates to:
+  /// **'还没有添加技能'**
+  String get noSkillsAddedYet;
+
+  /// No description provided for @noInterestsAddedYet.
+  ///
+  /// In zh, this message translates to:
+  /// **'还没有添加兴趣'**
+  String get noInterestsAddedYet;
+
+  /// No description provided for @enterInterest.
+  ///
+  /// In zh, this message translates to:
+  /// **'输入兴趣'**
+  String get enterInterest;
+
+  /// No description provided for @notificationsPreference.
+  ///
+  /// In zh, this message translates to:
+  /// **'通知'**
+  String get notificationsPreference;
+
+  /// No description provided for @receiveUpdatesAndAlerts.
+  ///
+  /// In zh, this message translates to:
+  /// **'接收更新和提醒'**
+  String get receiveUpdatesAndAlerts;
+
+  /// No description provided for @travelHistoryVisible.
+  ///
+  /// In zh, this message translates to:
+  /// **'旅行历史可见'**
+  String get travelHistoryVisible;
+
+  /// No description provided for @showTravelHistoryToOthers.
+  ///
+  /// In zh, this message translates to:
+  /// **'向其他用户展示您的旅行历史'**
+  String get showTravelHistoryToOthers;
+
+  /// No description provided for @publicProfile.
+  ///
+  /// In zh, this message translates to:
+  /// **'公开资料'**
+  String get publicProfile;
+
+  /// No description provided for @makeProfileVisibleToEveryone.
+  ///
+  /// In zh, this message translates to:
+  /// **'让所有人都能看到您的资料'**
+  String get makeProfileVisibleToEveryone;
+
+  /// No description provided for @celsius.
+  ///
+  /// In zh, this message translates to:
+  /// **'摄氏度'**
+  String get celsius;
+
+  /// No description provided for @fahrenheit.
+  ///
+  /// In zh, this message translates to:
+  /// **'华氏度'**
+  String get fahrenheit;
+
+  /// No description provided for @changePasswordComingSoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'修改密码功能即将推出'**
+  String get changePasswordComingSoon;
+
+  /// No description provided for @privacySettingsComingSoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'隐私设置功能即将推出'**
+  String get privacySettingsComingSoon;
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除账户'**
+  String get deleteAccount;
+
+  /// No description provided for @deleteAccountConfirmation.
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要删除您的账户吗？此操作无法撤销。'**
+  String get deleteAccountConfirmation;
+
+  /// No description provided for @accountDeletionCancelled.
+  ///
+  /// In zh, this message translates to:
+  /// **'已取消删除账户'**
+  String get accountDeletionCancelled;
 }
 
 class _AppLocalizationsDelegate

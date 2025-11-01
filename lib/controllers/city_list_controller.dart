@@ -1,18 +1,18 @@
 import 'package:get/get.dart';
 
-import '../services/data/city_data_service.dart';
 import '../services/home_api_service.dart';
 import '../widgets/app_toast.dart';
 
 /// 城市列表页面专用控制器
 /// 负责管理城市列表的数据加载、筛选和分页
 class CityListController extends GetxController {
-  final CityDataService _cityService = CityDataService();
   final HomeApiService _homeApiService = HomeApiService();
 
   // 响应式数据
   final RxBool isLoading = true.obs;
   final RxBool isLoadingMore = false.obs;
+  final RxBool hasError = false.obs;
+  final RxString errorMessage = ''.obs;
   final RxList<Map<String, dynamic>> cities = <Map<String, dynamic>>[].obs;
   
   // 分页控制
@@ -42,14 +42,23 @@ class CityListController extends GetxController {
   /// 初始加载城市数据 (第一页 20 条)
   Future<void> loadInitialCities() async {
     isLoading.value = true;
+    hasError.value = false;
+    errorMessage.value = '';
     _currentPage = 0;
     _hasMoreData = true;
+    cities.clear();
+    _allCities.clear();
 
     try {
       print('📡 城市列表页: 开始加载初始城市数据...');
 
       // 从 API 加载所有数据到缓存
       await _loadAllCitiesToCache();
+      
+      // 检查是否成功加载数据
+      if (_allCities.isEmpty) {
+        throw Exception('未能加载任何城市数据');
+      }
       
       // 只显示第一页
       _loadNextPage();
@@ -58,6 +67,8 @@ class CityListController extends GetxController {
       
     } catch (e) {
       print('❌ 加载初始城市数据失败: $e');
+      hasError.value = true;
+      errorMessage.value = e.toString();
       AppToast.error('加载城市数据失败');
     } finally {
       isLoading.value = false;
@@ -66,61 +77,57 @@ class CityListController extends GetxController {
 
   /// 加载所有城市到缓存
   Future<void> _loadAllCitiesToCache() async {
-    try {
-      // 优先从 Home API 加载
-      final homeFeed = await _homeApiService.getHomeFeed(
-        cityLimit: 1000, // 一次性加载所有城市到缓存
-        meetupLimit: 0,
-      );
+    // 优先从 Home API 加载
+    final homeFeed = await _homeApiService.getHomeFeed(
+      cityLimit: 1000, // 一次性加载所有城市到缓存
+      meetupLimit: 0,
+    );
 
-      print('✅ Home API 返回: ${homeFeed.cityCount} 城市');
+    print('✅ Home API 返回: ${homeFeed.cityCount} 城市');
 
-      // 转换城市数据到缓存
-      _allCities = [];
-      
-      for (var i = 0; i < homeFeed.cities.length; i++) {
-        try {
-          final city = homeFeed.cities[i];
-          final weather = city.weather;
+    // 转换城市数据到缓存
+    _allCities = [];
 
-          _allCities.add({
-            'city': city.name,
-            'country': city.country,
-            'region': _guessRegion(city.country),
-            'climate': _guessClimate(weather?.temperature),
-            'image': city.imageUrl ??
-                'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=400',
-            'temperature': weather?.temperature.toInt() ?? 25,
-            'feelsLike': weather?.feelsLike.toInt() ?? 25,
-            'weather': _getWeatherFromCode(weather?.weather),
-            'internet': 20,
-            'price': 1500,
-            'rank': i + 1,
-            'badge': city.meetupCount > 5 ? 'Popular' : '',
-            'ratings': ['😊', '👍', '🌟'],
-            'overall': 4.0,
-            'cost': 4.0,
-            'internetScore': 4.0,
-            'liked': 4.0,
-            'safety': 4.0,
-            'aqi': weather?.airQualityIndex ?? 50,
-            'aqiLevel': _getAqiLevel(weather?.airQualityIndex),
-            'population': '1M',
-            'timezone': 'GMT',
-            'humidity': weather?.humidity ?? 70,
-            'about': city.description ?? '',
-          });
-        } catch (e) {
-          print('❌ 转换城市数据失败 [索引 $i]: $e');
-        }
+    for (var i = 0; i < homeFeed.cities.length; i++) {
+      try {
+        final city = homeFeed.cities[i];
+        final weather = city.weather;
+
+        _allCities.add({
+          'id': city.id, // ✅ 使用 API 返回的城市 ID (UUID)
+          'city': city.name,
+          'country': city.country,
+          'region': _guessRegion(city.country),
+          'climate': _guessClimate(weather?.temperature),
+          'image': city.imageUrl ??
+              'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=400',
+          'temperature': weather?.temperature.toInt() ?? 25,
+          'feelsLike': weather?.feelsLike.toInt() ?? 25,
+          'weather': _getWeatherFromCode(weather?.weather),
+          'internet': 20,
+          'price': 1500,
+          'rank': i + 1,
+          'badge': city.meetupCount > 5 ? 'Popular' : '',
+          'ratings': ['😊', '👍', '🌟'],
+          'overall': 4.0,
+          'cost': 4.0,
+          'internetScore': 4.0,
+          'liked': 4.0,
+          'safety': 4.0,
+          'aqi': weather?.airQualityIndex ?? 50,
+          'aqiLevel': _getAqiLevel(weather?.airQualityIndex),
+          'population': '1M',
+          'timezone': 'GMT',
+          'humidity': weather?.humidity ?? 70,
+          'about': city.description ?? '',
+          'reviews': 0, // 默认值，实际数据从详情页加载
+        });
+      } catch (e) {
+        print('❌ 转换城市数据失败 [索引 $i]: $e');
       }
-
-      print('✅ 缓存了 ${_allCities.length} 个城市');
-      
-    } catch (apiError) {
-      print('⚠️ Home API 失败，尝试从数据库加载: $apiError');
-      await _loadCitiesFromDatabase();
     }
+
+    print('✅ 缓存了 ${_allCities.length} 个城市');
   }
 
   /// 加载下一页数据 (20 条)
@@ -173,45 +180,6 @@ class CityListController extends GetxController {
   
   /// 获取总城市数量(缓存中的所有城市)
   int get totalCitiesCount => _allCities.length;
-
-  /// 从本地数据库加载城市
-  Future<void> _loadCitiesFromDatabase() async {
-    try {
-      final dbCities = await _cityService.getAllCities();
-      print('🏙️ 从数据库加载了 ${dbCities.length} 个城市');
-
-      _allCities = dbCities.map((city) {
-        return {
-          'city': city['name'],
-          'country': city['country'],
-          'region': city['region'] ?? 'Asia',
-          'climate': city['climate'] ?? 'Warm',
-          'image': city['image_url'],
-          'temperature': city['temperature'] ?? 25,
-          'feelsLike': city['temperature'] ?? 25,
-          'weather': _getWeatherFromClimate(city['climate']),
-          'internet': (city['internet_speed'] as num?)?.toInt() ?? 20,
-          'price': (city['cost_of_living'] as num?)?.toInt() ?? 1500,
-          'rank': dbCities.indexOf(city) + 1,
-          'badge': _getBadgeForCity(city),
-          'ratings': ['😊', '👍', '🌟'],
-          'overall': (city['overall_score'] as num?)?.toDouble() ?? 4.0,
-          'cost': (city['cost_of_living'] as num?)?.toDouble() ?? 4.0,
-          'internetScore': (city['internet_speed'] as num?)?.toDouble() ?? 4.0,
-          'liked': 4.0,
-          'safety': 4.0,
-          'aqi': 50,
-          'aqiLevel': 'Good',
-          'population': '1M',
-          'timezone': 'GMT',
-          'humidity': 70,
-          'about': city['description'] ?? '',
-        };
-      }).toList();
-    } catch (e) {
-      print('❌ 从数据库加载城市失败: $e');
-    }
-  }
 
   /// 获取筛选后的城市列表
   List<Map<String, dynamic>> get filteredCities {
@@ -358,20 +326,5 @@ class CityListController extends GetxController {
     if (aqi <= 200) return 'Unhealthy';
     if (aqi <= 300) return 'Very Unhealthy';
     return 'Hazardous';
-  }
-
-  String _getWeatherFromClimate(String? climate) {
-    if (climate == null) return 'sunny';
-    final c = climate.toLowerCase();
-    if (c.contains('hot') || c.contains('warm')) return 'sunny';
-    if (c.contains('cool') || c.contains('mild')) return 'cloudy';
-    if (c.contains('cold')) return 'snowy';
-    return 'sunny';
-  }
-
-  String _getBadgeForCity(Map<String, dynamic> city) {
-    final score = (city['overall_score'] as num?)?.toDouble() ?? 0.0;
-    if (score >= 4.5) return 'Popular';
-    return '';
   }
 }

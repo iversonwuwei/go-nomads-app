@@ -229,8 +229,14 @@ class _CityListPageState extends State<CityListPage> {
         ),
       ),
       body: Obx(() {
+        // 加载中状态
         if (controller.isLoading.value) {
           return const CityListSkeleton();
+        }
+
+        // 错误状态
+        if (controller.hasError.value) {
+          return _buildErrorState();
         }
 
         return Column(
@@ -636,6 +642,73 @@ class _CityListPageState extends State<CityListPage> {
     if (aqi <= 150) return Colors.orange;
     if (aqi <= 200) return Colors.red;
     return Colors.purple;
+  }
+
+  // 错误状态
+  Widget _buildErrorState() {
+    return Builder(
+      builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF4458).withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.error_outline,
+                    size: 64,
+                    color: Color(0xFFFF4458),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  l10n.loadFailed,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Obx(() => Text(
+                      controller.errorMessage.value.isNotEmpty
+                          ? controller.errorMessage.value
+                          : l10n.networkError,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                      ),
+                      textAlign: TextAlign.center,
+                    )),
+                const SizedBox(height: 24),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    controller.loadInitialCities();
+                  },
+                  icon: const Icon(Icons.refresh, size: 18),
+                  label: Text(l10n.retry),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF4458),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   // 空状态

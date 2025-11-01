@@ -14,6 +14,7 @@ import '../pages/language_settings_page.dart';
 import '../pages/location_demo_page.dart';
 import '../pages/meetups_list_page.dart';
 import '../pages/nomads_login_page.dart';
+import '../pages/profile_edit_page.dart';
 import '../pages/profile_page.dart';
 import '../pages/register_page.dart';
 import '../pages/second_page.dart';
@@ -37,6 +38,7 @@ class AppRoutes {
   static const String locationDemo = '/location-demo';
   static const String languageSettings = '/language-settings';
   static const String profile = '/profile';
+  static const String profileEdit = '/profile-edit';
 
   static List<GetPage> getPages = [
     GetPage(
@@ -119,6 +121,11 @@ class AppRoutes {
     GetPage(
       name: languageSettings,
       page: () => const BottomNavLayout(child: LanguageSettingsPage()),
+      middlewares: [AuthMiddleware()],
+    ),
+    GetPage(
+      name: profileEdit,
+      page: () => const BottomNavLayout(child: ProfileEditPage()),
       middlewares: [AuthMiddleware()],
     ),
   ];

@@ -387,6 +387,7 @@
   "somethingWentWrong": "Something Went Wrong",
   "tryAgainLater": "Try Again Later",
   "networkError": "Network Error",
+  "loadFailed": "Load Failed",
   "noInternetConnection": "No Internet Connection",
   "checkConnection": "Please check your connection",
   "refreshing": "Refreshing...",
@@ -1711,7 +1712,63 @@
   "noBadgesYet": "No badges earned yet",
   "noTravelHistoryYet": "No travel history yet",
   "viewAllTrips": "View All Trips",
-  "noMembersOnline": "No members online"
+  "noMembersOnline": "No members online",
+  "communityCostSummary": "Community Cost Summary",
+  "contributors": "contributors",
+  "contributor": "contributor",
+  "averageCommunityCost": "Average Community Cost",
+  "basedOnRealExpenses": "Based on {count} real expense{plural}",
+  "@basedOnRealExpenses": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "plural": {
+        "type": "String"
+      }
+    }
+  },
+  "accommodation": "Accommodation",
+  "food": "Food",
+  "transportation": "Transportation",
+  "activity": "Activity",
+  "shopping": "Shopping",
+  "saveChanges": "Save Changes",
+  "profileUpdatedSuccessfully": "Profile updated successfully",
+  "saved": "Saved",
+  "name": "Name",
+  "enterYourName": "Enter your name",
+  "email": "Email",
+  "bio": "Bio",
+  "tellUsAboutYourself": "Tell us about yourself...",
+  "noSkillsAddedYet": "No skills added yet",
+  "noInterestsAddedYet": "No interests added yet",
+  "addSkill": "Add Skill",
+  "addInterest": "Add Interest",
+  "enterSkillName": "Enter skill name",
+  "enterInterest": "Enter interest",
+  "add": "Add",
+  "cancel": "Cancel",
+  "notificationsPreference": "Notifications",
+  "receiveUpdatesAndAlerts": "Receive updates and alerts",
+  "travelHistoryVisible": "Travel History Visible",
+  "showTravelHistoryToOthers": "Show your travel history to other users",
+  "publicProfile": "Public Profile",
+  "makeProfileVisibleToEveryone": "Make your profile visible to everyone",
+  "currency": "Currency",
+  "temperature": "Temperature",
+  "celsius": "Celsius",
+  "fahrenheit": "Fahrenheit",
+  "account": "Account",
+  "changePassword": "Change Password",
+  "changePasswordComingSoon": "Change password feature coming soon",
+  "privacySettings": "Privacy Settings",
+  "privacySettingsComingSoon": "Privacy settings coming soon",
+  "deleteAccount": "Delete Account",
+  "deleteAccountConfirmation": "Are you sure you want to delete your account? This action cannot be undone.",
+  "accountDeletionCancelled": "Account deletion cancelled"
 }
+
+
 
 

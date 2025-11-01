@@ -2,12 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
-import '../controllers/locale_controller.dart';
 import '../controllers/user_profile_controller.dart';
-import '../generated/app_localizations.dart';
 import '../models/user_model.dart' as user_model;
-import '../models/user_profile_models.dart';
-import '../routes/app_routes.dart';
 import '../widgets/app_toast.dart';
 
 /// 用户个人资料页面
@@ -33,14 +29,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
         'https://ui-avatars.com/api/?name=Digital+Nomad&background=FF9800&color=fff&size=200',
   };
 
-  // 用户偏好设置
-  bool _notifications = true;
-  String _currency = 'USD';
-  String _temperatureUnit = 'Celsius';
-
-  final List<String> _currencies = ['USD', 'EUR', 'GBP', 'JPY', 'CNY'];
-  final List<String> _temperatureUnits = ['Celsius', 'Fahrenheit'];
-
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -48,37 +36,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
     return Scaffold(
       backgroundColor: const Color(0xFF0a0a0a),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => Get.back(),
-        ),
-        title: Text(
-          'Profile',
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: isMobile ? 18 : 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit, color: Colors.white),
-            onPressed: () {
-              AppToast.info(
-                'Profile editing coming soon',
-                title: 'Edit Profile',
-              );
-            },
-          ),
-        ],
-      ),
       body: ListView(
         padding: EdgeInsets.fromLTRB(
           isMobile ? 16 : 24,
-          isMobile ? 16 : 24,
+          isMobile ? 48 : 64, // 顶部留白替代 AppBar
           isMobile ? 16 : 24,
           100, // 底部留白给导航栏
         ),
@@ -110,11 +71,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
           // 兴趣爱好
           _buildInterestsSection(isMobile),
-
-          const SizedBox(height: 24),
-
-          // 偏好设置
-          _buildPreferencesSection(isMobile),
 
           const SizedBox(height: 24),
 
@@ -554,77 +510,27 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     ),
                   ],
                 ),
-                if (travelHistory.isNotEmpty)
-                  IconButton(
-                    icon: const Icon(Icons.add, color: Color(0xFF1976D2)),
-                    onPressed: () => _showAddTravelHistoryDialog(),
-                  ),
               ],
             ),
             SizedBox(height: isMobile ? 16 : 20),
             if (travelHistory.isEmpty)
-              Container(
-                padding: EdgeInsets.symmetric(
-                  vertical: isMobile ? 40 : 60,
-                  horizontal: isMobile ? 20 : 40,
-                ),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      const Color(0xFFE8F5E9),
-                      const Color(0xFFC8E6C9),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  border: Border.all(
-                    color: const Color(0xFF4CAF50),
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Center(
+              Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: isMobile ? 40 : 60),
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
                         Icons.flight_takeoff,
                         size: isMobile ? 48 : 64,
-                        color: const Color(0xFF2E7D32),
+                        color: const Color(0xFF2E7D32).withValues(alpha: 0.5),
                       ),
                       const SizedBox(height: 16),
                       Text(
                         'No travel history yet',
                         style: TextStyle(
-                          color: const Color(0xFF1B5E20),
+                          color: const Color(0xFF1B5E20).withValues(alpha: 0.7),
                           fontSize: isMobile ? 16 : 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Record your nomadic journey here!',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: const Color(0xFF388E3C),
-                          fontSize: isMobile ? 12 : 14,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      ElevatedButton.icon(
-                        onPressed: () => _showAddTravelHistoryDialog(),
-                        icon: const Icon(Icons.add),
-                        label: const Text('Add Travel Record'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF4CAF50),
-                          foregroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: isMobile ? 24 : 32,
-                            vertical: isMobile ? 12 : 16,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
@@ -839,13 +745,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
-  void _showAddTravelHistoryDialog() {
-    AppToast.info(
-      'Add travel history feature coming soon',
-      title: 'Coming Soon',
-    );
-  }
-
   Widget _buildStatItem(
       IconData icon, String label, String value, Color color, bool isMobile) {
     return Container(
@@ -917,87 +816,25 @@ class _UserProfilePageState extends State<UserProfilePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      'Skills',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: isMobile ? 18 : 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Test',
-                      style: TextStyle(
-                        color: Colors.red,
-                        fontSize: isMobile ? 14 : 16,
-                        fontWeight: FontWeight.normal,
-                      ),
-                    ),
-                  ],
-                ),
-                if (skills.isNotEmpty)
-                  IconButton(
-                    icon: Icon(Icons.add, color: AppColors.accent),
-                    onPressed: () => _showAddSkillDialog(),
-                  ),
-              ],
+            Text(
+              'Skills',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: isMobile ? 18 : 22,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             SizedBox(height: isMobile ? 12 : 16),
             if (skills.isEmpty)
-              Container(
-                padding: EdgeInsets.symmetric(
-                  vertical: isMobile ? 40 : 60,
-                  horizontal: isMobile ? 20 : 40,
-                ),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    width: 1,
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.lightbulb_outline,
-                        size: isMobile ? 48 : 64,
-                        color: Colors.white.withValues(alpha: 0.3),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'No skills added yet',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: isMobile ? 16 : 18,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      ElevatedButton.icon(
-                        onPressed: () => _showAddSkillDialog(),
-                        icon: const Icon(Icons.add),
-                        label: const Text('Add Skill'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.accent,
-                          foregroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: isMobile ? 24 : 32,
-                            vertical: isMobile ? 12 : 16,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                      ),
-                    ],
+              Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: isMobile ? 24 : 32),
+                  child: Text(
+                    'No skills added yet',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.5),
+                      fontSize: isMobile ? 14 : 16,
+                    ),
                   ),
                 ),
               )
@@ -1008,14 +845,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 children: skills.map((skill) {
                   return Chip(
                     label: Text(skill),
-                    deleteIcon: const Icon(Icons.close, size: 18),
-                    onDeleted: () => _profileController.removeSkill(skill),
                     backgroundColor: AppColors.accent.withValues(alpha: 0.2),
                     labelStyle: const TextStyle(
                       color: Colors.white,
                       fontSize: 14,
                     ),
-                    deleteIconColor: Colors.white.withValues(alpha: 0.7),
                     side: BorderSide(
                       color: AppColors.accent.withValues(alpha: 0.3),
                     ),
@@ -1063,74 +897,25 @@ class _UserProfilePageState extends State<UserProfilePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Interests',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: isMobile ? 18 : 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                if (interests.isNotEmpty)
-                  IconButton(
-                    icon: Icon(Icons.add, color: AppColors.accent),
-                    onPressed: () => _showAddInterestDialog(),
-                  ),
-              ],
+            Text(
+              'Interests',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: isMobile ? 18 : 22,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             SizedBox(height: isMobile ? 12 : 16),
             if (interests.isEmpty)
-              Container(
-                padding: EdgeInsets.symmetric(
-                  vertical: isMobile ? 40 : 60,
-                  horizontal: isMobile ? 20 : 40,
-                ),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    width: 1,
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.favorite_outline,
-                        size: isMobile ? 48 : 64,
-                        color: Colors.white.withValues(alpha: 0.3),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'No interests added yet',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: isMobile ? 16 : 18,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      ElevatedButton.icon(
-                        onPressed: () => _showAddInterestDialog(),
-                        icon: const Icon(Icons.add),
-                        label: const Text('Add Interest'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.accent,
-                          foregroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: isMobile ? 24 : 32,
-                            vertical: isMobile ? 12 : 16,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                      ),
-                    ],
+              Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: isMobile ? 24 : 32),
+                  child: Text(
+                    'No interests added yet',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.5),
+                      fontSize: isMobile ? 14 : 16,
+                    ),
                   ),
                 ),
               )
@@ -1141,17 +926,13 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 children: interests.map((interest) {
                   return Chip(
                     label: Text(interest),
-                    deleteIcon: const Icon(Icons.close, size: 18),
-                    onDeleted: () =>
-                        _profileController.removeInterest(interest),
-                    backgroundColor: AppColors.accent.withValues(alpha: 0.2),
+                    backgroundColor: Colors.purple.withValues(alpha: 0.2),
                     labelStyle: const TextStyle(
                       color: Colors.white,
                       fontSize: 14,
                     ),
-                    deleteIconColor: Colors.white.withValues(alpha: 0.7),
                     side: BorderSide(
-                      color: AppColors.accent.withValues(alpha: 0.3),
+                      color: Colors.purple.withValues(alpha: 0.3),
                     ),
                   );
                 }).toList(),
@@ -1160,207 +941,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
         ),
       );
     });
-  }
-
-  Widget _buildPreferencesSection(bool isMobile) {
-    return Container(
-      padding: EdgeInsets.all(isMobile ? 16 : 20),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1a1a1a),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Preferences',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: isMobile ? 18 : 22,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: isMobile ? 16 : 20),
-
-          // 通知开关
-          _buildSwitchTile(
-            'Notifications',
-            'Receive updates about new cities',
-            Icons.notifications,
-            _notifications,
-            (value) => setState(() => _notifications = value),
-            isMobile,
-          ),
-
-          const Divider(color: Colors.white24, height: 32),
-
-          // 货币选择
-          _buildDropdownTile(
-            'Currency',
-            Icons.attach_money,
-            _currency,
-            _currencies,
-            (value) => setState(() => _currency = value!),
-            isMobile,
-          ),
-
-          const Divider(color: Colors.white24, height: 32),
-
-          // 温度单位选择
-          _buildDropdownTile(
-            'Temperature Unit',
-            Icons.thermostat,
-            _temperatureUnit,
-            _temperatureUnits,
-            (value) => setState(() => _temperatureUnit = value!),
-            isMobile,
-          ),
-
-          const Divider(color: Colors.white24, height: 32),
-
-          // 语言选择
-          _buildLanguageTile(isMobile),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLanguageTile(bool isMobile) {
-    final localeController = Get.find<LocaleController>();
-    final l10n = AppLocalizations.of(context)!;
-
-    return InkWell(
-      onTap: () => Get.toNamed(AppRoutes.languageSettings),
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          children: [
-            Icon(Icons.language,
-                color: Colors.orange, size: isMobile ? 20 : 24),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.language,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: isMobile ? 16 : 18,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Obx(() => Text(
-                        localeController.currentLanguageName,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.6),
-                          fontSize: isMobile ? 12 : 14,
-                        ),
-                      )),
-                ],
-              ),
-            ),
-            Icon(
-              Icons.chevron_right,
-              color: Colors.white54,
-              size: isMobile ? 20 : 24,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSwitchTile(
-    String title,
-    String subtitle,
-    IconData icon,
-    bool value,
-    Function(bool) onChanged,
-    bool isMobile,
-  ) {
-    return Row(
-      children: [
-        Icon(icon, color: Colors.orange, size: isMobile ? 20 : 24),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: isMobile ? 16 : 18,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.6),
-                  fontSize: isMobile ? 12 : 14,
-                ),
-              ),
-            ],
-          ),
-        ),
-        Switch(
-          value: value,
-          onChanged: onChanged,
-          activeThumbColor: Colors.orange,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDropdownTile(
-    String title,
-    IconData icon,
-    String value,
-    List<String> items,
-    Function(String?) onChanged,
-    bool isMobile,
-  ) {
-    return Row(
-      children: [
-        Icon(icon, color: Colors.orange, size: isMobile ? 20 : 24),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Text(
-            title,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: isMobile ? 16 : 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        DropdownButton<String>(
-          value: value,
-          dropdownColor: const Color(0xFF1a1a1a),
-          style: TextStyle(
-            color: Colors.orange,
-            fontSize: isMobile ? 14 : 16,
-            fontWeight: FontWeight.w600,
-          ),
-          underline: Container(),
-          items: items.map((item) {
-            return DropdownMenuItem(
-              value: item,
-              child: Text(item),
-            );
-          }).toList(),
-          onChanged: onChanged,
-        ),
-      ],
-    );
   }
 
   Widget _buildAccountActionsSection(bool isMobile) {
@@ -1442,152 +1022,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
           ],
         ),
       ),
-    );
-  }
-
-  void _showAddSkillDialog() {
-    String? selectedSkill;
-
-    Get.defaultDialog(
-      title: 'Add Skill',
-      titleStyle: const TextStyle(color: Colors.white),
-      backgroundColor: const Color(0xFF1a1a1a),
-      content: StatefulBuilder(
-        builder: (context, setState) {
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2a2a2a),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.1),
-                  ),
-                ),
-                child: DropdownButton<String>(
-                  value: selectedSkill,
-                  hint: const Text(
-                    'Select a skill',
-                    style: TextStyle(color: Colors.white70),
-                  ),
-                  isExpanded: true,
-                  dropdownColor: const Color(0xFF2a2a2a),
-                  underline: Container(),
-                  items: PredefinedSkills.skills.map((skill) {
-                    return DropdownMenuItem<String>(
-                      value: skill,
-                      child: Text(
-                        skill,
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedSkill = value;
-                    });
-                  },
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-      textCancel: 'Cancel',
-      textConfirm: 'Add',
-      cancelTextColor: Colors.white70,
-      confirmTextColor: Colors.white,
-      buttonColor: AppColors.accent,
-      onConfirm: () {
-        if (selectedSkill != null && selectedSkill!.isNotEmpty) {
-          _profileController.addSkill(selectedSkill!);
-          Get.back();
-          AppToast.success(
-            'Skill added successfully',
-            title: 'Success',
-          );
-        } else {
-          AppToast.warning(
-            'Please select a skill',
-            title: 'Warning',
-          );
-        }
-      },
-    );
-  }
-
-  void _showAddInterestDialog() {
-    String? selectedInterest;
-
-    Get.defaultDialog(
-      title: 'Add Interest',
-      titleStyle: const TextStyle(color: Colors.white),
-      backgroundColor: const Color(0xFF1a1a1a),
-      content: StatefulBuilder(
-        builder: (context, setState) {
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2a2a2a),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.1),
-                  ),
-                ),
-                child: DropdownButton<String>(
-                  value: selectedInterest,
-                  hint: const Text(
-                    'Select an interest',
-                    style: TextStyle(color: Colors.white70),
-                  ),
-                  isExpanded: true,
-                  dropdownColor: const Color(0xFF2a2a2a),
-                  underline: Container(),
-                  items: PredefinedInterests.interests.map((interest) {
-                    return DropdownMenuItem<String>(
-                      value: interest,
-                      child: Text(
-                        interest,
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedInterest = value;
-                    });
-                  },
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-      textCancel: 'Cancel',
-      textConfirm: 'Add',
-      cancelTextColor: Colors.white70,
-      confirmTextColor: Colors.white,
-      buttonColor: AppColors.accent,
-      onConfirm: () {
-        if (selectedInterest != null && selectedInterest!.isNotEmpty) {
-          _profileController.addInterest(selectedInterest!);
-          Get.back();
-          AppToast.success(
-            'Interest added successfully',
-            title: 'Success',
-          );
-        } else {
-          AppToast.warning(
-            'Please select an interest',
-            title: 'Warning',
-          );
-        }
-      },
     );
   }
 

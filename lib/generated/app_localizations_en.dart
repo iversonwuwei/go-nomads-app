@@ -1134,6 +1134,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get networkError => 'Network Error';
 
   @override
+  String get loadFailed => 'Load Failed';
+
+  @override
   String get noInternetConnection => 'No Internet Connection';
 
   @override
@@ -1666,7 +1669,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get unverified => 'Unverified';
 
   @override
-  String get contributor => 'Contributor';
+  String get contributor => 'contributor';
 
   @override
   String get localExpert => 'Local Expert';
@@ -3542,4 +3545,90 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noMembersOnline => 'No members online';
+
+  @override
+  String get communityCostSummary => 'Community Cost Summary';
+
+  @override
+  String get contributors => 'contributors';
+
+  @override
+  String get averageCommunityCost => 'Average Community Cost';
+
+  @override
+  String basedOnRealExpenses(int count, String plural) {
+    return 'Based on $count real expense$plural';
+  }
+
+  @override
+  String get activity => 'Activity';
+
+  @override
+  String get saveChanges => 'Save Changes';
+
+  @override
+  String get profileUpdatedSuccessfully => 'Profile updated successfully';
+
+  @override
+  String get saved => 'Saved';
+
+  @override
+  String get enterYourName => 'Enter your name';
+
+  @override
+  String get bio => 'Bio';
+
+  @override
+  String get tellUsAboutYourself => 'Tell us about yourself...';
+
+  @override
+  String get noSkillsAddedYet => 'No skills added yet';
+
+  @override
+  String get noInterestsAddedYet => 'No interests added yet';
+
+  @override
+  String get enterInterest => 'Enter interest';
+
+  @override
+  String get notificationsPreference => 'Notifications';
+
+  @override
+  String get receiveUpdatesAndAlerts => 'Receive updates and alerts';
+
+  @override
+  String get travelHistoryVisible => 'Travel History Visible';
+
+  @override
+  String get showTravelHistoryToOthers =>
+      'Show your travel history to other users';
+
+  @override
+  String get publicProfile => 'Public Profile';
+
+  @override
+  String get makeProfileVisibleToEveryone =>
+      'Make your profile visible to everyone';
+
+  @override
+  String get celsius => 'Celsius';
+
+  @override
+  String get fahrenheit => 'Fahrenheit';
+
+  @override
+  String get changePasswordComingSoon => 'Change password feature coming soon';
+
+  @override
+  String get privacySettingsComingSoon => 'Privacy settings coming soon';
+
+  @override
+  String get deleteAccount => 'Delete Account';
+
+  @override
+  String get deleteAccountConfirmation =>
+      'Are you sure you want to delete your account? This action cannot be undone.';
+
+  @override
+  String get accountDeletionCancelled => 'Account deletion cancelled';
 }

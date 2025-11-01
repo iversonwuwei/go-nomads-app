@@ -71,9 +71,8 @@ class BottomNavLayout extends StatelessWidget {
               case 1: // Profile
                 Get.toNamed(AppRoutes.profile);
                 break;
-              case 3: // 设置
-                // 设置页面 - 可以跳转到语言设置或其他设置页
-                Get.toNamed(AppRoutes.languageSettings);
+              case 3: // 编辑资料
+                Get.toNamed(AppRoutes.profileEdit);
                 break;
             }
           },
@@ -91,8 +90,8 @@ class BottomNavLayout extends StatelessWidget {
               label: 'AI助手',
             ),
             _NavBarItem(
-              icon: Icons.settings,
-              label: '设置',
+              icon: Icons.edit,
+              label: '编辑',
             ),
           ],
         );

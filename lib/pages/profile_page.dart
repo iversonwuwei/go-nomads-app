@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart' hide Badge;
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../config/app_colors.dart';
-import '../config/profile_presets.dart';
-import '../controllers/locale_controller.dart';
 import '../controllers/user_profile_controller.dart';
 import '../controllers/user_state_controller.dart';
 import '../generated/app_localizations.dart';
@@ -84,75 +81,6 @@ class ProfilePage extends StatelessWidget {
     }
   }
 
-  Future<void> _handleAvatarUpload(BuildContext context) async {
-    try {
-      final ImagePicker picker = ImagePicker();
-
-      // 显示选择对话框：相册或相机
-      final source = await showDialog<ImageSource>(
-        context: context,
-        builder: (BuildContext context) {
-          final l10n = AppLocalizations.of(context)!;
-          return AlertDialog(
-            title: Text(l10n.chooseImageSource),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  leading: const Icon(Icons.photo_library),
-                  title: Text(l10n.gallery),
-                  onTap: () => Navigator.of(context).pop(ImageSource.gallery),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.camera_alt),
-                  title: Text(l10n.camera),
-                  onTap: () => Navigator.of(context).pop(ImageSource.camera),
-                ),
-              ],
-            ),
-          );
-        },
-      );
-
-      if (source == null) return;
-
-      // 选择图片
-      final XFile? image = await picker.pickImage(
-        source: source,
-        maxWidth: 1024,
-        maxHeight: 1024,
-        imageQuality: 85,
-      );
-
-      if (image == null) return;
-
-      // TODO: 这里需要上传图片到服务器并获取URL
-      // 暂时显示上传成功提示
-      if (context.mounted) {
-        AppToast.success(
-          'Avatar image selected: ${image.name}',
-          title: 'Success',
-        );
-      }
-
-      // 后续需要：
-      // 1. 上传图片到云存储服务（如 Supabase Storage）
-      // 2. 获取上传后的 URL
-      // 3. 调用 UserProfileController 更新头像 URL
-      // 例如:
-      // final controller = Get.find<UserProfileController>();
-      // await controller.updateAvatar(imageUrl);
-    } catch (e) {
-      print('❌ 上传头像失败: $e');
-      if (context.mounted) {
-        AppToast.error(
-          'Failed to upload avatar',
-          title: 'Error',
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(UserProfileController());
@@ -175,52 +103,14 @@ class ProfilePage extends StatelessWidget {
 
         return CustomScrollView(
           slivers: [
-            // App Bar
-            SliverAppBar(
-              expandedHeight: 0,
-              floating: true,
-              pinned: true,
-              backgroundColor: Colors.white,
-              elevation: 0,
-              title: Text(
-                l10n.profile,
-                style: const TextStyle(
-                  color: Color(0xFF1a1a1a),
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              actions: [
-                IconButton(
-                  icon: Icon(
-                    controller.isEditMode.value ? Icons.check : Icons.edit,
-                    color: const Color(0xFFFF4458),
-                  ),
-                  onPressed: () {
-                    controller.toggleEditMode();
-                    if (controller.isEditMode.value) {
-                      AppToast.info(
-                        l10n.editModeEnabled,
-                        title: l10n.editProfile,
-                      );
-                    } else {
-                      AppToast.success(
-                        l10n.editModeSaved,
-                        title: l10n.editProfile,
-                      );
-                    }
-                  },
-                ),
-                const SizedBox(width: 8),
-              ],
-            ),
+            // 移除了 AppBar - 不需要 header
 
             // Content
             SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsets.symmetric(
                   horizontal: isMobile ? 16 : 32,
-                  vertical: 24,
+                  vertical: isMobile ? 48 : 64, // 顶部留白替代 AppBar
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -256,11 +146,6 @@ class ProfilePage extends StatelessWidget {
 
                     // Social Links
                     _buildSocialLinks(context, user.socialLinks, isMobile),
-
-                    const SizedBox(height: 32),
-
-                    // Preferences
-                    _buildPreferencesSection(isMobile),
 
                     const SizedBox(height: 48),
 
@@ -346,62 +231,42 @@ class ProfilePage extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Avatar
-        GestureDetector(
-          onTap: controller.isEditMode.value
-              ? () => _handleAvatarUpload(context)
-              : null,
-          child: Stack(
-            children: [
-              Container(
-                width: isMobile ? 80 : 120,
-                height: isMobile ? 80 : 120,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: const Color(0xFFFF4458),
-                    width: 3,
-                  ),
-                ),
-                child: ClipOval(
-                  child: _buildAvatarContent(user, isMobile),
+        // Avatar (只读，移除编辑功能)
+        Stack(
+          children: [
+            Container(
+              width: isMobile ? 80 : 120,
+              height: isMobile ? 80 : 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: const Color(0xFFFF4458),
+                  width: 3,
                 ),
               ),
-              // 相机图标覆盖层 - 仅在编辑模式下显示
-              if (controller.isEditMode.value)
-                Positioned.fill(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.black.withValues(alpha: 0.4),
-                    ),
-                    child: Icon(
-                      Icons.camera_alt,
-                      color: Colors.white.withValues(alpha: 0.8),
-                      size: isMobile ? 32 : 40,
-                    ),
+              child: ClipOval(
+                child: _buildAvatarContent(user, isMobile),
+              ),
+            ),
+            if (user.isVerified)
+              Positioned(
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  width: isMobile ? 24 : 32,
+                  height: isMobile ? 24 : 32,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFF4458),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.check,
+                    color: Colors.white,
+                    size: 16,
                   ),
                 ),
-              if (user.isVerified)
-                Positioned(
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    width: isMobile ? 24 : 32,
-                    height: isMobile ? 24 : 32,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFFF4458),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.check,
-                      color: Colors.white,
-                      size: 16,
-                    ),
-                  ),
-                ),
-            ],
-          ),
+              ),
+          ],
         ),
 
         const SizedBox(width: 20),
@@ -637,31 +502,16 @@ class ProfilePage extends StatelessWidget {
   Widget _buildSkillsAndInterests(BuildContext context, UserModel user,
       UserProfileController controller, bool isMobile) {
     final l10n = AppLocalizations.of(context)!;
-    final isEditMode = controller.isEditMode.value;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Skills Section
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(l10n.skills,
-                style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1a1a1a))),
-            if (isEditMode)
-              TextButton.icon(
-                onPressed: () => _showAddSkillDialog(context, controller),
-                icon: const Icon(Icons.add_circle_outline, size: 20),
-                label: Text(l10n.addSkill),
-                style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFFFF4458),
-                ),
-              ),
-          ],
-        ),
+        Text(l10n.skills,
+            style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1a1a1a))),
         const SizedBox(height: 12),
         user.skills.isEmpty
             ? Container(
@@ -694,26 +544,6 @@ class ProfilePage extends StatelessWidget {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      if (isEditMode) ...[
-                        const SizedBox(height: 24),
-                        ElevatedButton.icon(
-                          onPressed: () =>
-                              _showAddSkillDialog(context, controller),
-                          icon: const Icon(Icons.add),
-                          label: Text(l10n.addSkill),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFFF4458),
-                            foregroundColor: Colors.white,
-                            padding: EdgeInsets.symmetric(
-                              horizontal: isMobile ? 24 : 32,
-                              vertical: isMobile ? 12 : 16,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ),
-                      ],
                     ],
                   ),
                 ),
@@ -732,28 +562,12 @@ class ProfilePage extends StatelessWidget {
                           color:
                               const Color(0xFFFF4458).withValues(alpha: 0.3)),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          skill,
-                          style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFFFF4458)),
-                        ),
-                        if (isEditMode) ...[
-                          const SizedBox(width: 8),
-                          GestureDetector(
-                            onTap: () => controller.removeSkill(skill),
-                            child: const Icon(
-                              Icons.close,
-                              size: 16,
-                              color: Color(0xFFFF4458),
-                            ),
-                          ),
-                        ],
-                      ],
+                    child: Text(
+                      skill,
+                      style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFFF4458)),
                     ),
                   );
                 }).toList(),
@@ -761,25 +575,11 @@ class ProfilePage extends StatelessWidget {
         const SizedBox(height: 24),
 
         // Interests Section
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(l10n.interests,
-                style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1a1a1a))),
-            if (isEditMode)
-              TextButton.icon(
-                onPressed: () => _showAddInterestDialog(context, controller),
-                icon: const Icon(Icons.add_circle_outline, size: 20),
-                label: Text(l10n.addInterest),
-                style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFF374151),
-                ),
-              ),
-          ],
-        ),
+        Text(l10n.interests,
+            style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1a1a1a))),
         const SizedBox(height: 12),
         user.interests.isEmpty
             ? Container(
@@ -812,26 +612,6 @@ class ProfilePage extends StatelessWidget {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      if (isEditMode) ...[
-                        const SizedBox(height: 24),
-                        ElevatedButton.icon(
-                          onPressed: () =>
-                              _showAddInterestDialog(context, controller),
-                          icon: const Icon(Icons.add),
-                          label: Text(l10n.addInterest),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF374151),
-                            foregroundColor: Colors.white,
-                            padding: EdgeInsets.symmetric(
-                              horizontal: isMobile ? 24 : 32,
-                              vertical: isMobile ? 12 : 16,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ),
-                      ],
                     ],
                   ),
                 ),
@@ -848,63 +628,17 @@ class ProfilePage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: const Color(0xFFE5E7EB)),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          interest,
-                          style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF374151)),
-                        ),
-                        if (isEditMode) ...[
-                          const SizedBox(width: 8),
-                          GestureDetector(
-                            onTap: () => controller.removeInterest(interest),
-                            child: const Icon(
-                              Icons.close,
-                              size: 16,
-                              color: Color(0xFF374151),
-                            ),
-                          ),
-                        ],
-                      ],
+                    child: Text(
+                      interest,
+                      style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF374151)),
                     ),
                   );
                 }).toList(),
               ),
       ],
-    );
-  }
-
-  // Show Add Skill Dialog with Presets
-  void _showAddSkillDialog(
-      BuildContext context, UserProfileController controller) {
-    final l10n = AppLocalizations.of(context)!;
-
-    Get.bottomSheet(
-      _SkillSelectorSheet(
-        controller: controller,
-        l10n: l10n,
-      ),
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-    );
-  }
-
-  // Show Add Interest Dialog with Presets
-  void _showAddInterestDialog(
-      BuildContext context, UserProfileController controller) {
-    final l10n = AppLocalizations.of(context)!;
-
-    Get.bottomSheet(
-      _InterestSelectorSheet(
-        controller: controller,
-        l10n: l10n,
-      ),
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
     );
   }
 
@@ -1342,94 +1076,6 @@ class ProfilePage extends StatelessWidget {
   }
 
   // Preferences Section
-  Widget _buildPreferencesSection(bool isMobile) {
-    return Container(
-      padding: EdgeInsets.all(isMobile ? 16 : 20),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Builder(
-            builder: (context) {
-              final l10n = AppLocalizations.of(context)!;
-              return Text(
-                l10n.preferences,
-                style: TextStyle(
-                  fontSize: isMobile ? 16 : 18,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF1a1a1a),
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 16),
-          _buildLanguageTile(isMobile),
-        ],
-      ),
-    );
-  }
-
-  // Language Selection Tile
-  Widget _buildLanguageTile(bool isMobile) {
-    final localeController = Get.find<LocaleController>();
-
-    return Builder(
-      builder: (context) {
-        final l10n = AppLocalizations.of(context)!;
-
-        return InkWell(
-          onTap: () => Get.toNamed(AppRoutes.languageSettings),
-          borderRadius: BorderRadius.circular(8),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.language,
-                  color: const Color(0xFFFF4458),
-                  size: isMobile ? 20 : 24,
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.language,
-                        style: TextStyle(
-                          fontSize: isMobile ? 14 : 16,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF1a1a1a),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Obx(() => Text(
-                            localeController.currentLanguageName,
-                            style: TextStyle(
-                              fontSize: isMobile ? 12 : 14,
-                              color: const Color(0xFF6B7280),
-                            ),
-                          )),
-                    ],
-                  ),
-                ),
-                Icon(
-                  Icons.chevron_right,
-                  color: const Color(0xFF6B7280),
-                  size: isMobile ? 20 : 24,
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   // 登录提示卡片
   Widget _buildLoginNotice(BuildContext context, bool isMobile) {
     return Container(
@@ -1504,496 +1150,3 @@ class ProfilePage extends StatelessWidget {
   }
 }
 
-// 技能选择器底部弹窗
-class _SkillSelectorSheet extends StatefulWidget {
-  final UserProfileController controller;
-  final AppLocalizations l10n;
-
-  const _SkillSelectorSheet({
-    required this.controller,
-    required this.l10n,
-  });
-
-  @override
-  State<_SkillSelectorSheet> createState() => _SkillSelectorSheetState();
-}
-
-class _SkillSelectorSheetState extends State<_SkillSelectorSheet> {
-  final TextEditingController _searchController = TextEditingController();
-  final TextEditingController _customController = TextEditingController();
-  String _searchQuery = '';
-  bool _showCustomInput = false;
-
-  List<String> get _availableSkills {
-    final currentSkills = widget.controller.currentUser.value?.skills ?? [];
-    final allSkills = ProfilePresets.skills;
-
-    // 过滤掉已经添加的技能
-    var filtered =
-        allSkills.where((skill) => !currentSkills.contains(skill)).toList();
-
-    // 如果有搜索词，进一步过滤
-    if (_searchQuery.isNotEmpty) {
-      filtered = filtered
-          .where((skill) =>
-              skill.toLowerCase().contains(_searchQuery.toLowerCase()))
-          .toList();
-    }
-
-    return filtered;
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    _customController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.75,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: Column(
-        children: [
-          // Header
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: Colors.grey.shade200),
-              ),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    widget.l10n.addSkill,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Get.back(),
-                ),
-              ],
-            ),
-          ),
-
-          // Search Bar
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: '搜索技能...',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          setState(() {
-                            _searchController.clear();
-                            _searchQuery = '';
-                          });
-                        },
-                      )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              ),
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                });
-              },
-            ),
-          ),
-
-          // Custom Input Toggle
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      setState(() {
-                        _showCustomInput = !_showCustomInput;
-                      });
-                    },
-                    icon: Icon(_showCustomInput ? Icons.grid_view : Icons.edit),
-                    label: Text(_showCustomInput ? '选择预设' : '自定义输入'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFFFF4458),
-                      side: const BorderSide(color: Color(0xFFFF4458)),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Content
-          Expanded(
-            child: _showCustomInput ? _buildCustomInput() : _buildPresetList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCustomInput() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          TextField(
-            controller: _customController,
-            decoration: InputDecoration(
-              hintText: widget.l10n.enterSkillName,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              contentPadding: const EdgeInsets.all(16),
-            ),
-            textCapitalization: TextCapitalization.words,
-            autofocus: true,
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () {
-              if (_customController.text.trim().isNotEmpty) {
-                widget.controller.addSkill(_customController.text.trim());
-                Get.back();
-                AppToast.success('已添加：${_customController.text.trim()}');
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFF4458),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: Text(widget.l10n.add),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPresetList() {
-    return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      children: [
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: _availableSkills.map((skill) {
-            return InkWell(
-              onTap: () {
-                widget.controller.addSkill(skill);
-                Get.back();
-                AppToast.success('已添加：$skill');
-              },
-              borderRadius: BorderRadius.circular(20),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: const Color(0xFFFF4458).withValues(alpha: 0.3),
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      skill,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFFFF4458),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Icon(
-                      Icons.add_circle_outline,
-                      size: 18,
-                      color: Color(0xFFFF4458),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-        const SizedBox(height: 80),
-      ],
-    );
-  }
-}
-
-// 兴趣选择器底部弹窗
-class _InterestSelectorSheet extends StatefulWidget {
-  final UserProfileController controller;
-  final AppLocalizations l10n;
-
-  const _InterestSelectorSheet({
-    required this.controller,
-    required this.l10n,
-  });
-
-  @override
-  State<_InterestSelectorSheet> createState() => _InterestSelectorSheetState();
-}
-
-class _InterestSelectorSheetState extends State<_InterestSelectorSheet> {
-  final TextEditingController _searchController = TextEditingController();
-  final TextEditingController _customController = TextEditingController();
-  String _searchQuery = '';
-  bool _showCustomInput = false;
-
-  List<String> get _availableInterests {
-    final currentInterests =
-        widget.controller.currentUser.value?.interests ?? [];
-    final allInterests = ProfilePresets.interests;
-
-    // 过滤掉已经添加的兴趣
-    var filtered = allInterests
-        .where((interest) => !currentInterests.contains(interest))
-        .toList();
-
-    // 如果有搜索词，进一步过滤
-    if (_searchQuery.isNotEmpty) {
-      filtered = filtered
-          .where((interest) =>
-              interest.toLowerCase().contains(_searchQuery.toLowerCase()))
-          .toList();
-    }
-
-    return filtered;
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    _customController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.75,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: Column(
-        children: [
-          // Header
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: Colors.grey.shade200),
-              ),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    widget.l10n.addInterest,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Get.back(),
-                ),
-              ],
-            ),
-          ),
-
-          // Search Bar
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: '搜索兴趣...',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          setState(() {
-                            _searchController.clear();
-                            _searchQuery = '';
-                          });
-                        },
-                      )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              ),
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                });
-              },
-            ),
-          ),
-
-          // Custom Input Toggle
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      setState(() {
-                        _showCustomInput = !_showCustomInput;
-                      });
-                    },
-                    icon: Icon(_showCustomInput ? Icons.grid_view : Icons.edit),
-                    label: Text(_showCustomInput ? '选择预设' : '自定义输入'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF374151),
-                      side: const BorderSide(color: Color(0xFF374151)),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Content
-          Expanded(
-            child: _showCustomInput ? _buildCustomInput() : _buildPresetList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCustomInput() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          TextField(
-            controller: _customController,
-            decoration: InputDecoration(
-              hintText: widget.l10n.enterInterestName,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              contentPadding: const EdgeInsets.all(16),
-            ),
-            textCapitalization: TextCapitalization.words,
-            autofocus: true,
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () {
-              if (_customController.text.trim().isNotEmpty) {
-                widget.controller.addInterest(_customController.text.trim());
-                Get.back();
-                AppToast.success('已添加：${_customController.text.trim()}');
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF374151),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: Text(widget.l10n.add),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPresetList() {
-    return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      children: [
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: _availableInterests.map((interest) {
-            return InkWell(
-              onTap: () {
-                widget.controller.addInterest(interest);
-                Get.back();
-                AppToast.success('已添加：$interest');
-              },
-              borderRadius: BorderRadius.circular(20),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF3F4F6),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFFE5E7EB)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      interest,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF374151),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Icon(
-                      Icons.add_circle_outline,
-                      size: 18,
-                      color: Color(0xFF374151),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-        const SizedBox(height: 80),
-      ],
-    );
-  }
-}

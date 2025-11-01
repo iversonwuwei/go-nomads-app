@@ -994,6 +994,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
 
   // Cost of Living 标签
   Widget _buildCostTab(CityDetailController controller) {
+    final l10n = AppLocalizations.of(context)!; // ✅ 添加国际化
     return Obx(() {
       final communityCost = controller.communityCostSummary.value; // ✅ 使用后端真实数据
 
@@ -1017,30 +1018,28 @@ class _CityDetailPageState extends State<CityDetailPage> {
         padding:
             const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
         children: [
-          // ✅ 社区综合费用统计 - 始终显示
+          // ✅ 社区综合费用统计 - 标题左侧,贡献者右侧
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Flexible(
-                child: Text(
-                  'Community Cost Summary',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+              Text(
+                l10n.communityCostSummary,
+                style: const TextStyle(
+                  fontSize: 18, // 缩小字号以适应小屏幕
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(width: 8),
               Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.green.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  '$contributorCount contributor${contributorCount != 1 ? 's' : ''}',
+                  '$contributorCount ${contributorCount != 1 ? l10n.contributors : l10n.contributor}',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 11, // 缩小字号
                     color: Colors.green[700],
                     fontWeight: FontWeight.bold,
                   ),
@@ -1062,7 +1061,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
             child: Column(
               children: [
                 Text(
-                  'Average Community Cost',
+                  l10n.averageCommunityCost,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -1079,7 +1078,8 @@ class _CityDetailPageState extends State<CityDetailPage> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Based on $totalExpenseCount real expense${totalExpenseCount != 1 ? 's' : ''}',
+                  l10n.basedOnRealExpenses(
+                      totalExpenseCount, totalExpenseCount != 1 ? 's' : ''),
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.8),
                     fontSize: 12,
@@ -1091,31 +1091,31 @@ class _CityDetailPageState extends State<CityDetailPage> {
           const SizedBox(height: 24),
           // 费用分类明细 - 始终显示所有分类（即使为 0）
           _buildCostCategoryCard(
-            category: 'Accommodation',
+            category: l10n.accommodation,
             amount: accommodation,
             icon: Icons.hotel,
             color: Colors.purple,
           ),
           _buildCostCategoryCard(
-            category: 'Food',
+            category: l10n.food,
             amount: food,
             icon: Icons.restaurant,
             color: Colors.orange,
           ),
           _buildCostCategoryCard(
-            category: 'Transportation',
+            category: l10n.transportation,
             amount: transportation,
             icon: Icons.directions_car,
             color: Colors.blue,
           ),
           _buildCostCategoryCard(
-            category: 'Activity',
+            category: l10n.activity,
             amount: activity,
             icon: Icons.local_activity,
             color: Colors.green,
           ),
           _buildCostCategoryCard(
-            category: 'Shopping',
+            category: l10n.shopping,
             amount: shopping,
             icon: Icons.shopping_bag,
             color: Colors.pink,

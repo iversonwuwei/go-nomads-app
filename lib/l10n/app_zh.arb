@@ -387,6 +387,7 @@
   "somethingWentWrong": "出错了",
   "tryAgainLater": "请稍后再试",
   "networkError": "网络错误",
+  "loadFailed": "加载失败",
   "noInternetConnection": "无网络连接",
   "checkConnection": "请检查您的网络连接",
   "refreshing": "刷新中...",
@@ -1695,7 +1696,61 @@
   "noBadgesYet": "还没有获得勋章",
   "noTravelHistoryYet": "还没有旅行记录",
   "viewAllTrips": "查看所有旅行",
-  "noMembersOnline": "暂无在线成员"
+  "noMembersOnline": "暂无在线成员",
+  "communityCostSummary": "社区费用汇总",
+  "contributors": "位贡献者",
+  "contributor": "位贡献者",
+  "averageCommunityCost": "平均社区费用",
+  "basedOnRealExpenses": "基于 {count} 条真实费用{plural}",
+  "@basedOnRealExpenses": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "plural": {
+        "type": "String"
+      }
+    }
+  },
+  "accommodation": "住宿",
+  "food": "饮食",
+  "transportation": "交通",
+  "activity": "活动",
+  "shopping": "购物",
+  "saveChanges": "保存更改",
+  "profileUpdatedSuccessfully": "资料更新成功",
+  "saved": "已保存",
+  "name": "姓名",
+  "enterYourName": "请输入您的姓名",
+  "email": "邮箱",
+  "bio": "个人简介",
+  "tellUsAboutYourself": "介绍一下你自己...",
+  "noSkillsAddedYet": "还没有添加技能",
+  "noInterestsAddedYet": "还没有添加兴趣",
+  "addSkill": "添加技能",
+  "addInterest": "添加兴趣",
+  "enterSkillName": "输入技能名称",
+  "enterInterest": "输入兴趣",
+  "add": "添加",
+  "cancel": "取消",
+  "notificationsPreference": "通知",
+  "receiveUpdatesAndAlerts": "接收更新和提醒",
+  "travelHistoryVisible": "旅行历史可见",
+  "showTravelHistoryToOthers": "向其他用户展示您的旅行历史",
+  "publicProfile": "公开资料",
+  "makeProfileVisibleToEveryone": "让所有人都能看到您的资料",
+  "currency": "货币",
+  "temperature": "温度",
+  "celsius": "摄氏度",
+  "fahrenheit": "华氏度",
+  "account": "账户",
+  "changePassword": "修改密码",
+  "changePasswordComingSoon": "修改密码功能即将推出",
+  "privacySettings": "隐私设置",
+  "privacySettingsComingSoon": "隐私设置功能即将推出",
+  "deleteAccount": "删除账户",
+  "deleteAccountConfirmation": "确定要删除您的账户吗？此操作无法撤销。",
+  "accountDeletionCancelled": "已取消删除账户"
 }
 
 

@@ -2,8 +2,6 @@ import 'package:get/get.dart';
 
 import '../models/city_option.dart';
 import '../models/country_option.dart';
-import '../services/data/city_data_service.dart';
-import '../services/data/meetup_data_service.dart';
 import '../services/events_api_service.dart';
 import '../services/home_api_service.dart';
 import '../services/location_api_service.dart';
@@ -12,12 +10,13 @@ import 'user_state_controller.dart';
 
 class DataServiceController extends GetxController {
   // 数据服务
-  final CityDataService _cityService = CityDataService();
-  final MeetupDataService _meetupService = MeetupDataService();
   final LocationApiService _locationApiService = LocationApiService();
   final HomeApiService _homeApiService = HomeApiService();
+  
   // 响应式数据
   final RxBool isLoading = true.obs;
+  final RxBool hasError = false.obs;
+  final RxString errorMessage = ''.obs;
   final RxBool isGridView = true.obs;
   final RxString sortBy = 'popular'.obs;
   final RxString searchQuery = ''.obs;
@@ -50,17 +49,6 @@ class DataServiceController extends GetxController {
     }
   }
 
-  /// 获取当前登录用户的ID，如果未登录返回 null
-  int? _getCurrentUserId() {
-    try {
-      final userStateController = Get.find<UserStateController>();
-      return userStateController.getAccountIdOrNull();
-    } catch (e) {
-      print('⚠️ 获取用户ID失败: $e');
-      return null;
-    }
-  }
-
   // 筛选状态 - Nomads.com 风格
   final RxList<String> selectedRegions = <String>[].obs; // 地区筛选
   final RxList<String> selectedCountries = <String>[].obs; // 国家筛选
@@ -71,12 +59,6 @@ class DataServiceController extends GetxController {
   final RxDouble minRating = 0.0.obs; // 最低评分
   final RxInt maxAqi = 500.obs; // 最大AQI
   final RxList<String> selectedClimates = <String>[].obs; // 气候筛选
-
-  // 分页状态
-  final RxBool hasMoreCities = true.obs; // 是否还有更多城市可加载
-  final RxBool isLoadingMore = false.obs; // 是否正在加载更多
-  final int _currentCityPage = 1; // 当前加载的城市页数
-  final int _citiesPerPage = 50; // 每页城市数量
 
   // 可用的筛选选项
   final List<String> availableRegions = [
@@ -228,21 +210,16 @@ class DataServiceController extends GetxController {
   Future<void> refreshAllData() async {
     print('🔄 开始刷新所有数据...');
     isLoading.value = true;
+    hasError.value = false;
+    errorMessage.value = '';
 
     try {
-      // 优先从 Home API 加载聚合数据
-      try {
-        await _loadFromHomeApi();
-        print('✅ Home API 数据刷新成功');
-      } catch (apiError) {
-        print('⚠️ Home API 失败，回退到本地数据库: $apiError');
-        // 回退到本地数据库
-        await loadCountries();
-        await _loadCitiesFromDatabase();
-        await _loadMeetupsFromDatabase();
-      }
+      await _loadFromHomeApi();
+      print('✅ Home API 数据刷新成功');
     } catch (e) {
       print('❌ 数据刷新失败: $e');
+      hasError.value = true;
+      errorMessage.value = e.toString();
       AppToast.error('数据刷新失败，请稍后重试');
     } finally {
       isLoading.value = false;
@@ -252,24 +229,18 @@ class DataServiceController extends GetxController {
   // 初始化数据
   void initializeData() async {
     isLoading.value = true;
+    hasError.value = false;
+    errorMessage.value = '';
 
     try {
       print('🔄 开始加载首页数据...');
-
-      // 优先从 Home API 加载聚合数据
-      try {
-        await _loadFromHomeApi();
-        print('✅ Home API 数据加载成功');
-      } catch (apiError) {
-        print('⚠️ Home API 失败，回退到本地数据库: $apiError');
-        // 回退到本地数据库
-        await loadCountries();
-        await _loadCitiesFromDatabase();
-        await _loadMeetupsFromDatabase();
-      }
+      await _loadFromHomeApi();
+      print('✅ Home API 数据加载成功');
     } catch (e) {
       print('❌ 数据加载失败: $e');
-      AppToast.error('数据加载失败，请稍后重试');
+      hasError.value = true;
+      errorMessage.value = e.toString();
+      AppToast.error('数据加载失败');
     } finally {
       isLoading.value = false;
     }
@@ -512,158 +483,6 @@ class DataServiceController extends GetxController {
     }
   }
 
-  // 从数据库加载城市数据
-  Future<void> _loadCitiesFromDatabase() async {
-    try {
-      final cities = await _cityService.getAllCities();
-
-      print('🏙️ 从数据库加载了 ${cities.length} 个城市');
-
-      // 转换数据格式以匹配现有的UI结构
-      dataItems.value = cities.map((city) {
-        return {
-          'id': city['id']?.toString(), // ✅ 添加 ID 字段 (UUID 字符串)
-          'city': city['name'],
-          'country': city['country'],
-          'region': city['region'] ?? 'Asia',
-          'climate': city['climate'] ?? 'Warm',
-          'image': city['image_url'],
-          'temperature': city['temperature'] ?? 25,
-          'feelsLike': city['temperature'] ?? 25,
-          'weather': _getWeatherFromClimate(city['climate']),
-          'internet': (city['internet_speed'] as num?)?.toInt() ?? 20,
-          'price': (city['cost_of_living'] as num?)?.toInt() ?? 1500,
-          'rank': cities.indexOf(city) + 1,
-          'badge': _getBadgeForCity(city),
-          'ratings': ['😊', '👍', '🌟'],
-          'overall': (city['overall_score'] as num?)?.toDouble() ?? 4.0,
-          'cost': _calculateCostScore(city['cost_of_living']),
-          'internetScore': _calculateInternetScore(city['internet_speed']),
-          'liked': (city['overall_score'] as num?)?.toDouble() ?? 4.0,
-          'safety': (city['safety_score'] as num?)?.toDouble() ?? 4.0,
-          'aqi': city['aqi'] ?? 50,
-          'aqiLevel': _getAqiLevel(city['aqi']),
-          'population': city['population'] ?? '1M',
-          'timezone': city['timezone'] ?? 'GMT',
-          'humidity': city['humidity'] ?? 70,
-          'about': city['description'] ?? '',
-        };
-      }).toList();
-    } catch (e) {
-      print('Error loading cities: $e');
-      rethrow;
-    }
-  }
-
-  // 从数据库加载活动数据
-  Future<void> _loadMeetupsFromDatabase() async {
-    try {
-      final dbMeetups = await _meetupService.getUpcomingMeetups(days: 30);
-
-      // 转换数据格式
-      final List<Map<String, dynamic>> convertedMeetups = [];
-
-      for (var meetup in dbMeetups) {
-        final cityId = meetup['city_id'] as int?;
-        final cityInfo = await _getCityInfoById(cityId);
-
-        convertedMeetups.add({
-          'id': meetup['id'],
-          'city': cityInfo['name'],
-          'country': cityInfo['country'],
-          'type': meetup['category'] ?? 'Activity',
-          'title': meetup['title'],
-          'venue': meetup['location'],
-          'date':
-              DateTime.tryParse(meetup['start_time'] ?? '') ?? DateTime.now(),
-          'time': _formatTime(meetup['start_time']),
-          'attendees': meetup['current_participants'] ?? 0,
-          'maxAttendees': meetup['max_participants'] ?? 20,
-          'organizer': 'Organizer', // TODO: 从用户表获取
-          'organizerAvatar': 'https://i.pravatar.cc/150?img=1',
-          'image': meetup['image_url'] ??
-              'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=400',
-          'description': meetup['description'] ?? '',
-        });
-      }
-
-      meetups.value = convertedMeetups;
-    } catch (e) {
-      print('Error loading meetups: $e');
-      rethrow;
-    }
-  }
-
-  // 辅助方法:根据城市ID获取城市信息
-  Future<Map<String, dynamic>> _getCityInfoById(int? cityId) async {
-    if (cityId == null) return {'name': 'Unknown', 'country': 'Unknown'};
-
-    try {
-      final city = await _cityService.getCityById(cityId);
-      return {
-        'name': city?['name'] ?? 'Unknown',
-        'country': city?['country'] ?? 'Unknown',
-      };
-    } catch (e) {
-      return {'name': 'Unknown', 'country': 'Unknown'};
-    }
-  }
-
-  // 辅助方法:根据气候获取天气
-  String _getWeatherFromClimate(String? climate) {
-    switch (climate) {
-      case 'Hot':
-        return 'sunny';
-      case 'Warm':
-        return 'cloudy';
-      case 'Cool':
-        return 'rainy';
-      case 'Cold':
-        return 'snowy';
-      default:
-        return 'sunny';
-    }
-  }
-
-  // 辅助方法:获取城市徽章
-  String _getBadgeForCity(Map<String, dynamic> city) {
-    final score = (city['overall_score'] as num?)?.toDouble() ?? 0;
-    final price = (city['cost_of_living'] as num?)?.toDouble() ?? 0;
-
-    if (score >= 4.7) return 'Popular';
-    if (price < 1500) return 'Best Value';
-    if (score >= 4.5) return 'Trending';
-    return '';
-  }
-
-  // 辅助方法:计算生活成本评分
-  double _calculateCostScore(num? cost) {
-    if (cost == null) return 3.0;
-    if (cost < 1000) return 5.0;
-    if (cost < 1500) return 4.5;
-    if (cost < 2000) return 4.0;
-    if (cost < 3000) return 3.5;
-    return 3.0;
-  }
-
-  // 辅助方法:计算网速评分
-  double _calculateInternetScore(num? speed) {
-    if (speed == null) return 3.0;
-    if (speed >= 50) return 5.0;
-    if (speed >= 30) return 4.5;
-    if (speed >= 20) return 4.0;
-    if (speed >= 10) return 3.5;
-    return 3.0;
-  }
-
-  // 辅助方法:获取AQI等级
-  String _getAqiLevel(int? aqi) {
-    if (aqi == null) return '';
-    if (aqi > 150) return '😷';
-    if (aqi > 50) return '😷';
-    return '';
-  }
-
   // 辅助方法:格式化时间
   String _formatTime(String? isoTime) {
     if (isoTime == null) return '00:00';
@@ -673,6 +492,16 @@ class DataServiceController extends GetxController {
     } catch (e) {
       return '00:00';
     }
+  }
+
+  // 辅助方法:获取AQI等级
+  String _getAqiLevel(int? aqi) {
+    if (aqi == null || aqi <= 50) return 'Good';
+    if (aqi <= 100) return 'Moderate';
+    if (aqi <= 150) return 'Unhealthy for Sensitive Groups';
+    if (aqi <= 200) return 'Unhealthy';
+    if (aqi <= 300) return 'Very Unhealthy';
+    return 'Hazardous';
   }
 
   // 旧的生成模拟数据方法(保留以防需要)
@@ -935,23 +764,12 @@ class DataServiceController extends GetxController {
         'tags': tags,
       });
     } catch (apiError) {
-      print('⚠️ Events API failed, falling back to local storage: $apiError');
-
-      // 如果 API 失败，回退到本地数据库存储
-      await _createMeetupLocally({
-        'title': title,
-        'city': city,
-        'country': country,
-        'type': type,
-        'venue': venue,
-        'date': date,
-        'time': time,
-        'maxAttendees': maxAttendees,
-        'description': description,
-        'cityId': cityId,
-        'countryId': countryId,
-        'imageUrl': imageUrl,
-      });
+      print('❌ Events API failed: $apiError');
+      AppToast.error(
+        'Failed to create meetup. Please check your connection and try again.',
+        title: 'Error',
+      );
+      rethrow;
     }
   }
 
@@ -1014,9 +832,6 @@ class DataServiceController extends GetxController {
       final eventId = responseData['id'];
       print('✅ Event ID: $eventId');
 
-      // 持久化到本地数据库以便离线访问
-      await _persistMeetupSnapshot(responseData, params);
-
       // 更新内存中的列表
       final newMeetup = {
         'id': eventId,
@@ -1057,184 +872,9 @@ class DataServiceController extends GetxController {
       );
     } catch (e) {
       print('❌ Events API 创建失败: $e');
-      // 重新抛出异常以便上层捕获并回退到本地存储
-      rethrow;
-    }
-  }
-
-  /// 将远程创建的 meetup 同步保存到本地数据库
-  Future<void> _persistMeetupSnapshot(
-    Map<String, dynamic> responseData,
-    Map<String, dynamic> originalParams,
-  ) async {
-    try {
-      // 获取城市ID
-      int? cityIdInt;
-      final cityId = originalParams['cityId'];
-      if (cityId is int) {
-        cityIdInt = cityId;
-      } else if (cityId is String) {
-        cityIdInt = int.tryParse(cityId);
-      }
-
-      // 如果还是没有城市ID,尝试从城市名称查找
-      cityIdInt ??= await _ensureCityIdForLocalMeetup(originalParams['city']);
-      if (cityIdInt == null) {
-        print('⚠️ 无法获取城市ID,跳过本地持久化');
-        return;
-      }
-
-      // 准备数据库数据
-      final meetupData = {
-        'title': originalParams['title'],
-        'description': originalParams['description'] ?? '',
-        'city_id': cityIdInt,
-        'location': originalParams['venue'],
-        'start_time': responseData['startTime'] ??
-            (originalParams['date'] as DateTime).toIso8601String(),
-        'category': originalParams['type'],
-        'max_participants': originalParams['maxAttendees'],
-        'current_participants': responseData['currentParticipants'] ?? 1,
-        'image_url': responseData['imageUrl'] ??
-            originalParams['imageUrl'] ??
-            'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400',
-        'status': responseData['status'] ?? 'upcoming',
-        'organizer_id': 1, // TODO: 从当前用户获取
-        'remote_id': responseData['id']?.toString(), // 保存远程ID以便后续同步
-      };
-
-      // 保存到数据库
-      await _meetupService.createMeetup(meetupData);
-      print('✅ Meetup 已同步到本地数据库');
-    } catch (e) {
-      print('⚠️ 保存到本地数据库失败,但远程创建成功: $e');
-      // 不抛出异常,因为远程创建已经成功
-    }
-  }
-
-  /// 确保本地有城市ID,如果没有则创建占位符
-  Future<int?> _ensureCityIdForLocalMeetup(String? cityName) async {
-    if (cityName == null || cityName.isEmpty) {
-      return null;
-    }
-
-    try {
-      // 先尝试从数据库查找
-      final existingCityId = await _getCityIdByName(cityName);
-      if (existingCityId != null) {
-        return existingCityId;
-      }
-
-      // 如果找不到,返回null让上层处理
-      print('⚠️ 本地数据库中未找到城市: $cityName');
-      return null;
-    } catch (e) {
-      print('❌ 查找城市ID失败: $e');
-      return null;
-    }
-  }
-
-  /// 通过本地数据库创建活动（回退方案）
-  Future<void> _createMeetupLocally(Map<String, dynamic> params) async {
-    try {
-      // 获取城市ID
-      int? cityId;
-      final providedCityId = params['cityId'];
-      if (providedCityId is int) {
-        cityId = providedCityId;
-      } else if (providedCityId is String && providedCityId.isNotEmpty) {
-        cityId = int.tryParse(providedCityId);
-      }
-
-      // 如果没有城市ID,尝试从城市名称查找
-      cityId ??= await _ensureCityIdForLocalMeetup(params['city']);
-      if (cityId == null) {
-        AppToast.error('City not found in database. Please try again.');
-        return;
-      }
-
-      // 组合日期和时间
-      final time = params['time'] as String;
-      final date = params['date'] as DateTime;
-      final timeParts = time.split(':');
-      final startDateTime = DateTime(
-        date.year,
-        date.month,
-        date.day,
-        int.parse(timeParts[0]),
-        int.parse(timeParts[1]),
-      );
-
-      // 处理图片
-      String mainImageUrl = params['imageUrl'] as String? ?? '';
-      if (mainImageUrl.isEmpty) {
-        final images = params['images'];
-        if (images is List && images.isNotEmpty) {
-          mainImageUrl = images.first.toString();
-        }
-      }
-      if (mainImageUrl.isEmpty) {
-        mainImageUrl =
-            'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400';
-      }
-
-      // 准备数据库数据
-      final meetupData = {
-        'title': params['title'],
-        'description': params['description'] ?? '',
-        'city_id': cityId,
-        'location': params['venue'],
-        'start_time': startDateTime.toIso8601String(),
-        'category': params['type'],
-        'max_participants': params['maxAttendees'],
-        'current_participants': 1, // 创建者自动加入
-        'image_url': mainImageUrl,
-        'status': 'upcoming',
-        'organizer_id': 1, // TODO: 从当前用户获取
-      };
-
-      print('💾 保存到本地数据库: ${meetupData['title']}');
-
-      // 保存到数据库
-      final newId = await _meetupService.createMeetup(meetupData);
-
-      print('✅ 本地数据库保存成功，ID: $newId');
-
-      // 更新内存中的列表
-      final newMeetup = {
-        'id': newId,
-        'city': params['city'],
-        'country': params['country'] ?? 'Unknown',
-        'type': params['type'],
-        'title': params['title'],
-        'venue': params['venue'],
-        'date': params['date'],
-        'time': params['time'],
-        'attendees': 1, // 创建者自动加入
-        'maxAttendees': params['maxAttendees'],
-        'cityId': params['cityId'],
-        'countryId': params['countryId'],
-        'organizer': 'You',
-        'organizerAvatar': 'https://i.pravatar.cc/150?img=68',
-        'image': mainImageUrl,
-        'description': params['description'] ?? '',
-        'status': 'upcoming',
-      };
-
-      meetups.add(newMeetup);
-      meetups.refresh();
-
-      // 自动 RSVP
-      rsvpedMeetups.add(newId);
-
-      AppToast.success(
-        'Your meetup "${params['title']}" has been created successfully (saved locally)',
-        title: 'Meetup Created!',
-      );
-    } catch (e) {
-      print('❌ 本地保存失败: $e');
+      // 显示错误信息
       AppToast.error(
-        'Failed to create meetup: ${e.toString()}',
+        'Failed to create meetup. Please check your connection and try again.',
         title: 'Error',
       );
       rethrow;
@@ -1345,21 +985,6 @@ class DataServiceController extends GetxController {
         return 'business';
       default:
         return 'other';
-    }
-  }
-
-  // 辅助方法:根据城市名称获取城市ID
-  Future<int?> _getCityIdByName(String cityName) async {
-    try {
-      final cities = await _cityService.getAllCities();
-      final city = cities.firstWhere(
-        (c) => c['name'] == cityName,
-        orElse: () => {},
-      );
-      return city['id'] as int?;
-    } catch (e) {
-      print('Error getting city ID: $e');
-      return null;
     }
   }
 }
