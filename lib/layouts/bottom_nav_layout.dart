@@ -90,7 +90,7 @@ class BottomNavLayout extends StatelessWidget {
               label: 'AI助手',
             ),
             _NavBarItem(
-              icon: Icons.edit,
+              icon: Icons.settings,
               label: '编辑',
             ),
           ],
