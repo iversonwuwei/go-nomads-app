@@ -5,6 +5,11 @@ import '../config/app_colors.dart';
 import '../controllers/locale_controller.dart';
 import '../controllers/user_profile_controller.dart';
 import '../generated/app_localizations.dart';
+import '../models/interest_model.dart';
+import '../models/skill_model.dart';
+import '../models/user_model.dart';
+import '../services/interests_api_service.dart';
+import '../services/skills_api_service.dart';
 import '../widgets/app_toast.dart';
 
 /// 用户资料编辑页面 - 浅色性冷淡风格
@@ -34,7 +39,10 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   @override
   void initState() {
     super.initState();
-    _loadUserProfile();
+    // 延迟到下一帧执行，避免在 build 过程中触发状态更新
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadUserProfile();
+    });
   }
 
   @override
@@ -49,16 +57,16 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   Future<void> _loadUserProfile() async {
     final profileController = Get.put(UserProfileController());
 
-    // 加载用户资料
-    await profileController.loadUserProfile();
-
-    // 填充输入框
-    if (profileController.currentUser.value != null) {
-      final user = profileController.currentUser.value!;
-      _nameController.text = user.name;
-      _emailController.text = user.email ?? ''; // 使用 email 字段
-      _bioController.text = user.bio ?? '';
-    }
+    // 监听用户数据变化，填充输入框
+    ever(profileController.currentUser, (user) {
+      if (user != null && mounted) {
+        setState(() {
+          _nameController.text = user.name;
+          _emailController.text = user.email ?? '';
+          _bioController.text = user.bio ?? '';
+        });
+      }
+    });
   }
 
   @override
@@ -308,9 +316,13 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                IconButton(
-                  icon: Icon(Icons.add, color: AppColors.accent),
-                  onPressed: () => _showAddSkillDialog(profileController),
+                TextButton.icon(
+                  icon: Icon(Icons.edit, color: AppColors.accent, size: 20),
+                  label: Text(
+                    '编辑',
+                    style: TextStyle(color: AppColors.accent),
+                  ),
+                  onPressed: () => _showSkillsBottomSheet(profileController),
                 ),
               ],
             ),
@@ -334,9 +346,10 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 runSpacing: 8,
                 children: skills.map((skill) {
                   return Chip(
-                    label: Text(skill),
+                    label: Text(skill.skillName),
+                    avatar: skill.icon != null ? Text(skill.icon!) : null,
                     deleteIcon: const Icon(Icons.close, size: 18),
-                    onDeleted: () => profileController.removeSkill(skill),
+                    onDeleted: () => profileController.removeSkill(skill.id),
                     backgroundColor: AppColors.accent.withValues(alpha: 0.1),
                     labelStyle: TextStyle(
                       color: AppColors.textPrimary,
@@ -386,9 +399,13 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                IconButton(
-                  icon: Icon(Icons.add, color: AppColors.accent),
-                  onPressed: () => _showAddInterestDialog(profileController),
+                TextButton.icon(
+                  icon: Icon(Icons.edit, color: AppColors.accent, size: 20),
+                  label: Text(
+                    '编辑',
+                    style: TextStyle(color: AppColors.accent),
+                  ),
+                  onPressed: () => _showInterestsBottomSheet(profileController),
                 ),
               ],
             ),
@@ -412,9 +429,11 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 runSpacing: 8,
                 children: interests.map((interest) {
                   return Chip(
-                    label: Text(interest),
+                    label: Text(interest.interestName),
+                    avatar: interest.icon != null ? Text(interest.icon!) : null,
                     deleteIcon: const Icon(Icons.close, size: 18),
-                    onDeleted: () => profileController.removeInterest(interest),
+                    onDeleted: () =>
+                        profileController.removeInterest(interest.id),
                     backgroundColor: const Color(0xFFBA68C8).withValues(alpha: 0.1),
                     labelStyle: TextStyle(
                       color: AppColors.textPrimary,
@@ -700,93 +719,814 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     );
   }
 
-  void _showAddSkillDialog(UserProfileController profileController) {
-    final TextEditingController controller = TextEditingController();
-    final l10n = AppLocalizations.of(Get.context!)!;
+  // 显示技能选择底部抽屉
+  void _showSkillsBottomSheet(UserProfileController profileController) {
+    final SkillsApiService skillsService = SkillsApiService();
+    final currentSkills = profileController.currentUser.value?.skills ?? [];
+    
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _SkillsBottomSheet(
+        skillsService: skillsService,
+        currentSkills: currentSkills,
+        onSave: (selectedSkills) async {
+          if (selectedSkills.isNotEmpty) {
+            try {
+              final requests = selectedSkills.map((skill) {
+                return AddUserSkillRequest(
+                  skillId: skill.skillId,
+                  proficiencyLevel: skill.proficiencyLevel,
+                  yearsOfExperience: skill.yearsOfExperience,
+                );
+              }).toList();
 
-    Get.defaultDialog(
-      title: l10n.addSkill,
-      titleStyle: TextStyle(color: AppColors.textPrimary),
-      backgroundColor: Colors.white,
-      content: TextField(
-        controller: controller,
-        autofocus: true,
-        style: TextStyle(color: AppColors.textPrimary),
-        decoration: InputDecoration(
-          hintText: l10n.enterSkillName,
-          hintStyle: TextStyle(color: AppColors.textTertiary),
-          filled: true,
-          fillColor: AppColors.containerLight,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: AppColors.border),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: AppColors.border),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: AppColors.accent),
-          ),
-        ),
+              await skillsService.addUserSkillsBatch(requests);
+
+              AppToast.success(
+                '已保存 ${selectedSkills.length} 个技能',
+                title: '保存成功',
+              );
+
+              // 刷新用户资料数据
+              await profileController.loadUserProfile();
+            } catch (e) {
+              print('❌ 保存技能失败: $e');
+              AppToast.error('保存失败，请稍后重试');
+            }
+          }
+        },
       ),
-      textCancel: l10n.cancel,
-      textConfirm: l10n.add,
-      cancelTextColor: AppColors.textSecondary,
-      confirmTextColor: Colors.white,
-      buttonColor: AppColors.accent,
-      onConfirm: () {
-        if (controller.text.trim().isNotEmpty) {
-          profileController.addSkill(controller.text.trim());
-          Get.back();
+    );
+  }
+
+  // 显示兴趣选择底部抽屉
+  void _showInterestsBottomSheet(UserProfileController profileController) {
+    final InterestsApiService interestsService = InterestsApiService();
+    final currentInterests =
+        profileController.currentUser.value?.interests ?? [];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _InterestsBottomSheet(
+        interestsService: interestsService,
+        currentInterests: currentInterests,
+        onSave: (selectedInterests) async {
+          if (selectedInterests.isNotEmpty) {
+            try {
+              final requests = selectedInterests.map((interest) {
+                return AddUserInterestRequest(
+                  interestId: interest.interestId,
+                  intensityLevel: interest.intensityLevel,
+                );
+              }).toList();
+
+              await interestsService.addUserInterestsBatch(requests);
+
+              AppToast.success(
+                '已保存 ${selectedInterests.length} 个兴趣',
+                title: '保存成功',
+              );
+
+              // 刷新用户资料数据
+              await profileController.loadUserProfile();
+            } catch (e) {
+              print('❌ 保存兴趣失败: $e');
+              AppToast.error('保存失败，请稍后重试');
+            }
+          }
+        },
+      ),
+    );
+  }
+}
+
+// 技能选择底部抽屉组件
+class _SkillsBottomSheet extends StatefulWidget {
+  final SkillsApiService skillsService;
+  final List<UserSkillInfo> currentSkills;
+  final Function(List<UserSkill>) onSave;
+
+  const _SkillsBottomSheet({
+    required this.skillsService,
+    required this.currentSkills,
+    required this.onSave,
+  });
+
+  @override
+  State<_SkillsBottomSheet> createState() => _SkillsBottomSheetState();
+}
+
+class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
+  List<SkillsByCategory> _skillsByCategory = [];
+  List<UserSkill> _selectedSkills = [];
+  bool _isLoading = true;
+  String _searchQuery = '';
+  String? _selectedCategory;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSkills();
+  }
+
+  Future<void> _loadSkills() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final skillsByCategory = await widget.skillsService.getSkillsByCategory();
+      setState(() {
+        _skillsByCategory = skillsByCategory;
+        _isLoading = false;
+        // 预填充当前用户已有的技能
+        _preselectCurrentSkills();
+      });
+    } catch (e) {
+      print('❌ 加载技能失败: $e');
+      setState(() => _isLoading = false);
+
+      if (mounted) {
+        Get.snackbar(
+          '加载失败',
+          '无法加载技能列表: $e',
+          snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 5),
+        );
+      }
+    }
+  }
+
+  void _preselectCurrentSkills() {
+    // 预填充用户已有的技能
+    for (var userSkill in widget.currentSkills) {
+      for (var category in _skillsByCategory) {
+        final skill = category.skills.firstWhere(
+          (s) => s.id == userSkill.skillId,
+          orElse: () => Skill(
+            id: '',
+            name: '',
+            category: '',
+            icon: '',
+            createdAt: DateTime.now(),
+          ),
+        );
+
+        if (skill.id.isNotEmpty &&
+            !_selectedSkills.any((s) => s.skillId == skill.id)) {
+          _selectedSkills.add(UserSkill(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            userId: '',
+            skillId: skill.id,
+            skillName: skill.name,
+            category: skill.category,
+            icon: skill.icon,
+            proficiencyLevel: userSkill.proficiencyLevel ?? 'Intermediate',
+            yearsOfExperience: userSkill.yearsOfExperience,
+            createdAt: DateTime.now(),
+          ));
         }
+      }
+    }
+  }
+
+  void _toggleSkill(Skill skill) {
+    final isSelected = _selectedSkills.any((s) => s.skillId == skill.id);
+
+    setState(() {
+      if (isSelected) {
+        _selectedSkills.removeWhere((s) => s.skillId == skill.id);
+      } else {
+        final userSkill = UserSkill(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          userId: '',
+          skillId: skill.id,
+          skillName: skill.name,
+          category: skill.category,
+          icon: skill.icon,
+          proficiencyLevel: 'Intermediate',
+          yearsOfExperience: null,
+          createdAt: DateTime.now(),
+        );
+        _selectedSkills.add(userSkill);
+      }
+    });
+  }
+
+  List<Skill> _getFilteredSkills() {
+    List<Skill> allSkills = [];
+
+    for (var category in _skillsByCategory) {
+      if (_selectedCategory != null && category.category != _selectedCategory) {
+        continue;
+      }
+      allSkills.addAll(category.skills);
+    }
+
+    if (_searchQuery.isNotEmpty) {
+      allSkills = allSkills.where((skill) {
+        return skill.name.toLowerCase().contains(_searchQuery.toLowerCase());
+      }).toList();
+    }
+
+    return allSkills;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.9,
+      minChildSize: 0.5,
+      maxChildSize: 0.95,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              // 拖动条
+              Container(
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+
+              // 标题栏
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '选择技能',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        if (_selectedSkills.isNotEmpty)
+                          Text(
+                            '${_selectedSkills.length} 项',
+                            style: TextStyle(
+                              color: AppColors.accent,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              // 搜索框
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: '搜索技能...',
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: true,
+                    fillColor: AppColors.containerLight,
+                  ),
+                  onChanged: (value) {
+                    setState(() => _searchQuery = value);
+                  },
+                ),
+              ),
+
+              // 类别筛选
+              if (_searchQuery.isEmpty && _skillsByCategory.isNotEmpty)
+                SizedBox(
+                  height: 40,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    children: [
+                      _buildCategoryChip('全部', null),
+                      const SizedBox(width: 8),
+                      ..._skillsByCategory.map((category) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: _buildCategoryChip(
+                            _getCategoryText(category.category),
+                            category.category,
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+                ),
+
+              const SizedBox(height: 8),
+
+              // 技能列表
+              Expanded(
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _buildSkillsList(scrollController),
+              ),
+
+              // 底部按钮
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, -2),
+                    ),
+                  ],
+                ),
+                child: SafeArea(
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        widget.onSave(_selectedSkills);
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.accent,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: Text(
+                        '确定 (${_selectedSkills.length})',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
       },
     );
   }
 
-  void _showAddInterestDialog(UserProfileController profileController) {
-    final TextEditingController controller = TextEditingController();
-    final l10n = AppLocalizations.of(Get.context!)!;
-
-    Get.defaultDialog(
-      title: l10n.addInterest,
-      titleStyle: TextStyle(color: AppColors.textPrimary),
-      backgroundColor: Colors.white,
-      content: TextField(
-        controller: controller,
-        autofocus: true,
-        style: TextStyle(color: AppColors.textPrimary),
-        decoration: InputDecoration(
-          hintText: l10n.enterInterest,
-          hintStyle: TextStyle(color: AppColors.textTertiary),
-          filled: true,
-          fillColor: AppColors.containerLight,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: AppColors.border),
+  Widget _buildCategoryChip(String label, String? category) {
+    final isSelected = _selectedCategory == category;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedCategory = category),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.accent : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? AppColors.accent : AppColors.border,
           ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: AppColors.border),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: AppColors.accent),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : AppColors.textPrimary,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           ),
         ),
       ),
-      textCancel: l10n.cancel,
-      textConfirm: l10n.add,
-      cancelTextColor: AppColors.textSecondary,
-      confirmTextColor: Colors.white,
-      buttonColor: AppColors.accent,
-      onConfirm: () {
-        if (controller.text.trim().isNotEmpty) {
-          profileController.addInterest(controller.text.trim());
-          Get.back();
+    );
+  }
+
+  Widget _buildSkillsList(ScrollController scrollController) {
+    final filteredSkills = _getFilteredSkills();
+
+    if (filteredSkills.isEmpty) {
+      return Center(
+        child: Text(
+          _searchQuery.isEmpty ? '暂无技能' : '未找到匹配的技能',
+          style: TextStyle(color: AppColors.textSecondary),
+        ),
+      );
+    }
+
+    return ListView(
+      controller: scrollController,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: filteredSkills.map((skill) {
+            final isSelected =
+                _selectedSkills.any((s) => s.skillId == skill.id);
+            return FilterChip(
+              avatar: Text(skill.icon ?? '💼'),
+              label: Text(skill.name),
+              selected: isSelected,
+              onSelected: (_) => _toggleSkill(skill),
+              selectedColor: AppColors.accent.withOpacity(0.2),
+              checkmarkColor: AppColors.accent,
+              backgroundColor: Colors.white,
+              side: BorderSide(
+                color: isSelected ? AppColors.accent : AppColors.border,
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  String _getCategoryText(String category) {
+    const categoryMap = {
+      'Programming': '编程开发',
+      'Design': '设计创意',
+      'Marketing': '营销商务',
+      'Languages': '语言能力',
+      'Data': '数据分析',
+      'Management': '项目管理',
+      'Other': '其他技能',
+    };
+    return categoryMap[category] ?? category;
+  }
+}
+
+// 兴趣选择底部抽屉组件
+class _InterestsBottomSheet extends StatefulWidget {
+  final InterestsApiService interestsService;
+  final List<UserInterestInfo> currentInterests;
+  final Function(List<UserInterest>) onSave;
+
+  const _InterestsBottomSheet({
+    required this.interestsService,
+    required this.currentInterests,
+    required this.onSave,
+  });
+
+  @override
+  State<_InterestsBottomSheet> createState() => _InterestsBottomSheetState();
+}
+
+class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
+  List<InterestsByCategory> _interestsByCategory = [];
+  List<UserInterest> _selectedInterests = [];
+  bool _isLoading = true;
+  String _searchQuery = '';
+  String? _selectedCategory;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInterests();
+  }
+
+  Future<void> _loadInterests() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final interestsByCategory =
+          await widget.interestsService.getInterestsByCategory();
+      setState(() {
+        _interestsByCategory = interestsByCategory;
+        _isLoading = false;
+        // 预填充当前用户已有的兴趣
+        _preselectCurrentInterests();
+      });
+    } catch (e) {
+      print('❌ 加载兴趣失败: $e');
+      setState(() => _isLoading = false);
+
+      if (mounted) {
+        Get.snackbar(
+          '加载失败',
+          '无法加载兴趣列表: $e',
+          snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 5),
+        );
+      }
+    }
+  }
+
+  void _preselectCurrentInterests() {
+    // 预填充用户已有的兴趣
+    for (var userInterest in widget.currentInterests) {
+      for (var category in _interestsByCategory) {
+        final interest = category.interests.firstWhere(
+          (i) => i.id == userInterest.interestId,
+          orElse: () => Interest(
+            id: '',
+            name: '',
+            category: '',
+            icon: '',
+            createdAt: DateTime.now(),
+          ),
+        );
+
+        if (interest.id.isNotEmpty &&
+            !_selectedInterests.any((i) => i.interestId == interest.id)) {
+          _selectedInterests.add(UserInterest(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            userId: '',
+            interestId: interest.id,
+            interestName: interest.name,
+            category: interest.category,
+            icon: interest.icon,
+            intensityLevel: userInterest.intensityLevel ?? 'Medium',
+            createdAt: DateTime.now(),
+          ));
         }
+      }
+    }
+  }
+
+  void _toggleInterest(Interest interest) {
+    final isSelected =
+        _selectedInterests.any((i) => i.interestId == interest.id);
+
+    setState(() {
+      if (isSelected) {
+        _selectedInterests.removeWhere((i) => i.interestId == interest.id);
+      } else {
+        final userInterest = UserInterest(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          userId: '',
+          interestId: interest.id,
+          interestName: interest.name,
+          category: interest.category,
+          icon: interest.icon,
+          intensityLevel: 'Medium',
+          createdAt: DateTime.now(),
+        );
+        _selectedInterests.add(userInterest);
+      }
+    });
+  }
+
+  List<Interest> _getFilteredInterests() {
+    List<Interest> allInterests = [];
+
+    for (var category in _interestsByCategory) {
+      if (_selectedCategory != null && category.category != _selectedCategory) {
+        continue;
+      }
+      allInterests.addAll(category.interests);
+    }
+
+    if (_searchQuery.isNotEmpty) {
+      allInterests = allInterests.where((interest) {
+        return interest.name.toLowerCase().contains(_searchQuery.toLowerCase());
+      }).toList();
+    }
+
+    return allInterests;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.9,
+      minChildSize: 0.5,
+      maxChildSize: 0.95,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              // 拖动条
+              Container(
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+
+              // 标题栏
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '选择兴趣',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        if (_selectedInterests.isNotEmpty)
+                          Text(
+                            '${_selectedInterests.length} 项',
+                            style: TextStyle(
+                              color: AppColors.accent,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              // 搜索框
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: '搜索兴趣...',
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: true,
+                    fillColor: AppColors.containerLight,
+                  ),
+                  onChanged: (value) {
+                    setState(() => _searchQuery = value);
+                  },
+                ),
+              ),
+
+              // 类别筛选
+              if (_searchQuery.isEmpty && _interestsByCategory.isNotEmpty)
+                SizedBox(
+                  height: 40,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    children: [
+                      _buildCategoryChip('全部', null),
+                      const SizedBox(width: 8),
+                      ..._interestsByCategory.map((category) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: _buildCategoryChip(
+                            _getCategoryText(category.category),
+                            category.category,
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+                ),
+
+              const SizedBox(height: 8),
+
+              // 兴趣列表
+              Expanded(
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _buildInterestsList(scrollController),
+              ),
+
+              // 底部按钮
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, -2),
+                    ),
+                  ],
+                ),
+                child: SafeArea(
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        widget.onSave(_selectedInterests);
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.accent,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: Text(
+                        '确定 (${_selectedInterests.length})',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
       },
     );
+  }
+
+  Widget _buildCategoryChip(String label, String? category) {
+    final isSelected = _selectedCategory == category;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedCategory = category),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.accent : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? AppColors.accent : AppColors.border,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : AppColors.textPrimary,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInterestsList(ScrollController scrollController) {
+    final filteredInterests = _getFilteredInterests();
+
+    if (filteredInterests.isEmpty) {
+      return Center(
+        child: Text(
+          _searchQuery.isEmpty ? '暂无兴趣' : '未找到匹配的兴趣',
+          style: TextStyle(color: AppColors.textSecondary),
+        ),
+      );
+    }
+
+    return ListView(
+      controller: scrollController,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: filteredInterests.map((interest) {
+            final isSelected =
+                _selectedInterests.any((i) => i.interestId == interest.id);
+            return FilterChip(
+              avatar: Text(interest.icon ?? '❤️'),
+              label: Text(interest.name),
+              selected: isSelected,
+              onSelected: (_) => _toggleInterest(interest),
+              selectedColor: AppColors.accent.withOpacity(0.2),
+              checkmarkColor: AppColors.accent,
+              backgroundColor: Colors.white,
+              side: BorderSide(
+                color: isSelected ? AppColors.accent : AppColors.border,
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  String _getCategoryText(String category) {
+    const categoryMap = {
+      'Sports': '运动健身',
+      'Arts': '艺术文化',
+      'Food': '美食烹饪',
+      'Travel': '旅行探险',
+      'Technology': '科技数码',
+      'Reading': '阅读学习',
+      'Music': '音乐娱乐',
+      'Social': '社交公益',
+    };
+    return categoryMap[category] ?? category;
   }
 }

@@ -932,13 +932,25 @@ class MemberDetailPage extends StatelessWidget {
                           ),
                         ],
                       ),
-                      child: Text(
-                        interest,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (interest.icon != null) ...[
+                            Text(
+                              interest.icon!,
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                            const SizedBox(width: 6),
+                          ],
+                          Text(
+                            interest.interestName,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
                     );
                   }).toList(),
@@ -1036,13 +1048,25 @@ class MemberDetailPage extends StatelessWidget {
                           ),
                         ],
                       ),
-                      child: Text(
-                        skill,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (skill.icon != null) ...[
+                            Text(
+                              skill.icon!,
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                            const SizedBox(width: 6),
+                          ],
+                          Text(
+                            skill.skillName,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
                     );
                   }).toList(),

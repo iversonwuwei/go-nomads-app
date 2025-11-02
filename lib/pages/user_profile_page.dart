@@ -844,7 +844,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 runSpacing: 8,
                 children: skills.map((skill) {
                   return Chip(
-                    label: Text(skill),
+                    label: Text(skill.skillName),
+                    avatar: skill.icon != null ? Text(skill.icon!) : null,
                     backgroundColor: AppColors.accent.withValues(alpha: 0.2),
                     labelStyle: const TextStyle(
                       color: Colors.white,
@@ -925,7 +926,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 runSpacing: 8,
                 children: interests.map((interest) {
                   return Chip(
-                    label: Text(interest),
+                    label: Text(interest.interestName),
+                    avatar: interest.icon != null ? Text(interest.icon!) : null,
                     backgroundColor: Colors.purple.withValues(alpha: 0.2),
                     labelStyle: const TextStyle(
                       color: Colors.white,

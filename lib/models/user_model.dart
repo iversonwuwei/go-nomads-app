@@ -7,8 +7,8 @@ class UserModel {
   final String? avatarUrl;
   final String? currentCity;
   final String? currentCountry;
-  final List<String> skills;
-  final List<String> interests;
+  final List<UserSkillInfo> skills;
+  final List<UserInterestInfo> interests;
   final Map<String, String> socialLinks;
   final List<Badge> badges;
   final TravelStats stats;
@@ -45,8 +45,14 @@ class UserModel {
       avatarUrl: json['avatarUrl'] as String?,
       currentCity: json['currentCity'] as String?,
       currentCountry: json['currentCountry'] as String?,
-      skills: (json['skills'] as List<dynamic>?)?.cast<String>() ?? [],
-      interests: (json['interests'] as List<dynamic>?)?.cast<String>() ?? [],
+      skills: (json['skills'] as List<dynamic>?)
+              ?.map((e) => UserSkillInfo.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+      interests: (json['interests'] as List<dynamic>?)
+              ?.map((e) => UserInterestInfo.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
       socialLinks: (json['socialLinks'] as Map<String, dynamic>?)?.cast<String, String>() ?? {},
       badges: (json['badges'] as List<dynamic>?)
               ?.map((e) => Badge.fromJson(e as Map<String, dynamic>))
@@ -72,8 +78,8 @@ class UserModel {
       'avatarUrl': avatarUrl,
       'currentCity': currentCity,
       'currentCountry': currentCountry,
-      'skills': skills,
-      'interests': interests,
+      'skills': skills.map((e) => e.toJson()).toList(),
+      'interests': interests.map((e) => e.toJson()).toList(),
       'socialLinks': socialLinks,
       'badges': badges.map((e) => e.toJson()).toList(),
       'stats': stats.toJson(),
@@ -196,6 +202,92 @@ class TravelHistory {
       'endDate': endDate?.toIso8601String(),
       'review': review,
       'rating': rating,
+    };
+  }
+}
+
+/// 用户技能信息(简化版,用于 UserModel)
+class UserSkillInfo {
+  final String id; // user_skill 记录的 ID
+  final String skillId; // skill 的 ID
+  final String skillName; // skill 名称
+  final String? icon; // 图标
+  final String? category; // 类别
+  final String? proficiencyLevel; // 熟练度
+  final int? yearsOfExperience; // 经验年限
+
+  UserSkillInfo({
+    required this.id,
+    required this.skillId,
+    required this.skillName,
+    this.icon,
+    this.category,
+    this.proficiencyLevel,
+    this.yearsOfExperience,
+  });
+
+  factory UserSkillInfo.fromJson(Map<String, dynamic> json) {
+    return UserSkillInfo(
+      id: json['id'] as String,
+      skillId: json['skillId'] as String,
+      skillName: json['skillName'] as String,
+      icon: json['icon'] as String?,
+      category: json['category'] as String?,
+      proficiencyLevel: json['proficiencyLevel'] as String?,
+      yearsOfExperience: json['yearsOfExperience'] as int?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'skillId': skillId,
+      'skillName': skillName,
+      'icon': icon,
+      'category': category,
+      'proficiencyLevel': proficiencyLevel,
+      'yearsOfExperience': yearsOfExperience,
+    };
+  }
+}
+
+/// 用户兴趣信息(简化版,用于 UserModel)
+class UserInterestInfo {
+  final String id; // user_interest 记录的 ID
+  final String interestId; // interest 的 ID
+  final String interestName; // interest 名称
+  final String? icon; // 图标
+  final String? category; // 类别
+  final String? intensityLevel; // 强度
+
+  UserInterestInfo({
+    required this.id,
+    required this.interestId,
+    required this.interestName,
+    this.icon,
+    this.category,
+    this.intensityLevel,
+  });
+
+  factory UserInterestInfo.fromJson(Map<String, dynamic> json) {
+    return UserInterestInfo(
+      id: json['id'] as String,
+      interestId: json['interestId'] as String,
+      interestName: json['interestName'] as String,
+      icon: json['icon'] as String?,
+      category: json['category'] as String?,
+      intensityLevel: json['intensityLevel'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'interestId': interestId,
+      'interestName': interestName,
+      'icon': icon,
+      'category': category,
+      'intensityLevel': intensityLevel,
     };
   }
 }

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
 import '../models/user_model.dart';
@@ -19,7 +20,10 @@ class UserProfileController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _checkLoginAndLoadProfile();
+    // 延迟到下一帧执行，避免在 build 过程中触发状态更新
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkLoginAndLoadProfile();
+    });
     _setupLoginStateListener();
   }
 
@@ -119,19 +123,36 @@ class UserProfileController extends GetxController {
 
   // 从后端 API 数据解析用户模型
   UserModel _parseUserFromApi(Map<String, dynamic> data) {
-    // 解析JSON字符串字段或数组
-    List<String> parseStringList(dynamic value) {
+    // 解析技能对象数组
+    List<UserSkillInfo> parseSkillsList(dynamic value) {
       if (value == null) return [];
       if (value is List) {
-        return value.map((e) => e.toString()).toList();
+        return value
+            .map((skill) {
+              if (skill is Map<String, dynamic>) {
+                return UserSkillInfo.fromJson(skill);
+              }
+              return null;
+            })
+            .whereType<UserSkillInfo>()
+            .toList();
       }
-      if (value is String) {
-        if (value.isEmpty) return [];
-        try {
-          return List<String>.from(json.decode(value));
-        } catch (e) {
-          return [];
-        }
+      return [];
+    }
+
+    // 解析兴趣对象数组
+    List<UserInterestInfo> parseInterestsList(dynamic value) {
+      if (value == null) return [];
+      if (value is List) {
+        return value
+            .map((interest) {
+              if (interest is Map<String, dynamic>) {
+                return UserInterestInfo.fromJson(interest);
+              }
+              return null;
+            })
+            .whereType<UserInterestInfo>()
+            .toList();
       }
       return [];
     }
@@ -162,8 +183,8 @@ class UserProfileController extends GetxController {
       avatarUrl: data['avatarUrl'] ?? data['avatar_url'],
       currentCity: data['currentCity'] ?? data['current_city'],
       currentCountry: data['currentCountry'] ?? data['current_country'],
-      skills: parseStringList(data['skills']),
-      interests: parseStringList(data['interests']),
+      skills: parseSkillsList(data['skills']),
+      interests: parseInterestsList(data['interests']),
       socialLinks:
           parseSocialLinks(data['socialLinks'] ?? data['social_links']),
       badges: [], // TODO: 后端返回 badges 时解析
@@ -202,102 +223,82 @@ class UserProfileController extends GetxController {
     );
   }
 
-  // 添加技能
-  void addSkill(String skill) {
-    if (currentUser.value != null &&
-        !currentUser.value!.skills.contains(skill)) {
-      final updatedSkills = [...currentUser.value!.skills, skill];
-      currentUser.value = UserModel(
-        id: currentUser.value!.id,
-        name: currentUser.value!.name,
-        username: currentUser.value!.username,
-        bio: currentUser.value!.bio,
-        avatarUrl: currentUser.value!.avatarUrl,
-        currentCity: currentUser.value!.currentCity,
-        currentCountry: currentUser.value!.currentCountry,
-        skills: updatedSkills,
-        interests: currentUser.value!.interests,
-        socialLinks: currentUser.value!.socialLinks,
-        badges: currentUser.value!.badges,
-        stats: currentUser.value!.stats,
-        travelHistory: currentUser.value!.travelHistory,
-        joinedDate: currentUser.value!.joinedDate,
-        isVerified: currentUser.value!.isVerified,
-      );
-    }
-  }
+  // 添加技能 - 已废弃,现在通过 SkillsApiService.addUserSkillsBatch 添加
+  // void addSkill(UserSkillInfo skill) {
+  //   ...
+  // }
 
   // 移除技能
-  void removeSkill(String skill) {
-    if (currentUser.value != null) {
-      final updatedSkills =
-          currentUser.value!.skills.where((s) => s != skill).toList();
-      currentUser.value = UserModel(
-        id: currentUser.value!.id,
-        name: currentUser.value!.name,
-        username: currentUser.value!.username,
-        bio: currentUser.value!.bio,
-        avatarUrl: currentUser.value!.avatarUrl,
-        currentCity: currentUser.value!.currentCity,
-        currentCountry: currentUser.value!.currentCountry,
-        skills: updatedSkills,
-        interests: currentUser.value!.interests,
-        socialLinks: currentUser.value!.socialLinks,
-        badges: currentUser.value!.badges,
-        stats: currentUser.value!.stats,
-        travelHistory: currentUser.value!.travelHistory,
-        joinedDate: currentUser.value!.joinedDate,
-        isVerified: currentUser.value!.isVerified,
+  Future<void> removeSkill(String userSkillId) async {
+    if (currentUser.value == null) return;
+
+    try {
+      // 调用后端 API 删除(使用 user_skill 的 ID)
+      final httpService = HttpService();
+      final response = await httpService.delete('/skills/me/$userSkillId');
+
+      if (response.statusCode == 200) {
+        print('✅ 技能已从数据库删除: ID=$userSkillId');
+        
+        // 删除成功后,重新加载用户资料以刷新页面
+        await loadUserProfile();
+        
+        AppToast.success(
+          'Skill removed successfully',
+          title: 'Success',
+        );
+      } else {
+        print('⚠️ 删除技能失败: ${response.statusCode}');
+        AppToast.error(
+          'Failed to remove skill',
+          title: 'Error',
+        );
+      }
+    } catch (e) {
+      print('❌ 删除技能出错: $e');
+      AppToast.error(
+        'Failed to remove skill: $e',
+        title: 'Error',
       );
     }
   }
 
-  // 添加兴趣爱好
-  void addInterest(String interest) {
-    if (currentUser.value != null &&
-        !currentUser.value!.interests.contains(interest)) {
-      final updatedInterests = [...currentUser.value!.interests, interest];
-      currentUser.value = UserModel(
-        id: currentUser.value!.id,
-        name: currentUser.value!.name,
-        username: currentUser.value!.username,
-        bio: currentUser.value!.bio,
-        avatarUrl: currentUser.value!.avatarUrl,
-        currentCity: currentUser.value!.currentCity,
-        currentCountry: currentUser.value!.currentCountry,
-        skills: currentUser.value!.skills,
-        interests: updatedInterests,
-        socialLinks: currentUser.value!.socialLinks,
-        badges: currentUser.value!.badges,
-        stats: currentUser.value!.stats,
-        travelHistory: currentUser.value!.travelHistory,
-        joinedDate: currentUser.value!.joinedDate,
-        isVerified: currentUser.value!.isVerified,
-      );
-    }
-  }
+  // 添加兴趣爱好 - 已废弃,现在通过 InterestsApiService.addUserInterestsBatch 添加
+  // void addInterest(UserInterestInfo interest) {
+  //   ...
+  // }
 
   // 移除兴趣爱好
-  void removeInterest(String interest) {
-    if (currentUser.value != null) {
-      final updatedInterests =
-          currentUser.value!.interests.where((i) => i != interest).toList();
-      currentUser.value = UserModel(
-        id: currentUser.value!.id,
-        name: currentUser.value!.name,
-        username: currentUser.value!.username,
-        bio: currentUser.value!.bio,
-        avatarUrl: currentUser.value!.avatarUrl,
-        currentCity: currentUser.value!.currentCity,
-        currentCountry: currentUser.value!.currentCountry,
-        skills: currentUser.value!.skills,
-        interests: updatedInterests,
-        socialLinks: currentUser.value!.socialLinks,
-        badges: currentUser.value!.badges,
-        stats: currentUser.value!.stats,
-        travelHistory: currentUser.value!.travelHistory,
-        joinedDate: currentUser.value!.joinedDate,
-        isVerified: currentUser.value!.isVerified,
+  Future<void> removeInterest(String userInterestId) async {
+    if (currentUser.value == null) return;
+
+    try {
+      // 调用后端 API 删除(使用 user_interest 的 ID)
+      final httpService = HttpService();
+      final response = await httpService.delete('/interests/me/$userInterestId');
+
+      if (response.statusCode == 200) {
+        print('✅ 兴趣爱好已从数据库删除: ID=$userInterestId');
+        
+        // 删除成功后,重新加载用户资料以刷新页面
+        await loadUserProfile();
+        
+        AppToast.success(
+          'Interest removed successfully',
+          title: 'Success',
+        );
+      } else {
+        print('⚠️ 删除兴趣爱好失败: ${response.statusCode}');
+        AppToast.error(
+          'Failed to remove interest',
+          title: 'Error',
+        );
+      }
+    } catch (e) {
+      print('❌ 删除兴趣爱好出错: $e');
+      AppToast.error(
+        'Failed to remove interest: $e',
+        title: 'Error',
       );
     }
   }

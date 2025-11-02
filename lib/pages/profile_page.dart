@@ -564,12 +564,24 @@ class ProfilePage extends StatelessWidget {
                           color:
                               const Color(0xFFFF4458).withValues(alpha: 0.3)),
                     ),
-                    child: Text(
-                      skill,
-                      style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFFFF4458)),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (skill.icon != null) ...[
+                          Text(
+                            skill.icon!,
+                            style: const TextStyle(fontSize: 13),
+                          ),
+                          const SizedBox(width: 6),
+                        ],
+                        Text(
+                          skill.skillName,
+                          style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFFFF4458)),
+                        ),
+                      ],
                     ),
                   );
                 }).toList(),
@@ -630,12 +642,24 @@ class ProfilePage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: const Color(0xFFE5E7EB)),
                     ),
-                    child: Text(
-                      interest,
-                      style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF374151)),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (interest.icon != null) ...[
+                          Text(
+                            interest.icon!,
+                            style: const TextStyle(fontSize: 13),
+                          ),
+                          const SizedBox(width: 6),
+                        ],
+                        Text(
+                          interest.interestName,
+                          style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF374151)),
+                        ),
+                      ],
                     ),
                   );
                 }).toList(),
