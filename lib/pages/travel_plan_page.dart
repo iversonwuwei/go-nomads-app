@@ -299,17 +299,18 @@ class _TravelPlanPageState extends State<TravelPlanPage>
   Widget _buildLoadingSkeleton() {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: CustomScrollView(
-        slivers: [
-          // App Bar Skeleton
-          SliverAppBar(
-            expandedHeight: 200,
-            pinned: true,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_outlined,
-                  color: AppColors.backButtonLight),
-              onPressed: () => Get.back(),
-            ),
+      body: SafeArea(
+        child: CustomScrollView(
+          slivers: [
+            // App Bar Skeleton
+            SliverAppBar(
+              expandedHeight: 200,
+              pinned: true,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_outlined,
+                    color: AppColors.backButtonLight),
+                onPressed: () => Get.back(),
+              ),
             flexibleSpace: FlexibleSpaceBar(
               background: AnimatedBuilder(
                 animation: _shimmerController,
@@ -449,6 +450,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
             ),
           ),
         ],
+        ),
       ),
     );
   }

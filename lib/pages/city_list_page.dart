@@ -228,18 +228,20 @@ class _CityListPageState extends State<CityListPage> {
           ),
         ),
       ),
-      body: Obx(() {
-        // 加载中状态
-        if (controller.isLoading.value) {
-          return const CityListSkeleton();
-        }
+      body: SafeArea(
+        top: false, // AppBar 已经处理了顶部
+        child: Obx(() {
+          // 加载中状态
+          if (controller.isLoading.value) {
+            return const CityListSkeleton();
+          }
 
-        // 错误状态
-        if (controller.hasError.value) {
-          return _buildErrorState();
-        }
+          // 错误状态
+          if (controller.hasError.value) {
+            return _buildErrorState();
+          }
 
-        return Column(
+          return Column(
           children: [
             // 筛选栏
             _buildFilterBar(isMobile),
@@ -262,7 +264,8 @@ class _CityListPageState extends State<CityListPage> {
             ),
           ],
         );
-      }),
+        }),
+      ),
     );
   }
 

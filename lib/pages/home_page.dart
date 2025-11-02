@@ -60,14 +60,16 @@ class MyHomePage extends StatelessWidget {
           ),
         ),
       ),
-      body: Obx(() {
-        if (controller.isLoading.value) {
-          return const HomeSkeleton();
-        }
+      body: SafeArea(
+        top: false, // AppBar 已经处理了顶部安全区域
+        child: Obx(() {
+          if (controller.isLoading.value) {
+            return const HomeSkeleton();
+          }
 
-        return SingleChildScrollView(
-          padding: const EdgeInsets.only(bottom: 100),
-          child: Column(
+          return SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 100),
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Banner轮播�?
@@ -109,7 +111,8 @@ class MyHomePage extends StatelessWidget {
             ],
           ),
         );
-      }),
+        }),
+      ),
     );
   }
 

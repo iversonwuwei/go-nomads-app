@@ -2,6 +2,7 @@ class UserModel {
   final String id;
   final String name;
   final String username;
+  final String? email; // 添加 email 字段
   final String? bio;
   final String? avatarUrl;
   final String? currentCity;
@@ -19,6 +20,7 @@ class UserModel {
     required this.id,
     required this.name,
     required this.username,
+    this.email, // 添加 email 参数
     this.bio,
     this.avatarUrl,
     this.currentCity,
@@ -38,6 +40,7 @@ class UserModel {
       id: json['id'] as String,
       name: json['name'] as String,
       username: json['username'] as String,
+      email: json['email'] as String?, // 添加 email
       bio: json['bio'] as String?,
       avatarUrl: json['avatarUrl'] as String?,
       currentCity: json['currentCity'] as String?,
@@ -64,6 +67,7 @@ class UserModel {
       'id': id,
       'name': name,
       'username': username,
+      'email': email, // 添加 email
       'bio': bio,
       'avatarUrl': avatarUrl,
       'currentCity': currentCity,

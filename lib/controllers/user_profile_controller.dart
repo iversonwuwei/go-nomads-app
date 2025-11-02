@@ -157,6 +157,7 @@ class UserProfileController extends GetxController {
       id: data['id']?.toString() ?? '',
       name: data['name'] ?? data['username'] ?? 'User',
       username: '@${data['username'] ?? 'user'}',
+      email: data['email'], // 添加 email
       bio: data['bio'],
       avatarUrl: data['avatarUrl'] ?? data['avatar_url'],
       currentCity: data['currentCity'] ?? data['current_city'],

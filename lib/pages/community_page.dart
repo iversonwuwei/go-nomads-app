@@ -40,19 +40,22 @@ class CommunityPage extends StatelessWidget {
             ],
           ),
         ),
-        body: Obx(() {
-          if (controller.isLoading.value) {
-            return const CommunitySkeleton();
-          }
+        body: SafeArea(
+          top: false, // AppBar 已经处理了顶部
+          child: Obx(() {
+            if (controller.isLoading.value) {
+              return const CommunitySkeleton();
+            }
 
-          return TabBarView(
-            children: [
-              _buildTripReportsTab(controller, isMobile),
-              _buildRecommendationsTab(controller, isMobile),
-              _buildQATab(controller, isMobile),
-            ],
-          );
-        }),
+            return TabBarView(
+              children: [
+                _buildTripReportsTab(controller, isMobile),
+                _buildRecommendationsTab(controller, isMobile),
+                _buildQATab(controller, isMobile),
+              ],
+            );
+          }),
+        ),
       ),
     );
   }

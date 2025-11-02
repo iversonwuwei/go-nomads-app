@@ -91,27 +91,28 @@ class ProfilePage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Obx(() {
-        if (controller.isLoading.value) {
-          return const ProfileSkeleton();
-        }
+      body: SafeArea(
+        child: Obx(() {
+          if (controller.isLoading.value) {
+            return const ProfileSkeleton();
+          }
 
-        final user = controller.currentUser.value;
-        if (user == null) {
-          return Center(child: Text(l10n.userNotFound));
-        }
+          final user = controller.currentUser.value;
+          if (user == null) {
+            return Center(child: Text(l10n.userNotFound));
+          }
 
-        return CustomScrollView(
-          slivers: [
-            // 移除了 AppBar - 不需要 header
+          return CustomScrollView(
+            slivers: [
+              // 移除了 AppBar - 不需要 header
 
-            // Content
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: isMobile ? 16 : 32,
-                  vertical: isMobile ? 48 : 64, // 顶部留白替代 AppBar
-                ),
+              // Content
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isMobile ? 16 : 32,
+                    vertical: isMobile ? 24 : 32, // 减少顶部留白，SafeArea 已处理
+                  ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -157,7 +158,8 @@ class ProfilePage extends StatelessWidget {
             ),
           ],
         );
-      }),
+        }),
+      ),
     );
   }
 

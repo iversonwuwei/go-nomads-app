@@ -26,6 +26,41 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   final List<String> _currencies = ['USD', 'EUR', 'GBP', 'JPY', 'CNY'];
   final List<String> _temperatureUnits = ['Celsius', 'Fahrenheit'];
 
+  // TextEditingController 用于管理输入框
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _bioController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _bioController.dispose();
+    super.dispose();
+  }
+
+  // 加载用户资料
+  Future<void> _loadUserProfile() async {
+    final profileController = Get.put(UserProfileController());
+
+    // 加载用户资料
+    await profileController.loadUserProfile();
+
+    // 填充输入框
+    if (profileController.currentUser.value != null) {
+      final user = profileController.currentUser.value!;
+      _nameController.text = user.name;
+      _emailController.text = user.email ?? ''; // 使用 email 字段
+      _bioController.text = user.bio ?? '';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -37,30 +72,15 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => Get.back(),
-        ),
-        title: Text(
-          l10n.editProfile,
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: isMobile ? 18 : 20,
-            fontWeight: FontWeight.bold,
+      body: SafeArea(
+        child: ListView(
+          padding: EdgeInsets.fromLTRB(
+            isMobile ? 16 : 24,
+            isMobile ? 16 : 24,
+            isMobile ? 16 : 24,
+            100, // 底部留白给导航栏
           ),
-        ),
-      ),
-      body: ListView(
-        padding: EdgeInsets.fromLTRB(
-          isMobile ? 16 : 24,
-          isMobile ? 16 : 24,
-          isMobile ? 16 : 24,
-          100, // 底部留白给导航栏
-        ),
-        children: [
+          children: [
           // 头像和基本信息编辑
           _buildProfileEditCard(isMobile),
 
@@ -115,56 +135,64 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
             ),
           ),
         ],
+        ),
       ),
     );
   }
 
   Widget _buildProfileEditCard(bool isMobile) {
     final l10n = AppLocalizations.of(Get.context!)!;
-    
-    return Container(
-      padding: EdgeInsets.all(isMobile ? 20 : 32),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        children: [
-          // 头像编辑
-          Stack(
-            children: [
-              CircleAvatar(
-                radius: isMobile ? 50 : 70,
-                backgroundImage: const NetworkImage(
-                  'https://ui-avatars.com/api/?name=Digital+Nomad&background=FF9800&color=fff&size=200',
-                ),
-                backgroundColor: Colors.orange,
-              ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.accent,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
-                  ),
-                  child: const Icon(
-                    Icons.camera_alt,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-              ),
-            ],
-          ),
+    final profileController = Get.find<UserProfileController>();
 
-          SizedBox(height: isMobile ? 16 : 24),
+    return Obx(() {
+      final user = profileController.currentUser.value;
+
+      // 生成头像 URL (如果没有 avatarUrl，使用用户名生成)
+      final avatarUrl = user?.avatarUrl ??
+          'https://ui-avatars.com/api/?name=${Uri.encodeComponent(user?.name ?? 'User')}&background=FF9800&color=fff&size=200';
+      
+      return Container(
+        padding: EdgeInsets.all(isMobile ? 20 : 32),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Column(
+          children: [
+            // 头像编辑
+            Stack(
+              children: [
+                CircleAvatar(
+                  radius: isMobile ? 50 : 70,
+                  backgroundImage: NetworkImage(avatarUrl),
+                  backgroundColor: Colors.orange,
+                ),
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.accent,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                    ),
+                    child: const Icon(
+                      Icons.camera_alt,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            SizedBox(height: isMobile ? 16 : 24),
 
           // 用户名编辑
           TextField(
+              controller: _nameController,
             decoration: InputDecoration(
               labelText: l10n.name,
               labelStyle: TextStyle(color: AppColors.textSecondary),
@@ -190,8 +218,9 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
           const SizedBox(height: 16),
 
-          // 邮箱（只读）
+            // 邮箱(只读)
           TextField(
+              controller: _emailController,
             readOnly: true,
             decoration: InputDecoration(
               labelText: l10n.email,
@@ -216,6 +245,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
           // Bio
           TextField(
+              controller: _bioController,
             maxLines: 3,
             decoration: InputDecoration(
               labelText: l10n.bio,
@@ -242,6 +272,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
         ],
       ),
     );
+    }); // 关闭 Obx
   }
 
   Widget _buildSkillsSection(bool isMobile, UserProfileController profileController) {
