@@ -40,8 +40,10 @@ class CityDetailPage extends StatefulWidget {
   State<CityDetailPage> createState() => _CityDetailPageState();
 }
 
-class _CityDetailPageState extends State<CityDetailPage> {
+class _CityDetailPageState extends State<CityDetailPage>
+    with SingleTickerProviderStateMixin {
   late PageController _pageController;
+  late TabController _tabController;
   int _currentPage = 0;
 
   // �?Get.arguments 或构造函数获取参�?
@@ -50,6 +52,120 @@ class _CityDetailPageState extends State<CityDetailPage> {
   late final String cityImage;
   late final double overallScore;
   late final int reviewCount;
+
+  Widget _buildWeatherMetric({
+    required IconData icon,
+    required String label,
+    required String value,
+    String? subtitle,
+  }) {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minWidth: 150, maxWidth: 200),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: const Color(0xFFFF4458), size: 20),
+            const SizedBox(height: 12),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: 13,
+              ),
+            ),
+            if (subtitle != null && subtitle.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  color: Colors.grey[500],
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatWeatherTime(
+    DateTime utc,
+    int? offsetSeconds, {
+    String pattern = 'HH:mm',
+  }) {
+    final localized = _applyTimezoneOffset(utc, offsetSeconds);
+    return DateFormat(pattern).format(localized);
+  }
+
+  DateTime _applyTimezoneOffset(DateTime utc, int? offsetSeconds) {
+    final offset = Duration(seconds: offsetSeconds ?? 0);
+    final adjusted = utc.add(offset);
+    return DateTime.fromMillisecondsSinceEpoch(
+      adjusted.millisecondsSinceEpoch,
+      isUtc: false,
+    );
+  }
+
+  String _formatTimezone(int? offsetSeconds) {
+    if (offsetSeconds == null) {
+      return 'UTC';
+    }
+
+    final totalMinutes = offsetSeconds ~/ 60;
+    final hours = totalMinutes ~/ 60;
+    final minutes = totalMinutes.abs() % 60;
+    final sign = offsetSeconds >= 0 ? '+' : '-';
+
+    return 'UTC$sign${hours.abs().toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}';
+  }
+
+  String _formatDayName(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final targetDate = DateTime(date.year, date.month, date.day);
+    final difference = targetDate.difference(today).inDays;
+
+    if (difference == 0) {
+      return 'Today';
+    } else if (difference == 1) {
+      return 'Tomorrow';
+    } else {
+      // Format as "Mon", "Tue", etc.
+      return DateFormat('EEE').format(date);
+    }
+  }
+
+  String _describeAqi(int aqi) {
+    if (aqi <= 50) return 'Good';
+    if (aqi <= 100) return 'Moderate';
+    if (aqi <= 150) return 'Unhealthy for sensitive groups';
+    if (aqi <= 200) return 'Unhealthy';
+    if (aqi <= 300) return 'Very unhealthy';
+    return 'Hazardous';
+  }
 
   @override
   void initState() {
@@ -64,6 +180,17 @@ class _CityDetailPageState extends State<CityDetailPage> {
     reviewCount = args?['reviewCount'] ?? widget.reviewCount;
 
     _pageController = PageController();
+    
+    // 初始化 TabController (10个tab)
+    _tabController = TabController(length: 10, vsync: this);
+
+    // 监听 tab 切换
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        final controller = Get.find<CityDetailController>();
+        controller.changeTab(_tabController.index);
+      }
+    });
   }
 
   // 获取城市展示图片列表
@@ -100,8 +227,10 @@ class _CityDetailPageState extends State<CityDetailPage> {
   }
 
   @override
+  @override
   void dispose() {
     _pageController.dispose();
+    _tabController.dispose();
     print('🗑�?City detail page disposed');
     super.dispose();
   }
@@ -117,25 +246,22 @@ class _CityDetailPageState extends State<CityDetailPage> {
     // 加载用户内容
     controller.loadUserContent();
 
-    return DefaultTabController(
-      length:
-          10, // 10个标�?Scores, Guide, Pros&Cons, Reviews, Cost, Photos, Weather, Hotels, Neighborhoods, Coworking)
-      child: Scaffold(
-        body: Stack(
-          children: [
-            NestedScrollView(
-              headerSliverBuilder: (context, innerBoxIsScrolled) {
-                return [
-                  // 大图 Banner
-                  SliverAppBar(
-                    expandedHeight: 250,
-                    pinned: true,
-                    leading: IconButton(
-                      icon: const Icon(Icons.arrow_back_outlined,
-                          color: AppColors.backButtonLight),
-                      onPressed: () => Get.back(),
-                    ),
-                    flexibleSpace: FlexibleSpaceBar(
+    return Scaffold(
+      body: Stack(
+        children: [
+          NestedScrollView(
+            headerSliverBuilder: (context, innerBoxIsScrolled) {
+              return [
+                // 大图 Banner
+                SliverAppBar(
+                  expandedHeight: 250,
+                  pinned: true,
+                  leading: IconButton(
+                    icon: const Icon(Icons.arrow_back_outlined,
+                        color: AppColors.backButtonLight),
+                    onPressed: () => Get.back(),
+                  ),
+                  flexibleSpace: FlexibleSpaceBar(
                       title: Text(
                         cityName,
                         style: const TextStyle(
@@ -307,6 +433,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
                     pinned: true,
                     delegate: _SliverAppBarDelegate(
                       TabBar(
+                      controller: _tabController,
                         isScrollable: true,
                         labelColor: const Color(0xFFFF4458),
                         unselectedLabelColor: Colors.grey[600],
@@ -414,6 +541,7 @@ class _CityDetailPageState extends State<CityDetailPage> {
                 }
 
                 return TabBarView(
+                controller: _tabController,
                   children: [
                     _buildScoresTab(context, controller),
                     _buildGuideTab(controller),
@@ -430,8 +558,8 @@ class _CityDetailPageState extends State<CityDetailPage> {
               }),
             ),
 
-            // Floating AI Travel Plan Button
-            Positioned(
+          // Floating AI Travel Plan Button
+          Positioned(
               bottom: 16,
               right: 16,
               child: Material(
@@ -505,7 +633,6 @@ class _CityDetailPageState extends State<CityDetailPage> {
               ),
             ),
           ],
-        ),
       ),
     );
   }
@@ -1319,67 +1446,431 @@ class _CityDetailPageState extends State<CityDetailPage> {
     final weather = controller.weather.value;
     final l10n = AppLocalizations.of(context)!;
     if (weather == null) {
-      return Center(child: Text(l10n.noData));
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Text(
+            l10n.noData,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 16,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ),
+      );
+    }
+
+    final rawDescription = weather.weatherDescription.trim();
+    final description = rawDescription.isEmpty
+        ? weather.weather
+        : rawDescription[0].toUpperCase() + rawDescription.substring(1);
+    final iconUrl = weather.weatherIcon.isNotEmpty
+        ? 'https://openweathermap.org/img/wn/${weather.weatherIcon}@4x.png'
+        : null;
+    final timezone = _formatTimezone(weather.timezoneOffset);
+    final sunrise = _formatWeatherTime(weather.sunrise, weather.timezoneOffset);
+    final sunset = _formatWeatherTime(weather.sunset, weather.timezoneOffset);
+    final updatedAt = _formatWeatherTime(
+      weather.updatedAt,
+      weather.timezoneOffset,
+      pattern: 'MMM d, HH:mm',
+    );
+    final windSpeedKmh = (weather.windSpeed * 3.6).toStringAsFixed(1);
+    final visibilityKm = (weather.visibility / 1000).toStringAsFixed(1);
+    final windSubtitle = weather.windDirectionDescription?.isNotEmpty == true
+        ? weather.windDirectionDescription!
+        : '${weather.windDirection}°';
+
+    final metrics = <Widget>[
+      _buildWeatherMetric(
+        icon: Icons.thermostat,
+        label: l10n.feelsLike,
+        value: '${weather.feelsLike.toStringAsFixed(1)}°C',
+      ),
+      _buildWeatherMetric(
+        icon: Icons.water_drop,
+        label: 'Humidity',
+        value: '${weather.humidity}%',
+      ),
+      _buildWeatherMetric(
+        icon: Icons.air,
+        label: 'Wind',
+        value: '$windSpeedKmh km/h',
+        subtitle: windSubtitle,
+      ),
+      _buildWeatherMetric(
+        icon: Icons.speed,
+        label: 'Pressure',
+        value: '${weather.pressure} hPa',
+      ),
+      _buildWeatherMetric(
+        icon: Icons.cloud,
+        label: 'Cloudiness',
+        value: '${weather.cloudiness}%',
+      ),
+      _buildWeatherMetric(
+        icon: Icons.visibility,
+        label: 'Visibility',
+        value: '$visibilityKm km',
+      ),
+    ];
+
+    if (weather.airQualityIndex != null) {
+      metrics.add(
+        _buildWeatherMetric(
+          icon: Icons.health_and_safety,
+          label: 'Air Quality',
+          value: '${weather.airQualityIndex}',
+          subtitle: _describeAqi(weather.airQualityIndex!),
+        ),
+      );
+    }
+
+    if (weather.uvIndex != null) {
+      metrics.add(
+        _buildWeatherMetric(
+          icon: Icons.wb_sunny,
+          label: 'UV Index',
+          value: weather.uvIndex!.toStringAsFixed(1),
+        ),
+      );
     }
 
     return ListView(
       padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
       children: [
         Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(16),
           ),
-          child: Column(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                '${weather.currentTemp.toStringAsFixed(0)}°C',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 48,
-                  fontWeight: FontWeight.bold,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${weather.temperature.toStringAsFixed(1)}°C',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 48,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      description,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    if (controller.currentCityName.value.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          controller.currentCityName.value,
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.75),
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 12),
+                    Text(
+                      '${l10n.feelsLike} ${weather.feelsLike.toStringAsFixed(1)}°C',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '$timezone • Updated $updatedAt',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
                 ),
               ),
+              if (iconUrl != null)
+                SizedBox(
+                  height: 120,
+                  width: 120,
+                  child: Image.network(
+                    iconUrl,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(
+                        Icons.wb_sunny,
+                        color: Colors.white,
+                        size: 64,
+                      );
+                    },
+                  ),
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        Wrap(
+          spacing: 16,
+          runSpacing: 16,
+          children: metrics,
+        ),
+        const SizedBox(height: 24),
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Sunrise & Sunset',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  const Icon(Icons.wb_twilight, color: Color(0xFFFF4458)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Sunrise',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    sunrise,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  const Icon(Icons.nightlight_round, color: Color(0xFFFF4458)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Sunset',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    sunset,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        // 5-Day Forecast Section
+        if (weather.forecast?.daily.isNotEmpty == true) ...[
+          const SizedBox(height: 24),
+          const Padding(
+            padding: EdgeInsets.only(left: 4),
+            child: Text(
+              '5-Day Forecast',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 160,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: weather.forecast!.daily.length,
+              padding: const EdgeInsets.only(right: 16),
+              itemBuilder: (context, index) {
+                final day = weather.forecast!.daily[index];
+                final isToday = index == 0;
+                final dayName = isToday ? 'Today' : _formatDayName(day.date);
+                final iconUrl = day.weatherIcon.isNotEmpty
+                    ? 'https://openweathermap.org/img/wn/${day.weatherIcon}@2x.png'
+                    : null;
+
+                return Container(
+                  width: 110,
+                  margin: const EdgeInsets.only(left: 16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: isToday
+                          ? [const Color(0xFFFF4458), const Color(0xFFFF6B7A)]
+                          : [Colors.white, Colors.white],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    border: isToday
+                        ? null
+                        : Border.all(
+                            color: Colors.grey.shade200,
+                            width: 1,
+                          ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: isToday
+                            ? const Color(0xFFFF4458).withValues(alpha: 0.2)
+                            : Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 16,
+                      horizontal: 12,
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          dayName,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: isToday ? Colors.white : Colors.grey[800],
+                          ),
+                        ),
+                        if (iconUrl != null)
+                          SizedBox(
+                            height: 48,
+                            width: 48,
+                            child: Image.network(
+                              iconUrl,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(
+                                  Icons.wb_sunny,
+                                  color:
+                                      isToday ? Colors.white : Colors.grey[400],
+                                  size: 32,
+                                );
+                              },
+                            ),
+                          )
+                        else
+                          Icon(
+                            Icons.wb_sunny,
+                            color: isToday ? Colors.white : Colors.grey[400],
+                            size: 32,
+                          ),
+                        Column(
+                          children: [
+                            Text(
+                              '${day.tempMax.toStringAsFixed(0)}°',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color:
+                                    isToday ? Colors.white : Colors.grey[900],
+                              ),
+                            ),
+                            Text(
+                              '${day.tempMin.toStringAsFixed(0)}°',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: isToday
+                                    ? Colors.white.withValues(alpha: 0.7)
+                                    : Colors.grey[500],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Data Source',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 12),
               Text(
-                '${l10n.feelsLike} ${weather.feelsLike.toStringAsFixed(0)}°C',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
+                weather.dataSource ?? 'OpenWeatherMap',
+                style: TextStyle(
+                  color: Colors.grey[700],
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Timezone: $timezone',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 13,
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 24),
-        Text(
-          l10n.sevenDayForecast,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 12),
-        ...weather.forecast.map((day) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text('${day.date.month}/${day.date.day}'),
-                  ),
-                  Icon(
-                    day.condition == 'rainy'
-                        ? Icons.water_drop
-                        : Icons.wb_sunny,
-                    color:
-                        day.condition == 'rainy' ? Colors.blue : Colors.orange,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                      '${day.low.toStringAsFixed(0)}° - ${day.high.toStringAsFixed(0)}°'),
-                ],
-              ),
-            )),
       ],
     );
   }

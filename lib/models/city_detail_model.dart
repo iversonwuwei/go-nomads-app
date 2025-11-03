@@ -150,55 +150,6 @@ class CostOfLiving {
   });
 }
 
-/// 天气数据
-class WeatherData {
-  final double currentTemp;
-  final double feelsLike;
-  final double humidity;
-  final String condition; // sunny, cloudy, rainy, etc.
-  final int aqi;
-  final List<DailyForecast> forecast;
-  final MonthlyClimate monthlyClimate;
-  final String bestSeason;
-
-  WeatherData({
-    required this.currentTemp,
-    required this.feelsLike,
-    required this.humidity,
-    required this.condition,
-    required this.aqi,
-    required this.forecast,
-    required this.monthlyClimate,
-    required this.bestSeason,
-  });
-}
-
-class DailyForecast {
-  final DateTime date;
-  final double high;
-  final double low;
-  final String condition;
-  final int precipitation;
-
-  DailyForecast({
-    required this.date,
-    required this.high,
-    required this.low,
-    required this.condition,
-    required this.precipitation,
-  });
-}
-
-class MonthlyClimate {
-  final Map<String, double> avgTemperature; // month -> temp
-  final Map<String, int> rainfall; // month -> mm
-  
-  MonthlyClimate({
-    required this.avgTemperature,
-    required this.rainfall,
-  });
-}
-
 /// 城市照片
 class CityPhoto {
   final String id;

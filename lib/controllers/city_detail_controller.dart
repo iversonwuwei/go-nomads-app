@@ -1,15 +1,22 @@
+import 'dart:math';
+
 import 'package:get/get.dart';
 
 import '../models/city_detail_model.dart';
 import '../models/travel_plan_model.dart';
 import '../models/user_city_content_models.dart';
+import '../models/weather_model.dart';
 import '../services/ai_api_service.dart';
 import '../services/async_task_service.dart';
+import '../services/cities_api_service.dart';
+import '../services/http_service.dart';
 import '../services/user_city_content_api_service.dart';
 import '../widgets/app_toast.dart';
 
 /// 城市详情页控制器
 class CityDetailController extends GetxController {
+  final CitiesApiService _citiesApiService = CitiesApiService();
+
   // 当前城市ID
   var currentCityId = ''.obs;
   var currentCityName = ''.obs;
@@ -28,7 +35,7 @@ class CityDetailController extends GetxController {
   var costOfLiving = Rx<CostOfLiving?>(null);
   var peopleInCity = <String>[].obs; // User IDs
   var photos = <CityPhoto>[].obs;
-  var weather = Rx<WeatherData?>(null);
+  var weather = Rx<WeatherModel?>(null);
   var trends = Rx<TrendsData?>(null);
   var demographics = Rx<Demographics?>(null);
   var neighborhoods = <Neighborhood>[].obs;
@@ -229,19 +236,74 @@ class CityDetailController extends GetxController {
   }
 
   /// 加载城市数据
-  void loadCityData() {
+  Future<void> loadCityData() async {
     isLoading.value = true;
 
-    // 只加载部分 Mock 数据 (尚未实现后端 API 的部分)
-    Future.delayed(const Duration(milliseconds: 500), () {
-      _generateMockData();
+    try {
+      await _loadMockData();
+      // 天气数据延迟到用户点击 Weather tab 时加载
+    } finally {
       isLoading.value = false;
-    });
+    }
+  }
+
+  Future<void> _loadMockData() async {
+    // 保留部分数据的 Mock 生成逻辑，保证页面展示完整
+    await Future.delayed(const Duration(milliseconds: 500));
+    _generateMockData();
+  }
+
+  Future<void> loadWeatherData() async {
+    print(
+        '🌤️ [DEBUG] loadWeatherData called, currentCityId="${currentCityId.value}"');
+
+    if (currentCityId.value.isEmpty) {
+      print('⚠️ [DEBUG] cityId is empty, skipping weather load');
+      weather.value = null;
+      return;
+    }
+
+    try {
+      final httpService = HttpService();
+      final token = httpService.authToken;
+      print('🌤️ 正在加载城市天气: cityId=${currentCityId.value}');
+      print(
+          '🔑 当前 HttpService token: ${token != null ? "${token.substring(0, min(20, token.length))}..." : "null"}');
+      final weatherJson = await _citiesApiService.getCityWeather(
+        currentCityId.value,
+        includeForecast: true,
+        days: 5,
+      );
+
+      if (weatherJson != null) {
+        weather.value = WeatherModel.fromJson(weatherJson);
+        print(
+            '✅ 天气加载成功: 温度 ${weather.value?.temperature.toStringAsFixed(1)}°C');
+        final forecastDays = weather.value?.forecast?.daily.length ?? 0;
+        if (forecastDays > 0) {
+          print(
+              '📆 预报天数: $forecastDays, 更新时间: ${weather.value?.forecast?.generatedAt.toIso8601String()}');
+        }
+      } else {
+        weather.value = null;
+        print('ℹ️ 城市暂无天气数据: cityId=${currentCityId.value}');
+      }
+    } catch (e, stackTrace) {
+      weather.value = null;
+      print('❌ 加载城市天气失败: $e');
+      print('   堆栈: $stackTrace');
+    }
   }
 
   /// 切换标签页
   void changeTab(int index) {
     currentTabIndex.value = index;
+    
+    // Weather tab 索引是 6
+    if (index == 6 && weather.value == null) {
+      print('📍 切换到 Weather tab，开始加载天气数据...');
+      loadWeatherData();
+    }
   }
 
   /// 投票优缺点
@@ -380,55 +442,6 @@ class CityDetailController extends GetxController {
 
     // ❌ 已删除 Mock reviews - 使用后端 userReviews
     // ❌ 已删除 Mock costOfLiving - 使用后端 communityCostSummary
-
-    // 生成天气数据
-    weather.value = WeatherData(
-      currentTemp: 32,
-      feelsLike: 41,
-      humidity: 71,
-      condition: 'sunny',
-      aqi: 56,
-      forecast: List.generate(
-          7,
-          (index) => DailyForecast(
-                date: DateTime.now().add(Duration(days: index)),
-                high: 33 + (index % 3),
-                low: 28 + (index % 2),
-                condition: index % 3 == 0 ? 'rainy' : 'sunny',
-                precipitation: index % 3 == 0 ? 60 : 10,
-              )),
-      monthlyClimate: MonthlyClimate(
-        avgTemperature: {
-          'Jan': 27,
-          'Feb': 28,
-          'Mar': 29,
-          'Apr': 30,
-          'May': 30,
-          'Jun': 29,
-          'Jul': 29,
-          'Aug': 29,
-          'Sep': 28,
-          'Oct': 28,
-          'Nov': 27,
-          'Dec': 26,
-        },
-        rainfall: {
-          'Jan': 10,
-          'Feb': 20,
-          'Mar': 30,
-          'Apr': 70,
-          'May': 200,
-          'Jun': 150,
-          'Jul': 160,
-          'Aug': 180,
-          'Sep': 300,
-          'Oct': 240,
-          'Nov': 50,
-          'Dec': 10,
-        },
-      ),
-      bestSeason: 'November to February',
-    );
 
     // ❌ 已删除 Mock photos - 使用后端 userPhotos
 

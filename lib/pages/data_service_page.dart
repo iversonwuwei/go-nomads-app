@@ -1361,6 +1361,9 @@ class _DataCardState extends State<_DataCard> {
     return GestureDetector(
       onTap: () {
         // 单击跳转到城市详情页面
+        print('🏙️ [DEBUG] City card tapped: ${widget.data}');
+        print(
+            '🏙️ [DEBUG] cityId will be: ${widget.data['id']?.toString() ?? widget.data['city']?.toString() ?? "EMPTY"}');
 
         // 检查登录状态
         if (!userStateController.isLoggedIn) {

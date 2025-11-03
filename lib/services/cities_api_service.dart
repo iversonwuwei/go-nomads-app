@@ -109,4 +109,37 @@ class CitiesApiService {
       throw Exception('获取城市列表(含Coworking数量)失败: ${e.toString()}');
     }
   }
+
+  /// 获取城市天气信息，可选包含后续多日预报
+  Future<Map<String, dynamic>?> getCityWeather(
+    String cityId, {
+    bool includeForecast = true,
+    int days = 7,
+  }) async {
+    try {
+      final response = await _httpService.get(
+        '$baseUrl/$cityId/weather',
+        queryParameters: {
+          if (includeForecast) 'includeForecast': includeForecast,
+          if (includeForecast) 'days': days,
+        },
+      );
+      final data = response.data;
+
+      if (data is Map<String, dynamic>) {
+        return data;
+      }
+      if (data is Map) {
+        return Map<String, dynamic>.from(data);
+      }
+      return null;
+    } on HttpException catch (e) {
+      if (e.statusCode == 404) {
+        return null;
+      }
+      rethrow;
+    } catch (e) {
+      throw Exception('获取城市天气失败: ${e.toString()}');
+    }
+  }
 }
