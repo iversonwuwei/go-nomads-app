@@ -19,6 +19,7 @@ class TravelPlanPage extends StatefulWidget {
   final String? travelStyle;
   final List<String>? interests;
   final String? departureLocation;
+  final DateTime? departureDate;
 
   const TravelPlanPage({
     super.key,
@@ -30,6 +31,7 @@ class TravelPlanPage extends StatefulWidget {
     this.travelStyle,
     this.interests,
     this.departureLocation,
+    this.departureDate,
   });
 
   @override
@@ -100,6 +102,8 @@ class _TravelPlanPageState extends State<TravelPlanPage>
         travelStyle: widget.travelStyle ??
             'culture', // "adventure", "relaxation", "culture", "nightlife"
         interests: widget.interests ?? [],
+        departureLocation: widget.departureLocation,
+        departureDate: widget.departureDate,
         onProgress: (progress, message) {
           // 进度已通过 controller.taskProgress 和 taskProgressMessage 响应式更新
           print('📊 进度: $progress% - $message');
@@ -1010,6 +1014,23 @@ class _TravelPlanPageState extends State<TravelPlanPage>
   }
 
   Widget _buildTransportationCard(TravelPlan plan) {
+    // 解析航班推荐信息
+    final arrivalDetails = plan.transportation.arrivalDetails;
+    final flightRecommendationIndex = arrivalDetails.indexOf('\n\n航班推荐：\n');
+
+    String generalInfo = arrivalDetails;
+    List<String> flights = [];
+
+    if (flightRecommendationIndex != -1) {
+      generalInfo = arrivalDetails.substring(0, flightRecommendationIndex);
+      final flightSection =
+          arrivalDetails.substring(flightRecommendationIndex + 8);
+      flights = flightSection
+          .split('\n')
+          .where((line) => line.trim().isNotEmpty)
+          .toList();
+    }
+    
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -1036,12 +1057,241 @@ class _TravelPlanPageState extends State<TravelPlanPage>
           ),
           const SizedBox(height: 8),
           Text(
-            plan.transportation.arrivalDetails,
+            generalInfo,
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey[700],
             ),
           ),
+
+          // 航班推荐卡片
+          if (flights.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFFFF4458).withValues(alpha: 0.05),
+                    const Color(0xFFFF6B7A).withValues(alpha: 0.05),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFFFF4458).withValues(alpha: 0.2),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.local_airport,
+                        color: Color(0xFFFF4458),
+                        size: 18,
+                      ),
+                      const SizedBox(width: 6),
+                      const Text(
+                        '航班推荐',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFFF4458),
+                        ),
+                      ),
+                      const Spacer(),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFF4458),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          '${flights.length}个选择',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  ...flights.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final flight = entry.value;
+
+                    // 解析航班信息：航空公司 航班号 (时段) - 价格, 时长 - 备注
+                    final parts = flight.split(' - ');
+                    if (parts.length < 2) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Text(
+                          flight,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                      );
+                    }
+
+                    // 解析第一部分：航空公司 航班号 (时段)
+                    final firstPart = parts[0];
+                    final timeSlotMatch =
+                        RegExp(r'\(([^)]+)\)').firstMatch(firstPart);
+                    final timeSlot = timeSlotMatch?.group(1) ?? '';
+                    final airlineAndFlight = firstPart
+                        .replaceAll(RegExp(r'\s*\([^)]+\)'), '')
+                        .trim();
+
+                    // 解析第二部分：价格, 时长
+                    final secondPart = parts[1];
+                    final priceDuration = secondPart.split(', ');
+                    final price =
+                        priceDuration.isNotEmpty ? priceDuration[0].trim() : '';
+                    final duration =
+                        priceDuration.length > 1 ? priceDuration[1].trim() : '';
+
+                    // 备注（如果有第三部分）
+                    final notes =
+                        parts.length > 2 ? parts.sublist(2).join(' - ') : '';
+
+                    return Container(
+                      margin: EdgeInsets.only(
+                        bottom: index < flights.length - 1 ? 12 : 0,
+                      ),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.grey[200]!),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.03),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              // 航空公司和航班号
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      airlineAndFlight.split(' ')[0], // 航空公司
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      airlineAndFlight
+                                          .split(' ')
+                                          .skip(1)
+                                          .join(' '), // 航班号
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              // 时段标签
+                              if (timeSlot.isNotEmpty)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: _getTimeSlotColor(timeSlot),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    timeSlot,
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          // 价格和时长
+                          Row(
+                            children: [
+                              Icon(Icons.attach_money,
+                                  size: 14, color: Colors.grey[600]),
+                              const SizedBox(width: 4),
+                              Text(
+                                price,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.grey[800],
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Icon(Icons.schedule,
+                                  size: 14, color: Colors.grey[600]),
+                              const SizedBox(width: 4),
+                              Text(
+                                duration,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey[700],
+                                ),
+                              ),
+                            ],
+                          ),
+                          // 备注信息
+                          if (notes.isNotEmpty) ...[
+                            const SizedBox(height: 6),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(Icons.info_outline,
+                                    size: 14, color: Colors.blue[400]),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    notes,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.blue[700],
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ],
+                      ),
+                    );
+                  }),
+                ],
+              ),
+            ),
+          ],
+          
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(12),
@@ -1096,6 +1346,18 @@ class _TravelPlanPageState extends State<TravelPlanPage>
         ],
       ),
     );
+  }
+
+  // 根据时段返回不同颜色
+  Color _getTimeSlotColor(String timeSlot) {
+    if (timeSlot.contains('早')) {
+      return Colors.orange;
+    } else if (timeSlot.contains('午')) {
+      return Colors.blue;
+    } else if (timeSlot.contains('晚')) {
+      return Colors.purple;
+    }
+    return Colors.grey;
   }
 
   Widget _buildAccommodationCard(TravelPlan plan) {

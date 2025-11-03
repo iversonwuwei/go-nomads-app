@@ -26,20 +26,34 @@ class AsyncTaskService {
     required String
         travelStyle, // "adventure", "relaxation", "culture", "nightlife"
     List<String>? interests,
+    String? departureLocation,
+    DateTime? departureDate,
   }) async {
     try {
       print('🚀 创建异步任务: 城市=$cityName, 天数=$duration');
 
+      final requestData = {
+        'cityId': cityId,
+        'cityName': cityName,
+        'duration': duration,
+        'budget': budget,
+        'travelStyle': travelStyle,
+        'interests': interests ?? [],
+      };
+
+      // 添加出发地点（如果提供）
+      if (departureLocation != null && departureLocation.isNotEmpty) {
+        requestData['departureLocation'] = departureLocation;
+      }
+
+      // 添加出发日期（如果提供）
+      if (departureDate != null) {
+        requestData['departureDate'] = departureDate.toIso8601String();
+      }
+
       final response = await _httpService.post(
         '/ai/travel-plan/async',
-        data: {
-          'cityId': cityId,
-          'cityName': cityName,
-          'duration': duration,
-          'budget': budget,
-          'travelStyle': travelStyle,
-          'interests': interests ?? [],
-        },
+        data: requestData,
       );
 
       print('✅ 任务创建成功: ${response.data}');
@@ -199,6 +213,8 @@ class AsyncTaskService {
     required String budget,
     required String travelStyle,
     List<String>? interests,
+    String? departureLocation,
+    DateTime? departureDate,
     Function(TaskStatus status)? onProgress,
   }) async {
     // 1. 创建任务
@@ -209,6 +225,8 @@ class AsyncTaskService {
       budget: budget,
       travelStyle: travelStyle,
       interests: interests,
+      departureLocation: departureLocation,
+      departureDate: departureDate,
     );
 
     print('✅ 任务已创建: ${createResponse.taskId}');

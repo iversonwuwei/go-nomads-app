@@ -998,6 +998,8 @@ class CityDetailController extends GetxController {
     required String
         travelStyle, // "adventure", "relaxation", "culture", "nightlife"
     required List<String> interests,
+    String? departureLocation,
+    DateTime? departureDate,
     required Function(int progress, String message) onProgress,
   }) async {
     isGeneratingPlan.value = true;
@@ -1027,6 +1029,8 @@ class CityDetailController extends GetxController {
         budget: budget,
         travelStyle: travelStyle,
         interests: interests,
+        departureLocation: departureLocation,
+        departureDate: departureDate,
         onProgress: (status) {
           // 更新进度
           taskProgress.value = status.progress;

@@ -47,8 +47,12 @@ class _CityDetailPageState extends State<CityDetailPage>
   late PageController _pageController;
   late TabController _tabController;
   int _currentPage = 0;
+  
+  // 添加滚动控制器和透明度状态
+  final ScrollController _scrollController = ScrollController();
+  double _appBarOpacity = 0.0;
 
-  // �?Get.arguments 或构造函数获取参�?
+  // 从 Get.arguments 或构造函数获取参数
   late final String cityId;
   late final String cityName;
   late final String cityImage;
@@ -276,6 +280,24 @@ class _CityDetailPageState extends State<CityDetailPage>
         controller.changeTab(_tabController.index);
       }
     });
+    
+    // 监听滚动，动态改变 AppBar 背景透明度
+    _scrollController.addListener(() {
+      // 当滚动超过 200 像素时，背景变为不透明
+      final offset = _scrollController.offset;
+      final newOpacity = (offset / 200).clamp(0.0, 1.0);
+
+      if (_appBarOpacity != newOpacity) {
+        setState(() {
+          _appBarOpacity = newOpacity;
+        });
+      }
+    });
+    
+    // ✅ 初始化城市数据和加载用户内容（只在初始化时调用一次）
+    final controller = Get.put(CityDetailController());
+    controller.initCity(cityId, cityName);
+    controller.loadUserContent();
   }
 
   /// 显示 AI 生成进度对话框
@@ -424,41 +446,41 @@ class _CityDetailPageState extends State<CityDetailPage>
   }
 
   @override
-  @override
   void dispose() {
+    _scrollController.dispose();
     _pageController.dispose();
     _tabController.dispose();
-    print('🗑�?City detail page disposed');
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final controller = Get.put(CityDetailController());
-
-    // ✅ 初始化城市 (会自动清除旧 guide 和从 SQLite 加载缓存)
-    controller.initCity(cityId, cityName);
-
-    // 加载用户内容
-    controller.loadUserContent();
+    final controller = Get.find<CityDetailController>();
 
     return Scaffold(
       body: Stack(
         children: [
           NestedScrollView(
+            controller: _scrollController,
             headerSliverBuilder: (context, innerBoxIsScrolled) {
               return [
                 // 大图 Banner - 现代化设计
                 SliverAppBar(
                   expandedHeight: 320,
                   pinned: true,
-                  elevation: 0,
-                  backgroundColor: Colors.transparent,
+                  elevation: _appBarOpacity > 0 ? 4 : 0,
+                  backgroundColor: Color.lerp(
+                    Colors.transparent,
+                    Colors.white,
+                    _appBarOpacity,
+                  ),
                   leading: Container(
                     margin: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.3),
+                      color: _appBarOpacity > 0.5
+                          ? Colors.grey.withValues(alpha: 0.1)
+                          : Colors.black.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
@@ -469,8 +491,13 @@ class _CityDetailPageState extends State<CityDetailPage>
                       ],
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new,
-                          color: Colors.white, size: 20),
+                      icon: Icon(
+                        Icons.arrow_back_ios_new,
+                        color: _appBarOpacity > 0.5
+                            ? Colors.black87
+                            : Colors.white,
+                        size: 20,
+                      ),
                       onPressed: () => Get.back(),
                     ),
                   ),
@@ -478,7 +505,9 @@ class _CityDetailPageState extends State<CityDetailPage>
                     Container(
                       margin: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.3),
+                        color: _appBarOpacity > 0.5
+                            ? Colors.grey.withValues(alpha: 0.1)
+                            : Colors.black.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
@@ -489,8 +518,13 @@ class _CityDetailPageState extends State<CityDetailPage>
                         ],
                       ),
                       child: IconButton(
-                        icon: const Icon(Icons.share,
-                            color: Colors.white, size: 20),
+                        icon: Icon(
+                          Icons.share,
+                          color: _appBarOpacity > 0.5
+                              ? Colors.black87
+                              : Colors.white,
+                          size: 20,
+                        ),
                         onPressed: () {
                           // TODO: 实现分享功能
                         },
@@ -503,27 +537,34 @@ class _CityDetailPageState extends State<CityDetailPage>
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.black.withValues(alpha: 0.6),
-                            Colors.black.withValues(alpha: 0.3),
-                          ],
-                        ),
+                        gradient: _appBarOpacity > 0.5
+                            ? null
+                            : LinearGradient(
+                                colors: [
+                                  Colors.black.withValues(alpha: 0.6),
+                                  Colors.black.withValues(alpha: 0.3),
+                                ],
+                              ),
+                        color: _appBarOpacity > 0.5 ? Colors.transparent : null,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
                         cityName,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 24,
-                          color: Colors.white,
-                          shadows: [
-                            Shadow(
-                              offset: Offset(0, 2),
-                              blurRadius: 4,
-                              color: Colors.black54,
-                            ),
-                          ],
+                          color: _appBarOpacity > 0.5
+                              ? const Color(0xFFFF4458)
+                              : Colors.white,
+                          shadows: _appBarOpacity > 0.5
+                              ? []
+                              : const [
+                                  Shadow(
+                                    offset: Offset(0, 2),
+                                    blurRadius: 4,
+                                    color: Colors.black54,
+                                  ),
+                                ],
                         ),
                       ),
                     ),

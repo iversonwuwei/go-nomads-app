@@ -28,7 +28,8 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
   String budget = 'medium';
   String travelStyle = 'culture';
   List<String> interests = [];
-  String departureLocation = '';
+  String departureLocation = '北京'; // 默认出发地为北京
+  DateTime? departureDate;
   final TextEditingController _customBudgetController = TextEditingController();
   String selectedCurrency = 'USD';
   List<String> selectedAttractions = [];
@@ -300,6 +301,87 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                           fontSize: 12,
                           color: Colors.grey[600],
                           fontStyle: FontStyle.italic,
+                        ),
+                      ),
+
+                      const SizedBox(height: 28),
+
+                      // Departure Date
+                      _buildSectionTitle(
+                          'Departure Date', Icons.event_outlined),
+                      const SizedBox(height: 12),
+                      InkWell(
+                        onTap: () async {
+                          final DateTime? picked = await showDatePicker(
+                            context: context,
+                            initialDate: departureDate ?? DateTime.now(),
+                            firstDate: DateTime.now(),
+                            lastDate:
+                                DateTime.now().add(const Duration(days: 365)),
+                            builder: (context, child) {
+                              return Theme(
+                                data: Theme.of(context).copyWith(
+                                  colorScheme: const ColorScheme.light(
+                                    primary: Color(0xFFFF4458),
+                                    onPrimary: Colors.white,
+                                    surface: Colors.white,
+                                    onSurface: Colors.black87,
+                                  ),
+                                ),
+                                child: child!,
+                              );
+                            },
+                          );
+                          if (picked != null) {
+                            setState(() {
+                              departureDate = picked;
+                            });
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[50],
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey.shade200),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.calendar_today,
+                                color: departureDate != null
+                                    ? const Color(0xFFFF4458)
+                                    : Colors.grey[400],
+                                size: 20,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  departureDate != null
+                                      ? '${departureDate!.year}-${departureDate!.month.toString().padLeft(2, '0')}-${departureDate!.day.toString().padLeft(2, '0')}'
+                                      : 'Select departure date',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    color: departureDate != null
+                                        ? Colors.black87
+                                        : Colors.grey[400],
+                                  ),
+                                ),
+                              ),
+                              if (departureDate != null)
+                                IconButton(
+                                  icon: const Icon(Icons.clear, size: 20),
+                                  onPressed: () {
+                                    setState(() {
+                                      departureDate = null;
+                                    });
+                                  },
+                                ),
+                            ],
+                          ),
                         ),
                       ),
 
@@ -946,6 +1028,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
         travelStyle: travelStyle,
         interests: allInterests,
         departureLocation: departureLocation,
+        departureDate: departureDate,
       ),
     );
 
