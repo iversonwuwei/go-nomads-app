@@ -87,6 +87,41 @@ class _CityDetailPageState extends State<CityDetailPage>
     }
   }
 
+  // 主天气卡片中的迷你信息组件
+  Widget _buildWeatherMiniInfo({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Column(
+      children: [
+        Icon(
+          icon,
+          color: Colors.white.withValues(alpha: 0.9),
+          size: 24,
+        ),
+        const SizedBox(height: 6),
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.7),
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildWeatherMetric({
     required IconData icon,
     required String label,
@@ -414,27 +449,82 @@ class _CityDetailPageState extends State<CityDetailPage>
           NestedScrollView(
             headerSliverBuilder: (context, innerBoxIsScrolled) {
               return [
-                // 大图 Banner
+                // 大图 Banner - 现代化设计
                 SliverAppBar(
-                  expandedHeight: 250,
+                  expandedHeight: 320,
                   pinned: true,
-                  leading: IconButton(
-                    icon: const Icon(Icons.arrow_back_outlined,
-                        color: AppColors.backButtonLight),
-                    onPressed: () => Get.back(),
+                  elevation: 0,
+                  backgroundColor: Colors.transparent,
+                  leading: Container(
+                    margin: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_back_ios_new,
+                          color: Colors.white, size: 20),
+                      onPressed: () => Get.back(),
+                    ),
                   ),
-                  flexibleSpace: FlexibleSpaceBar(
-                    title: Text(
-                      cityName,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        shadows: [
-                          Shadow(
-                            offset: Offset(0, 1),
-                            blurRadius: 3,
-                            color: Colors.black45,
+                  actions: [
+                    Container(
+                      margin: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
                           ),
                         ],
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Icons.share,
+                            color: Colors.white, size: 20),
+                        onPressed: () {
+                          // TODO: 实现分享功能
+                        },
+                      ),
+                    ),
+                  ],
+                  flexibleSpace: FlexibleSpaceBar(
+                    titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
+                    title: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.black.withValues(alpha: 0.6),
+                            Colors.black.withValues(alpha: 0.3),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        cityName,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 24,
+                          color: Colors.white,
+                          shadows: [
+                            Shadow(
+                              offset: Offset(0, 2),
+                              blurRadius: 4,
+                              color: Colors.black54,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     background: Stack(
@@ -490,16 +580,18 @@ class _CityDetailPageState extends State<CityDetailPage>
                                     );
                                   },
                                 ),
-                                // 渐变遮罩�?
+                                // 增强渐变遮罩 - 更现代的三层渐变
                                 Container(
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
                                       begin: Alignment.topCenter,
                                       end: Alignment.bottomCenter,
                                       colors: [
+                                        Colors.black.withValues(alpha: 0.3),
                                         Colors.transparent,
-                                        Colors.black.withValues(alpha: 0.7),
+                                        Colors.black.withValues(alpha: 0.8),
                                       ],
+                                      stops: const [0.0, 0.5, 1.0],
                                     ),
                                   ),
                                 ),
@@ -507,20 +599,34 @@ class _CityDetailPageState extends State<CityDetailPage>
                             );
                           },
                         ),
-                        // Page indicators - 动态生�?
+                        // 现代化轮播指示器
                         Positioned(
-                          bottom: 8,
+                          bottom: 24,
                           left: 0,
                           right: 0,
-                          child: IgnorePointer(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: List.generate(
-                                _getCityImages().length,
-                                (index) => Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 4),
-                                  child: _buildIndicator(index),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List.generate(
+                              _getCityImages().length,
+                              (index) => AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                margin:
+                                    const EdgeInsets.symmetric(horizontal: 4),
+                                width: _currentPage == index ? 24 : 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(4),
+                                  color: _currentPage == index
+                                      ? Colors.white
+                                      : Colors.white.withValues(alpha: 0.5),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color:
+                                          Colors.black.withValues(alpha: 0.3),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
@@ -531,66 +637,154 @@ class _CityDetailPageState extends State<CityDetailPage>
                   ),
                 ),
 
-                // 评分信息
+                // 现代化评分信息卡片
                 SliverToBoxAdapter(
                   child: Container(
-                    color: Colors.white,
-                    padding: const EdgeInsets.all(16),
+                    margin: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 20,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
                     child: Row(
                       children: [
+                        // 评分徽章
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
+                            horizontal: 16,
+                            vertical: 10,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFF4458),
-                            borderRadius: BorderRadius.circular(20),
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFFF4458)
+                                    .withValues(alpha: 0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
                           child: Row(
                             children: [
                               const Icon(
-                                Icons.star,
+                                Icons.star_rounded,
                                 color: Colors.white,
-                                size: 16,
+                                size: 20,
                               ),
-                              const SizedBox(width: 4),
+                              const SizedBox(width: 6),
                               Text(
                                 overallScore.toStringAsFixed(1),
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
+                                  fontSize: 18,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Text(
-                          '$reviewCount reviews',
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 14,
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '$reviewCount reviews',
+                                style: TextStyle(
+                                  color: Colors.grey[800],
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'From digital nomads',
+                                style: TextStyle(
+                                  color: Colors.grey[500],
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const Spacer(),
+                        // 收藏按钮 - 动态状态
+                        Obx(() {
+                          final controller = Get.find<CityDetailController>();
+                          final isFavorited = controller.isFavorited.value;
+                          final isToggling =
+                              controller.isTogglingFavorite.value;
+
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: isFavorited
+                                  ? const Color(0xFFFF4458)
+                                      .withValues(alpha: 0.1)
+                                  : Colors.grey[100],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: isToggling
+                                ? const SizedBox(
+                                    width: 48,
+                                    height: 48,
+                                    child: Center(
+                                      child: SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                            Color(0xFFFF4458),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                : IconButton(
+                                    icon: Icon(
+                                      isFavorited
+                                          ? Icons.favorite
+                                          : Icons.favorite_border,
+                                      color: isFavorited
+                                          ? const Color(0xFFFF4458)
+                                          : Colors.grey[700],
+                                      size: 22,
+                                    ),
+                                    onPressed: () {
+                                      controller.toggleFavorite();
+                                    },
+                                  ),
+                          );
+                        }),
                         const SizedBox(width: 8),
-                        IconButton(
-                          icon: const Icon(Icons.favorite_border),
-                          onPressed: () {},
-                          color: const Color(0xFFFF4458),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.share),
-                          onPressed: () {},
-                          color: Colors.grey[700],
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.grey[100],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: IconButton(
+                            icon: Icon(Icons.share_outlined,
+                                color: Colors.grey[700], size: 22),
+                            onPressed: () {},
+                          ),
                         ),
                       ],
                     ),
                   ),
                 ),
 
-                // 标签页导�?
+                // 现代化标签页导航
                 SliverPersistentHeader(
                   pinned: true,
                   delegate: _SliverAppBarDelegate(
@@ -599,7 +793,25 @@ class _CityDetailPageState extends State<CityDetailPage>
                       isScrollable: true,
                       labelColor: const Color(0xFFFF4458),
                       unselectedLabelColor: Colors.grey[600],
-                      indicatorColor: const Color(0xFFFF4458),
+                      labelStyle: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                      ),
+                      unselectedLabelStyle: const TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 15,
+                      ),
+                      indicatorSize: TabBarIndicatorSize.label,
+                      indicator: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border(
+                          bottom: BorderSide(
+                            color: const Color(0xFFFF4458),
+                            width: 3,
+                          ),
+                        ),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
                       tabs: [
                         Tab(
                           child: Row(
@@ -1394,7 +1606,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
+                  color: Colors.green.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -1442,7 +1654,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                   l10n.basedOnRealExpenses(
                       totalExpenseCount, totalExpenseCount != 1 ? 's' : ''),
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 12,
                   ),
                 ),
@@ -1506,7 +1718,7 @@ class _CityDetailPageState extends State<CityDetailPage>
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.2),
+            color: color.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
@@ -1594,7 +1806,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.5),
+                        color: Colors.black.withValues(alpha: 0.5),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -1781,79 +1993,173 @@ class _CityDetailPageState extends State<CityDetailPage>
 
       return ListView(
         padding:
-            const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
+            const EdgeInsets.only(left: 16, right: 16, top: 24, bottom: 96),
         children: [
+          // 🌡️ 现代化主天气卡片
           Container(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(28),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFFF4458).withValues(alpha: 0.4),
+                  blurRadius: 24,
+                  offset: const Offset(0, 12),
+                  spreadRadius: 4,
+                ),
+              ],
             ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Column(
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${weather.temperature.toStringAsFixed(1)}°C',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 48,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        description,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      if (controller.currentCityName.value.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Text(
-                            controller.currentCityName.value,
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.75),
-                              fontSize: 14,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // 温度显示
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                weather.temperature.toStringAsFixed(0),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 72,
+                                  fontWeight: FontWeight.bold,
+                                  height: 0.95,
+                                  letterSpacing: -2,
+                                ),
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.only(top: 8),
+                                child: Text(
+                                  '°C',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          // 天气描述
+                          Text(
+                            description,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.3,
                             ),
                           ),
-                        ),
-                      const SizedBox(height: 12),
-                      Text(
-                        '${l10n.feelsLike} ${weather.feelsLike.toStringAsFixed(1)}°C',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          fontSize: 15,
-                        ),
+                          const SizedBox(height: 6),
+                          // 城市名称
+                          if (controller.currentCityName.value.isNotEmpty)
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.location_on_rounded,
+                                  color: Colors.white.withValues(alpha: 0.8),
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  controller.currentCityName.value,
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.85),
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                        ],
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '$timezone • ${l10n.updated} $updatedAt',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.7),
-                          fontSize: 12,
-                        ),
+                    ),
+                    // 天气图标
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                    ],
+                      child: FaIcon(
+                        _getWeatherIcon(
+                          weather.weatherIcon,
+                          isNight: weather.weatherIcon.endsWith('n'),
+                        ),
+                        color: Colors.white,
+                        size: 64,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                // 分隔线
+                Container(
+                  height: 1,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.white.withValues(alpha: 0.0),
+                        Colors.white.withValues(alpha: 0.3),
+                        Colors.white.withValues(alpha: 0.0),
+                      ],
+                    ),
                   ),
                 ),
-                FaIcon(
-                  _getWeatherIcon(
-                    weather.weatherIcon,
-                    isNight: weather.weatherIcon.endsWith('n'),
+                const SizedBox(height: 20),
+                // 附加信息行
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildWeatherMiniInfo(
+                      icon: Icons.thermostat_rounded,
+                      label: l10n.feelsLike,
+                      value: '${weather.feelsLike.toStringAsFixed(0)}°',
+                    ),
+                    Container(
+                      width: 1,
+                      height: 40,
+                      color: Colors.white.withValues(alpha: 0.3),
+                    ),
+                    _buildWeatherMiniInfo(
+                      icon: Icons.water_drop_rounded,
+                      label: l10n.humidity,
+                      value: '${weather.humidity}%',
+                    ),
+                    Container(
+                      width: 1,
+                      height: 40,
+                      color: Colors.white.withValues(alpha: 0.3),
+                    ),
+                    _buildWeatherMiniInfo(
+                      icon: Icons.air_rounded,
+                      label: l10n.wind,
+                      value:
+                          '${(weather.windSpeed * 3.6).toStringAsFixed(0)} km/h',
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                // 更新时间
+                Text(
+                  '$timezone • ${l10n.updated} $updatedAt',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.7),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
                   ),
-                  color: Colors.white,
-                  size: 80,
                 ),
               ],
             ),
@@ -1962,26 +2268,43 @@ class _CityDetailPageState extends State<CityDetailPage>
               ],
             ),
           ),
-          // 5-Day Forecast Section
+          // 🌤️ 现代化5天预报卡片
           if (weather.forecast?.daily.isNotEmpty == true) ...[
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
             Padding(
-              padding: const EdgeInsets.only(left: 4),
-              child: Text(
-                l10n.fiveDayForecast,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
+              padding: const EdgeInsets.only(left: 4, bottom: 8),
+              child: Row(
+                children: [
+                  Container(
+                    width: 4,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
+                      ),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    l10n.fiveDayForecast,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 16),
             SizedBox(
-              height: 160,
+              height: 200,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
                 itemCount: weather.forecast!.daily.length,
-                padding: const EdgeInsets.only(right: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemBuilder: (context, index) {
                   final day = weather.forecast!.daily[index];
                   final isToday = index == 0;
@@ -1989,76 +2312,148 @@ class _CityDetailPageState extends State<CityDetailPage>
                       isToday ? l10n.today : _formatDayName(day.date, l10n);
 
                   return Container(
-                    width: 110,
-                    margin: const EdgeInsets.only(left: 16),
+                    width: 140,
+                    margin: EdgeInsets.only(
+                        right: index < weather.forecast!.daily.length - 1
+                            ? 16
+                            : 0),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: isToday
-                            ? [const Color(0xFFFF4458), const Color(0xFFFF6B7A)]
-                            : [Colors.white, Colors.white],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(16),
+                      gradient: isToday
+                          ? const LinearGradient(
+                              colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            )
+                          : LinearGradient(
+                              colors: [Colors.white, Colors.grey.shade50],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
+                      borderRadius: BorderRadius.circular(24),
                       border: isToday
                           ? null
                           : Border.all(
                               color: Colors.grey.shade200,
-                              width: 1,
+                              width: 1.5,
                             ),
                       boxShadow: [
                         BoxShadow(
                           color: isToday
-                              ? const Color(0xFFFF4458).withValues(alpha: 0.2)
-                              : Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
+                              ? const Color(0xFFFF4458).withValues(alpha: 0.35)
+                              : Colors.black.withValues(alpha: 0.06),
+                          blurRadius: isToday ? 20 : 12,
+                          offset: Offset(0, isToday ? 8 : 4),
+                          spreadRadius: isToday ? 2 : 0,
                         ),
                       ],
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
-                        vertical: 16,
-                        horizontal: 12,
+                        vertical: 20,
+                        horizontal: 16,
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            dayName,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: isToday ? Colors.white : Colors.grey[800],
+                          // 日期标签
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isToday
+                                  ? Colors.white.withValues(alpha: 0.25)
+                                  : const Color(0xFFFF4458)
+                                      .withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              dayName,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: isToday
+                                    ? Colors.white
+                                    : const Color(0xFFFF4458),
+                                letterSpacing: 0.5,
+                              ),
                             ),
                           ),
+                          // 天气图标
                           FaIcon(
                             _getWeatherIcon(
                               day.weatherIcon,
                               isNight: false,
                             ),
-                            color: isToday ? Colors.white : Colors.orange[600],
-                            size: 36,
+                            color:
+                                isToday ? Colors.white : Colors.orange.shade600,
+                            size: 48,
                           ),
+                          // 温度显示
                           Column(
                             children: [
-                              Text(
-                                '${day.tempMax.toStringAsFixed(0)}°',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color:
-                                      isToday ? Colors.white : Colors.grey[900],
-                                ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    day.tempMax.toStringAsFixed(0),
+                                    style: TextStyle(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.bold,
+                                      color: isToday
+                                          ? Colors.white
+                                          : Colors.grey.shade900,
+                                      height: 1.0,
+                                    ),
+                                  ),
+                                  Text(
+                                    '°',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                      color: isToday
+                                          ? Colors.white.withValues(alpha: 0.9)
+                                          : Colors.grey.shade700,
+                                      height: 1.2,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              Text(
-                                '${day.tempMin.toStringAsFixed(0)}°',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: isToday
-                                      ? Colors.white.withValues(alpha: 0.7)
-                                      : Colors.grey[500],
-                                ),
+                              const SizedBox(height: 4),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Icon(
+                                    Icons.arrow_downward_rounded,
+                                    size: 12,
+                                    color: isToday
+                                        ? Colors.white.withValues(alpha: 0.7)
+                                        : Colors.grey.shade500,
+                                  ),
+                                  const SizedBox(width: 2),
+                                  Text(
+                                    day.tempMin.toStringAsFixed(0),
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: isToday
+                                          ? Colors.white.withValues(alpha: 0.8)
+                                          : Colors.grey.shade600,
+                                    ),
+                                  ),
+                                  Text(
+                                    '°',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: isToday
+                                          ? Colors.white.withValues(alpha: 0.7)
+                                          : Colors.grey.shade500,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -2970,21 +3365,6 @@ class _CityDetailPageState extends State<CityDetailPage>
         title: 'Success',
       );
     }
-  }
-
-  /// Build page indicator
-  Widget _buildIndicator(int index) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      width: _currentPage == index ? 24 : 8,
-      height: 8,
-      decoration: BoxDecoration(
-        color: _currentPage == index
-            ? Colors.white
-            : Colors.white.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(4),
-      ),
-    );
   }
 
   /// 分享社区信息

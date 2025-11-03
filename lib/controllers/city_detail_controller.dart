@@ -12,15 +12,22 @@ import '../services/cities_api_service.dart';
 import '../services/database_service.dart';
 import '../services/http_service.dart';
 import '../services/user_city_content_api_service.dart';
+import '../services/user_favorite_city_api_service.dart';
 import '../widgets/app_toast.dart';
 
 /// 城市详情页控制器
 class CityDetailController extends GetxController {
   final CitiesApiService _citiesApiService = CitiesApiService();
+  final UserFavoriteCityApiService _favoriteApiService =
+      UserFavoriteCityApiService();
 
   // 当前城市ID
   var currentCityId = ''.obs;
   var currentCityName = ''.obs;
+
+  // 收藏状态
+  var isFavorited = false.obs;
+  var isTogglingFavorite = false.obs;
 
   // 当前选中的标签页
   var currentTabIndex = 0.obs;
@@ -284,6 +291,9 @@ class CityDetailController extends GetxController {
       // 🔍 先从 SQLite 加载缓存的 Guide
       await _loadGuideFromCache();
 
+      // 🔍 加载收藏状态
+      await _loadFavoriteStatus();
+
       await _loadMockData();
       // 天气数据延迟到用户点击 Weather tab 时加载
     } finally {
@@ -321,6 +331,65 @@ class CityDetailController extends GetxController {
     // 保留部分数据的 Mock 生成逻辑，保证页面展示完整
     await Future.delayed(const Duration(milliseconds: 500));
     _generateMockData();
+  }
+
+  /// 加载收藏状态
+  Future<void> _loadFavoriteStatus() async {
+    if (currentCityId.value.isEmpty) {
+      isFavorited.value = false;
+      return;
+    }
+
+    try {
+      isFavorited.value =
+          await _favoriteApiService.isCityFavorited(currentCityId.value);
+      print(
+          '✅ 收藏状态加载成功: cityId=${currentCityId.value}, isFavorited=${isFavorited.value}');
+    } catch (e) {
+      print('❌ 加载收藏状态失败: $e');
+      isFavorited.value = false;
+    }
+  }
+
+  /// 切换收藏状态
+  Future<void> toggleFavorite() async {
+    if (currentCityId.value.isEmpty) {
+      AppToast.error('城市信息无效');
+      return;
+    }
+
+    if (isTogglingFavorite.value) {
+      print('ℹ️ 正在处理收藏操作，请稍候');
+      return;
+    }
+
+    isTogglingFavorite.value = true;
+
+    try {
+      final success =
+          await _favoriteApiService.toggleFavorite(currentCityId.value);
+
+      if (success) {
+        // 切换状态
+        isFavorited.value = !isFavorited.value;
+
+        if (isFavorited.value) {
+          AppToast.success('已添加到收藏');
+        } else {
+          AppToast.success('已取消收藏');
+        }
+
+        print(
+            '✅ 收藏状态切换成功: cityId=${currentCityId.value}, isFavorited=${isFavorited.value}');
+      } else {
+        AppToast.error('操作失败，请重试');
+      }
+    } catch (e) {
+      print('❌ 切换收藏状态失败: $e');
+      AppToast.error('操作失败: $e');
+    } finally {
+      isTogglingFavorite.value = false;
+    }
   }
 
   Future<void> loadWeatherData() async {
