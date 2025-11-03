@@ -35,7 +35,7 @@ class _SkillsSelectorState extends State<SkillsSelector> {
   final SkillsApiService _skillsService = SkillsApiService();
   
   List<SkillsByCategory> _skillsByCategory = [];
-  List<UserSkill> _selectedSkills = [];
+  final List<UserSkill> _selectedSkills = [];
   bool _isLoading = true;
   String _searchQuery = '';
   String? _selectedCategory;

@@ -35,7 +35,7 @@ class _InterestsSelectorState extends State<InterestsSelector> {
   final InterestsApiService _interestsService = InterestsApiService();
   
   List<InterestsByCategory> _interestsByCategory = [];
-  List<UserInterest> _selectedInterests = [];
+  final List<UserInterest> _selectedInterests = [];
   bool _isLoading = true;
   String _searchQuery = '';
   String? _selectedCategory;

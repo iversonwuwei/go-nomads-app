@@ -36,7 +36,7 @@ class ApiConfig {
   // 是否使用真机测试地址(手动切换)
   // ⚠️ 雷电模拟器用户请设置为 true
   // ⚠️ Android 官方模拟器用户请设置为 false,使用 10.0.2.2
-  static const bool usePhysicalDevice = false;
+  static const bool usePhysicalDevice = true;
 
   // ============================================================
   // CityService 直连配置 (端口 8002)

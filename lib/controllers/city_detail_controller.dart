@@ -9,6 +9,7 @@ import '../models/weather_model.dart';
 import '../services/ai_api_service.dart';
 import '../services/async_task_service.dart';
 import '../services/cities_api_service.dart';
+import '../services/database_service.dart';
 import '../services/http_service.dart';
 import '../services/user_city_content_api_service.dart';
 import '../widgets/app_toast.dart';
@@ -26,6 +27,17 @@ class CityDetailController extends GetxController {
 
   // 数据加载状态
   var isLoading = false.obs;
+
+  // 各个 tab 的独立加载状态
+  var isLoadingScores = false.obs;
+  var isLoadingGuide = false.obs;
+  var isLoadingProsCons = false.obs;
+  var isLoadingReviews = false.obs;
+  var isLoadingCost = false.obs;
+  var isLoadingPhotos = false.obs;
+  var isLoadingWeather = false.obs;
+  var isLoadingNeighborhoods = false.obs;
+  var isLoadingCoworking = false.obs;
 
   // 各个标签页的数据
   var scores = Rx<CityScores?>(null);
@@ -62,11 +74,24 @@ class CityDetailController extends GetxController {
   var communityCostSummary = Rx<CityCostSummary?>(null); // ✅ 新增:综合费用统计
   var isLoadingUserContent = false.obs;
 
-  @override
-  void onInit() {
-    super.onInit();
-    // 加载城市详情数据
-    loadCityData();
+  // 用于跟踪上一次加载的城市ID,防止重复加载
+  String _lastLoadedCityId = '';
+
+  /// 初始化城市数据 (当 cityId 改变时调用)
+  Future<void> initCity(String cityId, String cityName) async {
+    // 如果城市ID相同,不重复加载
+    if (cityId == _lastLoadedCityId) {
+      print('ℹ️ 城市ID未变化,跳过重复加载: $cityId');
+      return;
+    }
+
+    print('🏙️ 初始化城市: $cityName ($cityId)');
+    _lastLoadedCityId = cityId;
+    currentCityId.value = cityId;
+    currentCityName.value = cityName;
+
+    // 加载城市数据 (包括清除旧 guide 和从 SQLite 加载缓存)
+    await loadCityData();
   }
 
   /// 加载用户生成的内容 (照片、评论、费用统计)
@@ -75,7 +100,13 @@ class CityDetailController extends GetxController {
 
     print(
         '🔍 [Controller] Loading user content for cityId: ${currentCityId.value}');
+
+    // 设置相关 tab 的加载状态
+    isLoadingPhotos.value = true;
+    isLoadingReviews.value = true;
+    isLoadingCost.value = true;
     isLoadingUserContent.value = true;
+
     try {
       final apiService = UserCityContentApiService();
 
@@ -116,6 +147,9 @@ class CityDetailController extends GetxController {
       print('❌ 加载用户内容失败: $e');
       AppToast.error('Failed to load user content: $e');
     } finally {
+      isLoadingPhotos.value = false;
+      isLoadingReviews.value = false;
+      isLoadingCost.value = false;
       isLoadingUserContent.value = false;
     }
   }
@@ -143,7 +177,7 @@ class CityDetailController extends GetxController {
 
     try {
       final apiService = UserCityContentApiService();
-      
+
       // 并行刷新费用列表、统计和综合费用摘要
       final results = await Future.wait([
         apiService.getCityExpenses(cityId: currentCityId.value),
@@ -237,13 +271,49 @@ class CityDetailController extends GetxController {
 
   /// 加载城市数据
   Future<void> loadCityData() async {
+    // ✅ 切换城市时,清除旧的 guide 数据
+    guide.value = null;
+
     isLoading.value = true;
+    isLoadingScores.value = true;
+    isLoadingGuide.value = true;
+    isLoadingProsCons.value = true;
+    isLoadingNeighborhoods.value = true;
 
     try {
+      // 🔍 先从 SQLite 加载缓存的 Guide
+      await _loadGuideFromCache();
+
       await _loadMockData();
       // 天气数据延迟到用户点击 Weather tab 时加载
     } finally {
       isLoading.value = false;
+      isLoadingScores.value = false;
+      isLoadingGuide.value = false;
+      isLoadingProsCons.value = false;
+      isLoadingNeighborhoods.value = false;
+    }
+  }
+
+  /// 从 SQLite 缓存加载 Guide
+  Future<void> _loadGuideFromCache() async {
+    if (currentCityId.value.isEmpty) return;
+
+    try {
+      final dbService = DatabaseService();
+      final cachedGuideJson = await dbService.loadGuide(currentCityId.value);
+
+      if (cachedGuideJson != null) {
+        guide.value = DigitalNomadGuide.fromJson(cachedGuideJson);
+        print('✅ 已从 SQLite 加载缓存的 Guide: cityId=${currentCityId.value}');
+        print(
+            '   Overview: ${guide.value?.overview.substring(0, min(50, guide.value?.overview.length ?? 0))}...');
+      } else {
+        print('ℹ️ SQLite 中无缓存 Guide,等待用户手动生成');
+      }
+    } catch (e) {
+      print('❌ 从 SQLite 加载 Guide 失败: $e');
+      // 失败不影响页面加载,继续显示生成按钮
     }
   }
 
@@ -263,6 +333,7 @@ class CityDetailController extends GetxController {
       return;
     }
 
+    isLoadingWeather.value = true;
     try {
       final httpService = HttpService();
       final token = httpService.authToken;
@@ -292,17 +363,209 @@ class CityDetailController extends GetxController {
       weather.value = null;
       print('❌ 加载城市天气失败: $e');
       print('   堆栈: $stackTrace');
+    } finally {
+      isLoadingWeather.value = false;
     }
   }
 
   /// 切换标签页
   void changeTab(int index) {
     currentTabIndex.value = index;
-    
+
     // Weather tab 索引是 6
     if (index == 6 && weather.value == null) {
       print('📍 切换到 Weather tab，开始加载天气数据...');
       loadWeatherData();
+    }
+  }
+
+  /// 使用 AI 生成数字游民指南
+  Future<void> generateGuideWithAI() async {
+    if (currentCityId.value.isEmpty || currentCityName.value.isEmpty) {
+      AppToast.error('城市信息不完整');
+      return;
+    }
+
+    isLoadingGuide.value = true;
+    try {
+      print('🤖 开始生成 AI 数字游民指南...');
+      print('   城市: ${currentCityName.value} (${currentCityId.value})');
+
+      final aiService = AiApiService();
+      final guideData = await aiService.generateDigitalNomadGuide(
+        cityId: currentCityId.value,
+        cityName: currentCityName.value,
+      );
+
+      // 解析 AI 返回的数据
+      guide.value = DigitalNomadGuide.fromJson(guideData);
+
+      print('✅ AI 数字游民指南生成成功');
+      AppToast.success('AI 指南生成成功!');
+    } catch (e) {
+      print('❌ 生成 AI 指南失败: $e');
+      AppToast.error('生成指南失败: $e');
+      // 保留现有的 mock 数据作为后备
+    } finally {
+      isLoadingGuide.value = false;
+    }
+  }
+
+  /// 使用流式接口生成数字游民指南(带进度条)
+  /// ⚠️ 已废弃,请使用 generateGuideWithAIAsync
+  @Deprecated('使用异步任务队列方式: generateGuideWithAIAsync')
+  Future<void> generateGuideWithAIStream({
+    required Function(String message, int progress) onProgress,
+    required Function() onComplete,
+    required Function(String error) onError,
+  }) async {
+    if (currentCityId.value.isEmpty || currentCityName.value.isEmpty) {
+      onError('城市信息不完整');
+      return;
+    }
+
+    isLoadingGuide.value = true;
+    try {
+      print('🤖 [Stream] 开始生成 AI 数字游民指南...');
+      print('   城市: ${currentCityName.value} (${currentCityId.value})');
+
+      final aiService = AiApiService();
+      await aiService.generateDigitalNomadGuideStream(
+        cityId: currentCityId.value,
+        cityName: currentCityName.value,
+        onProgress: (message, progress) {
+          print('📊 进度更新: $progress% - $message');
+          onProgress(message, progress);
+        },
+        onData: (DigitalNomadGuide guideData) {
+          print('✅ 收到 AI 指南数据');
+          guide.value = guideData;
+          onComplete();
+        },
+        onError: (errorMessage) {
+          print('❌ 生成 AI 指南失败: $errorMessage');
+          onError(errorMessage);
+        },
+      );
+    } catch (e) {
+      print('❌ Stream 生成失败: $e');
+      onError('生成指南失败: $e');
+    } finally {
+      isLoadingGuide.value = false;
+    }
+  }
+
+  /// 异步生成数字游民指南 (使用任务队列 + SignalR)
+  ///
+  /// 这是推荐的方式,使用后台任务队列异步处理
+  /// 支持 SignalR 实时进度更新和轮询回退机制
+  Future<String?> generateGuideWithAIAsync({
+    required Function(int progress, String message) onProgress,
+  }) async {
+    if (currentCityId.value.isEmpty || currentCityName.value.isEmpty) {
+      AppToast.error('城市信息不完整');
+      return null;
+    }
+
+    isLoadingGuide.value = true;
+    taskProgress.value = 0;
+    taskProgressMessage.value = '正在创建任务...';
+
+    try {
+      print('🚀 开始异步生成数字游民指南...');
+
+      final asyncTaskService = AsyncTaskService();
+
+      // 连接 SignalR (如果尚未连接)
+      if (!asyncTaskService.signalR.isConnected) {
+        try {
+          await asyncTaskService.signalR.connect('http://localhost:8009');
+          print('✅ SignalR 已连接');
+        } catch (e) {
+          print('⚠️ SignalR 连接失败,将使用轮询模式: $e');
+        }
+      }
+
+      // 1. 创建任务并等待完成
+      final finalStatus =
+          await asyncTaskService.createGuideAndWaitForCompletion(
+        cityId: currentCityId.value,
+        cityName: currentCityName.value,
+        onProgress: (status) {
+          // 更新进度
+          taskProgress.value = status.progress;
+          taskProgressMessage.value = status.progressMessage ?? '';
+
+          print('📊 任务进度: ${status.progress}% - ${status.progressMessage}');
+
+          // 回调通知UI
+          onProgress(status.progress, status.progressMessage ?? '');
+        },
+      );
+
+      if (finalStatus.isCompleted && finalStatus.result != null) {
+        print('✅ 数字游民指南生成成功!');
+
+        // 2. 从返回结果中解析 Guide 数据
+        try {
+          final guideData = finalStatus.result as Map<String, dynamic>;
+
+          print('🔍 Guide JSON 数据:');
+          print('   - CityId: ${guideData['CityId']}');
+          print('   - CityName: ${guideData['CityName']}');
+          print(
+              '   - Overview length: ${(guideData['Overview'] as String?)?.length ?? 0}');
+          print('   - BestAreas type: ${guideData['BestAreas']?.runtimeType}');
+          print('   - Tips type: ${guideData['Tips']?.runtimeType}');
+
+          // ✅ 先设置 loading 为 false
+          isLoadingGuide.value = false;
+
+          // ✅ 然后更新 guide 数据,触发 UI 刷新
+          guide.value = DigitalNomadGuide.fromJson(guideData);
+
+          // 💾 保存到 SQLite 缓存 (使用 cityId 作为唯一标识)
+          try {
+            final dbService = DatabaseService();
+            await dbService.saveGuide(guideData);
+            print('💾 Guide 已保存到 SQLite 缓存');
+          } catch (e) {
+            print('⚠️ 保存到 SQLite 失败,但不影响显示: $e');
+          }
+
+          // ✅ 强制刷新 (确保 Obx 监听到变化)
+          update();
+
+          print('✅ Guide 数据已更新到 Controller: ${guide.value != null}');
+          print('   Overview: ${guide.value?.overview.substring(0, 50)}...');
+          print('   BestAreas 数量: ${guide.value?.bestAreas.length}');
+          print('   Tips 数量: ${guide.value?.tips.length}');
+
+          AppToast.success(
+            'Digital Nomad Guide generated successfully!',
+            title: 'Success',
+          );
+
+          return finalStatus.taskId;
+        } catch (e) {
+          print('❌ 解析 Guide 数据失败: $e');
+          isLoadingGuide.value = false;
+          throw Exception('解析指南数据失败: $e');
+        }
+      } else {
+        isLoadingGuide.value = false;
+        throw Exception('任务未完成或没有返回数据');
+      }
+    } catch (e) {
+      print('❌ 异步生成失败: $e');
+      isLoadingGuide.value = false;
+
+      AppToast.error(
+        'Failed to generate guide: ${e.toString()}',
+        title: 'Error',
+      );
+
+      return null;
     }
   }
 
@@ -336,7 +599,7 @@ class CityDetailController extends GetxController {
     // ❌ 已移除: reviews (使用 userReviews)
     // ❌ 已移除: costOfLiving (使用 communityCostSummary)
     // ❌ 已移除: photos (使用 userPhotos)
-    
+
     // 生成评分数据
     scores.value = CityScores(
       overall: 4.55,
@@ -550,46 +813,8 @@ class CityDetailController extends GetxController {
       ),
     ];
 
-    // 生成数字游民指南
-    guide.value = DigitalNomadGuide(
-      cityId: currentCityId.value,
-      cityName: currentCityName.value,
-      overview:
-          'Bangkok is one of the most popular digital nomad destinations in Southeast Asia, offering an unbeatable combination of affordability, infrastructure, and vibrant culture.',
-      visaInfo: VisaInfo(
-        type: 'Tourist Visa',
-        duration: 60,
-        requirements: 'Valid passport, proof of accommodation, return ticket',
-        cost: 35,
-        process: 'Apply online or at embassy',
-      ),
-      bestAreas: [
-        'Sukhumvit (modern, convenient)',
-        'Silom (business district)',
-        'Ari (hipster, local)',
-        'Thonglor (upscale, expat-friendly)',
-      ],
-      workspaceRecommendations: [
-        'The Hive - Multiple locations',
-        'HUBBA - Community focused',
-        'AIS D.C. - Spacious and modern',
-        'Launchpad - Startup vibe',
-      ],
-      tips: [
-        'Get a local SIM card (AIS or DTAC) for reliable internet',
-        'Use Grab or Bolt for transportation',
-        'Learn basic Thai phrases',
-        'Join Facebook groups for digital nomads',
-        'Be prepared for hot and humid weather',
-      ],
-      essentialInfo: {
-        'SIM Card': 'Available at 7-Eleven, 200-500 THB/month',
-        'Bank': 'Bangkok Bank offers tourist accounts',
-        'Transport': 'BTS/MRT trains, Grab taxis',
-        'Healthcare': 'Excellent private hospitals (Bumrungrad, Samitivej)',
-        'Coworking': '\$150-300/month for hot desk',
-      },
-    );
+    // ✅ 不再生成 guide mock 数据,初始为 null
+    // 页面将显示"生成指南"按钮
   }
 
   /// 生成AI旅行计划

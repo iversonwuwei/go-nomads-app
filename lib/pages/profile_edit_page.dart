@@ -589,7 +589,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       ),
       value: value,
       onChanged: onChanged,
-      activeColor: AppColors.accent,
+      activeThumbColor: AppColors.accent,
     );
   }
 
@@ -822,7 +822,7 @@ class _SkillsBottomSheet extends StatefulWidget {
 
 class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
   List<SkillsByCategory> _skillsByCategory = [];
-  List<UserSkill> _selectedSkills = [];
+  final List<UserSkill> _selectedSkills = [];
   bool _isLoading = true;
   String _searchQuery = '';
   String? _selectedCategory;
@@ -1185,7 +1185,7 @@ class _InterestsBottomSheet extends StatefulWidget {
 
 class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
   List<InterestsByCategory> _interestsByCategory = [];
-  List<UserInterest> _selectedInterests = [];
+  final List<UserInterest> _selectedInterests = [];
   bool _isLoading = true;
   String _searchQuery = '';
   String? _selectedCategory;

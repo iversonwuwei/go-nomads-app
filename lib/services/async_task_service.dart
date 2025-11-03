@@ -63,6 +63,42 @@ class AsyncTaskService {
     }
   }
 
+  /// 创建数字游民指南生成任务
+  ///
+  /// 返回任务ID和初始状态
+  Future<CreateTaskResponse> createDigitalNomadGuideTask({
+    required String cityId,
+    required String cityName,
+  }) async {
+    try {
+      print('🚀 创建数字游民指南异步任务: 城市=$cityName');
+
+      final response = await _httpService.post(
+        '/ai/guide/async',
+        data: {
+          'cityId': cityId,
+          'cityName': cityName,
+        },
+      );
+
+      print('✅ 指南任务创建成功: ${response.data}');
+
+      final data = response.data;
+      if (data == null) {
+        throw Exception('后端返回数据为空');
+      }
+
+      final taskData = data is Map<String, dynamic> && data.containsKey('data')
+          ? data['data'] as Map<String, dynamic>
+          : data as Map<String, dynamic>;
+
+      return CreateTaskResponse.fromJson(taskData);
+    } catch (e) {
+      print('❌ 创建指南任务失败: $e');
+      rethrow;
+    }
+  }
+
   /// 查询任务状态
   ///
   /// [taskId] 任务ID
@@ -176,6 +212,39 @@ class AsyncTaskService {
     );
 
     print('✅ 任务已创建: ${createResponse.taskId}');
+
+    // 2. 轮询直到完成
+    final finalStatus = await pollTaskStatus(
+      taskId: createResponse.taskId,
+      onProgress: onProgress,
+    );
+
+    if (finalStatus.isFailed) {
+      throw Exception('任务失败: ${finalStatus.error}');
+    }
+
+    return finalStatus;
+  }
+
+  /// 创建数字游民指南并等待完成
+  ///
+  /// [cityId] 城市ID
+  /// [cityName] 城市名称
+  /// [onProgress] 进度更新回调
+  ///
+  /// 返回完成后的任务状态(包含guideId)
+  Future<TaskStatus> createGuideAndWaitForCompletion({
+    required String cityId,
+    required String cityName,
+    Function(TaskStatus status)? onProgress,
+  }) async {
+    // 1. 创建任务
+    final createResponse = await createDigitalNomadGuideTask(
+      cityId: cityId,
+      cityName: cityName,
+    );
+
+    print('✅ 指南任务已创建: ${createResponse.taskId}');
 
     // 2. 轮询直到完成
     final finalStatus = await pollTaskStatus(

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart';
@@ -30,7 +31,7 @@ class DatabaseService {
     // 打开数据库,如果不存在则创建
     return await openDatabase(
       path,
-      version: 5, // 升级到版本5 - tokens 表添加用户信息字段
+      version: 6, // 升级到版本6 - 添加数字游民指南表
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -319,6 +320,23 @@ class DatabaseService {
       )
     ''');
 
+    // 数字游民指南表
+    await db.execute('''
+      CREATE TABLE digital_nomad_guides (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        city_id TEXT NOT NULL UNIQUE,
+        city_name TEXT NOT NULL,
+        overview TEXT,
+        best_areas TEXT,
+        visa_info TEXT,
+        workspace_recommendations TEXT,
+        tips TEXT,
+        essential_info TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      )
+    ''');
+
     // 创建索引以提高查询性能
     await db.execute('CREATE INDEX idx_users_phone ON users(phone)');
     await db.execute('CREATE INDEX idx_cities_name ON cities(name)');
@@ -329,6 +347,8 @@ class DatabaseService {
     await db.execute('CREATE INDEX idx_chat_room ON chat_messages(room_id)');
     await db.execute('CREATE INDEX idx_favorites_user ON favorites(user_id)');
     await db.execute('CREATE INDEX idx_tokens_user ON tokens(user_id)');
+    await db.execute(
+        'CREATE INDEX idx_guides_city ON digital_nomad_guides(city_id)');
 
     print('Database created successfully');
   }
@@ -505,6 +525,36 @@ class DatabaseService {
         print('⚠️ 升级 tokens 表时出错: $e');
       }
     }
+
+    if (oldVersion < 6 && newVersion >= 6) {
+      // 版本 5 -> 6: 添加数字游民指南表
+      try {
+        print('📖 开始添加数字游民指南表...');
+
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS digital_nomad_guides (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            city_id TEXT NOT NULL UNIQUE,
+            city_name TEXT NOT NULL,
+            overview TEXT,
+            best_areas TEXT,
+            visa_info TEXT,
+            workspace_recommendations TEXT,
+            tips TEXT,
+            essential_info TEXT,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+          )
+        ''');
+
+        await db.execute(
+            'CREATE INDEX IF NOT EXISTS idx_guides_city ON digital_nomad_guides(city_id)');
+
+        print('✅ 数字游民指南表创建完成');
+      } catch (e) {
+        print('⚠️ 创建数字游民指南表时出错: $e');
+      }
+    }
   }
 
   /// 关闭数据库
@@ -538,5 +588,160 @@ class DatabaseService {
     await databaseFactory.deleteDatabase(path);
     _database = null;
     print('Database deleted');
+  }
+
+  // ==================== 数字游民指南相关方法 ====================
+
+  /// 保存或更新数字游民指南 (使用 cityId 作为唯一标识)
+  Future<void> saveGuide(Map<String, dynamic> guideJson) async {
+    final db = await database;
+    final now = DateTime.now().toIso8601String();
+
+    try {
+      // 将复杂字段序列化为 JSON 字符串
+      final guideData = {
+        'city_id': guideJson['cityId'] ?? guideJson['CityId'],
+        'city_name': guideJson['cityName'] ?? guideJson['CityName'],
+        'overview': guideJson['overview'] ?? guideJson['Overview'],
+        'best_areas':
+            _serializeList(guideJson['bestAreas'] ?? guideJson['BestAreas']),
+        'visa_info':
+            _serializeMap(guideJson['visaInfo'] ?? guideJson['VisaInfo']),
+        'workspace_recommendations': _serializeList(
+            guideJson['workspaceRecommendations'] ??
+                guideJson['WorkspaceRecommendations']),
+        'tips': _serializeList(guideJson['tips'] ?? guideJson['Tips']),
+        'essential_info': _serializeMap(
+            guideJson['essentialInfo'] ?? guideJson['EssentialInfo']),
+        'created_at': now,
+        'updated_at': now,
+      };
+
+      // 使用 INSERT OR REPLACE 实现覆盖
+      await db.insert(
+        'digital_nomad_guides',
+        guideData,
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+
+      print('✅ Guide 已保存到 SQLite: cityId=${guideData['city_id']}');
+    } catch (e) {
+      print('❌ 保存 Guide 失败: $e');
+      rethrow;
+    }
+  }
+
+  /// 从 SQLite 加载指南
+  Future<Map<String, dynamic>?> loadGuide(String cityId) async {
+    final db = await database;
+
+    try {
+      final results = await db.query(
+        'digital_nomad_guides',
+        where: 'city_id = ?',
+        whereArgs: [cityId],
+        limit: 1,
+      );
+
+      if (results.isEmpty) {
+        print('ℹ️ SQLite 中未找到 Guide: cityId=$cityId');
+        return null;
+      }
+
+      final row = results.first;
+
+      // 反序列化为标准格式 (使用 camelCase)
+      final guideJson = {
+        'cityId': row['city_id'],
+        'cityName': row['city_name'],
+        'overview': row['overview'],
+        'bestAreas': _deserializeList(row['best_areas'] as String?),
+        'visaInfo': _deserializeMap(row['visa_info'] as String?),
+        'workspaceRecommendations':
+            _deserializeStringList(row['workspace_recommendations'] as String?),
+        'tips': _deserializeStringList(row['tips'] as String?),
+        'essentialInfo':
+            _deserializeStringMap(row['essential_info'] as String?),
+      };
+
+      print('✅ 从 SQLite 加载 Guide: cityId=$cityId');
+      return guideJson;
+    } catch (e) {
+      print('❌ 加载 Guide 失败: $e');
+      return null;
+    }
+  }
+
+  /// 删除指定城市的指南
+  Future<void> deleteGuide(String cityId) async {
+    final db = await database;
+
+    try {
+      await db.delete(
+        'digital_nomad_guides',
+        where: 'city_id = ?',
+        whereArgs: [cityId],
+      );
+
+      print('✅ Guide 已删除: cityId=$cityId');
+    } catch (e) {
+      print('❌ 删除 Guide 失败: $e');
+    }
+  }
+
+  // ==================== 序列化辅助方法 ====================
+
+  String _serializeList(dynamic list) {
+    if (list == null) return '[]';
+    if (list is String) return list; // 已经是字符串
+    return jsonEncode(list);
+  }
+
+  String _serializeMap(dynamic map) {
+    if (map == null) return '{}';
+    if (map is String) return map; // 已经是字符串
+    return jsonEncode(map);
+  }
+
+  List<dynamic> _deserializeList(String? json) {
+    if (json == null || json.isEmpty) return [];
+    try {
+      return jsonDecode(json) as List<dynamic>;
+    } catch (e) {
+      print('❌ 反序列化 List 失败: $e');
+      return [];
+    }
+  }
+
+  Map<String, dynamic> _deserializeMap(String? json) {
+    if (json == null || json.isEmpty) return {};
+    try {
+      return jsonDecode(json) as Map<String, dynamic>;
+    } catch (e) {
+      print('❌ 反序列化 Map 失败: $e');
+      return {};
+    }
+  }
+
+  List<String> _deserializeStringList(String? json) {
+    if (json == null || json.isEmpty) return [];
+    try {
+      final list = jsonDecode(json) as List<dynamic>;
+      return list.map((e) => e.toString()).toList();
+    } catch (e) {
+      print('❌ 反序列化 String List 失败: $e');
+      return [];
+    }
+  }
+
+  Map<String, String> _deserializeStringMap(String? json) {
+    if (json == null || json.isEmpty) return {};
+    try {
+      final map = jsonDecode(json) as Map<String, dynamic>;
+      return map.map((k, v) => MapEntry(k, v.toString()));
+    } catch (e) {
+      print('❌ 反序列化 String Map 失败: $e');
+      return {};
+    }
   }
 }

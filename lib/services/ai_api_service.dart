@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 
+import '../models/city_detail_model.dart';
 import '../models/travel_plan_model.dart';
 import 'http_service.dart';
 
@@ -406,6 +407,208 @@ class AiApiService {
     } catch (e) {
       print('❌ 解析旅行计划失败: $e');
       rethrow;
+    }
+  }
+
+  /// 生成数字游民指南
+  ///
+  /// [cityId] 城市ID
+  /// [cityName] 城市名称
+  ///
+  /// 返回完整的数字游民指南
+  Future<Map<String, dynamic>> generateDigitalNomadGuide({
+    required String cityId,
+    required String cityName,
+  }) async {
+    try {
+      print('🤖 正在生成数字游民指南...');
+      print('   城市: $cityName (ID: $cityId)');
+
+      final response = await _httpService.post(
+        '/ai/travel-guide',
+        data: {
+          'cityId': cityId,
+          'cityName': cityName,
+        },
+        options: Options(
+          receiveTimeout: const Duration(minutes: 3), // AI生成可能需要更长时间
+          sendTimeout: const Duration(seconds: 30),
+        ),
+      );
+
+      print('✅ AI数字游民指南生成成功');
+      print('   响应状态: ${response.statusCode}');
+
+      if (response.data == null) {
+        print('❌ 响应数据为 null');
+        throw Exception('AI service returned null data');
+      }
+
+      final data = response.data as Map<String, dynamic>;
+      print('📊 响应数据类型: ${data.runtimeType}');
+      print('📊 数据键: ${data.keys.join(', ')}');
+
+      return data;
+    } on DioException catch (e) {
+      print('❌ Dio错误: ${e.type}');
+      print('   错误信息: ${e.message}');
+      print('   响应数据: ${e.response?.data}');
+
+      if (e.response != null) {
+        final errorData = e.response!.data;
+        String errorMessage = 'AI服务错误';
+
+        if (errorData is Map<String, dynamic>) {
+          errorMessage = errorData['message'] ?? errorMessage;
+        }
+
+        throw Exception('HTTP ${e.response!.statusCode}: $errorMessage');
+      } else if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        throw Exception('AI生成超时,请稍后重试');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw Exception('网络连接失败,请检查网络');
+      } else {
+        throw Exception('网络错误: ${e.message}');
+      }
+    } catch (e, stackTrace) {
+      print('❌ 生成数字游民指南失败: $e');
+      print('   堆栈跟踪: $stackTrace');
+      rethrow;
+    }
+  }
+
+  /// 流式生成数字游民旅游指南 (使用 Server-Sent Events)
+  ///
+  /// 通过 [onProgress] 回调实时接收进度更新
+  /// 通过 [onData] 回调接收最终的旅游指南
+  /// 通过 [onError] 回调接收错误信息
+  ///
+  /// [cityId] 城市ID
+  /// [cityName] 城市名称
+  /// [onProgress] 进度回调 (message: 提示信息, progress: 进度 0-100)
+  /// [onData] 数据回调 (返回完整的旅游指南)
+  /// [onError] 错误回调
+  Future<void> generateDigitalNomadGuideStream({
+    required String cityId,
+    required String cityName,
+    required Function(String message, int progress) onProgress,
+    required Function(DigitalNomadGuide guide) onData,
+    required Function(String error) onError,
+  }) async {
+    try {
+      print('🤖 [流式] 正在生成数字游民指南...');
+      print('   城市: $cityName (ID: $cityId)');
+
+      final response = await _httpService.post<ResponseBody>(
+        '/ai/travel-guide/stream',
+        data: {
+          'cityId': cityId,
+          'cityName': cityName,
+        },
+        options: Options(
+          responseType: ResponseType.stream,
+          headers: {
+            'Accept': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+          },
+          extra: {
+            HttpService.disableApiResponseUnwrapKey: true,
+          },
+        ),
+      );
+
+      print('✅ [流式] 流式连接已建立');
+
+      // 处理流式响应
+      final stream = response.data!.stream;
+      String buffer = '';
+
+      await for (var chunk in const Utf8Decoder().bind(stream)) {
+        buffer += chunk;
+
+        // 处理可能的多个事件
+        final events = buffer.split('\n\n');
+        buffer = events.removeLast(); // 保留不完整的事件
+
+        for (var event in events) {
+          if (event.trim().isEmpty) continue;
+
+          try {
+            // 解析 SSE 格式: event: xxx\ndata: {...}
+            final lines = event.split('\n');
+            String? eventType;
+            String? eventData;
+
+            for (var line in lines) {
+              if (line.startsWith('event:')) {
+                eventType = line.substring(6).trim();
+              } else if (line.startsWith('data:')) {
+                eventData = line.substring(5).trim();
+              }
+            }
+
+            if (eventType == null || eventData == null) continue;
+
+            final data = jsonDecode(eventData) as Map<String, dynamic>;
+            print('📨 [流式] 收到事件: $eventType');
+
+            switch (eventType) {
+              case 'start':
+                onProgress(data['message'] ?? '开始生成...', data['progress'] ?? 0);
+                break;
+
+              case 'progress':
+                onProgress(data['message'] ?? '生成中...', data['progress'] ?? 0);
+                break;
+
+              case 'success':
+                print('✅ [流式] 旅游指南生成成功');
+                final guideData = data['data'] as Map<String, dynamic>;
+                final guide = DigitalNomadGuide.fromJson(guideData);
+                onData(guide);
+                break;
+
+              case 'error':
+                print('❌ [流式] 生成失败: ${data['message']}');
+                onError(data['message'] ?? '未知错误');
+                break;
+
+              default:
+                print('⚠️ [流式] 未知事件类型: $eventType');
+            }
+          } catch (e) {
+            print('⚠️ [流式] 解析事件失败: $e');
+          }
+        }
+      }
+
+      print('✅ [流式] 流式响应完成');
+    } on DioException catch (e) {
+      print('❌ [流式] Dio错误: ${e.type}');
+      print('   错误信息: ${e.message}');
+
+      if (e.response != null) {
+        final errorData = e.response!.data;
+        String errorMessage = 'AI服务错误';
+
+        if (errorData is Map<String, dynamic>) {
+          errorMessage = errorData['message'] ?? errorMessage;
+        }
+
+        onError('HTTP ${e.response!.statusCode}: $errorMessage');
+      } else if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        onError('AI生成超时,请稍后重试');
+      } else if (e.type == DioExceptionType.connectionError) {
+        onError('网络连接失败,请检查网络');
+      } else {
+        onError('网络错误: ${e.message}');
+      }
+    } catch (e, stackTrace) {
+      print('❌ [流式] 生成数字游民指南失败: $e');
+      print('   堆栈跟踪: $stackTrace');
+      onError('生成失败: ${e.toString()}');
     }
   }
 }

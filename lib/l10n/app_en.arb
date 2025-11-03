@@ -717,6 +717,56 @@
   "averageMonthlyCost": "Average Monthly Cost",
   "sevenDayForecast": "7-Day Forecast",
   "feelsLike": "Feels like",
+  "humidity": "Humidity",
+  "wind": "Wind",
+  "pressure": "Pressure",
+  "cloudiness": "Cloudiness",
+  "visibility": "Visibility",
+  "airQuality": "Air Quality",
+  "uvIndex": "UV Index",
+  "sunriseSunset": "Sunrise & Sunset",
+  "sunrise": "Sunrise",
+  "sunset": "Sunset",
+  "fiveDayForecast": "5-Day Forecast",
+  "today": "Today",
+  "tomorrow": "Tomorrow",
+  "aqiGood": "Good",
+  "aqiModerate": "Moderate",
+  "aqiUnhealthySensitive": "Unhealthy for sensitive groups",
+  "aqiUnhealthy": "Unhealthy",
+  "aqiVeryUnhealthy": "Very unhealthy",
+  "aqiHazardous": "Hazardous",
+  "yesterday": "Yesterday",
+  "daysAgo": "{count} days ago",
+  "@daysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weeksAgo": "{count} {count, plural, =1{week} other{weeks}} ago",
+  "@weeksAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monthsAgo": "{count} {count, plural, =1{month} other{months}} ago",
+  "@monthsAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "visited": "Visited",
+  "posted": "Posted",
+  "uploaded": "Uploaded",
+  "dataSource": "Data Source",
+  "timezone": "Timezone",
+  "updated": "Updated",
   "submitCost": "Submit Cost Information",
   "submitting": "Submitting...",
   "pleaseEnterCost": "Please enter at least one cost item",

@@ -35,7 +35,9 @@ class CreateTaskResponse {
 class TaskStatus {
   final String taskId;
   final String status; // queued, processing, completed, failed
-  final String? planId;
+  final String? planId; // 旅行计划ID (兼容旧版)
+  final String? guideId; // 数字游民指南ID
+  final Map<String, dynamic>? result; // 通用结果数据
   final String? error;
   final int progress; // 0-100
   final String? progressMessage;
@@ -47,6 +49,8 @@ class TaskStatus {
     required this.taskId,
     required this.status,
     this.planId,
+    this.guideId,
+    this.result,
     this.error,
     required this.progress,
     this.progressMessage,
@@ -60,6 +64,8 @@ class TaskStatus {
       taskId: json['taskId'] as String,
       status: json['status'] as String,
       planId: json['planId'] as String?,
+      guideId: json['guideId'] as String?,
+      result: json['result'] as Map<String, dynamic>?,
       error: json['error'] as String?,
       progress: json['progress'] as int,
       progressMessage: json['progressMessage'] as String?,
@@ -76,6 +82,8 @@ class TaskStatus {
       'taskId': taskId,
       'status': status,
       'planId': planId,
+      'guideId': guideId,
+      'result': result,
       'error': error,
       'progress': progress,
       'progressMessage': progressMessage,

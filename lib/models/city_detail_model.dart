@@ -95,7 +95,8 @@ class CityReview {
   final int likes;
   final int comments;
   final DateTime createdAt;
-  final Map<String, double>? categoryRatings; // cost, internet, safety, food, community
+  final Map<String, double>?
+      categoryRatings; // cost, internet, safety, food, community
 
   CityReview({
     required this.id,
@@ -127,12 +128,12 @@ class CostOfLiving {
   final double utilities;
   final double groceries;
   final double diningOut;
-  
+
   // 住宿选项
   final double? airbnbCost;
   final double? hotelCost;
   final double? apartmentCost;
-  
+
   CostOfLiving({
     required this.total,
     required this.accommodation,
@@ -310,7 +311,7 @@ class DigitalNomadGuide {
   final String cityName;
   final String overview;
   final VisaInfo visaInfo;
-  final List<String> bestAreas;
+  final List<BestArea> bestAreas;
   final List<String> workspaceRecommendations;
   final List<String> tips;
   final Map<String, String> essentialInfo; // SIM cards, banks, etc.
@@ -325,6 +326,108 @@ class DigitalNomadGuide {
     required this.tips,
     required this.essentialInfo,
   });
+
+  factory DigitalNomadGuide.fromJson(Map<String, dynamic> json) {
+    // ✅ 支持 PascalCase (C# 后端) 和 camelCase (Dart 前端)
+    return DigitalNomadGuide(
+      cityId: json['CityId'] ?? json['cityId'] ?? '',
+      cityName: json['CityName'] ?? json['cityName'] ?? '',
+      overview: json['Overview'] ?? json['overview'] ?? '',
+      visaInfo: VisaInfo.fromJson(json['VisaInfo'] ?? json['visaInfo'] ?? {}),
+      bestAreas: ((json['BestAreas'] ?? json['bestAreas']) as List<dynamic>?)
+              ?.map((area) => BestArea.fromJson(area as Map<String, dynamic>))
+              .toList() ??
+          [],
+      workspaceRecommendations: List<String>.from(
+          json['WorkspaceRecommendations'] ??
+              json['workspaceRecommendations'] ??
+              []),
+      tips: List<String>.from(json['Tips'] ?? json['tips'] ?? []),
+      essentialInfo: Map<String, String>.from(
+          json['EssentialInfo'] ?? json['essentialInfo'] ?? {}),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'cityId': cityId,
+      'cityName': cityName,
+      'overview': overview,
+      'visaInfo': visaInfo.toJson(),
+      'bestAreas': bestAreas.map((area) => area.toJson()).toList(),
+      'workspaceRecommendations': workspaceRecommendations,
+      'tips': tips,
+      'essentialInfo': essentialInfo,
+    };
+  }
+}
+
+/// 最佳区域推荐(包含娱乐、旅游、经济、文化四个维度)
+class BestArea {
+  final String name;
+  final String description;
+  final double entertainmentScore; // 1-5
+  final String entertainmentDescription;
+  final double tourismScore; // 1-5
+  final String tourismDescription;
+  final double economyScore; // 1-5 (越低越便宜)
+  final String economyDescription;
+  final double cultureScore; // 1-5
+  final String cultureDescription;
+
+  BestArea({
+    required this.name,
+    required this.description,
+    required this.entertainmentScore,
+    required this.entertainmentDescription,
+    required this.tourismScore,
+    required this.tourismDescription,
+    required this.economyScore,
+    required this.economyDescription,
+    required this.cultureScore,
+    required this.cultureDescription,
+  });
+
+  factory BestArea.fromJson(Map<String, dynamic> json) {
+    // ✅ 支持 PascalCase (C# 后端) 和 camelCase (Dart 前端)
+    return BestArea(
+      name: json['Name'] ?? json['name'] ?? '',
+      description: json['Description'] ?? json['description'] ?? '',
+      entertainmentScore:
+          ((json['EntertainmentScore'] ?? json['entertainmentScore']) ?? 0)
+              .toDouble(),
+      entertainmentDescription: json['EntertainmentDescription'] ??
+          json['entertainmentDescription'] ??
+          '',
+      tourismScore:
+          ((json['TourismScore'] ?? json['tourismScore']) ?? 0).toDouble(),
+      tourismDescription:
+          json['TourismDescription'] ?? json['tourismDescription'] ?? '',
+      economyScore:
+          ((json['EconomyScore'] ?? json['economyScore']) ?? 0).toDouble(),
+      economyDescription:
+          json['EconomyDescription'] ?? json['economyDescription'] ?? '',
+      cultureScore:
+          ((json['CultureScore'] ?? json['cultureScore']) ?? 0).toDouble(),
+      cultureDescription:
+          json['CultureDescription'] ?? json['cultureDescription'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'description': description,
+      'entertainmentScore': entertainmentScore,
+      'entertainmentDescription': entertainmentDescription,
+      'tourismScore': tourismScore,
+      'tourismDescription': tourismDescription,
+      'economyScore': economyScore,
+      'economyDescription': economyDescription,
+      'cultureScore': cultureScore,
+      'cultureDescription': cultureDescription,
+    };
+  }
 }
 
 class VisaInfo {
@@ -341,6 +444,27 @@ class VisaInfo {
     required this.cost,
     required this.process,
   });
+
+  factory VisaInfo.fromJson(Map<String, dynamic> json) {
+    // ✅ 支持 PascalCase (C# 后端) 和 camelCase (Dart 前端)
+    return VisaInfo(
+      type: json['Type'] ?? json['type'] ?? '',
+      duration: json['Duration'] ?? json['duration'] ?? 0,
+      requirements: json['Requirements'] ?? json['requirements'] ?? '',
+      cost: ((json['Cost'] ?? json['cost']) ?? 0).toDouble(),
+      process: json['Process'] ?? json['process'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'type': type,
+      'duration': duration,
+      'requirements': requirements,
+      'cost': cost,
+      'process': process,
+    };
+  }
 }
 
 /// 附近城市

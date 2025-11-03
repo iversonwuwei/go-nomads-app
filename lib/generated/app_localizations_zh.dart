@@ -1940,6 +1940,81 @@ class AppLocalizationsZh extends AppLocalizations {
   String get feelsLike => '体感温度';
 
   @override
+  String get wind => '风速';
+
+  @override
+  String get pressure => '气压';
+
+  @override
+  String get cloudiness => '云量';
+
+  @override
+  String get visibility => '能见度';
+
+  @override
+  String get uvIndex => '紫外线指数';
+
+  @override
+  String get sunriseSunset => '日出日落';
+
+  @override
+  String get sunrise => '日出';
+
+  @override
+  String get sunset => '日落';
+
+  @override
+  String get fiveDayForecast => '5天预报';
+
+  @override
+  String get aqiGood => '优';
+
+  @override
+  String get aqiModerate => '良';
+
+  @override
+  String get aqiUnhealthySensitive => '轻度污染';
+
+  @override
+  String get aqiUnhealthy => '中度污染';
+
+  @override
+  String get aqiVeryUnhealthy => '重度污染';
+
+  @override
+  String get aqiHazardous => '严重污染';
+
+  @override
+  String daysAgo(int count) {
+    return '$count天前';
+  }
+
+  @override
+  String weeksAgo(int count) {
+    return '$count周前';
+  }
+
+  @override
+  String monthsAgo(int count) {
+    return '$count月前';
+  }
+
+  @override
+  String get visited => '访问于';
+
+  @override
+  String get posted => '发布于';
+
+  @override
+  String get uploaded => '上传于';
+
+  @override
+  String get dataSource => '数据来源';
+
+  @override
+  String get updated => '更新于';
+
+  @override
   String get submitCost => '提交费用';
 
   @override
@@ -2888,22 +2963,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get adjustFilters => '尝试调整筛选条件';
 
   @override
-  String get aqiGood => '优';
-
-  @override
-  String get aqiModerate => '良';
-
-  @override
   String get aqiUnhealthyForSensitive => '轻度污染';
-
-  @override
-  String get aqiUnhealthy => '中度污染';
-
-  @override
-  String get aqiVeryUnhealthy => '重度污染';
-
-  @override
-  String get aqiHazardous => '严重污染';
 
   @override
   String get pricing => '价格';
@@ -3277,11 +3337,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String daysAgo(int count) {
-    return '$count天前';
-  }
-
-  @override
   String lastSeen(String time) {
     return '最后在线 $time';
   }
@@ -3363,16 +3418,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get contactCreator => '联系作者';
-
-  @override
-  String weeksAgo(int count) {
-    return '$count周前';
-  }
-
-  @override
-  String monthsAgo(int count) {
-    return '$count月前';
-  }
 
   @override
   String get createInnovationProject => '创建创意项目';

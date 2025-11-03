@@ -717,6 +717,56 @@
   "averageMonthlyCost": "平均月度费用",
   "sevenDayForecast": "7天天气预报",
   "feelsLike": "体感温度",
+  "humidity": "湿度",
+  "wind": "风速",
+  "pressure": "气压",
+  "cloudiness": "云量",
+  "visibility": "能见度",
+  "airQuality": "空气质量",
+  "uvIndex": "紫外线指数",
+  "sunriseSunset": "日出日落",
+  "sunrise": "日出",
+  "sunset": "日落",
+  "fiveDayForecast": "5天预报",
+  "today": "今天",
+  "tomorrow": "明天",
+  "aqiGood": "优",
+  "aqiModerate": "良",
+  "aqiUnhealthySensitive": "轻度污染",
+  "aqiUnhealthy": "中度污染",
+  "aqiVeryUnhealthy": "重度污染",
+  "aqiHazardous": "严重污染",
+  "yesterday": "昨天",
+  "daysAgo": "{count}天前",
+  "@daysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weeksAgo": "{count}周前",
+  "@weeksAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monthsAgo": "{count}个月前",
+  "@monthsAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "visited": "访问于",
+  "posted": "发布于",
+  "uploaded": "上传于",
+  "dataSource": "数据来源",
+  "timezone": "时区",
+  "updated": "更新于",
   "submitCost": "提交费用",
   "submitting": "提交中...",
   "pleaseEnterCost": "请至少输入一项费用",

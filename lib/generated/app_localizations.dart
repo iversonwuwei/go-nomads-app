@@ -3944,6 +3944,144 @@ abstract class AppLocalizations {
   /// **'体感温度'**
   String get feelsLike;
 
+  /// No description provided for @wind.
+  ///
+  /// In zh, this message translates to:
+  /// **'风速'**
+  String get wind;
+
+  /// No description provided for @pressure.
+  ///
+  /// In zh, this message translates to:
+  /// **'气压'**
+  String get pressure;
+
+  /// No description provided for @cloudiness.
+  ///
+  /// In zh, this message translates to:
+  /// **'云量'**
+  String get cloudiness;
+
+  /// No description provided for @visibility.
+  ///
+  /// In zh, this message translates to:
+  /// **'能见度'**
+  String get visibility;
+
+  /// No description provided for @uvIndex.
+  ///
+  /// In zh, this message translates to:
+  /// **'紫外线指数'**
+  String get uvIndex;
+
+  /// No description provided for @sunriseSunset.
+  ///
+  /// In zh, this message translates to:
+  /// **'日出日落'**
+  String get sunriseSunset;
+
+  /// No description provided for @sunrise.
+  ///
+  /// In zh, this message translates to:
+  /// **'日出'**
+  String get sunrise;
+
+  /// No description provided for @sunset.
+  ///
+  /// In zh, this message translates to:
+  /// **'日落'**
+  String get sunset;
+
+  /// No description provided for @fiveDayForecast.
+  ///
+  /// In zh, this message translates to:
+  /// **'5天预报'**
+  String get fiveDayForecast;
+
+  /// No description provided for @aqiGood.
+  ///
+  /// In zh, this message translates to:
+  /// **'优'**
+  String get aqiGood;
+
+  /// No description provided for @aqiModerate.
+  ///
+  /// In zh, this message translates to:
+  /// **'良'**
+  String get aqiModerate;
+
+  /// No description provided for @aqiUnhealthySensitive.
+  ///
+  /// In zh, this message translates to:
+  /// **'轻度污染'**
+  String get aqiUnhealthySensitive;
+
+  /// No description provided for @aqiUnhealthy.
+  ///
+  /// In zh, this message translates to:
+  /// **'中度污染'**
+  String get aqiUnhealthy;
+
+  /// No description provided for @aqiVeryUnhealthy.
+  ///
+  /// In zh, this message translates to:
+  /// **'重度污染'**
+  String get aqiVeryUnhealthy;
+
+  /// No description provided for @aqiHazardous.
+  ///
+  /// In zh, this message translates to:
+  /// **'严重污染'**
+  String get aqiHazardous;
+
+  /// No description provided for @daysAgo.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count}天前'**
+  String daysAgo(int count);
+
+  /// No description provided for @weeksAgo.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count}周前'**
+  String weeksAgo(int count);
+
+  /// No description provided for @monthsAgo.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count}月前'**
+  String monthsAgo(int count);
+
+  /// No description provided for @visited.
+  ///
+  /// In zh, this message translates to:
+  /// **'访问于'**
+  String get visited;
+
+  /// No description provided for @posted.
+  ///
+  /// In zh, this message translates to:
+  /// **'发布于'**
+  String get posted;
+
+  /// No description provided for @uploaded.
+  ///
+  /// In zh, this message translates to:
+  /// **'上传于'**
+  String get uploaded;
+
+  /// No description provided for @dataSource.
+  ///
+  /// In zh, this message translates to:
+  /// **'数据来源'**
+  String get dataSource;
+
+  /// No description provided for @updated.
+  ///
+  /// In zh, this message translates to:
+  /// **'更新于'**
+  String get updated;
+
   /// No description provided for @submitCost.
   ///
   /// In zh, this message translates to:
@@ -5774,41 +5912,11 @@ abstract class AppLocalizations {
   /// **'尝试调整筛选条件'**
   String get adjustFilters;
 
-  /// No description provided for @aqiGood.
-  ///
-  /// In zh, this message translates to:
-  /// **'优'**
-  String get aqiGood;
-
-  /// No description provided for @aqiModerate.
-  ///
-  /// In zh, this message translates to:
-  /// **'良'**
-  String get aqiModerate;
-
   /// No description provided for @aqiUnhealthyForSensitive.
   ///
   /// In zh, this message translates to:
   /// **'轻度污染'**
   String get aqiUnhealthyForSensitive;
-
-  /// No description provided for @aqiUnhealthy.
-  ///
-  /// In zh, this message translates to:
-  /// **'中度污染'**
-  String get aqiUnhealthy;
-
-  /// No description provided for @aqiVeryUnhealthy.
-  ///
-  /// In zh, this message translates to:
-  /// **'重度污染'**
-  String get aqiVeryUnhealthy;
-
-  /// No description provided for @aqiHazardous.
-  ///
-  /// In zh, this message translates to:
-  /// **'严重污染'**
-  String get aqiHazardous;
 
   /// No description provided for @pricing.
   ///
@@ -6500,12 +6608,6 @@ abstract class AppLocalizations {
   /// **'{hours}小时前'**
   String hoursAgo(int hours);
 
-  /// No description provided for @daysAgo.
-  ///
-  /// In zh, this message translates to:
-  /// **'{count}天前'**
-  String daysAgo(int count);
-
   /// No description provided for @lastSeen.
   ///
   /// In zh, this message translates to:
@@ -6667,18 +6769,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'联系作者'**
   String get contactCreator;
-
-  /// No description provided for @weeksAgo.
-  ///
-  /// In zh, this message translates to:
-  /// **'{count}周前'**
-  String weeksAgo(int count);
-
-  /// No description provided for @monthsAgo.
-  ///
-  /// In zh, this message translates to:
-  /// **'{count}月前'**
-  String monthsAgo(int count);
 
   /// No description provided for @createInnovationProject.
   ///

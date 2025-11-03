@@ -1944,6 +1944,81 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feelsLike => 'Feels like';
 
   @override
+  String get wind => 'Wind';
+
+  @override
+  String get pressure => 'Pressure';
+
+  @override
+  String get cloudiness => 'Cloudiness';
+
+  @override
+  String get visibility => 'Visibility';
+
+  @override
+  String get uvIndex => 'UV Index';
+
+  @override
+  String get sunriseSunset => 'Sunrise & Sunset';
+
+  @override
+  String get sunrise => 'Sunrise';
+
+  @override
+  String get sunset => 'Sunset';
+
+  @override
+  String get fiveDayForecast => '5-Day Forecast';
+
+  @override
+  String get aqiGood => 'Good';
+
+  @override
+  String get aqiModerate => 'Moderate';
+
+  @override
+  String get aqiUnhealthySensitive => 'Unhealthy for sensitive groups';
+
+  @override
+  String get aqiUnhealthy => 'Unhealthy';
+
+  @override
+  String get aqiVeryUnhealthy => 'Very Unhealthy';
+
+  @override
+  String get aqiHazardous => 'Hazardous';
+
+  @override
+  String daysAgo(int count) {
+    return '$count days ago';
+  }
+
+  @override
+  String weeksAgo(int count) {
+    return '$count weeks ago';
+  }
+
+  @override
+  String monthsAgo(int count) {
+    return '$count months ago';
+  }
+
+  @override
+  String get visited => 'Visited';
+
+  @override
+  String get posted => 'Posted';
+
+  @override
+  String get uploaded => 'Uploaded';
+
+  @override
+  String get dataSource => 'Data Source';
+
+  @override
+  String get updated => 'Updated';
+
+  @override
   String get submitCost => 'Submit Cost Information';
 
   @override
@@ -2913,22 +2988,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adjustFilters => 'Try adjusting your filters';
 
   @override
-  String get aqiGood => 'Good';
-
-  @override
-  String get aqiModerate => 'Moderate';
-
-  @override
   String get aqiUnhealthyForSensitive => 'Unhealthy for Sensitive';
-
-  @override
-  String get aqiUnhealthy => 'Unhealthy';
-
-  @override
-  String get aqiVeryUnhealthy => 'Very Unhealthy';
-
-  @override
-  String get aqiHazardous => 'Hazardous';
 
   @override
   String get pricing => 'Pricing';
@@ -3307,11 +3367,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String daysAgo(int count) {
-    return '$count days ago';
-  }
-
-  @override
   String lastSeen(String time) {
     return 'Last seen $time';
   }
@@ -3395,16 +3450,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get contactCreator => 'Contact Creator';
-
-  @override
-  String weeksAgo(int count) {
-    return '$count weeks ago';
-  }
-
-  @override
-  String monthsAgo(int count) {
-    return '$count months ago';
-  }
 
   @override
   String get createInnovationProject => 'Create Innovation Project';
