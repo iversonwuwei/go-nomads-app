@@ -62,20 +62,9 @@ class _CityListPageState extends State<CityListPage> {
   }
 
   // 获取筛选后的城市列表
+  // 注意: 搜索功能现在由后端 API 处理,不再在前端筛选
   List<Map<String, dynamic>> get _filteredCities {
-    var items = controller.filteredCities;
-
-    // 按搜索关键词筛选
-    if (_searchQuery.isNotEmpty) {
-      final query = _searchQuery.toLowerCase();
-      items = items.where((item) {
-        final city = (item['city'] as String).toLowerCase();
-        final country = (item['country'] as String).toLowerCase();
-        return city.contains(query) || country.contains(query);
-      }).toList();
-    }
-
-    return items;
+    return controller.filteredCities;
   }
 
   void _clearFilters() {
@@ -84,6 +73,7 @@ class _CityListPageState extends State<CityListPage> {
       _searchController.clear();
       controller.resetFilters();
     });
+    controller.loadInitialCities(); // 清除筛选后重新加载所有城市
   }
 
   // 构建工具栏
@@ -242,28 +232,28 @@ class _CityListPageState extends State<CityListPage> {
           }
 
           return Column(
-          children: [
-            // 筛选栏
-            _buildFilterBar(isMobile),
+            children: [
+              // 筛选栏
+              _buildFilterBar(isMobile),
 
-            // 工具栏 (筛选/视图/排序)
-            Container(
-              color: Colors.white,
-              padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 16 : 20,
-                vertical: 12,
+              // 工具栏 (筛选/视图/排序)
+              Container(
+                color: Colors.white,
+                padding: EdgeInsets.symmetric(
+                  horizontal: isMobile ? 16 : 20,
+                  vertical: 12,
+                ),
+                child: _buildToolbar(isMobile),
               ),
-              child: _buildToolbar(isMobile),
-            ),
 
-            // 城市列表
-            Expanded(
-              child: _filteredCities.isEmpty
-                  ? _buildEmptyState()
-                  : _buildCityList(isMobile),
-            ),
-          ],
-        );
+              // 城市列表
+              Expanded(
+                child: _filteredCities.isEmpty
+                    ? _buildEmptyState()
+                    : _buildCityList(isMobile),
+              ),
+            ],
+          );
         }),
       ),
     );
@@ -329,21 +319,28 @@ class _CityListPageState extends State<CityListPage> {
     );
   }
 
-  // 搜索框
+  // 搜索框 - 参考 data_service_page 的设计
   Widget _buildSearchField() {
     return Builder(
       builder: (context) {
         final l10n = AppLocalizations.of(context)!;
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           decoration: BoxDecoration(
-            color: AppColors.background,
+            color: Colors.white,
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppColors.borderLight),
+            border: Border.all(color: AppColors.borderLight, width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             children: [
-              const Icon(Icons.search,
+              const Icon(Icons.search_outlined,
                   color: AppColors.textSecondary, size: 20),
               const SizedBox(width: 12),
               Expanded(
@@ -354,6 +351,7 @@ class _CityListPageState extends State<CityListPage> {
                     hintStyle: const TextStyle(
                       color: AppColors.textTertiary,
                       fontSize: 14,
+                      fontWeight: FontWeight.w400,
                     ),
                     border: InputBorder.none,
                     isDense: true,
@@ -368,21 +366,65 @@ class _CityListPageState extends State<CityListPage> {
                       _searchQuery = value;
                     });
                   },
+                  onSubmitted: (value) {
+                    // 按回车键触发搜索
+                    if (value.trim().isNotEmpty) {
+                      controller.searchCities(value.trim());
+                    } else {
+                      controller.loadInitialCities();
+                    }
+                  },
                 ),
               ),
+              const SizedBox(width: 12),
+              // 清除按钮
               if (_searchQuery.isNotEmpty)
-                IconButton(
-                  icon: const Icon(Icons.clear, size: 18),
-                  color: AppColors.textSecondary,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  onPressed: () {
+                InkWell(
+                  onTap: () {
                     setState(() {
                       _searchQuery = '';
                       _searchController.clear();
                     });
+                    controller.loadInitialCities(); // 清除搜索,重新加载所有城市
                   },
+                  borderRadius: BorderRadius.circular(4),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Icon(
+                      Icons.clear,
+                      size: 18,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
                 ),
+              // 搜索按钮
+              InkWell(
+                onTap: () {
+                  final searchText = _searchController.text.trim();
+                  if (searchText.isNotEmpty) {
+                    controller.searchCities(searchText);
+                  } else {
+                    controller.loadInitialCities();
+                  }
+                },
+                borderRadius: BorderRadius.circular(6),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF4458),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    l10n.search,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         );
@@ -720,10 +762,10 @@ class _CityListPageState extends State<CityListPage> {
       builder: (context) {
         final l10n = AppLocalizations.of(context)!;
         return Center(
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(32),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
                   padding: const EdgeInsets.all(24),

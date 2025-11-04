@@ -110,6 +110,66 @@ class CitiesApiService {
     }
   }
 
+  /// 搜索城市
+  /// [query] 搜索关键词（城市名或国家名）
+  /// [country] 国家筛选
+  /// [region] 地区筛选
+  /// [minCost] 最低生活成本
+  /// [maxCost] 最高生活成本
+  /// [minScore] 最低评分
+  /// [page] 页码
+  /// [pageSize] 每页数量
+  Future<List<dynamic>> searchCities({
+    String? query,
+    String? country,
+    String? region,
+    double? minCost,
+    double? maxCost,
+    double? minScore,
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    try {
+      final queryParameters = <String, dynamic>{
+        'pageNumber': page,
+        'pageSize': pageSize,
+      };
+
+      if (query != null && query.isNotEmpty) {
+        queryParameters['name'] = query;
+      }
+      if (country != null && country.isNotEmpty) {
+        queryParameters['country'] = country;
+      }
+      if (region != null && region.isNotEmpty) {
+        queryParameters['region'] = region;
+      }
+      if (minCost != null) {
+        queryParameters['minCostOfLiving'] = minCost;
+      }
+      if (maxCost != null) {
+        queryParameters['maxCostOfLiving'] = maxCost;
+      }
+      if (minScore != null) {
+        queryParameters['minScore'] = minScore;
+      }
+
+      print('🔍 搜索城市: query=$query, country=$country, region=$region');
+      print('   参数: $queryParameters');
+
+      final response = await _httpService.get(
+        '$baseUrl/search',
+        queryParameters: queryParameters,
+      );
+
+      print('✅ 搜索完成，返回 ${(response.data as List).length} 个结果');
+      return response.data as List<dynamic>;
+    } catch (e) {
+      print('❌ 搜索城市失败: $e');
+      throw Exception('搜索城市失败: ${e.toString()}');
+    }
+  }
+
   /// 获取城市天气信息，可选包含后续多日预报
   Future<Map<String, dynamic>?> getCityWeather(
     String cityId, {

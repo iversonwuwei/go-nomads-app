@@ -275,6 +275,88 @@ class CityListController extends GetxController {
     searchQuery.value = '';
   }
 
+  /// 搜索城市 - 调用后端 API
+  Future<void> searchCities(String query) async {
+    try {
+      searchQuery.value = query;
+
+      if (query.trim().isEmpty) {
+        // 如果搜索词为空,重新加载所有城市
+        await loadInitialCities();
+        return;
+      }
+
+      isLoading.value = true;
+      hasError.value = false;
+      print('🔍 开始搜索城市: "$query"');
+
+      // 调用后端搜索 API
+      final results = await _citiesApiService.searchCities(
+        query: query,
+        page: 1,
+        pageSize: 1000,
+      );
+
+      print('✅ 搜索返回: ${results.length} 个结果');
+
+      // 转换搜索结果
+      _allCities = [];
+      cities.clear();
+
+      for (var i = 0; i < results.length; i++) {
+        try {
+          final city = results[i] as Map<String, dynamic>;
+          final weather = city['weather'] as Map<String, dynamic>?;
+
+          _allCities.add({
+            'id': city['id'],
+            'city': city['name'] ?? 'Unknown',
+            'country': city['country'] ?? 'Unknown',
+            'region': _guessRegion(city['country'] ?? 'Unknown'),
+            'climate': _guessClimate(weather?['temperature']?.toDouble()),
+            'image': city['imageUrl'] ??
+                'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=400',
+            'temperature': weather?['temperature']?.toInt() ?? 25,
+            'feelsLike': weather?['feelsLike']?.toInt() ?? 25,
+            'weather': _getWeatherFromCode(weather?['weather']?.toString()),
+            'internet': 20,
+            'price': 1500,
+            'rank': i + 1,
+            'badge': (city['meetupCount'] ?? 0) > 5 ? 'Popular' : '',
+            'ratings': ['😊', '👍', '🌟'],
+            'overall': 4.0,
+            'cost': 4.0,
+            'internetScore': 4.0,
+            'liked': 4.0,
+            'safety': 4.0,
+            'aqi': weather?['airQualityIndex']?.toInt() ?? 50,
+            'aqiLevel': _getAqiLevel(weather?['airQualityIndex']?.toInt()),
+            'population': '1M',
+            'timezone': 'GMT',
+            'humidity': weather?['humidity']?.toInt() ?? 70,
+            'about': city['description'] ?? '',
+            'reviews': 0,
+          });
+        } catch (e) {
+          print('❌ 转换搜索结果失败 [索引 $i]: $e');
+        }
+      }
+
+      // 加载第一页
+      _currentPage = 0;
+      _loadNextPage();
+
+      print('✅ 搜索完成，显示 ${cities.length} 个城市');
+    } catch (e) {
+      print('❌ 搜索失败: $e');
+      hasError.value = true;
+      errorMessage.value = '搜索失败: ${e.toString()}';
+      AppToast.error('搜索失败，请重试');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   /// 检查是否有激活的筛选条件
   bool get hasActiveFilters {
     return selectedRegions.isNotEmpty ||

@@ -442,8 +442,12 @@ class CityDetailController extends GetxController {
       }
     } catch (e, stackTrace) {
       weather.value = null;
-      print('❌ 加载城市天气失败: $e');
-      print('   堆栈: $stackTrace');
+      // 天气 API 暂时不可用 (404),静默失败不影响其他功能
+      print('ℹ️ 天气数据暂时不可用 (${e.toString().contains('404') ? 'API 未配置' : e})');
+      if (!e.toString().contains('404')) {
+        // 只有非 404 错误才打印详细堆栈
+        print('   堆栈: $stackTrace');
+      }
     } finally {
       isLoadingWeather.value = false;
     }
@@ -453,9 +457,9 @@ class CityDetailController extends GetxController {
   void changeTab(int index) {
     currentTabIndex.value = index;
 
-    // Weather tab 索引是 6
-    if (index == 6 && weather.value == null) {
-      print('📍 切换到 Weather tab，开始加载天气数据...');
+    // Weather tab 索引是 6 - 每次切换到 Weather tab 都重新加载最新数据
+    if (index == 6) {
+      print('📍 切换到 Weather tab，重新加载天气数据...');
       loadWeatherData();
     }
   }
