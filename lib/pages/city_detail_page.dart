@@ -559,7 +559,8 @@ class _CityDetailPageState extends State<CityDetailPage>
                     ),
                   ],
                   flexibleSpace: FlexibleSpaceBar(
-                    titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
+                    centerTitle: true,
+                    titlePadding: const EdgeInsets.only(bottom: 16),
                     title: Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 6),
