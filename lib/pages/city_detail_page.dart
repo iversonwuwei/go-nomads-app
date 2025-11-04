@@ -670,7 +670,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                         ),
                         // 现代化轮播指示器
                         Positioned(
-                          bottom: 24,
+                          top: 24,
                           left: 0,
                           right: 0,
                           child: Row(

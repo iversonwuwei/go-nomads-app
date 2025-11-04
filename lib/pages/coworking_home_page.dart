@@ -2,6 +2,7 @@ import 'package:df_admin_mobile/pages/add_coworking_page.dart';
 import 'package:df_admin_mobile/pages/coworking_list_page.dart';
 import 'package:df_admin_mobile/services/cities_api_service.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../config/app_colors.dart';
 import '../generated/app_localizations.dart';
@@ -25,6 +26,75 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
   void initState() {
     super.initState();
     _loadCitiesWithCoworkingCount();
+  }
+
+  /// 根据天气代码返回对应的 FontAwesome 图标
+  IconData _getWeatherIcon(String? weatherIcon) {
+    if (weatherIcon == null) return FontAwesomeIcons.cloudSun;
+
+    // OpenWeatherMap 图标代码格式: 01d, 01n, 02d, 02n, etc.
+    final code = weatherIcon.replaceAll(RegExp(r'[dn]$'), '');
+    final isNight = weatherIcon.endsWith('n');
+
+    switch (code) {
+      case '01': // clear sky
+        return isNight ? FontAwesomeIcons.moon : FontAwesomeIcons.sun;
+      case '02': // few clouds
+        return isNight ? FontAwesomeIcons.cloudMoon : FontAwesomeIcons.cloudSun;
+      case '03': // scattered clouds
+        return FontAwesomeIcons.cloud;
+      case '04': // broken clouds
+        return FontAwesomeIcons.cloudSun;
+      case '09': // shower rain
+        return FontAwesomeIcons.cloudShowersHeavy;
+      case '10': // rain
+        return isNight
+            ? FontAwesomeIcons.cloudMoonRain
+            : FontAwesomeIcons.cloudSunRain;
+      case '11': // thunderstorm
+        return FontAwesomeIcons.cloudBolt;
+      case '13': // snow
+        return FontAwesomeIcons.snowflake;
+      case '50': // mist
+        return FontAwesomeIcons.smog;
+      default:
+        return FontAwesomeIcons.cloudSun;
+    }
+  }
+
+  /// 根据天气代码返回对应的图标颜色
+  Color _getWeatherIconColor(String? weatherIcon) {
+    if (weatherIcon == null) return const Color(0xFFFF9800); // 鲜艳橙色
+
+    final code = weatherIcon.replaceAll(RegExp(r'[dn]$'), '');
+    final isNight = weatherIcon.endsWith('n');
+
+    switch (code) {
+      case '01': // clear sky - 晴天
+        return isNight
+            ? const Color(0xFF5C6BC0) // 鲜艳靛蓝 (夜晚)
+            : const Color(0xFFFFA726); // 鲜艳橙色 (白天)
+      case '02': // few clouds - 少云
+        return isNight
+            ? const Color(0xFF7E57C2) // 鲜艳紫色 (夜晚)
+            : const Color(0xFF42A5F5); // 鲜艳蓝色 (白天)
+      case '03': // scattered clouds - 多云
+        return const Color(0xFF66BB6A); // 鲜艳绿色
+      case '04': // broken clouds - 阴天
+        return const Color(0xFF78909C); // 蓝灰色
+      case '09': // shower rain - 阵雨
+        return const Color(0xFF29B6F6); // 鲜艳浅蓝
+      case '10': // rain - 雨
+        return const Color(0xFF1E88E5); // 鲜艳蓝色
+      case '11': // thunderstorm - 雷暴
+        return const Color(0xFF9C27B0); // 鲜艳紫色
+      case '13': // snow - 雪
+        return const Color(0xFF26C6DA); // 鲜艳青色
+      case '50': // mist - 雾霾
+        return const Color(0xFF8D6E63); // 棕色
+      default:
+        return const Color(0xFFFFA726); // 默认鲜艳橙色
+    }
   }
 
   /// 刷新数据(仅重新加载数据,不重建整个页面)
@@ -312,10 +382,10 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
                   const SizedBox(height: 2),
                   Row(
                     children: [
-                      Icon(
-                        Icons.location_on,
-                        size: 14,
-                        color: Colors.grey[600],
+                      FaIcon(
+                        FontAwesomeIcons.locationDot,
+                        size: 13,
+                        color: const Color(0xFFEF5350), // 鲜艳红色
                       ),
                       const SizedBox(width: 4),
                       Expanded(
@@ -337,25 +407,11 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
                       padding: const EdgeInsets.only(top: 4),
                       child: Row(
                         children: [
-                          if (city['weatherIcon'] != null)
-                            Image.network(
-                              'https://openweathermap.org/img/wn/${city['weatherIcon']}@2x.png',
-                              width: 20,
-                              height: 20,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Icon(
-                                  Icons.wb_sunny,
-                                  size: 14,
-                                  color: Colors.orange[600],
-                                );
-                              },
-                            )
-                          else
-                            Icon(
-                              Icons.wb_sunny,
-                              size: 14,
-                              color: Colors.orange[600],
-                            ),
+                          FaIcon(
+                            _getWeatherIcon(city['weatherIcon']),
+                            size: 14,
+                            color: _getWeatherIconColor(city['weatherIcon']),
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             '${city['temperature']?.toStringAsFixed(1)}°C',
