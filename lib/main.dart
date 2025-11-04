@@ -12,9 +12,11 @@ import 'controllers/user_state_controller.dart';
 import 'generated/app_localizations.dart';
 import 'routes/app_routes.dart';
 import 'services/app_init_service.dart';
+import 'services/background_task_service.dart';
 import 'services/database/account_dao.dart';
 import 'services/database_initializer.dart';
 import 'services/location_service.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,7 +46,30 @@ void main() async {
   Get.put(BottomNavController(), permanent: true);
   print('✅ 全局控制器初始化完成');
 
-  // 🔑 初始化应用，从 SQLite 恢复登录状态
+  // � 初始化通知服务
+  print('📢 初始化通知服务...');
+  try {
+    await Get.putAsync(() => NotificationService().init(), permanent: true);
+    print('✅ 通知服务初始化成功');
+  } catch (e) {
+    print('❌ 通知服务初始化失败: $e');
+  }
+
+  // 🔧 初始化后台任务服务
+  print('🔧 初始化后台任务服务...');
+  Get.put(BackgroundTaskService(), permanent: true);
+  print('✅ 后台任务服务初始化完成');
+
+  // � 恢复未完成的后台任务
+  print('🔄 检查未完成的后台任务...');
+  try {
+    await BackgroundTaskService.to.restoreUnfinishedTasks();
+    print('✅ 后台任务恢复完成');
+  } catch (e) {
+    print('❌ 后台任务恢复失败: $e');
+  }
+
+  // �🔑 初始化应用，从 SQLite 恢复登录状态
   print('🔑 开始恢复登录状态...');
   await AppInitService().initialize();
   print('✅ 登录状态恢复完成');

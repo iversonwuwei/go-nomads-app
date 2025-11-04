@@ -31,7 +31,7 @@ class DatabaseService {
     // 打开数据库,如果不存在则创建
     return await openDatabase(
       path,
-      version: 6, // 升级到版本6 - 添加数字游民指南表
+      version: 7, // 升级到版本7 - 添加后台任务表
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -337,6 +337,20 @@ class DatabaseService {
       )
     ''');
 
+    // 后台任务表
+    await db.execute('''
+      CREATE TABLE background_tasks (
+        id TEXT PRIMARY KEY,
+        city_id TEXT NOT NULL,
+        city_name TEXT NOT NULL,
+        status TEXT NOT NULL,
+        error TEXT,
+        start_time TEXT NOT NULL,
+        end_time TEXT,
+        created_at TEXT NOT NULL
+      )
+    ''');
+
     // 创建索引以提高查询性能
     await db.execute('CREATE INDEX idx_users_phone ON users(phone)');
     await db.execute('CREATE INDEX idx_cities_name ON cities(name)');
@@ -555,6 +569,35 @@ class DatabaseService {
         print('⚠️ 创建数字游民指南表时出错: $e');
       }
     }
+
+    // 版本 6 -> 7: 添加后台任务表
+    if (oldVersion < 7) {
+      try {
+        print('📋 开始添加后台任务表...');
+
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS background_tasks (
+            id TEXT PRIMARY KEY,
+            city_id TEXT NOT NULL,
+            city_name TEXT NOT NULL,
+            status TEXT NOT NULL,
+            error TEXT,
+            start_time TEXT NOT NULL,
+            end_time TEXT,
+            created_at TEXT NOT NULL
+          )
+        ''');
+
+        await db.execute(
+            'CREATE INDEX IF NOT EXISTS idx_tasks_city ON background_tasks(city_id)');
+        await db.execute(
+            'CREATE INDEX IF NOT EXISTS idx_tasks_status ON background_tasks(status)');
+
+        print('✅ 后台任务表创建完成');
+      } catch (e) {
+        print('⚠️ 创建后台任务表时出错: $e');
+      }
+    }
   }
 
   /// 关闭数据库
@@ -742,6 +785,99 @@ class DatabaseService {
     } catch (e) {
       print('❌ 反序列化 String Map 失败: $e');
       return {};
+    }
+  }
+
+  // ==================== 后台任务管理 ====================
+
+  /// 保存后台任务
+  Future<void> saveBackgroundTask(Map<String, dynamic> taskData) async {
+    try {
+      final db = await database;
+      await db.insert(
+        'background_tasks',
+        {
+          'id': taskData['id'],
+          'city_id': taskData['cityId'],
+          'city_name': taskData['cityName'],
+          'status': taskData['status'],
+          'error': taskData['error'],
+          'start_time': taskData['startTime'],
+          'end_time': taskData['endTime'],
+          'created_at': DateTime.now().toIso8601String(),
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      print('💾 后台任务已保存: ${taskData['id']}');
+    } catch (e) {
+      print('❌ 保存后台任务失败: $e');
+    }
+  }
+
+  /// 更新后台任务状态
+  Future<void> updateBackgroundTask(
+      String taskId, Map<String, dynamic> updates) async {
+    try {
+      final db = await database;
+      await db.update(
+        'background_tasks',
+        updates,
+        where: 'id = ?',
+        whereArgs: [taskId],
+      );
+      print('✅ 后台任务已更新: $taskId');
+    } catch (e) {
+      print('❌ 更新后台任务失败: $e');
+    }
+  }
+
+  /// 加载所有未完成的后台任务
+  Future<List<Map<String, dynamic>>> loadPendingBackgroundTasks() async {
+    try {
+      final db = await database;
+      final List<Map<String, dynamic>> tasks = await db.query(
+        'background_tasks',
+        where: 'status = ?',
+        whereArgs: ['running'],
+        orderBy: 'created_at DESC',
+      );
+      print('📋 加载到 ${tasks.length} 个未完成的后台任务');
+      return tasks;
+    } catch (e) {
+      print('❌ 加载后台任务失败: $e');
+      return [];
+    }
+  }
+
+  /// 删除后台任务
+  Future<void> deleteBackgroundTask(String taskId) async {
+    try {
+      final db = await database;
+      await db.delete(
+        'background_tasks',
+        where: 'id = ?',
+        whereArgs: [taskId],
+      );
+      print('🗑️ 后台任务已删除: $taskId');
+    } catch (e) {
+      print('❌ 删除后台任务失败: $e');
+    }
+  }
+
+  /// 清理已完成的旧任务 (超过7天)
+  Future<void> cleanupOldBackgroundTasks() async {
+    try {
+      final db = await database;
+      final sevenDaysAgo =
+          DateTime.now().subtract(const Duration(days: 7)).toIso8601String();
+      await db.delete(
+        'background_tasks',
+        where: 'status IN (?, ?) AND created_at < ?',
+        whereArgs: ['completed', 'failed', sevenDaysAgo],
+      );
+      print('🧹 旧的后台任务已清理');
+    } catch (e) {
+      print('❌ 清理旧任务失败: $e');
     }
   }
 }

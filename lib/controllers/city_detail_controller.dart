@@ -2,12 +2,14 @@ import 'dart:math';
 
 import 'package:get/get.dart';
 
+import '../config/api_config.dart';
 import '../models/city_detail_model.dart';
 import '../models/travel_plan_model.dart';
 import '../models/user_city_content_models.dart';
 import '../models/weather_model.dart';
 import '../services/ai_api_service.dart';
 import '../services/async_task_service.dart';
+import '../services/background_task_service.dart';
 import '../services/cities_api_service.dart';
 import '../services/database_service.dart';
 import '../services/http_service.dart';
@@ -548,7 +550,8 @@ class CityDetailController extends GetxController {
       // 连接 SignalR (如果尚未连接)
       if (!asyncTaskService.signalR.isConnected) {
         try {
-          await asyncTaskService.signalR.connect('http://localhost:8009');
+          // 使用 ApiConfig.baseUrl 而不是硬编码
+          await asyncTaskService.signalR.connect(ApiConfig.baseUrl);
           print('✅ SignalR 已连接');
         } catch (e) {
           print('⚠️ SignalR 连接失败,将使用轮询模式: $e');
@@ -634,6 +637,87 @@ class CityDetailController extends GetxController {
         title: 'Error',
       );
 
+      return null;
+    }
+  }
+
+  /// 在后台生成数字游民指南 (使用后台任务 + 通知)
+  ///
+  /// 用户可以关闭对话框,任务在后台继续运行
+  /// 完成后发送通知,点击通知跳转到结果页面
+  Future<String?> generateGuideInBackground() async {
+    if (currentCityId.value.isEmpty || currentCityName.value.isEmpty) {
+      AppToast.error('城市信息不完整');
+      return null;
+    }
+
+    try {
+      print('🎯 开始后台生成数字游民指南...');
+      print('   城市: ${currentCityName.value} (${currentCityId.value})');
+
+      // 创建后台任务
+      final taskId = await BackgroundTaskService.to.createTask(
+        cityId: currentCityId.value,
+        cityName: currentCityName.value,
+        taskFunction: (onProgress) async {
+          // 这里执行实际的生成逻辑
+          final asyncTaskService = AsyncTaskService();
+
+          // 连接 SignalR (如果尚未连接)
+          if (!asyncTaskService.signalR.isConnected) {
+            try {
+              await asyncTaskService.signalR.connect(ApiConfig.baseUrl);
+            } catch (e) {
+              print('⚠️ SignalR 连接失败,将使用轮询模式: $e');
+            }
+          }
+
+          // 创建任务并等待完成
+          final finalStatus =
+              await asyncTaskService.createGuideAndWaitForCompletion(
+            cityId: currentCityId.value,
+            cityName: currentCityName.value,
+            onProgress: (status) {
+              print(
+                  '📊 后台任务进度: ${status.progress}% - ${status.progressMessage}');
+              // 更新通知进度
+              onProgress(status.progress);
+            },
+          );
+
+          if (finalStatus.isCompleted && finalStatus.result != null) {
+            final guideData = finalStatus.result as Map<String, dynamic>;
+
+            // 更新 guide 数据
+            guide.value = DigitalNomadGuide.fromJson(guideData);
+            isLoadingGuide.value = false;
+
+            // 保存到 SQLite 缓存
+            try {
+              final dbService = DatabaseService();
+              await dbService.saveGuide(guideData);
+              print('💾 Guide 已保存到 SQLite 缓存');
+            } catch (e) {
+              print('⚠️ 保存到 SQLite 失败: $e');
+            }
+
+            // 强制刷新
+            update();
+
+            print('✅ 后台 Guide 生成成功!');
+          } else {
+            throw Exception('任务未完成或没有返回数据');
+          }
+        },
+      );
+
+      print('✅ 后台任务已创建: $taskId');
+      AppToast.success('指南正在后台生成,完成后会通知您');
+
+      return taskId;
+    } catch (e) {
+      print('❌ 创建后台任务失败: $e');
+      AppToast.error('启动后台任务失败: $e');
       return null;
     }
   }
@@ -1014,7 +1098,7 @@ class CityDetailController extends GetxController {
       // 连接 SignalR (如果尚未连接)
       if (!asyncTaskService.signalR.isConnected) {
         try {
-          await asyncTaskService.signalR.connect('http://localhost:8009');
+          await asyncTaskService.signalR.connect(ApiConfig.baseUrl);
           print('✅ SignalR 已连接');
         } catch (e) {
           print('⚠️ SignalR 连接失败,将使用轮询模式: $e');

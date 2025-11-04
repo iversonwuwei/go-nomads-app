@@ -29,6 +29,8 @@ android {
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
+        // 启用核心库脱糖以支持 Java 8+ API
+        coreLibraryDesugaringEnabled true
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
@@ -62,6 +64,9 @@ flutter {
 }
 
 dependencies {
+    // 核心库脱糖支持
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
+    
     // Material design components
     implementation 'com.google.android.material:material:1.9.0'
     implementation 'androidx.cardview:cardview:1.0.0'

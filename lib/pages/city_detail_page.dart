@@ -47,7 +47,7 @@ class _CityDetailPageState extends State<CityDetailPage>
   late PageController _pageController;
   late TabController _tabController;
   int _currentPage = 0;
-  
+
   // 添加滚动控制器和透明度状态
   final ScrollController _scrollController = ScrollController();
   double _appBarOpacity = 0.0;
@@ -267,11 +267,16 @@ class _CityDetailPageState extends State<CityDetailPage>
     cityImage = args?['cityImage'] ?? widget.cityImage;
     overallScore = args?['overallScore'] ?? widget.overallScore;
     reviewCount = args?['reviewCount'] ?? widget.reviewCount;
+    final initialTab = args?['initialTab'] as int? ?? 0; // 从通知跳转时的初始 Tab
 
     _pageController = PageController();
 
-    // 初始化 TabController (10个tab)
-    _tabController = TabController(length: 10, vsync: this);
+    // 初始化 TabController (10个tab), 设置初始索引
+    _tabController = TabController(
+      length: 10,
+      vsync: this,
+      initialIndex: initialTab,
+    );
 
     // 监听 tab 切换
     _tabController.addListener(() {
@@ -280,7 +285,7 @@ class _CityDetailPageState extends State<CityDetailPage>
         controller.changeTab(_tabController.index);
       }
     });
-    
+
     // 监听滚动，动态改变 AppBar 背景透明度
     _scrollController.addListener(() {
       // 当滚动超过 200 像素时，背景变为不透明
@@ -293,7 +298,7 @@ class _CityDetailPageState extends State<CityDetailPage>
         });
       }
     });
-    
+
     // ✅ 初始化城市数据和加载用户内容（只在初始化时调用一次）
     final controller = Get.put(CityDetailController());
     controller.initCity(cityId, cityName);
@@ -377,6 +382,27 @@ class _CityDetailPageState extends State<CityDetailPage>
               ),
             ],
           ),
+          actions: [
+            // 后台运行按钮
+            TextButton.icon(
+              onPressed: () {
+                // 关闭对话框
+                Navigator.of(dialogContext).pop();
+
+                // 启动后台任务
+                controller.generateGuideInBackground();
+
+                // 清理 ValueNotifier
+                progressMessage.dispose();
+                progressValue.dispose();
+              },
+              icon: const Icon(Icons.cloud_queue),
+              label: const Text('后台运行'),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFFFF4458),
+              ),
+            ),
+          ],
         );
       },
     );
@@ -1223,35 +1249,38 @@ class _CityDetailPageState extends State<CityDetailPage>
         print('⚠️ [GuideTab] Guide is null, showing empty state');
         // 显示空状态,带有"AI 生成"按钮
         return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.map_outlined,
-                size: 80,
-                color: Colors.grey,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                AppLocalizations.of(context)!.loadingGuide,
-                style: const TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: () => _showAIGenerateProgressDialog(controller),
-                icon: const Icon(Icons.auto_awesome),
-                label: const Text('AI 生成旅游指南'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFF4458),
-                  foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.map_outlined,
+                  size: 60,
+                  color: Colors.grey,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  AppLocalizations.of(context)!.loadingGuide,
+                  style: const TextStyle(fontSize: 16, color: Colors.grey),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: () => _showAIGenerateProgressDialog(controller),
+                  icon: const Icon(Icons.auto_awesome),
+                  label: const Text('AI 生成旅游指南'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF4458),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 32, vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       }

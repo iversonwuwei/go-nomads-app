@@ -61,5 +61,8 @@
 <!-- 日历权限描述 -->
 <key>NSCalendarsUsageDescription</key>
 <string>We need access to your calendar to add meetup events</string>
+<!-- 通知权限描述 -->
+<key>NSUserNotificationsUsageDescription</key>
+<string>我们需要发送通知以告知您旅游指南生成完成</string>
 </dict>
 </plist>
