@@ -66,6 +66,7 @@ class CityListController extends GetxController {
       print('✅ 初始城市数据加载完成: ${cities.length} 条');
     } catch (e) {
       print('❌ 加载初始城市数据失败: $e');
+      print('   错误堆栈: ${StackTrace.current}');
       hasError.value = true;
       errorMessage.value = e.toString();
       AppToast.error('加载城市数据失败');
@@ -77,16 +78,14 @@ class CityListController extends GetxController {
   /// 加载所有城市到缓存
   Future<void> _loadAllCitiesToCache() async {
     // 使用 CitiesApiService 加载城市列表
-    final response = await _citiesApiService.getCities(
+    // 注意: HttpService 会自动解包 API 响应的 data 字段
+    final data = await _citiesApiService.getCities(
       page: 1,
       pageSize: 1000, // 一次性加载所有城市到缓存
     );
 
-    // 解析响应数据
-    final data = response['data'] as Map<String, dynamic>?;
-    if (data == null) {
-      throw Exception('API 返回数据格式错误');
-    }
+    // data 已经是解包后的数据,包含 items, totalCount 等字段
+    print('🔍 API 响应数据结构: ${data.keys}');
 
     final items = data['items'] as List<dynamic>? ?? [];
     print('✅ Cities API 返回: ${items.length} 城市');
@@ -98,6 +97,11 @@ class CityListController extends GetxController {
       try {
         final city = items[i] as Map<String, dynamic>;
         final weather = city['weather'] as Map<String, dynamic>?;
+
+        // 打印前几个城市的数据用于调试
+        if (i < 3) {
+          print('🔍 城市[$i] 数据: id=${city['id']}, name=${city['name']}');
+        }
 
         _allCities.add({
           'id': city['id'], // ✅ 使用 API 返回的城市 ID (UUID)
@@ -130,6 +134,8 @@ class CityListController extends GetxController {
         });
       } catch (e) {
         print('❌ 转换城市数据失败 [索引 $i]: $e');
+        print('   城市数据: ${items[i]}');
+        // 继续处理下一个城市
       }
     }
 

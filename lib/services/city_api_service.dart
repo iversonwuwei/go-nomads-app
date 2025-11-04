@@ -378,14 +378,35 @@ class CityApiService {
         },
       );
 
-      print('✅ ${isPro ? "优点" : "挑战"}添加成功');
+      print('🔍 Response status: ${response.statusCode}');
+      print('🔍 Response data type: ${response.data.runtimeType}');
+      print('🔍 Response data: ${response.data}');
 
-      if (response.data == null) {
-        throw Exception('Failed to add pros/cons');
+      // 201 Created 状态码表示成功,但可能没有返回数据
+      if (response.statusCode == 201) {
+        print('✅ ${isPro ? "优点" : "挑战"}添加成功 (201 Created)');
+        // 返回一个临时对象,因为后端可能没有返回完整数据
+        // 实际数据需要重新获取
+        return ProsCons(
+          id: '', // 临时ID
+          userId: '',
+          cityId: cityId,
+          text: text,
+          isPro: isPro,
+          upvotes: 0,
+          downvotes: 0,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        );
       }
 
-      final data = response.data as Map<String, dynamic>;
-      final prosConsData = data['data'] as Map<String, dynamic>;
+      if (response.data == null) {
+        throw Exception('API 返回数据为 null');
+      }
+
+      // HttpService 已经自动解包,response.data 直接是后端返回的 data 字段
+      final prosConsData = response.data as Map<String, dynamic>;
+      print('✅ ${isPro ? "优点" : "挑战"}添加成功');
       return ProsCons.fromJson(prosConsData);
     } catch (e, stackTrace) {
       print('❌ 添加 Pros & Cons 失败: $e');
