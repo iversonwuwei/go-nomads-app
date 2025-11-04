@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import '../config/api_config.dart';
 import '../models/city_detail_model.dart';
+import '../models/coworking_space_model.dart' as coworking_model;
 import '../models/travel_plan_model.dart';
 import '../models/user_city_content_models.dart';
 import '../models/weather_model.dart';
@@ -12,6 +13,7 @@ import '../services/async_task_service.dart';
 import '../services/background_task_service.dart';
 import '../services/cities_api_service.dart';
 import '../services/city_api_service.dart';
+import '../services/coworking_api_service.dart';
 import '../services/database_service.dart';
 import '../services/http_service.dart';
 import '../services/user_city_content_api_service.dart';
@@ -61,7 +63,7 @@ class CityDetailController extends GetxController {
   var trends = Rx<TrendsData?>(null);
   var demographics = Rx<Demographics?>(null);
   var neighborhoods = <Neighborhood>[].obs;
-  var coworkingSpaces = <CoworkingSpace>[].obs;
+  var coworkingSpaces = <coworking_model.CoworkingSpace>[].obs;
   var videos = <CityVideo>[].obs;
   var nearbyCities = <NearbyCity>[].obs;
   var similarCities = <NearbyCity>[].obs;
@@ -462,6 +464,102 @@ class CityDetailController extends GetxController {
       print('📍 切换到 Weather tab，重新加载天气数据...');
       loadWeatherData();
     }
+
+    // Coworking tab 索引是 9 - 切换到 Coworking tab 时加载数据
+    if (index == 9 && coworkingSpaces.isEmpty && !isLoadingCoworking.value) {
+      print('📍 切换到 Coworking tab，加载共享办公数据...');
+      loadCoworkingSpaces();
+    }
+  }
+
+  /// 加载共享办公空间数据
+  Future<void> loadCoworkingSpaces() async {
+    if (currentCityId.value.isEmpty) {
+      print('⚠️ 城市ID为空，无法加载共享办公数据');
+      return;
+    }
+
+    isLoadingCoworking.value = true;
+
+    try {
+      print('🏢 开始加载共享办公数据: cityId=${currentCityId.value}');
+
+      final apiService = CoworkingApiService();
+      final response = await apiService.getCoworkingSpacesByCity(
+        currentCityId.value,
+        page: 1,
+        pageSize: 100,
+      );
+
+      final items = response['items'] as List<dynamic>? ?? [];
+      print('✅ API返回 ${items.length} 个共享办公空间');
+
+      // 转换为完整的 CoworkingSpace 模型
+      coworkingSpaces.value = items.map((item) {
+        final data = item as Map<String, dynamic>;
+        
+        return coworking_model.CoworkingSpace(
+          id: data['id']?.toString() ?? '',
+          name: data['name'] ?? '',
+          description: data['description'] ?? '',
+          address: data['address'] ?? '',
+          city: currentCityName.value,
+          country: 'China', // 默认国家
+          latitude: (data['latitude'] as num?)?.toDouble() ?? 0.0,
+          longitude: (data['longitude'] as num?)?.toDouble() ?? 0.0,
+          imageUrl: data['imageUrl'] ?? '',
+          images: data['images'] != null
+              ? List<String>.from(data['images'])
+              : [data['imageUrl'] ?? ''],
+          rating: (data['rating'] as num?)?.toDouble() ?? 4.0,
+          reviewCount: data['reviewCount'] as int? ?? 0,
+          pricing: coworking_model.CoworkingPricing(
+            hourlyRate: (data['pricePerHour'] as num?)?.toDouble(),
+            dailyRate: (data['pricePerDay'] as num?)?.toDouble(),
+            monthlyRate: (data['pricePerMonth'] as num?)?.toDouble(),
+            currency: data['currency'] ?? 'USD',
+            hasFreeTrial: false,
+          ),
+          amenities: coworking_model.CoworkingAmenities(
+            hasWifi: ((data['wifiSpeed'] as num?)?.toDouble() ?? 0) > 0,
+            hasCoffee: data['hasCoffee'] == true,
+            hasPrinter: true,
+            hasMeetingRoom: data['hasMeetingRoom'] == true,
+            hasParking: data['hasParking'] == true,
+            has24HourAccess: data['has247Access'] == true,
+            hasAirConditioning: true,
+            additionalAmenities: data['amenities'] != null
+                ? List<String>.from(data['amenities'])
+                : [],
+          ),
+          specs: coworking_model.CoworkingSpecs(
+            wifiSpeed: (data['wifiSpeed'] as num?)?.toDouble() ?? 0.0,
+            numberOfDesks: data['capacity'] as int? ?? 50,
+            numberOfMeetingRooms: data['hasMeetingRoom'] == true ? 2 : 0,
+            capacity: data['capacity'] as int? ?? 50,
+            noiseLevel: 'moderate',
+            hasNaturalLight: true,
+            spaceType: 'mixed',
+          ),
+          openingHours: [
+            data['openingHours'] ?? 'Mon-Fri: 9:00 AM - 6:00 PM',
+          ],
+          phone: data['phone'] ?? '',
+          email: data['email'] ?? '',
+          website: data['website'] ?? '',
+          isVerified: data['isActive'] == true,
+          lastUpdated: DateTime.now(),
+        );
+      }).toList();
+
+      print('✅ 共享办公数据加载成功: ${coworkingSpaces.length} 个空间');
+    } catch (e) {
+      print('❌ 加载共享办公数据失败: $e');
+      AppToast.error('加载共享办公数据失败: $e');
+      coworkingSpaces.value = [];
+    } finally {
+      isLoadingCoworking.value = false;
+    }
   }
 
   /// 使用 AI 生成数字游民指南
@@ -851,38 +949,7 @@ class CityDetailController extends GetxController {
       ),
     ];
 
-    // 生成共享办公空间
-    coworkingSpaces.value = [
-      CoworkingSpace(
-        id: 'c1',
-        name: 'The Hive Thonglor',
-        address: '1 Sukhumvit 55, Thonglor',
-        rating: 4.7,
-        reviewCount: 156,
-        price: 15,
-        internetSpeed: 100,
-        amenities: ['High-speed WiFi', 'Meeting rooms', 'Coffee', 'Printing'],
-        imageUrl:
-            'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400',
-        latitude: 13.7367,
-        longitude: 100.5735,
-        websiteUrl: 'https://thehive.co.th',
-      ),
-      CoworkingSpace(
-        id: 'c2',
-        name: 'HUBBA To',
-        address: '29 Sukhumvit 26',
-        rating: 4.6,
-        reviewCount: 89,
-        price: 12,
-        internetSpeed: 80,
-        amenities: ['WiFi', 'Cafe', 'Events', 'Community'],
-        imageUrl:
-            'https://images.unsplash.com/photo-1497366858526-0766cadbe8fa?w=400',
-        latitude: 13.7308,
-        longitude: 100.5691,
-      ),
-    ];
+    // ❌ 已移除 coworkingSpaces mock 数据 - 从后端API加载真实数据
 
     // 生成附近城市
     nearbyCities.value = [

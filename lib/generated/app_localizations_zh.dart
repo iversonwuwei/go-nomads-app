@@ -1262,7 +1262,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cons => '缺点';
 
   @override
-  String get neighborhoods => '社区';
+  String get neighborhoods => '附近';
 
   @override
   String get loadingGuide => '加载指南...';

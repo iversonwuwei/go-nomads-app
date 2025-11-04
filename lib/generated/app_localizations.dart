@@ -2591,7 +2591,7 @@ abstract class AppLocalizations {
   /// No description provided for @neighborhoods.
   ///
   /// In zh, this message translates to:
-  /// **'社区'**
+  /// **'附近'**
   String get neighborhoods;
 
   /// No description provided for @loadingGuide.

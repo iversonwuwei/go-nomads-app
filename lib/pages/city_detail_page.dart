@@ -6,7 +6,6 @@ import 'package:intl/intl.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/city_detail_controller.dart';
-import '../controllers/coworking_controller.dart';
 import '../generated/app_localizations.dart';
 import '../models/city_detail_model.dart';
 import '../models/coworking_space_model.dart' as coworking;
@@ -2773,19 +2772,14 @@ class _CityDetailPageState extends State<CityDetailPage>
 
   /// Coworking 标签�?
   Widget _buildCoworkingTab(CityDetailController controller) {
-    final coworkingController = Get.put(CoworkingController());
-
-    // 延迟执行筛�?避免�?build 期间修改状�?
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      coworkingController.filterByCity(cityName);
-    });
-
     return Obx(() {
-      if (coworkingController.isLoading.value) {
+      // 显示加载状态
+      if (controller.isLoadingCoworking.value) {
         return const Center(child: CircularProgressIndicator());
       }
 
-      if (coworkingController.filteredSpaces.isEmpty) {
+      // 显示空状态
+      if (controller.coworkingSpaces.isEmpty) {
         return Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 60),
@@ -2839,7 +2833,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                       ),
                       // Main icon
                       Icon(
-                        Icons.wb_sunny_outlined,
+                        Icons.business_outlined,
                         size: 80,
                         color: Colors.grey[300],
                       ),
@@ -2913,12 +2907,13 @@ class _CityDetailPageState extends State<CityDetailPage>
         );
       }
 
+      // 显示共享办公空间列表
       return ListView.builder(
         padding:
             const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
-        itemCount: coworkingController.filteredSpaces.length,
+        itemCount: controller.coworkingSpaces.length,
         itemBuilder: (context, index) {
-          final space = coworkingController.filteredSpaces[index];
+          final space = controller.coworkingSpaces[index];
           return _buildCoworkingSpaceCard(space);
         },
       );
