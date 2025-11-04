@@ -141,12 +141,14 @@ class AsyncTaskService {
     }
   }
 
-  /// 轮询任务状态直到完成
+  /// 等待任务完成(使用 SignalR 实时通知)
+  ///
+  /// 优先使用 SignalR 实时推送,如果 SignalR 未连接则回退到轮询模式
   ///
   /// [taskId] 任务ID
   /// [onProgress] 进度更新回调
-  /// [pollInterval] 轮询间隔(秒),默认3秒
-  /// [maxAttempts] 最大轮询次数,默认40次(2分钟)
+  /// [pollInterval] 轮询间隔(秒),默认3秒(仅轮询模式)
+  /// [maxAttempts] 最大轮询次数,默认100次(仅轮询模式)
   ///
   /// 返回最终的任务状态
   Future<TaskStatus> pollTaskStatus({
@@ -154,6 +156,107 @@ class AsyncTaskService {
     Function(TaskStatus status)? onProgress,
     Duration pollInterval = const Duration(seconds: 3),
     int maxAttempts = 100, // 5分钟 = 100次*3秒
+  }) async {
+    // 如果 SignalR 已连接,使用实时通知模式
+    if (_signalRService.isConnected) {
+      return _waitForTaskUsingSignalR(
+        taskId: taskId,
+        onProgress: onProgress,
+      );
+    }
+
+    // 否则回退到轮询模式
+    print('⚠️ SignalR 未连接,使用轮询模式');
+    return _pollTaskStatusHttp(
+      taskId: taskId,
+      onProgress: onProgress,
+      pollInterval: pollInterval,
+      maxAttempts: maxAttempts,
+    );
+  }
+
+  /// 使用 SignalR 等待任务完成
+  Future<TaskStatus> _waitForTaskUsingSignalR({
+    required String taskId,
+    Function(TaskStatus status)? onProgress,
+  }) async {
+    print('📡 使用 SignalR 等待任务完成: $taskId');
+
+    final completer = Completer<TaskStatus>();
+    StreamSubscription<TaskStatus>? progressSub;
+    StreamSubscription<TaskStatus>? completedSub;
+    StreamSubscription<TaskStatus>? failedSub;
+
+    try {
+      // 订阅任务通知
+      await _signalRService.subscribeToTask(taskId);
+
+      // 监听进度更新
+      progressSub = _signalRService.taskProgressStream
+          .where((status) => status.taskId == taskId)
+          .listen((status) {
+        print('📊 收到进度更新: ${status.progress}%');
+        onProgress?.call(status);
+      });
+
+      // 监听任务完成
+      completedSub = _signalRService.taskCompletedStream
+          .where((status) => status.taskId == taskId)
+          .listen((status) {
+        print('✅ 任务完成: $taskId');
+        if (!completer.isCompleted) {
+          completer.complete(status);
+        }
+      });
+
+      // 监听任务失败
+      failedSub = _signalRService.taskFailedStream
+          .where((status) => status.taskId == taskId)
+          .listen((status) {
+        print('❌ 任务失败: $taskId');
+        if (!completer.isCompleted) {
+          completer.complete(status);
+        }
+      });
+
+      // 获取初始状态
+      final initialStatus = await getTaskStatus(taskId);
+
+      // 如果任务已经完成或失败,直接返回
+      if (initialStatus.isCompleted || initialStatus.isFailed) {
+        return initialStatus;
+      }
+
+      // 回调初始进度
+      onProgress?.call(initialStatus);
+
+      // 等待完成信号(最多等待5分钟)
+      final result = await completer.future.timeout(
+        const Duration(minutes: 5),
+        onTimeout: () {
+          throw TimeoutException('SignalR 等待超时: 超过5分钟未收到完成信号');
+        },
+      );
+
+      return result;
+    } catch (e) {
+      print('❌ SignalR 等待失败: $e');
+      rethrow;
+    } finally {
+      // 清理资源
+      await progressSub?.cancel();
+      await completedSub?.cancel();
+      await failedSub?.cancel();
+      await _signalRService.unsubscribeFromTask(taskId);
+    }
+  }
+
+  /// HTTP 轮询模式(回退方案)
+  Future<TaskStatus> _pollTaskStatusHttp({
+    required String taskId,
+    Function(TaskStatus status)? onProgress,
+    Duration pollInterval = const Duration(seconds: 3),
+    int maxAttempts = 100,
   }) async {
     int attempts = 0;
 

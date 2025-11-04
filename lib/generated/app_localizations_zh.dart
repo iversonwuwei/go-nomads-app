@@ -1253,7 +1253,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get guide => '指南';
 
   @override
-  String get prosAndCons => '优缺点';
+  String get prosAndCons => '乐趣';
 
   @override
   String get pros => '优点';

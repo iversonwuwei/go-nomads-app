@@ -11,7 +11,6 @@ import '../routes/app_routes.dart';
 import '../services/events_api_service.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/copyright_widget.dart';
-import '../widgets/skeletons/skeletons.dart';
 import 'city_detail_page.dart';
 import 'create_meetup_page.dart';
 import 'global_map_page.dart';
@@ -29,6 +28,7 @@ class DataServicePage extends StatefulWidget {
 class _DataServicePageState extends State<DataServicePage>
     with WidgetsBindingObserver {
   final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
   final GlobalKey _citiesListKey = GlobalKey();
   bool _hasScrolled = false;
 
@@ -37,6 +37,10 @@ class _DataServicePageState extends State<DataServicePage>
     super.initState();
     // 添加生命周期监听
     WidgetsBinding.instance.addObserver(this);
+    // 监听搜索框内容变化以更新清除按钮
+    _searchController.addListener(() {
+      setState(() {}); // 触发重建以显示/隐藏清除按钮
+    });
   }
 
   @override
@@ -44,6 +48,7 @@ class _DataServicePageState extends State<DataServicePage>
     // 移除生命周期监听
     WidgetsBinding.instance.removeObserver(this);
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -139,17 +144,7 @@ class _DataServicePageState extends State<DataServicePage>
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Obx(() {
-        // 加载中状态
-        if (controller.isLoading.value) {
-          return const DataServiceListSkeleton();
-        }
-
-        // 错误状态
-        if (controller.hasError.value) {
-          return _buildErrorState(controller, l10n);
-        }
-
+      body: Builder(builder: (context) {
         // 数据加载完成，如果需要滚动则执行滚动
         if (widget.scrollToCities && !_hasScrolled) {
           _scrollToCitiesList();
@@ -239,69 +234,6 @@ class _DataServicePageState extends State<DataServicePage>
           ],
         );
       }),
-    );
-  }
-
-  // 错误状态
-  Widget _buildErrorState(
-      DataServiceController controller, AppLocalizations l10n) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.error_outline,
-                size: 64,
-                color: Color(0xFFFF4458),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              l10n.loadFailed,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Obx(() => Text(
-                  controller.errorMessage.value.isNotEmpty
-                      ? controller.errorMessage.value
-                      : l10n.networkError,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textSecondary,
-                  ),
-                  textAlign: TextAlign.center,
-                )),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () {
-                controller.refreshData();
-              },
-              icon: const Icon(Icons.refresh, size: 18),
-              label: Text(l10n.retry),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF4458),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -818,8 +750,9 @@ class _DataServicePageState extends State<DataServicePage>
           const SizedBox(width: 12),
           Expanded(
             child: TextField(
+              controller: _searchController,
               decoration: const InputDecoration(
-                hintText: 'Search or filter',
+                hintText: 'Search cities...',
                 hintStyle: TextStyle(
                   color: AppColors.textTertiary,
                   fontSize: 14,
@@ -833,24 +766,62 @@ class _DataServicePageState extends State<DataServicePage>
                 color: AppColors.textPrimary,
                 fontSize: 14,
               ),
-              onChanged: controller.updateSearchQuery,
+              onSubmitted: (value) {
+                // 按回车键也触发搜索
+                if (value.trim().isNotEmpty) {
+                  controller.searchCities(value.trim());
+                }
+              },
             ),
           ),
           const SizedBox(width: 12),
+          // 搜索按钮
           InkWell(
             onTap: () {
-              // 打开过滤器对话框
+              final searchText = _searchController.text.trim();
+              if (searchText.isNotEmpty) {
+                controller.searchCities(searchText);
+              } else {
+                controller.refreshCities();
+              }
             },
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(6),
             child: Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-                shape: BoxShape.circle,
+                color: const Color(0xFFFF4458),
+                borderRadius: BorderRadius.circular(6),
               ),
-              child: const Icon(Icons.add, color: Color(0xFFFF4458), size: 18),
+              child: const Text(
+                'Search',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ),
+          // 清除按钮
+          if (_searchController.text.isNotEmpty) ...[
+            const SizedBox(width: 8),
+            InkWell(
+              onTap: () {
+                _searchController.clear();
+                controller.refreshCities();
+                setState(() {}); // 更新 UI
+              },
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding: const EdgeInsets.all(6),
+                child: const Icon(
+                  Icons.clear,
+                  color: AppColors.textSecondary,
+                  size: 18,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -863,6 +834,40 @@ class _DataServicePageState extends State<DataServicePage>
       final items = controller.filteredItems;
       final isGrid = controller.isGridView.value;
       final crossAxisCount = isMobile ? 2 : 4;
+      final isLoadingCities = controller.isLoadingCities.value;
+
+      // 显示加载中状态
+      if (isLoadingCities) {
+        return SliverToBoxAdapter(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 60),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(
+                    width: 40,
+                    height: 40,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 3,
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    l10n.loading,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }
 
       // 如果城市列表为空，显示空状�?
       if (items.isEmpty) {
@@ -989,6 +994,43 @@ class _DataServicePageState extends State<DataServicePage>
   Widget _buildMeetupsSection(DataServiceController controller, bool isMobile) {
     return Obx(() {
       final upcomingMeetups = controller.upcomingMeetups;
+      final isLoadingMeetups = controller.isLoadingMeetups.value;
+
+      // 显示加载中状态
+      if (isLoadingMeetups) {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 60),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Builder(
+                  builder: (context) {
+                    final l10n = AppLocalizations.of(context)!;
+                    return Text(
+                      l10n.loading,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      }
 
       // 如果活动列表为空，显示空状�?
       if (upcomingMeetups.isEmpty) {
@@ -1772,7 +1814,7 @@ class _DetailOverlay extends StatelessWidget {
                       const Color(0xFFFBBF24)),
                   const SizedBox(height: 6),
                   _buildMetricBar(
-                      '👍 Liked', data['liked'], const Color(0xFF4ADE80)),
+                      '👍 乐趣', data['liked'], const Color(0xFF4ADE80)),
                   const SizedBox(height: 6),
                   _buildMetricBar(
                       '🛡�?Safety', data['safety'], const Color(0xFF4ADE80)),

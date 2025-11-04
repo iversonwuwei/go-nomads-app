@@ -2,8 +2,8 @@ import 'package:get/get.dart';
 
 import '../models/city_option.dart';
 import '../models/country_option.dart';
+import '../services/city_api_service.dart';
 import '../services/events_api_service.dart';
-import '../services/home_api_service.dart';
 import '../services/location_api_service.dart';
 import '../widgets/app_toast.dart';
 import 'user_state_controller.dart';
@@ -11,10 +11,13 @@ import 'user_state_controller.dart';
 class DataServiceController extends GetxController {
   // 数据服务
   final LocationApiService _locationApiService = LocationApiService();
-  final HomeApiService _homeApiService = HomeApiService();
-  
-  // 响应式数据
-  final RxBool isLoading = true.obs;
+  final EventsApiService _eventsApiService = EventsApiService();
+  final CityApiService _cityApiService = CityApiService();
+
+  // 响应式数据 - 拆分加载状态
+  final RxBool isLoading = true.obs; // 整体加载状态
+  final RxBool isLoadingCities = false.obs; // 城市列表加载状态
+  final RxBool isLoadingMeetups = false.obs; // 活动列表加载状态
   final RxBool hasError = false.obs;
   final RxString errorMessage = ''.obs;
   final RxBool isGridView = true.obs;
@@ -206,23 +209,160 @@ class DataServiceController extends GetxController {
     print('✅ 数据已清空');
   }
 
-  /// 刷新所有数据（登录成功时调用）
+  /// 刷新所有数据(登录成功时调用)
   Future<void> refreshAllData() async {
     print('🔄 开始刷新所有数据...');
-    isLoading.value = true;
-    hasError.value = false;
-    errorMessage.value = '';
+
+    // 并行加载城市和活动数据,提高性能
+    await Future.wait([
+      refreshCities(),
+      refreshMeetups(),
+    ]);
+
+    print('✅ 所有数据刷新完成');
+  }
+
+  /// 刷新城市列表(独立刷新)
+  Future<void> refreshCities() async {
+    print('🔄 刷新城市列表...');
+    isLoadingCities.value = true;
 
     try {
-      await _loadFromHomeApi();
-      print('✅ Home API 数据刷新成功');
+      await _loadCitiesFromApi();
+      print('✅ 城市列表刷新成功');
     } catch (e) {
-      print('❌ 数据刷新失败: $e');
-      hasError.value = true;
-      errorMessage.value = e.toString();
-      AppToast.error('数据刷新失败，请稍后重试');
+      print('❌ 城市列表刷新失败: $e');
+      AppToast.error('城市列表刷新失败');
     } finally {
-      isLoading.value = false;
+      isLoadingCities.value = false;
+    }
+  }
+
+  /// 搜索城市(从后端获取)
+  Future<void> searchCities(String searchKeyword) async {
+    if (searchKeyword.trim().isEmpty) {
+      // 如果搜索关键词为空,重新加载所有城市
+      await refreshCities();
+      return;
+    }
+
+    print('🔍 搜索城市: $searchKeyword');
+    isLoadingCities.value = true;
+
+    try {
+      final response = await _cityApiService.getCities(
+        page: 1,
+        pageSize: 100, // 搜索时加载更多结果
+        search: searchKeyword,
+      );
+
+      final data = response['items'] ?? response['data'] ?? [];
+      final cities = data is List ? data : [];
+
+      print('✅ CityService 返回: ${cities.length} 城市');
+
+      // 转换城市数据
+      final convertedCities = <Map<String, dynamic>>[];
+
+      for (var i = 0; i < cities.length; i++) {
+        try {
+          final city = cities[i] as Map<String, dynamic>;
+
+          // 处理 weather 字段 - 可能是字符串或对象(WeatherDto)
+          String weatherStr = 'sunny';
+          int temperature = 25;
+          int feelsLike = 25;
+
+          final weatherData = city['weather'];
+          if (weatherData is String) {
+            weatherStr = weatherData;
+          } else if (weatherData is Map<String, dynamic>) {
+            // WeatherDto 对象
+            weatherStr = weatherData['weather'] ??
+                weatherData['weatherDescription'] ??
+                weatherData['description'] ??
+                weatherData['main'] ??
+                weatherData['condition'] ??
+                'sunny';
+
+            // 提取温度 - Weather对象中的 temperature 字段
+            if (weatherData['temperature'] != null) {
+              temperature = (weatherData['temperature'] is int)
+                  ? weatherData['temperature']
+                  : (weatherData['temperature'] as num).toInt();
+            }
+
+            // 提取体感温度
+            if (weatherData['feelsLike'] != null) {
+              feelsLike = (weatherData['feelsLike'] is int)
+                  ? weatherData['feelsLike']
+                  : (weatherData['feelsLike'] as num).toInt();
+            }
+          }
+
+          convertedCities.add({
+            'id': city['id']?.toString() ?? '',
+            'city': city['name'] ?? 'Unknown',
+            'country': city['country'] ?? 'Unknown',
+            'region': _guessRegion(city['country'] ?? 'Unknown'),
+            'climate': _guessClimate(temperature.toDouble()),
+            'image': city['imageUrl'] ??
+                'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=400',
+            'temperature': temperature,
+            'feelsLike': feelsLike,
+            'weather': weatherStr,
+            'internet': city['internetSpeed']?.toInt() ?? 20,
+            'price': city['averageCost']?.toInt() ?? 1500,
+            'rank': i + 1,
+            'badge': (city['meetupCount'] ?? 0) > 5 ? 'Popular' : '',
+            'ratings': ['😊', '👍', '🌟'],
+            'overall': city['overallScore']?.toDouble() ?? 4.0,
+            'cost': city['costScore']?.toDouble() ?? 4.0,
+            'internetScore': city['internetScore']?.toDouble() ?? 4.0,
+            'liked': city['likedScore']?.toDouble() ?? 4.0,
+            'safety': city['safetyScore']?.toDouble() ?? 4.0,
+            'aqi': city['airQualityIndex']?.toInt() ?? 50,
+            'aqiLevel': _getAqiLevel(city['airQualityIndex']?.toInt()),
+            'population': city['population'] ?? '1M',
+            'timezone': city['timezone'] ?? 'GMT',
+            'humidity': city['humidity']?.toInt() ?? 70,
+            'about': city['description'] ?? '',
+          });
+        } catch (e) {
+          print('❌ 转换城市数据失败 [索引 $i]: $e');
+        }
+      }
+
+      dataItems.value = convertedCities;
+
+      if (convertedCities.isEmpty) {
+        AppToast.info('未找到匹配的城市');
+      } else {
+        AppToast.success('找到 ${convertedCities.length} 个城市');
+      }
+
+      print('✅ 城市搜索完成: ${convertedCities.length} 条');
+    } catch (e) {
+      print('❌ 城市搜索失败: $e');
+      AppToast.error('搜索失败,请重试');
+    } finally {
+      isLoadingCities.value = false;
+    }
+  }
+
+  /// 刷新活动列表(独立刷新)
+  Future<void> refreshMeetups() async {
+    print('🔄 刷新活动列表...');
+    isLoadingMeetups.value = true;
+
+    try {
+      await _loadMeetupsFromApi();
+      print('✅ 活动列表刷新成功');
+    } catch (e) {
+      print('❌ 活动列表刷新失败: $e');
+      AppToast.error('活动列表刷新失败');
+    } finally {
+      isLoadingMeetups.value = false;
     }
   }
 
@@ -232,10 +372,20 @@ class DataServiceController extends GetxController {
     hasError.value = false;
     errorMessage.value = '';
 
+    // 设置独立加载状态
+    isLoadingCities.value = true;
+    isLoadingMeetups.value = true;
+
     try {
       print('🔄 开始加载首页数据...');
-      await _loadFromHomeApi();
-      print('✅ Home API 数据加载成功');
+
+      // 并行加载城市和活动数据
+      await Future.wait([
+        _loadCitiesFromApi(),
+        _loadMeetupsFromApi(),
+      ]);
+
+      print('✅ 首页数据加载成功');
     } catch (e) {
       print('❌ 数据加载失败: $e');
       hasError.value = true;
@@ -243,115 +393,190 @@ class DataServiceController extends GetxController {
       AppToast.error('数据加载失败');
     } finally {
       isLoading.value = false;
+      isLoadingCities.value = false;
+      isLoadingMeetups.value = false;
     }
   }
 
-  /// 从 Home API 加载聚合数据
-  Future<void> _loadFromHomeApi() async {
+  /// 从 CityService 加载城市列表
+  Future<void> _loadCitiesFromApi() async {
     try {
-      print('📡 调用 Home API...');
+      print('📡 调用 CityService API...');
 
-      // 调用 API - 初始加载适量数据，提高启动速度
-      // 城市列表页面会通过分页机制按需加载更多
-      final homeFeed = await _homeApiService.getHomeFeed(
-        cityLimit: 20, // data_service_page 只显示6个城市,20已足够
-        meetupLimit: 20, // 只显示未来30天的meetups,20足够
+      // 调用 CityApiService 获取城市列表
+      final cityData = await _cityApiService.getCities(
+        page: 1,
+        pageSize: 20,
       );
 
-      print(
-          '✅ Home API 返回: ${homeFeed.cityCount} 城市, ${homeFeed.meetupCount} 活动');
+      // 提取城市列表
+      final cities = cityData['items'] as List<dynamic>? ?? [];
 
-      // 转换城市数据到 dataItems 格式（用于现有UI）
-      print('📊 开始转换城市数据...');
+      print('✅ CityService 返回: ${cities.length} 城市');
+
+      // 转换城市数据
       final convertedCities = <Map<String, dynamic>>[];
 
-      for (var i = 0; i < homeFeed.cities.length; i++) {
+      for (var i = 0; i < cities.length; i++) {
         try {
-          final city = homeFeed.cities[i];
-          final weather = city.weather;
+          final city = cities[i] as Map<String, dynamic>;
+
+          // 处理 weather 字段 - 可能是字符串或对象(WeatherDto)
+          String weatherStr = 'sunny';
+          int temperature = 25;
+          int feelsLike = 25;
+
+          final weatherData = city['weather'];
+          if (weatherData is String) {
+            weatherStr = weatherData;
+          } else if (weatherData is Map<String, dynamic>) {
+            // WeatherDto 对象
+            weatherStr = weatherData['weather'] ??
+                weatherData['weatherDescription'] ??
+                weatherData['description'] ??
+                weatherData['main'] ??
+                weatherData['condition'] ??
+                'sunny';
+
+            // 提取温度 - Weather对象中的 temperature 字段
+            if (weatherData['temperature'] != null) {
+              temperature = (weatherData['temperature'] is int)
+                  ? weatherData['temperature']
+                  : (weatherData['temperature'] as num).toInt();
+            }
+
+            // 提取体感温度
+            if (weatherData['feelsLike'] != null) {
+              feelsLike = (weatherData['feelsLike'] is int)
+                  ? weatherData['feelsLike']
+                  : (weatherData['feelsLike'] as num).toInt();
+            }
+          }
 
           convertedCities.add({
-            'id': city.id.toString(), // ✅ 添加 ID 字段 (UUID 字符串)
-            'city': city.name,
-            'country': city.country,
-            'region': _guessRegion(city.country),
-            'climate': _guessClimate(weather?.temperature),
-            'image': city.imageUrl ??
+            'id': city['id']?.toString() ?? '',
+            'city': city['name'] ?? 'Unknown',
+            'country': city['country'] ?? 'Unknown',
+            'region': _guessRegion(city['country'] ?? 'Unknown'),
+            'climate': _guessClimate(temperature.toDouble()),
+            'image': city['imageUrl'] ??
                 'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=400',
-            'temperature': weather?.temperature.toInt() ?? 25,
-            'feelsLike': weather?.feelsLike.toInt() ?? 25,
-            'weather': _getWeatherFromCode(weather?.weather),
-            'internet': 20, // 默认值，后续可从其他API获取
-            'price': 1500, // 默认值
+            'temperature': temperature,
+            'feelsLike': feelsLike,
+            'weather': weatherStr,
+            'internet': city['internetSpeed']?.toInt() ?? 20,
+            'price': city['averageCost']?.toInt() ?? 1500,
             'rank': i + 1,
-            'badge': city.meetupCount > 5 ? 'Popular' : '',
+            'badge': (city['meetupCount'] ?? 0) > 5 ? 'Popular' : '',
             'ratings': ['😊', '👍', '🌟'],
-            'overall': 4.0,
-            'cost': 4.0,
-            'internetScore': 4.0,
-            'liked': 4.0,
-            'safety': 4.0,
-            'aqi': weather?.airQualityIndex ?? 50,
-            'aqiLevel': _getAqiLevel(weather?.airQualityIndex),
-            'population': '1M',
-            'timezone': 'GMT',
-            'humidity': weather?.humidity ?? 70,
-            'about': city.description ?? '',
+            'overall': city['overallScore']?.toDouble() ?? 4.0,
+            'cost': city['costScore']?.toDouble() ?? 4.0,
+            'internetScore': city['internetScore']?.toDouble() ?? 4.0,
+            'liked': city['likedScore']?.toDouble() ?? 4.0,
+            'safety': city['safetyScore']?.toDouble() ?? 4.0,
+            'aqi': city['airQualityIndex']?.toInt() ?? 50,
+            'aqiLevel': _getAqiLevel(city['airQualityIndex']?.toInt()),
+            'population': city['population'] ?? '1M',
+            'timezone': city['timezone'] ?? 'GMT',
+            'humidity': city['humidity']?.toInt() ?? 70,
+            'about': city['description'] ?? '',
           });
         } catch (e) {
           print('❌ 转换城市数据失败 [索引 $i]: $e');
-          rethrow;
+          // 继续处理其他城市,不中断整个流程
         }
       }
 
       dataItems.value = convertedCities;
-      print('✅ 城市数据转换完成: ${dataItems.length} 条');
+      print('✅ 城市数据加载完成: ${dataItems.length} 条');
+    } catch (e, stackTrace) {
+      print('❌ CityService 加载失败: $e');
+      print('   堆栈跟踪: $stackTrace');
+      rethrow;
+    }
+  }
 
-      // 转换活动数据到 meetups 格式（用于现有UI）
-      print('📊 开始转换活动数据...');
+  /// 从 EventService 加载活动列表
+  Future<void> _loadMeetupsFromApi() async {
+    try {
+      print('📡 调用 EventService API...');
+
+      // 调用 EventsApiService 获取活动列表
+      // requireAuth: false 表示允许未登录用户查看活动列表
+      final eventData = await _eventsApiService.getEvents(
+        status: 'upcoming', // 只获取即将到来的活动
+        page: 1,
+        pageSize: 20,
+        requireAuth: false, // 不强制要求认证
+      );
+
+      // 提取活动列表
+      final events = eventData['items'] as List<dynamic>? ?? [];
+
+      print('✅ EventService 返回: ${events.length} 活动');
+
+      // 转换活动数据
       final convertedMeetups = <Map<String, dynamic>>[];
 
-      for (var i = 0; i < homeFeed.meetups.length; i++) {
+      for (var i = 0; i < events.length; i++) {
         try {
-          final meetup = homeFeed.meetups[i];
+          final event = events[i] as Map<String, dynamic>;
 
-          // 调试：打印每个 meetup 的数据
-          print('   Meetup [$i]: ${meetup.title}');
-          print('      participantCount: ${meetup.participantCount}');
-          print('      maxParticipants: ${meetup.maxParticipants}');
-          print('      isParticipant: ${meetup.isParticipant}');
-          print('      creatorName: ${meetup.creatorName}');
+          // 解析开始时间
+          DateTime? startTime;
+          try {
+            final startTimeStr = event['startTime']?.toString();
+            if (startTimeStr != null) {
+              startTime = DateTime.parse(startTimeStr);
+            }
+          } catch (e) {
+            print('⚠️ 解析活动开始时间失败: $e');
+          }
+          startTime ??= DateTime.now();
+
+          // 处理 organizer 字段 - 可能是字符串或对象
+          String organizerName = 'Organizer';
+          final organizerData = event['organizer'];
+          if (organizerData is String) {
+            organizerName = organizerData;
+          } else if (organizerData is Map<String, dynamic>) {
+            // 如果是对象,尝试提取名称字段
+            organizerName = organizerData['name'] ??
+                organizerData['username'] ??
+                organizerData['displayName'] ??
+                'Organizer';
+          }
+          // 优先使用 creatorName 字段
+          organizerName = event['creatorName'] ?? organizerName;
 
           convertedMeetups.add({
-            'id': meetup.id,
-            'city': meetup.cityName ?? 'Unknown',
+            'id': event['id'],
+            'city': event['cityName'] ?? event['city'] ?? 'Unknown',
             'country': 'Unknown', // TODO: 从城市数据中查找
-            'type': _guessMeetupType(meetup.title),
-            'title': meetup.title,
-            'venue': meetup.location,
-            'date': meetup.startTime,
-            'time': _formatTime(meetup.startTime.toIso8601String()),
-            'attendees': meetup.participantCount,
-            'maxAttendees': meetup.maxParticipants ?? 20,
-            'organizer': meetup.creatorName ?? 'Organizer',
+            'type': _guessMeetupType(event['title'] ?? ''),
+            'title': event['title'] ?? 'Unknown Event',
+            'venue': event['location'] ?? '',
+            'date': startTime,
+            'time': _formatTime(startTime.toIso8601String()),
+            'attendees': event['participantCount'] ?? 0,
+            'maxAttendees': event['maxParticipants'] ?? 20,
+            'organizer': organizerName,
             'organizerAvatar': 'https://i.pravatar.cc/150?img=1',
-            'image': meetup.imageUrl ??
+            'image': event['imageUrl'] ??
                 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=400',
-            'description': meetup.description ?? '',
-            'isParticipant': meetup.isParticipant, // 从 API 获取的参与状态
+            'description': event['description'] ?? '',
+            'isParticipant': event['isParticipant'] ?? false,
           });
         } catch (e) {
           print('❌ 转换活动数据失败 [索引 $i]: $e');
-          rethrow;
+          // 继续处理其他活动,不中断整个流程
         }
       }
 
       meetups.value = convertedMeetups;
-      print('✅ 活动数据转换完成: ${meetups.length} 条');
-
-      print('✅ 数据转换完成');
+      print('✅ 活动数据加载完成: ${meetups.length} 条');
     } catch (e, stackTrace) {
-      print('❌ Home API 加载失败: $e');
+      print('❌ EventService 加载失败: $e');
       print('   堆栈跟踪: $stackTrace');
       rethrow;
     }
@@ -390,17 +615,6 @@ class DataServiceController extends GetxController {
     if (temperature > 10) return 'Mild';
     if (temperature > 0) return 'Cool';
     return 'Cold';
-  }
-
-  /// 辅助方法: 根据天气代码获取天气状态
-  String _getWeatherFromCode(String? weather) {
-    if (weather == null) return 'sunny';
-    final w = weather.toLowerCase();
-    if (w.contains('clear') || w.contains('sun')) return 'sunny';
-    if (w.contains('cloud')) return 'cloudy';
-    if (w.contains('rain')) return 'rainy';
-    if (w.contains('snow')) return 'snowy';
-    return 'sunny';
   }
 
   /// 辅助方法: 猜测活动类型

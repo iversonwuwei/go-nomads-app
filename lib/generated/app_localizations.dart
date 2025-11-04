@@ -2573,7 +2573,7 @@ abstract class AppLocalizations {
   /// No description provided for @prosAndCons.
   ///
   /// In zh, this message translates to:
-  /// **'优缺点'**
+  /// **'乐趣'**
   String get prosAndCons;
 
   /// No description provided for @pros.

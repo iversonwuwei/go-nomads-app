@@ -159,16 +159,18 @@ class BackgroundTaskService extends GetxService {
     try {
       // 执行任务函数,传入进度回调
       await taskFunction((int progress) {
-        // 更新通知进度
+        // 更新通知进度 (确保进度在 0-100 范围内)
         final task = _activeTasks[taskId];
         if (task != null) {
+          final clampedProgress = progress.clamp(0, 100);
           final notificationService = _getNotificationService();
           if (notificationService != null) {
             notificationService.showGuideGenerating(
               task.cityName,
-              progress: progress,
+              progress: clampedProgress,
             );
           }
+          print('📊 任务 $taskId 进度更新: $clampedProgress%');
         }
       });
 

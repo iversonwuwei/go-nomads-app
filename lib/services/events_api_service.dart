@@ -71,6 +71,37 @@ class EventsApiService {
     return headers;
   }
 
+  /// 尝试获取认证头(不强制要求登录)
+  /// 如果用户已登录则返回认证头,未登录则返回 null
+  Future<Map<String, String>?> _tryGetAuthHeaders() async {
+    try {
+      // 检查是否已登录
+      final isLoggedIn = await _authService.checkLoginStatus();
+      if (!isLoggedIn) {
+        return null;
+      }
+
+      final headers = <String, String>{};
+
+      // 添加Authorization头
+      if (_httpService.authToken != null &&
+          _httpService.authToken!.isNotEmpty) {
+        headers['Authorization'] = 'Bearer ${_httpService.authToken}';
+      }
+
+      // 添加X-User-Id头
+      final userId = await _getCurrentUserId();
+      if (userId != null && userId.isNotEmpty) {
+        headers['X-User-Id'] = userId;
+      }
+
+      return headers.isNotEmpty ? headers : null;
+    } catch (e) {
+      print('ℹ️ 获取认证头失败,以访客身份继续: $e');
+      return null;
+    }
+  }
+
   /// 创建活动/聚会
   ///
   /// [eventData] 活动数据，包含以下字段：
@@ -118,14 +149,8 @@ class EventsApiService {
   /// 获取活动详情
   Future<Map<String, dynamic>> getEvent(String eventId) async {
     try {
-      // 获取认证头（可选,但用于判断参与状态）
-      Map<String, String>? authHeaders;
-      try {
-        authHeaders = await _getAuthHeaders();
-      } catch (e) {
-        print('⚠️ 未登录,获取活动详情时不包含用户状态: $e');
-        // 继续执行,不抛出异常
-      }
+      // 获取认证头(可选,但用于判断参与状态)
+      final authHeaders = await _tryGetAuthHeaders();
 
       final endpoint =
           ApiConfig.eventDetailEndpoint.replaceAll('{id}', eventId);
@@ -150,12 +175,15 @@ class EventsApiService {
   }
 
   /// 获取活动列表
+  ///
+  /// [requireAuth] 是否需要认证,默认 false,允许未登录用户查看活动列表
   Future<Map<String, dynamic>> getEvents({
     String? cityId,
     String? category,
     String? status = 'upcoming',
     int page = 1,
     int pageSize = 20,
+    bool requireAuth = false,
   }) async {
     try {
       final queryParameters = <String, dynamic>{
@@ -167,9 +195,27 @@ class EventsApiService {
       if (category != null) queryParameters['category'] = category;
       if (status != null) queryParameters['status'] = status;
 
+      // 如果需要认证,获取认证头
+      Options? requestOptions;
+      if (requireAuth) {
+        // 强制要求认证
+        final authHeaders = await _getAuthHeaders();
+        requestOptions = Options(headers: authHeaders);
+      } else {
+        // 可选认证:如果已登录则添加认证头,未登录则以访客身份访问
+        final authHeaders = await _tryGetAuthHeaders();
+        if (authHeaders != null) {
+          requestOptions = Options(headers: authHeaders);
+          print('✅ 已登录,使用认证头获取活动列表');
+        } else {
+          print('ℹ️ 未登录,以访客身份获取活动列表');
+        }
+      }
+
       final response = await _httpService.get<Map<String, dynamic>>(
         ApiConfig.eventsEndpoint,
         queryParameters: queryParameters,
+        options: requestOptions,
       );
 
       if (response.statusCode == 200 && response.data != null) {
@@ -178,6 +224,7 @@ class EventsApiService {
         throw Exception('Failed to get events: Invalid response');
       }
     } catch (e) {
+      print('❌ 获取活动列表失败: $e');
       if (e is HttpException) {
         rethrow;
       }

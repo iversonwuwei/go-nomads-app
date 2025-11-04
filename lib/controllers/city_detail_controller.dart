@@ -11,6 +11,7 @@ import '../services/ai_api_service.dart';
 import '../services/async_task_service.dart';
 import '../services/background_task_service.dart';
 import '../services/cities_api_service.dart';
+import '../services/city_api_service.dart';
 import '../services/database_service.dart';
 import '../services/http_service.dart';
 import '../services/user_city_content_api_service.dart';
@@ -114,26 +115,34 @@ class CityDetailController extends GetxController {
     isLoadingPhotos.value = true;
     isLoadingReviews.value = true;
     isLoadingCost.value = true;
+    isLoadingProsCons.value = true;
     isLoadingUserContent.value = true;
 
     try {
       final apiService = UserCityContentApiService();
+      final cityApi = CityApiService();
 
-      // 并行加载所有用户内容（移除 userExpenses，只保留 summary）
+      // 并行加载所有用户内容
       final results = await Future.wait([
         apiService.getCityPhotos(cityId: currentCityId.value),
         apiService.getCityReviews(currentCityId.value),
         apiService.getCityStats(currentCityId.value),
         apiService.getCityCostSummary(currentCityId.value), // ✅ 只加载综合费用统计
+        cityApi.getCityProsCons(
+            cityId: currentCityId.value, isPro: true), // ✅ 加载优点
+        cityApi.getCityProsCons(
+            cityId: currentCityId.value, isPro: false), // ✅ 加载缺点
       ]);
 
       userPhotos.value = results[0] as List<UserCityPhoto>;
       userReviews.value = results[1] as List<UserCityReview>;
       cityContentStats.value = results[2] as CityUserContentStats;
       communityCostSummary.value = results[3] as CityCostSummary; // ✅ 保存综合费用统计
+      prosList.value = results[4] as List<ProsCons>; // ✅ 保存优点
+      consList.value = results[5] as List<ProsCons>; // ✅ 保存缺点
 
       print(
-          '✅ 用户内容加载成功: ${userPhotos.length} photos, ${userReviews.length} reviews');
+          '✅ 用户内容加载成功: ${userPhotos.length} photos, ${userReviews.length} reviews, ${prosList.length} pros, ${consList.length} cons');
 
       // 🔍 详细打印 communityCostSummary 数据
       if (communityCostSummary.value != null) {
@@ -159,6 +168,7 @@ class CityDetailController extends GetxController {
       isLoadingPhotos.value = false;
       isLoadingReviews.value = false;
       isLoadingCost.value = false;
+      isLoadingProsCons.value = false;
       isLoadingUserContent.value = false;
     }
   }
@@ -749,6 +759,7 @@ class CityDetailController extends GetxController {
   /// 生成模拟数据
   void _generateMockData() {
     // ✅ 仅生成尚未实现后端 API 的数据
+    // ❌ 已移除: prosList & consList (使用真实 API)
     // ❌ 已移除: reviews (使用 userReviews)
     // ❌ 已移除: costOfLiving (使用 communityCostSummary)
     // ❌ 已移除: photos (使用 userPhotos)
@@ -785,80 +796,9 @@ class CityDetailController extends GetxController {
       startupScore: 2.8,
     );
 
-    // 生成优点
-    prosList.value = [
-      ProsCons(
-        id: '1',
-        text: 'Amazing street food culture with diverse options',
-        upvotes: 156,
-        downvotes: 12,
-        isPro: true,
-      ),
-      ProsCons(
-        id: '2',
-        text: 'Very affordable cost of living',
-        upvotes: 243,
-        downvotes: 8,
-        isPro: true,
-      ),
-      ProsCons(
-        id: '3',
-        text: 'Excellent coworking spaces and cafes with fast WiFi',
-        upvotes: 198,
-        downvotes: 15,
-        isPro: true,
-      ),
-      ProsCons(
-        id: '4',
-        text: 'Vibrant nightlife and entertainment',
-        upvotes: 187,
-        downvotes: 22,
-        isPro: true,
-      ),
-      ProsCons(
-        id: '5',
-        text: 'Easy to meet other digital nomads',
-        upvotes: 221,
-        downvotes: 9,
-        isPro: true,
-      ),
-    ];
-
-    // 生成缺点
-    consList.value = [
-      ProsCons(
-        id: '6',
-        text: 'Traffic can be extremely congested',
-        upvotes: 289,
-        downvotes: 34,
-        isPro: false,
-      ),
-      ProsCons(
-        id: '7',
-        text: 'Air quality issues during certain months',
-        upvotes: 167,
-        downvotes: 23,
-        isPro: false,
-      ),
-      ProsCons(
-        id: '8',
-        text: 'Very hot and humid weather year-round',
-        upvotes: 201,
-        downvotes: 45,
-        isPro: false,
-      ),
-      ProsCons(
-        id: '9',
-        text: 'Language barrier can be challenging',
-        upvotes: 134,
-        downvotes: 56,
-        isPro: false,
-      ),
-    ];
-
+    // ❌ 已删除 Mock prosList & consList - 使用真实 API
     // ❌ 已删除 Mock reviews - 使用后端 userReviews
     // ❌ 已删除 Mock costOfLiving - 使用后端 communityCostSummary
-
     // ❌ 已删除 Mock photos - 使用后端 userPhotos
 
     // 生成社区数据

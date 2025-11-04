@@ -20,6 +20,7 @@ import 'add_review_page.dart';
 import 'coworking_detail_page.dart';
 import 'create_travel_plan_page.dart';
 import 'hotel_list_page.dart';
+import 'pros_and_cons_add_page.dart';
 
 /// 城市详情�?- 完整�?Nomads.com 风格标签页系�?
 class CityDetailPage extends StatefulWidget {
@@ -897,7 +898,22 @@ class _CityDetailPageState extends State<CityDetailPage>
                           ),
                         ),
                         Tab(text: l10n.guide),
-                        Tab(text: l10n.prosAndCons),
+                        Tab(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(l10n.prosAndCons),
+                              const SizedBox(width: 4),
+                              GestureDetector(
+                                onTap: () => _showAddProsConsPage(),
+                                child: Container(
+                                  padding: const EdgeInsets.all(2),
+                                  child: const Icon(Icons.add_circle, size: 16),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                         Tab(
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -1375,96 +1391,190 @@ class _CityDetailPageState extends State<CityDetailPage>
         return const Center(child: CircularProgressIndicator());
       }
 
-      return ListView(
-        padding:
-            const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
+      return Stack(
         children: [
-          const Text(
-            'Pros',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 12),
-          ...controller.prosList.map((item) => Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.check_circle,
-                        color: Colors.green,
-                        size: 24,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          item.text,
-                          style: const TextStyle(fontSize: 15),
+          ListView(
+            padding:
+                const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
+            children: [
+              const Text(
+                '优点',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 12),
+              // 优点列表或空状态
+              if (controller.prosList.isEmpty)
+                _buildEmptyProsConsState(
+                  icon: Icons.check_circle_outline,
+                  iconColor: Colors.green,
+                  title: '还没有优点',
+                  subtitle: '分享你在这座城市的美好体验',
+                  buttonText: '添加优点',
+                  onTap: () => _showAddProsConsPage(initialTab: 0),
+                )
+              else
+                ...controller.prosList.map((item) => Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.check_circle,
+                              color: Colors.green,
+                              size: 24,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                item.text,
+                                style: const TextStyle(fontSize: 15),
+                              ),
+                            ),
+                            Column(
+                              children: [
+                                const Icon(Icons.arrow_upward,
+                                    size: 16, color: Color(0xFFFF4458)),
+                                Text(
+                                  '${item.upvotes}',
+                                  style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
-                      Column(
-                        children: [
-                          const Icon(Icons.arrow_upward,
-                              size: 16, color: Color(0xFFFF4458)),
-                          Text(
-                            '${item.upvotes}',
-                            style: const TextStyle(
-                                fontSize: 12, fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                    )),
+              const SizedBox(height: 24),
+              const Text(
+                '挑战',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                 ),
-              )),
-          const SizedBox(height: 24),
-          const Text(
-            'Cons',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 12),
-          ...controller.consList.map((item) => Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.cancel,
-                        color: Colors.red,
-                        size: 24,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          item.text,
-                          style: const TextStyle(fontSize: 15),
+              ),
+              const SizedBox(height: 12),
+              // 挑战列表或空状态
+              if (controller.consList.isEmpty)
+                _buildEmptyProsConsState(
+                  icon: Icons.cancel_outlined,
+                  iconColor: Colors.red,
+                  title: '还没有挑战',
+                  subtitle: '分享你遇到的困难和需要改进的地方',
+                  buttonText: '添加挑战',
+                  onTap: () => _showAddProsConsPage(initialTab: 1),
+                )
+              else
+                ...controller.consList.map((item) => Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.cancel,
+                              color: Colors.red,
+                              size: 24,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                item.text,
+                                style: const TextStyle(fontSize: 15),
+                              ),
+                            ),
+                            Column(
+                              children: [
+                                const Icon(Icons.arrow_upward,
+                                    size: 16, color: Color(0xFFFF4458)),
+                                Text(
+                                  '${item.upvotes}',
+                                  style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
-                      Column(
-                        children: [
-                          const Icon(Icons.arrow_upward,
-                              size: 16, color: Color(0xFFFF4458)),
-                          Text(
-                            '${item.upvotes}',
-                            style: const TextStyle(
-                                fontSize: 12, fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              )),
+                    )),
+            ],
+          ),
         ],
       );
     });
+  }
+
+  // 空状态显示组件 (参考 profile_page 的爱好设计)
+  Widget _buildEmptyProsConsState({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    required String buttonText,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        vertical: 40,
+        horizontal: 20,
+      ),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Colors.grey.withValues(alpha: 0.3),
+          width: 1,
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 48,
+            color: iconColor.withValues(alpha: 0.4),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            title,
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            subtitle,
+            style: TextStyle(
+              color: Colors.grey[500],
+              fontSize: 14,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 20),
+          OutlinedButton.icon(
+            onPressed: onTap,
+            icon: const Icon(Icons.add, size: 18),
+            label: Text(buttonText),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFFFF4458),
+              side: const BorderSide(color: Color(0xFFFF4458)),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   // Reviews 标签
@@ -3115,6 +3225,22 @@ class _CityDetailPageState extends State<CityDetailPage>
       controller.loadUserContent();
 
       print('Review submitted successfully: ${result['review']}');
+    }
+  }
+
+  /// 添加 Pros & Cons
+  /// [initialTab] 初始显示的 tab (0=优点, 1=挑战)
+  void _showAddProsConsPage({int initialTab = 0}) async {
+    final controller = Get.find<CityDetailController>();
+    final result = await Get.to(() => ProsAndConsAddPage(
+          cityId: controller.currentCityId.value,
+          cityName: controller.currentCityName.value,
+          initialTab: initialTab,
+        ));
+
+    // 如果有变更,刷新数据
+    if (result == true) {
+      controller.loadUserContent();
     }
   }
 

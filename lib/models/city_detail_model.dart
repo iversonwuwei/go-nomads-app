@@ -66,18 +66,56 @@ class CityScores {
 /// 城市优缺点
 class ProsCons {
   final String id;
+  final String userId;
+  final String cityId;
   final String text;
   final int upvotes;
   final int downvotes;
-  final bool isPro; // true = pro, false = con
+  final bool isPro; // true = pro (优点), false = con (挑战)
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
   ProsCons({
     required this.id,
+    required this.userId,
+    required this.cityId,
     required this.text,
     required this.upvotes,
     required this.downvotes,
     required this.isPro,
+    required this.createdAt,
+    required this.updatedAt,
   });
+
+  /// 从 JSON 创建
+  factory ProsCons.fromJson(Map<String, dynamic> json) {
+    return ProsCons(
+      id: json['id'] as String,
+      userId: json['userId'] as String,
+      cityId: json['cityId'] as String,
+      text: json['text'] as String? ?? '',
+      upvotes: json['upvotes'] as int? ?? 0,
+      downvotes: json['downvotes'] as int? ?? 0,
+      isPro: json['isPro'] as bool? ?? true,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
+    );
+  }
+
+  /// 转换为 JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'userId': userId,
+      'cityId': cityId,
+      'text': text,
+      'upvotes': upvotes,
+      'downvotes': downvotes,
+      'isPro': isPro,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+    };
+  }
 }
 
 /// 城市评论

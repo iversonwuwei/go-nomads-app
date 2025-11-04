@@ -131,6 +131,41 @@ class SignalRService {
     });
   }
 
+  /// 订阅任务通知
+  ///
+  /// [taskId] 任务 ID
+  Future<void> subscribeToTask(String taskId) async {
+    if (!_isConnected) {
+      print('❌ SignalR 未连接,无法订阅任务: $taskId');
+      return;
+    }
+
+    try {
+      await _hubConnection?.invoke('SubscribeToTask', args: [taskId]);
+      print('✅ 已订阅任务通知: $taskId');
+    } catch (e) {
+      print('❌ 订阅任务失败: $taskId, 错误: $e');
+      rethrow;
+    }
+  }
+
+  /// 取消订阅任务通知
+  ///
+  /// [taskId] 任务 ID
+  Future<void> unsubscribeFromTask(String taskId) async {
+    if (!_isConnected) {
+      print('📡 SignalR 未连接,跳过取消订阅: $taskId');
+      return;
+    }
+
+    try {
+      await _hubConnection?.invoke('UnsubscribeFromTask', args: [taskId]);
+      print('✅ 已取消订阅任务通知: $taskId');
+    } catch (e) {
+      print('❌ 取消订阅任务失败: $taskId, 错误: $e');
+    }
+  }
+
   /// 断开连接
   Future<void> disconnect() async {
     if (!_isConnected) {
