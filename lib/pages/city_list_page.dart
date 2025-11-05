@@ -21,6 +21,7 @@ class _CityListPageState extends State<CityListPage> {
   final CityListController controller = Get.put(CityListController());
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final Map<String, bool> _followedCities = {}; // 城市关注状态
 
   String _searchQuery = '';
 
@@ -524,22 +525,34 @@ class _CityListPageState extends State<CityListPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 城市图片
-            ClipRRect(
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(12)),
-              child: AspectRatio(
-                aspectRatio: 16 / 9,
-                child: Image.network(
-                  city['image'],
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: Colors.grey[200],
-                      child: const Icon(Icons.image_not_supported, size: 48),
-                    );
-                  },
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(12)),
+                  child: AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: Image.network(
+                      city['image'],
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.grey[200],
+                          child:
+                              const Icon(Icons.image_not_supported, size: 48),
+                        );
+                      },
+                    ),
+                  ),
                 ),
-              ),
+                // 关注按钮
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: _buildFollowButton(
+                      city['id']?.toString() ?? city['city']),
+                ),
+              ],
             ),
 
             // 城市信息
@@ -823,6 +836,75 @@ class _CityListPageState extends State<CityListPage> {
   String _truncateToOneDecimal(num value) {
     final truncated = (value * 10).truncate() / 10;
     return truncated.toStringAsFixed(1);
+  }
+
+  // 构建关注按钮
+  Widget _buildFollowButton(String cityId) {
+    final isFollowed = _followedCities[cityId] ?? false;
+
+    return GestureDetector(
+      onTap: () => _toggleFollow(cityId),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isFollowed
+              ? const Color(0xFF8B5CF6)
+              : Colors.white.withValues(alpha: 0.90),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.10),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isFollowed ? Icons.favorite : Icons.favorite_border,
+              size: 16,
+              color: isFollowed ? Colors.white : const Color(0xFF8B5CF6),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              isFollowed ? '已关注' : '关注',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: isFollowed ? Colors.white : const Color(0xFF8B5CF6),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 切换关注状态
+  void _toggleFollow(String cityId) {
+    setState(() {
+      _followedCities[cityId] = !(_followedCities[cityId] ?? false);
+    });
+
+    final isNowFollowed = _followedCities[cityId] ?? false;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          isNowFollowed ? '已关注该城市' : '已取消关注',
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor:
+            isNowFollowed ? const Color(0xFF10B981) : Colors.grey[600],
+        duration: const Duration(seconds: 1),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+    );
   }
 }
 
