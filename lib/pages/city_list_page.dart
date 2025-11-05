@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import '../config/app_colors.dart';
 import '../controllers/city_list_controller.dart';
 import '../generated/app_localizations.dart';
+import '../services/user_favorite_city_api_service.dart';
+import '../widgets/app_toast.dart';
 import '../widgets/skeletons/skeletons.dart';
 import 'city_detail_page.dart';
 import 'global_map_page.dart';
@@ -21,7 +23,10 @@ class _CityListPageState extends State<CityListPage> {
   final CityListController controller = Get.put(CityListController());
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final UserFavoriteCityApiService _favoriteApiService =
+      UserFavoriteCityApiService();
   final Map<String, bool> _followedCities = {}; // 城市关注状态
+  bool _isLoadingFollowedCities = false;
 
   String _searchQuery = '';
 
@@ -32,6 +37,7 @@ class _CityListPageState extends State<CityListPage> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    _loadFollowedCities(); // 加载已关注的城市
 
     // 监听筛选器变化
     ever(controller.selectedRegions, (_) => setState(() {}));
@@ -883,28 +889,61 @@ class _CityListPageState extends State<CityListPage> {
   }
 
   // 切换关注状态
-  void _toggleFollow(String cityId) {
+  void _toggleFollow(String cityId) async {
+    if (_isLoadingFollowedCities) {
+      return; // 正在加载时不允许操作
+    }
+
+    final previousState = _followedCities[cityId] ?? false;
+
+    // 乐观更新 UI
     setState(() {
-      _followedCities[cityId] = !(_followedCities[cityId] ?? false);
+      _followedCities[cityId] = !previousState;
     });
 
-    final isNowFollowed = _followedCities[cityId] ?? false;
+    try {
+      final success = await _favoriteApiService.toggleFavorite(cityId);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          isNowFollowed ? '已关注该城市' : '已取消关注',
-          style: const TextStyle(color: Colors.white),
-        ),
-        backgroundColor:
-            isNowFollowed ? const Color(0xFF10B981) : Colors.grey[600],
-        duration: const Duration(seconds: 1),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-      ),
-    );
+      if (success) {
+        final isNowFollowed = _followedCities[cityId] ?? false;
+        AppToast.success(isNowFollowed ? '已关注该城市' : '已取消关注');
+        print('✅ 城市关注状态切换成功: cityId=$cityId, followed=$isNowFollowed');
+      } else {
+        // 操作失败,恢复之前的状态
+        setState(() {
+          _followedCities[cityId] = previousState;
+        });
+        AppToast.error('操作失败，请重试');
+      }
+    } catch (e) {
+      print('❌ 切换关注状态失败: $e');
+      // 发生错误,恢复之前的状态
+      setState(() {
+        _followedCities[cityId] = previousState;
+      });
+      AppToast.error('操作失败: $e');
+    }
+  }
+
+  /// 加载用户已关注的城市列表
+  Future<void> _loadFollowedCities() async {
+    if (_isLoadingFollowedCities) return;
+
+    _isLoadingFollowedCities = true;
+    try {
+      final cityIds = await _favoriteApiService.getUserFavoriteCityIds();
+      setState(() {
+        _followedCities.clear();
+        for (var cityId in cityIds) {
+          _followedCities[cityId] = true;
+        }
+      });
+      print('✅ 已加载 ${cityIds.length} 个关注的城市');
+    } catch (e) {
+      print('❌ 加载关注城市列表失败: $e');
+    } finally {
+      _isLoadingFollowedCities = false;
+    }
   }
 }
 
