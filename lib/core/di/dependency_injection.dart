@@ -1,0 +1,710 @@
+import 'package:dio/dio.dart';
+import 'package:get/get.dart';
+
+// AI Domain
+import '../../features/ai/application/use_cases/ai_use_cases.dart';
+import '../../features/ai/domain/repositories/iai_repository.dart';
+import '../../features/ai/infrastructure/repositories/ai_repository.dart';
+import '../../features/ai/presentation/controllers/ai_state_controller.dart';
+import '../../features/auth/application/use_cases/auth_database_use_cases.dart'
+    as auth_db_use_cases;
+import '../../features/auth/application/use_cases/auth_use_cases.dart'
+    as auth_use_cases;
+import '../../features/auth/domain/repositories/iauth_database_repository.dart';
+// Auth Domain
+import '../../features/auth/domain/repositories/iauth_repository.dart';
+import '../../features/auth/infrastructure/repositories/auth_database_repository.dart';
+import '../../features/auth/infrastructure/repositories/auth_repository.dart';
+import '../../features/auth/presentation/controllers/auth_state_controller.dart';
+// Chat Domain
+import '../../features/chat/application/use_cases/chat_use_cases.dart';
+import '../../features/chat/domain/repositories/i_chat_repository.dart';
+import '../../features/chat/infrastructure/repositories/chat_repository.dart';
+import '../../features/chat/presentation/controllers/chat_state_controller.dart';
+import '../../features/city/application/state_controllers/pros_cons_state_controller.dart';
+import '../../features/city/application/use_cases/city_use_cases.dart';
+// City Domain
+import '../../features/city/domain/repositories/i_city_repository.dart';
+import '../../features/city/infrastructure/repositories/city_repository.dart';
+import '../../features/city/presentation/controllers/city_detail_state_controller.dart';
+import '../../features/city/presentation/controllers/city_state_controller.dart';
+// Community Domain
+import '../../features/community/domain/repositories/i_community_repository.dart';
+import '../../features/community/infrastructure/repositories/community_repository.dart';
+import '../../features/community/presentation/controllers/community_state_controller.dart';
+// Coworking Domain
+import '../../features/coworking/application/use_cases/coworking_use_cases.dart';
+import '../../features/coworking/domain/repositories/icoworking_repository.dart';
+import '../../features/coworking/infrastructure/repositories/coworking_repository.dart';
+import '../../features/coworking/presentation/controllers/coworking_state_controller.dart';
+// Hotel Domain
+import '../../features/hotel/application/use_cases/hotel_use_cases.dart';
+import '../../features/hotel/domain/repositories/i_hotel_repository.dart';
+import '../../features/hotel/infrastructure/repositories/hotel_repository.dart';
+import '../../features/hotel/presentation/controllers/hotel_state_controller.dart';
+// InnovationProject Domain
+import '../../features/innovation_project/application/use_cases/innovation_project_use_cases.dart';
+import '../../features/innovation_project/domain/repositories/i_innovation_project_repository.dart';
+import '../../features/innovation_project/infrastructure/repositories/innovation_project_repository.dart';
+import '../../features/innovation_project/presentation/controllers/innovation_project_state_controller.dart';
+// Interest Domain
+import '../../features/interest/application/use_cases/interest_use_cases.dart';
+import '../../features/interest/domain/repositories/i_interest_repository.dart';
+import '../../features/interest/infrastructure/repositories/interest_repository.dart';
+import '../../features/interest/presentation/controllers/interest_state_controller.dart';
+import '../../features/meetup/application/use_cases/cancel_rsvp_use_case.dart';
+import '../../features/meetup/application/use_cases/create_meetup_use_case.dart';
+import '../../features/meetup/application/use_cases/get_meetups_by_city_use_case.dart';
+import '../../features/meetup/application/use_cases/get_meetups_use_case.dart';
+import '../../features/meetup/application/use_cases/rsvp_to_meetup_use_case.dart';
+// Meetup Domain
+import '../../features/meetup/domain/repositories/i_meetup_repository.dart';
+import '../../features/meetup/infrastructure/repositories/meetup_repository.dart';
+import '../../features/meetup/presentation/controllers/meetup_state_controller.dart';
+// Skill Domain
+import '../../features/skill/application/use_cases/skill_use_cases.dart';
+import '../../features/skill/domain/repositories/i_skill_repository.dart';
+import '../../features/skill/infrastructure/repositories/skill_repository.dart';
+import '../../features/skill/presentation/controllers/skill_state_controller.dart';
+import '../../features/user/application/use_cases/favorite_city_use_cases.dart';
+import '../../features/user/application/use_cases/user_use_cases.dart';
+// User Domain
+import '../../features/user/domain/repositories/iuser_repository.dart';
+import '../../features/user/infrastructure/repositories/user_repository.dart';
+import '../../features/user/presentation/controllers/user_state_controller.dart';
+// User City Content Domain
+import '../../features/user_city_content/application/use_cases/user_city_content_use_cases.dart';
+import '../../features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
+import '../../features/user_city_content/infrastructure/repositories/user_city_content_repository.dart';
+import '../../features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
+import '../../features/weather/application/use_cases/get_city_weather_use_case.dart';
+// Weather Domain
+import '../../features/weather/domain/repositories/iweather_repository.dart';
+import '../../features/weather/infrastructure/repositories/weather_repository.dart';
+import '../../features/weather/presentation/controllers/weather_state_controller.dart';
+import '../../services/http_service.dart';
+// Services
+import '../../services/token_storage_service.dart';
+
+/// DDD依赖注入配置
+///
+/// 使用GetX进行依赖管理
+class DependencyInjection {
+  /// 初始化所有依赖
+  static Future<void> init() async {
+    // 基础设施服务
+    _registerInfrastructure();
+
+    // 认证领域 (优先注册,其他领域可能依赖)
+    _registerAuthDomain();
+
+    // 用户领域
+    _registerUserDomain();
+
+    // 城市领域
+    _registerCityDomain();
+
+    // 天气领域
+    _registerWeatherDomain();
+
+    // 共享办公领域
+    _registerCoworkingDomain();
+
+    // 用户城市内容领域
+    _registerUserCityContentDomain();
+
+    // AI领域
+    _registerAiDomain();
+
+    // 社区领域
+    _registerCommunityDomain();
+
+    // 活动领域
+    _registerMeetupDomain();
+
+    // Chat 领域
+    _registerChatDomain();
+
+    // Interest 领域
+    _registerInterestDomain();
+
+    // Skill 领域
+    _registerSkillDomain();
+
+    // InnovationProject 领域
+    _registerInnovationProjectDomain();
+
+    // Hotel 领域
+    _registerHotelDomain();
+
+    // 其他领域...
+  }
+
+  /// 注册基础设施服务
+  static void _registerInfrastructure() {
+    // Dio实例
+    Get.lazyPut<Dio>(() => Dio(BaseOptions(
+          connectTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(seconds: 30),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        )));
+
+    // TokenStorageService (如果还没注册)
+    if (!Get.isRegistered<TokenStorageService>()) {
+      Get.lazyPut<TokenStorageService>(() => TokenStorageService());
+    }
+
+    // HttpService (单例)
+    if (!Get.isRegistered<HttpService>()) {
+      Get.lazyPut<HttpService>(() => HttpService());
+    }
+  }
+
+  /// 注册用户领域依赖
+  static void _registerUserDomain() {
+    // Repository
+    Get.lazyPut<IUserRepository>(
+      () => UserRepository(
+        dio: Get.find<Dio>(),
+        tokenService: Get.find<TokenStorageService>(),
+      ),
+    );
+
+    // Use Cases - 基础用户操作
+    Get.lazyPut(() => BatchGetUsersUseCase(Get.find<IUserRepository>()));
+    Get.lazyPut(() => GetUserUseCase(Get.find<IUserRepository>()));
+    Get.lazyPut(() => GetCurrentUserUseCase(Get.find<IUserRepository>()));
+    Get.lazyPut(() => UpdateUserUseCase(Get.find<IUserRepository>()));
+    Get.lazyPut(() => SearchUsersUseCase(Get.find<IUserRepository>()));
+
+    // Use Cases - 收藏城市
+    Get.lazyPut(() => AddFavoriteCityUseCase(Get.find<IUserRepository>()));
+    Get.lazyPut(() => RemoveFavoriteCityUseCase(Get.find<IUserRepository>()));
+    Get.lazyPut(() => IsCityFavoritedUseCase(Get.find<IUserRepository>()));
+    Get.lazyPut(() => GetFavoriteCityIdsUseCase(Get.find<IUserRepository>()));
+    Get.lazyPut(() => ToggleFavoriteCityUseCase(Get.find<IUserRepository>()));
+
+    // Controller
+    Get.lazyPut(
+      () => UserStateController(
+        getCurrentUserUseCase: Get.find<GetCurrentUserUseCase>(),
+        updateUserUseCase: Get.find<UpdateUserUseCase>(),
+        addFavoriteCityUseCase: Get.find<AddFavoriteCityUseCase>(),
+        removeFavoriteCityUseCase: Get.find<RemoveFavoriteCityUseCase>(),
+        isCityFavoritedUseCase: Get.find<IsCityFavoritedUseCase>(),
+        getFavoriteCityIdsUseCase: Get.find<GetFavoriteCityIdsUseCase>(),
+        toggleFavoriteCityUseCase: Get.find<ToggleFavoriteCityUseCase>(),
+      ),
+    );
+  }
+
+  /// 注册认证领域依赖
+  static void _registerAuthDomain() {
+    // Repository - 基础认证
+    Get.lazyPut<IAuthRepository>(
+      () => AuthRepository(
+        httpService: Get.find<HttpService>(),
+        tokenStorage: Get.find<TokenStorageService>(),
+      ),
+    );
+
+    // Repository - 数据库认证
+    Get.lazyPut<IAuthDatabaseRepository>(
+      () => AuthDatabaseRepository(),
+    );
+
+    // Use Cases - 基础认证
+    Get.lazyPut(() => auth_use_cases.LoginUseCase(Get.find<IAuthRepository>()));
+    Get.lazyPut(
+        () => auth_use_cases.RegisterUseCase(Get.find<IAuthRepository>()));
+    Get.lazyPut(
+        () => auth_use_cases.LogoutUseCase(Get.find<IAuthRepository>()));
+    Get.lazyPut(() =>
+        auth_use_cases.GetCurrentUserUseCase(Get.find<IAuthRepository>()));
+    Get.lazyPut(() =>
+        auth_use_cases.UpdateUserProfileUseCase(Get.find<IAuthRepository>()));
+    Get.lazyPut(() =>
+        auth_use_cases.AutoRefreshTokenUseCase(Get.find<IAuthRepository>()));
+
+    // Use Cases - 数据库认证
+    Get.lazyPut(() => auth_db_use_cases.SaveTokenToDatabaseUseCase(
+          Get.find<IAuthDatabaseRepository>(),
+        ));
+    Get.lazyPut(() => auth_db_use_cases.CheckLoginStatusWithDatabaseUseCase(
+          Get.find<IAuthDatabaseRepository>(),
+          Get.find<IAuthRepository>(),
+        ));
+
+    // Controller
+    Get.lazyPut(
+      () => AuthStateController(
+        loginUseCase: Get.find<auth_use_cases.LoginUseCase>(),
+        registerUseCase: Get.find<auth_use_cases.RegisterUseCase>(),
+        logoutUseCase: Get.find<auth_use_cases.LogoutUseCase>(),
+        getCurrentUserUseCase: Get.find<auth_use_cases.GetCurrentUserUseCase>(),
+        updateUserProfileUseCase:
+            Get.find<auth_use_cases.UpdateUserProfileUseCase>(),
+        autoRefreshTokenUseCase:
+            Get.find<auth_use_cases.AutoRefreshTokenUseCase>(),
+        saveTokenToDatabaseUseCase:
+            Get.find<auth_db_use_cases.SaveTokenToDatabaseUseCase>(),
+        checkLoginStatusWithDatabaseUseCase:
+            Get.find<auth_db_use_cases.CheckLoginStatusWithDatabaseUseCase>(),
+      ),
+    );
+  }
+
+  /// 注册城市领域依赖
+  static void _registerCityDomain() {
+    // Repository
+    Get.lazyPut<ICityRepository>(
+      () => CityRepository(Get.find<HttpService>()),
+    );
+
+    // Use Cases
+    Get.lazyPut(() => GetCitiesUseCase(Get.find<ICityRepository>()));
+    Get.lazyPut(() => GetCityByIdUseCase(Get.find<ICityRepository>()));
+    Get.lazyPut(() => SearchCitiesUseCase(Get.find<ICityRepository>()));
+    Get.lazyPut(() => GetRecommendedCitiesUseCase(Get.find<ICityRepository>()));
+    Get.lazyPut(() => GetPopularCitiesUseCase(Get.find<ICityRepository>()));
+    Get.lazyPut(() => FavoriteCityUseCase(Get.find<ICityRepository>()));
+    Get.lazyPut(() => UnfavoriteCityUseCase(Get.find<ICityRepository>()));
+    Get.lazyPut(() => ToggleCityFavoriteUseCase(Get.find<ICityRepository>()));
+    Get.lazyPut(() => GetFavoriteCitiesUseCase(Get.find<ICityRepository>()));
+    Get.lazyPut(
+        () => GetUserFavoriteCityIdsUseCase(Get.find<ICityRepository>()));
+    Get.lazyPut(() => GetCityProsConsUseCase(Get.find<ICityRepository>()));
+
+    // Controller
+    Get.lazyPut(
+      () => CityStateController(
+        getCitiesUseCase: Get.find<GetCitiesUseCase>(),
+        searchCitiesUseCase: Get.find<SearchCitiesUseCase>(),
+        getRecommendedCitiesUseCase: Get.find<GetRecommendedCitiesUseCase>(),
+        getPopularCitiesUseCase: Get.find<GetPopularCitiesUseCase>(),
+        toggleCityFavoriteUseCase: Get.find<ToggleCityFavoriteUseCase>(),
+        getFavoriteCitiesUseCase: Get.find<GetFavoriteCitiesUseCase>(),
+        getUserFavoriteCityIdsUseCase:
+            Get.find<GetUserFavoriteCityIdsUseCase>(),
+      ),
+    );
+
+    // Detail Controller
+    Get.lazyPut(
+      () => CityDetailStateController(
+        getCityByIdUseCase: Get.find<GetCityByIdUseCase>(),
+        toggleCityFavoriteUseCase: Get.find<ToggleCityFavoriteUseCase>(),
+      ),
+    );
+
+    // ProsCons Controller
+    Get.lazyPut(
+      () => ProsConsStateController(
+        Get.find<ICityRepository>(),
+      ),
+    );
+  }
+
+  /// 注册天气领域依赖
+  static void _registerWeatherDomain() {
+    // Repository
+    Get.lazyPut<IWeatherRepository>(
+      () => WeatherRepository(),
+    );
+
+    // Use Cases
+    Get.lazyPut(() => GetCityWeatherUseCase(Get.find<IWeatherRepository>()));
+
+    // Controller
+    Get.lazyPut(
+      () => WeatherStateController(
+        getCityWeatherUseCase: Get.find<GetCityWeatherUseCase>(),
+      ),
+    );
+  }
+
+  /// 注册共享办公领域依赖
+  static void _registerCoworkingDomain() {
+    // Repository
+    Get.lazyPut<ICoworkingRepository>(
+      () => CoworkingRepository(),
+    );
+
+    // Use Cases
+    Get.lazyPut(() => GetCoworkingSpacesByCityUseCase(
+          Get.find<ICoworkingRepository>(),
+        ));
+    Get.lazyPut(() => GetCoworkingByIdUseCase(
+          Get.find<ICoworkingRepository>(),
+        ));
+    Get.lazyPut(() => GetCityCoworkingCountUseCase(
+          Get.find<ICoworkingRepository>(),
+        ));
+
+    // Controller
+    Get.lazyPut(
+      () => CoworkingStateController(
+        getCoworkingSpacesByCityUseCase:
+            Get.find<GetCoworkingSpacesByCityUseCase>(),
+        getCoworkingByIdUseCase: Get.find<GetCoworkingByIdUseCase>(),
+        getCityCoworkingCountUseCase: Get.find<GetCityCoworkingCountUseCase>(),
+      ),
+    );
+  }
+
+  /// 注册用户城市内容领域依赖
+  static void _registerUserCityContentDomain() {
+    // Repository
+    Get.lazyPut<IUserCityContentRepository>(
+      () => UserCityContentRepository(),
+    );
+
+    // Use Cases - Photo
+    Get.lazyPut(() => AddCityPhotoUseCase(
+          Get.find<IUserCityContentRepository>(),
+        ));
+    Get.lazyPut(() => GetCityPhotosUseCase(
+          Get.find<IUserCityContentRepository>(),
+        ));
+    Get.lazyPut(() => DeleteCityPhotoUseCase(
+          Get.find<IUserCityContentRepository>(),
+        ));
+    Get.lazyPut(() => GetMyPhotosUseCase(
+          Get.find<IUserCityContentRepository>(),
+        ));
+
+    // Use Cases - Expense
+    Get.lazyPut(() => AddCityExpenseUseCase(
+          Get.find<IUserCityContentRepository>(),
+        ));
+    Get.lazyPut(() => GetCityExpensesUseCase(
+          Get.find<IUserCityContentRepository>(),
+        ));
+    Get.lazyPut(() => DeleteCityExpenseUseCase(
+          Get.find<IUserCityContentRepository>(),
+        ));
+    Get.lazyPut(() => GetMyExpensesUseCase(
+          Get.find<IUserCityContentRepository>(),
+        ));
+
+    // Use Cases - Review
+    Get.lazyPut(() => UpsertCityReviewUseCase(
+          Get.find<IUserCityContentRepository>(),
+        ));
+    Get.lazyPut(() => GetCityReviewsUseCase(
+          Get.find<IUserCityContentRepository>(),
+        ));
+    Get.lazyPut(() => GetMyCityReviewUseCase(
+          Get.find<IUserCityContentRepository>(),
+        ));
+    Get.lazyPut(() => DeleteMyCityReviewUseCase(
+          Get.find<IUserCityContentRepository>(),
+        ));
+
+    // Use Cases - Statistics
+    Get.lazyPut(() => GetCityStatsUseCase(
+          Get.find<IUserCityContentRepository>(),
+        ));
+    Get.lazyPut(() => GetCityCostSummaryUseCase(
+          Get.find<IUserCityContentRepository>(),
+        ));
+
+    // Controller
+    Get.lazyPut(
+      () => UserCityContentStateController(
+        addCityPhotoUseCase: Get.find<AddCityPhotoUseCase>(),
+        getCityPhotosUseCase: Get.find<GetCityPhotosUseCase>(),
+        deleteCityPhotoUseCase: Get.find<DeleteCityPhotoUseCase>(),
+        getMyPhotosUseCase: Get.find<GetMyPhotosUseCase>(),
+        addCityExpenseUseCase: Get.find<AddCityExpenseUseCase>(),
+        getCityExpensesUseCase: Get.find<GetCityExpensesUseCase>(),
+        deleteCityExpenseUseCase: Get.find<DeleteCityExpenseUseCase>(),
+        getMyExpensesUseCase: Get.find<GetMyExpensesUseCase>(),
+        upsertCityReviewUseCase: Get.find<UpsertCityReviewUseCase>(),
+        getCityReviewsUseCase: Get.find<GetCityReviewsUseCase>(),
+        getMyCityReviewUseCase: Get.find<GetMyCityReviewUseCase>(),
+        deleteMyCityReviewUseCase: Get.find<DeleteMyCityReviewUseCase>(),
+        getCityStatsUseCase: Get.find<GetCityStatsUseCase>(),
+        getCityCostSummaryUseCase: Get.find<GetCityCostSummaryUseCase>(),
+      ),
+    );
+  }
+
+  /// 注册AI领域依赖
+  static void _registerAiDomain() {
+    // Repository
+    Get.lazyPut<IAiRepository>(
+      () => AiRepository(),
+    );
+
+    // Use Cases
+    Get.lazyPut(() => GenerateTravelPlanUseCase(
+          Get.find<IAiRepository>(),
+        ));
+    Get.lazyPut(() => GenerateTravelPlanStreamUseCase(
+          Get.find<IAiRepository>(),
+        ));
+    Get.lazyPut(() => GetTravelPlanByIdUseCase(
+          Get.find<IAiRepository>(),
+        ));
+    Get.lazyPut(() => GenerateDigitalNomadGuideUseCase(
+          Get.find<IAiRepository>(),
+        ));
+    Get.lazyPut(() => GenerateDigitalNomadGuideStreamUseCase(
+          Get.find<IAiRepository>(),
+        ));
+
+    // Controller
+    Get.lazyPut(
+      () => AiStateController(
+        Get.find<GenerateTravelPlanUseCase>(),
+        Get.find<GenerateTravelPlanStreamUseCase>(),
+        Get.find<GetTravelPlanByIdUseCase>(),
+        Get.find<GenerateDigitalNomadGuideUseCase>(),
+        Get.find<GenerateDigitalNomadGuideStreamUseCase>(),
+      ),
+    );
+  }
+
+  /// 注册社区领域依赖
+  static void _registerCommunityDomain() {
+    // Repository
+    Get.lazyPut<ICommunityRepository>(
+      () => CommunityRepository(),
+    );
+
+    // Controller
+    Get.lazyPut(
+      () => CommunityStateController(
+        repository: Get.find<ICommunityRepository>(),
+      ),
+    );
+  }
+
+  /// 注册活动领域依赖
+  static void _registerMeetupDomain() {
+    // Repository
+    Get.lazyPut<IMeetupRepository>(
+      () => MeetupRepository(),
+    );
+
+    // Use Cases
+    Get.lazyPut(() => GetMeetupsUseCase(Get.find<IMeetupRepository>()));
+    Get.lazyPut(() => GetMeetupsByCityUseCase(Get.find<IMeetupRepository>()));
+    Get.lazyPut(() => CreateMeetupUseCase(Get.find<IMeetupRepository>()));
+    Get.lazyPut(() => RsvpToMeetupUseCase(Get.find<IMeetupRepository>()));
+    Get.lazyPut(() => CancelRsvpUseCase(Get.find<IMeetupRepository>()));
+
+    // Controller
+    Get.lazyPut(
+      () => MeetupStateController(
+        getMeetupsUseCase: Get.find<GetMeetupsUseCase>(),
+        getMeetupsByCityUseCase: Get.find<GetMeetupsByCityUseCase>(),
+        createMeetupUseCase: Get.find<CreateMeetupUseCase>(),
+        rsvpToMeetupUseCase: Get.find<RsvpToMeetupUseCase>(),
+        cancelRsvpUseCase: Get.find<CancelRsvpUseCase>(),
+      ),
+    );
+  }
+
+  /// 注册Chat领域依赖
+  static void _registerChatDomain() {
+    // Repository
+    Get.lazyPut<IChatRepository>(
+      () => ChatRepository(Get.find<HttpService>()),
+    );
+
+    // Use Cases - 聊天室管理
+    Get.lazyPut(() => GetChatRoomsUseCase(Get.find<IChatRepository>()));
+    Get.lazyPut(() => GetChatRoomByIdUseCase(Get.find<IChatRepository>()));
+    Get.lazyPut(() => JoinChatRoomUseCase(Get.find<IChatRepository>()));
+    Get.lazyPut(() => LeaveChatRoomUseCase(Get.find<IChatRepository>()));
+
+    // Use Cases - 消息管理
+    Get.lazyPut(() => GetMessagesUseCase(Get.find<IChatRepository>()));
+    Get.lazyPut(() => SendMessageUseCase(Get.find<IChatRepository>()));
+    Get.lazyPut(() => DeleteMessageUseCase(Get.find<IChatRepository>()));
+
+    // Use Cases - 用户管理
+    Get.lazyPut(() => GetOnlineUsersUseCase(Get.find<IChatRepository>()));
+    Get.lazyPut(() => GetRoomMembersUseCase(Get.find<IChatRepository>()));
+
+    // Controller
+    Get.lazyPut(
+      () => ChatStateController(
+        Get.find<GetChatRoomsUseCase>(),
+        Get.find<GetChatRoomByIdUseCase>(),
+        Get.find<JoinChatRoomUseCase>(),
+        Get.find<LeaveChatRoomUseCase>(),
+        Get.find<GetMessagesUseCase>(),
+        Get.find<SendMessageUseCase>(),
+        Get.find<DeleteMessageUseCase>(),
+        Get.find<GetOnlineUsersUseCase>(),
+        Get.find<GetRoomMembersUseCase>(),
+      ),
+    );
+  }
+
+  /// 注册Interest领域依赖
+  static void _registerInterestDomain() {
+    // Repository
+    Get.lazyPut<IInterestRepository>(
+      () => InterestRepository(Get.find<HttpService>()),
+    );
+
+    // Use Cases
+    Get.lazyPut(() => GetInterestsUseCase(Get.find<IInterestRepository>()));
+    Get.lazyPut(
+        () => GetInterestsByCategoryUseCase(Get.find<IInterestRepository>()));
+    Get.lazyPut(() => GetUserInterestsUseCase(Get.find<IInterestRepository>()));
+    Get.lazyPut(() => AddUserInterestUseCase(Get.find<IInterestRepository>()));
+    Get.lazyPut(() =>
+        UpdateUserInterestIntensityUseCase(Get.find<IInterestRepository>()));
+    Get.lazyPut(
+        () => RemoveUserInterestUseCase(Get.find<IInterestRepository>()));
+    Get.lazyPut(() => SearchInterestsUseCase(Get.find<IInterestRepository>()));
+
+    // Controller
+    Get.lazyPut(
+      () => InterestStateController(
+        getInterestsUseCase: Get.find<GetInterestsUseCase>(),
+        getInterestsByCategoryUseCase:
+            Get.find<GetInterestsByCategoryUseCase>(),
+        getUserInterestsUseCase: Get.find<GetUserInterestsUseCase>(),
+        addUserInterestUseCase: Get.find<AddUserInterestUseCase>(),
+        updateUserInterestIntensityUseCase:
+            Get.find<UpdateUserInterestIntensityUseCase>(),
+        removeUserInterestUseCase: Get.find<RemoveUserInterestUseCase>(),
+        searchInterestsUseCase: Get.find<SearchInterestsUseCase>(),
+      ),
+    );
+  }
+
+  /// 注册Skill领域依赖
+  static void _registerSkillDomain() {
+    // Repository
+    Get.lazyPut<ISkillRepository>(
+      () => SkillRepository(Get.find<HttpService>()),
+    );
+
+    // Use Cases
+    Get.lazyPut(() => GetSkillsUseCase(Get.find<ISkillRepository>()));
+    Get.lazyPut(() => GetSkillsByCategoryUseCase(Get.find<ISkillRepository>()));
+    Get.lazyPut(() => GetUserSkillsUseCase(Get.find<ISkillRepository>()));
+    Get.lazyPut(() => AddUserSkillUseCase(Get.find<ISkillRepository>()));
+    Get.lazyPut(
+        () => UpdateUserSkillProficiencyUseCase(Get.find<ISkillRepository>()));
+    Get.lazyPut(() => RemoveUserSkillUseCase(Get.find<ISkillRepository>()));
+    Get.lazyPut(() => SearchSkillsUseCase(Get.find<ISkillRepository>()));
+
+    // Controller
+    Get.lazyPut(
+      () => SkillStateController(
+        getSkillsUseCase: Get.find<GetSkillsUseCase>(),
+        getSkillsByCategoryUseCase: Get.find<GetSkillsByCategoryUseCase>(),
+        getUserSkillsUseCase: Get.find<GetUserSkillsUseCase>(),
+        addUserSkillUseCase: Get.find<AddUserSkillUseCase>(),
+        updateUserSkillProficiencyUseCase:
+            Get.find<UpdateUserSkillProficiencyUseCase>(),
+        removeUserSkillUseCase: Get.find<RemoveUserSkillUseCase>(),
+        searchSkillsUseCase: Get.find<SearchSkillsUseCase>(),
+      ),
+    );
+  }
+
+  /// 注册InnovationProject领域依赖
+  static void _registerInnovationProjectDomain() {
+    // Repository
+    Get.lazyPut<IInnovationProjectRepository>(
+      () => InnovationProjectRepository(Get.find<HttpService>()),
+    );
+
+    // Use Cases
+    Get.lazyPut(
+        () => GetProjectsUseCase(Get.find<IInnovationProjectRepository>()));
+    Get.lazyPut(
+        () => GetProjectByIdUseCase(Get.find<IInnovationProjectRepository>()));
+    Get.lazyPut(
+        () => CreateProjectUseCase(Get.find<IInnovationProjectRepository>()));
+    Get.lazyPut(
+        () => UpdateProjectUseCase(Get.find<IInnovationProjectRepository>()));
+    Get.lazyPut(
+        () => DeleteProjectUseCase(Get.find<IInnovationProjectRepository>()));
+    Get.lazyPut(() =>
+        GetProjectsByUserUseCase(Get.find<IInnovationProjectRepository>()));
+    Get.lazyPut(
+        () => SearchProjectsUseCase(Get.find<IInnovationProjectRepository>()));
+    Get.lazyPut(
+        () => GetTeamMembersUseCase(Get.find<IInnovationProjectRepository>()));
+    Get.lazyPut(
+        () => AddTeamMemberUseCase(Get.find<IInnovationProjectRepository>()));
+    Get.lazyPut(() =>
+        RemoveTeamMemberUseCase(Get.find<IInnovationProjectRepository>()));
+    Get.lazyPut(
+        () => ToggleLikeUseCase(Get.find<IInnovationProjectRepository>()));
+    Get.lazyPut(() =>
+        GetPopularProjectsUseCase(Get.find<IInnovationProjectRepository>()));
+
+    // Controller
+    Get.lazyPut(
+      () => InnovationProjectStateController(
+        getProjectsUseCase: Get.find<GetProjectsUseCase>(),
+        getProjectByIdUseCase: Get.find<GetProjectByIdUseCase>(),
+        createProjectUseCase: Get.find<CreateProjectUseCase>(),
+        updateProjectUseCase: Get.find<UpdateProjectUseCase>(),
+        deleteProjectUseCase: Get.find<DeleteProjectUseCase>(),
+        getProjectsByUserUseCase: Get.find<GetProjectsByUserUseCase>(),
+        searchProjectsUseCase: Get.find<SearchProjectsUseCase>(),
+        getTeamMembersUseCase: Get.find<GetTeamMembersUseCase>(),
+        addTeamMemberUseCase: Get.find<AddTeamMemberUseCase>(),
+        removeTeamMemberUseCase: Get.find<RemoveTeamMemberUseCase>(),
+        toggleLikeUseCase: Get.find<ToggleLikeUseCase>(),
+        getPopularProjectsUseCase: Get.find<GetPopularProjectsUseCase>(),
+      ),
+    );
+  }
+
+  static void _registerHotelDomain() {
+    // Repository
+    Get.lazyPut<IHotelRepository>(
+      () => HotelRepository(Get.find<HttpService>()),
+    );
+
+    // Use Cases
+    Get.lazyPut(() => GetHotelsUseCase(Get.find<IHotelRepository>()));
+    Get.lazyPut(() => GetHotelByIdUseCase(Get.find<IHotelRepository>()));
+    Get.lazyPut(() => GetHotelsByCityUseCase(Get.find<IHotelRepository>()));
+    Get.lazyPut(() => SearchHotelsUseCase(Get.find<IHotelRepository>()));
+    Get.lazyPut(() => CreateHotelUseCase(Get.find<IHotelRepository>()));
+    Get.lazyPut(() => UpdateHotelUseCase(Get.find<IHotelRepository>()));
+    Get.lazyPut(() => DeleteHotelUseCase(Get.find<IHotelRepository>()));
+    Get.lazyPut(() => GetFeaturedHotelsUseCase(Get.find<IHotelRepository>()));
+    Get.lazyPut(() => GetHotelsByCategoryUseCase(Get.find<IHotelRepository>()));
+    Get.lazyPut(() => GetRoomTypesUseCase(Get.find<IHotelRepository>()));
+    Get.lazyPut(() => CreateBookingUseCase(Get.find<IHotelRepository>()));
+    Get.lazyPut(() => GetUserBookingsUseCase(Get.find<IHotelRepository>()));
+    Get.lazyPut(() => CancelBookingUseCase(Get.find<IHotelRepository>()));
+
+    // Controller
+    Get.lazyPut(
+      () => HotelStateController(
+        getHotelsUseCase: Get.find<GetHotelsUseCase>(),
+        getHotelByIdUseCase: Get.find<GetHotelByIdUseCase>(),
+        getHotelsByCityUseCase: Get.find<GetHotelsByCityUseCase>(),
+        searchHotelsUseCase: Get.find<SearchHotelsUseCase>(),
+        createHotelUseCase: Get.find<CreateHotelUseCase>(),
+        updateHotelUseCase: Get.find<UpdateHotelUseCase>(),
+        deleteHotelUseCase: Get.find<DeleteHotelUseCase>(),
+        getFeaturedHotelsUseCase: Get.find<GetFeaturedHotelsUseCase>(),
+        getHotelsByCategoryUseCase: Get.find<GetHotelsByCategoryUseCase>(),
+        getRoomTypesUseCase: Get.find<GetRoomTypesUseCase>(),
+        createBookingUseCase: Get.find<CreateBookingUseCase>(),
+        getUserBookingsUseCase: Get.find<GetUserBookingsUseCase>(),
+        cancelBookingUseCase: Get.find<CancelBookingUseCase>(),
+      ),
+    );
+  }
+}

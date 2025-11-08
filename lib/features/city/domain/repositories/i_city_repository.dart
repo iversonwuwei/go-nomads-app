@@ -1,0 +1,78 @@
+import '../../../../core/core.dart';
+import '../entities/city.dart';
+import '../entities/city_detail.dart';
+
+/// 城市仓储接口 (Domain Layer)
+/// 定义城市数据访问的抽象契约,不依赖具体实现
+abstract class ICityRepository implements IRepository {
+  /// 获取城市列表
+  Future<Result<List<City>>> getCities({
+    int page = 1,
+    int pageSize = 20,
+    String? search,
+    String? countryId,
+  });
+
+  /// 根据ID获取城市详情
+  Future<Result<City>> getCityById(String cityId);
+
+  /// 搜索城市
+  Future<Result<List<City>>> searchCities({
+    required String name,
+    int pageNumber = 1,
+    int pageSize = 20,
+  });
+
+  /// 获取热门城市
+  Future<Result<List<City>>> getPopularCities({int limit = 10});
+
+  /// 获取推荐城市
+  Future<Result<List<City>>> getRecommendedCities({
+    String? countryId,
+    int limit = 10,
+  });
+
+  /// 收藏城市
+  Future<Result<void>> favoriteCity(String cityId);
+
+  /// 取消收藏城市
+  Future<Result<void>> unfavoriteCity(String cityId);
+
+  /// 检查城市是否被收藏
+  Future<Result<bool>> isCityFavorited(String cityId);
+
+  /// 获取用户收藏的城市列表
+  Future<Result<List<City>>> getFavoriteCities();
+
+  /// 获取用户收藏的城市ID列表
+  Future<Result<List<String>>> getUserFavoriteCityIds();
+
+  /// 获取城市优缺点列表
+  ///
+  /// [cityId] 城市ID
+  /// [isPro] 可选筛选: true = 只返回优点, false = 只返回缺点, null = 返回全部
+  Future<Result<List<ProsCons>>> getCityProsCons({
+    required String cityId,
+    bool? isPro,
+  });
+
+  /// 添加城市优缺点
+  ///
+  /// [cityId] 城市ID
+  /// [text] 内容文本
+  /// [isPro] true = 优点, false = 缺点
+  Future<Result<ProsCons>> addProsCons({
+    required String cityId,
+    required String text,
+    required bool isPro,
+  });
+
+  /// 为优缺点投票
+  ///
+  /// [id] ProsCons ID
+  /// [isUpvote] true = 点赞, false = 点踩
+  Future<Result<void>> voteProsCons({
+    required String id,
+    required bool isUpvote,
+  });
+}

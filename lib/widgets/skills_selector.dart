@@ -2,20 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
-import '../models/skill_model.dart';
+import '../features/skill/infrastructure/models/skill_dto.dart';
 import '../services/skills_api_service.dart';
 
 /// 技能选择器组件
 class SkillsSelector extends StatefulWidget {
   /// 已选择的技能ID列表
   final List<String> selectedSkillIds;
-  
+
   /// 选择变化回调
   final Function(List<UserSkill>) onChanged;
-  
+
   /// 是否显示熟练度选择
   final bool showProficiency;
-  
+
   /// 最大选择数量（0表示无限制）
   final int maxSelection;
 
@@ -33,7 +33,7 @@ class SkillsSelector extends StatefulWidget {
 
 class _SkillsSelectorState extends State<SkillsSelector> {
   final SkillsApiService _skillsService = SkillsApiService();
-  
+
   List<SkillsByCategory> _skillsByCategory = [];
   final List<UserSkill> _selectedSkills = [];
   bool _isLoading = true;
@@ -48,7 +48,7 @@ class _SkillsSelectorState extends State<SkillsSelector> {
 
   Future<void> _loadSkills() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final skillsByCategory = await _skillsService.getSkillsByCategory();
       setState(() {
@@ -58,7 +58,7 @@ class _SkillsSelectorState extends State<SkillsSelector> {
     } catch (e) {
       print('❌ 加载技能失败: $e');
       setState(() => _isLoading = false);
-      
+
       if (mounted) {
         Get.snackbar(
           '加载失败',
@@ -71,7 +71,7 @@ class _SkillsSelectorState extends State<SkillsSelector> {
 
   void _toggleSkill(Skill skill) {
     final isSelected = _selectedSkills.any((s) => s.skillId == skill.id);
-    
+
     if (isSelected) {
       // 取消选择
       setState(() {
@@ -80,7 +80,8 @@ class _SkillsSelectorState extends State<SkillsSelector> {
       widget.onChanged(_selectedSkills);
     } else {
       // 检查是否超过最大选择数
-      if (widget.maxSelection > 0 && _selectedSkills.length >= widget.maxSelection) {
+      if (widget.maxSelection > 0 &&
+          _selectedSkills.length >= widget.maxSelection) {
         Get.snackbar(
           '达到上限',
           '最多只能选择 ${widget.maxSelection} 个技能',
@@ -88,7 +89,7 @@ class _SkillsSelectorState extends State<SkillsSelector> {
         );
         return;
       }
-      
+
       // 如果需要选择熟练度，显示对话框
       if (widget.showProficiency) {
         _showProficiencyDialog(skill);
@@ -110,7 +111,7 @@ class _SkillsSelectorState extends State<SkillsSelector> {
       yearsOfExperience: yearsOfExperience,
       createdAt: DateTime.now(),
     );
-    
+
     setState(() {
       _selectedSkills.add(userSkill);
     });
@@ -130,11 +131,13 @@ class _SkillsSelectorState extends State<SkillsSelector> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('熟练度', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('熟练度',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
-                  children: ['Beginner', 'Intermediate', 'Advanced', 'Expert'].map((level) {
+                  children: ['Beginner', 'Intermediate', 'Advanced', 'Expert']
+                      .map((level) {
                     return ChoiceChip(
                       label: Text(_getProficiencyText(level)),
                       selected: selectedProficiency == level,
@@ -143,13 +146,16 @@ class _SkillsSelectorState extends State<SkillsSelector> {
                       },
                       selectedColor: AppColors.accent,
                       labelStyle: TextStyle(
-                        color: selectedProficiency == level ? Colors.white : AppColors.textPrimary,
+                        color: selectedProficiency == level
+                            ? Colors.white
+                            : AppColors.textPrimary,
                       ),
                     );
                   }).toList(),
                 ),
                 const SizedBox(height: 16),
-                const Text('经验年限', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('经验年限',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 Row(
                   children: [
@@ -188,8 +194,8 @@ class _SkillsSelectorState extends State<SkillsSelector> {
             onPressed: () {
               Get.back();
               _addSkill(
-                skill, 
-                selectedProficiency, 
+                skill,
+                selectedProficiency,
                 selectedYears == 0 ? null : selectedYears,
               );
             },
@@ -217,7 +223,7 @@ class _SkillsSelectorState extends State<SkillsSelector> {
 
   List<Skill> _getFilteredSkills() {
     List<Skill> allSkills = [];
-    
+
     for (var category in _skillsByCategory) {
       // 如果选择了类别，只显示该类别
       if (_selectedCategory != null && category.category != _selectedCategory) {
@@ -225,15 +231,15 @@ class _SkillsSelectorState extends State<SkillsSelector> {
       }
       allSkills.addAll(category.skills);
     }
-    
+
     // 搜索过滤
     if (_searchQuery.isNotEmpty) {
       allSkills = allSkills.where((skill) {
         return skill.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-               skill.category.toLowerCase().contains(_searchQuery.toLowerCase());
+            skill.category.toLowerCase().contains(_searchQuery.toLowerCase());
       }).toList();
     }
-    
+
     return allSkills;
   }
 
@@ -293,7 +299,8 @@ class _SkillsSelectorState extends State<SkillsSelector> {
                     child: _CategoryChip(
                       label: _getCategoryText(category.category),
                       isSelected: _selectedCategory == category.category,
-                      onTap: () => setState(() => _selectedCategory = category.category),
+                      onTap: () =>
+                          setState(() => _selectedCategory = category.category),
                     ),
                   );
                 }),
@@ -354,7 +361,8 @@ class _SkillsSelectorState extends State<SkillsSelector> {
                       deleteIcon: const Icon(Icons.close, size: 18),
                       onDeleted: () {
                         setState(() {
-                          _selectedSkills.removeWhere((s) => s.skillId == userSkill.skillId);
+                          _selectedSkills.removeWhere(
+                              (s) => s.skillId == userSkill.skillId);
                         });
                         widget.onChanged(_selectedSkills);
                       },
@@ -384,7 +392,8 @@ class _SkillsSelectorState extends State<SkillsSelector> {
                       spacing: 8,
                       runSpacing: 8,
                       children: filteredSkills.map((skill) {
-                        final isSelected = _selectedSkills.any((s) => s.skillId == skill.id);
+                        final isSelected =
+                            _selectedSkills.any((s) => s.skillId == skill.id);
                         return FilterChip(
                           avatar: Text(skill.icon ?? '💼'),
                           label: Text(skill.name),
@@ -394,7 +403,9 @@ class _SkillsSelectorState extends State<SkillsSelector> {
                           checkmarkColor: AppColors.accent,
                           backgroundColor: AppColors.white,
                           side: BorderSide(
-                            color: isSelected ? AppColors.accent : AppColors.border,
+                            color: isSelected
+                                ? AppColors.accent
+                                : AppColors.border,
                           ),
                         );
                       }).toList(),

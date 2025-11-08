@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Badge;
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
-import '../controllers/user_profile_controller.dart';
-import '../models/user_model.dart' as user_model;
+import '../features/user/domain/entities/user.dart';
+import '../features/user/presentation/controllers/user_state_controller.dart';
 import '../widgets/app_toast.dart';
 
 /// 用户个人资料页面
@@ -15,8 +15,8 @@ class UserProfilePage extends StatefulWidget {
 }
 
 class _UserProfilePageState extends State<UserProfilePage> {
-  final UserProfileController _profileController =
-      Get.find<UserProfileController>();
+  final UserStateController _profileController =
+      Get.find<UserStateController>();
 
   // 用户信息
   final Map<String, dynamic> _userInfo = {
@@ -390,7 +390,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     });
   }
 
-  Widget _buildBadgeCard(user_model.Badge badge, bool isMobile) {
+  Widget _buildBadgeCard(Badge badge, bool isMobile) {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -574,8 +574,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     });
   }
 
-  Widget _buildTravelHistoryCard(
-      user_model.TravelHistory travel, bool isMobile) {
+  Widget _buildTravelHistoryCard(TravelHistory travel, bool isMobile) {
     return Container(
       padding: EdgeInsets.all(isMobile ? 12 : 16),
       decoration: BoxDecoration(
@@ -623,7 +622,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             ),
             child: Center(
               child: Text(
-                _getCountryFlag(travel.country),
+                _getCountryFlag(travel.countryName ?? ''),
                 style: TextStyle(fontSize: isMobile ? 24 : 32),
               ),
             ),
@@ -635,7 +634,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  travel.city,
+                  travel.cityName,
                   style: TextStyle(
                     color: const Color(0xFF1a1a1a),
                     fontSize: isMobile ? 16 : 18,
@@ -644,7 +643,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  travel.country,
+                  travel.countryName ?? '',
                   style: TextStyle(
                     color: const Color(0xFF6b7280),
                     fontSize: isMobile ? 12 : 14,
@@ -660,8 +659,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      _formatDateRange(travel.startDate.toIso8601String(),
-                          travel.endDate?.toIso8601String()),
+                      _formatDateRange(
+                          travel.visitDate.toIso8601String(), null),
                       style: TextStyle(
                         color: const Color(0xFF9ca3af),
                         fontSize: isMobile ? 11 : 13,
@@ -672,34 +671,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
               ],
             ),
           ),
-          // 评分
-          if (travel.rating != null)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFF9800).withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(
-                  color: const Color(0xFFFF9800),
-                  width: 1.5,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.star, color: Color(0xFFFF9800), size: 14),
-                  const SizedBox(width: 4),
-                  Text(
-                    travel.rating!.toStringAsFixed(1),
-                    style: const TextStyle(
-                      color: Color(0xFFFF6F00),
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          // 不显示评分(entity中没有rating字段)
         ],
       ),
     );
@@ -844,8 +816,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 runSpacing: 8,
                 children: skills.map((skill) {
                   return Chip(
-                    label: Text(skill.skillName),
-                    avatar: skill.icon != null ? Text(skill.icon!) : null,
+                    label: Text(skill.name),
                     backgroundColor: AppColors.accent.withValues(alpha: 0.2),
                     labelStyle: const TextStyle(
                       color: Colors.white,
@@ -926,8 +897,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 runSpacing: 8,
                 children: interests.map((interest) {
                   return Chip(
-                    label: Text(interest.interestName),
-                    avatar: interest.icon != null ? Text(interest.icon!) : null,
+                    label: Text(interest.name),
                     backgroundColor: Colors.purple.withValues(alpha: 0.2),
                     labelStyle: const TextStyle(
                       color: Colors.white,

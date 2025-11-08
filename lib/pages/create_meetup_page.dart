@@ -7,6 +7,8 @@ import 'package:image_picker/image_picker.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/data_service_controller.dart';
+import '../features/meetup/domain/entities/meetup.dart';
+import '../features/meetup/presentation/controllers/meetup_state_controller.dart';
 import '../generated/app_localizations.dart';
 import '../models/city_option.dart';
 import '../widgets/app_toast.dart';
@@ -43,12 +45,15 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
   final List<XFile> _selectedImages = [];
   final ImagePicker _imagePicker = ImagePicker();
 
-  final DataServiceController controller = Get.find<DataServiceController>();
+  final DataServiceController dataController =
+      Get.find<DataServiceController>();
+  final MeetupStateController meetupController =
+      Get.find<MeetupStateController>();
 
   @override
   void initState() {
     super.initState();
-    controller.loadCountries();
+    dataController.loadCountries();
   }
 
   @override
@@ -437,30 +442,30 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
       }
 
       try {
-        // 将 TimeOfDay 转换为字符串格式 "HH:mm"
-        final timeString =
-            '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}';
+        // 组合日期和时间
+        final startDateTime = DateTime(
+          _selectedDate!.year,
+          _selectedDate!.month,
+          _selectedDate!.day,
+          _selectedTime!.hour,
+          _selectedTime!.minute,
+        );
 
-        await controller.createMeetup(
+        // 根据活动类型文本创建 MeetupType
+        final meetupType = MeetupType.fromString(_typeController.text.isEmpty
+            ? 'social'
+            : _typeController.text.toLowerCase());
+
+        await meetupController.createMeetup(
           title: _titleController.text,
-          type: _typeController.text,
-          city: _selectedCity!,
-          country: _selectedCountry ?? '',
-          cityId: _selectedCityId,
-          countryId: _selectedCountryId,
-          venue: _venueController.text,
-          date: _selectedDate!,
-          time: timeString,
-          maxAttendees: _maxAttendees.toInt(),
+          type: meetupType,
           description: _descriptionController.text,
+          cityId: _selectedCityId ?? '',
+          venue: _venueController.text,
+          venueAddress: _venueController.text, // 使用 venue 作为 address
+          startTime: startDateTime,
+          maxAttendees: _maxAttendees.toInt(),
           images: _selectedImages.map((image) => image.path).toList(),
-          // TODO: 如果有地址信息，可以在这里添加
-          // address: _addressController.text,
-          // TODO: 如果有GPS坐标，可以在这里添加
-          // latitude: _latitude,
-          // longitude: _longitude,
-          // TODO: 如果有标签，可以在这里添加
-          // tags: _selectedTags,
         );
 
         // 显示成功消息
@@ -747,9 +752,10 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
             ),
             const SizedBox(height: 8),
             Obx(() {
-              final countryList = controller.countries;
+              final countryList = dataController.countries;
               final _ = countryList.length;
-              final isLoadingCountries = controller.isLoadingCountries.value;
+              final isLoadingCountries =
+                  dataController.isLoadingCountries.value;
               final localeCode =
                   Localizations.localeOf(context).languageCode.toLowerCase();
 
@@ -789,7 +795,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
 
                       if (countries.isEmpty) {
                         AppToast.info(l10n.noData, title: l10n.notice);
-                        controller.loadCountries(forceRefresh: true);
+                        dataController.loadCountries(forceRefresh: true);
                         return;
                       }
 
@@ -816,7 +822,8 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                           final cityFieldState = _cityFieldKey.currentState;
                           cityFieldState?.didChange(null);
 
-                          controller.loadCitiesByCountry(selectedEntry.key.id);
+                          dataController
+                              .loadCitiesByCountry(selectedEntry.key.id);
                         },
                       );
                     },
@@ -881,7 +888,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
             const SizedBox(height: 8),
             Obx(() {
               final selectedCountryId = _selectedCountryId;
-              final cityMap = controller.citiesByCountry;
+              final cityMap = dataController.citiesByCountry;
               final _ = cityMap.length;
               final cachedCities = selectedCountryId == null
                   ? const <CityOption>[]
@@ -928,7 +935,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                         );
                         List<CityOption> selectionSource = cachedCities;
 
-                        final fetchedCities = await controller
+                        final fetchedCities = await dataController
                             .loadCitiesByCountry(_selectedCountryId!);
                         final fetchedCityNames = fetchedCities
                             .map((city) => city.name)

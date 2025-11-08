@@ -4,7 +4,7 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 
-import '../models/city_detail_model.dart';
+import '../features/city/domain/entities/city_detail.dart';
 import '../models/travel_plan_model.dart';
 import 'http_service.dart';
 

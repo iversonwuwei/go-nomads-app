@@ -1,5 +1,5 @@
 import 'package:df_admin_mobile/controllers/coworking_controller.dart';
-import 'package:df_admin_mobile/models/coworking_space_model.dart';
+import 'package:df_admin_mobile/features/coworking/infrastructure/models/coworking_space_dto.dart';
 import 'package:df_admin_mobile/pages/add_coworking_page.dart';
 import 'package:df_admin_mobile/pages/coworking_detail_page.dart';
 import 'package:flutter/material.dart';

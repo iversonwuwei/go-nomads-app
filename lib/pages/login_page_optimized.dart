@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
-import '../controllers/auth_controller.dart';
+import '../features/auth/presentation/controllers/auth_state_controller.dart';
 import '../widgets/app_toast.dart';
 
 class LoginPageOptimized extends StatelessWidget {

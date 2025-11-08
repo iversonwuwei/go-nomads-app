@@ -2,20 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
-import '../models/interest_model.dart';
+import '../features/interest/infrastructure/models/interest_dto.dart';
 import '../services/interests_api_service.dart';
 
 /// 兴趣爱好选择器组件
 class InterestsSelector extends StatefulWidget {
   /// 已选择的兴趣ID列表
   final List<String> selectedInterestIds;
-  
+
   /// 选择变化回调
   final Function(List<UserInterest>) onChanged;
-  
+
   /// 是否显示强度选择
   final bool showIntensity;
-  
+
   /// 最大选择数量（0表示无限制）
   final int maxSelection;
 
@@ -33,7 +33,7 @@ class InterestsSelector extends StatefulWidget {
 
 class _InterestsSelectorState extends State<InterestsSelector> {
   final InterestsApiService _interestsService = InterestsApiService();
-  
+
   List<InterestsByCategory> _interestsByCategory = [];
   final List<UserInterest> _selectedInterests = [];
   bool _isLoading = true;
@@ -48,9 +48,10 @@ class _InterestsSelectorState extends State<InterestsSelector> {
 
   Future<void> _loadInterests() async {
     setState(() => _isLoading = true);
-    
+
     try {
-      final interestsByCategory = await _interestsService.getInterestsByCategory();
+      final interestsByCategory =
+          await _interestsService.getInterestsByCategory();
       setState(() {
         _interestsByCategory = interestsByCategory;
         _isLoading = false;
@@ -58,7 +59,7 @@ class _InterestsSelectorState extends State<InterestsSelector> {
     } catch (e) {
       print('❌ 加载兴趣失败: $e');
       setState(() => _isLoading = false);
-      
+
       if (mounted) {
         Get.snackbar(
           '加载失败',
@@ -70,8 +71,9 @@ class _InterestsSelectorState extends State<InterestsSelector> {
   }
 
   void _toggleInterest(Interest interest) {
-    final isSelected = _selectedInterests.any((i) => i.interestId == interest.id);
-    
+    final isSelected =
+        _selectedInterests.any((i) => i.interestId == interest.id);
+
     if (isSelected) {
       // 取消选择
       setState(() {
@@ -80,7 +82,8 @@ class _InterestsSelectorState extends State<InterestsSelector> {
       widget.onChanged(_selectedInterests);
     } else {
       // 检查是否超过最大选择数
-      if (widget.maxSelection > 0 && _selectedInterests.length >= widget.maxSelection) {
+      if (widget.maxSelection > 0 &&
+          _selectedInterests.length >= widget.maxSelection) {
         Get.snackbar(
           '达到上限',
           '最多只能选择 ${widget.maxSelection} 个兴趣',
@@ -88,7 +91,7 @@ class _InterestsSelectorState extends State<InterestsSelector> {
         );
         return;
       }
-      
+
       // 如果需要选择强度，显示对话框
       if (widget.showIntensity) {
         _showIntensityDialog(interest);
@@ -109,7 +112,7 @@ class _InterestsSelectorState extends State<InterestsSelector> {
       intensityLevel: intensity,
       createdAt: DateTime.now(),
     );
-    
+
     setState(() {
       _selectedInterests.add(userInterest);
     });
@@ -128,7 +131,8 @@ class _InterestsSelectorState extends State<InterestsSelector> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('喜爱程度', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('喜爱程度',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -141,7 +145,9 @@ class _InterestsSelectorState extends State<InterestsSelector> {
                       },
                       selectedColor: AppColors.accent,
                       labelStyle: TextStyle(
-                        color: selectedIntensity == level ? Colors.white : AppColors.textPrimary,
+                        color: selectedIntensity == level
+                            ? Colors.white
+                            : AppColors.textPrimary,
                       ),
                     );
                   }).toList(),
@@ -182,7 +188,7 @@ class _InterestsSelectorState extends State<InterestsSelector> {
 
   List<Interest> _getFilteredInterests() {
     List<Interest> allInterests = [];
-    
+
     for (var category in _interestsByCategory) {
       // 如果选择了类别，只显示该类别
       if (_selectedCategory != null && category.category != _selectedCategory) {
@@ -190,15 +196,19 @@ class _InterestsSelectorState extends State<InterestsSelector> {
       }
       allInterests.addAll(category.interests);
     }
-    
+
     // 搜索过滤
     if (_searchQuery.isNotEmpty) {
       allInterests = allInterests.where((interest) {
-        return interest.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-               interest.category.toLowerCase().contains(_searchQuery.toLowerCase());
+        return interest.name
+                .toLowerCase()
+                .contains(_searchQuery.toLowerCase()) ||
+            interest.category
+                .toLowerCase()
+                .contains(_searchQuery.toLowerCase());
       }).toList();
     }
-    
+
     return allInterests;
   }
 
@@ -258,7 +268,8 @@ class _InterestsSelectorState extends State<InterestsSelector> {
                     child: _CategoryChip(
                       label: _getCategoryText(category.category),
                       isSelected: _selectedCategory == category.category,
-                      onTap: () => setState(() => _selectedCategory = category.category),
+                      onTap: () =>
+                          setState(() => _selectedCategory = category.category),
                     ),
                   );
                 }),
@@ -319,7 +330,8 @@ class _InterestsSelectorState extends State<InterestsSelector> {
                       deleteIcon: const Icon(Icons.close, size: 18),
                       onDeleted: () {
                         setState(() {
-                          _selectedInterests.removeWhere((i) => i.interestId == userInterest.interestId);
+                          _selectedInterests.removeWhere(
+                              (i) => i.interestId == userInterest.interestId);
                         });
                         widget.onChanged(_selectedInterests);
                       },
@@ -349,7 +361,8 @@ class _InterestsSelectorState extends State<InterestsSelector> {
                       spacing: 8,
                       runSpacing: 8,
                       children: filteredInterests.map((interest) {
-                        final isSelected = _selectedInterests.any((i) => i.interestId == interest.id);
+                        final isSelected = _selectedInterests
+                            .any((i) => i.interestId == interest.id);
                         return FilterChip(
                           avatar: Text(interest.icon ?? '❤️'),
                           label: Text(interest.name),
@@ -359,7 +372,9 @@ class _InterestsSelectorState extends State<InterestsSelector> {
                           checkmarkColor: AppColors.accent,
                           backgroundColor: AppColors.white,
                           side: BorderSide(
-                            color: isSelected ? AppColors.accent : AppColors.border,
+                            color: isSelected
+                                ? AppColors.accent
+                                : AppColors.border,
                           ),
                         );
                       }).toList(),

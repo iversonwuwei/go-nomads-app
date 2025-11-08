@@ -3,11 +3,11 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/shopping_controller.dart';
-import '../controllers/user_state_controller.dart';
+import '../features/auth/presentation/controllers/auth_state_controller.dart';
+import '../features/user/presentation/controllers/user_state_controller.dart';
 import '../generated/app_localizations.dart';
 import '../routes/app_routes.dart';
 import '../services/http_service.dart';
-import '../services/nomads_auth_service.dart';
 import '../widgets/app_toast.dart';
 
 class NomadsLoginPage extends StatefulWidget {
@@ -52,21 +52,31 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
         print('🔐 开始登录验�?..');
         print('   邮箱: ${_emailController.text.trim()}');
 
-        // 调用后端登录接口
-        final nomadsAuthService = NomadsAuthService();
-        final loginResponse = await nomadsAuthService.login(
+        // 调用 AuthStateController 登录
+        final authController = Get.find<AuthStateController>();
+        final success = await authController.login(
           email: _emailController.text.trim(),
           password: _passwordController.text,
         );
 
-        // 关闭加载指示�?
+        // 关闭加载指示器
         if (mounted) {
           Navigator.pop(context);
         }
 
-        if (loginResponse.success && loginResponse.data != null) {
-          // 登录成功
-          final user = loginResponse.data!.user;
+        if (success) {
+          // 登录成功 - 从 AuthStateController 获取当前用户
+          final user = authController.currentUser.value;
+
+          if (user == null) {
+            // 用户数据为空
+            print('❌ 登录失败: 用户数据为空');
+            AppToast.error(
+              'Failed to load user data',
+              title: 'Login Failed',
+            );
+            return;
+          }
 
           print('🎉 登录成功');
           print('   用户ID: ${user.id}');
@@ -102,9 +112,9 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
           Get.offAllNamed('/');
         } else {
           // 登录失败
-          print('�?登录失败: ${loginResponse.message}');
+          print('❌ 登录失败');
           AppToast.error(
-            loginResponse.message,
+            'Invalid email or password',
             title: 'Login Failed',
           );
         }

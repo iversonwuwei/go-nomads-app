@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../controllers/data_service_controller.dart';
+import '../features/meetup/domain/entities/meetup.dart';
+import '../features/meetup/presentation/controllers/meetup_state_controller.dart';
+import '../features/user/domain/entities/user.dart';
 import '../generated/app_localizations.dart';
-import '../models/user_model.dart' as models;
 import '../widgets/app_toast.dart';
 import 'create_meetup_page.dart';
 
 class InviteToMeetupPage extends StatelessWidget {
-  final models.UserModel user;
+  final User user;
 
   const InviteToMeetupPage({
     super.key,
@@ -18,8 +19,8 @@ class InviteToMeetupPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final controller = Get.find<DataServiceController>();
-    final myMeetups = controller.upcomingMeetups;
+    final meetupController = Get.find<MeetupStateController>();
+    final myMeetups = meetupController.upcomingMeetups;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
@@ -132,10 +133,10 @@ class InviteToMeetupPage extends StatelessWidget {
     );
   }
 
-  // Meetup 邀请卡�?
+  // Meetup 邀请卡片
   Widget _buildMeetupInviteCard(
     BuildContext context,
-    Map<String, dynamic> meetup,
+    Meetup meetup,
   ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -184,7 +185,7 @@ class InviteToMeetupPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        meetup['title'] ?? 'Untitled Meetup',
+                        meetup.title,
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -203,9 +204,7 @@ class InviteToMeetupPage extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            meetup['date'] != null
-                                ? '${(meetup['date'] as DateTime).month}/${(meetup['date'] as DateTime).day}/${(meetup['date'] as DateTime).year}'
-                                : 'Date TBD',
+                            '${meetup.schedule.startTime.month}/${meetup.schedule.startTime.day}/${meetup.schedule.startTime.year}',
                             style: const TextStyle(
                               fontSize: 13,
                               color: Color(0xFF6b7280),
@@ -224,7 +223,7 @@ class InviteToMeetupPage extends StatelessWidget {
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
-                              meetup['location'] ?? 'Location TBD',
+                              meetup.location.city,
                               style: const TextStyle(
                                 fontSize: 13,
                                 color: Color(0xFF6b7280),
@@ -254,7 +253,7 @@ class InviteToMeetupPage extends StatelessWidget {
   }
 
   // 邀请到 Meetup
-  void _inviteToMeetup(BuildContext context, Map<String, dynamic> meetup) {
+  void _inviteToMeetup(BuildContext context, Meetup meetup) {
     final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
@@ -314,7 +313,7 @@ class InviteToMeetupPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      meetup['title'] ?? 'Untitled Meetup',
+                      meetup.title,
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
@@ -331,9 +330,7 @@ class InviteToMeetupPage extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          meetup['date'] != null
-                              ? '${(meetup['date'] as DateTime).month}/${(meetup['date'] as DateTime).day}/${(meetup['date'] as DateTime).year}${meetup['time'] != null ? ' at ${meetup['time']}' : ''}'
-                              : 'Date TBD',
+                          '${meetup.schedule.startTime.month}/${meetup.schedule.startTime.day}/${meetup.schedule.startTime.year} at ${meetup.schedule.startTime.hour}:${meetup.schedule.startTime.minute.toString().padLeft(2, '0')}',
                           style: const TextStyle(
                             fontSize: 13,
                             color: Color(0xFF6b7280),

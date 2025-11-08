@@ -5,11 +5,16 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 import '../config/app_colors.dart';
-import '../controllers/city_detail_controller.dart';
+import '../features/ai/presentation/controllers/ai_state_controller.dart';
+import '../features/city/application/state_controllers/pros_cons_state_controller.dart';
+import '../features/city/domain/entities/city_detail.dart';
+import '../features/city/presentation/controllers/city_detail_state_controller.dart';
+import '../features/coworking/domain/entities/coworking_space.dart' as coworking;
+import '../features/coworking/presentation/controllers/coworking_state_controller.dart';
+import '../features/user_city_content/domain/entities/user_city_content.dart';
+import '../features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
+import '../features/weather/presentation/controllers/weather_state_controller.dart';
 import '../generated/app_localizations.dart';
-import '../models/city_detail_model.dart';
-import '../models/coworking_space_model.dart' as coworking;
-import '../models/user_city_content_models.dart';
 import '../services/user_city_content_api_service.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/skeletons/skeletons.dart';
@@ -271,7 +276,7 @@ class _CityDetailPageState extends State<CityDetailPage>
 
     _pageController = PageController();
 
-    // 初始化 TabController (10个tab), 设置初始索引
+    // 初始化 TabController (10个tab,包含ProsCons), 设置初始索引
     _tabController = TabController(
       length: 10,
       vsync: this,
@@ -281,8 +286,10 @@ class _CityDetailPageState extends State<CityDetailPage>
     // 监听 tab 切换
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
-        final controller = Get.find<CityDetailController>();
-        controller.changeTab(_tabController.index);
+        // Tab切换逻辑可以保留在UI层面,不需要通知controller
+        setState(() {
+          _currentPage = _tabController.index;
+        });
       }
     });
 
@@ -299,142 +306,120 @@ class _CityDetailPageState extends State<CityDetailPage>
       }
     });
 
-    // ✅ 初始化城市数据和加载用户内容（只在初始化时调用一次）
-    final controller = Get.put(CityDetailController());
-    controller.initCity(cityId, cityName);
-    controller.loadUserContent();
+    // ✅ 初始化城市数据和加载用户内容
+    final cityDetailController = Get.find<CityDetailStateController>();
+    final userContentController = Get.find<UserCityContentStateController>();
+    final prosConsController = Get.find<ProsConsStateController>();
+    
+    // 加载城市详情
+    cityDetailController.loadCityDetail(cityId);
+    
+    // 加载用户生成内容
+    userContentController.loadCityPhotos(cityId);
+    userContentController.loadCityExpenses(cityId);
+    userContentController.loadCityReviews(cityId);
+    userContentController.loadCityCostSummary(cityId); // ✅ 加载cost summary
+    
+    // 加载优缺点
+    prosConsController.loadCityProsCons(cityId);
   }
 
   /// 显示 AI 生成进度对话框
-  void _showAIGenerateProgressDialog(CityDetailController controller) {
-    final progressMessage = ValueNotifier<String>('准备生成...');
-    final progressValue = ValueNotifier<int>(0);
-
+  void _showAIGenerateProgressDialog(AiStateController controller) {
     showDialog(
       context: context,
       barrierDismissible: false, // 不允许点击外部关闭
       builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: const Row(
-            children: [
-              Icon(
-                Icons.auto_awesome,
-                color: Color(0xFFFF4458),
-                size: 28,
-              ),
-              SizedBox(width: 12),
-              Text(
-                'AI 正在生成旅游指南',
-                style: TextStyle(fontSize: 18),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 16),
-              ValueListenableBuilder<int>(
-                valueListenable: progressValue,
-                builder: (context, value, child) {
-                  return LinearProgressIndicator(
-                    value: value / 100,
-                    backgroundColor: Colors.grey[200],
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      Color(0xFFFF4458),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
-              ValueListenableBuilder<String>(
-                valueListenable: progressMessage,
-                builder: (context, message, child) {
-                  return ValueListenableBuilder<int>(
-                    valueListenable: progressValue,
-                    builder: (context, value, child) {
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              message,
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                          Text(
-                            '$value%',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
-              ),
-            ],
-          ),
-          actions: [
-            // 后台运行按钮
-            TextButton.icon(
-              onPressed: () {
-                // 关闭对话框
-                Navigator.of(dialogContext).pop();
-
-                // 启动后台任务
-                controller.generateGuideInBackground();
-
-                // 清理 ValueNotifier
-                progressMessage.dispose();
-                progressValue.dispose();
-              },
-              icon: const Icon(Icons.cloud_queue),
-              label: const Text('后台运行'),
-              style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFFFF4458),
-              ),
+        return Obx(() {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
             ),
-          ],
-        );
+            title: const Row(
+              children: [
+                Icon(
+                  Icons.auto_awesome,
+                  color: Color(0xFFFF4458),
+                  size: 28,
+                ),
+                SizedBox(width: 12),
+                Text(
+                  'AI 正在生成旅游指南',
+                  style: TextStyle(fontSize: 18),
+                ),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 16),
+                LinearProgressIndicator(
+                  value: controller.guideGenerationProgress / 100,
+                  backgroundColor: Colors.grey[200],
+                  valueColor: const AlwaysStoppedAnimation<Color>(
+                    Color(0xFFFF4458),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        controller.guideGenerationMessage,
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '${controller.guideGenerationProgress}%',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            actions: [
+              // 取消按钮
+              TextButton(
+                onPressed: () {
+                  // 关闭对话框
+                  Navigator.of(dialogContext).pop();
+                },
+                child: const Text('取消'),
+              ),
+            ],
+          );
+        });
       },
     );
 
-    // 调用异步任务队列 API (推荐方式)
-    controller.generateGuideWithAIAsync(
-      onProgress: (progress, message) {
-        progressMessage.value = message;
-        progressValue.value = progress;
-      },
-    ).then((taskId) {
+    // 使用流式生成方法
+    controller.generateDigitalNomadGuideStream(
+      cityId: cityId,
+      cityName: cityName,
+    ).then((_) {
       // 关闭进度对话框
       if (Navigator.of(context).canPop()) {
         Navigator.of(context).pop();
       }
 
-      if (taskId != null) {
+      if (controller.currentGuide != null) {
         AppToast.success('AI 旅游指南生成成功!');
+      } else if (controller.guideError != null) {
+        AppToast.error('生成失败: ${controller.guideError}');
       }
-
-      // 清理 ValueNotifier
-      progressMessage.dispose();
-      progressValue.dispose();
     }).catchError((error) {
       // 关闭进度对话框
       if (Navigator.of(context).canPop()) {
         Navigator.of(context).pop();
       }
       AppToast.error('生成失败: $error');
-      // 清理 ValueNotifier
-      progressMessage.dispose();
-      progressValue.dispose();
     });
   }
 
@@ -482,7 +467,14 @@ class _CityDetailPageState extends State<CityDetailPage>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final controller = Get.find<CityDetailController>();
+    
+    // 获取所有需要的State Controllers
+    final cityDetailController = Get.find<CityDetailStateController>();
+    final weatherController = Get.find<WeatherStateController>();
+    final coworkingController = Get.find<CoworkingStateController>();
+    final userContentController = Get.find<UserCityContentStateController>();
+    final aiController = Get.find<AiStateController>();
+    final prosConsController = Get.find<ProsConsStateController>();
 
     return Scaffold(
       body: Stack(
@@ -788,10 +780,9 @@ class _CityDetailPageState extends State<CityDetailPage>
                         ),
                         // 收藏按钮 - 动态状态
                         Obx(() {
-                          final controller = Get.find<CityDetailController>();
-                          final isFavorited = controller.isFavorited.value;
-                          final isToggling =
-                              controller.isTogglingFavorite.value;
+                          final cityController = Get.find<CityDetailStateController>();
+                          final isFavorited = cityController.isFavorited.value;
+                          final isToggling = cityController.isTogglingFavorite.value;
 
                           return Container(
                             decoration: BoxDecoration(
@@ -830,7 +821,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                                       size: 22,
                                     ),
                                     onPressed: () {
-                                      controller.toggleFavorite();
+                                      cityController.toggleFavorite();
                                     },
                                   ),
                           );
@@ -988,23 +979,23 @@ class _CityDetailPageState extends State<CityDetailPage>
               ];
             },
             body: Obx(() {
-              if (controller.isLoading.value) {
+              if (cityDetailController.isLoading.value) {
                 return const CityDetailSkeleton();
               }
 
               return TabBarView(
                 controller: _tabController,
                 children: [
-                  _buildScoresTab(context, controller),
-                  _buildGuideTab(controller),
-                  _buildProsConsTab(controller),
-                  _buildReviewsTab(controller),
-                  _buildCostTab(controller),
-                  _buildPhotosTab(controller),
-                  _buildWeatherTab(controller),
-                  _buildHotelsTab(controller),
-                  _buildNeighborhoodsTab(controller),
-                  _buildCoworkingTab(controller),
+                  _buildScoresTab(context, cityDetailController),
+                  _buildGuideTab(aiController),
+                  _buildProsConsTab(prosConsController),
+                  _buildReviewsTab(userContentController),
+                  _buildCostTab(userContentController),
+                  _buildPhotosTab(userContentController),
+                  _buildWeatherTab(weatherController),
+                  _buildHotelsTab(cityDetailController),
+                  _buildNeighborhoodsTab(cityDetailController),
+                  _buildCoworkingTab(coworkingController),
                 ],
               );
             }),
@@ -1089,89 +1080,48 @@ class _CityDetailPageState extends State<CityDetailPage>
     );
   }
 
-  // Scores 标签
+  // Scores 标签 (简化版 - 只显示5个基本评分)
   Widget _buildScoresTab(
-      BuildContext context, CityDetailController controller) {
+      BuildContext context, CityDetailStateController controller) {
     final l10n = AppLocalizations.of(context)!;
 
     return Obx(() {
       // 显示加载状态
-      if (controller.isLoadingScores.value) {
+      if (controller.isLoading.value) {
         return const Center(child: CircularProgressIndicator());
       }
 
-      final scores = controller.scores.value;
-      if (scores == null) {
+      final city = controller.currentCity.value;
+      if (city == null) {
         return Center(child: Text(l10n.noData));
       }
 
+      // ✅ 只使用City实体中的5个基本评分
       final scoreItems = [
-        {'icon': Icons.star, 'label': l10n.overall, 'value': scores.overall},
         {
-          'icon': Icons.favorite,
-          'label': l10n.qualityOfLife,
-          'value': scores.qualityOfLife
+          'icon': Icons.star,
+          'label': l10n.overall,
+          'value': city.overallScore ?? 0.0
         },
         {
-          'icon': Icons.family_restroom,
-          'label': l10n.familyScore,
-          'value': scores.familyScore
+          'icon': Icons.attach_money,
+          'label': l10n.cost,
+          'value': city.costScore ?? 0.0
         },
         {
-          'icon': Icons.people,
-          'label': l10n.community,
-          'value': scores.communityScore
+          'icon': Icons.wifi,
+          'label': l10n.internet,
+          'value': city.internetScore ?? 0.0
         },
         {
           'icon': Icons.security,
           'label': l10n.safety,
-          'value': scores.safetyScore
+          'value': city.safetyScore ?? 0.0
         },
         {
-          'icon': Icons.female,
-          'label': l10n.womenSafety,
-          'value': scores.womenSafety
-        },
-        {
-          'icon': Icons.flag,
-          'label': l10n.lgbtqSafety,
-          'value': scores.lgbtqSafety
-        },
-        {
-          'icon': Icons.celebration,
-          'label': l10n.fun,
-          'value': scores.funScore
-        },
-        {
-          'icon': Icons.directions_walk,
-          'label': l10n.walkability,
-          'value': scores.walkability
-        },
-        {
-          'icon': Icons.nightlife,
-          'label': l10n.nightlife,
-          'value': scores.nightlife
-        },
-        {
-          'icon': Icons.language,
-          'label': l10n.englishSpeaking,
-          'value': scores.englishSpeaking
-        },
-        {
-          'icon': Icons.restaurant,
-          'label': l10n.foodSafety,
-          'value': scores.foodSafety
-        },
-        {'icon': Icons.wifi, 'label': l10n.freeWiFi, 'value': scores.freeWiFi},
-        {
-          'icon': Icons.laptop,
-          'label': l10n.placesToWork,
-          'value': scores.placesToWork
-        },
-        {
-          'icon': Icons.local_hospital,
-          'label': l10n.hospitals,
-          'value': scores.hospitals
+          'icon': Icons.favorite,
+          'label': 'Liked',
+          'value': city.likedScore ?? 0.0
         },
       ];
 
@@ -1238,13 +1188,13 @@ class _CityDetailPageState extends State<CityDetailPage>
   }
 
   // Digital Nomad Guide 标签
-  Widget _buildGuideTab(CityDetailController controller) {
+  Widget _buildGuideTab(AiStateController controller) {
     return Obx(() {
       print(
-          '🔍 [GuideTab] Rebuilding... isLoading=${controller.isLoadingGuide.value}, guide=${controller.guide.value != null}');
+          '🔍 [GuideTab] Rebuilding... isGenerating=${controller.isGeneratingGuide}, guide=${controller.currentGuide != null}');
 
       // 显示加载状态
-      if (controller.isLoadingGuide.value) {
+      if (controller.isGeneratingGuide) {
         return const Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -1260,7 +1210,7 @@ class _CityDetailPageState extends State<CityDetailPage>
         );
       }
 
-      final guide = controller.guide.value;
+      final guide = controller.currentGuide;
       if (guide == null) {
         print('⚠️ [GuideTab] Guide is null, showing empty state');
         // 显示空状态,带有"AI 生成"按钮
@@ -1307,7 +1257,7 @@ class _CityDetailPageState extends State<CityDetailPage>
   }
 
   Widget _buildGuideContent(
-      BuildContext context, guide, CityDetailController controller) {
+      BuildContext context, guide, AiStateController controller) {
     final l10n = AppLocalizations.of(context)!;
     return ListView(
       padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
@@ -1384,10 +1334,12 @@ class _CityDetailPageState extends State<CityDetailPage>
   }
 
   // Pros & Cons 标签
-  Widget _buildProsConsTab(CityDetailController controller) {
+  Widget _buildProsConsTab(ProsConsStateController controller) {
     return Obx(() {
       // 显示加载状态
-      if (controller.isLoadingProsCons.value) {
+      final isLoading = controller.isLoadingPros.value || controller.isLoadingCons.value;
+      
+      if (isLoading) {
         return const Center(child: CircularProgressIndicator());
       }
 
@@ -1511,7 +1463,7 @@ class _CityDetailPageState extends State<CityDetailPage>
     });
   }
 
-  // 空状态显示组件 (参考 profile_page 的爱好设计)
+  // 空状态显示组件
   Widget _buildEmptyProsConsState({
     required IconData icon,
     required Color iconColor,
@@ -1577,12 +1529,13 @@ class _CityDetailPageState extends State<CityDetailPage>
     );
   }
 
+
   // Reviews 标签
-  Widget _buildReviewsTab(CityDetailController controller) {
+  Widget _buildReviewsTab(UserCityContentStateController controller) {
     final l10n = AppLocalizations.of(context)!;
 
     return Obx(() {
-      final realUserReviews = controller.userReviews; // ✅ 只使用后端真实评论
+      final realUserReviews = controller.reviews; // ✅ 使用reviews属性
 
       // 如果正在加载
       if (controller.isLoadingReviews.value && realUserReviews.isEmpty) {
@@ -1612,7 +1565,7 @@ class _CityDetailPageState extends State<CityDetailPage>
       }
 
       return RefreshIndicator(
-        onRefresh: controller.refreshReviews,
+        onRefresh: () => controller.loadCityReviews(cityId), // ✅ 使用loadCityReviews方法
         child: ListView.builder(
           padding:
               const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
@@ -1746,13 +1699,13 @@ class _CityDetailPageState extends State<CityDetailPage>
   }
 
   // Cost of Living 标签
-  Widget _buildCostTab(CityDetailController controller) {
+  Widget _buildCostTab(UserCityContentStateController controller) {
     final l10n = AppLocalizations.of(context)!; // ✅ 添加国际化
     return Obx(() {
-      final communityCost = controller.communityCostSummary.value; // ✅ 使用后端真实数据
+      final communityCost = controller.costSummary.value; // ✅ 使用costSummary属性
 
       // 如果数据还在加载中
-      if (controller.isLoadingCost.value && communityCost == null) {
+      if (controller.isLoadingCostSummary.value && communityCost == null) {
         return const Center(child: CircularProgressIndicator());
       }
 
@@ -1923,9 +1876,9 @@ class _CityDetailPageState extends State<CityDetailPage>
   }
 
   // Photos 标签
-  Widget _buildPhotosTab(CityDetailController controller) {
+  Widget _buildPhotosTab(UserCityContentStateController controller) {
     return Obx(() {
-      final realUserPhotos = controller.userPhotos; // ✅ 只使用后端真实照片
+      final realUserPhotos = controller.photos; // ✅ 使用photos属性
 
       // 如果正在加载
       if (controller.isLoadingPhotos.value && realUserPhotos.isEmpty) {
@@ -1955,7 +1908,7 @@ class _CityDetailPageState extends State<CityDetailPage>
       }
 
       return RefreshIndicator(
-        onRefresh: controller.refreshPhotos,
+        onRefresh: () => controller.loadCityPhotos(cityId),
         child: GridView.builder(
           padding: const EdgeInsets.only(left: 8, right: 8, top: 8, bottom: 96),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -2070,7 +2023,7 @@ class _CityDetailPageState extends State<CityDetailPage>
   }
 
   // Weather 标签
-  Widget _buildWeatherTab(CityDetailController controller) {
+  Widget _buildWeatherTab(WeatherStateController controller) {
     final l10n = AppLocalizations.of(context)!;
 
     return Obx(() {
@@ -2695,7 +2648,7 @@ class _CityDetailPageState extends State<CityDetailPage>
   }
 
   // Neighborhoods 标签
-  Widget _buildNeighborhoodsTab(CityDetailController controller) {
+  Widget _buildNeighborhoodsTab(CityDetailStateController controller) {
     return Obx(() {
       // 显示加载状态
       if (controller.isLoadingNeighborhoods.value) {
@@ -2771,7 +2724,7 @@ class _CityDetailPageState extends State<CityDetailPage>
   }
 
   /// Coworking 标签�?
-  Widget _buildCoworkingTab(CityDetailController controller) {
+  Widget _buildCoworkingTab(CoworkingStateController controller) {
     return Obx(() {
       // 显示加载状态
       if (controller.isLoadingCoworking.value) {
@@ -3119,7 +3072,7 @@ class _CityDetailPageState extends State<CityDetailPage>
   }
 
   // Hotels Tab - 显示城市的酒店列表
-  Widget _buildHotelsTab(CityDetailController controller) {
+  Widget _buildHotelsTab(CityDetailStateController controller) {
     final parsedCityId = int.tryParse(cityId);
     print(
         '🏨 Hotels Tab - cityId: $cityId, parsed: $parsedCityId, cityName: $cityName');
@@ -3217,8 +3170,8 @@ class _CityDetailPageState extends State<CityDetailPage>
 
     // 如果提交成功,刷新评论列表
     if (result != null && result['success'] == true) {
-      final controller = Get.find<CityDetailController>();
-      controller.loadUserContent();
+      final userContentController = Get.find<UserCityContentStateController>();
+      userContentController.loadCityReviews(cityId);
 
       print('Review submitted successfully: ${result['review']}');
     }
@@ -3227,10 +3180,9 @@ class _CityDetailPageState extends State<CityDetailPage>
   /// 添加 Pros & Cons
   /// [initialTab] 初始显示的 tab (0=优点, 1=挑战)
   void _showAddProsConsPage({int initialTab = 0}) async {
-    final controller = Get.find<CityDetailController>();
     final result = await Get.to(() => ProsAndConsAddPage(
-          cityId: controller.currentCityId.value,
-          cityName: controller.currentCityName.value,
+          cityId: cityId,
+          cityName: cityName,
           initialTab: initialTab,
         ));
 
@@ -3250,16 +3202,16 @@ class _CityDetailPageState extends State<CityDetailPage>
     );
 
     // 如果提交成功,刷新费用列表
+    // 如果提交成功,刷新费用列表
     if (result != null && result['success'] == true) {
-      final controller = Get.find<CityDetailController>();
-      controller.loadUserContent();
+      final userContentController = Get.find<UserCityContentStateController>();
+      userContentController.loadCityExpenses(cityId);
 
       print('Expenses submitted successfully: ${result['expenses']}');
     }
-  }
 
   /// 分享照片
-  void _showSharePhotoDialog() async {
+  void showSharePhotoDialog() async {
     // 显示选择对话框
     final source = await Get.dialog<ImageSource>(
       Dialog(
@@ -3326,11 +3278,11 @@ class _CityDetailPageState extends State<CityDetailPage>
 
     if (source == null) return;
 
-    await _pickAndUploadImage(source);
+    await pickAndUploadImage(source);
   }
 
   /// 选择并上传图片
-  Future<void> _pickAndUploadImage(ImageSource source) async {
+  Future<void> pickAndUploadImage(ImageSource source) async {
     try {
       final ImagePicker picker = ImagePicker();
       final XFile? image = await picker.pickImage(
@@ -3358,8 +3310,8 @@ class _CityDetailPageState extends State<CityDetailPage>
         );
 
         // 刷新照片列表
-        final controller = Get.find<CityDetailController>();
-        await controller.refreshPhotos();
+        final userContentController = Get.find<UserCityContentStateController>();
+        await userContentController.loadCityPhotos(cityId);
 
         AppToast.success(
           'Photo uploaded successfully!',
@@ -3375,7 +3327,7 @@ class _CityDetailPageState extends State<CityDetailPage>
   }
 
   /// 构建 Best Area 卡片 (包含娱乐、旅游、经济、文化四个维度)
-  Widget _buildBestAreaCard(BestArea area) {
+  Widget buildBestAreaCard(BestArea area) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 2,
@@ -3421,7 +3373,7 @@ class _CityDetailPageState extends State<CityDetailPage>
             const SizedBox(height: 16),
 
             // 四个维度评分
-            _buildScoreDimension(
+            buildScoreDimension(
               icon: Icons.nightlife,
               label: '娱乐',
               score: area.entertainmentScore,
@@ -3429,7 +3381,7 @@ class _CityDetailPageState extends State<CityDetailPage>
               color: Colors.purple,
             ),
             const SizedBox(height: 12),
-            _buildScoreDimension(
+            buildScoreDimension(
               icon: Icons.attractions,
               label: '旅游',
               score: area.tourismScore,
@@ -3437,7 +3389,7 @@ class _CityDetailPageState extends State<CityDetailPage>
               color: Colors.blue,
             ),
             const SizedBox(height: 12),
-            _buildScoreDimension(
+            buildScoreDimension(
               icon: Icons.attach_money,
               label: '经济',
               score: area.economyScore,
@@ -3446,7 +3398,7 @@ class _CityDetailPageState extends State<CityDetailPage>
               isReversed: true, // 经济评分越低越好
             ),
             const SizedBox(height: 12),
-            _buildScoreDimension(
+            buildScoreDimension(
               icon: Icons.palette,
               label: '文化',
               score: area.cultureScore,
@@ -3460,7 +3412,7 @@ class _CityDetailPageState extends State<CityDetailPage>
   }
 
   /// 构建单个评分维度
-  Widget _buildScoreDimension({
+  Widget buildScoreDimension({
     required IconData icon,
     required String label,
     required double score,
@@ -3524,7 +3476,7 @@ class _CityDetailPageState extends State<CityDetailPage>
   }
 
   /// 格式化日期
-  String _formatDate(DateTime date, AppLocalizations l10n) {
+  String formatDate(DateTime date, AppLocalizations l10n) {
     final now = DateTime.now();
     final difference = now.difference(date);
 
@@ -3546,7 +3498,7 @@ class _CityDetailPageState extends State<CityDetailPage>
   }
 
   /// 添加 Coworking Space
-  void _showAddCoworkingPage() async {
+  void showAddCoworkingPage() async {
     final result = await Get.to(() => AddCoworkingPage(
           cityName: cityName,
           cityId: cityId,
@@ -3563,23 +3515,23 @@ class _CityDetailPageState extends State<CityDetailPage>
 }
 
 // SliverAppBarDelegate for pinned tab bar
-class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+class _SliverAppBarDelegate extends void SliverPersistentHeaderDelegate {
   _SliverAppBarDelegate(this._tabBar);
 
-  final TabBar _tabBar;
+  final TabBar tabBar;
 
   @override
-  double get minExtent => _tabBar.preferredSize.height;
+  double get minExtent => tabBar.preferredSize.height;
 
   @override
-  double get maxExtent => _tabBar.preferredSize.height;
+  double get maxExtent => tabBar.preferredSize.height;
 
   @override
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
       color: Colors.white,
-      child: _tabBar,
+      child: tabBar,
     );
   }
 

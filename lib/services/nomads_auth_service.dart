@@ -2,8 +2,9 @@ import 'package:get/get.dart';
 
 import '../config/api_config.dart';
 import '../controllers/user_state_controller.dart';
+import '../features/auth/domain/entities/login_response.dart';
+import '../features/auth/infrastructure/models/login_response_dto.dart';
 import '../models/api_response_meta.dart';
-import '../models/login_response_model.dart';
 import '../services/database/token_dao.dart';
 import 'http_service.dart';
 
@@ -49,7 +50,8 @@ class NomadsAuthService {
           throw HttpException('登录返回数据格式异常', response.statusCode);
         }
 
-        final loginData = LoginData.fromJson(rawData);
+        final loginDataDto = LoginDataDto.fromJson(rawData);
+        final loginData = loginDataDto.toDomain();
         final loginResponse = LoginResponse(
           success: meta?.success ?? true,
           message: meta?.message ?? '登录成功',
@@ -60,17 +62,17 @@ class NomadsAuthService {
         // 登录成功，保存 token
         print('🎉 登录成功！');
         print('   用户: ${loginData.user.name}');
-        if (loginData.accessToken.isNotEmpty) {
-          final previewLength = loginData.accessToken.length >= 20
+        if (loginData.tokens.accessToken.isNotEmpty) {
+          final previewLength = loginData.tokens.accessToken.length >= 20
               ? 20
-              : loginData.accessToken.length;
+              : loginData.tokens.accessToken.length;
           print(
-              '   Token: ${loginData.accessToken.substring(0, previewLength)}...');
+              '   Token: ${loginData.tokens.accessToken.substring(0, previewLength)}...');
         }
 
         // 设置 HttpService 的认证 token
-        _httpService.setAuthToken(loginData.accessToken);
-        
+        _httpService.setAuthToken(loginData.tokens.accessToken);
+
         // 设置用户ID到 HttpService（用于 X-User-Id header）
         _httpService.setUserId(loginData.user.id);
 
@@ -94,10 +96,10 @@ class NomadsAuthService {
 
       await _tokenDao.saveToken(
         userId: data.user.id,
-        accessToken: data.accessToken,
-        refreshToken: data.refreshToken,
-        tokenType: data.tokenType,
-        expiresIn: data.expiresIn,
+        accessToken: data.tokens.accessToken,
+        refreshToken: data.tokens.refreshToken,
+        tokenType: data.tokens.tokenType,
+        expiresIn: data.tokens.expiresIn,
         userName: data.user.name,
         userEmail: data.user.email,
       );
@@ -142,7 +144,7 @@ class NomadsAuthService {
       // 恢复 token 到 HttpService
       final accessToken = tokenData['access_token'] as String;
       _httpService.setAuthToken(accessToken);
-      
+
       // 恢复用户ID到 HttpService
       _httpService.setUserId(userId);
 
@@ -351,20 +353,21 @@ class NomadsAuthService {
           return false;
         }
 
-        final loginData = LoginData.fromJson(rawData);
+        final dto = LoginDataDto.fromJson(rawData);
+        final loginData = dto.toDomain();
 
         print('🎉 Token 刷新成功！');
-        final previewLength = loginData.accessToken.length >= 20
+        final previewLength = loginData.tokens.accessToken.length >= 20
             ? 20
-            : loginData.accessToken.length;
+            : loginData.tokens.accessToken.length;
         if (previewLength > 0) {
           print(
-              '   新 Token: ${loginData.accessToken.substring(0, previewLength)}...');
+              '   新 Token: ${loginData.tokens.accessToken.substring(0, previewLength)}...');
         }
 
         // 设置新的 access_token
-        _httpService.setAuthToken(loginData.accessToken);
-        
+        _httpService.setAuthToken(loginData.tokens.accessToken);
+
         // 设置用户ID
         _httpService.setUserId(loginData.user.id);
 

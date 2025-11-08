@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
-import '../models/skill_model.dart';
+import '../features/skill/infrastructure/models/skill_dto.dart';
 import '../services/skills_api_service.dart';
 
 /// 底部抽屉：技能选择器
 class SkillsBottomSheet extends StatefulWidget {
   /// 已选择的技能ID列表
   final List<String> selectedSkillIds;
-  
+
   /// 选择变化回调
   final Function(List<UserSkill>) onChanged;
-  
+
   /// 是否显示熟练度选择
   final bool showProficiency;
 
@@ -29,7 +29,7 @@ class SkillsBottomSheet extends StatefulWidget {
 
 class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
   final SkillsApiService _skillsService = SkillsApiService();
-  
+
   List<SkillsByCategory> _skillsByCategory = [];
   final List<UserSkill> _selectedSkills = [];
   bool _isLoading = true;
@@ -44,7 +44,7 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
 
   Future<void> _loadSkills() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final skillsByCategory = await _skillsService.getSkillsByCategory();
       setState(() {
@@ -54,7 +54,7 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
     } catch (e) {
       print('❌ 加载技能失败: $e');
       setState(() => _isLoading = false);
-      
+
       if (mounted) {
         Get.snackbar(
           '加载失败',
@@ -67,7 +67,7 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
 
   void _toggleSkill(Skill skill) {
     final isSelected = _selectedSkills.any((s) => s.skillId == skill.id);
-    
+
     if (isSelected) {
       // 取消选择
       setState(() {
@@ -91,7 +91,7 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
       yearsOfExperience: yearsOfExperience,
       createdAt: DateTime.now(),
     );
-    
+
     setState(() {
       _selectedSkills.add(userSkill);
     });
@@ -99,21 +99,21 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
 
   List<Skill> _getFilteredSkills() {
     List<Skill> allSkills = [];
-    
+
     for (var category in _skillsByCategory) {
       if (_selectedCategory != null && category.category != _selectedCategory) {
         continue;
       }
       allSkills.addAll(category.skills);
     }
-    
+
     if (_searchQuery.isNotEmpty) {
       allSkills = allSkills.where((skill) {
         return skill.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-               skill.category.toLowerCase().contains(_searchQuery.toLowerCase());
+            skill.category.toLowerCase().contains(_searchQuery.toLowerCase());
       }).toList();
     }
-    
+
     return allSkills;
   }
 
@@ -211,7 +211,8 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
                         ),
                         filled: true,
                         fillColor: AppColors.background,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
                       ),
                       onChanged: (value) {
                         setState(() => _searchQuery = value);
@@ -230,7 +231,8 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
                           _CategoryChip(
                             label: '全部',
                             isSelected: _selectedCategory == null,
-                            onTap: () => setState(() => _selectedCategory = null),
+                            onTap: () =>
+                                setState(() => _selectedCategory = null),
                           ),
                           const SizedBox(width: 8),
                           ..._skillsByCategory.map((category) {
@@ -238,8 +240,10 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
                               padding: const EdgeInsets.only(right: 8),
                               child: _CategoryChip(
                                 label: _getCategoryText(category.category),
-                                isSelected: _selectedCategory == category.category,
-                                onTap: () => setState(() => _selectedCategory = category.category),
+                                isSelected:
+                                    _selectedCategory == category.category,
+                                onTap: () => setState(() =>
+                                    _selectedCategory = category.category),
                               ),
                             );
                           }),
@@ -265,17 +269,21 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
                                 spacing: 8,
                                 runSpacing: 8,
                                 children: filteredSkills.map((skill) {
-                                  final isSelected = _selectedSkills.any((s) => s.skillId == skill.id);
+                                  final isSelected = _selectedSkills
+                                      .any((s) => s.skillId == skill.id);
                                   return FilterChip(
                                     avatar: Text(skill.icon ?? '💼'),
                                     label: Text(skill.name),
                                     selected: isSelected,
                                     onSelected: (_) => _toggleSkill(skill),
-                                    selectedColor: AppColors.accent.withOpacity(0.2),
+                                    selectedColor:
+                                        AppColors.accent.withOpacity(0.2),
                                     checkmarkColor: AppColors.accent,
                                     backgroundColor: AppColors.white,
                                     side: BorderSide(
-                                      color: isSelected ? AppColors.accent : AppColors.border,
+                                      color: isSelected
+                                          ? AppColors.accent
+                                          : AppColors.border,
                                     ),
                                   );
                                 }).toList(),

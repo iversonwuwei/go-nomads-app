@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
-import '../controllers/city_detail_controller.dart';
 import '../generated/app_localizations.dart';
 import '../widgets/app_toast.dart';
 import 'amap_native_picker_page.dart';
@@ -1002,8 +1001,6 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
   }
 
   void _generatePlan() {
-    final controller = Get.find<CityDetailController>();
-
     // Use custom budget if provided, otherwise use selected budget level
     String finalBudget = budget;
     if (_customBudgetController.text.isNotEmpty) {
@@ -1031,8 +1028,5 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
         departureDate: departureDate,
       ),
     );
-
-    // Show generating message
-    controller.isGeneratingPlan.value = true;
   }
 }

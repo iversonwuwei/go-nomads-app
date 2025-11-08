@@ -3,9 +3,10 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
-import '../controllers/city_list_controller.dart';
+import '../core/core.dart';
+import '../features/city/domain/entities/city.dart';
+import '../features/city/presentation/controllers/city_state_controller.dart';
 import '../generated/app_localizations.dart';
-import '../services/user_favorite_city_api_service.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/skeletons/skeletons.dart';
 import 'city_detail_page.dart';
@@ -20,11 +21,9 @@ class CityListPage extends StatefulWidget {
 }
 
 class _CityListPageState extends State<CityListPage> {
-  final CityListController controller = Get.put(CityListController());
+  final CityStateController controller = Get.find<CityStateController>();
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  final UserFavoriteCityApiService _favoriteApiService =
-      UserFavoriteCityApiService();
   final Map<String, bool> _followedCities = {}; // 城市关注状态
   bool _isLoadingFollowedCities = false;
 
@@ -70,7 +69,7 @@ class _CityListPageState extends State<CityListPage> {
 
   // 获取筛选后的城市列表
   // 注意: 搜索功能现在由后端 API 处理,不再在前端筛选
-  List<Map<String, dynamic>> get _filteredCities {
+  List<City> get _filteredCities {
     return controller.filteredCities;
   }
 
@@ -497,7 +496,7 @@ class _CityListPageState extends State<CityListPage> {
   }
 
   // 城市卡片
-  Widget _buildCityCard(Map<String, dynamic> city, bool isMobile) {
+  Widget _buildCityCard(City city, bool isMobile) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -517,11 +516,12 @@ class _CityListPageState extends State<CityListPage> {
             context,
             MaterialPageRoute(
               builder: (context) => CityDetailPage(
-                cityId: city['id']?.toString() ?? city['city'],
-                cityName: city['city'],
-                cityImage: city['image'],
-                overallScore: (city['overall'] as num?)?.toDouble() ?? 0.0,
-                reviewCount: city['reviews'] ?? 0,
+                cityId: city.id,
+                cityName: city.name,
+                cityImage: city.imageUrl ??
+                    'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=400',
+                overallScore: city.overallScore ?? 0.0,
+                reviewCount: city.reviewCount ?? 0,
               ),
             ),
           );
@@ -539,7 +539,7 @@ class _CityListPageState extends State<CityListPage> {
                   child: AspectRatio(
                     aspectRatio: 16 / 9,
                     child: Image.network(
-                      city['image'],
+                      city.imageUrl ?? '',
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
@@ -555,8 +555,7 @@ class _CityListPageState extends State<CityListPage> {
                 Positioned(
                   top: 12,
                   right: 12,
-                  child: _buildFollowButton(
-                      city['id']?.toString() ?? city['city']),
+                  child: _buildFollowButton(city.id),
                 ),
               ],
             ),
@@ -575,7 +574,7 @@ class _CityListPageState extends State<CityListPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              city['city'],
+                              city.name,
                               style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
@@ -589,7 +588,7 @@ class _CityListPageState extends State<CityListPage> {
                                     size: 14, color: AppColors.textSecondary),
                                 const SizedBox(width: 4),
                                 Text(
-                                  city['country'],
+                                  city.country ?? '',
                                   style: const TextStyle(
                                     fontSize: 14,
                                     color: AppColors.textSecondary,
@@ -620,8 +619,7 @@ class _CityListPageState extends State<CityListPage> {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              (city['overall'] as num?)?.toStringAsFixed(1) ??
-                                  '0.0',
+                              (city.overallScore ?? 0.0).toStringAsFixed(1),
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
@@ -643,24 +641,24 @@ class _CityListPageState extends State<CityListPage> {
                     children: [
                       _buildInfoChip(
                         Icons.wb_sunny,
-                        '${_truncateToOneDecimal(city['temperature'] ?? 0)}°',
+                        '${_truncateToOneDecimal(city.temperature ?? 0)}°',
                         Colors.orange,
                       ),
                       _buildInfoChip(
                         Icons.wifi,
-                        '${city['internet'] ?? 0} Mbps',
+                        '${((city.internetScore ?? 0) * 20).toInt()} Mbps',
                         Colors.blue,
                       ),
                       _buildInfoChip(
                         Icons.attach_money,
-                        '\$${city['cost'] ?? 0}',
+                        '\$${((city.costScore ?? 0) * 500).toInt()}',
                         Colors.green,
                       ),
-                      if (city['aqi'] != null)
+                      if (city.airQualityIndex != null)
                         _buildInfoChip(
                           Icons.air,
-                          'AQI ${city['aqi']}',
-                          _getAqiColor(city['aqi']),
+                          'AQI ${city.airQualityIndex}',
+                          _getAqiColor(city.airQualityIndex!),
                         ),
                     ],
                   ),
@@ -742,8 +740,8 @@ class _CityListPageState extends State<CityListPage> {
                 ),
                 const SizedBox(height: 12),
                 Obx(() => Text(
-                      controller.errorMessage.value.isNotEmpty
-                          ? controller.errorMessage.value
+                      controller.errorMessage.value?.isNotEmpty == true
+                          ? controller.errorMessage.value!
                           : l10n.networkError,
                       style: const TextStyle(
                         fontSize: 14,
@@ -902,19 +900,24 @@ class _CityListPageState extends State<CityListPage> {
     });
 
     try {
-      final success = await _favoriteApiService.toggleFavorite(cityId);
+      // 使用 CityStateController 的 toggleCityFavorite 方法
+      final result = await controller.toggleCityFavorite(cityId);
 
-      if (success) {
-        final isNowFollowed = _followedCities[cityId] ?? false;
-        AppToast.success(isNowFollowed ? '已关注该城市' : '已取消关注');
-        print('✅ 城市关注状态切换成功: cityId=$cityId, followed=$isNowFollowed');
-      } else {
-        // 操作失败,恢复之前的状态
-        setState(() {
-          _followedCities[cityId] = previousState;
-        });
-        AppToast.error('操作失败，请重试');
-      }
+      result.fold(
+        onSuccess: (_) {
+          final isNowFollowed = _followedCities[cityId] ?? false;
+          AppToast.success(isNowFollowed ? '已关注该城市' : '已取消关注');
+          print('✅ 城市关注状态切换成功: cityId=$cityId, followed=$isNowFollowed');
+        },
+        onFailure: (error) {
+          // 操作失败,恢复之前的状态
+          setState(() {
+            _followedCities[cityId] = previousState;
+          });
+          AppToast.error('操作失败，请重试');
+          print('❌ 切换关注状态失败: $error');
+        },
+      );
     } catch (e) {
       print('❌ 切换关注状态失败: $e');
       // 发生错误,恢复之前的状态
@@ -931,14 +934,23 @@ class _CityListPageState extends State<CityListPage> {
 
     _isLoadingFollowedCities = true;
     try {
-      final cityIds = await _favoriteApiService.getUserFavoriteCityIds();
-      setState(() {
-        _followedCities.clear();
-        for (var cityId in cityIds) {
-          _followedCities[cityId] = true;
-        }
-      });
-      print('✅ 已加载 ${cityIds.length} 个关注的城市');
+      // 使用 CityStateController 的 loadUserFavoriteCityIds 方法
+      final result = await controller.loadUserFavoriteCityIds();
+
+      result.fold(
+        onSuccess: (cityIds) {
+          setState(() {
+            _followedCities.clear();
+            for (var cityId in cityIds) {
+              _followedCities[cityId] = true;
+            }
+          });
+          print('✅ 已加载 ${cityIds.length} 个关注的城市');
+        },
+        onFailure: (error) {
+          print('❌ 加载关注城市列表失败: $error');
+        },
+      );
     } catch (e) {
       print('❌ 加载关注城市列表失败: $e');
     } finally {
@@ -949,7 +961,7 @@ class _CityListPageState extends State<CityListPage> {
 
 // 城市筛选抽屉
 class _CityFilterDrawer extends StatelessWidget {
-  final CityListController controller;
+  final CityStateController controller;
 
   const _CityFilterDrawer({required this.controller});
 

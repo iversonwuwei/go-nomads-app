@@ -31,7 +31,7 @@ class DatabaseService {
     // 打开数据库,如果不存在则创建
     return await openDatabase(
       path,
-      version: 7, // 升级到版本7 - 添加后台任务表
+      version: 8, // 升级到版本8 - tokens表添加expires_at字段
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -313,6 +313,7 @@ class DatabaseService {
         refresh_token TEXT NOT NULL,
         token_type TEXT NOT NULL,
         expires_in INTEGER NOT NULL,
+        expires_at TEXT,
         user_name TEXT,
         user_email TEXT,
         created_at TEXT NOT NULL,
@@ -500,6 +501,7 @@ class DatabaseService {
             refresh_token TEXT NOT NULL,
             token_type TEXT NOT NULL,
             expires_in INTEGER NOT NULL,
+            expires_at TEXT,
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL
           )
@@ -537,6 +539,25 @@ class DatabaseService {
         print('✅ tokens 表字段升级完成');
       } catch (e) {
         print('⚠️ 升级 tokens 表时出错: $e');
+      }
+    }
+
+    if (oldVersion < 8 && newVersion >= 8) {
+      // 版本 7 -> 8: 为 tokens 表添加 expires_at 字段
+      try {
+        print('🔑 开始为 tokens 表添加 expires_at 字段...');
+
+        final result = await db.rawQuery("PRAGMA table_info(tokens)");
+        final hasExpiresAt = result.any((col) => col['name'] == 'expires_at');
+
+        if (!hasExpiresAt) {
+          await db.execute('ALTER TABLE tokens ADD COLUMN expires_at TEXT');
+          print('✅ 添加 expires_at 字段');
+        }
+
+        print('✅ tokens 表 expires_at 字段检查完成');
+      } catch (e) {
+        print('⚠️ 升级 tokens 表的 expires_at 字段时出错: $e');
       }
     }
 

@@ -3,7 +3,6 @@ import 'package:dio/dio.dart';
 import '../config/api_config.dart';
 import 'database/token_dao.dart';
 import 'http_service.dart';
-import 'nomads_auth_service.dart';
 
 /// Events API 服务
 /// 专门处理与后端 Events 服务的 API 交互
@@ -13,23 +12,16 @@ class EventsApiService {
 
   final HttpService _httpService = HttpService();
   final TokenDao _tokenDao = TokenDao();
-  final NomadsAuthService _authService = NomadsAuthService();
 
   EventsApiService._internal();
 
   /// 确保认证头已设置
-  /// 这个方法会从数据库获取当前用户的token并设置认证头
+  /// 注意: AuthStateController 已在登录时自动设置 HttpService.authToken
+  /// 此方法主要用于检查认证状态
   Future<void> _ensureAuthentication() async {
     try {
-      // 如果HttpService已经有token，直接返回
-      if (_httpService.authToken != null &&
-          _httpService.authToken!.isNotEmpty) {
-        return;
-      }
-
-      // 尝试从数据库恢复token
-      final isLoggedIn = await _authService.checkLoginStatus();
-      if (!isLoggedIn) {
+      // 检查 HttpService 是否有 token
+      if (_httpService.authToken == null || _httpService.authToken!.isEmpty) {
         throw Exception('用户未登录，请先登录');
       }
     } catch (e) {
@@ -75,19 +67,15 @@ class EventsApiService {
   /// 如果用户已登录则返回认证头,未登录则返回 null
   Future<Map<String, String>?> _tryGetAuthHeaders() async {
     try {
-      // 检查是否已登录
-      final isLoggedIn = await _authService.checkLoginStatus();
-      if (!isLoggedIn) {
+      // 检查 HttpService 是否有 token
+      if (_httpService.authToken == null || _httpService.authToken!.isEmpty) {
         return null;
       }
 
       final headers = <String, String>{};
 
       // 添加Authorization头
-      if (_httpService.authToken != null &&
-          _httpService.authToken!.isNotEmpty) {
-        headers['Authorization'] = 'Bearer ${_httpService.authToken}';
-      }
+      headers['Authorization'] = 'Bearer ${_httpService.authToken}';
 
       // 添加X-User-Id头
       final userId = await _getCurrentUserId();

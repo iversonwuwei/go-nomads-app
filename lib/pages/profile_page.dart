@@ -2,10 +2,9 @@ import 'package:flutter/material.dart' hide Badge;
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
-import '../controllers/user_profile_controller.dart';
-import '../controllers/user_state_controller.dart';
+import '../features/user/presentation/controllers/user_state_controller.dart';
+import '../features/user/domain/entities/user.dart';
 import '../generated/app_localizations.dart';
-import '../models/user_model.dart';
 import '../routes/app_routes.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/skeletons/skeletons.dart';
@@ -13,11 +12,11 @@ import '../widgets/skeletons/skeletons.dart';
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
-  /// 处理退出登录
+  /// 处理退出登�?
   void _handleLogout(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    // 显示确认对话框
+    // 显示确认对话�?
     Get.dialog(
       AlertDialog(
         title: Text(l10n.logoutConfirmTitle),
@@ -29,7 +28,7 @@ class ProfilePage extends StatelessWidget {
           ),
           TextButton(
             onPressed: () {
-              Get.back(); // 关闭对话框
+              Get.back(); // 关闭对话�?
               _performLogout();
             },
             style: TextButton.styleFrom(
@@ -42,26 +41,26 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  /// 执行退出登录操作
+  /// 执行退出登录操�?
   void _performLogout() {
     try {
-      print('🚪 开始执行退出登录...');
+      print('🚪 开始执行退出登�?..');
 
       // 获取用户状态控制器
       final userStateController = Get.find<UserStateController>();
 
-      print('   当前登录状态: ${userStateController.isLoggedIn}');
+      print('   当前登录状�? ${userStateController.isLoggedIn}');
       print('   当前用户: ${userStateController.username}');
       print('   当前账户ID: ${userStateController.currentAccountId}');
 
-      // 清除用户状态
+      // 清除用户状�?
       userStateController.logout();
 
-      print('✅ 用户状态已清除');
-      print('   登录状态: ${userStateController.isLoggedIn}');
+      print('�?用户状态已清除');
+      print('   登录状�? ${userStateController.isLoggedIn}');
       print('   账户ID: ${userStateController.currentAccountId}');
 
-      // 显示退出成功提示
+      // 显示退出成功提�?
       AppToast.success(
         'You have been logged out successfully',
         title: 'Logout Success',
@@ -73,7 +72,7 @@ class ProfilePage extends StatelessWidget {
         Get.offAllNamed(AppRoutes.login);
       });
     } catch (e) {
-      print('❌ 退出登录失败: $e');
+      print('�?退出登录失�? $e');
       AppToast.error(
         'An error occurred during logout',
         title: 'Error',
@@ -83,8 +82,7 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(UserProfileController());
-    final userStateController = Get.find<UserStateController>();
+    final controller = Get.find<UserStateController>();
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
     final l10n = AppLocalizations.of(context)!;
@@ -104,20 +102,20 @@ class ProfilePage extends StatelessWidget {
 
           return CustomScrollView(
             slivers: [
-              // 移除了 AppBar - 不需要 header
+              // 移除�?AppBar - 不需�?header
 
               // Content
               SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.symmetric(
                     horizontal: isMobile ? 16 : 32,
-                    vertical: isMobile ? 24 : 32, // 减少顶部留白，SafeArea 已处理
+                    vertical: isMobile ? 24 : 32, // 减少顶部留白，SafeArea 已处�?
                   ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Login Notice (if not logged in)
-                    if (!userStateController.isLoggedIn)
+                    if (!controller.isLoggedIn)
                       _buildLoginNotice(context, isMobile),
 
                     // Profile Header
@@ -163,8 +161,8 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  // 构建头像内容 - 如果没有头像URL则显示用户名首字母
-  Widget _buildAvatarContent(UserModel user, bool isMobile) {
+  // 构建头像内容 - 如果没有头像URL则显示用户名首字�?
+  Widget _buildAvatarContent(User user, bool isMobile) {
     final hasAvatar = user.avatarUrl != null &&
         user.avatarUrl!.isNotEmpty &&
         user.avatarUrl != 'https://i.pravatar.cc/300';
@@ -183,8 +181,8 @@ class ProfilePage extends StatelessWidget {
     }
   }
 
-  // 构建首字母头像
-  Widget _buildInitialsAvatar(UserModel user, bool isMobile) {
+  // 构建首字母头�?
+  Widget _buildInitialsAvatar(User user, bool isMobile) {
     // 获取用户名首字母
     String initials = '';
     if (user.name.isNotEmpty) {
@@ -194,7 +192,7 @@ class ProfilePage extends StatelessWidget {
         initials =
             nameParts[0][0].toUpperCase() + nameParts[1][0].toUpperCase();
       } else {
-        // 如果只有一个单词，取前两个字母（如果有）
+        // 如果只有一个单词，取前两个字母（如果有�?
         initials =
             user.name.substring(0, user.name.length >= 2 ? 2 : 1).toUpperCase();
       }
@@ -228,12 +226,12 @@ class ProfilePage extends StatelessWidget {
   }
 
   // Profile Header
-  Widget _buildProfileHeader(BuildContext context, UserModel user,
-      UserProfileController controller, bool isMobile) {
+  Widget _buildProfileHeader(BuildContext context, User user,
+      UserStateController controller, bool isMobile) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Avatar (只读，移除编辑功能)
+        // Avatar (只读，移除编辑功�?
         Stack(
           children: [
             Container(
@@ -376,15 +374,15 @@ class ProfilePage extends StatelessWidget {
             _buildStatCard(
                 '🌍', stats.countriesVisited.toString(), 'Countries', isMobile),
             _buildStatCard(
-                '🏙️', stats.citiesLived.toString(), l10n.cities, isMobile),
+                '🏙�?, stats.citiesVisited.toString(), l10n.cities, isMobile),
             _buildStatCard(
-                '📅', stats.daysNomading.toString(), 'Days nomading', isMobile),
+                '📅', stats.reviewsWritten.toString(), 'Days nomading', isMobile),
             _buildStatCard(
-                '🤝', stats.meetupsAttended.toString(), 'Meetups', isMobile),
+                '🤝', stats.photosShared.toString(), 'Meetups', isMobile),
             _buildStatCard(
-                '✈️', stats.tripsCompleted.toString(), 'Trips', isMobile),
+                '✈️', stats.citiesVisited.toString(), 'Trips', isMobile),
             _buildStatCard(
-                '❤️', stats.favorites.toString(), 'Favorites', isMobile),
+                '❤️', stats.countriesVisited.toString(), 'Favorites', isMobile),
           ],
         ),
       ],
@@ -501,8 +499,8 @@ class ProfilePage extends StatelessWidget {
   }
 
   // Skills and Interests
-  Widget _buildSkillsAndInterests(BuildContext context, UserModel user,
-      UserProfileController controller, bool isMobile) {
+  Widget _buildSkillsAndInterests(BuildContext context, User user,
+      UserStateController controller, bool isMobile) {
     final l10n = AppLocalizations.of(context)!;
 
     return Column(
@@ -735,7 +733,7 @@ class ProfilePage extends StatelessWidget {
   }
 
   Widget _buildTravelHistoryCard(TravelHistory trip) {
-    final isCurrentLocation = trip.endDate == null;
+    final isCurrentLocation = trip.visitDate == null;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -763,7 +761,7 @@ class ProfilePage extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Text('${trip.city}, ${trip.country}',
+                        Text('${trip.cityName}, ${trip.countryName}',
                             style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -787,41 +785,40 @@ class ProfilePage extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      '${_formatDate(trip.startDate)} - ${trip.endDate != null ? _formatDate(trip.endDate!) : 'Present'}',
+                      '${_formatDate(trip.visitDate)} - ${_formatDate(trip.visitDate)}',
                       style: const TextStyle(
                           fontSize: 13, color: Color(0xFF6b7280)),
                     ),
                   ],
                 ),
               ),
-              if (trip.rating != null)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                      color: const Color(0xFFFEF3C7),
-                      borderRadius: BorderRadius.circular(6)),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.star,
-                          size: 16, color: Color(0xFFF59E0B)),
-                      const SizedBox(width: 4),
-                      Text(trip.rating!.toStringAsFixed(1),
-                          style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF92400E))),
-                    ],
-                  ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                    color: const Color(0xFFFEF3C7),
+                    borderRadius: BorderRadius.circular(6)),
+                child: Row(
+                  children: [
+                    const Icon(Icons.star,
+                        size: 16, color: Color(0xFFF59E0B)),
+                    const SizedBox(width: 4),
+                    Text(trip.visitDate.toStringAsFixed(1),
+                        style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF92400E))),
+                  ],
                 ),
+              ),
             ],
           ),
-          if (trip.review != null) ...[
-            const SizedBox(height: 12),
-            Text(trip.review!,
-                style: const TextStyle(
-                    fontSize: 14, color: Color(0xFF374151), height: 1.5)),
-          ],
+          ...[
+          const SizedBox(height: 12),
+          Text(trip.cityName,
+              style: const TextStyle(
+                  fontSize: 14, color: Color(0xFF374151), height: 1.5)),
+        ],
         ],
       ),
     );
@@ -908,7 +905,7 @@ class ProfilePage extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
-        // 退出登录
+        // 退出登�?
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -946,8 +943,8 @@ class ProfilePage extends StatelessWidget {
   /// 我的旅行计划部分
   Widget _buildTravelPlansSection(BuildContext context, bool isMobile) {
     final l10n = AppLocalizations.of(context)!;
-    // 这里应该从用户数据中获取保存的计划
-    // 暂时使用空列表演示
+    // 这里应该从用户数据中获取保存的计�?
+    // 暂时使用空列表演�?
     final savedPlans = <String>[]; // TODO: 从UserProfileController获取
 
     return Column(
@@ -1049,7 +1046,7 @@ class ProfilePage extends StatelessWidget {
             ),
           )
         else
-          // TODO: 显示保存的旅行计划列表
+          // TODO: 显示保存的旅行计划列�?
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -1137,7 +1134,7 @@ class ProfilePage extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '您当前查看的是示例用户资料。登录后可查看您的真实个人信息。',
+                  '您当前查看的是示例用户资料。登录后可查看您的真实个人信息�?,
                   style: TextStyle(
                     fontSize: isMobile ? 12 : 14,
                     color: const Color(0xFF6B7280),
@@ -1162,7 +1159,7 @@ class ProfilePage extends StatelessWidget {
               ),
             ),
             child: Text(
-              '去登录',
+              '去登�?,
               style: TextStyle(
                 color: Colors.white,
                 fontSize: isMobile ? 12 : 14,
@@ -1175,4 +1172,6 @@ class ProfilePage extends StatelessWidget {
     );
   }
 }
+
+
 

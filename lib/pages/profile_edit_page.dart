@@ -3,11 +3,9 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/locale_controller.dart';
-import '../controllers/user_profile_controller.dart';
+import '../features/user/domain/entities/user.dart';
+import '../features/user/presentation/controllers/user_state_controller.dart';
 import '../generated/app_localizations.dart';
-import '../models/interest_model.dart';
-import '../models/skill_model.dart';
-import '../models/user_model.dart';
 import '../services/interests_api_service.dart';
 import '../services/skills_api_service.dart';
 import '../widgets/app_toast.dart';
@@ -55,7 +53,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
   // 加载用户资料
   Future<void> _loadUserProfile() async {
-    final profileController = Get.put(UserProfileController());
+    final profileController = Get.find<UserStateController>();
 
     // 监听用户数据变化，填充输入框
     ever(profileController.currentUser, (user) {
@@ -73,9 +71,9 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final l10n = AppLocalizations.of(context)!;
-    
-    // 在这里获取 controller，如果不存在则创建
-    final profileController = Get.put(UserProfileController());
+
+    // 在这里获取 controller
+    final profileController = Get.find<UserStateController>();
     final isMobile = screenWidth < 768;
 
     return Scaffold(
@@ -89,60 +87,60 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
             100, // 底部留白给导航栏
           ),
           children: [
-          // 头像和基本信息编辑
-          _buildProfileEditCard(isMobile),
+            // 头像和基本信息编辑
+            _buildProfileEditCard(isMobile),
 
-          const SizedBox(height: 24),
+            const SizedBox(height: 24),
 
-          // 技能编辑
-          _buildSkillsSection(isMobile, profileController),
+            // 技能编辑
+            _buildSkillsSection(isMobile, profileController),
 
-          const SizedBox(height: 24),
+            const SizedBox(height: 24),
 
-          // 兴趣爱好编辑
-          _buildInterestsSection(isMobile, profileController),
+            // 兴趣爱好编辑
+            _buildInterestsSection(isMobile, profileController),
 
-          const SizedBox(height: 24),
+            const SizedBox(height: 24),
 
-          // 偏好设置
-          _buildPreferencesSection(isMobile),
+            // 偏好设置
+            _buildPreferencesSection(isMobile),
 
-          const SizedBox(height: 24),
+            const SizedBox(height: 24),
 
-          // 账户操作
-          _buildAccountActionsSection(isMobile),
+            // 账户操作
+            _buildAccountActionsSection(isMobile),
 
-          const SizedBox(height: 32),
+            const SizedBox(height: 32),
 
-          // 保存按钮
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                AppToast.success(
-                  l10n.profileUpdatedSuccessfully,
-                  title: l10n.saved,
-                );
-                Get.back();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.accent,
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(vertical: isMobile ? 16 : 20),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+            // 保存按钮
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  AppToast.success(
+                    l10n.profileUpdatedSuccessfully,
+                    title: l10n.saved,
+                  );
+                  Get.back();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.accent,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: isMobile ? 16 : 20),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-              ),
-              child: Text(
-                l10n.saveChanges,
-                style: TextStyle(
-                  fontSize: isMobile ? 16 : 18,
-                  fontWeight: FontWeight.w600,
+                child: Text(
+                  l10n.saveChanges,
+                  style: TextStyle(
+                    fontSize: isMobile ? 16 : 18,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
         ),
       ),
     );
@@ -150,7 +148,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
   Widget _buildProfileEditCard(bool isMobile) {
     final l10n = AppLocalizations.of(Get.context!)!;
-    final profileController = Get.find<UserProfileController>();
+    final profileController = Get.find<UserStateController>();
 
     return Obx(() {
       final user = profileController.currentUser.value;
@@ -158,7 +156,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       // 生成头像 URL (如果没有 avatarUrl，使用用户名生成)
       final avatarUrl = user?.avatarUrl ??
           'https://ui-avatars.com/api/?name=${Uri.encodeComponent(user?.name ?? 'User')}&background=FF9800&color=fff&size=200';
-      
+
       return Container(
         padding: EdgeInsets.all(isMobile ? 20 : 32),
         decoration: BoxDecoration(
@@ -198,94 +196,95 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
             SizedBox(height: isMobile ? 16 : 24),
 
-          // 用户名编辑
-          TextField(
+            // 用户名编辑
+            TextField(
               controller: _nameController,
-            decoration: InputDecoration(
-              labelText: l10n.name,
-              labelStyle: TextStyle(color: AppColors.textSecondary),
-              hintText: l10n.enterYourName,
-              hintStyle: TextStyle(color: AppColors.textTertiary),
-              filled: true,
-              fillColor: AppColors.containerLight,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.border),
+              decoration: InputDecoration(
+                labelText: l10n.name,
+                labelStyle: TextStyle(color: AppColors.textSecondary),
+                hintText: l10n.enterYourName,
+                hintStyle: TextStyle(color: AppColors.textTertiary),
+                filled: true,
+                fillColor: AppColors.containerLight,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.border),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.border),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.accent),
+                ),
               ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.border),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.accent),
-              ),
+              style: TextStyle(color: AppColors.textPrimary),
             ),
-            style: TextStyle(color: AppColors.textPrimary),
-          ),
 
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
             // 邮箱(只读)
-          TextField(
+            TextField(
               controller: _emailController,
-            readOnly: true,
-            decoration: InputDecoration(
-              labelText: l10n.email,
-              labelStyle: TextStyle(color: AppColors.textSecondary),
-              hintText: 'nomad@example.com',
-              hintStyle: TextStyle(color: AppColors.textTertiary),
-              filled: true,
-              fillColor: AppColors.containerLight.withValues(alpha: 0.5),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.borderLight),
+              readOnly: true,
+              decoration: InputDecoration(
+                labelText: l10n.email,
+                labelStyle: TextStyle(color: AppColors.textSecondary),
+                hintText: 'nomad@example.com',
+                hintStyle: TextStyle(color: AppColors.textTertiary),
+                filled: true,
+                fillColor: AppColors.containerLight.withValues(alpha: 0.5),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.borderLight),
+                ),
+                suffixIcon: Icon(
+                  Icons.lock_outline,
+                  color: AppColors.iconSecondary,
+                ),
               ),
-              suffixIcon: Icon(
-                Icons.lock_outline,
-                color: AppColors.iconSecondary,
-              ),
+              style: TextStyle(color: AppColors.textSecondary),
             ),
-            style: TextStyle(color: AppColors.textSecondary),
-          ),
 
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-          // Bio
-          TextField(
+            // Bio
+            TextField(
               controller: _bioController,
-            maxLines: 3,
-            decoration: InputDecoration(
-              labelText: l10n.bio,
-              labelStyle: TextStyle(color: AppColors.textSecondary),
-              hintText: l10n.tellUsAboutYourself,
-              hintStyle: TextStyle(color: AppColors.textTertiary),
-              filled: true,
-              fillColor: AppColors.containerLight,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.border),
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: l10n.bio,
+                labelStyle: TextStyle(color: AppColors.textSecondary),
+                hintText: l10n.tellUsAboutYourself,
+                hintStyle: TextStyle(color: AppColors.textTertiary),
+                filled: true,
+                fillColor: AppColors.containerLight,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.border),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.border),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.accent),
+                ),
               ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.border),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.accent),
-              ),
+              style: TextStyle(color: AppColors.textPrimary),
             ),
-            style: TextStyle(color: AppColors.textPrimary),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
     }); // 关闭 Obx
   }
 
-  Widget _buildSkillsSection(bool isMobile, UserProfileController profileController) {
+  Widget _buildSkillsSection(
+      bool isMobile, UserStateController profileController) {
     final l10n = AppLocalizations.of(Get.context!)!;
-    
+
     return Obx(() {
       final user = profileController.currentUser.value;
 
@@ -346,8 +345,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 runSpacing: 8,
                 children: skills.map((skill) {
                   return Chip(
-                    label: Text(skill.skillName),
-                    avatar: skill.icon != null ? Text(skill.icon!) : null,
+                    label: Text(skill.name),
                     deleteIcon: const Icon(Icons.close, size: 18),
                     onDeleted: () => profileController.removeSkill(skill.id),
                     backgroundColor: AppColors.accent.withValues(alpha: 0.1),
@@ -356,7 +354,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                       fontSize: 14,
                     ),
                     deleteIconColor: AppColors.textSecondary,
-                    side: BorderSide(color: AppColors.accent.withValues(alpha: 0.3)),
+                    side: BorderSide(
+                        color: AppColors.accent.withValues(alpha: 0.3)),
                   );
                 }).toList(),
               ),
@@ -366,9 +365,10 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     });
   }
 
-  Widget _buildInterestsSection(bool isMobile, UserProfileController profileController) {
+  Widget _buildInterestsSection(
+      bool isMobile, UserStateController profileController) {
     final l10n = AppLocalizations.of(Get.context!)!;
-    
+
     return Obx(() {
       final user = profileController.currentUser.value;
 
@@ -429,12 +429,12 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 runSpacing: 8,
                 children: interests.map((interest) {
                   return Chip(
-                    label: Text(interest.interestName),
-                    avatar: interest.icon != null ? Text(interest.icon!) : null,
+                    label: Text(interest.name),
                     deleteIcon: const Icon(Icons.close, size: 18),
                     onDeleted: () =>
                         profileController.removeInterest(interest.id),
-                    backgroundColor: const Color(0xFFBA68C8).withValues(alpha: 0.1),
+                    backgroundColor:
+                        const Color(0xFFBA68C8).withValues(alpha: 0.1),
                     labelStyle: TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 14,
@@ -454,7 +454,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
   Widget _buildPreferencesSection(bool isMobile) {
     final l10n = AppLocalizations.of(Get.context!)!;
-    
+
     return Container(
       padding: EdgeInsets.all(isMobile ? 16 : 20),
       decoration: BoxDecoration(
@@ -629,7 +629,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
   Widget _buildAccountActionsSection(bool isMobile) {
     final l10n = AppLocalizations.of(Get.context!)!;
-    
+
     return Container(
       padding: EdgeInsets.all(isMobile ? 16 : 20),
       decoration: BoxDecoration(
@@ -720,10 +720,10 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   }
 
   // 显示技能选择底部抽屉
-  void _showSkillsBottomSheet(UserProfileController profileController) {
+  void _showSkillsBottomSheet(UserStateController profileController) {
     final SkillsApiService skillsService = SkillsApiService();
     final currentSkills = profileController.currentUser.value?.skills ?? [];
-    
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -762,7 +762,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   }
 
   // 显示兴趣选择底部抽屉
-  void _showInterestsBottomSheet(UserProfileController profileController) {
+  void _showInterestsBottomSheet(UserStateController profileController) {
     final InterestsApiService interestsService = InterestsApiService();
     final currentInterests =
         profileController.currentUser.value?.interests ?? [];

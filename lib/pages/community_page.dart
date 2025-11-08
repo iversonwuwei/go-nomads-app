@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../controllers/community_controller.dart';
-import '../models/community_model.dart';
+import '../features/community/domain/entities/trip_report.dart';
+import '../features/community/presentation/controllers/community_state_controller.dart';
 import '../widgets/skeletons/skeletons.dart';
 
 class CommunityPage extends StatelessWidget {
@@ -10,7 +10,7 @@ class CommunityPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(CommunityController());
+    final controller = Get.find<CommunityStateController>();
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
 
@@ -61,7 +61,8 @@ class CommunityPage extends StatelessWidget {
   }
 
   // Trip Reports Tab
-  Widget _buildTripReportsTab(CommunityController controller, bool isMobile) {
+  Widget _buildTripReportsTab(
+      CommunityStateController controller, bool isMobile) {
     return Obx(() => ListView.builder(
           padding: EdgeInsets.fromLTRB(
             isMobile ? 16 : 24,
@@ -78,7 +79,7 @@ class CommunityPage extends StatelessWidget {
   }
 
   Widget _buildTripReportCard(
-      TripReport report, CommunityController controller, bool isMobile) {
+      TripReport report, CommunityStateController controller, bool isMobile) {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
@@ -277,11 +278,9 @@ class CommunityPage extends StatelessWidget {
                   child: Row(
                     children: [
                       Icon(
-                        controller.likedReports.contains(report.id)
-                            ? Icons.favorite
-                            : Icons.favorite_border,
+                        report.isLiked ? Icons.favorite : Icons.favorite_border,
                         size: 20,
-                        color: controller.likedReports.contains(report.id)
+                        color: report.isLiked
                             ? const Color(0xFFFF4458)
                             : const Color(0xFF6b7280),
                       ),
@@ -367,7 +366,7 @@ class CommunityPage extends StatelessWidget {
 
   // Recommendations Tab
   Widget _buildRecommendationsTab(
-      CommunityController controller, bool isMobile) {
+      CommunityStateController controller, bool isMobile) {
     return Column(
       children: [
         // Category Filter
@@ -599,7 +598,7 @@ class CommunityPage extends StatelessWidget {
   }
 
   // Q&A Tab
-  Widget _buildQATab(CommunityController controller, bool isMobile) {
+  Widget _buildQATab(CommunityStateController controller, bool isMobile) {
     return Obx(() => ListView.builder(
           padding: EdgeInsets.fromLTRB(
             isMobile ? 16 : 24,
@@ -616,7 +615,7 @@ class CommunityPage extends StatelessWidget {
   }
 
   Widget _buildQuestionCard(
-      Question question, CommunityController controller, bool isMobile) {
+      Question question, CommunityStateController controller, bool isMobile) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -754,11 +753,11 @@ class CommunityPage extends StatelessWidget {
                 child: Row(
                   children: [
                     Icon(
-                      controller.upvotedQuestions.contains(question.id)
+                      question.isUpvoted
                           ? Icons.arrow_upward
                           : Icons.arrow_upward_outlined,
                       size: 18,
-                      color: controller.upvotedQuestions.contains(question.id)
+                      color: question.isUpvoted
                           ? const Color(0xFFFF4458)
                           : const Color(0xFF6b7280),
                     ),

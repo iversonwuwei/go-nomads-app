@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
-import '../services/nomads_auth_service.dart';
+import '../features/auth/presentation/controllers/auth_state_controller.dart';
 
 /// 应用启动初始化服务
 /// 用于在应用启动时恢复用户登录状态
@@ -9,14 +10,13 @@ class AppInitService {
   factory AppInitService() => _instance;
   AppInitService._internal();
 
-  final NomadsAuthService _authService = NomadsAuthService();
   bool _isInitialized = false;
 
   /// 是否已初始化
   bool get isInitialized => _isInitialized;
 
   /// 初始化应用
-  /// 
+  ///
   /// 在 main.dart 的 runApp 之前调用
   /// 主要功能：
   /// 1. 从 SQLite 恢复 token
@@ -31,13 +31,20 @@ class AppInitService {
     print('🚀 开始初始化应用...');
 
     try {
-      // 尝试从 SQLite 恢复登录状态
-      final isLoggedIn = await _authService.checkLoginStatus();
+      // AuthStateController 会在 onInit 中自动从 SQLite 恢复登录状态
+      // 这里只需要确保 AuthStateController 已经初始化
+      try {
+        final authController = Get.find<AuthStateController>();
+        final isLoggedIn = authController.isAuthenticated.value;
 
-      if (isLoggedIn) {
-        print('✅ 用户登录状态已恢复');
-      } else {
-        print('ℹ️ 用户未登录或 token 已过期');
+        if (isLoggedIn) {
+          print('✅ 用户登录状态已恢复');
+        } else {
+          print('ℹ️ 用户未登录或 token 已过期');
+        }
+      } catch (e) {
+        print('⚠️ AuthStateController 未初始化: $e');
+        print('ℹ️ 登录状态将在 AuthStateController 初始化后恢复');
       }
 
       _isInitialized = true;
@@ -81,7 +88,7 @@ class _AppInitializerState extends State<AppInitializer> {
 
   Future<void> _initialize() async {
     await AppInitService().initialize();
-    
+
     if (mounted) {
       setState(() {
         _isInitialized = true;

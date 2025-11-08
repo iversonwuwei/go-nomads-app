@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 
 import '../config/api_config.dart';
-import '../models/user_favorite_city_model.dart';
+import '../features/user/infrastructure/models/user_favorite_city_dto.dart';
 import 'http_service.dart';
 
 /// 用户收藏城市API服务

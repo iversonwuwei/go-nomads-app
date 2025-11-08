@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../controllers/bottom_nav_controller.dart';
-import '../controllers/user_state_controller.dart';
+import '../features/user/presentation/controllers/user_state_controller.dart';
 import '../generated/app_localizations.dart';
 import '../routes/app_routes.dart';
 

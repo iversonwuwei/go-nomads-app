@@ -1,7 +1,9 @@
 import 'package:dio/dio.dart';
 
 import '../config/api_config.dart';
-import '../models/user_city_content_models.dart';
+import '../features/user_city_content/domain/entities/user_city_content.dart'
+    show ExpenseCategory;
+import '../features/user_city_content/infrastructure/models/user_city_content_dto.dart';
 import 'http_service.dart';
 
 /// 用户城市内容 API 服务

@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
-import '../controllers/city_detail_controller.dart';
+import '../features/ai/presentation/controllers/ai_state_controller.dart';
+import '../features/travel_plan/domain/entities/travel_plan.dart';
 import '../generated/app_localizations.dart';
 import '../models/travel_plan_model.dart';
 import '../services/ai_api_service.dart';
@@ -45,8 +46,8 @@ class _TravelPlanPageState extends State<TravelPlanPage>
   late AnimationController _shimmerController;
 
   // 流式进度状态
-  String _progressMessage = '正在准备...';
-  int _progressValue = 0;
+  final String _progressMessage = '正在准备...';
+  final int _progressValue = 0;
 
   @override
   void initState() {
@@ -76,77 +77,46 @@ class _TravelPlanPageState extends State<TravelPlanPage>
     super.dispose();
   }
 
-  /// 使用异步任务队列生成旅行计划 (推荐)
+  /// 使用AI State Controller生成旅行计划
   Future<void> _generatePlanAsync() async {
-    final controller = Get.find<CityDetailController>();
-    bool dialogShown = false;
+    final aiController = Get.find<AiStateController>();
 
     try {
-      // 显示前先确保没有残留的进度对话框
-      print('[LOG] 尝试关闭残留进度对话框...');
-      AsyncTaskProgressDialog.dismiss();
-      await Future.delayed(const Duration(milliseconds: 100));
+      setState(() => _isLoading = true);
 
-      print('[LOG] 显示进度对话框');
-      AsyncTaskProgressDialog.show(
-        title: 'Generating Travel Plan',
-        progress: controller.taskProgress,
-        message: controller.taskProgressMessage,
-      );
-      dialogShown = true;
-
-      // 调用异步任务生成
-      final planId = await controller.generateTravelPlanAsync(
+      // 调用AI Controller生成旅行计划
+      final plan = await aiController.generateTravelPlan(
+        cityId: widget.cityId ?? '',
+        cityName: widget.cityName ?? '',
+        cityImage: '',
         duration: widget.duration ?? 7,
-        budget: widget.budget ?? 'medium', // "low", "medium", "high"
-        travelStyle: widget.travelStyle ??
-            'culture', // "adventure", "relaxation", "culture", "nightlife"
+        budget: widget.budget ?? 'medium',
+        travelStyle: widget.travelStyle ?? 'culture',
         interests: widget.interests ?? [],
         departureLocation: widget.departureLocation,
-        departureDate: widget.departureDate,
-        onProgress: (progress, message) {
-          // 进度已通过 controller.taskProgress 和 taskProgressMessage 响应式更新
-          print('📊 进度: $progress% - $message');
-        },
       );
 
-      if (planId != null) {
-        print('✅ 旅行计划生成成功! planId: $planId');
-
-        // 从后端 API 获取完整的旅行计划数据
-        try {
-          print('📥 开始获取旅行计划详情...');
-
-          final aiService = AiApiService();
-          final plan = await aiService.getTravelPlanById(planId);
-
-          print('✅ 成功获取旅行计划数据');
-          print('   城市: ${plan.cityName}');
-          print('   天数: ${plan.duration}');
-          print('   景点数: ${plan.attractions.length}');
-
-          // 立即关闭对话框
-          print('[LOG] 成功获取数据，立即关闭对话框');
-          AsyncTaskProgressDialog.dismiss();
-          dialogShown = false; // 标记已关闭
-
-          if (mounted) {
-            setState(() {
-              _plan = plan;
-              _isLoading = false;
-            });
-
-            AppToast.success('Travel plan loaded successfully!');
-          }
-        } catch (e) {
-          print('❌ 获取旅行计划详情失败: $e');
-
-          // 立即关闭对话框
-          print('[LOG] 获取详情失败，立即关闭对话框');
-          AsyncTaskProgressDialog.dismiss();
-          dialogShown = false; // 标记已关闭
-
-          // 如果获取失败,降级使用模拟数据
+      if (plan != null && mounted) {
+        setState(() {
+          _plan = plan;
+          _isLoading = false;
+        });
+        AppToast.success('Travel plan generated successfully!');
+      } else if (mounted) {
+        // 生成失败
+        setState(() => _isLoading = false);
+        AppToast.error('Failed to generate travel plan');
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      print('❌ 生成旅行计划失败: $e');
+      if (mounted) {
+        setState(() => _isLoading = false);
+        AppToast.error('Error: $e');
+        Navigator.of(context).pop();
+      }
+    }
+  }
           if (mounted) {
             setState(() {
               _plan = controller.generateMockTravelPlan(
@@ -162,7 +132,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                 'Failed to load plan data, using mock data: ${e.toString()}');
           }
         }
-      } else {
+      } void else {
         print('⚠️ planId 为 null，生成失败');
 
         // 立即关闭对话框
@@ -179,7 +149,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
           Get.back();
         }
       }
-    } catch (e, stackTrace) {
+    } void catch (e, stackTrace) {
       print('❌ 异步生成旅行计划失败: $e');
       print('堆栈跟踪: $stackTrace');
 
@@ -196,7 +166,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
         // 返回到上一页
         Get.back();
       }
-    } finally {
+    } void finally {
       // 确保对话框一定会被关闭
       print('[LOG] finally 块：确保关闭进度对话框 (dialogShown=$dialogShown)');
       
@@ -212,80 +182,6 @@ class _TravelPlanPageState extends State<TravelPlanPage>
         });
       }
     }
-  }
-
-  /// 使用流式 API 生成旅行计划 (备用方案)
-  Future<void> _generatePlanStream() async {
-    final controller = Get.find<CityDetailController>();
-
-    try {
-      await controller.generateTravelPlanStream(
-        duration: widget.duration ?? 7,
-        budget: widget.budget ?? 'medium',
-        travelStyle: widget.travelStyle ?? 'culture',
-        interests: widget.interests ?? [],
-        departureLocation: widget.departureLocation,
-        onProgress: (String message, int progress) {
-          // 实时更新进度
-          if (mounted) {
-            setState(() {
-              _progressMessage = message;
-              _progressValue = progress;
-            });
-          }
-        },
-        onData: (TravelPlan plan) {
-          // 接收到完整数据
-          if (mounted) {
-            setState(() {
-              _plan = plan;
-              _isLoading = false;
-            });
-          }
-        },
-        onError: (String error) {
-          // 处理错误
-          if (mounted) {
-            setState(() {
-              _isLoading = false;
-            });
-
-            AppToast.error(error);
-            Get.back();
-          }
-        },
-      );
-    } catch (e) {
-      print('❌ 生成旅行计划异常: $e');
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-
-        AppToast.error('生成失败,请稍后重试');
-        Get.back();
-      }
-    }
-  }
-
-  /// 旧的同步生成方法 (保留作为备用)
-  Future<void> _generatePlan() async {
-    final controller = Get.find<CityDetailController>();
-    final plan = await controller.generateTravelPlan(
-      duration: widget.duration ?? 7,
-      budget: widget.budget ?? 'medium',
-      travelStyle: widget.travelStyle ?? 'culture',
-      interests: widget.interests ?? [],
-      departureLocation: widget.departureLocation,
-    );
-
-    if (mounted) {
-      setState(() {
-        _plan = plan;
-        _isLoading = false;
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {

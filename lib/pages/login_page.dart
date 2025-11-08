@@ -4,16 +4,16 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
-import '../controllers/auth_controller.dart';
 import '../generated/app_localizations.dart';
 import '../widgets/app_toast.dart';
+import 'controllers/login_form_controller.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final AuthController controller = Get.put(AuthController());
+    final LoginFormController controller = Get.put(LoginFormController());
     final screenWidth = MediaQuery.of(context).size.width;
     final isLargeScreen = screenWidth > 800;
 
@@ -27,7 +27,7 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  Widget _buildDesktopLayout(AuthController controller) {
+  Widget _buildDesktopLayout(LoginFormController controller) {
     return Row(
       children: [
         Expanded(
@@ -44,7 +44,7 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  Widget _buildMobileLayout(AuthController controller) {
+  Widget _buildMobileLayout(LoginFormController controller) {
     return Builder(
       builder: (context) {
         final l10n = AppLocalizations.of(context)!;
@@ -298,7 +298,7 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  Widget _buildLoginCard(AuthController controller) {
+  Widget _buildLoginCard(LoginFormController controller) {
     return Builder(
       builder: (context) {
         final l10n = AppLocalizations.of(context)!;
@@ -427,7 +427,7 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  Widget _buildLoginTypeTabs(AuthController controller) {
+  Widget _buildLoginTypeTabs(LoginFormController controller) {
     return Builder(
       builder: (context) {
         final l10n = AppLocalizations.of(context)!;
@@ -478,7 +478,7 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  Widget _buildLoginForm(AuthController controller, bool isMobile) {
+  Widget _buildLoginForm(LoginFormController controller, bool isMobile) {
     return Builder(
       builder: (context) {
         final l10n = AppLocalizations.of(context)!;
@@ -589,7 +589,7 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  Widget _buildPasswordField(AuthController controller) {
+  Widget _buildPasswordField(LoginFormController controller) {
     return Builder(
       builder: (context) {
         final l10n = AppLocalizations.of(context)!;
@@ -646,7 +646,7 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  Widget _buildCodeField(AuthController controller) {
+  Widget _buildCodeField(LoginFormController controller) {
     return Builder(
       builder: (context) {
         final l10n = AppLocalizations.of(context)!;
@@ -739,7 +739,7 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  Widget _buildLoginButton(AuthController controller) {
+  Widget _buildLoginButton(LoginFormController controller) {
     return Builder(
       builder: (context) {
         final l10n = AppLocalizations.of(context)!;
@@ -748,7 +748,7 @@ class LoginPage extends StatelessWidget {
               width: double.infinity,
               height: 52.h,
               child: ElevatedButton(
-                onPressed: controller.isLoading.value ? null : controller.login,
+                onPressed: controller.isLoading ? null : controller.login,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF1976D2),
                   foregroundColor: Colors.white,
@@ -759,7 +759,7 @@ class LoginPage extends StatelessWidget {
                   ),
                   disabledBackgroundColor: Colors.grey[300],
                 ),
-                child: controller.isLoading.value
+                child: controller.isLoading
                     ? SizedBox(
                         height: 22.w,
                         width: 22.w,
@@ -783,26 +783,26 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  Widget _buildThirdPartyButtons(AuthController controller) {
+  Widget _buildThirdPartyButtons(LoginFormController controller) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _buildSocialButton(
           icon: Icons.wechat,
           color: const Color(0xFF07C160),
-          onTap: () => controller.thirdPartyLogin(LoginType.wechat),
+          onTap: () => controller.loginWithThirdParty(LoginType.wechat),
         ),
         SizedBox(width: 24.w),
         _buildSocialButton(
           icon: Icons.apple,
           color: Colors.black87,
-          onTap: () => controller.thirdPartyLogin(LoginType.alipay),
+          onTap: () => controller.loginWithThirdParty(LoginType.alipay),
         ),
         SizedBox(width: 24.w),
         _buildSocialButton(
           icon: Icons.facebook,
           color: const Color(0xFF1877F2),
-          onTap: () => controller.thirdPartyLogin(LoginType.alipay),
+          onTap: () => controller.loginWithThirdParty(LoginType.alipay),
         ),
       ],
     );

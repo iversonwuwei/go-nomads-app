@@ -4,29 +4,17 @@ import '../config/api_config.dart';
 import '../models/city_option.dart';
 import '../models/country_option.dart';
 import 'http_service.dart';
-import 'nomads_auth_service.dart';
 
 /// Location API service for fetching countries and cities from backend.
 class LocationApiService {
   LocationApiService();
 
   final HttpService _httpService = HttpService();
-  final NomadsAuthService _authService = NomadsAuthService();
 
   Future<void> _ensureAuthToken() async {
     final token = _httpService.authToken;
-    if (token != null && token.isNotEmpty) {
-      return;
-    }
-
-    final isLoggedIn = await _authService.checkLoginStatus();
-    if (!isLoggedIn) {
+    if (token == null || token.isEmpty) {
       throw HttpException('未授权，请先登录', 401);
-    }
-
-    final refreshedToken = _httpService.authToken;
-    if (refreshedToken == null || refreshedToken.isEmpty) {
-      throw HttpException('未能获取有效的认证信息', 401);
     }
   }
 

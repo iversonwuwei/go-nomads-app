@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
+import '../features/auth/presentation/controllers/auth_state_controller.dart';
 import '../generated/app_localizations.dart';
 import '../routes/app_routes.dart';
-import '../services/auth_service.dart';
 import '../services/http_service.dart';
 import '../widgets/app_toast.dart';
 
@@ -24,7 +24,6 @@ class _RegisterPageState extends State<RegisterPage> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _usernameController = TextEditingController();
-  final _authService = AuthService();
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -58,29 +57,38 @@ class _RegisterPageState extends State<RegisterPage> {
       try {
         final l10n = AppLocalizations.of(context)!;
 
-        // 调用后端注册 API
-        // 注意：后�?RegisterDto 不需�?confirmPassword 字段
-        final response = await _authService.register(
-          username: _usernameController.text.trim(),
+        // 调用 AuthStateController 注册
+        final authController = Get.find<AuthStateController>();
+        final success = await authController.register(
+          name: _usernameController.text.trim(),
           email: _emailController.text.trim(),
           password: _passwordController.text,
           confirmPassword: _confirmPasswordController.text,
         );
 
-        // 注册成功 - response 包含 {accessToken, refreshToken, user}
-        print('�?注册成功: ${response['user']}');
+        if (success) {
+          // 注册成功
+          final user = authController.currentUser.value;
+          print('✅ 注册成功: ${user?.name}');
 
-        AppToast.success(
-          l10n.welcomeToCommunity,
-          title: l10n.success,
-        );
+          AppToast.success(
+            l10n.welcomeToCommunity,
+            title: l10n.success,
+          );
 
-        // 延迟一下让用户看到成功提示
-        await Future.delayed(const Duration(milliseconds: 500));
+          // 延迟一下让用户看到成功提示
+          await Future.delayed(const Duration(milliseconds: 500));
 
-        // 注册成功后跳转到登录页面
-        Get.offAllNamed('/login');
-        
+          // 注册成功后跳转到主页 (已自动登录)
+          Get.offAllNamed('/');
+        } else {
+          // 注册失败
+          print('❌ 注册失败');
+          AppToast.error(
+            '注册失败,请检查输入信息',
+            title: '注册失败',
+          );
+        }
       } on HttpException catch (e) {
         // HTTP 异常 - 显示后端返回的错误信�?
         print('�?注册失败 (HttpException): ${e.message}');
@@ -630,4 +638,3 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 }
-

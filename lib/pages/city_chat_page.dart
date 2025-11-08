@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
-import '../controllers/chat_controller.dart';
+import '../features/chat/presentation/controllers/chat_state_controller.dart';
 import '../generated/app_localizations.dart';
 import '../models/chat_model.dart';
 import '../models/user_model.dart' as models;
@@ -15,7 +15,7 @@ class CityChatPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(ChatController());
+    final controller = Get.find<ChatStateController>();
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
 
@@ -42,7 +42,7 @@ class CityChatPage extends StatelessWidget {
   Widget _buildChatRoomsList(
       BuildContext context, ChatController controller, bool isMobile) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return CustomScrollView(
       slivers: [
         SliverAppBar(
@@ -538,7 +538,7 @@ class CityChatPage extends StatelessWidget {
 
   void _showAttachmentOptions(ChatController controller) {
     final l10n = AppLocalizations.of(Get.context!)!;
-    
+
     Get.bottomSheet(
       Container(
         constraints: const BoxConstraints(maxHeight: 450),
@@ -746,7 +746,7 @@ class CityChatPage extends StatelessWidget {
 
   void _showOnlineUsers(ChatController controller) {
     final l10n = AppLocalizations.of(Get.context!)!;
-    
+
     Get.bottomSheet(
       Container(
         height: 400,

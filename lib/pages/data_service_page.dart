@@ -4,17 +4,17 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/data_service_controller.dart';
-import '../controllers/user_state_controller.dart';
+import '../features/meetup/domain/entities/meetup.dart';
+import '../features/meetup/infrastructure/repositories/meetup_repository.dart';
+import '../features/meetup/presentation/controllers/meetup_state_controller.dart';
+import '../features/user/presentation/controllers/user_state_controller.dart';
 import '../generated/app_localizations.dart';
-import '../models/meetup_model.dart';
 import '../routes/app_routes.dart';
-import '../services/events_api_service.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/copyright_widget.dart';
 import 'city_detail_page.dart';
 import 'create_meetup_page.dart';
 import 'global_map_page.dart';
-import 'meetup_detail_page.dart';
 
 class DataServicePage extends StatefulWidget {
   final bool scrollToCities;
@@ -138,6 +138,8 @@ class _DataServicePageState extends State<DataServicePage>
   Widget build(BuildContext context) {
     // 使用 Get.find() 获取已经初始化的 Controller，而不是创建新实例
     final DataServiceController controller = Get.find<DataServiceController>();
+    final MeetupStateController meetupController =
+        Get.find<MeetupStateController>();
     final l10n = AppLocalizations.of(context)!;
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
@@ -206,7 +208,8 @@ class _DataServicePageState extends State<DataServicePage>
                 padding: EdgeInsets.symmetric(
                   horizontal: isMobile ? 16 : 32,
                 ),
-                child: _buildMeetupsSection(controller, isMobile),
+                child: _buildMeetupsSection(
+                    controller, meetupController, isMobile),
               ),
             ),
 
@@ -918,9 +921,10 @@ class _DataServicePageState extends State<DataServicePage>
   }
 
   // Meetups 部分 - Nomads.com 风格
-  Widget _buildMeetupsSection(DataServiceController controller, bool isMobile) {
+  Widget _buildMeetupsSection(DataServiceController controller,
+      MeetupStateController meetupController, bool isMobile) {
     return Obx(() {
-      final upcomingMeetups = controller.upcomingMeetups;
+      final upcomingMeetups = meetupController.upcomingMeetups;
       final isLoadingMeetups = controller.isLoadingMeetups.value;
 
       // 显示加载中状态
@@ -1915,7 +1919,7 @@ class _DataListItem extends StatelessWidget {
 
 // Meetup 卡片 - Nomads.com 风格
 class _MeetupCard extends StatefulWidget {
-  final Map<String, dynamic> meetup;
+  final Meetup meetup;
   final DataServiceController controller;
   final bool isMobile;
 
@@ -1933,58 +1937,28 @@ class _MeetupCardState extends State<_MeetupCard> {
   // 卡片自己的状�?- 符合 DDD 原则
   late bool _isJoined;
 
-  // �?widget.meetup 获取最新的参与人数（getter方式，始终读取最新值）
+  // 从 widget.meetup 获取最新的参与人数
   int get _currentAttendees {
-    final value = widget.meetup['attendees'];
-    print('🔍 Getting _currentAttendees: $value (type: ${value.runtimeType})');
-    return (value is int) ? value : 0;
+    return widget.meetup.capacity.currentAttendees;
   }
 
   int get _maxAttendees {
-    final value = widget.meetup['maxAttendees'];
-    print('🔍 Getting _maxAttendees: $value (type: ${value.runtimeType})');
-    return (value is int) ? value : 0;
+    return widget.meetup.capacity.maxAttendees;
   }
 
   @override
   void initState() {
     super.initState();
 
-    // 调试：打�?meetup 数据
+    // 调试：打印 meetup 数据
     print('🔍 MeetupCard initState:');
-    print('   ID: ${widget.meetup['id']}');
-    print('   Title: ${widget.meetup['title']}');
-    print('   Raw meetup data keys: ${widget.meetup.keys.toList()}');
-    print(
-        '   Raw attendees value: ${widget.meetup['attendees']} (${widget.meetup['attendees']?.runtimeType})');
-    print(
-        '   Raw maxAttendees value: ${widget.meetup['maxAttendees']} (${widget.meetup['maxAttendees']?.runtimeType})');
-    print('   Computed Attendees: $_currentAttendees / $_maxAttendees');
-    print(
-        '   containsKey(isParticipant): ${widget.meetup.containsKey('isParticipant')}');
-    if (widget.meetup.containsKey('isParticipant')) {
-      print('   isParticipant: ${widget.meetup['isParticipant']}');
-    }
+    print('   ID: ${widget.meetup.id}');
+    print('   Title: ${widget.meetup.title}');
+    print('   Attendees: $_currentAttendees / $_maxAttendees');
 
-    // �?API 数据获取参与状态（优先）或�?controller �?rsvpedMeetups 获取
-    if (widget.meetup.containsKey('isParticipant')) {
-      _isJoined = widget.meetup['isParticipant'] as bool? ?? false;
-      print('   �?�?API 数据读取 isParticipant: $_isJoined');
-    } else {
-      // 降级方案：从 controller 获取初始�?joined 状�?
-      final meetupId = widget.meetup['id'];
-      final int meetupIdInt;
-      if (meetupId is int) {
-        meetupIdInt = meetupId;
-      } else if (meetupId is String) {
-        meetupIdInt = int.tryParse(meetupId) ?? 0;
-      } else {
-        meetupIdInt = 0;
-      }
-      _isJoined = widget.controller.rsvpedMeetups.contains(meetupIdInt);
-      print('   ⚠️ API �?isParticipant，从 controller 读取: $_isJoined');
-    }
-
+    // 从 controller 获取初始 joined 状�?
+    final meetupIdInt = int.tryParse(widget.meetup.id) ?? 0;
+    _isJoined = widget.controller.rsvpedMeetups.contains(meetupIdInt);
     print('   最终状�?_isJoined: $_isJoined');
   }
 
@@ -1992,24 +1966,22 @@ class _MeetupCardState extends State<_MeetupCard> {
   void didUpdateWidget(_MeetupCard oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    // �?widget 更新时，检查数据是否变�?
-    if (oldWidget.meetup['id'] == widget.meetup['id']) {
-      // 同一�?meetup，更新参与状�?
-      if (widget.meetup.containsKey('isParticipant')) {
-        final newIsParticipant =
-            widget.meetup['isParticipant'] as bool? ?? false;
-        if (_isJoined != newIsParticipant) {
-          print(
-              '🔄 Meetup ${widget.meetup['title']} 参与状态更�? $_isJoined -> $newIsParticipant');
-          setState(() {
-            _isJoined = newIsParticipant;
-          });
-        }
+    // 当 widget 更新时，检查数据是否变化
+    if (oldWidget.meetup.id == widget.meetup.id) {
+      // 同一个 meetup，从 controller 更新参与状�?
+      final meetupIdInt = int.tryParse(widget.meetup.id) ?? 0;
+      final newIsJoined = widget.controller.rsvpedMeetups.contains(meetupIdInt);
+      if (_isJoined != newIsJoined) {
+        print(
+            '🔄 Meetup ${widget.meetup.title} 参与状态更�? $_isJoined -> $newIsJoined');
+        setState(() {
+          _isJoined = newIsJoined;
+        });
       }
 
       // 参与人数会通过 getter 自动获取最新值，无需手动更新
       print(
-          '🔄 Meetup ${widget.meetup['title']} 数据更新: $_currentAttendees / $_maxAttendees');
+          '🔄 Meetup ${widget.meetup.title} 数据更新: $_currentAttendees / $_maxAttendees');
     }
   }
 
@@ -2028,44 +2000,25 @@ class _MeetupCardState extends State<_MeetupCard> {
     }
 
     // 获取 meetup id
-    final meetupId = widget.meetup['id'];
-    String meetupIdString;
-    int meetupIdInt;
-
-    // 类型转换
-    if (meetupId is int) {
-      meetupIdInt = meetupId;
-      meetupIdString = meetupId.toString();
-    } else if (meetupId is String) {
-      meetupIdString = meetupId;
-      meetupIdInt = int.tryParse(meetupId) ?? 0;
-    } else {
-      print('�?无效�?meetup id 类型: ${meetupId.runtimeType}');
-      AppToast.error('Invalid meetup ID');
-      return;
-    }
+    final meetupIdString = widget.meetup.id;
+    final meetupIdInt = int.tryParse(meetupIdString) ?? 0;
 
     final isJoining = !_isJoined;
 
     try {
-      // 调用真实�?API
-      final eventsApiService = EventsApiService();
+      // 使用 MeetupRepository 替代直接调用 API
+      final meetupRepository = MeetupRepository();
 
       if (isJoining) {
         // 加入活动
-        await eventsApiService.joinEvent(meetupIdString);
+        await meetupRepository.rsvpToMeetup(meetupIdString);
       } else {
-        // 退出活�?
-        await eventsApiService.leaveEvent(meetupIdString);
+        // 退出活动
+        await meetupRepository.cancelRsvp(meetupIdString);
       }
 
       // API 调用成功，更新全局 rsvpedMeetups 列表
       widget.controller.toggleRSVP(meetupIdInt);
-
-      // 更新 widget.meetup 中的数据（这�?getter 就能获取最新值）
-      widget.meetup['isParticipant'] = isJoining;
-      widget.meetup['attendees'] =
-          (widget.meetup['attendees'] as int) + (isJoining ? 1 : -1);
 
       // 更新卡片自己的状�?
       setState(() {
@@ -2095,14 +2048,13 @@ class _MeetupCardState extends State<_MeetupCard> {
 
   @override
   Widget build(BuildContext context) {
-    final date = widget.meetup['date'] as DateTime;
+    final date = widget.meetup.schedule.startTime;
 
     return InkWell(
       onTap: () {
-        // �?Map 转换�?MeetupModel
-        final meetupModel = _convertToMeetupModel(widget.meetup);
-        // 跳转�?meetup 详情�?
-        Get.to(() => MeetupDetailPage(meetup: meetupModel));
+        // TODO: MeetupDetailPage 需要迁移到使用 Meetup 实体
+        // Get.to(() => MeetupDetailPage(meetup: widget.meetup));
+        AppToast.info('Meetup detail page is under migration');
       },
       borderRadius: BorderRadius.circular(12),
       child: Container(
@@ -2131,7 +2083,9 @@ class _MeetupCardState extends State<_MeetupCard> {
                   borderRadius:
                       const BorderRadius.vertical(top: Radius.circular(12)),
                   child: Image.network(
-                    widget.meetup['image'],
+                    widget.meetup.images.isNotEmpty
+                        ? widget.meetup.images.first
+                        : 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=400',
                     width: double.infinity,
                     height: 140,
                     fit: BoxFit.cover,
@@ -2144,11 +2098,11 @@ class _MeetupCardState extends State<_MeetupCard> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                      color: _getTypeColor(widget.meetup['type']),
+                      color: _getTypeColor(widget.meetup.type.value),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      widget.meetup['type'],
+                      widget.meetup.type.value,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 12,
@@ -2169,7 +2123,7 @@ class _MeetupCardState extends State<_MeetupCard> {
                 children: [
                   // 标题
                   Text(
-                    widget.meetup['title'],
+                    widget.meetup.title,
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
@@ -2196,7 +2150,7 @@ class _MeetupCardState extends State<_MeetupCard> {
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
-                              '${_formatDate(date)} ${widget.meetup['time'] ?? ''}',
+                              '${_formatDate(date)} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}',
                               style: const TextStyle(
                                 fontSize: 11,
                                 color: AppColors.textSecondary,
@@ -2219,9 +2173,9 @@ class _MeetupCardState extends State<_MeetupCard> {
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
-                              widget.meetup['venue'] ??
-                                  widget.meetup['city'] ??
-                                  'TBD',
+                              widget.meetup.venue.name.isNotEmpty
+                                  ? widget.meetup.venue.name
+                                  : widget.meetup.location.city,
                               style: const TextStyle(
                                 fontSize: 11,
                                 color: AppColors.textSecondary,
@@ -2286,7 +2240,7 @@ class _MeetupCardState extends State<_MeetupCard> {
                             const SizedBox(width: 3),
                             Flexible(
                               child: Text(
-                                widget.meetup['organizer'] ?? 'Organizer',
+                                widget.meetup.organizer.name,
                                 style: const TextStyle(
                                   fontSize: 11,
                                   color: AppColors.textSecondary,
@@ -2376,10 +2330,10 @@ class _MeetupCardState extends State<_MeetupCard> {
                                 Get.toNamed(
                                   AppRoutes.cityChat,
                                   arguments: {
-                                    'city': widget.meetup['city'],
-                                    'country': widget.meetup['country'],
-                                    'meetupId': widget.meetup['id'],
-                                    'meetupTitle': widget.meetup['title'],
+                                    'city': widget.meetup.location.city,
+                                    'country': widget.meetup.location.country,
+                                    'meetupId': widget.meetup.id,
+                                    'meetupTitle': widget.meetup.title,
                                   },
                                 );
                               },
@@ -2497,73 +2451,5 @@ class _MeetupCardState extends State<_MeetupCard> {
       'Dec'
     ];
     return '${months[date.month - 1]} ${date.day}';
-  }
-
-  // �?Map 转换�?MeetupModel
-  MeetupModel _convertToMeetupModel(Map<String, dynamic> meetup) {
-    final date = meetup['date'] as DateTime;
-    final time = meetup['time'] as String;
-
-    // 合并日期和时�?
-    final timeParts = time.split(':');
-    final dateTime = DateTime(
-      date.year,
-      date.month,
-      date.day,
-      int.parse(timeParts[0]),
-      int.parse(timeParts[1]),
-    );
-
-    // 处理 meetup id 的类型转�?
-    final meetupId = meetup['id'];
-    final int meetupIdInt;
-    if (meetupId is int) {
-      meetupIdInt = meetupId;
-    } else if (meetupId is String) {
-      meetupIdInt = int.tryParse(meetupId) ?? 0;
-    } else {
-      meetupIdInt = 0;
-    }
-
-    // 安全地获取字符串字段,处理可能的 Map 类型
-    String safeGetString(dynamic value, String defaultValue) {
-      if (value == null) return defaultValue;
-      if (value is String) return value;
-      if (value is Map<String, dynamic>) {
-        // 如果是 Map,尝试获取常见的名称字段
-        return value['name'] ??
-            value['displayName'] ??
-            value['title'] ??
-            defaultValue;
-      }
-      return value.toString();
-    }
-
-    return MeetupModel(
-      id: meetup['id'].toString(),
-      title: safeGetString(meetup['title'], 'Unknown Event'),
-      type: safeGetString(meetup['type'], 'Meetup'),
-      description: safeGetString(meetup['description'], ''),
-      city: safeGetString(meetup['city'], 'Unknown'),
-      country: safeGetString(meetup['country'], 'Unknown'),
-      venue: safeGetString(meetup['venue'], 'TBD'),
-      venueAddress: safeGetString(meetup['venue'], 'TBD'), // 使用 venue 作为地址
-      dateTime: dateTime,
-      maxAttendees:
-          (meetup['maxAttendees'] is int) ? meetup['maxAttendees'] as int : 20,
-      currentAttendees:
-          (meetup['attendees'] is int) ? meetup['attendees'] as int : 0,
-      organizerId: meetup['id'].toString(),
-      organizerName: safeGetString(meetup['organizer'], 'Organizer'),
-      organizerAvatar: safeGetString(
-          meetup['organizerAvatar'], 'https://i.pravatar.cc/150?img=1'),
-      images: [
-        safeGetString(meetup['image'],
-            'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=400')
-      ],
-      attendeeIds: [],
-      isJoined: widget.controller.rsvpedMeetups.contains(meetupIdInt),
-      createdAt: DateTime.now(),
-    );
   }
 }

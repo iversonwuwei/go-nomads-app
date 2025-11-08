@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
-import '../controllers/chat_controller.dart';
+import '../features/chat/presentation/controllers/chat_state_controller.dart';
 import '../generated/app_localizations.dart';
 import '../models/chat_model.dart';
 import '../models/user_model.dart' as models;
@@ -20,7 +20,7 @@ class DirectChatPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(ChatController());
+    final controller = Get.find<ChatStateController>();
 
     // 创建一对一聊天室
     WidgetsBinding.instance.addPostFrameCallback((_) {
