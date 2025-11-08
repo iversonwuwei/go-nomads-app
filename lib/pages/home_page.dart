@@ -6,8 +6,8 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/shopping_controller.dart';
+import '../features/api/domain/entities/api_interface.dart';
 import '../generated/app_localizations.dart';
-import '../models/api_interface_model.dart';
 import '../routes/app_routes.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/copyright_widget.dart';
@@ -218,11 +218,6 @@ class MyHomePage extends StatelessWidget {
         'icon': Icons.verified_user_outlined,
         'title': '验证接口',
         'route': AppRoutes.coworking
-      },
-      {
-        'icon': Icons.analytics_outlined,
-        'title': '分析工具',
-        'route': AppRoutes.analyticsTool
       },
       {
         'icon': Icons.groups_outlined,

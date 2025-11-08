@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
-import '../controllers/shopping_controller.dart';
 import '../features/auth/presentation/controllers/auth_state_controller.dart';
-import '../features/user/presentation/controllers/user_state_controller.dart';
 import '../generated/app_localizations.dart';
 import '../routes/app_routes.dart';
 import '../services/http_service.dart';
@@ -83,28 +81,16 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
           print('   用户名: ${user.name}');
           print('   邮箱: ${user.email}');
 
-          // 保存用户状态到全局控制�?
-          try {
-            final userStateController = Get.find<UserStateController>();
-            // 注意：后端返回的�?String ID，需要转换或修改控制�?
-            // 这里暂时使用 hashCode 作为临时方案
-            userStateController.login(
-              user.id.hashCode,
-              user.name,
-              email: user.email,
-            );
-            print('�?用户状态已保存');
-            print('🔔 登录状态变化事件将触发数据重新加载');
-          } catch (e) {
-            print('⚠️ 保存用户状态失�? $e');
-          }
+          // TODO: 需要通过 AuthStateController 处理登录状态
+          // UserStateController 没有 login 方法，应该使用 AuthStateController
+          print('✅ 用户登录成功，待集成状态管理');
 
           AppToast.success(
             'Welcome back, ${user.name}!',
             title: 'Login Successful',
           );
 
-          // 等待一小段时间，确保登录状态事件已被处�?
+          // 等待一小段时间，确保登录状态事件已被处理
           await Future.delayed(const Duration(milliseconds: 300));
 
           // 登录成功后跳转到主页
@@ -167,15 +153,8 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                         color: NomadsLoginPage.nomadsRed,
                       ),
                       onPressed: () {
-                        // 返回到主页的 home tab
-                        try {
-                          final shoppingController =
-                              Get.find<ShoppingController>();
-                          shoppingController.changeTab(0); // 切换�?home tab
-                        } catch (e) {
-                          print('⚠️ 未找�?ShoppingController: $e');
-                        }
-                        Get.offAllNamed('/'); // 跳转到主�?
+                        // 返回到主页
+                        Get.offAllNamed('/'); // 跳转到主页
                       },
                     ),
                   ),

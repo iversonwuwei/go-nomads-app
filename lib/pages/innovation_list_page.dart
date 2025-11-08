@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../generated/app_localizations.dart';
 import '../models/innovation_project_model.dart';
-import '../models/user_model.dart' as models;
+import '../features/user/domain/entities/user.dart' as models;
 import 'add_innovation_page.dart';
 import 'direct_chat_page.dart';
 import 'innovation_detail_page.dart';

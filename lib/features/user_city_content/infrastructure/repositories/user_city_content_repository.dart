@@ -1,13 +1,18 @@
+import 'package:df_admin_mobile/config/api_config.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/user_city_content/domain/entities/user_city_content.dart'
     as entity;
 import 'package:df_admin_mobile/features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
-import 'package:df_admin_mobile/services/user_city_content_api_service.dart';
+import 'package:df_admin_mobile/features/user_city_content/infrastructure/models/user_city_content_dto.dart';
+import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 
 /// User City Content Repository Implementation - DDD Infrastructure Layer
 class UserCityContentRepository implements IUserCityContentRepository {
-  final UserCityContentApiService _apiService = Get.find();
+  final HttpService _httpService = Get.find();
+
+  String _buildUrl(String path) => '${ApiConfig.apiBaseUrl}$path';
 
   // ==================== Photo Operations ====================
 
@@ -20,86 +25,79 @@ class UserCityContentRepository implements IUserCityContentRepository {
     DateTime? takenAt,
   }) async {
     try {
-      final photo = await _apiService.addCityPhoto(
-        cityId: cityId,
-        imageUrl: imageUrl,
-        caption: caption,
-        location: location,
-        takenAt: takenAt,
-      );
-      return Result.success(photo);
+      final endpoint =
+          ApiConfig.cityPhotosEndpoint.replaceAll('{cityId}', cityId);
+      final response = await _httpService.post(_buildUrl(endpoint), data: {
+        'imageUrl': imageUrl,
+        'caption': caption,
+        'location': location,
+        'takenAt': takenAt?.toIso8601String(),
+      });
+      return Result.success(
+          UserCityPhotoDto.fromJson(response.data).toDomain());
     } catch (e) {
-      return Result.failure(
-        UnknownException(
+      return Result.failure(UnknownException(
           'Failed to add city photo: ${e.toString()}',
           code: 'ADD_CITY_PHOTO_ERROR',
-          details: {'cityId': cityId, 'error': e.toString()},
-        ),
-      );
+          details: {'cityId': cityId, 'error': e.toString()}));
     }
   }
 
   @override
-  Future<Result<List<entity.UserCityPhoto>>> getCityPhotos({
-    required String cityId,
-    bool onlyMine = false,
-  }) async {
+  Future<Result<List<entity.UserCityPhoto>>> getCityPhotos(
+      {required String cityId, bool onlyMine = false}) async {
     try {
-      final photos = await _apiService.getCityPhotos(
-        cityId: cityId,
-        onlyMine: onlyMine,
-      );
-      return Result.success(photos);
+      final endpoint =
+          ApiConfig.cityPhotosEndpoint.replaceAll('{cityId}', cityId);
+      final response = await _httpService
+          .get(_buildUrl(endpoint), queryParameters: {'onlyMine': onlyMine});
+      final List<dynamic> data = response.data;
+      return Result.success(data
+          .map((json) => UserCityPhotoDto.fromJson(json).toDomain())
+          .toList());
     } catch (e) {
-      return Result.failure(
-        UnknownException(
+      return Result.failure(UnknownException(
           'Failed to get city photos: ${e.toString()}',
           code: 'GET_CITY_PHOTOS_ERROR',
-          details: {'cityId': cityId, 'error': e.toString()},
-        ),
-      );
+          details: {'cityId': cityId, 'error': e.toString()}));
     }
   }
 
   @override
-  Future<Result<void>> deleteCityPhoto({
-    required String cityId,
-    required String photoId,
-  }) async {
+  Future<Result<void>> deleteCityPhoto(
+      {required String cityId, required String photoId}) async {
     try {
-      await _apiService.deleteCityPhoto(
-        cityId: cityId,
-        photoId: photoId,
-      );
+      final endpoint = ApiConfig.cityPhotoDetailEndpoint
+          .replaceAll('{cityId}', cityId)
+          .replaceAll('{photoId}', photoId);
+      await _httpService.delete(_buildUrl(endpoint));
       return Result.success(null);
     } catch (e) {
-      return Result.failure(
-        UnknownException(
+      return Result.failure(UnknownException(
           'Failed to delete city photo: ${e.toString()}',
           code: 'DELETE_CITY_PHOTO_ERROR',
           details: {
             'cityId': cityId,
             'photoId': photoId,
-            'error': e.toString(),
-          },
-        ),
-      );
+            'error': e.toString()
+          }));
     }
   }
 
   @override
   Future<Result<List<entity.UserCityPhoto>>> getMyPhotos() async {
     try {
-      final photos = await _apiService.getMyPhotos();
-      return Result.success(photos);
+      final response =
+          await _httpService.get(_buildUrl(ApiConfig.myPhotosEndpoint));
+      final List<dynamic> data = response.data;
+      return Result.success(data
+          .map((json) => UserCityPhotoDto.fromJson(json).toDomain())
+          .toList());
     } catch (e) {
-      return Result.failure(
-        UnknownException(
+      return Result.failure(UnknownException(
           'Failed to get my photos: ${e.toString()}',
           code: 'GET_MY_PHOTOS_ERROR',
-          details: {'error': e.toString()},
-        ),
-      );
+          details: {'error': e.toString()}));
     }
   }
 
@@ -115,87 +113,81 @@ class UserCityContentRepository implements IUserCityContentRepository {
     required DateTime date,
   }) async {
     try {
-      final expense = await _apiService.addCityExpense(
-        cityId: cityId,
-        category: category,
-        amount: amount,
-        currency: currency,
-        description: description,
-        date: date,
-      );
-      return Result.success(expense);
+      final endpoint =
+          ApiConfig.cityExpensesEndpoint.replaceAll('{cityId}', cityId);
+      final response = await _httpService.post(_buildUrl(endpoint), data: {
+        'cityId': cityId,
+        'category': category.value,
+        'amount': amount,
+        'currency': currency,
+        'description': description,
+        'date': date.toIso8601String(),
+      });
+      return Result.success(
+          UserCityExpenseDto.fromJson(response.data).toDomain());
     } catch (e) {
-      return Result.failure(
-        UnknownException(
+      return Result.failure(UnknownException(
           'Failed to add city expense: ${e.toString()}',
           code: 'ADD_CITY_EXPENSE_ERROR',
-          details: {'cityId': cityId, 'error': e.toString()},
-        ),
-      );
+          details: {'cityId': cityId, 'error': e.toString()}));
     }
   }
 
   @override
-  Future<Result<List<entity.UserCityExpense>>> getCityExpenses({
-    required String cityId,
-    bool onlyMine = false,
-  }) async {
+  Future<Result<List<entity.UserCityExpense>>> getCityExpenses(
+      {required String cityId, bool onlyMine = false}) async {
     try {
-      final expenses = await _apiService.getCityExpenses(
-        cityId: cityId,
-        onlyMine: onlyMine,
-      );
-      return Result.success(expenses);
+      final endpoint =
+          ApiConfig.cityExpensesEndpoint.replaceAll('{cityId}', cityId);
+      final response = await _httpService
+          .get(_buildUrl(endpoint), queryParameters: {'onlyMine': onlyMine});
+      final List<dynamic> data = response.data;
+      return Result.success(data
+          .map((json) => UserCityExpenseDto.fromJson(json).toDomain())
+          .toList());
     } catch (e) {
-      return Result.failure(
-        UnknownException(
+      return Result.failure(UnknownException(
           'Failed to get city expenses: ${e.toString()}',
           code: 'GET_CITY_EXPENSES_ERROR',
-          details: {'cityId': cityId, 'error': e.toString()},
-        ),
-      );
+          details: {'cityId': cityId, 'error': e.toString()}));
     }
   }
 
   @override
-  Future<Result<void>> deleteCityExpense({
-    required String cityId,
-    required String expenseId,
-  }) async {
+  Future<Result<void>> deleteCityExpense(
+      {required String cityId, required String expenseId}) async {
     try {
-      await _apiService.deleteCityExpense(
-        cityId: cityId,
-        expenseId: expenseId,
-      );
+      final endpoint = ApiConfig.cityExpenseDetailEndpoint
+          .replaceAll('{cityId}', cityId)
+          .replaceAll('{expenseId}', expenseId);
+      await _httpService.delete(_buildUrl(endpoint));
       return Result.success(null);
     } catch (e) {
-      return Result.failure(
-        UnknownException(
+      return Result.failure(UnknownException(
           'Failed to delete city expense: ${e.toString()}',
           code: 'DELETE_CITY_EXPENSE_ERROR',
           details: {
             'cityId': cityId,
             'expenseId': expenseId,
-            'error': e.toString(),
-          },
-        ),
-      );
+            'error': e.toString()
+          }));
     }
   }
 
   @override
   Future<Result<List<entity.UserCityExpense>>> getMyExpenses() async {
     try {
-      final expenses = await _apiService.getMyExpenses();
-      return Result.success(expenses);
+      final response =
+          await _httpService.get(_buildUrl(ApiConfig.myExpensesEndpoint));
+      final List<dynamic> data = response.data;
+      return Result.success(data
+          .map((json) => UserCityExpenseDto.fromJson(json).toDomain())
+          .toList());
     } catch (e) {
-      return Result.failure(
-        UnknownException(
+      return Result.failure(UnknownException(
           'Failed to get my expenses: ${e.toString()}',
           code: 'GET_MY_EXPENSES_ERROR',
-          details: {'error': e.toString()},
-        ),
-      );
+          details: {'error': e.toString()}));
     }
   }
 
@@ -216,28 +208,29 @@ class UserCityContentRepository implements IUserCityContentRepository {
     String? reviewText,
   }) async {
     try {
-      final review = await _apiService.upsertCityReview(
-        cityId: cityId,
-        rating: rating,
-        title: title,
-        content: content,
-        visitDate: visitDate,
-        internetQualityScore: internetQualityScore,
-        safetyScore: safetyScore,
-        costScore: costScore,
-        communityScore: communityScore,
-        weatherScore: weatherScore,
-        reviewText: reviewText,
-      );
-      return Result.success(review);
+      final endpoint =
+          ApiConfig.cityReviewsEndpoint.replaceAll('{cityId}', cityId);
+      final response = await _httpService.post(_buildUrl(endpoint), data: {
+        'cityId': cityId,
+        'rating': rating,
+        'title': title,
+        'content': content,
+        if (visitDate != null) 'visitDate': visitDate.toIso8601String(),
+        if (internetQualityScore != null)
+          'internetQualityScore': internetQualityScore,
+        if (safetyScore != null) 'safetyScore': safetyScore,
+        if (costScore != null) 'costScore': costScore,
+        if (communityScore != null) 'communityScore': communityScore,
+        if (weatherScore != null) 'weatherScore': weatherScore,
+        if (reviewText != null) 'reviewText': reviewText,
+      });
+      return Result.success(
+          UserCityReviewDto.fromJson(response.data).toDomain());
     } catch (e) {
-      return Result.failure(
-        UnknownException(
+      return Result.failure(UnknownException(
           'Failed to upsert city review: ${e.toString()}',
           code: 'UPSERT_CITY_REVIEW_ERROR',
-          details: {'cityId': cityId, 'error': e.toString()},
-        ),
-      );
+          details: {'cityId': cityId, 'error': e.toString()}));
     }
   }
 
@@ -245,48 +238,53 @@ class UserCityContentRepository implements IUserCityContentRepository {
   Future<Result<List<entity.UserCityReview>>> getCityReviews(
       String cityId) async {
     try {
-      final reviews = await _apiService.getCityReviews(cityId);
-      return Result.success(reviews);
+      final endpoint =
+          ApiConfig.cityReviewsEndpoint.replaceAll('{cityId}', cityId);
+      final response = await _httpService.get(_buildUrl(endpoint));
+      final List<dynamic> data = response.data;
+      return Result.success(data
+          .map((json) => UserCityReviewDto.fromJson(json).toDomain())
+          .toList());
     } catch (e) {
-      return Result.failure(
-        UnknownException(
+      return Result.failure(UnknownException(
           'Failed to get city reviews: ${e.toString()}',
           code: 'GET_CITY_REVIEWS_ERROR',
-          details: {'cityId': cityId, 'error': e.toString()},
-        ),
-      );
+          details: {'cityId': cityId, 'error': e.toString()}));
     }
   }
 
   @override
   Future<Result<entity.UserCityReview?>> getMyCityReview(String cityId) async {
     try {
-      final review = await _apiService.getMyCityReview(cityId);
-      return Result.success(review);
+      final endpoint =
+          ApiConfig.myCityReviewEndpoint.replaceAll('{cityId}', cityId);
+      final response = await _httpService.get(_buildUrl(endpoint));
+      if (response.data == null) return Result.success(null);
+      return Result.success(
+          UserCityReviewDto.fromJson(response.data).toDomain());
     } catch (e) {
-      return Result.failure(
-        UnknownException(
+      if (e is DioException && e.response?.statusCode == 404) {
+        return Result.success(null);
+      }
+      return Result.failure(UnknownException(
           'Failed to get my city review: ${e.toString()}',
           code: 'GET_MY_CITY_REVIEW_ERROR',
-          details: {'cityId': cityId, 'error': e.toString()},
-        ),
-      );
+          details: {'cityId': cityId, 'error': e.toString()}));
     }
   }
 
   @override
   Future<Result<void>> deleteMyCityReview(String cityId) async {
     try {
-      await _apiService.deleteMyCityReview(cityId);
+      final endpoint =
+          ApiConfig.myCityReviewEndpoint.replaceAll('{cityId}', cityId);
+      await _httpService.delete(_buildUrl(endpoint));
       return Result.success(null);
     } catch (e) {
-      return Result.failure(
-        UnknownException(
+      return Result.failure(UnknownException(
           'Failed to delete my city review: ${e.toString()}',
           code: 'DELETE_MY_CITY_REVIEW_ERROR',
-          details: {'cityId': cityId, 'error': e.toString()},
-        ),
-      );
+          details: {'cityId': cityId, 'error': e.toString()}));
     }
   }
 
@@ -296,16 +294,16 @@ class UserCityContentRepository implements IUserCityContentRepository {
   Future<Result<entity.CityUserContentStats>> getCityStats(
       String cityId) async {
     try {
-      final stats = await _apiService.getCityStats(cityId);
-      return Result.success(stats);
+      final endpoint =
+          ApiConfig.cityUserContentStatsEndpoint.replaceAll('{cityId}', cityId);
+      final response = await _httpService.get(_buildUrl(endpoint));
+      return Result.success(
+          CityUserContentStatsDto.fromJson(response.data).toDomain());
     } catch (e) {
-      return Result.failure(
-        UnknownException(
+      return Result.failure(UnknownException(
           'Failed to get city stats: ${e.toString()}',
           code: 'GET_CITY_STATS_ERROR',
-          details: {'cityId': cityId, 'error': e.toString()},
-        ),
-      );
+          details: {'cityId': cityId, 'error': e.toString()}));
     }
   }
 
@@ -313,16 +311,15 @@ class UserCityContentRepository implements IUserCityContentRepository {
   Future<Result<entity.CityCostSummary>> getCityCostSummary(
       String cityId) async {
     try {
-      final summary = await _apiService.getCityCostSummary(cityId);
-      return Result.success(summary);
+      final endpoint = '/cities/$cityId/user-content/cost-summary';
+      final response = await _httpService.get(_buildUrl(endpoint));
+      return Result.success(
+          CityCostSummaryDto.fromJson(response.data).toDomain());
     } catch (e) {
-      return Result.failure(
-        UnknownException(
+      return Result.failure(UnknownException(
           'Failed to get city cost summary: ${e.toString()}',
           code: 'GET_CITY_COST_SUMMARY_ERROR',
-          details: {'cityId': cityId, 'error': e.toString()},
-        ),
-      );
+          details: {'cityId': cityId, 'error': e.toString()}));
     }
   }
 }

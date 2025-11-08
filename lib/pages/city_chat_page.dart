@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
+import '../features/chat/domain/entities/chat.dart';
 import '../features/chat/presentation/controllers/chat_state_controller.dart';
+import '../features/user/domain/entities/user.dart';
 import '../generated/app_localizations.dart';
-import '../models/chat_model.dart';
-import '../models/user_model.dart' as models;
 import '../widgets/app_toast.dart';
 import '../widgets/skeletons/skeletons.dart';
 import 'member_detail_page.dart';
@@ -40,7 +40,7 @@ class CityChatPage extends StatelessWidget {
 
   // Chat Rooms List
   Widget _buildChatRoomsList(
-      BuildContext context, ChatController controller, bool isMobile) {
+      BuildContext context, ChatStateController controller, bool isMobile) {
     final l10n = AppLocalizations.of(context)!;
 
     return CustomScrollView(
@@ -83,7 +83,7 @@ class CityChatPage extends StatelessWidget {
   }
 
   Widget _buildChatRoomCard(
-      ChatRoom room, ChatController controller, bool isMobile) {
+      ChatRoom room, ChatStateController controller, bool isMobile) {
     return InkWell(
       onTap: () => controller.joinRoom(room),
       child: Container(
@@ -206,7 +206,7 @@ class CityChatPage extends StatelessWidget {
 
   // Chat Room
   Widget _buildChatRoom(
-      BuildContext context, ChatController controller, bool isMobile) {
+      BuildContext context, ChatStateController controller, bool isMobile) {
     final room = controller.currentRoom.value!;
 
     return Scaffold(
@@ -287,7 +287,7 @@ class CityChatPage extends StatelessWidget {
   }
 
   Widget _buildMessageBubble(
-      ChatMessage message, bool isMe, ChatController controller) {
+      ChatMessage message, bool isMe, ChatStateController controller) {
     return GestureDetector(
       onLongPress: () {
         if (!isMe) {
@@ -429,7 +429,7 @@ class CityChatPage extends StatelessWidget {
     );
   }
 
-  Widget _buildReplyPreview(ChatController controller) {
+  Widget _buildReplyPreview(ChatStateController controller) {
     final reply = controller.replyingTo.value!;
     return Container(
       padding: const EdgeInsets.all(12),
@@ -477,7 +477,7 @@ class CityChatPage extends StatelessWidget {
     );
   }
 
-  Widget _buildMessageInput(ChatController controller) {
+  Widget _buildMessageInput(ChatStateController controller) {
     final textController = TextEditingController();
 
     return Container(
@@ -536,7 +536,7 @@ class CityChatPage extends StatelessWidget {
     );
   }
 
-  void _showAttachmentOptions(ChatController controller) {
+  void _showAttachmentOptions(ChatStateController controller) {
     final l10n = AppLocalizations.of(Get.context!)!;
 
     Get.bottomSheet(
@@ -708,7 +708,7 @@ class CityChatPage extends StatelessWidget {
     );
   }
 
-  void _handleImageUpload(ChatController controller) {
+  void _handleImageUpload(ChatStateController controller) {
     final l10n = AppLocalizations.of(Get.context!)!;
     // TODO: 实现图片上传功能
     AppToast.info(
@@ -717,7 +717,7 @@ class CityChatPage extends StatelessWidget {
     );
   }
 
-  void _handleLocationShare(ChatController controller) {
+  void _handleLocationShare(ChatStateController controller) {
     final l10n = AppLocalizations.of(Get.context!)!;
     // TODO: 实现位置分享功能
     AppToast.info(
@@ -726,7 +726,7 @@ class CityChatPage extends StatelessWidget {
     );
   }
 
-  void _handleDocumentUpload(ChatController controller) {
+  void _handleDocumentUpload(ChatStateController controller) {
     final l10n = AppLocalizations.of(Get.context!)!;
     // TODO: 实现文档上传功能
     AppToast.info(
@@ -735,7 +735,7 @@ class CityChatPage extends StatelessWidget {
     );
   }
 
-  void _handleContactShare(ChatController controller) {
+  void _handleContactShare(ChatStateController controller) {
     final l10n = AppLocalizations.of(Get.context!)!;
     // TODO: 实现联系人分享功能
     AppToast.info(
@@ -744,7 +744,7 @@ class CityChatPage extends StatelessWidget {
     );
   }
 
-  void _showOnlineUsers(ChatController controller) {
+  void _showOnlineUsers(ChatStateController controller) {
     final l10n = AppLocalizations.of(Get.context!)!;
 
     Get.bottomSheet(
@@ -879,9 +879,9 @@ class CityChatPage extends StatelessWidget {
     return '${months[time.month - 1]} ${time.day}';
   }
 
-  // 将 OnlineUser 转换为 UserModel 用于显示详情页
-  models.UserModel _convertToUserModel(OnlineUser user) {
-    return models.UserModel(
+  // 将 OnlineUser 转换为 User 用于显示详情页
+  User _convertToUser(OnlineUser user) {
+    return User(
       id: user.id,
       name: user.name,
       username: user.name.toLowerCase().replaceAll(' ', '_'),
@@ -892,72 +892,43 @@ class CityChatPage extends StatelessWidget {
       currentCity: 'Bangkok', // 默认值,实际应从API获取
       currentCountry: 'Thailand',
       skills: [
-        models.UserSkillInfo(
+        UserSkillInfo(
           id: '1',
-          skillId: '1',
-          skillName: 'Flutter',
-          icon: '💙',
-          category: 'Programming',
-          proficiencyLevel: 'Advanced',
-          yearsOfExperience: 3,
+          name: 'Flutter',
+          level: 'Advanced',
         ),
-        models.UserSkillInfo(
+        UserSkillInfo(
           id: '2',
-          skillId: '2',
-          skillName: 'Design',
-          icon: '🎨',
-          category: 'Design',
-          proficiencyLevel: 'Intermediate',
-          yearsOfExperience: 2,
+          name: 'Design',
+          level: 'Intermediate',
         ),
-        models.UserSkillInfo(
+        UserSkillInfo(
           id: '3',
-          skillId: '3',
-          skillName: 'Marketing',
-          icon: '📢',
-          category: 'Business',
-          proficiencyLevel: 'Intermediate',
-          yearsOfExperience: 2,
+          name: 'Marketing',
+          level: 'Intermediate',
         ),
-        models.UserSkillInfo(
+        UserSkillInfo(
           id: '4',
-          skillId: '4',
-          skillName: 'Photography',
-          icon: '📷',
-          category: 'Creative',
-          proficiencyLevel: 'Advanced',
-          yearsOfExperience: 4,
+          name: 'Photography',
+          level: 'Advanced',
         ),
       ],
       interests: [
-        models.UserInterestInfo(
+        UserInterestInfo(
           id: '1',
-          interestId: '1',
-          interestName: 'Travel',
-          icon: '✈️',
-          category: 'Travel',
-          intensityLevel: 'Passionate',
+          name: 'Travel',
         ),
-        models.UserInterestInfo(
+        UserInterestInfo(
           id: '2',
-          interestId: '2',
-          interestName: 'Coding',
-          icon: '💻',
-          category: 'Technology',
-          intensityLevel: 'Very Interested',
+          name: 'Coding',
         ),
-        models.UserInterestInfo(
+        UserInterestInfo(
           id: '3',
-          interestId: '3',
-          interestName: 'Coffee',
-          icon: '☕',
-          category: 'Lifestyle',
-          intensityLevel: 'Very Interested',
+          name: 'Coffee',
         ),
-        models.UserInterestInfo(
+        UserInterestInfo(
           id: '4',
-          interestId: '4',
-          interestName: 'Hiking',
+          name: 'Hiking',
           icon: '🥾',
           category: 'Outdoor',
           intensityLevel: 'Interested',

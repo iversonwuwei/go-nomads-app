@@ -2,7 +2,21 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
 import '../config/api_config.dart';
-import '../models/api_response_meta.dart';
+
+/// API 响应元数据
+class ApiResponseMeta {
+  final bool success;
+  final String message;
+  final List<String> errors;
+  final int? statusCode;
+
+  ApiResponseMeta({
+    required this.success,
+    required this.message,
+    required this.errors,
+    this.statusCode,
+  });
+}
 
 /// HTTP 服务类
 /// 基于 Dio 封装的 HTTP 请求服务

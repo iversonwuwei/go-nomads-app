@@ -1,8 +1,8 @@
-import 'package:df_admin_mobile/models/coworking_space_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../features/coworking/domain/entities/coworking_space.dart';
 import '../generated/app_localizations.dart';
 import 'osm_navigation_page.dart';
 

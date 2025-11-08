@@ -15,7 +15,8 @@ import '../features/user_city_content/domain/entities/user_city_content.dart';
 import '../features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
 import '../features/weather/presentation/controllers/weather_state_controller.dart';
 import '../generated/app_localizations.dart';
-import '../services/user_city_content_api_service.dart';
+import '../core/domain/result.dart';
+import '../features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/skeletons/skeletons.dart';
 import 'add_cost_page.dart';
@@ -3299,8 +3300,8 @@ class _CityDetailPageState extends State<CityDetailPage>
         // 3. 调用 API 保存照片记录
 
         // 临时实现: 使用占位符 URL
-        final apiService = UserCityContentApiService();
-        await apiService.addCityPhoto(
+        final apiService = Get.find<IUserCityContentRepository>();
+        final result = await apiService.addCityPhoto(
           cityId: cityId,
           imageUrl:
               'https://via.placeholder.com/800x600.png?text=${Uri.encodeComponent(image.name)}',
@@ -3309,14 +3310,22 @@ class _CityDetailPageState extends State<CityDetailPage>
           takenAt: null,
         );
 
-        // 刷新照片列表
-        final userContentController = Get.find<UserCityContentStateController>();
-        await userContentController.loadCityPhotos(cityId);
+        switch (result) {
+          case Success():
+            // 刷新照片列表
+            final userContentController = Get.find<UserCityContentStateController>();
+            await userContentController.loadCityPhotos(cityId);
 
-        AppToast.success(
-          'Photo uploaded successfully!',
-          title: 'Success',
-        );
+            AppToast.success(
+              'Photo uploaded successfully!',
+              title: 'Success',
+            );
+          case Failure(:final exception):
+            AppToast.error(
+              'Failed to upload photo: ${exception.message}',
+              title: 'Error',
+            );
+        }
       }
     } catch (e) {
       AppToast.error(

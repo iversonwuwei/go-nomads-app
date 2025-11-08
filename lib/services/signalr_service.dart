@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:signalr_netcore/signalr_client.dart';
 
-import '../models/async_task_models.dart';
+import '../features/async_task/domain/entities/async_task.dart';
+import '../features/async_task/infrastructure/models/async_task_dto.dart';
 
 /// SignalR 实时通知服务
 /// 管理与后端 SignalR Hub 的连接,接收任务进度和完成通知
@@ -14,14 +15,14 @@ class SignalRService {
   bool _isConnected = false;
 
   // 事件流控制器
-  final _taskProgressController = StreamController<TaskStatus>.broadcast();
-  final _taskCompletedController = StreamController<TaskStatus>.broadcast();
-  final _taskFailedController = StreamController<TaskStatus>.broadcast();
+  final _taskProgressController = StreamController<AsyncTask>.broadcast();
+  final _taskCompletedController = StreamController<AsyncTask>.broadcast();
+  final _taskFailedController = StreamController<AsyncTask>.broadcast();
 
   // 事件流
-  Stream<TaskStatus> get taskProgressStream => _taskProgressController.stream;
-  Stream<TaskStatus> get taskCompletedStream => _taskCompletedController.stream;
-  Stream<TaskStatus> get taskFailedStream => _taskFailedController.stream;
+  Stream<AsyncTask> get taskProgressStream => _taskProgressController.stream;
+  Stream<AsyncTask> get taskCompletedStream => _taskCompletedController.stream;
+  Stream<AsyncTask> get taskFailedStream => _taskFailedController.stream;
 
   SignalRService._internal();
 
@@ -90,10 +91,11 @@ class SignalRService {
 
       try {
         final data = arguments[0] as Map<String, dynamic>;
-        final taskStatus = TaskStatus.fromJson(data);
+        final taskDto = AsyncTaskDto.fromJson(data);
+        final task = taskDto.toDomain();
 
-        print('📊 收到任务进度: ${taskStatus.taskId} - ${taskStatus.progress}%');
-        _taskProgressController.add(taskStatus);
+        print('📊 收到任务进度: ${task.taskId} - ${task.progress.percentage}%');
+        _taskProgressController.add(task);
       } catch (e) {
         print('❌ 解析 TaskProgress 失败: $e');
       }
@@ -105,11 +107,12 @@ class SignalRService {
 
       try {
         final data = arguments[0] as Map<String, dynamic>;
-        final taskStatus = TaskStatus.fromJson(data);
+        final taskDto = AsyncTaskDto.fromJson(data);
+        final task = taskDto.toDomain();
 
         print(
-            '✅ 收到任务完成通知: ${taskStatus.taskId} - PlanId: ${taskStatus.planId}');
-        _taskCompletedController.add(taskStatus);
+            '✅ 收到任务完成通知: ${task.taskId} - PlanId: ${task.result?.planId}');
+        _taskCompletedController.add(task);
       } catch (e) {
         print('❌ 解析 TaskCompleted 失败: $e');
       }
@@ -121,10 +124,11 @@ class SignalRService {
 
       try {
         final data = arguments[0] as Map<String, dynamic>;
-        final taskStatus = TaskStatus.fromJson(data);
+        final taskDto = AsyncTaskDto.fromJson(data);
+        final task = taskDto.toDomain();
 
-        print('❌ 收到任务失败通知: ${taskStatus.taskId} - ${taskStatus.error}');
-        _taskFailedController.add(taskStatus);
+        print('❌ 收到任务失败通知: ${task.taskId} - ${task.error}');
+        _taskFailedController.add(task);
       } catch (e) {
         print('❌ 解析 TaskFailed 失败: $e');
       }

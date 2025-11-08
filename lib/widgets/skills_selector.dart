@@ -1,9 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
-import '../features/skill/infrastructure/models/skill_dto.dart';
-import '../services/skills_api_service.dart';
+import '../features/skill/domain/entities/skill.dart';
+import '../features/skill/presentation/controllers/skill_state_controller.dart';
 
 /// 技能选择器组件
 class SkillsSelector extends StatefulWidget {
@@ -32,10 +33,12 @@ class SkillsSelector extends StatefulWidget {
 }
 
 class _SkillsSelectorState extends State<SkillsSelector> {
-  final SkillsApiService _skillsService = SkillsApiService();
+  late final SkillStateController _skillController;
 
   List<SkillsByCategory> _skillsByCategory = [];
   final List<UserSkill> _selectedSkills = [];
+  List<Skill> _allSkills = [];
+  bool _didRestoreInitialSelection = false;
   bool _isLoading = true;
   String _searchQuery = '';
   String? _selectedCategory;
@@ -43,29 +46,43 @@ class _SkillsSelectorState extends State<SkillsSelector> {
   @override
   void initState() {
     super.initState();
+    _skillController = Get.find<SkillStateController>();
     _loadSkills();
+  }
+
+  @override
+  void didUpdateWidget(covariant SkillsSelector oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (!setEquals(
+        widget.selectedSkillIds.toSet(), oldWidget.selectedSkillIds.toSet())) {
+      _restoreSelectionFromWidget(force: true);
+    }
   }
 
   Future<void> _loadSkills() async {
     setState(() => _isLoading = true);
 
-    try {
-      final skillsByCategory = await _skillsService.getSkillsByCategory();
-      setState(() {
-        _skillsByCategory = skillsByCategory;
-        _isLoading = false;
-      });
-    } catch (e) {
-      print('❌ 加载技能失败: $e');
-      setState(() => _isLoading = false);
+    await _skillController.getSkills();
 
-      if (mounted) {
-        Get.snackbar(
-          '加载失败',
-          '无法加载技能列表，请稍后重试',
-          snackPosition: SnackPosition.BOTTOM,
-        );
-      }
+    final skills = List<Skill>.from(_skillController.skills);
+    if (!mounted) return;
+
+    setState(() {
+      _allSkills = skills;
+      _skillsByCategory = _groupSkillsByCategory(skills);
+      _isLoading = false;
+    });
+
+    _restoreSelectionFromWidget();
+
+    final error = _skillController.errorMessage.value;
+    if (error != null && error.isNotEmpty && mounted) {
+      Get.snackbar(
+        '加载失败',
+        error,
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
 
@@ -116,6 +133,79 @@ class _SkillsSelectorState extends State<SkillsSelector> {
       _selectedSkills.add(userSkill);
     });
     widget.onChanged(_selectedSkills);
+  }
+
+  void _restoreSelectionFromWidget({bool force = false}) {
+    if (_allSkills.isEmpty || widget.selectedSkillIds.isEmpty) {
+      return;
+    }
+
+    if (!force && _didRestoreInitialSelection) {
+      return;
+    }
+
+    final restored = _buildUserSkillsFromIds(widget.selectedSkillIds);
+    if (restored.isEmpty) {
+      _didRestoreInitialSelection = true;
+      return;
+    }
+
+    setState(() {
+      _selectedSkills
+        ..clear()
+        ..addAll(restored);
+    });
+
+    _didRestoreInitialSelection = true;
+  }
+
+  List<UserSkill> _buildUserSkillsFromIds(List<String> skillIds) {
+    final now = DateTime.now();
+    final results = <UserSkill>[];
+    for (final id in skillIds) {
+      final skill = _findSkillById(id);
+      if (skill == null) continue;
+      results.add(
+        UserSkill(
+          id: 'selected-$id-${now.millisecondsSinceEpoch}',
+          userId: '',
+          skillId: skill.id,
+          skillName: skill.name,
+          category: skill.category,
+          icon: skill.icon,
+          proficiencyLevel: null,
+          yearsOfExperience: null,
+          createdAt: now,
+        ),
+      );
+    }
+    return results;
+  }
+
+  Skill? _findSkillById(String id) {
+    for (final skill in _allSkills) {
+      if (skill.id == id) {
+        return skill;
+      }
+    }
+    return null;
+  }
+
+  List<SkillsByCategory> _groupSkillsByCategory(List<Skill> skills) {
+    final Map<String, List<Skill>> grouped = {};
+    for (final skill in skills) {
+      grouped.putIfAbsent(skill.category, () => []).add(skill);
+    }
+
+    final categories = grouped.entries
+        .map((entry) => SkillsByCategory(
+              category: entry.key,
+              skills: entry.value,
+            ))
+        .toList()
+      ..sort((a, b) => a.category.compareTo(b.category));
+
+    return categories;
   }
 
   void _showProficiencyDialog(Skill skill) {
@@ -366,7 +456,7 @@ class _SkillsSelectorState extends State<SkillsSelector> {
                         });
                         widget.onChanged(_selectedSkills);
                       },
-                      backgroundColor: AppColors.accent.withOpacity(0.1),
+                      backgroundColor: AppColors.accent.withValues(alpha: 0.1),
                       side: BorderSide(color: AppColors.accent),
                     );
                   }).toList(),
@@ -399,7 +489,8 @@ class _SkillsSelectorState extends State<SkillsSelector> {
                           label: Text(skill.name),
                           selected: isSelected,
                           onSelected: (_) => _toggleSkill(skill),
-                          selectedColor: AppColors.accent.withOpacity(0.2),
+                          selectedColor:
+                              AppColors.accent.withValues(alpha: 0.2),
                           checkmarkColor: AppColors.accent,
                           backgroundColor: AppColors.white,
                           side: BorderSide(

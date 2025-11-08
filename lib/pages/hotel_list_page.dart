@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-import '../models/hotel_model.dart';
-import '../services/database/hotel_dao.dart';
 import '../widgets/app_toast.dart';
 import 'room_type_list_page.dart';
 

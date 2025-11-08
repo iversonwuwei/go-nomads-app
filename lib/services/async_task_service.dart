@@ -1,6 +1,7 @@
 import 'dart:async';
 
-import '../models/async_task_models.dart';
+import '../features/async_task/domain/entities/async_task.dart';
+import '../features/async_task/infrastructure/models/async_task_dto.dart';
 import 'http_service.dart';
 import 'signalr_service.dart';
 

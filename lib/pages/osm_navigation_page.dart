@@ -6,8 +6,8 @@ import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../config/app_colors.dart';
+import '../features/coworking/domain/entities/coworking_space.dart';
 import '../generated/app_localizations.dart';
-import '../models/coworking_space_model.dart';
 import '../widgets/app_toast.dart';
 
 // 地图瓦片源配置已简化,使用与 GlobalMapPage 相同的配置

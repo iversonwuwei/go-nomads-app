@@ -1,5 +1,5 @@
-import 'package:df_admin_mobile/controllers/coworking_controller.dart';
-import 'package:df_admin_mobile/features/coworking/infrastructure/models/coworking_space_dto.dart';
+import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
+import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
 import 'package:df_admin_mobile/pages/add_coworking_page.dart';
 import 'package:df_admin_mobile/pages/coworking_detail_page.dart';
 import 'package:flutter/material.dart';
@@ -25,20 +25,21 @@ class CoworkingListPage extends StatefulWidget {
 
 class _CoworkingListPageState extends State<CoworkingListPage> {
   bool _isGridView = true;
-  late final CoworkingController controller;
+  late final CoworkingStateController controller;
 
   @override
   void initState() {
     super.initState();
-    controller = Get.put(CoworkingController());
-    // 按城市ID加载数据,并传递城市名称
+    controller = Get.find<CoworkingStateController>();
     controller.loadCoworkingsByCity(widget.cityId, cityName: widget.cityName);
   }
 
   /// 刷新数据(仅重新加载数据,不重建整个页面)
   Future<void> _refreshData() async {
-    await controller.loadCoworkingsByCity(widget.cityId,
-        cityName: widget.cityName);
+    await controller.loadCoworkingsByCity(
+      widget.cityId,
+      cityName: widget.cityName,
+    );
   }
 
   @override
@@ -231,7 +232,7 @@ class _CoworkingListPageState extends State<CoworkingListPage> {
   }
 
   /// 筛选条件
-  Widget _buildFilterChips(CoworkingController controller) {
+  Widget _buildFilterChips(CoworkingStateController controller) {
     return Builder(
       builder: (context) {
         final l10n = AppLocalizations.of(context)!;
@@ -280,7 +281,7 @@ class _CoworkingListPageState extends State<CoworkingListPage> {
   }
 
   Widget _buildFilterChip(
-    CoworkingController controller,
+    CoworkingStateController controller,
     String label,
     IconData icon,
   ) {
@@ -322,7 +323,7 @@ class _CoworkingListPageState extends State<CoworkingListPage> {
                 AspectRatio(
                   aspectRatio: 16 / 9,
                   child: Image.network(
-                    space.imageUrl,
+                    space.spaceInfo.imageUrl,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
@@ -401,13 +402,13 @@ class _CoworkingListPageState extends State<CoworkingListPage> {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            space.rating.toStringAsFixed(1),
+                            space.spaceInfo.rating.toStringAsFixed(1),
                             style: const TextStyle(
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                           Text(
-                            ' (${space.reviewCount})',
+                            ' (${space.spaceInfo.reviewCount})',
                             style: TextStyle(
                               color: Colors.grey[600],
                               fontSize: 12,
@@ -428,7 +429,7 @@ class _CoworkingListPageState extends State<CoworkingListPage> {
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
-                          space.address,
+                          space.fullAddress,
                           style: TextStyle(
                             color: Colors.grey[600],
                             fontSize: 14,
@@ -481,15 +482,17 @@ class _CoworkingListPageState extends State<CoworkingListPage> {
                     children: space.amenities
                         .getAvailableAmenities()
                         .take(4)
-                        .map((amenity) => Chip(
-                              label: Text(
-                                amenity,
-                                style: const TextStyle(fontSize: 11),
-                              ),
-                              padding: EdgeInsets.zero,
-                              materialTapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
-                            ))
+                        .map(
+                          (amenity) => Chip(
+                            label: Text(
+                              amenity,
+                              style: const TextStyle(fontSize: 11),
+                            ),
+                            padding: EdgeInsets.zero,
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                          ),
+                        )
                         .toList(),
                   ),
 
@@ -512,7 +515,9 @@ class _CoworkingListPageState extends State<CoworkingListPage> {
                               size: 16, color: Colors.green[700]),
                           const SizedBox(width: 4),
                           Text(
-                            'Free ${space.pricing.trialDuration} trial available',
+                            space.pricing.trialDuration != null
+                                ? 'Free ${space.pricing.trialDuration} trial available'
+                                : 'Free trial available',
                             style: TextStyle(
                               color: Colors.green[700],
                               fontSize: 12,

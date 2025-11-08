@@ -3,22 +3,16 @@ import 'package:get/get.dart';
 import '../layouts/bottom_nav_layout.dart';
 import '../middlewares/auth_middleware.dart';
 import '../pages/ai_chat_page.dart';
-import '../pages/analytics_tool_page.dart';
-import '../pages/api_marketplace_page.dart';
 import '../pages/city_chat_page.dart';
 import '../pages/city_list_page.dart';
 import '../pages/coworking_home_page.dart';
 import '../pages/data_service_page.dart';
 import '../pages/innovation_list_page.dart';
-import '../pages/language_settings_page.dart';
-import '../pages/location_demo_page.dart';
 import '../pages/meetups_list_page.dart';
 import '../pages/nomads_login_page.dart';
 import '../pages/profile_edit_page.dart';
 import '../pages/profile_page.dart';
 import '../pages/register_page.dart';
-import '../pages/second_page.dart';
-import '../pages/snake_game_page.dart';
 
 class AppRoutes {
   static const String home = '/';
@@ -26,10 +20,7 @@ class AppRoutes {
   static const String login = '/login';
   static const String register = '/register';
   static const String aiChat = '/ai-chat';
-  static const String snakeGame = '/snake-game';
-  static const String apiMarketplace = '/api-marketplace';
   static const String dataService = '/data-service';
-  static const String analyticsTool = '/analytics-tool';
   static const String coworking = '/coworking';
   static const String cityChat = '/city-chat';
   static const String cityList = '/city-list';
@@ -51,11 +42,6 @@ class AppRoutes {
       middlewares: [AuthMiddleware()],
     ),
     GetPage(
-      name: second,
-      page: () => const BottomNavLayout(child: SecondPage()),
-      middlewares: [AuthMiddleware()],
-    ),
-    GetPage(
       name: login,
       page: () => const NomadsLoginPage(),
     ),
@@ -66,21 +52,6 @@ class AppRoutes {
     GetPage(
       name: aiChat,
       page: () => const AiChatPage(),
-      middlewares: [AuthMiddleware()],
-    ),
-    GetPage(
-      name: snakeGame,
-      page: () => const BottomNavLayout(child: SnakeGamePage()),
-      middlewares: [AuthMiddleware()],
-    ),
-    GetPage(
-      name: apiMarketplace,
-      page: () => const BottomNavLayout(child: ApiMarketplacePage()),
-      middlewares: [AuthMiddleware()],
-    ),
-    GetPage(
-      name: analyticsTool,
-      page: () => const BottomNavLayout(child: AnalyticsToolPage()),
       middlewares: [AuthMiddleware()],
     ),
     GetPage(
@@ -111,16 +82,6 @@ class AppRoutes {
     GetPage(
       name: innovation,
       page: () => const InnovationListPage(),
-      middlewares: [AuthMiddleware()],
-    ),
-    GetPage(
-      name: locationDemo,
-      page: () => const BottomNavLayout(child: LocationDemoPage()),
-      middlewares: [AuthMiddleware()],
-    ),
-    GetPage(
-      name: languageSettings,
-      page: () => const BottomNavLayout(child: LanguageSettingsPage()),
       middlewares: [AuthMiddleware()],
     ),
     GetPage(

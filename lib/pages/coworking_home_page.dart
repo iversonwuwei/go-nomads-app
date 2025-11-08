@@ -1,10 +1,12 @@
 import 'package:df_admin_mobile/pages/add_coworking_page.dart';
 import 'package:df_admin_mobile/pages/coworking_list_page.dart';
-import 'package:df_admin_mobile/services/cities_api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
+import '../core/core.dart';
+import '../features/city/application/use_cases/city_use_cases.dart';
 import '../generated/app_localizations.dart';
 import '../widgets/app_toast.dart';
 
@@ -18,7 +20,8 @@ class CoworkingHomePage extends StatefulWidget {
 }
 
 class _CoworkingHomePageState extends State<CoworkingHomePage> {
-  final CitiesApiService _citiesApiService = CitiesApiService();
+  final GetCitiesWithCoworkingCountUseCase _getCitiesUseCase =
+      Get.find<GetCitiesWithCoworkingCountUseCase>();
   List<Map<String, dynamic>> _cities = [];
   bool _isLoading = true;
 
@@ -103,72 +106,83 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
   }
 
   /// 加载城市及其coworking空间数量
-  /// 使用新的后端接口: /api/v1/home/cities-with-coworking
+  /// 使用 City 域的 UseCase
   Future<void> _loadCitiesWithCoworkingCount() async {
     try {
       setState(() => _isLoading = true);
 
       print('🏙️ 开始获取城市列表(含Coworking数量)...');
 
-      // 调用新的一体化接口,后端已经聚合了 coworking 数量
-      final response = await _citiesApiService.getCitiesWithCoworkingCount(
-        page: 1,
-        pageSize: 100,
+      // 使用 UseCase 获取数据
+      final result = await _getCitiesUseCase.execute(
+        const GetCitiesWithCoworkingCountParams(
+          page: 1,
+          pageSize: 100,
+        ),
       );
 
-      final cities = response['items'] as List<dynamic>;
-      print('✅ 获取到 ${cities.length} 个城市');
+      // 处理结果
+      switch (result) {
+        case Success(:final data):
+          final cities = data['items'] as List<dynamic>;
+          print('✅ 获取到 ${cities.length} 个城市');
 
-      if (cities.isEmpty) {
-        setState(() {
-          _cities = [];
-          _isLoading = false;
-        });
-        return;
-      }
+          if (cities.isEmpty) {
+            setState(() {
+              _cities = [];
+              _isLoading = false;
+            });
+            return;
+          }
 
-      // 组装城市数据,只保留有 coworking 空间的城市
-      List<Map<String, dynamic>> citiesWithCount = [];
+          // 组装城市数据,只保留有 coworking 空间的城市
+          List<Map<String, dynamic>> citiesWithCount = [];
 
-      for (var city in cities) {
-        // 处理 coworkingCount 可能是字符串或整数的情况
-        final coworkingCountValue = city['coworkingCount'];
-        final count = coworkingCountValue is int
-            ? coworkingCountValue
-            : (coworkingCountValue is String
-                ? int.tryParse(coworkingCountValue) ?? 0
-                : 0);
+          for (var city in cities) {
+            // 处理 coworkingCount 可能是字符串或整数的情况
+            final coworkingCountValue = city['coworkingCount'];
+            final count = coworkingCountValue is int
+                ? coworkingCountValue
+                : (coworkingCountValue is String
+                    ? int.tryParse(coworkingCountValue) ?? 0
+                    : 0);
 
-        // 只添加有 coworking 空间的城市
-        if (count > 0) {
-          // 提取天气信息
-          final weather = city['weather'] as Map<String, dynamic>?;
-          final temperature = weather?['temperature']?.toDouble();
-          final weatherIcon = weather?['weatherIcon'] as String?;
-          final weatherDesc = weather?['weatherDescription'] as String?;
+            // 只添加有 coworking 空间的城市
+            if (count > 0) {
+              // 提取天气信息
+              final weather = city['weather'] as Map<String, dynamic>?;
+              final temperature = weather?['temperature']?.toDouble();
+              final weatherIcon = weather?['weatherIcon'] as String?;
+              final weatherDesc = weather?['weatherDescription'] as String?;
 
-          citiesWithCount.add({
-            'id': city['id'] as String,
-            'name': city['name'] as String,
-            'country': city['country'] as String? ?? '',
-            'image': city['imageUrl'] as String? ??
-                'https://images.unsplash.com/photo-1449824913935-59a10b8d2000',
-            'spaces': count,
-            'temperature': temperature,
-            'weatherIcon': weatherIcon,
-            'weatherDescription': weatherDesc,
+              citiesWithCount.add({
+                'id': city['id'] as String,
+                'name': city['name'] as String,
+                'country': city['country'] as String? ?? '',
+                'image': city['imageUrl'] as String? ??
+                    'https://images.unsplash.com/photo-1449824913935-59a10b8d2000',
+                'spaces': count,
+                'temperature': temperature,
+                'weatherIcon': weatherIcon,
+                'weatherDescription': weatherDesc,
+              });
+            }
+          }
+
+          print('✅ 找到 ${citiesWithCount.length} 个有 Coworking 空间的城市');
+
+          setState(() {
+            _cities = citiesWithCount;
+            _isLoading = false;
           });
-        }
+
+        case Failure(:final exception):
+          print('❌ 加载城市数据失败: ${exception.message}');
+          setState(() => _isLoading = false);
+          AppToast.error('加载失败: ${exception.message}');
       }
-
-      print('✅ 找到 ${citiesWithCount.length} 个有 Coworking 空间的城市');
-
-      setState(() {
-        _cities = citiesWithCount;
-        _isLoading = false;
-      });
     } catch (e) {
-      print('❌ 加载城市数据失败: $e');
+      print('❌ 加载城市数据异常: $e');
       setState(() => _isLoading = false);
       AppToast.error('加载失败,请稍后重试');
     }

@@ -3,11 +3,13 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../controllers/locale_controller.dart';
+import '../features/interest/domain/entities/interest.dart';
+import '../features/interest/presentation/controllers/interest_state_controller.dart';
+import '../features/skill/domain/entities/skill.dart';
+import '../features/skill/presentation/controllers/skill_state_controller.dart';
 import '../features/user/domain/entities/user.dart';
 import '../features/user/presentation/controllers/user_state_controller.dart';
 import '../generated/app_localizations.dart';
-import '../services/interests_api_service.dart';
-import '../services/skills_api_service.dart';
 import '../widgets/app_toast.dart';
 
 /// 用户资料编辑页面 - 浅色性冷淡风格
@@ -721,36 +723,53 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
   // 显示技能选择底部抽屉
   void _showSkillsBottomSheet(UserStateController profileController) {
-    final SkillsApiService skillsService = SkillsApiService();
-    final currentSkills = profileController.currentUser.value?.skills ?? [];
+    final SkillStateController skillController =
+        Get.find<SkillStateController>();
+    final currentUser = profileController.currentUser.value;
+
+    if (currentUser == null) {
+      AppToast.error('请先登录');
+      return;
+    }
+
+    final currentSkills = currentUser.skills;
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => _SkillsBottomSheet(
-        skillsService: skillsService,
+        skillController: skillController,
         currentSkills: currentSkills,
         onSave: (selectedSkills) async {
           if (selectedSkills.isNotEmpty) {
             try {
-              final requests = selectedSkills.map((skill) {
-                return AddUserSkillRequest(
-                  skillId: skill.skillId,
-                  proficiencyLevel: skill.proficiencyLevel,
-                  yearsOfExperience: skill.yearsOfExperience,
+              var successCount = 0;
+              for (final skill in selectedSkills) {
+                final success = await skillController.addUserSkill(
+                  currentUser.id,
+                  AddUserSkillRequest(
+                    skillId: skill.skillId,
+                    proficiencyLevel: skill.proficiencyLevel,
+                    yearsOfExperience: skill.yearsOfExperience,
+                  ),
                 );
-              }).toList();
+                if (success) {
+                  successCount++;
+                }
+              }
 
-              await skillsService.addUserSkillsBatch(requests);
+              if (successCount > 0) {
+                AppToast.success(
+                  '已保存 $successCount 个技能',
+                  title: '保存成功',
+                );
 
-              AppToast.success(
-                '已保存 ${selectedSkills.length} 个技能',
-                title: '保存成功',
-              );
-
-              // 刷新用户资料数据
-              await profileController.loadUserProfile();
+                // 刷新用户资料数据
+                await profileController.loadUserProfile();
+              } else {
+                AppToast.error('保存失败，请稍后重试');
+              }
             } catch (e) {
               print('❌ 保存技能失败: $e');
               AppToast.error('保存失败，请稍后重试');
@@ -763,36 +782,52 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
   // 显示兴趣选择底部抽屉
   void _showInterestsBottomSheet(UserStateController profileController) {
-    final InterestsApiService interestsService = InterestsApiService();
-    final currentInterests =
-        profileController.currentUser.value?.interests ?? [];
+    final InterestStateController interestController =
+        Get.find<InterestStateController>();
+    final currentUser = profileController.currentUser.value;
+
+    if (currentUser == null) {
+      AppToast.error('请先登录');
+      return;
+    }
+
+    final currentInterests = currentUser.interests;
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => _InterestsBottomSheet(
-        interestsService: interestsService,
+        interestController: interestController,
         currentInterests: currentInterests,
         onSave: (selectedInterests) async {
           if (selectedInterests.isNotEmpty) {
             try {
-              final requests = selectedInterests.map((interest) {
-                return AddUserInterestRequest(
-                  interestId: interest.interestId,
-                  intensityLevel: interest.intensityLevel,
+              var successCount = 0;
+              for (final interest in selectedInterests) {
+                final success = await interestController.addUserInterest(
+                  currentUser.id,
+                  AddUserInterestRequest(
+                    interestId: interest.interestId,
+                    intensityLevel: interest.intensityLevel,
+                  ),
                 );
-              }).toList();
+                if (success) {
+                  successCount++;
+                }
+              }
 
-              await interestsService.addUserInterestsBatch(requests);
+              if (successCount > 0) {
+                AppToast.success(
+                  '已保存 $successCount 个兴趣',
+                  title: '保存成功',
+                );
 
-              AppToast.success(
-                '已保存 ${selectedInterests.length} 个兴趣',
-                title: '保存成功',
-              );
-
-              // 刷新用户资料数据
-              await profileController.loadUserProfile();
+                // 刷新用户资料数据
+                await profileController.loadUserProfile();
+              } else {
+                AppToast.error('保存失败，请稍后重试');
+              }
             } catch (e) {
               print('❌ 保存兴趣失败: $e');
               AppToast.error('保存失败，请稍后重试');
@@ -806,12 +841,12 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
 // 技能选择底部抽屉组件
 class _SkillsBottomSheet extends StatefulWidget {
-  final SkillsApiService skillsService;
+  final SkillStateController skillController;
   final List<UserSkillInfo> currentSkills;
   final Function(List<UserSkill>) onSave;
 
   const _SkillsBottomSheet({
-    required this.skillsService,
+    required this.skillController,
     required this.currentSkills,
     required this.onSave,
   });
@@ -837,26 +872,54 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
     setState(() => _isLoading = true);
 
     try {
-      final skillsByCategory = await widget.skillsService.getSkillsByCategory();
+      await widget.skillController.getSkills();
+
+      final skills = List<Skill>.from(widget.skillController.skills);
+      if (!mounted) return;
+
       setState(() {
-        _skillsByCategory = skillsByCategory;
+        _skillsByCategory = _groupSkillsByCategory(skills);
         _isLoading = false;
         // 预填充当前用户已有的技能
         _preselectCurrentSkills();
       });
-    } catch (e) {
-      print('❌ 加载技能失败: $e');
-      setState(() => _isLoading = false);
 
-      if (mounted) {
+      final error = widget.skillController.errorMessage.value;
+      if (error != null && error.isNotEmpty && mounted) {
         Get.snackbar(
           '加载失败',
-          '无法加载技能列表: $e',
+          error,
           snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 5),
         );
       }
+    } catch (e) {
+      print('❌ 加载技能失败: $e');
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      Get.snackbar(
+        '加载失败',
+        '无法加载技能列表: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 5),
+      );
     }
+  }
+
+  List<SkillsByCategory> _groupSkillsByCategory(List<Skill> skills) {
+    final Map<String, List<Skill>> grouped = {};
+    for (final skill in skills) {
+      grouped.putIfAbsent(skill.category, () => []).add(skill);
+    }
+
+    final categories = grouped.entries
+        .map((entry) => SkillsByCategory(
+              category: entry.key,
+              skills: entry.value,
+            ))
+        .toList()
+      ..sort((a, b) => a.category.compareTo(b.category));
+
+    return categories;
   }
 
   void _preselectCurrentSkills() {
@@ -864,12 +927,11 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
     for (var userSkill in widget.currentSkills) {
       for (var category in _skillsByCategory) {
         final skill = category.skills.firstWhere(
-          (s) => s.id == userSkill.skillId,
+          (s) => s.id == userSkill.id,
           orElse: () => Skill(
             id: '',
             name: '',
             category: '',
-            icon: '',
             createdAt: DateTime.now(),
           ),
         );
@@ -883,8 +945,8 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
             skillName: skill.name,
             category: skill.category,
             icon: skill.icon,
-            proficiencyLevel: userSkill.proficiencyLevel ?? 'Intermediate',
-            yearsOfExperience: userSkill.yearsOfExperience,
+            proficiencyLevel: userSkill.level,
+            yearsOfExperience: null,
             createdAt: DateTime.now(),
           ));
         }
@@ -1052,7 +1114,7 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
                   color: Colors.white,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 10,
                       offset: const Offset(0, -2),
                     ),
@@ -1140,7 +1202,7 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
               label: Text(skill.name),
               selected: isSelected,
               onSelected: (_) => _toggleSkill(skill),
-              selectedColor: AppColors.accent.withOpacity(0.2),
+              selectedColor: AppColors.accent.withValues(alpha: 0.2),
               checkmarkColor: AppColors.accent,
               backgroundColor: Colors.white,
               side: BorderSide(
@@ -1169,12 +1231,12 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
 
 // 兴趣选择底部抽屉组件
 class _InterestsBottomSheet extends StatefulWidget {
-  final InterestsApiService interestsService;
+  final InterestStateController interestController;
   final List<UserInterestInfo> currentInterests;
   final Function(List<UserInterest>) onSave;
 
   const _InterestsBottomSheet({
-    required this.interestsService,
+    required this.interestController,
     required this.currentInterests,
     required this.onSave,
   });
@@ -1200,27 +1262,56 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
     setState(() => _isLoading = true);
 
     try {
-      final interestsByCategory =
-          await widget.interestsService.getInterestsByCategory();
+      await widget.interestController.getInterests();
+
+      final interests =
+          List<Interest>.from(widget.interestController.interests);
+      if (!mounted) return;
+
       setState(() {
-        _interestsByCategory = interestsByCategory;
+        _interestsByCategory = _groupInterestsByCategory(interests);
         _isLoading = false;
         // 预填充当前用户已有的兴趣
         _preselectCurrentInterests();
       });
-    } catch (e) {
-      print('❌ 加载兴趣失败: $e');
-      setState(() => _isLoading = false);
 
-      if (mounted) {
+      final error = widget.interestController.errorMessage.value;
+      if (error != null && error.isNotEmpty && mounted) {
         Get.snackbar(
           '加载失败',
-          '无法加载兴趣列表: $e',
+          error,
           snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 5),
         );
       }
+    } catch (e) {
+      print('❌ 加载兴趣失败: $e');
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      Get.snackbar(
+        '加载失败',
+        '无法加载兴趣列表: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 5),
+      );
     }
+  }
+
+  List<InterestsByCategory> _groupInterestsByCategory(
+      List<Interest> interests) {
+    final Map<String, List<Interest>> grouped = {};
+    for (final interest in interests) {
+      grouped.putIfAbsent(interest.category, () => []).add(interest);
+    }
+
+    final categories = grouped.entries
+        .map((entry) => InterestsByCategory(
+              category: entry.key,
+              interests: entry.value,
+            ))
+        .toList()
+      ..sort((a, b) => a.category.compareTo(b.category));
+
+    return categories;
   }
 
   void _preselectCurrentInterests() {
@@ -1228,12 +1319,11 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
     for (var userInterest in widget.currentInterests) {
       for (var category in _interestsByCategory) {
         final interest = category.interests.firstWhere(
-          (i) => i.id == userInterest.interestId,
+          (i) => i.id == userInterest.id,
           orElse: () => Interest(
             id: '',
             name: '',
             category: '',
-            icon: '',
             createdAt: DateTime.now(),
           ),
         );
@@ -1247,7 +1337,7 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
             interestName: interest.name,
             category: interest.category,
             icon: interest.icon,
-            intensityLevel: userInterest.intensityLevel ?? 'Medium',
+            intensityLevel: 'moderate',
             createdAt: DateTime.now(),
           ));
         }
@@ -1415,7 +1505,7 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
                   color: Colors.white,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 10,
                       offset: const Offset(0, -2),
                     ),
@@ -1503,7 +1593,7 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
               label: Text(interest.name),
               selected: isSelected,
               onSelected: (_) => _toggleInterest(interest),
-              selectedColor: AppColors.accent.withOpacity(0.2),
+              selectedColor: AppColors.accent.withValues(alpha: 0.2),
               checkmarkColor: AppColors.accent,
               backgroundColor: Colors.white,
               side: BorderSide(

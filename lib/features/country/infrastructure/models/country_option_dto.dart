@@ -1,4 +1,3 @@
-import '../../../../models/country_option.dart' as legacy;
 import '../../domain/entities/country_option.dart' as domain;
 
 /// CountryOption DTO
@@ -68,20 +67,6 @@ class CountryOptionDto {
       flagUrl: flagUrl,
       callingCode: callingCode,
       isActive: isActive,
-    );
-  }
-
-  factory CountryOptionDto.fromLegacyModel(legacy.CountryOption model) {
-    return CountryOptionDto(
-      id: model.id,
-      name: model.name,
-      nameZh: model.nameZh,
-      code: model.code,
-      codeAlpha3: model.codeAlpha3,
-      continent: model.continent,
-      flagUrl: model.flagUrl,
-      callingCode: model.callingCode,
-      isActive: model.isActive,
     );
   }
 }

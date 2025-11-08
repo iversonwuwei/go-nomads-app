@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../models/user_profile_models.dart';
+import '../features/user_profile/infrastructure/models/user_profile_dto.dart';
 import '../services/database/user_profile_dao.dart';
 import '../widgets/app_toast.dart';
 
@@ -88,7 +88,7 @@ class _EditBasicInfoPageState extends State<EditBasicInfoPage> {
 
     try {
       final now = DateTime.now().millisecondsSinceEpoch.toString();
-      final info = UserBasicInfo(
+      final info = UserBasicInfoDto(
         accountId: widget.accountId,
         name: _nameController.text.trim(),
         bio: _bioController.text.trim().isEmpty

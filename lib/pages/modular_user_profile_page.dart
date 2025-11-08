@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../models/user_profile_models.dart';
 import '../services/database/user_profile_dao.dart';
 import 'edit_basic_info_page.dart';
 import 'edit_interests_page.dart';

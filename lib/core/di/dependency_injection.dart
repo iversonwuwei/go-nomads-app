@@ -52,6 +52,14 @@ import '../../features/interest/application/use_cases/interest_use_cases.dart';
 import '../../features/interest/domain/repositories/i_interest_repository.dart';
 import '../../features/interest/infrastructure/repositories/interest_repository.dart';
 import '../../features/interest/presentation/controllers/interest_state_controller.dart';
+// Location Domain
+import '../../features/location/application/use_cases/get_cities_by_country_use_case.dart';
+import '../../features/location/application/use_cases/get_countries_use_case.dart';
+import '../../features/location/application/use_cases/search_cities_use_case.dart'
+    as location_use_cases;
+import '../../features/location/domain/repositories/ilocation_repository.dart';
+import '../../features/location/infrastructure/repositories/location_repository.dart';
+import '../../features/location/presentation/controllers/location_state_controller.dart';
 import '../../features/meetup/application/use_cases/cancel_rsvp_use_case.dart';
 import '../../features/meetup/application/use_cases/create_meetup_use_case.dart';
 import '../../features/meetup/application/use_cases/get_meetups_by_city_use_case.dart';
@@ -100,6 +108,9 @@ class DependencyInjection {
 
     // 用户领域
     _registerUserDomain();
+
+    // 位置领域 (国家/城市数据)
+    _registerLocationDomain();
 
     // 城市领域
     _registerCityDomain();
@@ -257,6 +268,30 @@ class DependencyInjection {
     );
   }
 
+  /// 注册位置领域依赖 (国家和城市数据)
+  static void _registerLocationDomain() {
+    // Repository
+    Get.lazyPut<ILocationRepository>(
+      () => LocationRepository(),
+    );
+
+    // Use Cases
+    Get.lazyPut(() => GetCountriesUseCase(Get.find<ILocationRepository>()));
+    Get.lazyPut(
+        () => GetCitiesByCountryUseCase(Get.find<ILocationRepository>()));
+    Get.lazyPut(() => location_use_cases.SearchCitiesUseCase(
+        Get.find<ILocationRepository>()));
+
+    // Controller
+    Get.lazyPut(
+      () => LocationStateController(
+        getCountriesUseCase: Get.find<GetCountriesUseCase>(),
+        getCitiesByCountryUseCase: Get.find<GetCitiesByCountryUseCase>(),
+        searchCitiesUseCase: Get.find<location_use_cases.SearchCitiesUseCase>(),
+      ),
+    );
+  }
+
   /// 注册城市领域依赖
   static void _registerCityDomain() {
     // Repository
@@ -277,6 +312,8 @@ class DependencyInjection {
     Get.lazyPut(
         () => GetUserFavoriteCityIdsUseCase(Get.find<ICityRepository>()));
     Get.lazyPut(() => GetCityProsConsUseCase(Get.find<ICityRepository>()));
+    Get.lazyPut(
+        () => GetCitiesWithCoworkingCountUseCase(Get.find<ICityRepository>()));
 
     // Controller
     Get.lazyPut(
@@ -333,7 +370,7 @@ class DependencyInjection {
       () => CoworkingRepository(),
     );
 
-    // Use Cases
+    // Use Cases - 查询类
     Get.lazyPut(() => GetCoworkingSpacesByCityUseCase(
           Get.find<ICoworkingRepository>(),
         ));
@@ -341,6 +378,23 @@ class DependencyInjection {
           Get.find<ICoworkingRepository>(),
         ));
     Get.lazyPut(() => GetCityCoworkingCountUseCase(
+          Get.find<ICoworkingRepository>(),
+        ));
+    Get.lazyPut(() => GetCoworkingSpacesUseCase(
+          Get.find<ICoworkingRepository>(),
+        ));
+    Get.lazyPut(() => GetCoworkingCountByCitiesUseCase(
+          Get.find<ICoworkingRepository>(),
+        ));
+
+    // Use Cases - 命令类
+    Get.lazyPut(() => CreateCoworkingUseCase(
+          Get.find<ICoworkingRepository>(),
+        ));
+    Get.lazyPut(() => UpdateCoworkingUseCase(
+          Get.find<ICoworkingRepository>(),
+        ));
+    Get.lazyPut(() => DeleteCoworkingUseCase(
           Get.find<ICoworkingRepository>(),
         ));
 

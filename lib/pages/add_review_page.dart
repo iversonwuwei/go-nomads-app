@@ -6,8 +6,9 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../config/app_colors.dart';
+import '../core/domain/result.dart';
+import '../features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
 import '../generated/app_localizations.dart';
-import '../services/user_city_content_api_service.dart';
 import '../widgets/app_toast.dart';
 
 /// 添加 Review 页面 - 独立页面形式
@@ -705,9 +706,9 @@ class _AddReviewPageState extends State<AddReviewPage> {
 
     try {
       // 实际的 API 调用
-      final apiService = UserCityContentApiService();
+      final apiService = Get.find<IUserCityContentRepository>();
 
-      final review = await apiService.upsertCityReview(
+      final result = await apiService.upsertCityReview(
         cityId: widget.cityId,
         rating: _rating.value.round(),
         title: _titleController.text.trim(),
@@ -715,15 +716,23 @@ class _AddReviewPageState extends State<AddReviewPage> {
         // visitDate: 可以添加一个日期选择器
       );
 
-      Get.back(result: {
-        'success': true,
-        'review': review,
-      });
+      switch (result) {
+        case Success(:final data):
+          Get.back(result: {
+            'success': true,
+            'review': data,
+          });
 
-      AppToast.success(
-        l10n.reviewSubmitted,
-        title: l10n.success,
-      );
+          AppToast.success(
+            l10n.reviewSubmitted,
+            title: l10n.success,
+          );
+        case Failure(:final exception):
+          AppToast.error(
+            l10n.failedToSubmitReview(exception.toString()),
+            title: l10n.error,
+          );
+      }
     } catch (e) {
       AppToast.error(
         l10n.failedToSubmitReview('$e'),

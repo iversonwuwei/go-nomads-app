@@ -1,9 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
-import '../features/interest/infrastructure/models/interest_dto.dart';
-import '../services/interests_api_service.dart';
+import '../features/interest/domain/entities/interest.dart';
+import '../features/interest/presentation/controllers/interest_state_controller.dart';
 
 /// 兴趣爱好选择器组件
 class InterestsSelector extends StatefulWidget {
@@ -32,10 +33,12 @@ class InterestsSelector extends StatefulWidget {
 }
 
 class _InterestsSelectorState extends State<InterestsSelector> {
-  final InterestsApiService _interestsService = InterestsApiService();
+  late final InterestStateController _interestController;
 
   List<InterestsByCategory> _interestsByCategory = [];
   final List<UserInterest> _selectedInterests = [];
+  List<Interest> _allInterests = [];
+  bool _didRestoreInitialSelection = false;
   bool _isLoading = true;
   String _searchQuery = '';
   String? _selectedCategory;
@@ -43,30 +46,54 @@ class _InterestsSelectorState extends State<InterestsSelector> {
   @override
   void initState() {
     super.initState();
+    _interestController = Get.find<InterestStateController>();
     _loadInterests();
+  }
+
+  @override
+  void didUpdateWidget(covariant InterestsSelector oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (!setEquals(widget.selectedInterestIds.toSet(),
+        oldWidget.selectedInterestIds.toSet())) {
+      _restoreSelectionFromWidget(force: true);
+    }
   }
 
   Future<void> _loadInterests() async {
     setState(() => _isLoading = true);
 
     try {
-      final interestsByCategory =
-          await _interestsService.getInterestsByCategory();
+      await _interestController.getInterests();
+
+      final interests = List<Interest>.from(_interestController.interests);
+      if (!mounted) return;
+
       setState(() {
-        _interestsByCategory = interestsByCategory;
+        _allInterests = interests;
+        _interestsByCategory = _groupInterestsByCategory(interests);
         _isLoading = false;
       });
-    } catch (e) {
-      print('❌ 加载兴趣失败: $e');
-      setState(() => _isLoading = false);
 
-      if (mounted) {
+      _restoreSelectionFromWidget();
+
+      final error = _interestController.errorMessage.value;
+      if (error != null && error.isNotEmpty && mounted) {
         Get.snackbar(
           '加载失败',
-          '无法加载兴趣列表，请稍后重试',
+          error,
           snackPosition: SnackPosition.BOTTOM,
         );
       }
+    } catch (e) {
+      debugPrint('❌ 加载兴趣失败: $e');
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      Get.snackbar(
+        '加载失败',
+        '无法加载兴趣列表，请稍后重试',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
 
@@ -96,12 +123,12 @@ class _InterestsSelectorState extends State<InterestsSelector> {
       if (widget.showIntensity) {
         _showIntensityDialog(interest);
       } else {
-        _addInterest(interest, null, null);
+        _addInterest(interest, null);
       }
     }
   }
 
-  void _addInterest(Interest interest, String? intensity, String? _) {
+  void _addInterest(Interest interest, String? intensity) {
     final userInterest = UserInterest(
       id: DateTime.now().millisecondsSinceEpoch.toString(), // 临时ID
       userId: '', // 将由后端填充
@@ -119,8 +146,81 @@ class _InterestsSelectorState extends State<InterestsSelector> {
     widget.onChanged(_selectedInterests);
   }
 
+  void _restoreSelectionFromWidget({bool force = false}) {
+    if (_allInterests.isEmpty || widget.selectedInterestIds.isEmpty) {
+      return;
+    }
+
+    if (!force && _didRestoreInitialSelection) {
+      return;
+    }
+
+    final restored = _buildUserInterestsFromIds(widget.selectedInterestIds);
+    if (restored.isEmpty) {
+      _didRestoreInitialSelection = true;
+      return;
+    }
+
+    setState(() {
+      _selectedInterests
+        ..clear()
+        ..addAll(restored);
+    });
+
+    _didRestoreInitialSelection = true;
+  }
+
+  List<UserInterest> _buildUserInterestsFromIds(List<String> interestIds) {
+    final now = DateTime.now();
+    final results = <UserInterest>[];
+    for (final id in interestIds) {
+      final interest = _findInterestById(id);
+      if (interest == null) continue;
+      results.add(
+        UserInterest(
+          id: 'selected-$id-${now.millisecondsSinceEpoch}',
+          userId: '',
+          interestId: interest.id,
+          interestName: interest.name,
+          category: interest.category,
+          icon: interest.icon,
+          intensityLevel: null,
+          createdAt: now,
+        ),
+      );
+    }
+    return results;
+  }
+
+  Interest? _findInterestById(String id) {
+    for (final interest in _allInterests) {
+      if (interest.id == id) {
+        return interest;
+      }
+    }
+    return null;
+  }
+
+  List<InterestsByCategory> _groupInterestsByCategory(
+      List<Interest> interests) {
+    final Map<String, List<Interest>> grouped = {};
+    for (final interest in interests) {
+      grouped.putIfAbsent(interest.category, () => []).add(interest);
+    }
+
+    final categories = grouped.entries
+        .map((entry) => InterestsByCategory(
+              category: entry.key,
+              interests: entry.value,
+            ))
+        .toList()
+      ..sort((a, b) => a.category.compareTo(b.category));
+
+    return categories;
+  }
+
   void _showIntensityDialog(Interest interest) {
-    String? selectedIntensity = 'Medium';
+    String? selectedIntensity = 'moderate';
 
     Get.dialog(
       AlertDialog(
@@ -136,7 +236,7 @@ class _InterestsSelectorState extends State<InterestsSelector> {
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
-                  children: ['Low', 'Medium', 'High'].map((level) {
+                  children: ['casual', 'moderate', 'passionate'].map((level) {
                     return ChoiceChip(
                       label: Text(_getIntensityText(level)),
                       selected: selectedIntensity == level,
@@ -164,7 +264,7 @@ class _InterestsSelectorState extends State<InterestsSelector> {
           ElevatedButton(
             onPressed: () {
               Get.back();
-              _addInterest(interest, selectedIntensity, null);
+              _addInterest(interest, selectedIntensity);
             },
             child: const Text('确定'),
           ),
@@ -175,11 +275,14 @@ class _InterestsSelectorState extends State<InterestsSelector> {
 
   String _getIntensityText(String level) {
     switch (level) {
-      case 'Low':
+      case 'casual':
+      case 'low':
         return '一般';
-      case 'Medium':
+      case 'moderate':
+      case 'medium':
         return '喜欢';
-      case 'High':
+      case 'passionate':
+      case 'high':
         return '热爱';
       default:
         return level;
@@ -335,7 +438,7 @@ class _InterestsSelectorState extends State<InterestsSelector> {
                         });
                         widget.onChanged(_selectedInterests);
                       },
-                      backgroundColor: AppColors.accent.withOpacity(0.1),
+                      backgroundColor: AppColors.accent.withValues(alpha: 0.1),
                       side: BorderSide(color: AppColors.accent),
                     );
                   }).toList(),
@@ -368,7 +471,8 @@ class _InterestsSelectorState extends State<InterestsSelector> {
                           label: Text(interest.name),
                           selected: isSelected,
                           onSelected: (_) => _toggleInterest(interest),
-                          selectedColor: AppColors.accent.withOpacity(0.2),
+                          selectedColor:
+                              AppColors.accent.withValues(alpha: 0.2),
                           checkmarkColor: AppColors.accent,
                           backgroundColor: AppColors.white,
                           side: BorderSide(

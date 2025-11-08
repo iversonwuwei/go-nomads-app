@@ -1,13 +1,6 @@
 // import '../../../../models/user_city_content_models.dart' as legacy;
 import '../../domain/entities/user_city_content.dart' as domain;
 
-// Type aliases for backward compatibility
-typedef UserCityPhoto = UserCityPhotoDto;
-typedef UserCityExpense = UserCityExpenseDto;
-typedef UserCityReview = UserCityReviewDto;
-typedef CityUserContentStats = CityUserContentStatsDto;
-typedef CityCostSummary = CityCostSummaryDto;
-
 /// UserCityPhoto DTO
 class UserCityPhotoDto {
   final String id;

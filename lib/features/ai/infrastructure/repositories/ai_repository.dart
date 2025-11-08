@@ -1,3 +1,4 @@
+import 'package:df_admin_mobile/core/core.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/ai/domain/repositories/iai_repository.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city_detail.dart'
@@ -6,15 +7,14 @@ import 'package:df_admin_mobile/features/city/infrastructure/models/city_detail_
     as city_dto;
 import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan.dart'
     as entity;
-import 'package:df_admin_mobile/features/travel_plan/infrastructure/models/travel_plan_dto.dart';
-import 'package:df_admin_mobile/models/travel_plan_model.dart' as legacy;
-import 'package:df_admin_mobile/services/ai_api_service.dart';
+import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:get/get.dart';
 
 /// AI服务Repository实现
 ///
-/// 使用AiApiService调用后端AI API
+/// 使用HttpService调用后端AI API
 class AiRepository implements IAiRepository {
-  final AiApiService _apiService = AiApiService();
+  final HttpService _httpService = Get.find();
 
   @override
   Future<Result<entity.TravelPlan>> generateTravelPlan({
@@ -31,26 +31,54 @@ class AiRepository implements IAiRepository {
     List<String>? selectedAttractions,
   }) async {
     try {
-      // API返回legacy.TravelPlan
-      final legacyPlan = await _apiService.generateTravelPlan(
-        cityId: cityId,
-        cityName: cityName,
-        cityImage: cityImage,
-        duration: duration,
-        budget: budget,
-        travelStyle: travelStyle,
-        interests: interests,
-        departureLocation: departureLocation,
-        customBudget: customBudget,
-        currency: currency,
-        selectedAttractions: selectedAttractions,
+      print('🤖 正在生成AI旅行计划...');
+      print('   城市: $cityName, 天数: $duration');
+
+      // 处理自定义预算格式
+      String finalBudget = budget;
+      String? finalCurrency = currency;
+      double? finalCustomBudget = customBudget;
+
+      if (budget.contains(':')) {
+        final parts = budget.split(':');
+        if (parts.length == 2) {
+          finalCurrency = parts[0];
+          final amount = double.tryParse(parts[1]);
+          if (amount != null) {
+            finalCustomBudget = amount;
+            finalBudget =
+                amount < 3000 ? 'low' : (amount < 10000 ? 'medium' : 'high');
+          }
+        }
+      }
+
+      final response = await _httpService.post(
+        '/ai/travel-plan',
+        data: {
+          'cityId': cityId,
+          'cityName': cityName,
+          'cityImage': cityImage,
+          'duration': duration,
+          'budget': finalBudget,
+          'travelStyle': travelStyle,
+          'interests': interests,
+          if (departureLocation != null) 'departureLocation': departureLocation,
+          if (finalCustomBudget != null)
+            'customBudget': finalCustomBudget.toString(),
+          if (finalCurrency != null) 'currency': finalCurrency,
+          if (selectedAttractions != null)
+            'selectedAttractions': selectedAttractions,
+        },
       );
 
-      // 转换: legacy.TravelPlan → TravelPlanDto → entity.TravelPlan
-      final dto = TravelPlanDto.fromLegacyModel(legacyPlan);
-      final entityPlan = dto.toDomain();
+      // 使用响应数据 (TODO: 实现完整的转换逻辑)
+      print('✅ API响应: ${response.statusCode}');
 
-      return Result.success(entityPlan);
+      // TODO: 实现从响应到 entity.TravelPlan 的转换
+      // 暂时返回错误，等待完整的 DTO 迁移
+      return Result.failure(
+        UnknownException('TravelPlan DTO conversion not yet implemented'),
+      );
     } catch (e) {
       return Result.failure(UnknownException(e.toString()));
     }
@@ -74,28 +102,11 @@ class AiRepository implements IAiRepository {
     required Function(String error) onError,
   }) async {
     try {
-      await _apiService.generateTravelPlanStream(
-        cityId: cityId,
-        cityName: cityName,
-        cityImage: cityImage,
-        duration: duration,
-        budget: budget,
-        travelStyle: travelStyle,
-        interests: interests,
-        departureLocation: departureLocation,
-        customBudget: customBudget,
-        currency: currency,
-        selectedAttractions: selectedAttractions,
-        onProgress: onProgress,
-        onData: (legacy.TravelPlan legacyPlan) {
-          // 转换: legacy.TravelPlan → TravelPlanDto → entity.TravelPlan
-          final dto = TravelPlanDto.fromLegacyModel(legacyPlan);
-          final entityPlan = dto.toDomain();
-          onData(entityPlan);
-        },
-        onError: onError,
+      // TODO: 需要实现从 legacy model 到 DTO 的转换
+      // 暂时直接返回错误，等待 AI service 迁移到 DDD
+      return Result.failure(
+        UnknownException('Legacy model conversion not implemented'),
       );
-      return Result.success(null);
     } catch (e) {
       return Result.failure(UnknownException(e.toString()));
     }
@@ -104,14 +115,11 @@ class AiRepository implements IAiRepository {
   @override
   Future<Result<entity.TravelPlan>> getTravelPlanById(String planId) async {
     try {
-      // API返回legacy.TravelPlan
-      final legacyPlan = await _apiService.getTravelPlanById(planId);
-
-      // 转换: legacy.TravelPlan → TravelPlanDto → entity.TravelPlan
-      final dto = TravelPlanDto.fromLegacyModel(legacyPlan);
-      final entityPlan = dto.toDomain();
-
-      return Result.success(entityPlan);
+      // TODO: 需要实现从 legacy model 到 DTO 的转换
+      // 暂时直接返回错误，等待 AI service 迁移到 DDD
+      return Result.failure(
+        UnknownException('Legacy model conversion not implemented'),
+      );
     } catch (e) {
       return Result.failure(UnknownException(e.toString()));
     }
@@ -123,14 +131,12 @@ class AiRepository implements IAiRepository {
     required String cityName,
   }) async {
     try {
-      final guideData = await _apiService.generateDigitalNomadGuide(
-        cityId: cityId,
-        cityName: cityName,
+      final response = await _httpService.post(
+        '/ai/digital-nomad-guide',
+        data: {'cityId': cityId, 'cityName': cityName},
       );
 
-      // API返回Map<String, dynamic>,需要转换为DigitalNomadGuide
-      // 使用DigitalNomadGuideDto进行转换
-      // dto.toDomain()返回entity.DigitalNomadGuide,因为city_detail_dto import的是as entity
+      final guideData = response.data as Map<String, dynamic>;
       final dto = city_dto.DigitalNomadGuideDto.fromJson(guideData);
       final guide = dto.toDomain() as city_entity.DigitalNomadGuide;
 
@@ -149,14 +155,10 @@ class AiRepository implements IAiRepository {
     required Function(String error) onError,
   }) async {
     try {
-      await _apiService.generateDigitalNomadGuideStream(
-        cityId: cityId,
-        cityName: cityName,
-        onProgress: onProgress,
-        onData: onData,
-        onError: onError,
+      // TODO: 实现流式响应 (需要 HttpService 支持 SSE)
+      return Result.failure(
+        UnknownException('Stream API not yet implemented'),
       );
-      return Result.success(null);
     } catch (e) {
       return Result.failure(UnknownException(e.toString()));
     }

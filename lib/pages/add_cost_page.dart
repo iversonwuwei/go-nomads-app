@@ -3,9 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
+import '../core/domain/result.dart';
+import '../features/user_city_content/domain/entities/user_city_content.dart';
+import '../features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
 import '../generated/app_localizations.dart';
-import '../models/user_city_content_models.dart';
-import '../services/user_city_content_api_service.dart';
 import '../widgets/app_toast.dart';
 
 class AddCostPage extends StatefulWidget {
@@ -206,7 +207,7 @@ class _AddCostPageState extends State<AddCostPage> {
     _isSubmitting.value = true;
 
     try {
-      final apiService = UserCityContentApiService();
+      final repository = Get.find<IUserCityContentRepository>();
 
       // 提交每个非空的费用项
       final List<UserCityExpense> addedExpenses = [];
@@ -219,7 +220,7 @@ class _AddCostPageState extends State<AddCostPage> {
           // 映射类别名称到 ExpenseCategory 枚举
           final category = _mapToExpenseCategory(entry.key);
 
-          final expense = await apiService.addCityExpense(
+          final result = await repository.addCityExpense(
             cityId: widget.cityId,
             category: category,
             amount: amount,
@@ -230,7 +231,12 @@ class _AddCostPageState extends State<AddCostPage> {
             date: DateTime.now(),
           );
 
-          addedExpenses.add(expense);
+          switch (result) {
+            case Success(:final data):
+              addedExpenses.add(data);
+            case Failure(:final exception):
+              throw exception;
+          }
         }
       }
 

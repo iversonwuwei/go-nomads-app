@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 
 import '../generated/app_localizations.dart';
 import '../models/innovation_project_model.dart';
-import '../models/user_model.dart';
+import '../features/user/domain/entities/user.dart';
 import 'direct_chat_page.dart';
 
 /// Innovation Project Detail Page

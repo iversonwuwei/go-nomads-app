@@ -1,115 +1,228 @@
-# 全域 DDD 架构迁移计划
+# DDD 架构迁移计划# 全域 DDD 架构迁移计划
 
-## 📋 目标
+
+
+## 迁移目标## 📋 目标
+
+将 `lib/services` 文件夹中的业务逻辑迁移到 DDD 架构的各个领域模块，保留必要的基础设施服务。
 
 将整个项目从 Service-based 架构迁移到 DDD (Domain-Driven Design) 架构,参照 **Auth 域**和 **User 域**的成功模式。
 
----
+## 当前错误统计
 
-## 🏗️ DDD 标准结构
+- **总错误数**: 419---
 
-每个域应包含以下层次:
+- **主要错误来源**:
 
-```
-features/{domain}/
+  - city_chat_page.dart: 51 errors## 🏗️ DDD 标准结构
+
+  - city_detail_page.dart: 39 errors  
+
+  - coworking_detail_page.dart: 27 errors每个域应包含以下层次:
+
+  - meetup_detail_page.dart: 24 errors
+
+  - meetups_list_page.dart: 23 errors```
+
+  - innovation_list_page.dart: 23 errorsfeatures/{domain}/
+
 ├── domain/                    # 领域层
-│   ├── entities/             # 实体 (纯粹的业务对象)
+
+## Services 分类和迁移策略│   ├── entities/             # 实体 (纯粹的业务对象)
+
 │   ├── repositories/         # 仓储接口 (I{Domain}Repository)
-│   └── services/             # 领域服务 (可选)
-├── application/               # 应用层
+
+### 1. 基础设施层 - **保留**（不迁移）│   └── services/             # 领域服务 (可选)
+
+这些是纯技术基础设施，应该保留在 services 文件夹中：├── application/               # 应用层
+
 │   └── use_cases/            # 用例 (UseCase<R, P>)
-├── infrastructure/            # 基础设施层
-│   ├── models/               # DTO (数据传输对象)
-│   └── repositories/         # 仓储实现 ({Domain}Repository)
-└── presentation/              # 表示层
-    └── controllers/          # 状态控制器 ({Domain}StateController)
-```
 
----
+- ✅ **http_service.dart** - HTTP 客户端封装├── infrastructure/            # 基础设施层
 
-## ✅ 已完成的域
+- ✅ **database_service.dart** - 数据库连接管理│   ├── models/               # DTO (数据传输对象)
+
+- ✅ **database_initializer.dart** - 数据库初始化│   └── repositories/         # 仓储实现 ({Domain}Repository)
+
+- ✅ **database/** - 数据库相关（DAO等）└── presentation/              # 表示层
+
+- ✅ **token_storage_service.dart** - Token 存储    └── controllers/          # 状态控制器 ({Domain}StateController)
+
+- ✅ **notification_service.dart** - 推送通知```
+
+- ✅ **location_service.dart** - 位置服务
+
+- ✅ **amap_native_service.dart** - 高德地图原生服务---
+
+- ✅ **signalr_service.dart** - SignalR 实时通信
+
+- ✅ **background_task_service.dart** - 后台任务## ✅ 已完成的域
+
+- ✅ **app_init_service.dart** - 应用初始化
 
 ### 1. Auth 域 ✅ (100%)
-- ✅ Domain: AuthUser, AuthToken 实体
+
+### 2. 业务逻辑层 - **需要迁移**- ✅ Domain: AuthUser, AuthToken 实体
+
 - ✅ Application: LoginUseCase, RegisterUseCase, LogoutUseCase, etc.
-- ✅ Infrastructure: AuthRepository, AuthDatabaseRepository
+
+#### Phase 1: 核心依赖模块（优先级最高）- ✅ Infrastructure: AuthRepository, AuthDatabaseRepository
+
 - ✅ Presentation: AuthStateController
 
-### 2. User 域 ✅ (100%)
-- ✅ Domain: User, UserFavoriteCity 实体, IUserRepository 接口
-- ✅ Application: GetCurrentUserUseCase, UpdateUserUseCase, etc.
+##### 2.1 Country & City Data Service
+
+**文件**: `cities_api_service.dart`, `city_api_service.dart`, `location_api_service.dart`### 2. User 域 ✅ (100%)
+
+**目标**: `lib/features/location/` (新建)- ✅ Domain: User, UserFavoriteCity 实体, IUserRepository 接口
+
+**原因**: 被 create_meetup, add_coworking, global_map 等多个页面依赖- ✅ Application: GetCurrentUserUseCase, UpdateUserUseCase, etc.
+
 - ✅ Infrastructure: UserRepository
-- ✅ Presentation: 已集成到 UserProfileController
 
----
+**迁移步骤**:- ✅ Presentation: 已集成到 UserProfileController
 
-## 🚧 待迁移的域 (优先级排序)
+```
 
-### 优先级 1: 核心业务域 (高频使用)
+1. 创建 features/location/domain/---
 
-#### 1. City 域 (部分完成,需完善)
-**现状**:
-- ✅ Domain: CityOption, CityDetail 实体, ICityRepository 接口
-- ⚠️ Application: Use Cases 使用自定义 Result,需改为标准 Result<T>
-- ❌ Infrastructure: 缺少 CityRepository 实现
-- ❌ Presentation: CityListController, CityDetailController 仍使用 CitiesApiService
+   - entities/country.dart
 
-**需要完成**:
-1. 创建统一的 City 实体 (或明确 CityOption vs CityDetail 的使用场景)
-2. 重构 Use Cases 使用标准 `Result<T>` 和 `UseCase<R, P>` 基类
-3. 创建 CityRepository 实现 (从 cities_api_service.dart 迁移)
-4. 创建 CityStateController 替代 city_list_controller
-5. 创建 CityDetailStateController 替代 city_detail_controller
+   - entities/city_option.dart  ## 🚧 待迁移的域 (优先级排序)
 
-**影响的 Controllers**:
-- `lib/controllers/city_list_controller.dart` (450 行)
-- `lib/controllers/city_detail_controller.dart` (大文件,依赖多个 services)
+   - repositories/ilocation_repository.dart
+
+   ### 优先级 1: 核心业务域 (高频使用)
+
+2. 创建 features/location/infrastructure/
+
+   - repositories/location_repository.dart#### 1. City 域 (部分完成,需完善)
+
+   - models/country_dto.dart**现状**:
+
+   - models/city_dto.dart- ✅ Domain: CityOption, CityDetail 实体, ICityRepository 接口
+
+   - ⚠️ Application: Use Cases 使用自定义 Result,需改为标准 Result<T>
+
+3. 创建 features/location/application/- ❌ Infrastructure: 缺少 CityRepository 实现
+
+   - use_cases/get_countries_use_case.dart- ❌ Presentation: CityListController, CityDetailController 仍使用 CitiesApiService
+
+   - use_cases/get_cities_by_country_use_case.dart
+
+   **需要完成**:
+
+4. 创建 features/location/presentation/1. 创建统一的 City 实体 (或明确 CityOption vs CityDetail 的使用场景)
+
+   - controllers/location_state_controller.dart2. 重构 Use Cases 使用标准 `Result<T>` 和 `UseCase<R, P>` 基类
+
+   3. 创建 CityRepository 实现 (从 cities_api_service.dart 迁移)
+
+5. 在 dependency_injection.dart 中注册4. 创建 CityStateController 替代 city_list_controller
+
+```5. 创建 CityDetailStateController 替代 city_detail_controller
+
+
+
+##### 2.2 User Authentication  **影响的 Controllers**:
+
+**文件**: `nomads_auth_service.dart`- `lib/controllers/city_list_controller.dart` (450 行)
+
+**目标**: 已有 `features/auth/`- `lib/controllers/city_detail_controller.dart` (大文件,依赖多个 services)
+
+**迁移步骤**: 检查并整合到现有 auth_repository.dart
 
 **影响的 Services**:
-- `lib/services/cities_api_service.dart` (206 行)
-- `lib/services/city_api_service.dart`
 
----
+##### 2.3 AI Services- `lib/services/cities_api_service.dart` (206 行)
 
-#### 2. Coworking 域 (未开始)
-**现状**:
-- ✅ Domain: CoworkingSpace 实体存在
-- ❌ Application: 无 Use Cases
+**文件**: `ai_api_service.dart`- `lib/services/city_api_service.dart`
+
+**目标**: `features/ai/infrastructure/repositories/ai_repository.dart`
+
+**状态**: ✅ 已有结构，需移除 service 层---
+
+
+
+##### 2.4 Coworking Management#### 2. Coworking 域 (未开始)
+
+**文件**: `coworking_api_service.dart`**现状**:
+
+**目标**: `features/coworking/`- ✅ Domain: CoworkingSpace 实体存在
+
+**迁移步骤**: 添加创建/编辑 use cases 和扩展 controller- ❌ Application: 无 Use Cases
+
 - ❌ Infrastructure: 无 Repository
-- ❌ Presentation: CoworkingController 使用 coworking_api_service
 
-**需要创建**:
-1. Domain: ICoworkingRepository 接口
+##### 2.5 Events/Meetups- ❌ Presentation: CoworkingController 使用 coworking_api_service
+
+**文件**: `events_api_service.dart`
+
+**目标**: `features/meetup/infrastructure/`**需要创建**:
+
+**状态**: ✅ 已有结构1. Domain: ICoworkingRepository 接口
+
 2. Application: GetCoworkingSpacesUseCase, SearchCoworkingUseCase, AddCoworkingUseCase
-3. Infrastructure: CoworkingRepository (从 coworking_api_service 迁移)
-4. Presentation: CoworkingStateController
 
-**影响的 Controllers**:
+##### 2.6 User City Content3. Infrastructure: CoworkingRepository (从 coworking_api_service 迁移)
+
+**文件**: `user_city_content_api_service.dart`4. Presentation: CoworkingStateController
+
+**目标**: `features/user_city_content/infrastructure/`
+
+**问题**: 类型不匹配，需添加转换层**影响的 Controllers**:
+
 - `lib/controllers/coworking_controller.dart`
-- `lib/controllers/add_coworking_controller.dart`
 
-**影响的 Services**:
+##### 2.7 Skills & Interests- `lib/controllers/add_coworking_controller.dart`
+
+**文件**: `skills_api_service.dart`, `interests_api_service.dart`
+
+**目标**: 新建 `features/taxonomy/`**影响的 Services**:
+
 - `lib/services/coworking_api_service.dart`
 
----
+##### 2.8 User Favorites
+
+**文件**: `user_favorite_city_api_service.dart`---
+
+**目标**: 整合到 `features/user_profile/`
 
 ### 优先级 2: 社交和互动域
 
-#### 3. Chat 域 (未开始)
-**现状**:
-- ✅ Domain: Chat 实体存在
-- ❌ Application: 无 Use Cases
-- ❌ Infrastructure: 无 Repository
-- ❌ Presentation: ChatController 依赖 SignalR Service
+##### 2.9 Async Tasks
 
-**需要创建**:
-1. Domain: ChatMessage, Conversation 实体, IChatRepository
-2. Application: SendMessageUseCase, GetChatHistoryUseCase, CreateChatUseCase
+**文件**: `async_task_service.dart`#### 3. Chat 域 (未开始)
+
+**目标**: `features/async_task/infrastructure/`**现状**:
+
+- ✅ Domain: Chat 实体存在
+
+## 迁移执行顺序- ❌ Application: 无 Use Cases
+
+- ❌ Infrastructure: 无 Repository
+
+### Stage 1: 核心依赖- ❌ Presentation: ChatController 依赖 SignalR Service
+
+1. ✅ 修复 AI repository legacy model 错误
+
+2. ✅ 修复 async_task, country DTO imports  **需要创建**:
+
+3. 🔄 创建 Location 模块（Country/City）1. Domain: ChatMessage, Conversation 实体, IChatRepository
+
+4. 修复 UserCityContent 类型转换2. Application: SendMessageUseCase, GetChatHistoryUseCase, CreateChatUseCase
+
 3. Infrastructure: ChatRepository (集成 SignalR + HTTP)
-4. Presentation: ChatStateController
+
+### Stage 2-5: 按页面错误数量逐步修复4. Presentation: ChatStateController
+
+详见完整计划文档...
 
 **影响的 Controllers**:
-- `lib/controllers/chat_controller.dart`
+
+## 下一步行动- `lib/controllers/chat_controller.dart`
+
+**立即开始**: 创建 Location 模块（Country/City）
 
 **影响的 Services**:
 - `lib/services/signalr_service.dart` (保留作为基础设施)
@@ -139,26 +252,35 @@ features/{domain}/
 
 ### 优先级 3: 辅助功能域
 
-#### 5. Location 域 (未开始)
+#### 5. Location 域 ✅ (已完成)
 **现状**:
-- ✅ Domain: Country 实体存在
-- ❌ Application: 无 Use Cases
-- ❌ Infrastructure: 无 Repository
-- ❌ Presentation: LocationController 使用 location_api_service
+- ✅ Domain: CountryOption, CityOption 实体 (重用现有)
+- ✅ Application: GetCountriesUseCase, GetCitiesByCountryUseCase, SearchCitiesUseCase
+- ✅ Infrastructure: LocationRepository (整合 CitiesApiService)
+- ✅ Presentation: LocationStateController
 
-**需要创建**:
-1. Domain: Location, Region 实体, ILocationRepository
-2. Application: GetCountriesUseCase, GetLocationsUseCase, SearchLocationUseCase
-3. Infrastructure: LocationRepository (从 location_api_service 迁移)
-4. Presentation: LocationStateController
+**已创建文件**:
+1. `lib/features/location/domain/entities/country.dart` (re-export CountryOption)
+2. `lib/features/location/domain/entities/city.dart` (re-export CityOption)
+3. `lib/features/location/domain/repositories/ilocation_repository.dart`
+4. `lib/features/location/infrastructure/repositories/location_repository.dart`
+5. `lib/features/location/infrastructure/models/country_dto.dart`
+6. `lib/features/location/infrastructure/models/city_dto.dart`
+7. `lib/features/location/application/use_cases/get_countries_use_case.dart`
+8. `lib/features/location/application/use_cases/get_cities_by_country_use_case.dart`
+9. `lib/features/location/application/use_cases/search_cities_use_case.dart`
+10. `lib/features/location/presentation/controllers/location_state_controller.dart`
 
-**影响的 Controllers**:
-- `lib/controllers/location_controller.dart`
-- `lib/controllers/add_coworking_controller.dart` (依赖 location_api_service)
+**DI 注册**: ✅ 已在 `dependency_injection.dart` 中注册
 
-**影响的 Services**:
-- `lib/services/location_api_service.dart`
-- `lib/services/location_service.dart` (保留作为设备位置服务)
+**要替换的旧代码**:
+- `lib/controllers/data_service_controller.dart` (国家/城市功能)
+- `lib/controllers/add_coworking_controller.dart` (国家/城市选择)
+
+**影响的页面** (待更新):
+- `lib/pages/create_meetup_page.dart`
+- `lib/pages/add_coworking_page.dart`
+- `lib/pages/global_map_page.dart`
 
 ---
 

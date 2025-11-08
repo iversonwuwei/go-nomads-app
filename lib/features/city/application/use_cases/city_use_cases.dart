@@ -386,3 +386,50 @@ class GetCityProsConsParams extends UseCaseParams {
 
   List<Object?> get props => [cityId, isPro];
 }
+
+// ============================================================================
+// 获取城市列表（含 Coworking 数量）Use Case
+// ============================================================================
+
+/// 获取城市列表（含 Coworking 数量）用例
+class GetCitiesWithCoworkingCountUseCase
+    extends UseCase<Map<String, dynamic>, GetCitiesWithCoworkingCountParams> {
+  final ICityRepository _repository;
+
+  GetCitiesWithCoworkingCountUseCase(this._repository);
+
+  @override
+  Future<Result<Map<String, dynamic>>> execute(
+    GetCitiesWithCoworkingCountParams params,
+  ) async {
+    // 参数验证
+    if (params.pageSize <= 0) {
+      return Failure(
+        ValidationException('页大小必须大于0', code: 'INVALID_PAGE_SIZE'),
+      );
+    }
+
+    if (params.page < 1) {
+      return Failure(
+        ValidationException('页码必须大于等于1', code: 'INVALID_PAGE'),
+      );
+    }
+
+    // 调用 Repository
+    return await _repository.getCitiesWithCoworkingCount(
+      page: params.page,
+      pageSize: params.pageSize,
+    );
+  }
+}
+
+/// 获取城市列表（含 Coworking 数量）参数
+class GetCitiesWithCoworkingCountParams extends UseCaseParams {
+  final int page;
+  final int pageSize;
+
+  const GetCitiesWithCoworkingCountParams({
+    this.page = 1,
+    this.pageSize = 100,
+  });
+}

@@ -5,9 +5,9 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../config/app_colors.dart';
-import '../controllers/add_coworking_controller.dart';
+import '../features/city/domain/entities/city_option.dart';
+import '../features/location/presentation/controllers/location_state_controller.dart';
 import '../generated/app_localizations.dart';
-import '../models/city_option.dart';
 import '../services/coworking_api_service.dart';
 import '../widgets/app_toast.dart';
 import 'amap_native_picker_page.dart';
@@ -32,9 +32,8 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
   final _formKey = GlobalKey<FormState>();
   final RxBool _isSubmitting = false.obs;
 
-  // Controller for managing countries and cities
-  final AddCoworkingController _addCoworkingController =
-      Get.put(AddCoworkingController());
+  final LocationStateController _locationController =
+      Get.find<LocationStateController>();
 
   // Basic Info
   final _nameController = TextEditingController();
@@ -902,9 +901,9 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
         ),
         const SizedBox(height: 8),
         Obx(() {
-          final countryList = _addCoworkingController.countries;
+          final countryList = _locationController.countries;
           final isLoadingCountries =
-              _addCoworkingController.isLoadingCountries.value;
+              _locationController.isLoadingCountries.value;
           final localeCode =
               Localizations.localeOf(context).languageCode.toLowerCase();
 
@@ -941,7 +940,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
 
                   if (countries.isEmpty) {
                     AppToast.info(l10n.noData, title: l10n.notice);
-                    _addCoworkingController.loadCountries(forceRefresh: true);
+                    _locationController.loadCountries(forceRefresh: true);
                     return;
                   }
 
@@ -968,7 +967,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                       final cityFieldState = _cityFieldKey.currentState;
                       cityFieldState?.didChange(null);
 
-                      _addCoworkingController
+                      _locationController
                           .loadCitiesByCountry(selectedEntry.key.id);
                     },
                   );
@@ -1030,7 +1029,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
         const SizedBox(height: 8),
         Obx(() {
           final selectedCountryId = _selectedCountryId;
-          final cityMap = _addCoworkingController.citiesByCountry;
+          final cityMap = _locationController.citiesByCountry;
           final _ = cityMap.length; // 触发 Obx 监听
           final cachedCities = selectedCountryId == null
               ? const <CityOption>[]
@@ -1055,7 +1054,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
             builder: (field) {
               final displayCity = field.value ?? _selectedCity;
               final isLoadingCities =
-                  _addCoworkingController.isLoadingCities.value;
+                  _locationController.isLoadingCities.value;
 
               return GestureDetector(
                 behavior: HitTestBehavior.opaque,

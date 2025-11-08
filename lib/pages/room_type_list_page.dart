@@ -3,8 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
-import '../models/hotel_model.dart';
-import '../services/database/hotel_dao.dart';
 import '../widgets/app_toast.dart';
 
 /// 房型列表页面

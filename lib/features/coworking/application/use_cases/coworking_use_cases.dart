@@ -74,3 +74,158 @@ class GetCityCoworkingCountParams extends UseCaseParams {
 
   const GetCityCoworkingCountParams({required this.cityId});
 }
+
+/// 获取 Coworking 空间列表（分页）Use Case
+class GetCoworkingSpacesUseCase
+    extends UseCase<List<CoworkingSpace>, GetCoworkingSpacesParams> {
+  final ICoworkingRepository _repository;
+
+  GetCoworkingSpacesUseCase(this._repository);
+
+  @override
+  Future<Result<List<CoworkingSpace>>> execute(
+    GetCoworkingSpacesParams params,
+  ) async {
+    return await _repository.getCoworkingSpaces(
+      page: params.page,
+      pageSize: params.pageSize,
+      cityId: params.cityId,
+    );
+  }
+}
+
+/// 获取 Coworking 空间列表参数
+class GetCoworkingSpacesParams extends UseCaseParams {
+  final int page;
+  final int pageSize;
+  final String? cityId;
+
+  const GetCoworkingSpacesParams({
+    this.page = 1,
+    this.pageSize = 20,
+    this.cityId,
+  });
+}
+
+/// 批量获取城市 Coworking 数量 Use Case
+class GetCoworkingCountByCitiesUseCase
+    extends UseCase<Map<String, int>, GetCoworkingCountByCitiesParams> {
+  final ICoworkingRepository _repository;
+
+  GetCoworkingCountByCitiesUseCase(this._repository);
+
+  @override
+  Future<Result<Map<String, int>>> execute(
+    GetCoworkingCountByCitiesParams params,
+  ) async {
+    return await _repository.getCoworkingCountByCities(params.cityIds);
+  }
+}
+
+/// 批量获取城市 Coworking 数量参数
+class GetCoworkingCountByCitiesParams extends UseCaseParams {
+  final List<String> cityIds;
+
+  const GetCoworkingCountByCitiesParams({required this.cityIds});
+}
+
+/// 创建 Coworking 空间 Use Case
+class CreateCoworkingUseCase
+    extends UseCase<CoworkingSpace, CreateCoworkingParams> {
+  final ICoworkingRepository _repository;
+
+  CreateCoworkingUseCase(this._repository);
+
+  @override
+  Future<Result<CoworkingSpace>> execute(CreateCoworkingParams params) async {
+    // 基本验证
+    if (params.space.name.isEmpty) {
+      return Result.failure(
+        ValidationException('空间名称不能为空', code: 'INVALID_NAME'),
+      );
+    }
+
+    if (params.space.location.address.isEmpty) {
+      return Result.failure(
+        ValidationException('地址不能为空', code: 'INVALID_ADDRESS'),
+      );
+    }
+
+    if (params.space.location.city.isEmpty) {
+      return Result.failure(
+        ValidationException('城市不能为空', code: 'INVALID_CITY'),
+      );
+    }
+
+    return await _repository.createCoworkingSpace(params.space);
+  }
+}
+
+/// 创建 Coworking 空间参数
+class CreateCoworkingParams extends UseCaseParams {
+  final CoworkingSpace space;
+
+  const CreateCoworkingParams({required this.space});
+}
+
+/// 更新 Coworking 空间 Use Case
+class UpdateCoworkingUseCase
+    extends UseCase<CoworkingSpace, UpdateCoworkingParams> {
+  final ICoworkingRepository _repository;
+
+  UpdateCoworkingUseCase(this._repository);
+
+  @override
+  Future<Result<CoworkingSpace>> execute(UpdateCoworkingParams params) async {
+    // 基本验证
+    if (params.id.isEmpty) {
+      return Result.failure(
+        ValidationException('Coworking 空间ID不能为空', code: 'INVALID_ID'),
+      );
+    }
+
+    if (params.space.name.isEmpty) {
+      return Result.failure(
+        ValidationException('空间名称不能为空', code: 'INVALID_NAME'),
+      );
+    }
+
+    return await _repository.updateCoworkingSpace(params.id, params.space);
+  }
+}
+
+/// 更新 Coworking 空间参数
+class UpdateCoworkingParams extends UseCaseParams {
+  final String id;
+  final CoworkingSpace space;
+
+  const UpdateCoworkingParams({
+    required this.id,
+    required this.space,
+  });
+}
+
+/// 删除 Coworking 空间 Use Case
+class DeleteCoworkingUseCase extends UseCase<void, DeleteCoworkingParams> {
+  final ICoworkingRepository _repository;
+
+  DeleteCoworkingUseCase(this._repository);
+
+  @override
+  Future<Result<void>> execute(DeleteCoworkingParams params) async {
+    if (params.id.isEmpty) {
+      return Result.failure(
+        ValidationException('Coworking 空间ID不能为空', code: 'INVALID_ID'),
+      );
+    }
+
+    return await _repository.deleteCoworkingSpace(params.id);
+  }
+}
+
+/// 删除 Coworking 空间参数
+class DeleteCoworkingParams extends UseCaseParams {
+  final String id;
+
+  const DeleteCoworkingParams({required this.id});
+}

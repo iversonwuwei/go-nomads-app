@@ -32,7 +32,6 @@ class AuthMiddleware extends GetMiddleware {
       try {
         final userStateController = Get.find<UserStateController>();
         print('   用户登录状态: ${userStateController.isLoggedIn}');
-        print('   当前账户ID: ${userStateController.currentAccountId}');
 
         if (!userStateController.isLoggedIn) {
           print('⚠️ 用户状态控制器显示未登录，但 AuthStateController 显示已登录');

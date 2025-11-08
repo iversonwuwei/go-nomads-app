@@ -1,15 +1,14 @@
-import '../../../../services/events_api_service.dart';
+import 'package:get/get.dart';
+
+import '../../../../services/http_service.dart';
 import '../../domain/entities/meetup.dart';
 import '../../domain/repositories/i_meetup_repository.dart';
 import '../models/meetup_dto.dart';
 
 /// Meetup Repository 实现
-/// 使用 EventsApiService 进行数据访问
+/// 使用 HttpService 进行数据访问
 class MeetupRepository implements IMeetupRepository {
-  final EventsApiService _apiService;
-
-  MeetupRepository({EventsApiService? apiService})
-      : _apiService = apiService ?? EventsApiService();
+  final HttpService _httpService = Get.find();
 
   @override
   Future<List<Meetup>> getMeetups({
@@ -19,20 +18,27 @@ class MeetupRepository implements IMeetupRepository {
     int pageSize = 20,
   }) async {
     try {
-      print('📡 调用 EventsApiService.getEvents...');
+      print('📡 调用 HttpService GET /events...');
       print('   status: $status, cityId: $cityId, page: $page');
 
-      // 调用 API 获取活动数据
-      final response = await _apiService.getEvents(
-        status: status ?? 'upcoming',
-        cityId: cityId,
-        page: page,
-        pageSize: pageSize,
-        requireAuth: false, // 允许未登录用户查看活动列表
+      final queryParams = <String, dynamic>{
+        'status': status ?? 'upcoming',
+        'page': page,
+        'pageSize': pageSize,
+      };
+      if (cityId != null) {
+        queryParams['cityId'] = cityId;
+      }
+
+      // 调用 HttpService 获取活动数据
+      final response = await _httpService.get(
+        '/events',
+        queryParameters: queryParams,
       );
 
       // 提取活动列表
-      final items = response['items'] as List<dynamic>? ?? [];
+      final data = response.data as Map<String, dynamic>;
+      final items = data['items'] as List<dynamic>? ?? [];
       print('✅ 获取到 ${items.length} 个活动');
 
       // 转换为领域实体
@@ -52,10 +58,10 @@ class MeetupRepository implements IMeetupRepository {
   @override
   Future<Meetup?> getMeetupById(String meetupId) async {
     try {
-      print('📡 调用 EventsApiService.getEvent: $meetupId');
+      print('📡 调用 HttpService GET /events/$meetupId');
 
-      final response = await _apiService.getEvent(meetupId);
-      final data = response['data'] as Map<String, dynamic>? ?? response;
+      final response = await _httpService.get('/events/$meetupId');
+      final data = response.data as Map<String, dynamic>;
 
       final dto = MeetupDto.fromJson(data);
       return dto.toDomain();
@@ -113,9 +119,9 @@ class MeetupRepository implements IMeetupRepository {
 
       print('📤 请求数据: $requestData');
 
-      // 调用 API
-      final response = await _apiService.createEvent(requestData);
-      final data = response['data'] as Map<String, dynamic>? ?? response;
+      // 调用 HttpService POST
+      final response = await _httpService.post('/events', data: requestData);
+      final data = response.data as Map<String, dynamic>;
 
       print('✅ 活动创建成功, ID: ${data['id']}');
 
@@ -134,12 +140,9 @@ class MeetupRepository implements IMeetupRepository {
     try {
       print('📡 RSVP 活动: $meetupId');
 
-      final success = await _apiService.joinEvent(meetupId);
-      if (success) {
-        print('✅ RSVP 成功');
-      }
-
-      return success;
+      await _httpService.post('/events/$meetupId/join');
+      print('✅ RSVP 成功');
+      return true;
     } catch (e) {
       print('❌ MeetupRepository.rsvpToMeetup 失败: $e');
       rethrow;
@@ -151,12 +154,9 @@ class MeetupRepository implements IMeetupRepository {
     try {
       print('📡 取消 RSVP: $meetupId');
 
-      final success = await _apiService.leaveEvent(meetupId);
-      if (success) {
-        print('✅ 取消 RSVP 成功');
-      }
-
-      return success;
+      await _httpService.post('/events/$meetupId/leave');
+      print('✅ 取消 RSVP 成功');
+      return true;
     } catch (e) {
       print('❌ MeetupRepository.cancelRsvp 失败: $e');
       rethrow;

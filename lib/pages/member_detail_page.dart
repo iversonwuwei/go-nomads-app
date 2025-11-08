@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
 import '../generated/app_localizations.dart';
-import '../models/user_model.dart' as models;
+import '../features/user/domain/entities/user.dart' as models;
 import '../widgets/app_toast.dart';
 import 'direct_chat_page.dart';
 import 'invite_to_meetup_page.dart';

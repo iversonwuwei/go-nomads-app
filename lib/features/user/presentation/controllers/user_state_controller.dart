@@ -1,6 +1,8 @@
 import 'package:get/get.dart';
 
 import '../../../../core/core.dart';
+import '../../../interest/presentation/controllers/interest_state_controller.dart';
+import '../../../skill/presentation/controllers/skill_state_controller.dart';
 import '../../application/use_cases/favorite_city_use_cases.dart';
 import '../../application/use_cases/user_use_cases.dart';
 import '../../domain/entities/user.dart';
@@ -260,6 +262,61 @@ class UserStateController extends GetxController {
     }
 
     Get.snackbar(title, message);
+  }
+
+  // ==================== 技能和兴趣管理方法 ====================
+
+  /// 移除用户技能
+  /// 这是一个便捷方法,委托给 SkillStateController
+  Future<bool> removeSkill(String skillId) async {
+    final user = currentUser.value;
+    if (user == null) {
+      errorMessage.value = '用户未登录';
+      return false;
+    }
+
+    try {
+      final skillController = Get.find<SkillStateController>();
+      final success = await skillController.removeUserSkill(user.id, skillId);
+
+      if (success) {
+        // 刷新用户信息以更新技能列表
+        await loadCurrentUser();
+      }
+
+      return success;
+    } catch (e) {
+      errorMessage.value = '移除技能失败: $e';
+      Get.snackbar('错误', '移除技能失败');
+      return false;
+    }
+  }
+
+  /// 移除用户兴趣
+  /// 这是一个便捷方法,委托给 InterestStateController
+  Future<bool> removeInterest(String interestId) async {
+    final user = currentUser.value;
+    if (user == null) {
+      errorMessage.value = '用户未登录';
+      return false;
+    }
+
+    try {
+      final interestController = Get.find<InterestStateController>();
+      final success =
+          await interestController.removeUserInterest(user.id, interestId);
+
+      if (success) {
+        // 刷新用户信息以更新兴趣列表
+        await loadCurrentUser();
+      }
+
+      return success;
+    } catch (e) {
+      errorMessage.value = '移除兴趣失败: $e';
+      Get.snackbar('错误', '移除兴趣失败');
+      return false;
+    }
   }
 
   // Getters - 业务逻辑委托给领域实体

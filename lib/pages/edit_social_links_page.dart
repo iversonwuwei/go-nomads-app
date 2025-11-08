@@ -1,8 +1,22 @@
 import 'package:flutter/material.dart';
 
-import '../models/user_profile_models.dart';
+import '../features/user_profile/infrastructure/models/user_profile_dto.dart';
 import '../services/database/user_profile_dao.dart';
 import '../widgets/app_toast.dart';
+
+/// 社交平台常量
+class SocialPlatforms {
+  static const Map<String, Map<String, String>> platforms = {
+    'instagram': {'name': 'Instagram', 'icon': '📷'},
+    'twitter': {'name': 'Twitter', 'icon': '🐦'},
+    'facebook': {'name': 'Facebook', 'icon': '👤'},
+    'linkedin': {'name': 'LinkedIn', 'icon': '💼'},
+    'github': {'name': 'GitHub', 'icon': '💻'},
+    'youtube': {'name': 'YouTube', 'icon': '📺'},
+    'tiktok': {'name': 'TikTok', 'icon': '🎵'},
+    'wechat': {'name': 'WeChat', 'icon': '💬'},
+  };
+}
 
 /// 社交链接编辑页面
 class EditSocialLinksPage extends StatefulWidget {
@@ -115,12 +129,12 @@ class _EditSocialLinksPageState extends State<EditSocialLinksPage> {
 
   Future<void> _saveSocialLink(String platform, String url) async {
     try {
-      final link = UserSocialLink(
+      final link = SocialLinkDto(
         accountId: widget.accountId,
         platform: platform,
         url: url,
-        createdAt: DateTime.now().millisecondsSinceEpoch.toString(),
-        updatedAt: DateTime.now().millisecondsSinceEpoch.toString(),
+        createdAt: DateTime.now().toIso8601String(),
+        updatedAt: DateTime.now().toIso8601String(),
       );
       await _userProfileDao.saveSocialLink(link);
       setState(() {

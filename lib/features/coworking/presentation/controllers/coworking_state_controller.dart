@@ -24,6 +24,12 @@ class CoworkingStateController extends GetxController {
   /// Coworking 空间列表
   final RxList<CoworkingSpace> coworkingSpaces = <CoworkingSpace>[].obs;
 
+  /// 筛选后的空间列表
+  final RxList<CoworkingSpace> filteredSpaces = <CoworkingSpace>[].obs;
+
+  /// 选中的筛选条件
+  final RxList<String> selectedFilters = <String>[].obs;
+
   /// 当前选中的 Coworking 空间
   final Rx<CoworkingSpace?> currentCoworking = Rx<CoworkingSpace?>(null);
 
@@ -31,6 +37,9 @@ class CoworkingStateController extends GetxController {
   final RxBool isLoadingSpaces = false.obs;
   final RxBool isLoadingDetail = false.obs;
   final RxBool isLoadingCount = false.obs;
+
+  /// 加载状态简写 (用于兼容旧页面)
+  RxBool get isLoading => isLoadingSpaces;
 
   /// 错误信息
   final RxString errorMessage = ''.obs;
@@ -65,7 +74,8 @@ class CoworkingStateController extends GetxController {
 
       result.fold(
         onSuccess: (spaces) {
-          coworkingSpaces.value = spaces;
+          coworkingSpaces.assignAll(spaces);
+          _applyFilters(); // 应用筛选
           // print('✅ 成功加载 ${spaces.length} 个 Coworking 空间');
         },
         onFailure: (exception) {
@@ -150,9 +160,103 @@ class CoworkingStateController extends GetxController {
     await loadCoworkingSpacesByCity(cityId);
   }
 
+  // === 筛选和排序功能 ===
+
+  /// 兼容旧页面的方法名
+  Future<void> loadCoworkingsByCity(String cityId, {String? cityName}) async {
+    await loadCoworkingSpacesByCity(cityId);
+  }
+
+  /// 切换筛选条件
+  void toggleFilter(String filter) {
+    if (selectedFilters.contains(filter)) {
+      selectedFilters.remove(filter);
+    } else {
+      selectedFilters.add(filter);
+    }
+    _applyFilters();
+  }
+
+  /// 清空筛选条件
+  void clearFilters() {
+    selectedFilters.clear();
+    _applyFilters();
+  }
+
+  /// 应用筛选条件
+  void _applyFilters() {
+    if (selectedFilters.isEmpty) {
+      filteredSpaces.assignAll(coworkingSpaces);
+    } else {
+      filteredSpaces.assignAll(
+        coworkingSpaces.where((space) {
+          for (final filter in selectedFilters) {
+            switch (filter) {
+              case 'WiFi':
+                if (!space.amenities.hasWifi) {
+                  return false;
+                }
+                break;
+              case '24/7':
+                if (!space.amenities.has24HourAccess) {
+                  return false;
+                }
+                break;
+              case 'Meeting Rooms':
+              case '会议室':
+                if (!space.amenities.hasMeetingRoom) {
+                  return false;
+                }
+                break;
+              case 'Coffee':
+                if (!space.amenities.hasCoffee) {
+                  return false;
+                }
+                break;
+              default:
+                final amenities = space.amenities.getAvailableAmenities();
+                if (!amenities.any(
+                  (amenity) => amenity.toLowerCase() == filter.toLowerCase(),
+                )) {
+                  return false;
+                }
+            }
+          }
+          return true;
+        }),
+      );
+    }
+  }
+
+  /// 按评分排序
+  void sortByRating() {
+    final list = List<CoworkingSpace>.from(filteredSpaces);
+    list.sort((a, b) => b.spaceInfo.rating.compareTo(a.spaceInfo.rating));
+    filteredSpaces.assignAll(list);
+  }
+
+  /// 按价格排序
+  void sortByPrice() {
+    final list = List<CoworkingSpace>.from(filteredSpaces);
+    list.sort((a, b) {
+      final aPrice = a.lowestPrice == 0 ? double.infinity : a.lowestPrice;
+      final bPrice = b.lowestPrice == 0 ? double.infinity : b.lowestPrice;
+      return aPrice.compareTo(bPrice);
+    });
+    filteredSpaces.assignAll(list);
+  }
+
+  /// 按距离排序 (暂时不实现,需要用户位置)
+  void sortByDistance() {
+    // TODO: 实现距离排序,需要获取用户当前位置
+    // 暂时保持原顺序
+  }
+
   /// 清空数据
   void clearCoworkingData() {
     coworkingSpaces.clear();
+    filteredSpaces.clear();
+    selectedFilters.clear();
     currentCoworking.value = null;
     coworkingCount.value = 0;
     errorMessage.value = '';

@@ -362,4 +362,89 @@ class CityRepository implements ICityRepository {
       return Failure(UnknownException('投票失败: ${e.toString()}'));
     }
   }
+
+  @override
+  Future<Result<List<Map<String, dynamic>>>> getCountries() async {
+    try {
+      final response = await _httpService.get('$_baseUrl/countries');
+      final countries = (response.data as List)
+          .map((item) => item as Map<String, dynamic>)
+          .toList();
+      return Success(countries);
+    } on HttpException catch (e) {
+      return Failure(_convertHttpException(e));
+    } catch (e) {
+      return Failure(UnknownException('获取国家列表失败: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Result<Map<String, dynamic>>> getCitiesGroupedByCountry() async {
+    try {
+      final response = await _httpService.get('$_baseUrl/grouped-by-country');
+      return Success(response.data as Map<String, dynamic>);
+    } on HttpException catch (e) {
+      return Failure(_convertHttpException(e));
+    } catch (e) {
+      return Failure(UnknownException('获取分组城市失败: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Result<Map<String, dynamic>>> getCitiesWithCoworkingCount({
+    int page = 1,
+    int pageSize = 100,
+  }) async {
+    try {
+      final queryParameters = <String, dynamic>{
+        'page': page,
+        'pageSize': pageSize,
+      };
+
+      final response = await _httpService.get(
+        '/cities/with-coworking-count',
+        queryParameters: queryParameters,
+      );
+
+      return Success(response.data as Map<String, dynamic>);
+    } on HttpException catch (e) {
+      return Failure(_convertHttpException(e));
+    } catch (e) {
+      return Failure(
+          UnknownException('获取城市列表(含Coworking数量)失败: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Result<Map<String, dynamic>?>> getCityWeather(
+    String cityId, {
+    bool includeForecast = true,
+    int days = 7,
+  }) async {
+    try {
+      final response = await _httpService.get(
+        '$_baseUrl/$cityId/weather',
+        queryParameters: {
+          if (includeForecast) 'includeForecast': includeForecast,
+          if (includeForecast) 'days': days,
+        },
+      );
+      final data = response.data;
+
+      if (data is Map<String, dynamic>) {
+        return Success(data);
+      }
+      if (data is Map) {
+        return Success(Map<String, dynamic>.from(data));
+      }
+      return const Success(null);
+    } on HttpException catch (e) {
+      if (e.statusCode == 404) {
+        return const Success(null);
+      }
+      return Failure(_convertHttpException(e));
+    } catch (e) {
+      return Failure(UnknownException('获取城市天气失败: ${e.toString()}'));
+    }
+  }
 }

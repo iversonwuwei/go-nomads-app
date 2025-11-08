@@ -28,4 +28,16 @@ abstract class ICoworkingRepository {
   Future<Result<Map<String, int>>> getCoworkingCountByCities(
     List<String> cityIds,
   );
+
+  /// 创建新的 Coworking 空间
+  Future<Result<CoworkingSpace>> createCoworkingSpace(CoworkingSpace space);
+
+  /// 更新 Coworking 空间信息
+  Future<Result<CoworkingSpace>> updateCoworkingSpace(
+    String id,
+    CoworkingSpace space,
+  );
+
+  /// 删除 Coworking 空间
+  Future<Result<void>> deleteCoworkingSpace(String id);
 }

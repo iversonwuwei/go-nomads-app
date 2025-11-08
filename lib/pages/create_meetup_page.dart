@@ -6,11 +6,11 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../config/app_colors.dart';
-import '../controllers/data_service_controller.dart';
+import '../features/city/domain/entities/city_option.dart';
+import '../features/location/presentation/controllers/location_state_controller.dart';
 import '../features/meetup/domain/entities/meetup.dart';
 import '../features/meetup/presentation/controllers/meetup_state_controller.dart';
 import '../generated/app_localizations.dart';
-import '../models/city_option.dart';
 import '../widgets/app_toast.dart';
 import 'venue_map_picker_page.dart';
 
@@ -45,15 +45,15 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
   final List<XFile> _selectedImages = [];
   final ImagePicker _imagePicker = ImagePicker();
 
-  final DataServiceController dataController =
-      Get.find<DataServiceController>();
+  final LocationStateController _locationController =
+      Get.find<LocationStateController>();
   final MeetupStateController meetupController =
       Get.find<MeetupStateController>();
 
   @override
   void initState() {
     super.initState();
-    dataController.loadCountries();
+    _locationController.loadCountries();
   }
 
   @override
@@ -752,10 +752,10 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
             ),
             const SizedBox(height: 8),
             Obx(() {
-              final countryList = dataController.countries;
+              final countryList = _locationController.countries;
               final _ = countryList.length;
               final isLoadingCountries =
-                  dataController.isLoadingCountries.value;
+                  _locationController.isLoadingCountries.value;
               final localeCode =
                   Localizations.localeOf(context).languageCode.toLowerCase();
 
@@ -795,7 +795,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
 
                       if (countries.isEmpty) {
                         AppToast.info(l10n.noData, title: l10n.notice);
-                        dataController.loadCountries(forceRefresh: true);
+                        _locationController.loadCountries(forceRefresh: true);
                         return;
                       }
 
@@ -822,7 +822,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                           final cityFieldState = _cityFieldKey.currentState;
                           cityFieldState?.didChange(null);
 
-                          dataController
+                          _locationController
                               .loadCitiesByCountry(selectedEntry.key.id);
                         },
                       );
@@ -888,7 +888,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
             const SizedBox(height: 8),
             Obx(() {
               final selectedCountryId = _selectedCountryId;
-              final cityMap = dataController.citiesByCountry;
+              final cityMap = _locationController.citiesByCountry;
               final _ = cityMap.length;
               final cachedCities = selectedCountryId == null
                   ? const <CityOption>[]
@@ -935,7 +935,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                         );
                         List<CityOption> selectionSource = cachedCities;
 
-                        final fetchedCities = await dataController
+                        final fetchedCities = await _locationController
                             .loadCitiesByCountry(_selectedCountryId!);
                         final fetchedCityNames = fetchedCities
                             .map((city) => city.name)

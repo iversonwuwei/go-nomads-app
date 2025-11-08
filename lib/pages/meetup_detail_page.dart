@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import '../config/app_colors.dart';
 import '../generated/app_localizations.dart';
 import '../models/meetup_model.dart';
-import '../models/user_model.dart';
+import '../features/user/domain/entities/user.dart';
 import '../routes/app_routes.dart';
 import '../services/events_api_service.dart';
 import '../widgets/app_toast.dart';

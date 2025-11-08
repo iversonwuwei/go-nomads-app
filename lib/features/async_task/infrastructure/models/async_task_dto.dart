@@ -1,4 +1,3 @@
-import '../../../../models/async_task_models.dart' as legacy;
 import '../../domain/entities/async_task.dart';
 
 /// AsyncTask DTO - 基础设施层数据传输对象
@@ -88,23 +87,6 @@ class AsyncTaskDto {
       ),
     );
   }
-
-  /// 从旧模型转换 (TaskStatus)
-  factory AsyncTaskDto.fromLegacyModel(legacy.TaskStatus model) {
-    return AsyncTaskDto(
-      taskId: model.taskId,
-      status: model.status,
-      planId: model.planId,
-      guideId: model.guideId,
-      result: model.result,
-      error: model.error,
-      progress: model.progress,
-      progressMessage: model.progressMessage,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-      completedAt: model.completedAt,
-    );
-  }
 }
 
 /// TaskCreation DTO - 任务创建响应
@@ -146,16 +128,6 @@ class TaskCreationDto {
       initialState: TaskState.fromString(status),
       estimatedTimeSeconds: estimatedTimeSeconds,
       message: message,
-    );
-  }
-
-  /// 从旧模型转换
-  factory TaskCreationDto.fromLegacyModel(legacy.CreateTaskResponse model) {
-    return TaskCreationDto(
-      taskId: model.taskId,
-      status: model.status,
-      estimatedTimeSeconds: model.estimatedTimeSeconds,
-      message: model.message,
     );
   }
 }

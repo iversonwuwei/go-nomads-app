@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../models/user_profile_models.dart';
+import '../features/skill/domain/entities/skill.dart';
 import '../services/database/user_profile_dao.dart';
 import '../widgets/app_toast.dart';
 

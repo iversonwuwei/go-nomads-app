@@ -75,4 +75,27 @@ abstract class ICityRepository implements IRepository {
     required String id,
     required bool isUpvote,
   });
+
+  /// 获取所有国家列表
+  Future<Result<List<Map<String, dynamic>>>> getCountries();
+
+  /// 获取按国家分组的城市
+  Future<Result<Map<String, dynamic>>> getCitiesGroupedByCountry();
+
+  /// 获取城市列表（含 Coworking 数量）
+  Future<Result<Map<String, dynamic>>> getCitiesWithCoworkingCount({
+    int page = 1,
+    int pageSize = 100,
+  });
+
+  /// 获取城市天气信息
+  ///
+  /// [cityId] 城市ID
+  /// [includeForecast] 是否包含预报
+  /// [days] 预报天数
+  Future<Result<Map<String, dynamic>?>> getCityWeather(
+    String cityId, {
+    bool includeForecast = true,
+    int days = 7,
+  });
 }

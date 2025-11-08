@@ -64,11 +64,12 @@ class _MeetupsListPageState extends State<MeetupsListPage>
   final LocationController _locationController = Get.put(LocationController());
 
   // Events API 服务
-  final EventsApiService _eventsApiService = EventsApiService();
+  late final EventsApiService _eventsApiService;
 
   @override
   void initState() {
     super.initState();
+    _eventsApiService = EventsApiService();
     _tabController = TabController(length: 3, vsync: this);
     _loadMeetups();
     _autoSelectCurrentCountry();
@@ -513,7 +514,6 @@ class _MeetupsListPageState extends State<MeetupsListPage>
     // 使用自管理生命周期的 StatefulWidget，参�?data_service_page 的设�?
     return _MeetupListCard(
       meetup: meetup,
-      eventsApiService: _eventsApiService,
       onUpdated: (updatedMeetup) {
         // 回调更新父级�?_meetups 列表
         final index = _meetups.indexWhere((m) => m.id == updatedMeetup.id);
@@ -548,12 +548,10 @@ class _MeetupsListPageState extends State<MeetupsListPage>
 // 自管理生命周期的 Meetup Card - 参�?data_service_page 的设�?
 class _MeetupListCard extends StatefulWidget {
   final MeetupModel meetup;
-  final EventsApiService eventsApiService;
   final Function(MeetupModel) onUpdated;
 
   const _MeetupListCard({
     required this.meetup,
-    required this.eventsApiService,
     required this.onUpdated,
   });
 
@@ -607,6 +605,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
 
   Future<void> _handleToggleJoin() async {
     final l10n = AppLocalizations.of(context)!;
+    final eventsApiService = EventsApiService();
 
     // 判断是加入还是退�?
     final isJoining = !_isJoined;
@@ -614,10 +613,10 @@ class _MeetupListCardState extends State<_MeetupListCard> {
     try {
       // 调用 API
       if (isJoining) {
-        await widget.eventsApiService.joinEvent(widget.meetup.id);
+        await eventsApiService.joinEvent(widget.meetup.id);
         print('�?成功加入活动: ${widget.meetup.title}');
       } else {
-        await widget.eventsApiService.leaveEvent(widget.meetup.id);
+        await eventsApiService.leaveEvent(widget.meetup.id);
         print('�?成功退出活�? ${widget.meetup.title}');
       }
 

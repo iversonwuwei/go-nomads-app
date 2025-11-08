@@ -2,8 +2,8 @@ import 'package:flutter/material.dart' hide Badge;
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
-import '../features/user/presentation/controllers/user_state_controller.dart';
 import '../features/user/domain/entities/user.dart';
+import '../features/user/presentation/controllers/user_state_controller.dart';
 import '../generated/app_localizations.dart';
 import '../routes/app_routes.dart';
 import '../widgets/app_toast.dart';
@@ -374,7 +374,7 @@ class ProfilePage extends StatelessWidget {
             _buildStatCard(
                 '🌍', stats.countriesVisited.toString(), 'Countries', isMobile),
             _buildStatCard(
-                '🏙�?, stats.citiesVisited.toString(), l10n.cities, isMobile),
+                '🏙️', stats.citiesVisited.toString(), l10n.cities, isMobile),
             _buildStatCard(
                 '📅', stats.reviewsWritten.toString(), 'Days nomading', isMobile),
             _buildStatCard(
@@ -1134,7 +1134,7 @@ class ProfilePage extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '您当前查看的是示例用户资料。登录后可查看您的真实个人信息�?,
+                  '您当前查看的是示例用户资料。登录后可查看您的真实个人信息。',
                   style: TextStyle(
                     fontSize: isMobile ? 12 : 14,
                     color: const Color(0xFF6B7280),
@@ -1159,7 +1159,7 @@ class ProfilePage extends StatelessWidget {
               ),
             ),
             child: Text(
-              '去登�?,
+              '去登录',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: isMobile ? 12 : 14,

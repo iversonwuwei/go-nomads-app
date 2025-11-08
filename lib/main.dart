@@ -4,9 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import 'controllers/bottom_nav_controller.dart';
-import 'controllers/data_service_controller.dart';
 import 'controllers/locale_controller.dart';
-import 'controllers/shopping_controller.dart';
 import 'core/di/dependency_injection.dart';
 import 'generated/app_localizations.dart';
 import 'routes/app_routes.dart';
@@ -55,9 +53,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 初始化页面级控制器
-    Get.put(ShoppingController());
-    Get.put(DataServiceController());
+    // TODO: 迁移 DataService 功能到 DDD controller
+    // Get.put(DataServiceController());
     final localeController = Get.put(LocaleController());
 
     return ScreenUtilInit(
