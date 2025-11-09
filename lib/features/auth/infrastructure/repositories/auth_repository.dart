@@ -18,7 +18,37 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
     required HttpService httpService,
     required TokenStorageService tokenStorage,
   })  : _httpService = httpService,
-        _tokenStorage = tokenStorage;
+        _tokenStorage = tokenStorage {
+    // 设置 token 刷新回调
+    _httpService.setTokenRefreshCallback(_handleTokenRefresh);
+  }
+
+  /// 处理 token 刷新请求
+  Future<String?> _handleTokenRefresh() async {
+    try {
+      // 获取refresh token
+      final refreshToken = await _tokenStorage.getRefreshToken();
+      if (refreshToken == null || refreshToken.isEmpty) {
+        return null;
+      }
+
+      // 调用刷新接口
+      final result = await this.refreshToken(refreshToken);
+
+      return result.fold(
+        onSuccess: (newToken) {
+          // 刷新成功，返回新的 access token
+          return newToken.accessToken;
+        },
+        onFailure: (_) {
+          // 刷新失败
+          return null;
+        },
+      );
+    } catch (e) {
+      return null;
+    }
+  }
 
   @override
   Future<Result<AuthToken>> login({

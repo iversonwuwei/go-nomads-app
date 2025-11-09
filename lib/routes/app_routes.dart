@@ -32,31 +32,32 @@ class AppRoutes {
   static const String profileEdit = '/profile-edit';
 
   static List<GetPage> getPages = [
+    // ✅ 白名单路由：不需要认证
     GetPage(
       name: home,
       page: () => const BottomNavLayout(child: DataServicePage()),
+      // 🚫 无 middleware - 首页支持匿名访问
     ),
+    GetPage(
+      name: login,
+      page: () => const NomadsLoginPage(),
+      // 🚫 无 middleware - 登录页
+    ),
+    GetPage(
+      name: register,
+      page: () => const RegisterPage(),
+      // 🚫 无 middleware - 注册页
+    ),
+    
+    // 🔒 需要认证的路由
     GetPage(
       name: profile,
       page: () => const BottomNavLayout(child: ProfilePage()),
       middlewares: [AuthMiddleware()],
     ),
     GetPage(
-      name: login,
-      page: () => const NomadsLoginPage(),
-    ),
-    GetPage(
-      name: register,
-      page: () => const RegisterPage(),
-    ),
-    GetPage(
       name: aiChat,
       page: () => const AiChatPage(),
-      middlewares: [AuthMiddleware()],
-    ),
-    GetPage(
-      name: dataService,
-      page: () => const BottomNavLayout(child: DataServicePage()),
       middlewares: [AuthMiddleware()],
     ),
     GetPage(

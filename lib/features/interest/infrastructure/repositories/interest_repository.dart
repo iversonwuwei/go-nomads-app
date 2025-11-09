@@ -63,7 +63,7 @@ class InterestRepository implements IInterestRepository {
   @override
   Future<Result<List<UserInterest>>> getUserInterests(String userId) async {
     try {
-      final response = await _httpService.get('/users/$userId/interests');
+      final response = await _httpService.get('/interests/users/$userId');
       final List<dynamic> data = response.data as List<dynamic>;
       final userInterests = data
           .map((json) =>
@@ -84,7 +84,7 @@ class InterestRepository implements IInterestRepository {
   ) async {
     try {
       final response = await _httpService.post(
-        '/users/$userId/interests',
+        '/interests/users/$userId',
         data: {
           'interestId': request.interestId,
           'intensityLevel': request.intensityLevel,
@@ -109,7 +109,7 @@ class InterestRepository implements IInterestRepository {
   ) async {
     try {
       final response = await _httpService.put(
-        '/users/$userId/interests/$interestId',
+        '/interests/users/$userId/$interestId',
         data: {'intensityLevel': intensityLevel},
       );
       final userInterest =
@@ -129,7 +129,7 @@ class InterestRepository implements IInterestRepository {
     String interestId,
   ) async {
     try {
-      await _httpService.delete('/users/$userId/interests/$interestId');
+      await _httpService.delete('/interests/users/$userId/$interestId');
       return const Success(null);
     } on HttpException catch (e) {
       return Failure(_convertHttpException(e));

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart' hide Badge;
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
+import '../features/auth/presentation/controllers/auth_state_controller.dart';
 import '../features/user/domain/entities/user.dart';
 import '../features/user/presentation/controllers/user_state_controller.dart';
 import '../generated/app_localizations.dart';
@@ -9,8 +10,52 @@ import '../routes/app_routes.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/skeletons/skeletons.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  @override
+  void initState() {
+    super.initState();
+    // 页面加载时刷新用户数据
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadUserData();
+    });
+  }
+
+  /// 加载用户数据
+  Future<void> _loadUserData() async {
+    final controller = Get.find<UserStateController>();
+
+    // 先检查 Token 是否存在
+    final authController = Get.find<AuthStateController>();
+    if (!authController.isAuthenticated.value) {
+      print('⚠️ 用户未登录，跳转到登录页');
+      AppToast.info('Please login to view your profile',
+          title: 'Login Required');
+      Get.offAllNamed(AppRoutes.login);
+      return;
+    }
+
+    // 尝试加载用户数据
+    if (controller.isLoggedIn) {
+      await controller.loadUserProfile();
+
+      // 加载后检查是否成功（如果失败会清除 currentUser）
+      if (!mounted) return;
+
+      if (controller.currentUser.value == null &&
+          controller.errorMessage.value.isNotEmpty) {
+        print('⚠️ 加载用户数据失败，跳转到登录页');
+        AppToast.info('Please login again', title: 'Session Expired');
+        Get.offAllNamed(AppRoutes.login);
+      }
+    }
+  }
 
   /// 处理退出登�?
   void _handleLogout(BuildContext context) {
@@ -84,9 +129,9 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<UserStateController>();
+    final authController = Get.find<AuthStateController>();
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
-    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -97,16 +142,37 @@ class ProfilePage extends StatelessWidget {
           }
 
           final user = controller.currentUser.value;
+          
+          // 如果用户数据为空，检查是否需要跳转登录
           if (user == null) {
-            return Center(child: Text(l10n.userNotFound));
+            // 检查认证状态
+            if (!authController.isAuthenticated.value) {
+              // Token 不存在，直接跳转
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                Get.offAllNamed(AppRoutes.login);
+              });
+            } else if (controller.errorMessage.value.isNotEmpty) {
+              // 有错误信息（比如 401），延迟跳转
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                AppToast.info('Please login again', title: 'Session Expired');
+                Get.offAllNamed(AppRoutes.login);
+              });
+            }
+
+            // 在跳转前显示加载状态，避免闪现 "用户未找到"
+            return const ProfileSkeleton();
           }
 
-          return CustomScrollView(
-            slivers: [
-              // 移除�?AppBar - 不需�?header
+          return RefreshIndicator(
+            onRefresh: () async {
+              await controller.loadUserProfile();
+            },
+            child: CustomScrollView(
+              slivers: [
+                // 移除�?AppBar - 不需�?header
 
-              // Content
-              SliverToBoxAdapter(
+                // Content
+                SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.symmetric(
                     horizontal: isMobile ? 16 : 32,
@@ -156,7 +222,8 @@ class ProfilePage extends StatelessWidget {
               ),
             ),
           ],
-        );
+            ),
+          );
         }),
       ),
     );

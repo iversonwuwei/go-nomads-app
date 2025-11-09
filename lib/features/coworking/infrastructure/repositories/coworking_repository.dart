@@ -19,7 +19,7 @@ class CoworkingRepository implements ICoworkingRepository {
   }) async {
     try {
       final response = await _httpService.get(
-        '/coworking-spaces',
+        '/coworking',
         queryParameters: {
           'cityId': cityId,
           'page': page,
@@ -92,13 +92,17 @@ class CoworkingRepository implements ICoworkingRepository {
   @override
   Future<Result<entity.CoworkingSpace>> getCoworkingById(String id) async {
     try {
-      final response = await _httpService.get('/coworking-spaces/$id');
+      final response = await _httpService.get('/coworking/$id');
 
-      final dto =
-          CoworkingSpaceDto.fromJson(response.data as Map<String, dynamic>);
-      final space = dto.toDomain();
+      if (response.data['success'] == true && response.data['data'] != null) {
+        final dto = CoworkingSpaceDto.fromJson(
+            response.data['data'] as Map<String, dynamic>);
+        final space = dto.toDomain();
 
-      return Result.success(space);
+        return Result.success(space);
+      }
+
+      throw NotFoundException('Coworking space not found');
     } catch (e, stackTrace) {
       return Result.failure(
         UnknownException(
@@ -114,9 +118,14 @@ class CoworkingRepository implements ICoworkingRepository {
   Future<Result<int>> getCityCoworkingCount(String cityId) async {
     try {
       final response =
-          await _httpService.get('/coworking-spaces/cities/$cityId/count');
-      final count = response.data as int;
-      return Result.success(count);
+          await _httpService.get('/coworking/cities/$cityId/count');
+
+      if (response.data['success'] == true && response.data['data'] != null) {
+        final count = response.data['data'] as int;
+        return Result.success(count);
+      }
+
+      throw ServerException('Failed to get coworking count');
     } catch (e, stackTrace) {
       return Result.failure(
         UnknownException(
@@ -134,11 +143,16 @@ class CoworkingRepository implements ICoworkingRepository {
   ) async {
     try {
       final response = await _httpService.post(
-        '/coworking-spaces/cities/counts',
+        '/coworking/cities/counts',
         data: {'cityIds': cityIds},
       );
-      final counts = response.data as Map<String, dynamic>;
-      return Result.success(counts.map((k, v) => MapEntry(k, v as int)));
+      
+      if (response.data['success'] == true && response.data['data'] != null) {
+        final counts = response.data['data'] as Map<String, dynamic>;
+        return Result.success(counts.map((k, v) => MapEntry(k, v as int)));
+      }
+
+      throw ServerException('Failed to get coworking counts');
     } catch (e, stackTrace) {
       return Result.failure(
         UnknownException(
@@ -160,13 +174,18 @@ class CoworkingRepository implements ICoworkingRepository {
       final requestData = dto.toJson();
 
       final response =
-          await _httpService.post('/coworking-spaces', data: requestData);
+          await _httpService.post('/coworking', data: requestData);
 
-      final createdDto =
-          CoworkingSpaceDto.fromJson(response.data as Map<String, dynamic>);
-      final createdSpace = createdDto.toDomain();
+      if (response.data['success'] == true && response.data['data'] != null) {
+        final createdDto =
+            CoworkingSpaceDto.fromJson(
+            response.data['data'] as Map<String, dynamic>);
+        final createdSpace = createdDto.toDomain();
 
-      return Result.success(createdSpace);
+        return Result.success(createdSpace);
+      }
+
+      throw ServerException('Failed to create coworking space');
     } catch (e, stackTrace) {
       return Result.failure(
         UnknownException(
@@ -188,13 +207,18 @@ class CoworkingRepository implements ICoworkingRepository {
       final requestData = dto.toJson();
 
       final response =
-          await _httpService.put('/coworking-spaces/$id', data: requestData);
+          await _httpService.put('/coworking/$id', data: requestData);
 
-      final updatedDto =
-          CoworkingSpaceDto.fromJson(response.data as Map<String, dynamic>);
-      final updatedSpace = updatedDto.toDomain();
+      if (response.data['success'] == true && response.data['data'] != null) {
+        final updatedDto =
+            CoworkingSpaceDto.fromJson(
+            response.data['data'] as Map<String, dynamic>);
+        final updatedSpace = updatedDto.toDomain();
 
-      return Result.success(updatedSpace);
+        return Result.success(updatedSpace);
+      }
+
+      throw ServerException('Failed to update coworking space');
     } catch (e, stackTrace) {
       return Result.failure(
         UnknownException(
@@ -209,7 +233,7 @@ class CoworkingRepository implements ICoworkingRepository {
   @override
   Future<Result<void>> deleteCoworkingSpace(String id) async {
     try {
-      await _httpService.delete('/coworking-spaces/$id');
+      await _httpService.delete('/coworking/$id');
       return Result.success(null);
     } catch (e, stackTrace) {
       return Result.failure(

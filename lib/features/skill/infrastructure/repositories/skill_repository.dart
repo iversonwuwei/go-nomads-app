@@ -62,7 +62,7 @@ class SkillRepository implements ISkillRepository {
   @override
   Future<Result<List<UserSkill>>> getUserSkills(String userId) async {
     try {
-      final response = await _httpService.get('/users/$userId/skills');
+      final response = await _httpService.get('/skills/users/$userId');
       final List<dynamic> data = response.data as List<dynamic>;
       final userSkills = data
           .map((json) =>
@@ -83,7 +83,7 @@ class SkillRepository implements ISkillRepository {
   ) async {
     try {
       final response = await _httpService.post(
-        '/users/$userId/skills',
+        '/skills/users/$userId',
         data: {
           'skillId': request.skillId,
           'proficiencyLevel': request.proficiencyLevel,
@@ -110,7 +110,7 @@ class SkillRepository implements ISkillRepository {
   ) async {
     try {
       final response = await _httpService.put(
-        '/users/$userId/skills/$skillId',
+        '/skills/users/$userId/$skillId',
         data: {
           'proficiencyLevel': proficiencyLevel,
           'yearsOfExperience': yearsOfExperience,
@@ -133,7 +133,7 @@ class SkillRepository implements ISkillRepository {
     String skillId,
   ) async {
     try {
-      await _httpService.delete('/users/$userId/skills/$skillId');
+      await _httpService.delete('/skills/users/$userId/$skillId');
       return const Success(null);
     } on HttpException catch (e) {
       return Failure(_convertHttpException(e));

@@ -75,7 +75,8 @@ class CityStateController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadInitialCities();
+    // 不在这里自动加载，由页面决定何时加载
+    // loadInitialCities();
   }
 
   // ==================== Public Methods ====================
@@ -112,7 +113,14 @@ class CityStateController extends GetxController {
         hasError.value = true;
         errorMessage.value = exception.message;
         isLoading.value = false;
-        AppToast.error(exception.message, title: '加载失败');
+        
+        // 如果是未授权错误，静默处理（不显示 Toast）
+        // 因为 AuthStateController 会处理 401 错误并跳转登录页
+        if (exception is! UnauthorizedException) {
+          AppToast.error(exception.message, title: '加载失败');
+        } else {
+          print('⚠️ 加载城市失败: Token 无效或过期');
+        }
       },
     );
   }

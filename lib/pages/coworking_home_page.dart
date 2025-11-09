@@ -20,14 +20,14 @@ class CoworkingHomePage extends StatefulWidget {
 }
 
 class _CoworkingHomePageState extends State<CoworkingHomePage> {
-  final GetCitiesWithCoworkingCountUseCase _getCitiesUseCase =
-      Get.find<GetCitiesWithCoworkingCountUseCase>();
+  late final GetCitiesWithCoworkingCountUseCase _getCitiesUseCase;
   List<Map<String, dynamic>> _cities = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    _getCitiesUseCase = Get.find<GetCitiesWithCoworkingCountUseCase>();
     _loadCitiesWithCoworkingCount();
   }
 

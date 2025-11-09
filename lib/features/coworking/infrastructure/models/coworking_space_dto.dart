@@ -83,28 +83,65 @@ class CoworkingSpaceDto {
   }
 
   factory CoworkingSpaceDto.fromJson(Map<String, dynamic> json) {
+    // 适配后端实际返回的扁平化数据结构
     return CoworkingSpaceDto(
       id: json['id'] ?? '',
       name: json['name'] ?? '',
       address: json['address'] ?? '',
       city: json['city'] ?? '',
       country: json['country'] ?? '',
-      latitude: (json['latitude'] ?? 0.0).toDouble(),
-      longitude: (json['longitude'] ?? 0.0).toDouble(),
+      latitude:
+          json['latitude'] != null ? (json['latitude'] as num).toDouble() : 0.0,
+      longitude: json['longitude'] != null
+          ? (json['longitude'] as num).toDouble()
+          : 0.0,
       imageUrl: json['imageUrl'] ?? '',
-      images: List<String>.from(json['images'] ?? []),
-      rating: (json['rating'] ?? 0.0).toDouble(),
+      images: json['images'] != null
+          ? List<String>.from(json['images'])
+          : (json['imageUrl'] != null && json['imageUrl'].toString().isNotEmpty
+              ? [json['imageUrl'].toString()]
+              : []),
+      rating: json['rating'] != null ? (json['rating'] as num).toDouble() : 0.0,
       reviewCount: json['reviewCount'] ?? 0,
       description: json['description'] ?? '',
-      pricing: CoworkingPricingDto.fromJson(json['pricing'] ?? {}),
-      amenities: CoworkingAmenitiesDto.fromJson(json['amenities'] ?? {}),
-      specs: CoworkingSpecsDto.fromJson(json['specs'] ?? {}),
-      openingHours: List<String>.from(json['openingHours'] ?? []),
+      // 适配后端扁平化的 pricing 字段
+      pricing: CoworkingPricingDto.fromJson({
+        'hourly': json['pricePerHour'],
+        'daily': json['pricePerDay'],
+        'monthly': json['pricePerMonth'],
+        'currency': json['currency'] ?? 'CNY',
+      }),
+      // 适配后端扁平化的 amenities 字段
+      amenities: CoworkingAmenitiesDto.fromJson({
+        'hasWifi': json['amenities']?.contains('wifi') ?? false,
+        'hasMeetingRoom': json['hasMeetingRoom'] ??
+            json['amenities']?.contains('meeting_room') ??
+            false,
+        'hasCoffee':
+            json['hasCoffee'] ?? json['amenities']?.contains('coffee') ?? false,
+        'hasParking': json['hasParking'] ??
+            json['amenities']?.contains('parking') ??
+            false,
+        'has24HourAccess': json['has247Access'] ??
+            json['amenities']?.contains('24_hour') ??
+            false,
+      }),
+      // 适配后端扁平化的 specs 字段
+      specs: CoworkingSpecsDto.fromJson({
+        'capacity': json['capacity'],
+        'desks': json['desks'],
+        'privateRooms': json['privateRooms'],
+        'meetingRooms': json['meetingRooms'],
+        'wifiSpeed': json['wifiSpeed'],
+      }),
+      openingHours: json['openingHours'] != null
+          ? List<String>.from(json['openingHours'])
+          : [],
       phone: json['phone'] ?? '',
       email: json['email'] ?? '',
       website: json['website'] ?? '',
-      isVerified: json['isVerified'] ?? false,
-      lastUpdated: json['lastUpdated'] as String?,
+      isVerified: json['isVerified'] ?? json['isActive'] ?? false,
+      lastUpdated: json['updatedAt'] ?? json['lastUpdated'],
     );
   }
 

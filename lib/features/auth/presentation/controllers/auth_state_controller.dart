@@ -65,7 +65,8 @@ class AuthStateController extends GetxController {
       onSuccess: (isAuth) {
         isAuthenticated.value = isAuth;
         if (isAuth) {
-          _loadCurrentUser();
+          // ❌ 不在这里自动加载用户信息，避免 token 过期时发送 401 请求
+          // _loadCurrentUser();
           _autoRefreshToken();
         }
       },
@@ -103,6 +104,21 @@ class AuthStateController extends GetxController {
     result.fold(
       onSuccess: (token) => currentToken.value = token,
       onFailure: (_) => currentToken.value = null,
+    );
+  }
+
+  /// 手动刷新令牌（公共方法，供 Middleware 使用）
+  Future<bool> refreshToken() async {
+    final result = await _autoRefreshTokenUseCase.execute(NoParams());
+    return result.fold(
+      onSuccess: (token) {
+        currentToken.value = token;
+        return true;
+      },
+      onFailure: (_) {
+        currentToken.value = null;
+        return false;
+      },
     );
   }
 

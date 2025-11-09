@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../controllers/bottom_nav_controller.dart';
-import '../features/auth/presentation/controllers/auth_state_controller.dart';
 import '../generated/app_localizations.dart';
 import '../routes/app_routes.dart';
+import '../services/token_storage_service.dart';
 
 /// 全局底部导航布局包装器
 /// 包装任意页面内容，在底部显示导航栏
@@ -25,12 +25,6 @@ class BottomNavLayout extends StatefulWidget {
 }
 
 class _BottomNavLayoutState extends State<BottomNavLayout> {
-  AuthStateController? _authStateControllerCache;
-  AuthStateController get _authStateController {
-    _authStateControllerCache ??= Get.find<AuthStateController>();
-    return _authStateControllerCache!;
-  }
-
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(BottomNavController(), permanent: true);
@@ -56,32 +50,45 @@ class _BottomNavLayoutState extends State<BottomNavLayout> {
 
         return _ModernBottomNavBar(
           currentIndex: controller.currentIndex.value,
-          onTap: (index) {
-            // AI助手需要特殊处理 (索引 2)
-            if (index == 2) {
-              if (_authStateController.isAuthenticated.value) {
-                // 已登录，跳转到AI聊天页面
-                Get.toNamed(AppRoutes.aiChat);
-              } else {
-                // 未登录，跳转到登录页
-                print('🔒 需要登录才能使用AI助手');
-                Get.toNamed(AppRoutes.login);
-              }
-              return; // 不改变当前索引
+          onTap: (index) async {
+            print('🔘 Bottom Nav 点击: index=$index');
+
+            // 首页不需要验证，直接跳转
+            if (index == 0) {
+              print('✅ 首页，无需验证');
+              controller.changeTab(index);
+              Get.offAllNamed(AppRoutes.home);
+              return;
             }
 
-            // 其他标签页正常切换
+            // 🔒 其他所有页面都需要验证 token（索引 1, 2, 3）
+            print('🔒 检查 token...');
+            final tokenService = TokenStorageService();
+            final accessToken = await tokenService.getAccessToken();
+            print('   Token: ${accessToken?.substring(0, 20)}...');
+
+            if (accessToken == null || accessToken.isEmpty) {
+              print('❌ 无 token，跳转登录页');
+              Get.toNamed(AppRoutes.login);
+              return;
+            }
+
+            // Token 存在，允许跳转
+            print('✅ Token 有效，允许跳转');
             controller.changeTab(index);
 
             // 根据索引跳转到对应页面
             switch (index) {
-              case 0: // 主页
-                Get.offAllNamed(AppRoutes.home);
-                break;
               case 1: // Profile
+                print('   → Profile 页面');
                 Get.toNamed(AppRoutes.profile);
                 break;
+              case 2: // AI助手
+                print('   → AI 页面');
+                Get.toNamed(AppRoutes.aiChat);
+                break;
               case 3: // 编辑资料
+                print('   → 编辑资料页面');
                 Get.toNamed(AppRoutes.profileEdit);
                 break;
             }

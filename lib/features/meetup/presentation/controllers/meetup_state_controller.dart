@@ -36,7 +36,13 @@ class MeetupStateController extends GetxController {
   final RxList<Meetup> meetups = <Meetup>[].obs;
   final RxList<String> rsvpedMeetupIds = <String>[].obs;
   final RxBool isLoading = false.obs;
+  final RxBool isLoadingMore = false.obs; // 加载更多状态
   final RxString errorMessage = ''.obs;
+  
+  // 分页相关
+  final RxInt currentPage = 1.obs;
+  final RxBool hasMoreData = true.obs;
+  final int pageSize = 20;
 
   // Getters
 
@@ -80,22 +86,81 @@ class MeetupStateController extends GetxController {
 
       isLoading.value = true;
       errorMessage.value = '';
+      currentPage.value = 1; // 重置页码
+      hasMoreData.value = true; // 重置是否有更多数据
 
       print('🔄 加载活动列表...');
-      print('   cityId: $cityId, status: $status');
+      print(
+          '   cityId: $cityId, status: $status, page: 1, pageSize: $pageSize');
 
       final loadedMeetups = await _getMeetupsUseCase.execute(
         status: status ?? 'upcoming',
         cityId: cityId,
+        page: 1,
+        pageSize: pageSize,
       );
 
       meetups.value = loadedMeetups;
+      
+      // 如果返回的数据少于 pageSize，说明没有更多数据了
+      if (loadedMeetups.length < pageSize) {
+        hasMoreData.value = false;
+      }
+      
       print('✅ 加载了 ${loadedMeetups.length} 个活动');
     } catch (e) {
       errorMessage.value = '加载活动失败: $e';
       print('❌ 加载活动失败: $e');
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  /// 加载更多活动
+  Future<void> loadMoreMeetups({
+    String? cityId,
+    String? status,
+  }) async {
+    // 如果已经在加载或没有更多数据，直接返回
+    if (isLoadingMore.value || !hasMoreData.value) {
+      print(
+          '⏸️ 跳过加载更多: isLoadingMore=${isLoadingMore.value}, hasMoreData=${hasMoreData.value}');
+      return;
+    }
+
+    try {
+      isLoadingMore.value = true;
+      final nextPage = currentPage.value + 1;
+
+      print('🔄 加载更多活动...');
+      print(
+          '   cityId: $cityId, status: $status, page: $nextPage, pageSize: $pageSize');
+
+      final moreMeetups = await _getMeetupsUseCase.execute(
+        status: status ?? 'upcoming',
+        cityId: cityId,
+        page: nextPage,
+        pageSize: pageSize,
+      );
+
+      if (moreMeetups.isNotEmpty) {
+        meetups.addAll(moreMeetups);
+        currentPage.value = nextPage;
+
+        // 如果返回的数据少于 pageSize，说明没有更多数据了
+        if (moreMeetups.length < pageSize) {
+          hasMoreData.value = false;
+        }
+
+        print('✅ 加载了更多 ${moreMeetups.length} 个活动，当前总数: ${meetups.length}');
+      } else {
+        hasMoreData.value = false;
+        print('✅ 没有更多活动了');
+      }
+    } catch (e) {
+      print('❌ 加载更多活动失败: $e');
+    } finally {
+      isLoadingMore.value = false;
     }
   }
 
@@ -355,8 +420,8 @@ class MeetupStateController extends GetxController {
     // 设置登录状态监听
     _setupLoginStateListener();
 
-    // 加载初始数据
-    loadMeetups();
+    // 不在这里自动加载，由页面决定何时加载
+    // loadMeetups();
   }
 
   @override

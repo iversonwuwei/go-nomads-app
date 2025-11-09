@@ -164,11 +164,13 @@ class UserDto {
 }
 
 class UserSkillInfoDto {
+  final String id;
   final String name;
   final String level;
   final String? icon;
 
   UserSkillInfoDto({
+    required this.id,
     required this.name,
     required this.level,
     this.icon,
@@ -176,11 +178,15 @@ class UserSkillInfoDto {
 
   factory UserSkillInfoDto.fromJson(Map<String, dynamic> json) {
     print('🔍 解析 UserSkillInfo: $json');
+    // 优先使用 skillId（技能本身的ID），而不是 id（UserSkill关联记录的ID）
+    final id =
+        (json['skillId'] ?? json['SkillId'] ?? json['id']) as String? ?? '';
     final name = (json['name'] ?? json['skillName'] ?? json['SkillName']) as String? ?? '';
     final level = (json['level'] ?? json['proficiencyLevel'] ?? json['ProficiencyLevel']) as String? ?? '';
     final icon = (json['icon'] ?? json['Icon']) as String?;
-    print('   ✅ 解析结果: name=$name, level=$level, icon=$icon');
+    print('   ✅ 解析结果: id=$id, name=$name, level=$level, icon=$icon');
     return UserSkillInfoDto(
+      id: id,
       name: name,
       level: level,
       icon: icon,
@@ -189,6 +195,7 @@ class UserSkillInfoDto {
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'name': name,
       'level': level,
       if (icon != null) 'icon': icon,
@@ -197,7 +204,7 @@ class UserSkillInfoDto {
 
   UserSkillInfo toDomain() {
     return UserSkillInfo(
-      id: '', // DTO缺少id字段,使用空字符串
+      id: id,
       name: name,
       level: level,
       icon: icon,
@@ -206,20 +213,27 @@ class UserSkillInfoDto {
 }
 
 class UserInterestInfoDto {
+  final String id;
   final String name;
   final String? icon;
 
   UserInterestInfoDto({
+    required this.id,
     required this.name,
     this.icon,
   });
 
   factory UserInterestInfoDto.fromJson(Map<String, dynamic> json) {
     print('🔍 解析 UserInterestInfo: $json');
+    // 优先使用 interestId（兴趣本身的ID），而不是 id（UserInterest关联记录的ID）
+    final id =
+        (json['interestId'] ?? json['InterestId'] ?? json['id']) as String? ??
+            '';
     final name = (json['name'] ?? json['interestName'] ?? json['InterestName']) as String? ?? '';
     final icon = (json['icon'] ?? json['Icon']) as String?;
-    print('   ✅ 解析结果: name=$name, icon=$icon');
+    print('   ✅ 解析结果: id=$id, name=$name, icon=$icon');
     return UserInterestInfoDto(
+      id: id,
       name: name,
       icon: icon,
     );
@@ -227,6 +241,7 @@ class UserInterestInfoDto {
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'name': name,
       if (icon != null) 'icon': icon,
     };
@@ -234,7 +249,7 @@ class UserInterestInfoDto {
 
   UserInterestInfo toDomain() {
     return UserInterestInfo(
-      id: '', // DTO缺少id字段,使用空字符串
+      id: id,
       name: name,
       icon: icon,
     );

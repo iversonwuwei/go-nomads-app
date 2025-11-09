@@ -36,7 +36,6 @@ class _DataServicePageState extends State<DataServicePage>
 
   // 本地状态管理
   bool _isGridView = true;
-  String _searchQuery = '';
 
   // 获取领域层的 StateController（延迟初始化，避免在构建时查找）
   CityStateController? _cityControllerCache;
@@ -57,31 +56,17 @@ class _DataServicePageState extends State<DataServicePage>
     return _userControllerCache!;
   }
 
-  // computed property for filtered cities
-  List<City> get _filteredCities {
-    if (_searchQuery.isEmpty) {
-      return _cityController.cities.toList();
-    }
-    return _cityController.cities
-        .where((city) =>
-            city.name.toLowerCase().contains(_searchQuery.toLowerCase()))
-        .toList();
-  }
-
   @override
   void initState() {
     super.initState();
     // 添加生命周期监听
     WidgetsBinding.instance.addObserver(this);
-    // 监听搜索框内容变化以更新清除按钮
-    _searchController.addListener(() {
-      _onSearchChanged();
-    });
-  }
-
-  void _onSearchChanged() {
-    setState(() {
-      _searchQuery = _searchController.text;
+    
+    // 首页不验证 token，直接加载数据
+    // 如果有 token 会自动带上，没有就匿名访问
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      print('🏠 首页初始化，加载数据（不验证 token）');
+      _refreshData();
     });
   }
 
@@ -116,7 +101,7 @@ class _DataServicePageState extends State<DataServicePage>
     if (route != null && route.isCurrent) {
       // 延迟执行，避免在build过程中调用
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        // 只在非首次加载时刷新（首次加载已经在controller初始化时执行）
+        // 检查是否已有数据，避免重复刷新
         if (_cityController.cities.isNotEmpty ||
             _meetupController.meetups.isNotEmpty) {
           print('🔄 页面回到前台,刷新数据');
@@ -126,13 +111,12 @@ class _DataServicePageState extends State<DataServicePage>
     }
   }
 
-  /// 刷新数据
+  /// 刷新数据（首页不验证 token，直接请求）
   Future<void> _refreshData() async {
     await Future.wait([
       _cityController.loadInitialCities(),
       _meetupController.loadMeetups(forceRefresh: true),
     ]);
-    _onSearchChanged(); // 更新筛选结果
   }
 
   /// 检查登录状态，未登录则跳转到登录页
@@ -159,36 +143,37 @@ class _DataServicePageState extends State<DataServicePage>
   }
 
   /// 执行城市搜索
-  void _performSearch(String query) {
+  Future<void> _performSearch(String query) async {
     print('🔍 开始搜索城市: $query');
     
-    // 调用 CityStateController 的搜索方法
-    _cityController.searchCities(query);
+    // 调用 CityStateController 的搜索方法，等待后端返回结果
+    await _cityController.searchCities(query);
     
-    // 显示搜索提示
-    AppToast.info(
-      'Searching for "$query"...',
-      title: 'Search',
-    );
+    if (mounted) {
+      // 搜索完成后显示结果数量
+      final resultCount = _cityController.cities.length;
+      AppToast.success(
+        'Found $resultCount cities',
+        title: 'Search',
+      );
+    }
   }
 
   /// 清除搜索
-  void _clearSearch() {
+  Future<void> _clearSearch() async {
     _searchController.clear();
     
     print('🧹 清除搜索，重新加载全部城市');
     
     // 重新加载全部城市
-    _cityController.loadInitialCities();
-    
-    setState(() {}); // 更新 UI
+    await _cityController.loadInitialCities();
   }
 
   /// 搜索结果提示
   Widget _buildSearchResultHint(bool isMobile) {
     return Obx(() {
       final searchQuery = _cityController.searchQuery.value;
-      final cityCount = _filteredCities.length;
+      final cityCount = _cityController.cities.length;
       
       if (searchQuery.isEmpty) return const SizedBox.shrink();
       
@@ -935,7 +920,7 @@ class _DataServicePageState extends State<DataServicePage>
   Widget _buildDataGridSliver(bool isMobile) {
     final l10n = AppLocalizations.of(context)!;
     return Obx(() {
-      final items = _filteredCities;
+      final items = _cityController.cities;
       final isGrid = _isGridView;
       final crossAxisCount = isMobile ? 2 : 4;
       final isLoadingCities = _cityController.isLoading.value;
@@ -1247,19 +1232,47 @@ class _DataServicePageState extends State<DataServicePage>
 
               const SizedBox(height: 24),
 
-              // Meetups 列表（横向滚动）
+              // Meetups 列表（横向滚动 + 无限加载）
               SizedBox(
                 height: 310,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: upcomingMeetups.length,
-                  itemBuilder: (context, index) {
-                    final meetup = upcomingMeetups[index];
-                    return _MeetupCard(
-                      meetup: meetup,
-                      isMobile: isMobile,
-                    );
+                child: NotificationListener<ScrollNotification>(
+                  onNotification: (ScrollNotification scrollInfo) {
+                    // 当滚动到接近末尾时，加载更多数据
+                    if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent * 0.8 &&
+                        !_meetupController.isLoadingMore.value &&
+                        _meetupController.hasMoreData.value) {
+                      print('📜 接近滚动末尾，触发加载更多活动');
+                      _meetupController.loadMoreMeetups();
+                    }
+                    return false;
                   },
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: upcomingMeetups.length + (_meetupController.hasMoreData.value ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      // 如果是最后一项且还有更多数据，显示加载指示器
+                      if (index == upcomingMeetups.length) {
+                        return Container(
+                          width: 60,
+                          margin: const EdgeInsets.only(left: 12),
+                          child: Center(
+                            child: Obx(() => _meetupController.isLoadingMore.value
+                                ? const CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
+                                  )
+                                : const SizedBox.shrink()),
+                          ),
+                        );
+                      }
+                      
+                      final meetup = upcomingMeetups[index];
+                      return _MeetupCard(
+                        meetup: meetup,
+                        isMobile: isMobile,
+                      );
+                    },
+                  ),
                 ),
               ),
 
@@ -1586,29 +1599,41 @@ class _DataCardState extends State<_DataCard> {
             // 背景图片
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Container(
-                width: double.infinity,
-                height: double.infinity,
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: NetworkImage(widget.data.imageUrl ?? ""),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                // 渐变遮罩
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black.withValues(alpha: 0.3),
-                        Colors.black.withValues(alpha: 0.7),
-                      ],
+              child: widget.data.imageUrl != null &&
+                      widget.data.imageUrl!.isNotEmpty
+                  ? Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: NetworkImage(widget.data.imageUrl!),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      // 渐变遮罩
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.black.withValues(alpha: 0.3),
+                              Colors.black.withValues(alpha: 0.7),
+                            ],
+                          ),
+                        ),
+                      ),
+                    )
+                  : Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      color: Colors.grey[300],
+                      child: Icon(
+                        Icons.location_city,
+                        size: 60,
+                        color: Colors.grey[400],
+                      ),
                     ),
-                  ),
-                ),
-              ),
             ),
 
             // 内容 - 完全复刻 Nomads.com 设计

@@ -97,8 +97,11 @@ class UserStateController extends GetxController {
     try {
       final authController = Get.find<AuthStateController>();
       if (authController.isAuthenticated.value) {
-        loadCurrentUser();
-        loadFavoriteCityIds();
+        // ❌ 不在这里自动加载任何需要 API 请求的数据
+        // 避免 token 过期时发送 401 请求并触发全局跳转登录
+        // 由各个页面根据需要手动调用：
+        // - loadCurrentUser() - 加载用户信息
+        // - loadFavoriteCityIds() - 加载收藏列表
       }
     } catch (e) {
       // AuthStateController 未初始化，跳过
@@ -121,7 +124,18 @@ class UserStateController extends GetxController {
       },
       onFailure: (exception) {
         errorMessage.value = exception.message;
-        _handleException(exception);
+        
+        // 如果是未授权错误，清除用户数据并静默处理
+        if (exception is UnauthorizedException) {
+          print('⚠️ 加载用户数据失败: Token 无效或过期');
+          print('   清除用户状态...');
+          currentUser.value = null; // 清除无效的用户数据
+          favoriteCityIds.clear();
+          loginStateChanged.toggle();
+        } else {
+          // 其他错误显示提示
+          _handleException(exception, silent: false);
+        }
       },
     );
 
@@ -283,7 +297,7 @@ class UserStateController extends GetxController {
   }
 
   /// 统一异常处理
-  void _handleException(DomainException exception) {
+  void _handleException(DomainException exception, {bool silent = false}) {
     String title = '错误';
     String message = exception.message;
 
@@ -305,7 +319,21 @@ class UserStateController extends GetxController {
         title = '未知错误';
     }
 
-    Get.snackbar(title, message);
+    // 如果是静默模式，或者 Get context 还不可用，则不显示 Snackbar
+    if (!silent) {
+      try {
+        // 检查 Get.context 是否可用
+        if (Get.context != null) {
+          Get.snackbar(title, message);
+        } else {
+          print('⚠️ 无法显示 Snackbar: Get.context 不可用');
+          print('   错误: $title - $message');
+        }
+      } catch (e) {
+        print('⚠️ 显示 Snackbar 失败: $e');
+        print('   错误: $title - $message');
+      }
+    }
   }
 
   // ==================== 技能和兴趣管理方法 ====================

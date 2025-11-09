@@ -56,8 +56,27 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   // 加载用户资料
   Future<void> _loadUserProfile() async {
     final profileController = Get.find<UserStateController>();
+    final skillController = Get.find<SkillStateController>();
+    final interestController = Get.find<InterestStateController>();
 
-    // 监听用户数据变化，填充输入框
+    // 并行加载所有数据：用户信息、技能选项、兴趣选项
+    await Future.wait([
+      profileController.loadUserProfile(),
+      skillController.getSkills(),
+      interestController.getInterests(),
+    ]);
+
+    // 加载后填充输入框
+    final user = profileController.currentUser.value;
+    if (user != null && mounted) {
+      setState(() {
+        _nameController.text = user.name;
+        _emailController.text = user.email ?? '';
+        _bioController.text = user.bio ?? '';
+      });
+    }
+
+    // 继续监听后续的用户数据变化
     ever(profileController.currentUser, (user) {
       if (user != null && mounted) {
         setState(() {
@@ -745,6 +764,10 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     }
 
     final currentSkills = currentUser.skills;
+    print('📋 打开技能 Drawer: currentSkills = ${currentSkills.length} 个');
+    for (var skill in currentSkills) {
+      print('  - id=${skill.id}, name=${skill.name}, level=${skill.level}');
+    }
 
     showModalBottomSheet(
       context: context,
@@ -804,6 +827,10 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     }
 
     final currentInterests = currentUser.interests;
+    print('📋 打开兴趣 Drawer: currentInterests = ${currentInterests.length} 个');
+    for (var interest in currentInterests) {
+      print('  - id=${interest.id}, name=${interest.name}');
+    }
 
     showModalBottomSheet(
       context: context,
@@ -936,7 +963,9 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
 
   void _preselectCurrentSkills() {
     // 预填充用户已有的技能
+    print('🔍 预选技能开始: currentSkills = ${widget.currentSkills.length} 个');
     for (var userSkill in widget.currentSkills) {
+      print('  - 查找技能: id=${userSkill.id}, name=${userSkill.name}');
       for (var category in _skillsByCategory) {
         final skill = category.skills.firstWhere(
           (s) => s.id == userSkill.id,
@@ -950,6 +979,7 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
 
         if (skill.id.isNotEmpty &&
             !_selectedSkills.any((s) => s.skillId == skill.id)) {
+          print('  ✅ 找到并添加技能: ${skill.name}');
           _selectedSkills.add(UserSkill(
             id: DateTime.now().millisecondsSinceEpoch.toString(),
             userId: '',
@@ -961,9 +991,12 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
             yearsOfExperience: null,
             createdAt: DateTime.now(),
           ));
+        } else if (skill.id.isEmpty) {
+          print('  ❌ 未找到技能: ${userSkill.name}');
         }
       }
     }
+    print('🔍 预选完成: _selectedSkills = ${_selectedSkills.length} 个');
   }
 
   void _toggleSkill(Skill skill) {
@@ -1209,6 +1242,9 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
           children: filteredSkills.map((skill) {
             final isSelected =
                 _selectedSkills.any((s) => s.skillId == skill.id);
+            if (isSelected) {
+              print('🎯 技能 ${skill.name} (id=${skill.id}) 被标记为选中');
+            }
             return FilterChip(
               avatar: Text(skill.icon ?? '💼'),
               label: Text(skill.name),
@@ -1328,7 +1364,9 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
 
   void _preselectCurrentInterests() {
     // 预填充用户已有的兴趣
+    print('🔍 预选兴趣开始: currentInterests = ${widget.currentInterests.length} 个');
     for (var userInterest in widget.currentInterests) {
+      print('  - 查找兴趣: id=${userInterest.id}, name=${userInterest.name}');
       for (var category in _interestsByCategory) {
         final interest = category.interests.firstWhere(
           (i) => i.id == userInterest.id,
@@ -1342,6 +1380,7 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
 
         if (interest.id.isNotEmpty &&
             !_selectedInterests.any((i) => i.interestId == interest.id)) {
+          print('  ✅ 找到并添加兴趣: ${interest.name}');
           _selectedInterests.add(UserInterest(
             id: DateTime.now().millisecondsSinceEpoch.toString(),
             userId: '',
@@ -1352,9 +1391,12 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
             intensityLevel: 'moderate',
             createdAt: DateTime.now(),
           ));
+        } else if (interest.id.isEmpty) {
+          print('  ❌ 未找到兴趣: ${userInterest.name}');
         }
       }
     }
+    print('🔍 预选完成: _selectedInterests = ${_selectedInterests.length} 个');
   }
 
   void _toggleInterest(Interest interest) {
@@ -1600,6 +1642,9 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
           children: filteredInterests.map((interest) {
             final isSelected =
                 _selectedInterests.any((i) => i.interestId == interest.id);
+            if (isSelected) {
+              print('🎯 兴趣 ${interest.name} (id=${interest.id}) 被标记为选中');
+            }
             return FilterChip(
               avatar: Text(interest.icon ?? '❤️'),
               label: Text(interest.name),
