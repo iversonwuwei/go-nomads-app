@@ -87,46 +87,33 @@ class GetCityByIdParams extends UseCaseParams {
 // 搜索城市 Use Case
 // ============================================================================
 
-/// 搜索城市用例
-class SearchCitiesUseCase extends UseCase<List<City>, SearchCitiesParams> {
+/// 搜索城市用例（City 领域）
+/// 搜索城市参数（City 领域）
+class SearchCitiesParams extends UseCaseParams {
+  final String keyword;
+  final int pageSize;
+  final int pageNumber;
+
+  SearchCitiesParams({
+    required this.keyword,
+    this.pageSize = 20,
+    this.pageNumber = 1,
+  });
+}
+
+class SearchCityListUseCase extends UseCase<List<City>, SearchCitiesParams> {
   final ICityRepository _repository;
 
-  SearchCitiesUseCase(this._repository);
+  SearchCityListUseCase(this._repository);
 
   @override
   Future<Result<List<City>>> execute(SearchCitiesParams params) async {
-    // 参数验证
-    if (params.query.trim().isEmpty) {
-      return Failure(
-        ValidationException('搜索关键词不能为空', code: 'EMPTY_SEARCH_QUERY'),
-      );
-    }
-
-    if (params.pageSize <= 0) {
-      return Failure(
-        ValidationException('页大小必须大于0', code: 'INVALID_PAGE_SIZE'),
-      );
-    }
-
     return await _repository.searchCities(
-      name: params.query.trim(),
-      pageNumber: params.page,
+      name: params.keyword,
       pageSize: params.pageSize,
+      pageNumber: params.pageNumber,
     );
   }
-}
-
-/// 搜索城市参数
-class SearchCitiesParams extends UseCaseParams {
-  final String query;
-  final int page;
-  final int pageSize;
-
-  const SearchCitiesParams({
-    required this.query,
-    this.page = 1,
-    this.pageSize = 20,
-  });
 }
 
 // ============================================================================

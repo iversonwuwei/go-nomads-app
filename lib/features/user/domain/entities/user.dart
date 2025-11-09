@@ -59,23 +59,31 @@ class UserSkillInfo {
   final String id;
   final String name;
   final String level;
+  final String? icon;
 
   UserSkillInfo({
     required this.id,
     required this.name,
     required this.level,
+    this.icon,
   });
+  
+  bool get hasIcon => icon != null && icon!.isNotEmpty;
 }
 
 /// User Interest Info Value Object
 class UserInterestInfo {
   final String id;
   final String name;
+  final String? icon;
 
   UserInterestInfo({
     required this.id,
     required this.name,
+    this.icon,
   });
+  
+  bool get hasIcon => icon != null && icon!.isNotEmpty;
 }
 
 /// Badge Value Object

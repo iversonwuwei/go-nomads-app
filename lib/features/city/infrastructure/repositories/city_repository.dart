@@ -110,8 +110,18 @@ class CityRepository implements ICityRepository {
         },
       );
 
-      final data = response.data as Map<String, dynamic>;
-      final items = data['items'] as List<dynamic>? ?? [];
+      // 后端返回 ApiResponse<List<CityDto>>，data 字段直接是城市列表
+      List<dynamic> items;
+      if (response.data is Map<String, dynamic>) {
+        final dataMap = response.data as Map<String, dynamic>;
+        items = (dataMap['data'] as List<dynamic>?) ?? 
+                (dataMap['items'] as List<dynamic>?) ?? 
+                [];
+      } else if (response.data is List) {
+        items = response.data as List<dynamic>;
+      } else {
+        items = [];
+      }
 
       final cities = items
           .map((json) => City.fromJson(json as Map<String, dynamic>))

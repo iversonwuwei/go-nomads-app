@@ -538,17 +538,23 @@ class _CityListPageState extends State<CityListPage> {
                       const BorderRadius.vertical(top: Radius.circular(12)),
                   child: AspectRatio(
                     aspectRatio: 16 / 9,
-                    child: Image.network(
-                      city.imageUrl ?? '',
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey[200],
-                          child:
-                              const Icon(Icons.image_not_supported, size: 48),
-                        );
-                      },
-                    ),
+                    child: city.imageUrl != null && city.imageUrl!.isNotEmpty
+                        ? Image.network(
+                            city.imageUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: Colors.grey[200],
+                                child: const Icon(Icons.image_not_supported,
+                                    size: 48),
+                              );
+                            },
+                          )
+                        : Container(
+                            color: Colors.grey[200],
+                            child:
+                                const Icon(Icons.image_not_supported, size: 48),
+                          ),
                   ),
                 ),
                 // 关注按钮

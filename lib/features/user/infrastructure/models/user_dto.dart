@@ -166,16 +166,24 @@ class UserDto {
 class UserSkillInfoDto {
   final String name;
   final String level;
+  final String? icon;
 
   UserSkillInfoDto({
     required this.name,
     required this.level,
+    this.icon,
   });
 
   factory UserSkillInfoDto.fromJson(Map<String, dynamic> json) {
+    print('🔍 解析 UserSkillInfo: $json');
+    final name = (json['name'] ?? json['skillName'] ?? json['SkillName']) as String? ?? '';
+    final level = (json['level'] ?? json['proficiencyLevel'] ?? json['ProficiencyLevel']) as String? ?? '';
+    final icon = (json['icon'] ?? json['Icon']) as String?;
+    print('   ✅ 解析结果: name=$name, level=$level, icon=$icon');
     return UserSkillInfoDto(
-      name: json['name'] as String? ?? '',
-      level: json['level'] as String? ?? '',
+      name: name,
+      level: level,
+      icon: icon,
     );
   }
 
@@ -183,6 +191,7 @@ class UserSkillInfoDto {
     return {
       'name': name,
       'level': level,
+      if (icon != null) 'icon': icon,
     };
   }
 
@@ -191,26 +200,35 @@ class UserSkillInfoDto {
       id: '', // DTO缺少id字段,使用空字符串
       name: name,
       level: level,
+      icon: icon,
     );
   }
 }
 
 class UserInterestInfoDto {
   final String name;
+  final String? icon;
 
   UserInterestInfoDto({
     required this.name,
+    this.icon,
   });
 
   factory UserInterestInfoDto.fromJson(Map<String, dynamic> json) {
+    print('🔍 解析 UserInterestInfo: $json');
+    final name = (json['name'] ?? json['interestName'] ?? json['InterestName']) as String? ?? '';
+    final icon = (json['icon'] ?? json['Icon']) as String?;
+    print('   ✅ 解析结果: name=$name, icon=$icon');
     return UserInterestInfoDto(
-      name: json['name'] as String? ?? '',
+      name: name,
+      icon: icon,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'name': name,
+      if (icon != null) 'icon': icon,
     };
   }
 
@@ -218,6 +236,7 @@ class UserInterestInfoDto {
     return UserInterestInfo(
       id: '', // DTO缺少id字段,使用空字符串
       name: name,
+      icon: icon,
     );
   }
 }

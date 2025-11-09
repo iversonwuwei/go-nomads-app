@@ -566,6 +566,13 @@ class ProfilePage extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        if (skill.hasIcon) ...[
+                          Text(
+                            skill.icon!,
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          const SizedBox(width: 6),
+                        ],
                         Text(
                           skill.name,
                           style: const TextStyle(
@@ -637,6 +644,13 @@ class ProfilePage extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        if (interest.hasIcon) ...[
+                          Text(
+                            interest.icon!,
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          const SizedBox(width: 6),
+                        ],
                         Text(
                           interest.name,
                           style: const TextStyle(

@@ -56,27 +56,46 @@ class MeetupDto {
     // 处理 organizer 对象
     String? organizerName;
     String? organizerId;
+    String? organizerAvatar;
     if (json['organizer'] != null && json['organizer'] is Map) {
       final organizer = json['organizer'] as Map<String, dynamic>;
       organizerName = organizer['name'] as String?;
       organizerId = organizer['id'] as String?;
+      organizerAvatar =
+          organizer['avatar'] as String? ?? organizer['avatarUrl'] as String?;
     }
     organizerName ??=
         json['organizerName'] as String? ?? json['creatorName'] as String?;
     organizerId ??=
         json['organizerId'] as String? ?? json['creatorId'] as String?;
+    organizerAvatar ??= json['organizerAvatar'] as String?;
+
+    // 处理 city 对象
+    String? cityName;
+    String? cityId;
+    String? country;
+    if (json['city'] != null && json['city'] is Map) {
+      final city = json['city'] as Map<String, dynamic>;
+      cityName = city['name'] as String?;
+      cityId = city['id'] as String?;
+      country = city['country'] as String?;
+    }
+    cityName ??= json['cityName'] as String? ?? json['location'] as String?;
+    cityId ??= json['cityId'] as String?;
+    country ??= json['country'] as String?;
 
     return MeetupDto(
       id: json['id'] as String? ?? '',
       title: json['title'] as String? ?? '',
-      type: json['type'] as String? ?? '',
+      type: json['type'] as String? ?? json['category'] as String? ?? '',
       description: json['description'] as String? ?? '',
-      city: json['city'] as String? ?? json['location'] as String? ?? '',
-      cityId: json['cityId'] as String? ?? '',
-      cityName: json['cityName'] as String?,
-      country: json['country'] as String? ?? '',
-      venue: json['venue'] as String? ?? '',
-      venueAddress: json['venueAddress'] as String? ?? '',
+      city: cityName ?? '',
+      cityId: cityId ?? '',
+      cityName: cityName,
+      country: country ?? '',
+      venue: json['venue'] as String? ?? json['address'] as String? ?? '',
+      venueAddress:
+          json['venueAddress'] as String? ?? json['address'] as String? ?? '',
       dateTime: json['dateTime'] != null
           ? DateTime.parse(json['dateTime'] as String)
           : json['startTime'] != null
@@ -93,7 +112,7 @@ class MeetupDto {
           0,
       organizerId: organizerId ?? '',
       organizerName: organizerName ?? '',
-      organizerAvatar: json['organizerAvatar'] as String?,
+      organizerAvatar: organizerAvatar,
       imageUrl: json['imageUrl'] as String?,
       images: (json['images'] as List<dynamic>?)
               ?.map((e) => e.toString())

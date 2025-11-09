@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
 import '../config/api_config.dart';
+import 'token_storage_service.dart';
 
 /// API 响应元数据
 class ApiResponseMeta {
@@ -55,10 +56,16 @@ class HttpService {
     // 请求拦截器
     _dio.interceptors.add(
       InterceptorsWrapper(
-        onRequest: (options, handler) {
+        onRequest: (options, handler) async {
+          // 从 SQLite/SharedPreferences 动态获取 token
+          final tokenService = TokenStorageService();
+          final token = await tokenService.getAccessToken();
+          
           // 添加认证 token
-          if (_authToken != null && _authToken!.isNotEmpty) {
-            options.headers['Authorization'] = 'Bearer $_authToken';
+          if (token != null && token.isNotEmpty) {
+            options.headers['Authorization'] = 'Bearer $token';
+            // 同步更新内存中的 token（用于向后兼容）
+            _authToken = token;
           }
 
           // 添加用户ID header

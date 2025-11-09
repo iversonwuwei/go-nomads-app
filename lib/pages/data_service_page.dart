@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
+import '../features/auth/presentation/controllers/auth_state_controller.dart';
 import '../features/city/domain/entities/city.dart';
 import '../features/city/presentation/controllers/city_state_controller.dart';
 import '../features/meetup/domain/entities/meetup.dart';
@@ -37,11 +38,24 @@ class _DataServicePageState extends State<DataServicePage>
   bool _isGridView = true;
   String _searchQuery = '';
 
-  // 获取领域层的 StateController
-  CityStateController get _cityController => Get.find<CityStateController>();
-  MeetupStateController get _meetupController =>
-      Get.find<MeetupStateController>();
-  UserStateController get _userController => Get.find<UserStateController>();
+  // 获取领域层的 StateController（延迟初始化，避免在构建时查找）
+  CityStateController? _cityControllerCache;
+  CityStateController get _cityController {
+    _cityControllerCache ??= Get.find<CityStateController>();
+    return _cityControllerCache!;
+  }
+
+  MeetupStateController? _meetupControllerCache;
+  MeetupStateController get _meetupController {
+    _meetupControllerCache ??= Get.find<MeetupStateController>();
+    return _meetupControllerCache!;
+  }
+
+  UserStateController? _userControllerCache;
+  UserStateController get _userController {
+    _userControllerCache ??= Get.find<UserStateController>();
+    return _userControllerCache!;
+  }
 
   // computed property for filtered cities
   List<City> get _filteredCities {
@@ -123,13 +137,14 @@ class _DataServicePageState extends State<DataServicePage>
 
   /// 检查登录状态，未登录则跳转到登录页
   bool _checkLoginAndNavigate(VoidCallback onLoggedIn) {
-    final userStateController = Get.find<UserStateController>();
+    // 使用 AuthStateController 检查登录状态（更可靠）
+    final authController = Get.find<AuthStateController>();
 
     print('🔒 DataServicePage: 检查登录状态');
-    print('   当前登录状态: ${userStateController.isLoggedIn}');
+    print('   当前登录状态: ${authController.isAuthenticated.value}');
 
-    if (!userStateController.isLoggedIn) {
-      print('�?用户未登录，跳转到登录页');
+    if (!authController.isAuthenticated.value) {
+      print('⚠️ 用户未登录，跳转到登录页');
       AppToast.info(
         'Please login to access this feature',
         title: 'Login Required',
@@ -138,9 +153,117 @@ class _DataServicePageState extends State<DataServicePage>
       return false;
     }
 
-    print('�?用户已登录，执行操作');
+    print('✅ 用户已登录，执行操作');
     onLoggedIn();
     return true;
+  }
+
+  /// 执行城市搜索
+  void _performSearch(String query) {
+    print('🔍 开始搜索城市: $query');
+    
+    // 调用 CityStateController 的搜索方法
+    _cityController.searchCities(query);
+    
+    // 显示搜索提示
+    AppToast.info(
+      'Searching for "$query"...',
+      title: 'Search',
+    );
+  }
+
+  /// 清除搜索
+  void _clearSearch() {
+    _searchController.clear();
+    
+    print('🧹 清除搜索，重新加载全部城市');
+    
+    // 重新加载全部城市
+    _cityController.loadInitialCities();
+    
+    setState(() {}); // 更新 UI
+  }
+
+  /// 搜索结果提示
+  Widget _buildSearchResultHint(bool isMobile) {
+    return Obx(() {
+      final searchQuery = _cityController.searchQuery.value;
+      final cityCount = _filteredCities.length;
+      
+      if (searchQuery.isEmpty) return const SizedBox.shrink();
+      
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFF4458).withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: const Color(0xFFFF4458).withValues(alpha: 0.3),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.search,
+              color: Color(0xFFFF4458),
+              size: 20,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: RichText(
+                text: TextSpan(
+                  style: TextStyle(
+                    fontSize: isMobile ? 13 : 14,
+                    color: AppColors.textPrimary,
+                  ),
+                  children: [
+                    TextSpan(
+                      text: 'Search results for ',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    TextSpan(
+                      text: '"$searchQuery"',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFFFF4458),
+                      ),
+                    ),
+                    TextSpan(
+                      text: ': ',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    TextSpan(
+                      text: '$cityCount ${cityCount == 1 ? "city" : "cities"} found',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            InkWell(
+              onTap: _clearSearch,
+              borderRadius: BorderRadius.circular(4),
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: const Icon(
+                  Icons.close,
+                  color: AppColors.textSecondary,
+                  size: 18,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   void _scrollToCitiesList() {
@@ -217,6 +340,20 @@ class _DataServicePageState extends State<DataServicePage>
             ),
 
             const SliverToBoxAdapter(child: SizedBox(height: 8)),
+            
+            // 搜索结果提示
+            if (_searchController.text.trim().isNotEmpty)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isMobile ? 16 : 32,
+                  ),
+                  child: _buildSearchResultHint(isMobile),
+                ),
+              ),
+            
+            if (_searchController.text.trim().isNotEmpty)
+              const SliverToBoxAdapter(child: SizedBox(height: 8)),
 
             // 城市列表锚点 (用于滚动定位)
             SliverToBoxAdapter(
@@ -716,7 +853,7 @@ class _DataServicePageState extends State<DataServicePage>
             child: TextField(
               controller: _searchController,
               decoration: const InputDecoration(
-                hintText: 'Search cities...',
+                hintText: 'Search cities... (支持中英文搜索)',
                 hintStyle: TextStyle(
                   color: AppColors.textTertiary,
                   fontSize: 14,
@@ -730,10 +867,14 @@ class _DataServicePageState extends State<DataServicePage>
                 color: AppColors.textPrimary,
                 fontSize: 14,
               ),
+              onChanged: (value) {
+                // 实时更新清除按钮的显示
+                setState(() {});
+              },
               onSubmitted: (value) {
-                // 按回车键也触发搜索
+                // 按回车键触发搜索
                 if (value.trim().isNotEmpty) {
-                  
+                  _performSearch(value.trim());
                 }
               },
             ),
@@ -744,10 +885,10 @@ class _DataServicePageState extends State<DataServicePage>
             onTap: () {
               final searchText = _searchController.text.trim();
               if (searchText.isNotEmpty) {
-                
+                _performSearch(searchText);
               } else {
-                _searchController.clear();
-                setState(() {});
+                // 如果搜索框为空，清除搜索并重新加载全部城市
+                _clearSearch();
               }
             },
             borderRadius: BorderRadius.circular(6),
@@ -772,10 +913,7 @@ class _DataServicePageState extends State<DataServicePage>
             const SizedBox(width: 8),
             InkWell(
               onTap: () {
-                _searchController.clear();
-                _searchController.clear();
-                setState(() {});
-                setState(() {}); // 更新 UI
+                _clearSearch();
               },
               borderRadius: BorderRadius.circular(20),
               child: Container(
@@ -1176,6 +1314,9 @@ class _DataServicePageState extends State<DataServicePage>
 
   // 空城市列表状�?
   Widget _buildEmptyCitiesState(bool isMobile, AppLocalizations l10n) {
+    // 检查是否正在搜索
+    final isSearching = _searchController.text.trim().isNotEmpty;
+    
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: isMobile ? 24 : 48,
@@ -1193,7 +1334,7 @@ class _DataServicePageState extends State<DataServicePage>
               shape: BoxShape.circle,
             ),
             child: Icon(
-              Icons.location_city_rounded,
+              isSearching ? Icons.search_off_rounded : Icons.location_city_rounded,
               size: isMobile ? 50 : 60,
               color: const Color(0xFFFF4458),
             ),
@@ -1203,7 +1344,9 @@ class _DataServicePageState extends State<DataServicePage>
 
           // 标题
           Text(
-            l10n.noCitiesYet,
+            isSearching 
+                ? 'No cities found'
+                : l10n.noCitiesYet,
             style: TextStyle(
               fontSize: isMobile ? 24 : 28,
               fontWeight: FontWeight.bold,
@@ -1215,7 +1358,9 @@ class _DataServicePageState extends State<DataServicePage>
 
           // 描述
           Text(
-            'Start exploring by adding your first city',
+            isSearching
+                ? 'Try searching with a different keyword\n(支持中英文搜索)'
+                : 'Start exploring by adding your first city',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: isMobile ? 14 : 16,
@@ -1226,32 +1371,55 @@ class _DataServicePageState extends State<DataServicePage>
 
           SizedBox(height: isMobile ? 32 : 40),
 
-          // 添加按钮
-          ElevatedButton.icon(
-            onPressed: () {
-              Get.toNamed(AppRoutes.cityList);
-            },
-            icon: const Icon(Icons.add_circle_outline, size: 20),
-            label: Text(
-              l10n.browseCities,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+          // 按钮
+          if (isSearching) ...[
+            // 搜索结果为空时显示清除按钮
+            ElevatedButton.icon(
+              onPressed: () {
+                _clearSearch();
+              },
+              icon: const Icon(Icons.clear),
+              label: const Text('Clear Search'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFF4458),
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(
+                  horizontal: isMobile ? 24 : 32,
+                  vertical: isMobile ? 12 : 16,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFF4458),
-              foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 24 : 32,
-                vertical: isMobile ? 14 : 16,
+          ] else ...[
+            // 无城市时显示浏览按钮
+            ElevatedButton.icon(
+              onPressed: () {
+                Get.toNamed(AppRoutes.cityList);
+              },
+              icon: const Icon(Icons.add_circle_outline, size: 20),
+              label: Text(
+                l10n.browseCities,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFF4458),
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(
+                  horizontal: isMobile ? 24 : 32,
+                  vertical: isMobile ? 14 : 16,
+                ),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -1363,7 +1531,6 @@ class _DataCardState extends State<_DataCard> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
-    final userStateController = Get.find<UserStateController>();
     final l10n = AppLocalizations.of(context)!;
 
     return GestureDetector(
@@ -1373,7 +1540,8 @@ class _DataCardState extends State<_DataCard> {
         print('🏙️ [DEBUG] cityId will be: ${widget.data.id}');
 
         // 检查登录状态
-        if (!userStateController.isLoggedIn) {
+        final authController = Get.find<AuthStateController>();
+        if (!authController.isAuthenticated.value) {
           AppToast.warning(
             l10n.pleaseLoginToCreateMeetup,
             title: l10n.loginRequired,
@@ -1980,10 +2148,10 @@ class _MeetupCardState extends State<_MeetupCard> {
 
   Future<void> _handleToggleJoin(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
-    final userStateController = Get.find<UserStateController>();
+    final authController = Get.find<AuthStateController>();
 
     // 检查登录状�?
-    if (!userStateController.isLoggedIn) {
+    if (!authController.isAuthenticated.value) {
       AppToast.warning(
         l10n.pleaseLoginToCreateMeetup,
         title: l10n.loginRequired,
@@ -2307,10 +2475,10 @@ class _MeetupCardState extends State<_MeetupCard> {
                               onPressed: () {
                                 // 跳转到聊天页面并加入该城市的聊天�?
                                 // 检查登录状�?
-                                final userStateController =
-                                    Get.find<UserStateController>();
+                                final authController =
+                                    Get.find<AuthStateController>();
                                 final l10n = AppLocalizations.of(context)!;
-                                if (!userStateController.isLoggedIn) {
+                                if (!authController.isAuthenticated.value) {
                                   AppToast.warning(
                                     l10n.pleaseLoginToCreateMeetup,
                                     title: l10n.loginRequired,

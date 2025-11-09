@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../controllers/bottom_nav_controller.dart';
-import '../features/user/presentation/controllers/user_state_controller.dart';
+import '../features/auth/presentation/controllers/auth_state_controller.dart';
 import '../generated/app_localizations.dart';
 import '../routes/app_routes.dart';
 
 /// 全局底部导航布局包装器
 /// 包装任意页面内容，在底部显示导航栏
-class BottomNavLayout extends StatelessWidget {
+class BottomNavLayout extends StatefulWidget {
   final Widget child;
   final bool showBottomNav;
 
@@ -21,9 +21,19 @@ class BottomNavLayout extends StatelessWidget {
   });
 
   @override
+  State<BottomNavLayout> createState() => _BottomNavLayoutState();
+}
+
+class _BottomNavLayoutState extends State<BottomNavLayout> {
+  AuthStateController? _authStateControllerCache;
+  AuthStateController get _authStateController {
+    _authStateControllerCache ??= Get.find<AuthStateController>();
+    return _authStateControllerCache!;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final controller = Get.put(BottomNavController(), permanent: true);
-    final userStateController = Get.find<UserStateController>();
     final l10n = AppLocalizations.of(context)!;
 
     // 根据当前路由更新选中的标签索引
@@ -32,12 +42,12 @@ class BottomNavLayout extends StatelessWidget {
     });
 
     // 如果不显示底部导航，直接返回子组件
-    if (!showBottomNav) {
-      return child;
+    if (!widget.showBottomNav) {
+      return widget.child;
     }
 
     return Scaffold(
-      body: child,
+      body: widget.child,
       bottomNavigationBar: Obx(() {
         // 如果底部导航不可见，返回空容器
         if (!controller.isBottomNavVisible.value) {
@@ -49,7 +59,7 @@ class BottomNavLayout extends StatelessWidget {
           onTap: (index) {
             // AI助手需要特殊处理 (索引 2)
             if (index == 2) {
-              if (userStateController.isLoggedIn) {
+              if (_authStateController.isAuthenticated.value) {
                 // 已登录，跳转到AI聊天页面
                 Get.toNamed(AppRoutes.aiChat);
               } else {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../auth/presentation/controllers/auth_state_controller.dart';
 import '../../../user/presentation/controllers/user_state_controller.dart';
 import '../../application/use_cases/cancel_rsvp_use_case.dart';
 import '../../application/use_cases/create_meetup_use_case.dart';
@@ -296,8 +297,8 @@ class MeetupStateController extends GetxController {
   /// 检查登录状态
   bool _requireLogin({String? action}) {
     try {
-      final userController = Get.find<UserStateController>();
-      if (!userController.isLoggedIn) {
+      final authController = Get.find<AuthStateController>();
+      if (!authController.isAuthenticated.value) {
         final actionText = action ?? '此操作';
         print('⚠️ 需要登录: $actionText');
         Get.snackbar(

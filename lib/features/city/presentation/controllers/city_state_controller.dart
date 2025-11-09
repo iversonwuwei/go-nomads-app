@@ -11,7 +11,7 @@ import '../../domain/entities/city.dart';
 class CityStateController extends GetxController {
   // ==================== Dependencies ====================
   final GetCitiesUseCase _getCitiesUseCase;
-  final SearchCitiesUseCase _searchCitiesUseCase;
+  final SearchCityListUseCase _searchCitiesUseCase;
   final GetRecommendedCitiesUseCase _getRecommendedCitiesUseCase;
   final GetPopularCitiesUseCase _getPopularCitiesUseCase;
   final ToggleCityFavoriteUseCase _toggleCityFavoriteUseCase;
@@ -20,7 +20,7 @@ class CityStateController extends GetxController {
 
   CityStateController({
     required GetCitiesUseCase getCitiesUseCase,
-    required SearchCitiesUseCase searchCitiesUseCase,
+    required SearchCityListUseCase searchCitiesUseCase,
     required GetRecommendedCitiesUseCase getRecommendedCitiesUseCase,
     required GetPopularCitiesUseCase getPopularCitiesUseCase,
     required ToggleCityFavoriteUseCase toggleCityFavoriteUseCase,
@@ -171,7 +171,7 @@ class CityStateController extends GetxController {
     // print('🔍 搜索城市: $query');
 
     final result = await _searchCitiesUseCase.execute(
-      SearchCitiesParams(query: query, pageSize: _pageSize),
+      SearchCitiesParams(keyword: query, pageSize: _pageSize),
     );
 
     result.fold(

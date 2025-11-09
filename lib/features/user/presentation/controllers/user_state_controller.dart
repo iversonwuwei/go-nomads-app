@@ -1,10 +1,11 @@
 import 'package:get/get.dart';
 
 import '../../../../core/core.dart';
+import '../../../auth/presentation/controllers/auth_state_controller.dart';
 import '../../../interest/presentation/controllers/interest_state_controller.dart';
 import '../../../skill/presentation/controllers/skill_state_controller.dart';
 import '../../application/use_cases/favorite_city_use_cases.dart';
-import '../../application/use_cases/user_use_cases.dart';
+import '../../application/use_cases/user_use_cases.dart' as user_use_cases;
 import '../../domain/entities/user.dart';
 
 /// 用户状态控制器 (重构版 - DDD)
@@ -15,8 +16,8 @@ import '../../domain/entities/user.dart';
 /// - 处理UI交互
 class UserStateController extends GetxController {
   // Use Cases注入 - 基础用户操作
-  final GetCurrentUserUseCase _getCurrentUserUseCase;
-  final UpdateUserUseCase _updateUserUseCase;
+  final user_use_cases.GetUserProfileUseCase _getCurrentUserUseCase;
+  final user_use_cases.UpdateUserUseCase _updateUserUseCase;
 
   // Use Cases注入 - 收藏城市
   final AddFavoriteCityUseCase _addFavoriteCityUseCase;
@@ -26,8 +27,8 @@ class UserStateController extends GetxController {
   final ToggleFavoriteCityUseCase _toggleFavoriteCityUseCase;
 
   UserStateController({
-    required GetCurrentUserUseCase getCurrentUserUseCase,
-    required UpdateUserUseCase updateUserUseCase,
+    required user_use_cases.GetUserProfileUseCase getCurrentUserUseCase,
+    required user_use_cases.UpdateUserUseCase updateUserUseCase,
     required AddFavoriteCityUseCase addFavoriteCityUseCase,
     required RemoveFavoriteCityUseCase removeFavoriteCityUseCase,
     required IsCityFavoritedUseCase isCityFavoritedUseCase,
@@ -58,8 +59,51 @@ class UserStateController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadCurrentUser();
-    loadFavoriteCityIds(); // 加载收藏列表
+    // 延迟初始化，等待 AuthStateController 准备好
+    Future.microtask(() => _initializeIfLoggedIn());
+    
+    // 监听登录状态变化
+    _setupAuthStateListener();
+  }
+
+  /// 设置认证状态监听器
+  void _setupAuthStateListener() {
+    try {
+      final authController = Get.find<AuthStateController>();
+      
+      // 监听认证状态变化
+      ever(authController.isAuthenticated, (isAuthenticated) {
+        print('🔔 UserStateController: 认证状态变化 -> $isAuthenticated');
+        
+        if (isAuthenticated) {
+          // 登录成功，加载用户数据
+          print('✅ 用户已登录，加载用户数据...');
+          loadCurrentUser();
+          loadFavoriteCityIds();
+        } else {
+          // 退出登录，清除用户数据
+          print('⚠️ 用户已退出，清除用户数据');
+          currentUser.value = null;
+          favoriteCityIds.clear();
+        }
+      });
+    } catch (e) {
+      print('⚠️ AuthStateController 未就绪，无法设置监听器');
+    }
+  }
+
+  /// 如果用户已登录，则初始化数据
+  void _initializeIfLoggedIn() {
+    try {
+      final authController = Get.find<AuthStateController>();
+      if (authController.isAuthenticated.value) {
+        loadCurrentUser();
+        loadFavoriteCityIds();
+      }
+    } catch (e) {
+      // AuthStateController 未初始化，跳过
+      print('⚠️ AuthStateController 未就绪，跳过用户数据加载');
+    }
   }
 
   /// 加载当前用户信息
@@ -103,7 +147,7 @@ class UserStateController extends GetxController {
     isLoading.value = true;
     errorMessage.value = '';
 
-    final result = await _updateUserUseCase(UpdateUserParams(
+    final result = await _updateUserUseCase(user_use_cases.UpdateUserParams(
       userId: user.id,
       updates: updates,
     ));

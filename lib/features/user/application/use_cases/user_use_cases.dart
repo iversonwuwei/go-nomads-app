@@ -51,11 +51,11 @@ class GetUserParams extends UseCaseParams {
   const GetUserParams({required this.userId});
 }
 
-/// 获取当前用户用例
-class GetCurrentUserUseCase extends NoParamsUseCase<User> {
+/// 获取当前用户信息用例（User 领域）
+class GetUserProfileUseCase extends NoParamsUseCase<User> {
   final IUserRepository _repository;
 
-  GetCurrentUserUseCase(this._repository);
+  GetUserProfileUseCase(this._repository);
 
   @override
   Future<Result<User>> execute(NoParams params) async {

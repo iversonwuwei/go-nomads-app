@@ -64,9 +64,9 @@ class ApiConfig {
   static String get apiBaseUrl => '$baseUrl$apiVersion';
 
   // 超时配置 (毫秒)
-  static const int connectTimeout = 15000;
-  static const int receiveTimeout = 15000;
-  static const int sendTimeout = 15000;
+  static const int connectTimeout = 30000;
+  static const int receiveTimeout = 30000;
+  static const int sendTimeout = 30000;
 
   // 认证相关
   static const String authTokenKey = 'auth_token';

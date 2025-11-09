@@ -23,8 +23,12 @@ class _GlobalMapPageState extends State<GlobalMapPage> {
   final MapController _mapController = MapController();
   final TextEditingController _searchController = TextEditingController();
 
-  // 使用 DDD 的 CityStateController
-  CityStateController get _cityController => Get.find<CityStateController>();
+  // 使用 DDD 的 CityStateController（延迟初始化）
+  CityStateController? _cityControllerCache;
+  CityStateController get _cityController {
+    _cityControllerCache ??= Get.find<CityStateController>();
+    return _cityControllerCache!;
+  }
 
   // 搜索状态
   String _searchQuery = '';

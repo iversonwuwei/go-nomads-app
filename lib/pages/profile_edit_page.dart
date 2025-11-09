@@ -347,6 +347,12 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 runSpacing: 8,
                 children: skills.map((skill) {
                   return Chip(
+                    avatar: skill.hasIcon
+                        ? Text(
+                            skill.icon!,
+                            style: const TextStyle(fontSize: 16),
+                          )
+                        : null,
                     label: Text(skill.name),
                     deleteIcon: const Icon(Icons.close, size: 18),
                     onDeleted: () => profileController.removeSkill(skill.id),
@@ -431,6 +437,12 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 runSpacing: 8,
                 children: interests.map((interest) {
                   return Chip(
+                    avatar: interest.hasIcon
+                        ? Text(
+                            interest.icon!,
+                            style: const TextStyle(fontSize: 16),
+                          )
+                        : null,
                     label: Text(interest.name),
                     deleteIcon: const Icon(Icons.close, size: 18),
                     onDeleted: () =>

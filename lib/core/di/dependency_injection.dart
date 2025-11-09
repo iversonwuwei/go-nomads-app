@@ -75,7 +75,8 @@ import '../../features/skill/domain/repositories/i_skill_repository.dart';
 import '../../features/skill/infrastructure/repositories/skill_repository.dart';
 import '../../features/skill/presentation/controllers/skill_state_controller.dart';
 import '../../features/user/application/use_cases/favorite_city_use_cases.dart';
-import '../../features/user/application/use_cases/user_use_cases.dart';
+import '../../features/user/application/use_cases/user_use_cases.dart'
+    as user_use_cases;
 // User Domain
 import '../../features/user/domain/repositories/iuser_repository.dart';
 import '../../features/user/infrastructure/repositories/user_repository.dart';
@@ -149,6 +150,20 @@ class DependencyInjection {
     _registerHotelDomain();
 
     // 其他领域...
+    
+    // ⚠️ 强制初始化全局 Controllers，防止路由切换时被删除
+    _initializeGlobalControllers();
+  }
+  
+  /// 强制初始化全局 Controllers
+  /// 必须在所有依赖注册完成后调用
+  static void _initializeGlobalControllers() {
+    // 立即创建 Controller 实例，确保它们在整个应用生命周期中存活
+    Get.find<CityStateController>();
+    Get.find<MeetupStateController>();
+    Get.find<UserStateController>();
+    
+    print('✅ 全局 Controllers 已强制初始化');
   }
 
   /// 注册基础设施服务
@@ -185,11 +200,16 @@ class DependencyInjection {
     );
 
     // Use Cases - 基础用户操作
-    Get.lazyPut(() => BatchGetUsersUseCase(Get.find<IUserRepository>()));
-    Get.lazyPut(() => GetUserUseCase(Get.find<IUserRepository>()));
-    Get.lazyPut(() => GetCurrentUserUseCase(Get.find<IUserRepository>()));
-    Get.lazyPut(() => UpdateUserUseCase(Get.find<IUserRepository>()));
-    Get.lazyPut(() => SearchUsersUseCase(Get.find<IUserRepository>()));
+    Get.lazyPut<user_use_cases.BatchGetUsersUseCase>(
+        () => user_use_cases.BatchGetUsersUseCase(Get.find<IUserRepository>()));
+    Get.lazyPut<user_use_cases.GetUserUseCase>(
+        () => user_use_cases.GetUserUseCase(Get.find<IUserRepository>()));
+    Get.lazyPut<user_use_cases.GetUserProfileUseCase>(() =>
+        user_use_cases.GetUserProfileUseCase(Get.find<IUserRepository>()));
+    Get.lazyPut<user_use_cases.UpdateUserUseCase>(
+        () => user_use_cases.UpdateUserUseCase(Get.find<IUserRepository>()));
+    Get.lazyPut<user_use_cases.SearchUsersUseCase>(
+        () => user_use_cases.SearchUsersUseCase(Get.find<IUserRepository>()));
 
     // Use Cases - 收藏城市
     Get.lazyPut(() => AddFavoriteCityUseCase(Get.find<IUserRepository>()));
@@ -198,17 +218,18 @@ class DependencyInjection {
     Get.lazyPut(() => GetFavoriteCityIdsUseCase(Get.find<IUserRepository>()));
     Get.lazyPut(() => ToggleFavoriteCityUseCase(Get.find<IUserRepository>()));
 
-    // Controller
+    // Controller（fenix: true 允许删除后重新创建）
     Get.lazyPut(
       () => UserStateController(
-        getCurrentUserUseCase: Get.find<GetCurrentUserUseCase>(),
-        updateUserUseCase: Get.find<UpdateUserUseCase>(),
+        getCurrentUserUseCase: Get.find<user_use_cases.GetUserProfileUseCase>(),
+        updateUserUseCase: Get.find<user_use_cases.UpdateUserUseCase>(),
         addFavoriteCityUseCase: Get.find<AddFavoriteCityUseCase>(),
         removeFavoriteCityUseCase: Get.find<RemoveFavoriteCityUseCase>(),
         isCityFavoritedUseCase: Get.find<IsCityFavoritedUseCase>(),
         getFavoriteCityIdsUseCase: Get.find<GetFavoriteCityIdsUseCase>(),
         toggleFavoriteCityUseCase: Get.find<ToggleFavoriteCityUseCase>(),
       ),
+      fenix: true,
     );
   }
 
@@ -302,7 +323,7 @@ class DependencyInjection {
     // Use Cases
     Get.lazyPut(() => GetCitiesUseCase(Get.find<ICityRepository>()));
     Get.lazyPut(() => GetCityByIdUseCase(Get.find<ICityRepository>()));
-    Get.lazyPut(() => SearchCitiesUseCase(Get.find<ICityRepository>()));
+    Get.lazyPut(() => SearchCityListUseCase(Get.find<ICityRepository>()));
     Get.lazyPut(() => GetRecommendedCitiesUseCase(Get.find<ICityRepository>()));
     Get.lazyPut(() => GetPopularCitiesUseCase(Get.find<ICityRepository>()));
     Get.lazyPut(() => FavoriteCityUseCase(Get.find<ICityRepository>()));
@@ -315,11 +336,11 @@ class DependencyInjection {
     Get.lazyPut(
         () => GetCitiesWithCoworkingCountUseCase(Get.find<ICityRepository>()));
 
-    // Controller
+    // Controller（permanent: true 防止路由切换时被销毁）
     Get.lazyPut(
       () => CityStateController(
         getCitiesUseCase: Get.find<GetCitiesUseCase>(),
-        searchCitiesUseCase: Get.find<SearchCitiesUseCase>(),
+        searchCitiesUseCase: Get.find<SearchCityListUseCase>(),
         getRecommendedCitiesUseCase: Get.find<GetRecommendedCitiesUseCase>(),
         getPopularCitiesUseCase: Get.find<GetPopularCitiesUseCase>(),
         toggleCityFavoriteUseCase: Get.find<ToggleCityFavoriteUseCase>(),
@@ -327,6 +348,7 @@ class DependencyInjection {
         getUserFavoriteCityIdsUseCase:
             Get.find<GetUserFavoriteCityIdsUseCase>(),
       ),
+      fenix: true, // 允许在删除后重新创建
     );
 
     // Detail Controller
@@ -552,7 +574,7 @@ class DependencyInjection {
     Get.lazyPut(() => RsvpToMeetupUseCase(Get.find<IMeetupRepository>()));
     Get.lazyPut(() => CancelRsvpUseCase(Get.find<IMeetupRepository>()));
 
-    // Controller
+    // Controller（fenix: true 允许删除后重新创建）
     Get.lazyPut(
       () => MeetupStateController(
         getMeetupsUseCase: Get.find<GetMeetupsUseCase>(),
@@ -561,6 +583,7 @@ class DependencyInjection {
         rsvpToMeetupUseCase: Get.find<RsvpToMeetupUseCase>(),
         cancelRsvpUseCase: Get.find<CancelRsvpUseCase>(),
       ),
+      fenix: true,
     );
   }
 

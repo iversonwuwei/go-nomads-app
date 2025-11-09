@@ -176,10 +176,15 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
   @override
   Future<Result<void>> persistToken(AuthToken token) async {
     return execute(() async {
+      // 保存到 SharedPreferences/SQLite
       await _tokenStorage.saveTokens(
         accessToken: token.accessToken,
         refreshToken: token.refreshToken,
       );
+      
+      // 同时设置到 HttpService（用于向后兼容）
+      // 注意：由于拦截器会动态从存储获取，这一步不是必需的，但保留以确保兼容性
+      _httpService.setAuthToken(token.accessToken);
     });
   }
 
