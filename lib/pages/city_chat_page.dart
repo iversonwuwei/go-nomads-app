@@ -4,11 +4,10 @@ import 'package:get/get.dart';
 import '../config/app_colors.dart';
 import '../features/chat/domain/entities/chat.dart';
 import '../features/chat/presentation/controllers/chat_state_controller.dart';
-import '../features/user/domain/entities/user.dart';
 import '../generated/app_localizations.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/skeletons/skeletons.dart';
-import 'member_detail_page.dart';
+
 
 class CityChatPage extends StatelessWidget {
   const CityChatPage({super.key});
@@ -22,13 +21,12 @@ class CityChatPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Obx(() {
-        if (controller.isLoading.value &&
-            controller.currentRoom.value == null) {
+        if (controller.isLoading && controller.currentRoom == null) {
           return const ChatListSkeleton();
         }
 
         // Show chat rooms list if no room is selected
-        if (controller.currentRoom.value == null) {
+        if (controller.currentRoom == null) {
           return _buildChatRoomsList(context, controller, isMobile);
         }
 
@@ -111,7 +109,7 @@ class CityChatPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${room.city}, ${room.country}',
+                        '${room.location.city}, ${room.location.country}',
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -131,7 +129,7 @@ class CityChatPage extends StatelessWidget {
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            '${room.onlineUsers} online • ${room.totalMembers} members',
+                            '${room.stats.onlineUsers} online • ${room.stats.totalMembers} members',
                             style: const TextStyle(
                               fontSize: 13,
                               color: Color(0xFF6b7280),
@@ -155,11 +153,11 @@ class CityChatPage extends StatelessWidget {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  if (room.lastMessage!.userAvatar != null)
+                  if (room.lastMessage!.author.userAvatar != null)
                     CircleAvatar(
                       radius: 12,
                       backgroundImage:
-                          NetworkImage(room.lastMessage!.userAvatar!),
+                          NetworkImage(room.lastMessage!.author.userAvatar!),
                     ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -169,7 +167,7 @@ class CityChatPage extends StatelessWidget {
                       text: TextSpan(
                         children: [
                           TextSpan(
-                            text: '${room.lastMessage!.userName}: ',
+                            text: '${room.lastMessage!.author.userName}: ',
                             style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
@@ -207,7 +205,7 @@ class CityChatPage extends StatelessWidget {
   // Chat Room
   Widget _buildChatRoom(
       BuildContext context, ChatStateController controller, bool isMobile) {
-    final room = controller.currentRoom.value!;
+    final room = controller.currentRoom!;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
@@ -218,15 +216,14 @@ class CityChatPage extends StatelessWidget {
           icon: const Icon(Icons.arrow_back_outlined,
               color: AppColors.backButtonDark),
           onPressed: () {
-            controller.currentRoom.value = null;
-            controller.messages.clear();
+            controller.leaveRoom();
           },
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '${room.city}, ${room.country}',
+              '${room.location.city}, ${room.location.country}',
               style: const TextStyle(
                 color: Color(0xFF1a1a1a),
                 fontSize: 16,
@@ -234,7 +231,7 @@ class CityChatPage extends StatelessWidget {
               ),
             ),
             Text(
-              '${room.onlineUsers} online',
+              '${room.stats.onlineUsers} online',
               style: const TextStyle(
                 color: Color(0xFF6b7280),
                 fontSize: 12,
@@ -254,7 +251,7 @@ class CityChatPage extends StatelessWidget {
           // Messages
           Expanded(
             child: Obx(() {
-              if (controller.isLoading.value) {
+              if (controller.isLoading) {
                 return const MessagesSkeleton();
               }
 
@@ -264,7 +261,7 @@ class CityChatPage extends StatelessWidget {
                 itemCount: controller.messages.length,
                 itemBuilder: (context, index) {
                   final message = controller.messages[index];
-                  final isMe = message.userId == controller.currentUserId;
+                  final isMe = message.author.userId == _getCurrentUserId();
                   return _buildMessageBubble(message, isMe, controller);
                 },
               );
@@ -273,7 +270,7 @@ class CityChatPage extends StatelessWidget {
 
           // Reply Preview
           Obx(() {
-            if (controller.replyingTo.value != null) {
+            if (controller.replyTo != null) {
               return _buildReplyPreview(controller);
             }
             return const SizedBox.shrink();
@@ -309,11 +306,12 @@ class CityChatPage extends StatelessWidget {
                 },
                 child: Hero(
                   tag:
-                      'message_avatar_${message.userId}_${message.timestamp.millisecondsSinceEpoch}',
+                      'message_avatar_${message.author.userId}_${message.timestamp.millisecondsSinceEpoch}',
                   child: CircleAvatar(
                     radius: 16,
                     backgroundImage: NetworkImage(
-                        message.userAvatar ?? 'https://i.pravatar.cc/300'),
+                        message.author.userAvatar ??
+                        'https://i.pravatar.cc/300'),
                   ),
                 ),
               ),
@@ -328,7 +326,7 @@ class CityChatPage extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(left: 4, bottom: 4),
                       child: Text(
-                        message.userName,
+                        message.author.userName,
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -358,7 +356,7 @@ class CityChatPage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (message.replyToMessage != null) ...[
+                        if (message.replyTo?.message != null) ...[
                           Container(
                             padding: const EdgeInsets.all(8),
                             margin: const EdgeInsets.only(bottom: 8),
@@ -373,7 +371,7 @@ class CityChatPage extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  message.replyToUser!,
+                                  message.replyTo!.userName,
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
@@ -384,7 +382,7 @@ class CityChatPage extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  message.replyToMessage!,
+                                  message.replyTo!.message,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
@@ -430,7 +428,7 @@ class CityChatPage extends StatelessWidget {
   }
 
   Widget _buildReplyPreview(ChatStateController controller) {
-    final reply = controller.replyingTo.value!;
+    final reply = controller.replyTo!;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: const BoxDecoration(
@@ -448,7 +446,7 @@ class CityChatPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Replying to ${reply.userName}',
+                  'Replying to ${reply.author.userName}',
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -470,7 +468,7 @@ class CityChatPage extends StatelessWidget {
           ),
           IconButton(
             icon: const Icon(Icons.close, size: 20),
-            onPressed: controller.cancelReply,
+            onPressed: controller.clearReplyTo,
           ),
         ],
       ),
@@ -791,10 +789,8 @@ class CityChatPage extends StatelessWidget {
                     final user = controller.onlineUsers[index];
                     return ListTile(
                       onTap: () {
-                        // 转换 OnlineUser 到 UserModel 并跳转到详情页
-                        Get.to(() => MemberDetailPage(
-                              user: _convertToUserModel(user),
-                            ));
+                        // TODO: 暂不支持查看用户详情
+                        Get.snackbar('提示', '此功能即将推出');
                       },
                       leading: Hero(
                         tag: 'user_avatar_${user.id}',
@@ -879,236 +875,15 @@ class CityChatPage extends StatelessWidget {
     return '${months[time.month - 1]} ${time.day}';
   }
 
-  // 将 OnlineUser 转换为 User 用于显示详情页
-  User _convertToUser(OnlineUser user) {
-    return User(
-      id: user.id,
-      name: user.name,
-      username: user.name.toLowerCase().replaceAll(' ', '_'),
-      bio: 'Digital nomad exploring the world 🌍\n\n'
-          'I love working remotely from different cities and meeting amazing people along the way. '
-          'Always up for coffee, coworking sessions, or exploring local spots!',
-      avatarUrl: user.avatar ?? 'https://i.pravatar.cc/300',
-      currentCity: 'Bangkok', // 默认值,实际应从API获取
-      currentCountry: 'Thailand',
-      skills: [
-        UserSkillInfo(
-          id: '1',
-          name: 'Flutter',
-          level: 'Advanced',
-        ),
-        UserSkillInfo(
-          id: '2',
-          name: 'Design',
-          level: 'Intermediate',
-        ),
-        UserSkillInfo(
-          id: '3',
-          name: 'Marketing',
-          level: 'Intermediate',
-        ),
-        UserSkillInfo(
-          id: '4',
-          name: 'Photography',
-          level: 'Advanced',
-        ),
-      ],
-      interests: [
-        UserInterestInfo(
-          id: '1',
-          name: 'Travel',
-        ),
-        UserInterestInfo(
-          id: '2',
-          name: 'Coding',
-        ),
-        UserInterestInfo(
-          id: '3',
-          name: 'Coffee',
-        ),
-        UserInterestInfo(
-          id: '4',
-          name: 'Hiking',
-          icon: '🥾',
-          category: 'Outdoor',
-          intensityLevel: 'Interested',
-        ),
-        models.UserInterestInfo(
-          id: '5',
-          interestId: '5',
-          interestName: 'Photography',
-          icon: '📸',
-          category: 'Creative',
-          intensityLevel: 'Passionate',
-        ),
-      ],
-      socialLinks: {},
-      badges: [
-        models.Badge(
-          id: '1',
-          name: 'Early Adopter',
-          icon: '🚀',
-          description: 'One of the first users',
-          earnedDate: DateTime.now().subtract(const Duration(days: 90)),
-        ),
-        models.Badge(
-          id: '2',
-          name: 'Globetrotter',
-          icon: '🌍',
-          description: 'Visited 10+ countries',
-          earnedDate: DateTime.now().subtract(const Duration(days: 60)),
-        ),
-        models.Badge(
-          id: '3',
-          name: 'Social Butterfly',
-          icon: '🦋',
-          description: 'Attended 20+ meetups',
-          earnedDate: DateTime.now().subtract(const Duration(days: 30)),
-        ),
-      ],
-      stats: models.TravelStats(
-        countriesVisited: 15,
-        citiesLived: 8,
-        daysNomading: 365,
-        meetupsAttended: 42,
-        tripsCompleted: 12,
-      ),
-      travelHistory: [],
-      joinedDate: DateTime.now().subtract(const Duration(days: 180)),
-      isVerified: true,
-    );
+  String? _getCurrentUserId() {
+    // TODO: 从 UserStateController 获取当前用户ID
+    return null;
   }
 
-  // 从消息对象查看用户详情
+  // TODO: 实现从 ChatMessage 查看用户详情的功能
   void _showUserDetail(ChatMessage message) {
-    // 从消息信息构建 UserModel
-    final userModel = models.UserModel(
-      id: message.userId,
-      name: message.userName,
-      username: message.userName.toLowerCase().replaceAll(' ', '_'),
-      bio: 'Digital nomad exploring the world 🌍\n\n'
-          'I love working remotely from different cities and meeting amazing people along the way. '
-          'Always up for coffee, coworking sessions, or exploring local spots!',
-      avatarUrl: message.userAvatar ?? 'https://i.pravatar.cc/300',
-      currentCity: 'Bangkok', // 默认值,实际应从API获取
-      currentCountry: 'Thailand',
-      skills: [
-        models.UserSkillInfo(
-          id: '1',
-          skillId: '1',
-          skillName: 'Flutter',
-          icon: '💙',
-          category: 'Programming',
-          proficiencyLevel: 'Advanced',
-          yearsOfExperience: 3,
-        ),
-        models.UserSkillInfo(
-          id: '2',
-          skillId: '2',
-          skillName: 'Design',
-          icon: '🎨',
-          category: 'Design',
-          proficiencyLevel: 'Intermediate',
-          yearsOfExperience: 2,
-        ),
-        models.UserSkillInfo(
-          id: '3',
-          skillId: '3',
-          skillName: 'Marketing',
-          icon: '📢',
-          category: 'Business',
-          proficiencyLevel: 'Intermediate',
-          yearsOfExperience: 2,
-        ),
-        models.UserSkillInfo(
-          id: '4',
-          skillId: '4',
-          skillName: 'Photography',
-          icon: '📷',
-          category: 'Creative',
-          proficiencyLevel: 'Advanced',
-          yearsOfExperience: 4,
-        ),
-      ],
-      interests: [
-        models.UserInterestInfo(
-          id: '1',
-          interestId: '1',
-          interestName: 'Travel',
-          icon: '✈️',
-          category: 'Travel',
-          intensityLevel: 'Passionate',
-        ),
-        models.UserInterestInfo(
-          id: '2',
-          interestId: '2',
-          interestName: 'Coding',
-          icon: '💻',
-          category: 'Technology',
-          intensityLevel: 'Very Interested',
-        ),
-        models.UserInterestInfo(
-          id: '3',
-          interestId: '3',
-          interestName: 'Coffee',
-          icon: '☕',
-          category: 'Lifestyle',
-          intensityLevel: 'Very Interested',
-        ),
-        models.UserInterestInfo(
-          id: '4',
-          interestId: '4',
-          interestName: 'Hiking',
-          icon: '🥾',
-          category: 'Outdoor',
-          intensityLevel: 'Interested',
-        ),
-        models.UserInterestInfo(
-          id: '5',
-          interestId: '5',
-          interestName: 'Photography',
-          icon: '📸',
-          category: 'Creative',
-          intensityLevel: 'Passionate',
-        ),
-      ],
-      socialLinks: {},
-      badges: [
-        models.Badge(
-          id: '1',
-          name: 'Early Adopter',
-          icon: '🚀',
-          description: 'One of the first users',
-          earnedDate: DateTime.now().subtract(const Duration(days: 90)),
-        ),
-        models.Badge(
-          id: '2',
-          name: 'Globetrotter',
-          icon: '🌍',
-          description: 'Visited 10+ countries',
-          earnedDate: DateTime.now().subtract(const Duration(days: 60)),
-        ),
-        models.Badge(
-          id: '3',
-          name: 'Social Butterfly',
-          icon: '🦋',
-          description: 'Attended 20+ meetups',
-          earnedDate: DateTime.now().subtract(const Duration(days: 30)),
-        ),
-      ],
-      stats: models.TravelStats(
-        countriesVisited: 15,
-        citiesLived: 8,
-        daysNomading: 365,
-        meetupsAttended: 42,
-        tripsCompleted: 12,
-      ),
-      travelHistory: [],
-      joinedDate: DateTime.now().subtract(const Duration(days: 180)),
-      isVerified: true,
-    );
-
-    // 跳转到成员详情页
-    Get.to(() => MemberDetailPage(user: userModel));
+    // 暂不支持从消息查看用户详情
+    Get.snackbar('提示', '此功能即将推出');
   }
+
 }

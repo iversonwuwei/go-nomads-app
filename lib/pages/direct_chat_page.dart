@@ -10,7 +10,7 @@ import '../widgets/app_toast.dart';
 import '../widgets/skeletons/skeletons.dart';
 import 'member_detail_page.dart';
 
-class DirectChatPage extends StatelessWidget {
+class DirectChatPage extends StatefulWidget {
   final models.User user;
 
   const DirectChatPage({
@@ -19,17 +19,26 @@ class DirectChatPage extends StatelessWidget {
   });
 
   @override
+  State<DirectChatPage> createState() => _DirectChatPageState();
+}
+
+class _DirectChatPageState extends State<DirectChatPage> {
+  final _messageController = TextEditingController();
+
+  @override
+  void dispose() {
+    _messageController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final controller = Get.find<ChatStateController>();
 
-    // 创建一对一聊天室
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      controller.joinDirectChat(
-        user.name,
-        user.avatarUrl,
-        user.id,
-      );
-    });
+    // Direct chat 功能暂不支持 (仅支持聊天室)
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   controller.joinDirectChat(widget.user.name, widget.user.avatarUrl, widget.user.id);
+    // });
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
@@ -44,14 +53,14 @@ class DirectChatPage extends StatelessWidget {
         title: GestureDetector(
           onTap: () {
             // 点击标题查看用户详情
-            Get.to(() => MemberDetailPage(user: user));
+            Get.to(() => MemberDetailPage(user: widget.user));
           },
           child: Row(
             children: [
               CircleAvatar(
                 radius: 18,
                 backgroundImage: NetworkImage(
-                  user.avatarUrl ?? 'https://i.pravatar.cc/150',
+                  widget.user.avatarUrl ?? 'https://i.pravatar.cc/150',
                 ),
               ),
               const SizedBox(width: 12),
@@ -60,16 +69,16 @@ class DirectChatPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      user.name,
+                      widget.user.name,
                       style: const TextStyle(
                         color: Color(0xFF1a1a1a),
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    if (user.currentCity != null)
+                    if (widget.user.currentCity != null)
                       Text(
-                        user.currentCity!,
+                        widget.user.currentCity!,
                         style: const TextStyle(
                           color: Color(0xFF6b7280),
                           fontSize: 12,
@@ -88,7 +97,7 @@ class DirectChatPage extends StatelessWidget {
             onSelected: (value) {
               switch (value) {
                 case 'profile':
-                  Get.to(() => MemberDetailPage(user: user));
+                  Get.to(() => MemberDetailPage(user: widget.user));
                   break;
                 case 'mute':
                   final l10n = AppLocalizations.of(context)!;
@@ -98,7 +107,7 @@ class DirectChatPage extends StatelessWidget {
                   );
                   break;
                 case 'block':
-                  _showBlockDialog(user.name, context);
+                  _showBlockDialog(widget.user.name, context);
                   break;
               }
             },
@@ -143,7 +152,7 @@ class DirectChatPage extends StatelessWidget {
         ],
       ),
       body: Obx(() {
-        if (controller.isLoading.value) {
+        if (controller.isLoading) {
           return const MessagesSkeleton();
         }
 
@@ -159,7 +168,7 @@ class DirectChatPage extends StatelessWidget {
                       itemCount: controller.messages.length,
                       itemBuilder: (context, index) {
                         final message = controller.messages[index];
-                        final isMe = message.userId == controller.currentUserId;
+                        final isMe = message.author.userId == widget.user.id;
                         return _buildMessageBubble(message, isMe, controller);
                       },
                     ),
@@ -167,7 +176,7 @@ class DirectChatPage extends StatelessWidget {
 
             // Reply Preview
             Obx(() {
-              if (controller.replyingTo.value != null) {
+              if (controller.replyTo != null) {
                 return _buildReplyPreview(controller);
               }
               return const SizedBox.shrink();
@@ -229,12 +238,12 @@ class DirectChatPage extends StatelessWidget {
             if (!isMe) ...[
               GestureDetector(
                 onTap: () {
-                  Get.to(() => MemberDetailPage(user: user));
+                  Get.to(() => MemberDetailPage(user: widget.user));
                 },
                 child: CircleAvatar(
                   radius: 16,
                   backgroundImage: NetworkImage(
-                    user.avatarUrl ?? 'https://i.pravatar.cc/150',
+                    widget.user.avatarUrl ?? 'https://i.pravatar.cc/150',
                   ),
                 ),
               ),
@@ -268,7 +277,7 @@ class DirectChatPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Reply preview in message
-                        if (message.replyToMessage != null) ...[
+                        if (message.replyTo?.message != null) ...[
                           Container(
                             padding: const EdgeInsets.all(8),
                             margin: const EdgeInsets.only(bottom: 8),
@@ -283,7 +292,7 @@ class DirectChatPage extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  message.replyToUser!,
+                                  message.replyTo!.userName,
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
@@ -294,7 +303,7 @@ class DirectChatPage extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  message.replyToMessage!,
+                                  message.replyTo!.message,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
@@ -345,8 +354,8 @@ class DirectChatPage extends StatelessWidget {
   }
 
   // Reply preview bar
-  Widget _buildReplyPreview(ChatController controller) {
-    final replyTo = controller.replyingTo.value!;
+  Widget _buildReplyPreview(ChatStateController controller) {
+    final replyTo = controller.replyTo!;
     return Builder(
       builder: (context) {
         final l10n = AppLocalizations.of(context)!;
@@ -374,7 +383,7 @@ class DirectChatPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${l10n.reply} ${replyTo.userName}',
+                      '${l10n.reply} ${replyTo.author.userName}',
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -396,7 +405,7 @@ class DirectChatPage extends StatelessWidget {
               ),
               IconButton(
                 icon: const Icon(Icons.close, size: 20),
-                onPressed: () => controller.cancelReply(),
+                onPressed: () => controller.clearReplyTo(),
               ),
             ],
           ),
@@ -406,7 +415,7 @@ class DirectChatPage extends StatelessWidget {
   }
 
   // Message input
-  Widget _buildMessageInput(ChatController controller) {
+  Widget _buildMessageInput(ChatStateController controller) {
     return Builder(
       builder: (context) {
         final l10n = AppLocalizations.of(context)!;
@@ -444,7 +453,7 @@ class DirectChatPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(24),
                     ),
                     child: TextField(
-                      controller: controller.messageInputController,
+                      controller: _messageController,
                       decoration: InputDecoration(
                         hintText: l10n.typeMessage,
                         hintStyle: const TextStyle(
@@ -465,9 +474,9 @@ class DirectChatPage extends StatelessWidget {
 
                 // Send button
                 AnimatedBuilder(
-                  animation: controller.messageInputController,
+                  animation: _messageController,
                   builder: (context, child) {
-                    final hasText = controller.messageInputController.text
+                    final hasText = _messageController.text
                         .trim()
                         .isNotEmpty;
                     return Container(
@@ -483,10 +492,10 @@ class DirectChatPage extends StatelessWidget {
                         onPressed: hasText
                             ? () {
                                 final text =
-                                    controller.messageInputController.text;
+                                    _messageController.text;
                                 if (text.trim().isNotEmpty) {
                                   controller.sendMessage(text);
-                                  controller.messageInputController.clear();
+                                  _messageController.clear();
                                 }
                               }
                             : null,
