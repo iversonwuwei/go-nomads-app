@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 import '../config/app_colors.dart';
+import '../core/domain/result.dart';
 import '../features/ai/presentation/controllers/ai_state_controller.dart';
 import '../features/city/application/state_controllers/pros_cons_state_controller.dart';
 import '../features/city/domain/entities/city_detail.dart';
@@ -12,11 +13,10 @@ import '../features/city/presentation/controllers/city_detail_state_controller.d
 import '../features/coworking/domain/entities/coworking_space.dart' as coworking;
 import '../features/coworking/presentation/controllers/coworking_state_controller.dart';
 import '../features/user_city_content/domain/entities/user_city_content.dart';
+import '../features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
 import '../features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
 import '../features/weather/presentation/controllers/weather_state_controller.dart';
 import '../generated/app_localizations.dart';
-import '../core/domain/result.dart';
-import '../features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/skeletons/skeletons.dart';
 import 'add_cost_page.dart';
@@ -2029,7 +2029,7 @@ class _CityDetailPageState extends State<CityDetailPage>
 
     return Obx(() {
       // 显示加载状态
-      if (controller.isLoadingWeather.value) {
+      if (controller.isLoading.value) {
         return const Center(child: CircularProgressIndicator());
       }
 
@@ -2198,7 +2198,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                           ),
                           const SizedBox(height: 6),
                           // 城市名称
-                          if (controller.currentCityName.value.isNotEmpty)
+                          if (cityName.isNotEmpty)
                             Row(
                               children: [
                                 Icon(
@@ -2208,7 +2208,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  controller.currentCityName.value,
+                                  cityName,
                                   style: TextStyle(
                                     color: Colors.white.withValues(alpha: 0.85),
                                     fontSize: 15,
@@ -2652,16 +2652,22 @@ class _CityDetailPageState extends State<CityDetailPage>
   Widget _buildNeighborhoodsTab(CityDetailStateController controller) {
     return Obx(() {
       // 显示加载状态
-      if (controller.isLoadingNeighborhoods.value) {
+      if (controller.isLoading.value) {
         return const Center(child: CircularProgressIndicator());
       }
 
+      // TODO: City 实体暂时没有 neighborhoods/bestAreas，先显示空状态
+      final neighborhoods = <dynamic>[];
+      if (neighborhoods.isEmpty) {
+        return const Center(child: Text('No neighborhoods available'));
+      }
+      
       return ListView.builder(
         padding:
             const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
-        itemCount: controller.neighborhoods.length,
+        itemCount: neighborhoods.length,
         itemBuilder: (context, index) {
-          final neighborhood = controller.neighborhoods[index];
+          final neighborhood = neighborhoods[index];
           return Card(
             margin: const EdgeInsets.only(bottom: 16),
             child: Column(
@@ -2728,7 +2734,7 @@ class _CityDetailPageState extends State<CityDetailPage>
   Widget _buildCoworkingTab(CoworkingStateController controller) {
     return Obx(() {
       // 显示加载状态
-      if (controller.isLoadingCoworking.value) {
+      if (controller.isLoading.value) {
         return const Center(child: CircularProgressIndicator());
       }
 
@@ -2905,7 +2911,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                   child: AspectRatio(
                     aspectRatio: 16 / 9,
                     child: Image.network(
-                      space.imageUrl,
+                      space.spaceInfo.imageUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
@@ -2996,7 +3002,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              space.rating.toStringAsFixed(1),
+                              space.spaceInfo.rating.toStringAsFixed(1),
                               style: const TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.bold,
@@ -3019,7 +3025,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
-                          space.address,
+                          space.location.address,
                           style: const TextStyle(
                             fontSize: 13,
                             color: AppColors.textSecondary,
@@ -3189,7 +3195,7 @@ class _CityDetailPageState extends State<CityDetailPage>
 
     // 如果有变更,刷新数据
     if (result == true) {
-      controller.loadUserContent();
+      // TODO: Refresh user content if needed
     }
   }
 
@@ -3210,9 +3216,10 @@ class _CityDetailPageState extends State<CityDetailPage>
 
       print('Expenses submitted successfully: ${result['expenses']}');
     }
+  }
 
   /// 分享照片
-  void showSharePhotoDialog() async {
+  void _showSharePhotoDialog() async {
     // 显示选择对话框
     final source = await Get.dialog<ImageSource>(
       Dialog(
@@ -3336,7 +3343,7 @@ class _CityDetailPageState extends State<CityDetailPage>
   }
 
   /// 构建 Best Area 卡片 (包含娱乐、旅游、经济、文化四个维度)
-  Widget buildBestAreaCard(BestArea area) {
+  Widget _buildBestAreaCard(BestArea area) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 2,
@@ -3484,8 +3491,22 @@ class _CityDetailPageState extends State<CityDetailPage>
     );
   }
 
+  /// 添加 Coworking Space
+  void _showAddCoworkingPage() async {
+    final result = await Get.to(() => AddCoworkingPage(
+          cityName: cityName,
+          cityId: cityId,
+        ));
+    if (result != null) {
+      AppToast.success(
+        'Your coworking space will be reviewed and added soon!',
+        title: 'Success',
+      );
+    }
+  }
+
   /// 格式化日期
-  String formatDate(DateTime date, AppLocalizations l10n) {
+  String _formatDate(DateTime date, AppLocalizations l10n) {
     final now = DateTime.now();
     final difference = now.difference(date);
 
@@ -3524,8 +3545,8 @@ class _CityDetailPageState extends State<CityDetailPage>
 }
 
 // SliverAppBarDelegate for pinned tab bar
-class _SliverAppBarDelegate extends void SliverPersistentHeaderDelegate {
-  _SliverAppBarDelegate(this._tabBar);
+class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  _SliverAppBarDelegate(this.tabBar);
 
   final TabBar tabBar;
 

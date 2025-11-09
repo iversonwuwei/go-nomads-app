@@ -3,7 +3,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
-import '../controllers/data_service_controller.dart';
+import '../features/city/domain/entities/city.dart';
+import '../features/city/presentation/controllers/city_state_controller.dart';
 import '../features/meetup/domain/entities/meetup.dart';
 import '../features/meetup/infrastructure/repositories/meetup_repository.dart';
 import '../features/meetup/presentation/controllers/meetup_state_controller.dart';
@@ -32,6 +33,27 @@ class _DataServicePageState extends State<DataServicePage>
   final GlobalKey _citiesListKey = GlobalKey();
   bool _hasScrolled = false;
 
+  // 本地状态管理
+  bool _isGridView = true;
+  String _searchQuery = '';
+
+  // 获取领域层的 StateController
+  CityStateController get _cityController => Get.find<CityStateController>();
+  MeetupStateController get _meetupController =>
+      Get.find<MeetupStateController>();
+  UserStateController get _userController => Get.find<UserStateController>();
+
+  // computed property for filtered cities
+  List<City> get _filteredCities {
+    if (_searchQuery.isEmpty) {
+      return _cityController.cities.toList();
+    }
+    return _cityController.cities
+        .where((city) =>
+            city.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .toList();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -39,7 +61,13 @@ class _DataServicePageState extends State<DataServicePage>
     WidgetsBinding.instance.addObserver(this);
     // 监听搜索框内容变化以更新清除按钮
     _searchController.addListener(() {
-      setState(() {}); // 触发重建以显示/隐藏清除按钮
+      _onSearchChanged();
+    });
+  }
+
+  void _onSearchChanged() {
+    setState(() {
+      _searchQuery = _searchController.text;
     });
   }
 
@@ -59,13 +87,12 @@ class _DataServicePageState extends State<DataServicePage>
     // 当应用回到前台时刷新数据
     if (state == AppLifecycleState.resumed) {
       print('📱 应用回到前台,刷新首页数据');
-      final controller = Get.find<DataServiceController>();
-      controller.refreshData();
+      _refreshData();
     }
   }
 
-  // 页面回退时的刷新逻辑会在路由导航时处�?
-  // 我们在每次页面可见时都刷新数�?
+  // 页面回退时的刷新逻辑会在路由导航时处理
+  // 我们在每次页面可见时都刷新数据
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -73,16 +100,25 @@ class _DataServicePageState extends State<DataServicePage>
     // 检查页面是否从其他页面回退
     final route = ModalRoute.of(context);
     if (route != null && route.isCurrent) {
-      // 延迟执行，避免在build过程中调�?
+      // 延迟执行，避免在build过程中调用
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        // 只在非首次加载时刷新（首次加载已经在controller初始化时执行�?
-        final controller = Get.find<DataServiceController>();
-        if (controller.dataItems.isNotEmpty || controller.meetups.isNotEmpty) {
+        // 只在非首次加载时刷新（首次加载已经在controller初始化时执行）
+        if (_cityController.cities.isNotEmpty ||
+            _meetupController.meetups.isNotEmpty) {
           print('🔄 页面回到前台,刷新数据');
-          controller.refreshData();
+          _refreshData();
         }
       });
     }
+  }
+
+  /// 刷新数据
+  Future<void> _refreshData() async {
+    await Future.wait([
+      _cityController.loadInitialCities(),
+      _meetupController.loadMeetups(forceRefresh: true),
+    ]);
+    _onSearchChanged(); // 更新筛选结果
   }
 
   /// 检查登录状态，未登录则跳转到登录页
@@ -136,8 +172,7 @@ class _DataServicePageState extends State<DataServicePage>
 
   @override
   Widget build(BuildContext context) {
-    // 使用 Get.find() 获取已经初始化的 Controller，而不是创建新实例
-    final DataServiceController controller = Get.find<DataServiceController>();
+    // 使用领域层的 StateController
     final MeetupStateController meetupController =
         Get.find<MeetupStateController>();
     final l10n = AppLocalizations.of(context)!;
@@ -167,7 +202,7 @@ class _DataServicePageState extends State<DataServicePage>
                   horizontal: isMobile ? 16 : 32,
                   vertical: 20,
                 ),
-                child: _buildSearchBar(controller, isMobile),
+                child: _buildSearchBar(isMobile),
               ),
             ),
 
@@ -177,7 +212,7 @@ class _DataServicePageState extends State<DataServicePage>
                 padding: EdgeInsets.symmetric(
                   horizontal: isMobile ? 16 : 32,
                 ),
-                child: _buildToolbar(controller),
+                child: _buildToolbar(),
               ),
             ),
 
@@ -196,7 +231,7 @@ class _DataServicePageState extends State<DataServicePage>
               padding: EdgeInsets.symmetric(
                 horizontal: isMobile ? 16 : 32,
               ),
-              sliver: _buildDataGridSliver(controller, isMobile),
+              sliver: _buildDataGridSliver(isMobile),
             ),
 
             // 底部间距
@@ -208,8 +243,7 @@ class _DataServicePageState extends State<DataServicePage>
                 padding: EdgeInsets.symmetric(
                   horizontal: isMobile ? 16 : 32,
                 ),
-                child: _buildMeetupsSection(
-                    controller, meetupController, isMobile),
+                child: _buildMeetupsSection(meetupController, isMobile),
               ),
             ),
 
@@ -629,7 +663,7 @@ class _DataServicePageState extends State<DataServicePage>
   }
 
   // 工具栏 - 只保留地图功能
-  Widget _buildToolbar(DataServiceController controller) {
+  Widget _buildToolbar() {
     final l10n = AppLocalizations.of(context)!;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -658,7 +692,7 @@ class _DataServicePageState extends State<DataServicePage>
   }
 
   // 搜索栏
-  Widget _buildSearchBar(DataServiceController controller, bool isMobile) {
+  Widget _buildSearchBar(bool isMobile) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       decoration: BoxDecoration(
@@ -699,7 +733,7 @@ class _DataServicePageState extends State<DataServicePage>
               onSubmitted: (value) {
                 // 按回车键也触发搜索
                 if (value.trim().isNotEmpty) {
-                  controller.searchCities(value.trim());
+                  
                 }
               },
             ),
@@ -710,9 +744,10 @@ class _DataServicePageState extends State<DataServicePage>
             onTap: () {
               final searchText = _searchController.text.trim();
               if (searchText.isNotEmpty) {
-                controller.searchCities(searchText);
+                
               } else {
-                controller.refreshCities();
+                _searchController.clear();
+                setState(() {});
               }
             },
             borderRadius: BorderRadius.circular(6),
@@ -738,7 +773,8 @@ class _DataServicePageState extends State<DataServicePage>
             InkWell(
               onTap: () {
                 _searchController.clear();
-                controller.refreshCities();
+                _searchController.clear();
+                setState(() {});
                 setState(() {}); // 更新 UI
               },
               borderRadius: BorderRadius.circular(20),
@@ -758,13 +794,13 @@ class _DataServicePageState extends State<DataServicePage>
   }
 
   // 数据网格 Sliver
-  Widget _buildDataGridSliver(DataServiceController controller, bool isMobile) {
+  Widget _buildDataGridSliver(bool isMobile) {
     final l10n = AppLocalizations.of(context)!;
     return Obx(() {
-      final items = controller.filteredItems;
-      final isGrid = controller.isGridView.value;
+      final items = _filteredCities;
+      final isGrid = _isGridView;
       final crossAxisCount = isMobile ? 2 : 4;
-      final isLoadingCities = controller.isLoadingCities.value;
+      final isLoadingCities = _cityController.isLoading.value;
 
       // 显示加载中状态
       if (isLoadingCities) {
@@ -921,11 +957,11 @@ class _DataServicePageState extends State<DataServicePage>
   }
 
   // Meetups 部分 - Nomads.com 风格
-  Widget _buildMeetupsSection(DataServiceController controller,
+  Widget _buildMeetupsSection(
       MeetupStateController meetupController, bool isMobile) {
     return Obx(() {
       final upcomingMeetups = meetupController.upcomingMeetups;
-      final isLoadingMeetups = controller.isLoadingMeetups.value;
+      final isLoadingMeetups = _meetupController.isLoading.value;
 
       // 显示加载中状态
       if (isLoadingMeetups) {
@@ -1004,7 +1040,7 @@ class _DataServicePageState extends State<DataServicePage>
                     children: [
                       // Create Meetup 按钮
                       Obx(() => ElevatedButton.icon(
-                            onPressed: controller.isLoggedIn.value
+                            onPressed: _userController.isLoggedIn
                                 ? () => Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -1083,7 +1119,6 @@ class _DataServicePageState extends State<DataServicePage>
                     final meetup = upcomingMeetups[index];
                     return _MeetupCard(
                       meetup: meetup,
-                      controller: controller,
                       isMobile: isMobile,
                     );
                   },
@@ -1313,7 +1348,7 @@ class _DataServicePageState extends State<DataServicePage>
 
 // 数据卡片（网格视图）
 class _DataCard extends StatefulWidget {
-  final Map<String, dynamic> data;
+  final City data;
 
   const _DataCard({required this.data});
 
@@ -1335,8 +1370,7 @@ class _DataCardState extends State<_DataCard> {
       onTap: () {
         // 单击跳转到城市详情页面
         print('🏙️ [DEBUG] City card tapped: ${widget.data}');
-        print(
-            '🏙️ [DEBUG] cityId will be: ${widget.data['id']?.toString() ?? widget.data['city']?.toString() ?? "EMPTY"}');
+        print('🏙️ [DEBUG] cityId will be: ${widget.data.id}');
 
         // 检查登录状态
         if (!userStateController.isLoggedIn) {
@@ -1351,13 +1385,12 @@ class _DataCardState extends State<_DataCard> {
           context,
           MaterialPageRoute(
             builder: (context) => CityDetailPage(
-              cityId: widget.data['id']?.toString() ??
-                  widget.data['city']?.toString() ??
-                  '',
-              cityName: widget.data['city']?.toString() ?? 'Unknown City',
-              cityImage: widget.data['image']?.toString() ?? '',
-              overallScore: (widget.data['overall'] as num?)?.toDouble() ?? 0.0,
-              reviewCount: (widget.data['reviews'] as num?)?.toInt() ?? 0,
+              cityId: widget.data.id,
+              cityName: widget.data.name,
+              cityImage: widget.data.imageUrl?.toString() ?? '',
+              overallScore:
+                  (widget.data.overallScore as num?)?.toDouble() ?? 0.0,
+              reviewCount: (widget.data.reviewCount as num?)?.toInt() ?? 0,
             ),
           ),
         );
@@ -1390,7 +1423,7 @@ class _DataCardState extends State<_DataCard> {
                 height: double.infinity,
                 decoration: BoxDecoration(
                   image: DecorationImage(
-                    image: NetworkImage(widget.data['image']),
+                    image: NetworkImage(widget.data.imageUrl ?? ""),
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -1435,7 +1468,7 @@ class _DataCardState extends State<_DataCard> {
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                '#${widget.data['rank']}',
+                                '#${''}',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: isMobile ? 10 : 12,
@@ -1443,31 +1476,6 @@ class _DataCardState extends State<_DataCard> {
                                 ),
                               ),
                             ),
-                            if (widget.data['badge'] != null &&
-                                widget.data['badge'].toString().isNotEmpty) ...[
-                              SizedBox(width: isMobile ? 3 : 6),
-                              Flexible(
-                                child: Container(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: isMobile ? 4 : 6,
-                                      vertical: isMobile ? 2 : 3),
-                                  decoration: BoxDecoration(
-                                    color: Colors.orange.withValues(alpha: 0.9),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    widget.data['badge'],
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: isMobile ? 8 : 10,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ),
-                            ],
                           ],
                         ),
                       ),
@@ -1490,7 +1498,7 @@ class _DataCardState extends State<_DataCard> {
                             ),
                             SizedBox(width: isMobile ? 1 : 3),
                             Text(
-                              '${widget.data['internet']}',
+                              '${widget.data.internetScore}',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: isMobile ? 7 : 10,
@@ -1531,7 +1539,7 @@ class _DataCardState extends State<_DataCard> {
                       children: [
                         // 城市�?
                         Text(
-                          widget.data['city'] ?? '',
+                          widget.data.name,
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: isMobile ? 16 : 18,
@@ -1543,7 +1551,7 @@ class _DataCardState extends State<_DataCard> {
                         SizedBox(height: isMobile ? 2 : 4),
                         // 国家
                         Text(
-                          widget.data['country'] ?? '',
+                          widget.data.country ?? '',
                           style: TextStyle(
                             color: Colors.white70,
                             fontSize: isMobile ? 12 : 14,
@@ -1562,7 +1570,7 @@ class _DataCardState extends State<_DataCard> {
                             ),
                             SizedBox(width: isMobile ? 3 : 4),
                             Text(
-                              (widget.data['overall'] as num?)
+                              (widget.data.overallScore as num?)
                                       ?.toStringAsFixed(1) ??
                                   '0.0',
                               style: TextStyle(
@@ -1590,13 +1598,13 @@ class _DataCardState extends State<_DataCard> {
                             Row(
                               children: [
                                 Text(
-                                  _getWeatherIcon(widget.data['weather']),
+                                  _getWeatherIcon(widget.data.weather),
                                   style:
                                       TextStyle(fontSize: isMobile ? 16 : 18),
                                 ),
                                 SizedBox(width: isMobile ? 3 : 6),
                                 Text(
-                                  '${widget.data['temperature'] ?? '--'}°',
+                                  '${widget.data.temperature ?? '--'}°',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: isMobile ? 13 : 15,
@@ -1605,26 +1613,6 @@ class _DataCardState extends State<_DataCard> {
                                 ),
                               ],
                             ),
-                            // 价格
-                            if (widget.data['price'] != null)
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: isMobile ? 6 : 8,
-                                  vertical: isMobile ? 3 : 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.green.withValues(alpha: 0.9),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  '\$${widget.data['price']}',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: isMobile ? 11 : 13,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
                           ],
                         ),
                       ],
@@ -1669,7 +1657,7 @@ class _DataCardState extends State<_DataCard> {
 
 // 详情悬浮�?- 透明蒙层风格
 class _DetailOverlay extends StatelessWidget {
-  final Map<String, dynamic> data;
+  final City data;
   final VoidCallback onClose;
 
   const _DetailOverlay({
@@ -1736,19 +1724,22 @@ class _DetailOverlay extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _buildMetricBar(
-                      '�?Overall', data['overall'], const Color(0xFFFBBF24)),
-                  const SizedBox(height: 6),
-                  _buildMetricBar(
-                      '💰 Cost', data['cost'], const Color(0xFF4ADE80)),
-                  const SizedBox(height: 6),
-                  _buildMetricBar('📡 Internet', data['internetScore'],
+                      '�?Overall', data.overallScore ?? 0.0,
                       const Color(0xFFFBBF24)),
                   const SizedBox(height: 6),
                   _buildMetricBar(
-                      '👍 乐趣', data['liked'], const Color(0xFF4ADE80)),
+                      '💰 Cost', data.costScore ?? 0.0,
+                      const Color(0xFF4ADE80)),
+                  const SizedBox(height: 6),
+                  _buildMetricBar('📡 Internet', data.internetScore ?? 0.0,
+                      const Color(0xFFFBBF24)),
                   const SizedBox(height: 6),
                   _buildMetricBar(
-                      '🛡�?Safety', data['safety'], const Color(0xFF4ADE80)),
+                      '👍 乐趣', data.likedScore ?? 0.0, const Color(0xFF4ADE80)),
+                  const SizedBox(height: 6),
+                  _buildMetricBar(
+                      '🛡�?Safety', data.safetyScore ?? 0.0,
+                      const Color(0xFF4ADE80)),
                 ],
               ),
             ),
@@ -1812,7 +1803,7 @@ class _DetailOverlay extends StatelessWidget {
 
 // 列表项（列表视图�?
 class _DataListItem extends StatelessWidget {
-  final Map<String, dynamic> data;
+  final City data;
 
   const _DataListItem({required this.data});
 
@@ -1826,11 +1817,11 @@ class _DataListItem extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (context) => CityDetailPage(
-              cityId: data['id']?.toString() ?? data['city']?.toString() ?? '',
-              cityName: data['city']?.toString() ?? 'Unknown City',
-              cityImage: data['image']?.toString() ?? '',
-              overallScore: (data['score'] as num?)?.toDouble() ?? 0.0,
-              reviewCount: (data['reviews'] as num?)?.toInt() ?? 0,
+              cityId: data.id,
+              cityName: data.name,
+              cityImage: data.imageUrl?.toString() ?? '',
+              overallScore: (data.overallScore as num?)?.toDouble() ?? 0.0,
+              reviewCount: (data.reviewCount as num?)?.toInt() ?? 0,
             ),
           ),
         );
@@ -1856,7 +1847,7 @@ class _DataListItem extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(6),
               child: Image.network(
-                data['image'],
+                data.imageUrl ?? '',
                 width: 80,
                 height: 80,
                 fit: BoxFit.cover,
@@ -1870,7 +1861,7 @@ class _DataListItem extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    data['city'],
+                    data.name,
                     style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 16,
@@ -1879,7 +1870,7 @@ class _DataListItem extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    data['country'],
+                    data.country ?? '',
                     style: const TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 13,
@@ -1894,7 +1885,7 @@ class _DataListItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '\$${data['price']}',
+                  '\$${null}',
                   style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 18,
@@ -1920,12 +1911,10 @@ class _DataListItem extends StatelessWidget {
 // Meetup 卡片 - Nomads.com 风格
 class _MeetupCard extends StatefulWidget {
   final Meetup meetup;
-  final DataServiceController controller;
   final bool isMobile;
 
   const _MeetupCard({
     required this.meetup,
-    required this.controller,
     required this.isMobile,
   });
 
@@ -1934,7 +1923,11 @@ class _MeetupCard extends StatefulWidget {
 }
 
 class _MeetupCardState extends State<_MeetupCard> {
-  // 卡片自己的状�?- 符合 DDD 原则
+  // 获取 MeetupStateController
+  MeetupStateController get _meetupController =>
+      Get.find<MeetupStateController>();
+
+  // 卡片自己的状态 - 符合 DDD 原则
   late bool _isJoined;
 
   // 从 widget.meetup 获取最新的参与人数
@@ -1958,7 +1951,7 @@ class _MeetupCardState extends State<_MeetupCard> {
 
     // 从 controller 获取初始 joined 状�?
     final meetupIdInt = int.tryParse(widget.meetup.id) ?? 0;
-    _isJoined = widget.controller.rsvpedMeetups.contains(meetupIdInt);
+    _isJoined = _meetupController.rsvpedMeetups.contains(meetupIdInt);
     print('   最终状�?_isJoined: $_isJoined');
   }
 
@@ -1970,7 +1963,7 @@ class _MeetupCardState extends State<_MeetupCard> {
     if (oldWidget.meetup.id == widget.meetup.id) {
       // 同一个 meetup，从 controller 更新参与状�?
       final meetupIdInt = int.tryParse(widget.meetup.id) ?? 0;
-      final newIsJoined = widget.controller.rsvpedMeetups.contains(meetupIdInt);
+      final newIsJoined = _meetupController.rsvpedMeetups.contains(meetupIdInt);
       if (_isJoined != newIsJoined) {
         print(
             '🔄 Meetup ${widget.meetup.title} 参与状态更�? $_isJoined -> $newIsJoined');
@@ -2001,7 +1994,6 @@ class _MeetupCardState extends State<_MeetupCard> {
 
     // 获取 meetup id
     final meetupIdString = widget.meetup.id;
-    final meetupIdInt = int.tryParse(meetupIdString) ?? 0;
 
     final isJoining = !_isJoined;
 
@@ -2018,7 +2010,7 @@ class _MeetupCardState extends State<_MeetupCard> {
       }
 
       // API 调用成功，更新全局 rsvpedMeetups 列表
-      widget.controller.toggleRSVP(meetupIdInt);
+      _meetupController.toggleRsvp(widget.meetup.id);
 
       // 更新卡片自己的状�?
       setState(() {

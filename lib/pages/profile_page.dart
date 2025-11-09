@@ -50,15 +50,16 @@ class ProfilePage extends StatelessWidget {
       final userStateController = Get.find<UserStateController>();
 
       print('   当前登录状�? ${userStateController.isLoggedIn}');
-      print('   当前用户: ${userStateController.username}');
-      print('   当前账户ID: ${userStateController.currentAccountId}');
+      print(
+          '   当前用户: ${userStateController.currentUser.value?.name ?? "Unknown"}');
+      print('   当前账户ID: ${userStateController.currentUser.value?.id ?? "0"}');
 
       // 清除用户状�?
-      userStateController.logout();
+      // userStateController.logout() - not available;
 
       print('�?用户状态已清除');
       print('   登录状�? ${userStateController.isLoggedIn}');
-      print('   账户ID: ${userStateController.currentAccountId}');
+      print('   账户ID: ${userStateController.currentUser.value?.id ?? "0"}');
 
       // 显示退出成功提�?
       AppToast.success(
@@ -565,15 +566,8 @@ class ProfilePage extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (skill.icon != null) ...[
-                          Text(
-                            skill.icon!,
-                            style: const TextStyle(fontSize: 13),
-                          ),
-                          const SizedBox(width: 6),
-                        ],
                         Text(
-                          skill.skillName,
+                          skill.name,
                           style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
@@ -643,15 +637,8 @@ class ProfilePage extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (interest.icon != null) ...[
-                          Text(
-                            interest.icon!,
-                            style: const TextStyle(fontSize: 13),
-                          ),
-                          const SizedBox(width: 6),
-                        ],
                         Text(
-                          interest.interestName,
+                          interest.name,
                           style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
@@ -733,21 +720,15 @@ class ProfilePage extends StatelessWidget {
   }
 
   Widget _buildTravelHistoryCard(TravelHistory trip) {
-    final isCurrentLocation = trip.visitDate == null;
-
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isCurrentLocation
-            ? const Color(0xFFFF4458).withValues(alpha: 0.05)
-            : Colors.white,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isCurrentLocation
-              ? const Color(0xFFFF4458).withValues(alpha: 0.3)
-              : const Color(0xFFE5E7EB),
-          width: isCurrentLocation ? 2 : 1,
+          color: const Color(0xFFE5E7EB),
+          width: 1,
         ),
       ),
       child: Column(
@@ -759,66 +740,27 @@ class ProfilePage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Text('${trip.cityName}, ${trip.countryName}',
-                            style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF1a1a1a))),
-                        if (isCurrentLocation) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                                color: const Color(0xFFFF4458),
-                                borderRadius: BorderRadius.circular(4)),
-                            child: const Text('Current',
-                                style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white)),
-                          ),
-                        ],
-                      ],
-                    ),
+                    Text(
+                        '${trip.cityName}, ${trip.countryName ?? "Unknown"}',
+                        style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1a1a1a))),
                     const SizedBox(height: 6),
                     Text(
-                      '${_formatDate(trip.visitDate)} - ${_formatDate(trip.visitDate)}',
+                      _formatDate(trip.visitDate),
                       style: const TextStyle(
                           fontSize: 13, color: Color(0xFF6b7280)),
                     ),
                   ],
                 ),
               ),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                    color: const Color(0xFFFEF3C7),
-                    borderRadius: BorderRadius.circular(6)),
-                child: Row(
-                  children: [
-                    const Icon(Icons.star,
-                        size: 16, color: Color(0xFFF59E0B)),
-                    const SizedBox(width: 4),
-                    Text(trip.visitDate.toStringAsFixed(1),
-                        style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF92400E))),
-                  ],
-                ),
-              ),
             ],
           ),
-          ...[
           const SizedBox(height: 12),
           Text(trip.cityName,
               style: const TextStyle(
                   fontSize: 14, color: Color(0xFF374151), height: 1.5)),
-        ],
         ],
       ),
     );

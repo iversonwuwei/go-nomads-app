@@ -44,7 +44,7 @@ class CoworkingDetailPage extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   Image.network(
-                    space.imageUrl,
+                    space.spaceInfo.imageUrl,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
@@ -97,14 +97,14 @@ class CoworkingDetailPage extends StatelessWidget {
                                 size: 18, color: Colors.amber),
                             const SizedBox(width: 4),
                             Text(
-                              space.rating.toStringAsFixed(1),
+                              space.spaceInfo.rating.toStringAsFixed(1),
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
                               ),
                             ),
                             Text(
-                              ' (${space.reviewCount} ${l10n.reviews})',
+                              ' (${space.spaceInfo.reviewCount} ${l10n.reviews})',
                               style: TextStyle(
                                 color: Colors.grey[600],
                                 fontSize: 14,
@@ -153,8 +153,9 @@ class CoworkingDetailPage extends StatelessWidget {
                 // Address
                 ListTile(
                   leading: const Icon(Icons.location_on, color: Colors.red),
-                  title: Text(space.address),
-                  subtitle: Text('${space.city}, ${space.country}'),
+                  title: Text(space.location.address),
+                  subtitle:
+                      Text('${space.location.city}, ${space.location.country}'),
                 ),
 
                 const Divider(),
@@ -174,7 +175,7 @@ class CoworkingDetailPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        space.description,
+                        space.spaceInfo.description,
                         style: TextStyle(
                           fontSize: 15,
                           color: Colors.grey[700],
@@ -203,10 +204,10 @@ class CoworkingDetailPage extends StatelessWidget {
                 const Divider(),
 
                 // Opening Hours
-                if (space.openingHours.isNotEmpty)
+                if (space.operationHours.hasHours)
                   _buildOpeningHoursSection(context),
 
-                if (space.openingHours.isNotEmpty) const Divider(),
+                if (space.operationHours.hasHours) const Divider(),
 
                 // Contact
                 _buildContactSection(context),
@@ -254,8 +255,8 @@ class CoworkingDetailPage extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                onPressed: space.website.isNotEmpty
-                    ? () => _launchURL(space.website)
+                onPressed: space.contactInfo.hasWebsite
+                    ? () => _launchURL(space.contactInfo.website)
                     : null,
               ),
             ),
@@ -461,7 +462,7 @@ class CoworkingDetailPage extends StatelessWidget {
             const SizedBox(height: 8),
             _buildSpecCard(
               l10n.noiseLevel,
-              space.specs.noiseLevel!,
+              space.specs.noiseLevel!.toString(),
               Icons.volume_down,
               Colors.red,
             ),
@@ -597,7 +598,7 @@ class CoworkingDetailPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          ...space.openingHours.map((hours) => Padding(
+          ...space.operationHours.hours.map((hours) => Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Row(
                   children: [
@@ -631,9 +632,9 @@ class CoworkingDetailPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          if (space.phone.isNotEmpty)
+          if (space.contactInfo.phone.isNotEmpty)
             InkWell(
-              onTap: () => _makePhoneCall(context, space.phone),
+              onTap: () => _makePhoneCall(context, space.contactInfo.phone),
               borderRadius: BorderRadius.circular(12),
               child: Container(
                 padding: const EdgeInsets.all(16),
@@ -670,7 +671,7 @@ class CoworkingDetailPage extends StatelessWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            space.phone,
+                            space.contactInfo.phone,
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -713,11 +714,12 @@ class CoworkingDetailPage extends StatelessWidget {
                 ),
               ),
             ),
-          if (space.phone.isNotEmpty && space.email.isNotEmpty)
+          if (space.contactInfo.phone.isNotEmpty &&
+              space.contactInfo.email.isNotEmpty)
             const SizedBox(height: 12),
-          if (space.email.isNotEmpty)
+          if (space.contactInfo.email.isNotEmpty)
             InkWell(
-              onTap: () => _launchURL('mailto:${space.email}'),
+              onTap: () => _launchURL('mailto:${space.contactInfo.email}'),
               borderRadius: BorderRadius.circular(12),
               child: Container(
                 padding: const EdgeInsets.all(16),
@@ -754,7 +756,7 @@ class CoworkingDetailPage extends StatelessWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            space.email,
+                            space.contactInfo.email,
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -774,12 +776,13 @@ class CoworkingDetailPage extends StatelessWidget {
                 ),
               ),
             ),
-          if ((space.phone.isNotEmpty || space.email.isNotEmpty) &&
-              space.website.isNotEmpty)
+          if ((space.contactInfo.phone.isNotEmpty ||
+                  space.contactInfo.email.isNotEmpty) &&
+              space.contactInfo.hasWebsite)
             const SizedBox(height: 12),
-          if (space.website.isNotEmpty)
+          if (space.contactInfo.hasWebsite)
             InkWell(
-              onTap: () => _launchURL(space.website),
+              onTap: () => _launchURL(space.contactInfo.website),
               borderRadius: BorderRadius.circular(12),
               child: Container(
                 padding: const EdgeInsets.all(16),
@@ -816,7 +819,7 @@ class CoworkingDetailPage extends StatelessWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            space.website,
+                            space.contactInfo.website,
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,

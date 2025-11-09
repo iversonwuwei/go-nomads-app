@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../generated/app_localizations.dart';
-import '../models/innovation_project_model.dart';
+import '../features/innovation_project/domain/entities/innovation_project.dart';
 import '../features/user/domain/entities/user.dart';
+import '../generated/app_localizations.dart';
 import 'direct_chat_page.dart';
 
 /// Innovation Project Detail Page
@@ -78,12 +78,12 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                   ],
                 ),
               ),
-              background: widget.project.imageUrl != null
+              background: widget.project.userAvatar != null
                   ? Stack(
                       fit: StackFit.expand,
                       children: [
                         Image.network(
-                          widget.project.imageUrl!,
+                          widget.project.userAvatar!,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
                             return Container(
@@ -180,7 +180,10 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                 _buildListSection(
                   icon: Icons.star_outline,
                   title: l10n.keyFeatures,
-                  items: widget.project.keyFeatures,
+                  items: widget.project.keyFeatures
+                      .split('\n')
+                      .where((s) => s.isNotEmpty)
+                      .toList(),
                   color: const Color(0xFF8B5CF6),
                 ),
 
@@ -259,7 +262,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                         radius: 24,
                         backgroundColor: const Color(0xFF8B5CF6),
                         child: Text(
-                          widget.project.creatorName.substring(0, 1),
+                          (widget.project.userName ?? '?').substring(0, 1),
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 20,
@@ -273,7 +276,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              widget.project.creatorName,
+                              widget.project.userName ?? 'Unknown',
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -392,18 +395,20 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
 
   /// 联系创建者
   void _contactCreator(BuildContext context) {
-    // 创建发布者的 UserModel 对象
-    final creatorUser = UserModel(
-      id: widget.project.creatorId,
-      name: widget.project.creatorName,
-      username: widget.project.creatorName.toLowerCase().replaceAll(' ', '_'),
-      avatarUrl: null, // 可以从项目中获取,如果有的话
+    // 创建发布者的 User 对象
+    final creatorUser = User(
+      id: widget.project.userId.toString(),
+      name: widget.project.userName ?? 'Unknown',
+      username: (widget.project.userName ?? 'unknown')
+          .toLowerCase()
+          .replaceAll(' ', '_'),
+      avatarUrl: widget.project.userAvatar,
       stats: TravelStats(
+        citiesVisited: 0,
         countriesVisited: 0,
-        citiesLived: 0,
-        daysNomading: 0,
-        meetupsAttended: 0,
-        tripsCompleted: 0,
+        reviewsWritten: 0,
+        photosShared: 0,
+        totalDistanceTraveled: 0,
       ),
       joinedDate: DateTime.now(),
     );
@@ -594,7 +599,9 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                     radius: 24,
                     backgroundColor: color,
                     child: Text(
-                      member.name.substring(0, 1),
+                      member.name.isNotEmpty
+                          ? member.name.substring(0, 1)
+                          : '?',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,

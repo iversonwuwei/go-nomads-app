@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../features/user_profile/infrastructure/models/user_profile_dto.dart';
 import '../services/database/user_profile_dao.dart';
 import 'edit_basic_info_page.dart';
 import 'edit_interests_page.dart';
@@ -26,14 +27,14 @@ class _ModularUserProfilePageState extends State<ModularUserProfilePage> {
   final _userProfileDao = UserProfileDao();
 
   bool _loading = true;
-  UserBasicInfo? _basicInfo;
-  NomadStats? _stats;
-  List<UserSkill> _skills = [];
-  List<UserInterest> _interests = [];
-  List<UserSocialLink> _socialLinks = [];
-  List<TravelPlan> _travelPlans = [];
-  List<UserBadge> _badges = [];
-  List<TravelHistory> _history = [];
+  UserBasicInfoDto? _basicInfo;
+  NomadStatsDto? _stats;
+  List<UserSkillDto> _skills = [];
+  List<UserInterestDto> _interests = [];
+  List<SocialLinkDto> _socialLinks = [];
+  List<dynamic> _travelPlans = [];
+  List<UserBadgeDto> _badges = [];
+  List<TravelHistoryEntryDto> _history = [];
 
   @override
   void initState() {

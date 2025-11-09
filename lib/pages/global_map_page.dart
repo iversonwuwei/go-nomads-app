@@ -7,7 +7,7 @@ import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../controllers/data_service_controller.dart';
+import '../features/city/presentation/controllers/city_state_controller.dart';
 import '../generated/app_localizations.dart';
 import 'city_detail_page.dart';
 
@@ -22,11 +22,27 @@ class GlobalMapPage extends StatefulWidget {
 class _GlobalMapPageState extends State<GlobalMapPage> {
   final MapController _mapController = MapController();
   final TextEditingController _searchController = TextEditingController();
-  final DataServiceController _dataController =
-      Get.find<DataServiceController>();
 
-  List<Map<String, dynamic>> _filteredCities = [];
+  // 使用 DDD 的 CityStateController
+  CityStateController get _cityController => Get.find<CityStateController>();
+
+  // 搜索状态
+  String _searchQuery = '';
   bool _isSearching = false;
+
+  // 根据搜索查询筛选城市
+  List<dynamic> get _filteredCities {
+    if (_searchQuery.isEmpty) {
+      return _cityController.cities.toList();
+    }
+    return _cityController.cities.where((city) {
+      final cityName = city.name.toLowerCase();
+      final countryName = city.country ?? ''.toLowerCase();
+      final searchLower = _searchQuery.toLowerCase();
+      return cityName.contains(searchLower) ||
+          countryName.contains(searchLower);
+    }).toList();
+  }
 
   // 瓦片源选择
   String _selectedTileSource = 'amap-road'; // 默认使用高德标准地图
@@ -73,7 +89,7 @@ class _GlobalMapPageState extends State<GlobalMapPage> {
   @override
   void initState() {
     super.initState();
-    _filteredCities = _dataController.dataItems;
+    // 城市数据由 CityStateController 管理
   }
 
   @override
@@ -85,19 +101,8 @@ class _GlobalMapPageState extends State<GlobalMapPage> {
   // 搜索城市
   void _searchCities(String query) {
     setState(() {
-      if (query.isEmpty) {
-        _filteredCities = _dataController.dataItems;
-        _isSearching = false;
-      } else {
-        _isSearching = true;
-        _filteredCities = _dataController.dataItems.where((city) {
-          final cityName = city['city'].toString().toLowerCase();
-          final countryName = city['country'].toString().toLowerCase();
-          final searchLower = query.toLowerCase();
-          return cityName.contains(searchLower) ||
-              countryName.contains(searchLower);
-        }).toList();
-      }
+      _searchQuery = query;
+      _isSearching = query.isNotEmpty;
     });
   }
 
@@ -282,8 +287,8 @@ class _GlobalMapPageState extends State<GlobalMapPage> {
               // 城市标记层
               MarkerLayer(
                 markers: _filteredCities.map((city) {
-                  final coords = _getCityCoordinates(city['city']);
-                  final memberCount = _getMemberCount(city['city']);
+                  final coords = _getCityCoordinates(city.name);
+                  final memberCount = _getMemberCount(city.name);
 
                   return Marker(
                     point: coords,
@@ -294,8 +299,8 @@ class _GlobalMapPageState extends State<GlobalMapPage> {
                         // 显示城市信息和导航选项
                         _showCityInfoSheet(
                           context,
-                          city['city'],
-                          city['country'] ?? '',
+                          city.name,
+                          city.country ?? '' ?? '',
                           coords,
                           memberCount,
                           city,
@@ -473,7 +478,7 @@ class _GlobalMapPageState extends State<GlobalMapPage> {
                   itemCount: _filteredCities.length,
                   itemBuilder: (context, index) {
                     final city = _filteredCities[index];
-                    final memberCount = _getMemberCount(city['city']);
+                    final memberCount = _getMemberCount(city.name);
 
                     return ListTile(
                       leading: const FaIcon(
@@ -481,8 +486,8 @@ class _GlobalMapPageState extends State<GlobalMapPage> {
                         color: Color(0xFFFF4458),
                         size: 20,
                       ),
-                      title: Text(city['city']),
-                      subtitle: Text(city['country']),
+                      title: Text(city.name),
+                      subtitle: Text(city.country ?? ''),
                       trailing: Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8,
@@ -502,12 +507,12 @@ class _GlobalMapPageState extends State<GlobalMapPage> {
                         ),
                       ),
                       onTap: () {
-                        final coords = _getCityCoordinates(city['city']);
+                        final coords = _getCityCoordinates(city.name);
                         _moveToCity(coords.latitude, coords.longitude);
                         setState(() {
                           _isSearching = false;
                           _searchController.clear();
-                          _filteredCities = _dataController.dataItems;
+                          _searchQuery = '';
                         });
                       },
                     );

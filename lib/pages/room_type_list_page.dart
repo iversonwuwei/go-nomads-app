@@ -3,6 +3,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
+import '../core/domain/result.dart';
+import '../features/hotel/domain/entities/hotel.dart';
+import '../features/hotel/infrastructure/repositories/hotel_repository.dart';
+import '../services/http_service.dart';
 import '../widgets/app_toast.dart';
 
 /// 房型列表页面
@@ -24,7 +28,7 @@ class _RoomTypeListPageState extends State<RoomTypeListPage> {
   final RxBool _isLoading = false.obs;
   final RxList<RoomType> _roomTypes = <RoomType>[].obs;
 
-  final HotelDao _hotelDao = HotelDao();
+  final HotelRepository _hotelRepository = HotelRepository(HttpService());
 
   @override
   void initState() {
@@ -36,11 +40,17 @@ class _RoomTypeListPageState extends State<RoomTypeListPage> {
   Future<void> _loadRoomTypes() async {
     _isLoading.value = true;
     try {
-      final roomTypesData =
-          await _hotelDao.getRoomTypesByHotelId(widget.hotelId);
-      final roomTypes =
-          roomTypesData.map((data) => RoomType.fromMap(data)).toList();
-      _roomTypes.value = roomTypes;
+      final result =
+          await _hotelRepository.getRoomTypes(widget.hotelId.toString());
+
+      result.fold(
+        onSuccess: (roomTypes) {
+          _roomTypes.value = roomTypes;
+        },
+        onFailure: (exception) {
+          AppToast.error('加载房型失败: ${exception.message}');
+        },
+      );
     } catch (e) {
       AppToast.error('加载房型失败: $e');
     } finally {

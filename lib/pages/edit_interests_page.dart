@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../features/interest/domain/entities/interest.dart';
+import '../features/user_profile/infrastructure/models/user_profile_dto.dart';
 import '../services/database/user_profile_dao.dart';
 import '../widgets/app_toast.dart';
 
@@ -150,10 +150,10 @@ class _EditInterestsPageState extends State<EditInterestsPage> {
         AppToast.success('已移除兴趣');
       } else {
         // 添加兴趣
-        final interest = UserInterest(
+        final interest = UserInterestDto(
           accountId: widget.accountId,
           interestName: interestName,
-          createdAt: DateTime.now().millisecondsSinceEpoch.toString(),
+          createdAt: DateTime.now().toIso8601String(),
         );
         await _userProfileDao.addInterest(interest);
         setState(() {
@@ -180,10 +180,10 @@ class _EditInterestsPageState extends State<EditInterestsPage> {
     }
 
     try {
-      final interest = UserInterest(
+      final interest = UserInterestDto(
         accountId: widget.accountId,
         interestName: interestName,
-        createdAt: DateTime.now().millisecondsSinceEpoch.toString(),
+        createdAt: DateTime.now().toIso8601String(),
       );
       await _userProfileDao.addInterest(interest);
       setState(() {

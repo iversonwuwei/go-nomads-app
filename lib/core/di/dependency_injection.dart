@@ -349,7 +349,7 @@ class DependencyInjection {
   static void _registerWeatherDomain() {
     // Repository
     Get.lazyPut<IWeatherRepository>(
-      () => WeatherRepository(),
+      () => WeatherRepository(Get.find<ICityRepository>()),
     );
 
     // Use Cases

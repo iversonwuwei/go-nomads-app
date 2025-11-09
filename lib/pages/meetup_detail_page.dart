@@ -4,18 +4,18 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 import '../config/app_colors.dart';
-import '../generated/app_localizations.dart';
-import '../models/meetup_model.dart';
+import '../features/meetup/domain/entities/meetup.dart';
+import '../features/meetup/domain/repositories/i_meetup_repository.dart';
 import '../features/user/domain/entities/user.dart';
+import '../generated/app_localizations.dart';
 import '../routes/app_routes.dart';
-import '../services/events_api_service.dart';
 import '../widgets/app_toast.dart';
 import 'direct_chat_page.dart';
 import 'member_detail_page.dart';
 
 /// Meetup 详情页面
 class MeetupDetailPage extends StatefulWidget {
-  final MeetupModel meetup;
+  final Meetup meetup;
 
   const MeetupDetailPage({
     super.key,
@@ -27,11 +27,17 @@ class MeetupDetailPage extends StatefulWidget {
 }
 
 class _MeetupDetailPageState extends State<MeetupDetailPage> {
-  late Rx<MeetupModel> _meetup;
-  final EventsApiService _eventsApiService = EventsApiService();
+  late Rx<Meetup> _meetup;
+  final IMeetupRepository _meetupRepository = Get.find();
   final RxBool _isLoading = true.obs;
   final RxList<Map<String, dynamic>> _participants =
       <Map<String, dynamic>>[].obs;
+
+  // TODO: 需要从认证服务获取当前用户ID
+  String get _currentUserId => 'TODO_CURRENT_USER_ID';
+
+  // 检查当前用户是否已加入活动
+  bool get _isJoined => _meetup.value.attendeeIds.contains(_currentUserId);
 
   @override
   void initState() {
@@ -40,91 +46,27 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     _loadEventDetails();
   }
 
-  /// 从后端加载活动详�?
+  /// 从后端加载活动详情
   Future<void> _loadEventDetails() async {
     try {
       _isLoading.value = true;
 
-      // 调用 API 获取详情
-      final response = await _eventsApiService.getEvent(widget.meetup.id);
-
-      // 解析响应数据
-      final eventData = response;
-
-      // 更新 meetup 数据
-      _meetup.value = _convertApiEventToMeetupModel(eventData);
-
-      // 🔧 �?eventData 中提取参与者列表（后端已经通过 gRPC 填充了用户信息）
-      // ParticipantResponse 包含: id, eventId, userId, status, registeredAt, user{id, name, email, avatar, phone}
-      final participantsData = eventData['participants'] as List?;
-      if (participantsData != null) {
-        _participants.value =
-            participantsData.map((p) => p as Map<String, dynamic>).toList();
-        print('�?成功从活动详情中加载 ${_participants.length} 个参与�?包含用户信息)');
+      // 调用 Repository 获取详情
+      final meetup = await _meetupRepository.getMeetupById(widget.meetup.id);
+      
+      if (meetup != null) {
+        _meetup.value = meetup;
+        print('✅ 成功加载活动详情: ${meetup.title}');
       } else {
-        _participants.value = [];
-        print('⚠️ 活动详情中无参与者数据');
+        print('⚠️ 未找到活动详情');
+        AppToast.error('未找到活动信息');
       }
-
-      print('✅ 成功加载活动详情: ${_meetup.value.title}');
     } catch (e) {
-      print('�?加载活动详情失败: $e');
+      print('❌ 加载活动详情失败: $e');
       AppToast.error('加载活动详情失败');
     } finally {
       _isLoading.value = false;
     }
-  }
-
-  /// 将后端API的Event数据转换为MeetupModel
-  MeetupModel _convertApiEventToMeetupModel(Map<String, dynamic> event) {
-    // 解析城市信息
-    final cityData = event['city'] as Map<String, dynamic>?;
-    final cityName = cityData?['name'] as String? ?? '';
-    final country = cityData?['country'] as String? ?? '';
-
-    // 解析组织者信�?
-    final organizerData = event['organizer'] as Map<String, dynamic>?;
-    final organizerName = organizerData?['name'] as String? ?? 'Unknown';
-    final organizerId = organizerData?['id']?.toString() ??
-        event['organizerId']?.toString() ??
-        '0';
-
-    // 获取 imageUrl（用于列表页的封面图�?
-    final imageUrl = event['imageUrl']?.toString();
-
-    // 获取 images 数组（用于详情页的图片轮播）
-    List<String> images = [];
-    final imagesList = event['images'];
-    if (imagesList is List) {
-      images = imagesList
-          .where((img) => img != null && img.toString().isNotEmpty)
-          .map((img) => img.toString())
-          .toList();
-    }
-
-    return MeetupModel(
-      id: event['id']?.toString() ?? widget.meetup.id,
-      title: event['title'] as String? ?? '',
-      type: event['category'] as String? ?? 'Meetup',
-      description: event['description'] as String? ?? '',
-      city: cityName,
-      country: country,
-      venue: event['location'] as String? ?? '',
-      venueAddress: event['address'] as String? ?? '',
-      dateTime: DateTime.parse(
-          event['startTime'] as String? ?? DateTime.now().toIso8601String()),
-      maxAttendees: event['maxParticipants'] as int? ?? 20,
-      currentAttendees: event['participantCount'] as int? ?? 0,
-      organizerId: organizerId,
-      organizerName: organizerName,
-      organizerAvatar: 'https://i.pravatar.cc/150?u=$organizerId',
-      imageUrl: imageUrl,
-      images: images,
-      attendeeIds: [],
-      isJoined: event['isParticipant'] as bool? ?? false,
-      createdAt: DateTime.parse(
-          event['createdAt'] as String? ?? DateTime.now().toIso8601String()),
-    );
   }
 
   @override
@@ -252,7 +194,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
         children: [
           Row(
             children: [
-              _buildTypeChip(_meetup.value.type),
+              _buildTypeChip(_meetup.value.type.value),
               SizedBox(width: 12.w),
               if (_meetup.value.isStartingSoon)
                 Container(
@@ -297,7 +239,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                   size: 16.sp, color: AppColors.textSecondary),
               SizedBox(width: 6.w),
               Text(
-                '${_meetup.value.city}, ${_meetup.value.country}',
+                '${_meetup.value.location.city}, ${_meetup.value.location.country}',
                 style: TextStyle(
                   fontSize: 14.sp,
                   color: AppColors.textSecondary,
@@ -320,23 +262,23 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
           _buildInfoRow(
             Icons.calendar_today,
             l10n.dateAndTime,
-            _formatDateTime(_meetup.value.dateTime),
+            _formatDateTime(_meetup.value.schedule.startTime),
           ),
           SizedBox(height: 16.h),
           _buildInfoRow(
             Icons.location_on,
             l10n.venue,
-            _meetup.value.venue,
-            subtitle: _meetup.value.venueAddress,
+            _meetup.value.venue.name,
+            subtitle: _meetup.value.venue.address,
           ),
           SizedBox(height: 16.h),
           _buildInfoRow(
             Icons.people,
             l10n.attendees,
-            '${_meetup.value.currentAttendees} / ${_meetup.value.maxAttendees}',
-            subtitle: _meetup.value.isFull
+            '${_meetup.value.capacity.currentAttendees} / ${_meetup.value.capacity.maxAttendees}',
+            subtitle: _meetup.value.capacity.isFull
                 ? l10n.meetupIsFull
-                : l10n.spotsLeft('${_meetup.value.remainingSlots}'),
+                : l10n.spotsLeft('${_meetup.value.capacity.remainingSlots}'),
           ),
         ],
       ),
@@ -395,17 +337,18 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
             children: [
               GestureDetector(
                 onTap: () {
-                  // 跳转�?Organizer 的个人详情页
+                  // 跳转到 Organizer 的个人详情页
                   final organizerUser = _createBasicUserModel(
-                    _meetup.value.organizerId,
-                    _meetup.value.organizerName,
-                    _meetup.value.organizerAvatar,
+                    _meetup.value.organizer.id,
+                    _meetup.value.organizer.name,
+                    _meetup.value.organizer.avatarUrl,
                   );
                   Get.to(() => MemberDetailPage(user: organizerUser));
                 },
                 child: CircleAvatar(
                   radius: 30.r,
-                  backgroundImage: NetworkImage(_meetup.value.organizerAvatar),
+                  backgroundImage:
+                      NetworkImage(_meetup.value.organizer.avatarUrl ?? ''),
                 ),
               ),
               SizedBox(width: 16.w),
@@ -414,7 +357,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _meetup.value.organizerName,
+                      _meetup.value.organizer.name,
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
@@ -471,14 +414,15 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                l10n.attendeesCount('${_meetup.value.currentAttendees}'),
+                l10n.attendeesCount(
+                    '${_meetup.value.capacity.currentAttendees}'),
                 style: TextStyle(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
                 ),
               ),
-              if (_meetup.value.currentAttendees > 0)
+              if (_meetup.value.capacity.currentAttendees > 0)
                 TextButton(
                   onPressed: _showAllAttendees,
                   child: Text(
@@ -574,7 +518,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
               children: [
                 // Chat Button - 只有参与了才能点�?
                 OutlinedButton.icon(
-                  onPressed: _meetup.value.isJoined ? _openChat : null,
+                  onPressed: _isJoined ? _openChat : null,
                   icon: Icon(Icons.chat_bubble_outline, size: 20.sp),
                   label: Text(
                     l10n.chat,
@@ -585,9 +529,9 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                   ),
                   style: OutlinedButton.styleFrom(
                     foregroundColor:
-                        _meetup.value.isJoined ? Colors.blue : Colors.grey,
+                        _isJoined ? Colors.blue : Colors.grey,
                     side: BorderSide(
-                      color: _meetup.value.isJoined
+                      color: _isJoined
                           ? Colors.blue
                           : Colors.grey.shade300,
                       width: 1.5.w,
@@ -598,21 +542,23 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                     padding:
                         EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
                     backgroundColor:
-                        _meetup.value.isJoined ? null : Colors.grey.shade50,
+                        _isJoined ? null : Colors.grey.shade50,
                   ),
                 ),
                 SizedBox(width: 12.w),
                 // Join Button
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: _meetup.value.isEnded || _meetup.value.isFull
+                    onPressed:
+                        _meetup.value.isEnded || _meetup.value.capacity.isFull
                         ? null
                         : _toggleJoin,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: _meetup.value.isJoined
+                      backgroundColor: _isJoined
                           ? AppColors.borderLight
                           : const Color(0xFFFF4458),
-                      foregroundColor: _meetup.value.isJoined
+                      foregroundColor:
+                          _isJoined
                           ? AppColors.textSecondary
                           : Colors.white,
                       padding: EdgeInsets.symmetric(vertical: 14.h),
@@ -625,9 +571,9 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                     child: Text(
                       _meetup.value.isEnded
                           ? l10n.ended
-                          : _meetup.value.isFull
+                          : _meetup.value.capacity.isFull
                               ? l10n.full
-                              : _meetup.value.isJoined
+                              : _isJoined
                                   ? l10n.leaveMeetup
                                   : l10n.joinMeetup,
                       style: TextStyle(
@@ -747,19 +693,19 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     final l10n = AppLocalizations.of(context)!;
 
     try {
-      // 判断是加入还是退�?
-      final isJoining = !_meetup.value.isJoined;
+      // 判断是加入还是退出
+      final isJoining = !_isJoined;
 
-      // 调用 API
+      // 调用 Repository
       if (isJoining) {
-        await _eventsApiService.joinEvent(_meetup.value.id);
-        print('�?成功加入活动: ${_meetup.value.title}');
+        await _meetupRepository.rsvpToMeetup(_meetup.value.id);
+        print('✅ 成功加入活动: ${_meetup.value.title}');
       } else {
-        await _eventsApiService.leaveEvent(_meetup.value.id);
-        print('�?成功退出活�? ${_meetup.value.title}');
+        await _meetupRepository.cancelRsvp(_meetup.value.id);
+        print('✅ 成功退出活动: ${_meetup.value.title}');
       }
 
-      // API 调用成功�?重新加载活动详情以获取最新数�?
+      // API 调用成功后，重新加载活动详情以获取最新数据
       await _loadEventDetails();
 
       // 显示成功消息
@@ -777,14 +723,14 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     } catch (e) {
       print('❌ 加入/退出活动失败: $e');
       AppToast.error(
-        _meetup.value.isJoined ? '退出活动失败' : '加入活动失败',
+        _isJoined ? '退出活动失败' : '加入活动失败',
       );
     }
   }
 
   void _openChat() {
     final l10n = AppLocalizations.of(context)!;
-    if (!_meetup.value.isJoined) {
+    if (!_isJoined) {
       AppToast.warning(
         l10n.joinToAccessChat,
         title: l10n.joinRequired,
@@ -810,18 +756,18 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
   }
 
   void _contactOrganizer() {
-    // 创建组织者的 UserModel 对象
-    final organizerUser = UserModel(
-      id: _meetup.value.organizerId,
-      name: _meetup.value.organizerName,
-      username: _meetup.value.organizerName.toLowerCase().replaceAll(' ', '_'),
-      avatarUrl: _meetup.value.organizerAvatar,
+    // 创建组织者的 User 对象
+    final organizerUser = User(
+      id: _meetup.value.organizer.id,
+      name: _meetup.value.organizer.name,
+      username: _meetup.value.organizer.name.toLowerCase().replaceAll(' ', '_'),
+      avatarUrl: _meetup.value.organizer.avatarUrl,
       stats: TravelStats(
+        citiesVisited: 0,
         countriesVisited: 0,
-        citiesLived: 0,
-        daysNomading: 0,
-        meetupsAttended: 0,
-        tripsCompleted: 0,
+        reviewsWritten: 0,
+        photosShared: 0,
+        totalDistanceTraveled: 0.0,
       ),
       joinedDate: DateTime.now(),
     );
@@ -907,19 +853,19 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     return DateFormat('EEEE, MMMM dd, yyyy \'at\' HH:mm').format(dateTime);
   }
 
-  /// 创建基本�?UserModel 用于跳转到详情页
-  UserModel _createBasicUserModel(String id, String name, String avatarUrl) {
-    return UserModel(
+  /// 创建基本的 User 实体用于跳转到详情页
+  User _createBasicUserModel(String id, String name, String? avatarUrl) {
+    return User(
       id: id,
       name: name,
       username: name, // 使用 name 作为 username
       avatarUrl: avatarUrl,
       stats: TravelStats(
+        citiesVisited: 0,
         countriesVisited: 0,
-        citiesLived: 0,
-        daysNomading: 0,
-        meetupsAttended: 0,
-        tripsCompleted: 0,
+        reviewsWritten: 0,
+        photosShared: 0,
+        totalDistanceTraveled: 0.0,
       ),
       joinedDate: DateTime.now(),
     );

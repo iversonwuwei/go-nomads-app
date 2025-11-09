@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../features/skill/domain/entities/skill.dart';
+import '../features/user_profile/infrastructure/models/user_profile_dto.dart';
 import '../services/database/user_profile_dao.dart';
 import '../widgets/app_toast.dart';
 
@@ -111,10 +111,10 @@ class _EditSkillsPageState extends State<EditSkillsPage> {
         AppToast.success('已移除技能');
       } else {
         // 添加技能
-        final skill = UserSkill(
+        final skill = UserSkillDto(
           accountId: widget.accountId,
           skillName: skillName,
-          createdAt: DateTime.now().millisecondsSinceEpoch.toString(),
+          createdAt: DateTime.now().toIso8601String(),
         );
         await _userProfileDao.addSkill(skill);
         setState(() {
@@ -141,10 +141,10 @@ class _EditSkillsPageState extends State<EditSkillsPage> {
     }
 
     try {
-      final skill = UserSkill(
+      final skill = UserSkillDto(
         accountId: widget.accountId,
         skillName: skillName,
-        createdAt: DateTime.now().millisecondsSinceEpoch.toString(),
+        createdAt: DateTime.now().toIso8601String(),
       );
       await _userProfileDao.addSkill(skill);
       setState(() {

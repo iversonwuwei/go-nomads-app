@@ -87,8 +87,8 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
     // 模拟加载周边设施数据
     // 实际应该调用 Overpass API 或其他 POI 数据源
     final center = LatLng(
-      widget.coworkingSpace.latitude,
-      widget.coworkingSpace.longitude,
+      widget.coworkingSpace.location.latitude,
+      widget.coworkingSpace.location.longitude,
     );
 
     _nearbyPOIs = [
@@ -136,8 +136,8 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
 
   // 打开系统地图应用
   Future<void> _openSystemMap() async {
-    final lat = widget.coworkingSpace.latitude;
-    final lon = widget.coworkingSpace.longitude;
+    final lat = widget.coworkingSpace.location.latitude;
+    final lon = widget.coworkingSpace.location.longitude;
     final name = Uri.encodeComponent(widget.coworkingSpace.name);
 
     // 尝试多个地图应用
@@ -280,8 +280,8 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final center = LatLng(
-      widget.coworkingSpace.latitude,
-      widget.coworkingSpace.longitude,
+      widget.coworkingSpace.location.latitude,
+      widget.coworkingSpace.location.longitude,
     );
 
     return Scaffold(
@@ -442,7 +442,7 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              widget.coworkingSpace.address,
+                              widget.coworkingSpace.location.address,
                               style: const TextStyle(
                                 fontSize: 12,
                                 color: AppColors.textSecondary,
@@ -768,8 +768,8 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
     final l10n = AppLocalizations.of(context)!;
     final distance = _calculateDistance(
       LatLng(
-        widget.coworkingSpace.latitude,
-        widget.coworkingSpace.longitude,
+        widget.coworkingSpace.location.latitude,
+        widget.coworkingSpace.location.longitude,
       ),
       poi.position,
     );

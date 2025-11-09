@@ -5,10 +5,12 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../config/app_colors.dart';
+import '../core/domain/result.dart';
 import '../features/city/domain/entities/city_option.dart';
+import '../features/coworking/domain/entities/coworking_space.dart';
+import '../features/coworking/domain/repositories/icoworking_repository.dart';
 import '../features/location/presentation/controllers/location_state_controller.dart';
 import '../generated/app_localizations.dart';
-import '../services/coworking_api_service.dart';
 import '../widgets/app_toast.dart';
 import 'amap_native_picker_page.dart';
 
@@ -813,70 +815,115 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
     _isSubmitting.value = true;
 
     try {
-      // 构建 amenities 列表
-      final amenities = <String>[];
-      if (_hasWifi) amenities.add('wifi');
-      if (_hasCoffee) amenities.add('coffee');
-      if (_hasPrinter) amenities.add('printer');
-      if (_hasMeetingRoom) amenities.add('meeting_room');
-      if (_hasPhoneBooth) amenities.add('phone_booth');
-      if (_hasKitchen) amenities.add('kitchen');
-      if (_hasParking) amenities.add('parking');
-      if (_hasLocker) amenities.add('locker');
-      if (_has24HourAccess) amenities.add('24h_access');
-      if (_hasAirConditioning) amenities.add('air_conditioning');
-      if (_hasStandingDesk) amenities.add('standing_desk');
-      if (_hasShower) amenities.add('shower');
-      if (_hasBike) amenities.add('bike');
-      if (_hasEventSpace) amenities.add('event_space');
-      if (_hasPetFriendly) amenities.add('pet_friendly');
+      // 获取 Repository
+      final repository = Get.find<ICoworkingRepository>();
 
-      // 创建请求对象(使用 Map,因为拦截器会自动解包)
-      final request = <String, dynamic>{
-        'name': _nameController.text,
-        if (_descriptionController.text.isNotEmpty)
-          'description': _descriptionController.text,
-        'address': _addressController.text,
-        'cityId': _selectedCityId,
-        // 只有在用户真正设置了位置时才发送坐标(非 0 值)
-        if (_latitude != 0.0) 'latitude': _latitude,
-        if (_longitude != 0.0) 'longitude': _longitude,
-        if (_dailyRateController.text.isNotEmpty)
-          'pricePerDay': double.tryParse(_dailyRateController.text),
-        if (_monthlyRateController.text.isNotEmpty)
-          'pricePerMonth': double.tryParse(_monthlyRateController.text),
-        if (_hourlyRateController.text.isNotEmpty)
-          'pricePerHour': double.tryParse(_hourlyRateController.text),
-        'currency': _currency,
-        if (_wifiSpeedController.text.isNotEmpty)
-          'wifiSpeed': double.tryParse(_wifiSpeedController.text),
-        'hasMeetingRoom': _hasMeetingRoom,
-        'hasCoffee': _hasCoffee,
-        'hasParking': _hasParking,
-        'has247Access': _has24HourAccess,
-        if (amenities.isNotEmpty) 'amenities': amenities,
-        if (_capacityController.text.isNotEmpty)
-          'capacity': int.tryParse(_capacityController.text),
-        if (_selectedImage != null)
-          'imageUrl': _selectedImage!.path, // TODO: 上传图片到 Supabase Storage
-        if (_phoneController.text.isNotEmpty) 'phone': _phoneController.text,
-        if (_emailController.text.isNotEmpty) 'email': _emailController.text,
-        if (_websiteController.text.isNotEmpty)
-          'website': _websiteController.text,
-        if (_openingHours.isNotEmpty) 'openingHours': _openingHours.join(', '),
-      };
+      // 构建 opening hours 列表
+      final openingHours = _openingHours.isNotEmpty
+          ? _openingHours
+          : ['Monday-Friday: 9:00-18:00']; // 默认营业时间
 
-      // 调用真实 API(拦截器已自动解包 ApiResponse)
-      final apiService = CoworkingApiService();
-      await apiService.createCoworkingSpace(request);
+      // 构建领域实体
+      final coworkingSpace = CoworkingSpace(
+        id: '', // 新创建时 ID 为空，由后端生成
+        name: _nameController.text,
+        location: Location(
+          address: _addressController.text,
+          city: _selectedCity ?? '',
+          country: _selectedCountry ?? '',
+          latitude: _latitude,
+          longitude: _longitude,
+        ),
+        contactInfo: ContactInfo(
+          phone: _phoneController.text,
+          email: _emailController.text,
+          website: _websiteController.text,
+        ),
+        spaceInfo: SpaceInfo(
+          imageUrl: _selectedImage?.path ?? '', // TODO: 上传图片到 Supabase Storage
+          images: _selectedImage != null ? [_selectedImage!.path] : [],
+          rating: 0.0,
+          reviewCount: 0,
+          description: _descriptionController.text,
+        ),
+        pricing: Pricing(
+          hourlyRate: _hourlyRateController.text.isNotEmpty
+              ? double.tryParse(_hourlyRateController.text)
+              : null,
+          dailyRate: _dailyRateController.text.isNotEmpty
+              ? double.tryParse(_dailyRateController.text)
+              : null,
+          weeklyRate: _weeklyRateController.text.isNotEmpty
+              ? double.tryParse(_weeklyRateController.text)
+              : null,
+          monthlyRate: _monthlyRateController.text.isNotEmpty
+              ? double.tryParse(_monthlyRateController.text)
+              : null,
+          currency: _currency,
+          hasFreeTrial: _hasFreeTrial,
+          trialDuration: _hasFreeTrial ? _trialDurationController.text : null,
+        ),
+        amenities: Amenities(
+          hasWifi: _hasWifi,
+          hasCoffee: _hasCoffee,
+          hasPrinter: _hasPrinter,
+          hasMeetingRoom: _hasMeetingRoom,
+          hasPhoneBooth: _hasPhoneBooth,
+          hasKitchen: _hasKitchen,
+          hasParking: _hasParking,
+          hasLocker: _hasLocker,
+          has24HourAccess: _has24HourAccess,
+          hasAirConditioning: _hasAirConditioning,
+          hasStandingDesk: _hasStandingDesk,
+          hasShower: _hasShower,
+          hasBike: _hasBike,
+          hasEventSpace: _hasEventSpace,
+          hasPetFriendly: _hasPetFriendly,
+        ),
+        specs: Specifications(
+          wifiSpeed: _wifiSpeedController.text.isNotEmpty
+              ? double.tryParse(_wifiSpeedController.text)
+              : null,
+          numberOfDesks: _numberOfDesksController.text.isNotEmpty
+              ? int.tryParse(_numberOfDesksController.text)
+              : null,
+          numberOfMeetingRooms: _numberOfMeetingRoomsController.text.isNotEmpty
+              ? int.tryParse(_numberOfMeetingRoomsController.text)
+              : null,
+          capacity: _capacityController.text.isNotEmpty
+              ? int.tryParse(_capacityController.text)
+              : null,
+          noiseLevel: NoiseLevel.fromString(_noiseLevel),
+          hasNaturalLight: _hasNaturalLight,
+          spaceType: SpaceType.fromString(_spaceType),
+        ),
+        operationHours: OperationHours(hours: openingHours),
+        isVerified: false,
+        lastUpdated: DateTime.now(),
+      );
 
-      // 返回结果,传递 true 表示需要刷新数据
-      Navigator.pop(context, true);
-      AppToast.success(
-        l10n.coworkingSubmittedSuccess,
-        title: l10n.success,
+      // 调用 Repository 创建共享办公空间
+      final result = await repository.createCoworkingSpace(coworkingSpace);
+
+      // 处理结果
+      result.fold(
+        onSuccess: (createdSpace) {
+          // 返回结果,传递 true 表示需要刷新数据
+          Navigator.pop(context, true);
+          AppToast.success(
+            l10n.coworkingSubmittedSuccess,
+            title: l10n.success,
+          );
+        },
+        onFailure: (exception) {
+          AppToast.error(
+            l10n.failedToSubmitCoworking(exception.message),
+            title: l10n.error,
+          );
+        },
       );
     } catch (e) {
+      // 捕获未预期的异常
       AppToast.error(
         l10n.failedToSubmitCoworking(e.toString()),
         title: l10n.error,

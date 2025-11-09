@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
-import '../features/chat/presentation/controllers/chat_state_controller.dart';
-import '../generated/app_localizations.dart';
 import '../features/chat/domain/entities/chat.dart';
+import '../features/chat/presentation/controllers/chat_state_controller.dart';
 import '../features/user/domain/entities/user.dart' as models;
+import '../generated/app_localizations.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/skeletons/skeletons.dart';
 import 'member_detail_page.dart';
 
 class DirectChatPage extends StatelessWidget {
-  final models.UserModel user;
+  final models.User user;
 
   const DirectChatPage({
     super.key,
@@ -212,7 +212,7 @@ class DirectChatPage extends StatelessWidget {
 
   // 消息气泡
   Widget _buildMessageBubble(
-      ChatMessage message, bool isMe, ChatController controller) {
+      ChatMessage message, bool isMe, ChatStateController controller) {
     return GestureDetector(
       onLongPress: () {
         if (!isMe) {
