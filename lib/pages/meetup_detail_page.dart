@@ -761,9 +761,15 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
       if (isJoining) {
         await _meetupRepository.rsvpToMeetup(_meetup.value.id);
         print('✅ 成功加入活动: ${_meetup.value.title}');
+        // 更新 Controller 的 rsvpedMeetupIds
+        if (!_meetupController.rsvpedMeetupIds.contains(_meetup.value.id)) {
+          _meetupController.rsvpedMeetupIds.add(_meetup.value.id);
+        }
       } else {
         await _meetupRepository.cancelRsvp(_meetup.value.id);
         print('✅ 成功退出活动: ${_meetup.value.title}');
+        // 更新 Controller 的 rsvpedMeetupIds
+        _meetupController.rsvpedMeetupIds.remove(_meetup.value.id);
       }
 
       // API 调用成功后，重新加载活动详情以获取最新数据
@@ -791,25 +797,24 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
 
   Future<void> _cancelMeetup() async {
     final l10n = AppLocalizations.of(context)!;
+    final meetupRepository = Get.find<IMeetupRepository>();
 
     // 显示确认对话框
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
-        title: const Text('确认取消活动'),
-        content:
-            Text('确定要取消活动 "${_meetup.value.title}" 吗？\n\n取消后参与者将收到通知,此操作无法撤销。'),
+        title: const Text('取消活动'),
+        content: const Text('确定要取消这个活动吗？此操作无法撤销。'),
         actions: [
           TextButton(
             onPressed: () => Get.back(result: false),
-            child: Text(l10n.no),
+            child: Text(l10n.cancel),
           ),
-          ElevatedButton(
+          TextButton(
             onPressed: () => Get.back(result: true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
             ),
-            child: const Text('确认取消'),
+            child: const Text('确定'),
           ),
         ],
       ),
@@ -818,15 +823,20 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     if (confirmed != true) return;
 
     try {
-      // 调用 Controller 的 cancelMeetup 方法
-      // Controller 会自动处理加载状态和错误提示
-      await _meetupController.cancelMeetup(_meetup.value.id);
+      await meetupRepository.cancelMeetup(_meetup.value.id);
+      print('✅ 成功取消活动: ${_meetup.value.title}');
+
+      // 显示成功消息
+      AppToast.success(
+        '活动已取消',
+        title: '成功',
+      );
 
       // 如果成功,重新加载活动详情以更新 UI
       await _loadEventDetails();
     } catch (e) {
-      print('❌ 取消活动异常: $e');
-      // Controller 已经显示了错误提示,这里只打印日志
+      print('❌ 取消活动失败: $e');
+      AppToast.error('取消活动失败');
     }
   }
 

@@ -327,6 +327,7 @@ class CityRepository implements ICityRepository {
     try {
       final endpoint = '$_baseUrl/$cityId/user-content/pros-cons';
       final requestData = {
+        'cityId': cityId,
         'text': text.trim(),
         'isPro': isPro,
       };

@@ -7,7 +7,6 @@ import '../features/auth/presentation/controllers/auth_state_controller.dart';
 import '../features/city/domain/entities/city.dart';
 import '../features/city/presentation/controllers/city_state_controller.dart';
 import '../features/meetup/domain/entities/meetup.dart';
-import '../features/meetup/domain/repositories/i_meetup_repository.dart';
 import '../features/meetup/infrastructure/repositories/meetup_repository.dart';
 import '../features/meetup/presentation/controllers/meetup_state_controller.dart';
 import '../features/user/presentation/controllers/user_state_controller.dart';
@@ -1240,7 +1239,7 @@ class _DataServicePageState extends State<DataServicePage>
 
               // Meetups 列表（横向滚动 + 无限加载）
               SizedBox(
-                height: 300, // 减小卡片高度
+                height: 310,
                 child: NotificationListener<ScrollNotification>(
                   onNotification: (ScrollNotification scrollInfo) {
                     // 当滚动到接近末尾时，加载更多数据
@@ -2130,29 +2129,30 @@ class _MeetupCardState extends State<_MeetupCard> {
 
   // 卡片自己的状态 - 符合 DDD 原则
   late bool _isJoined;
-  late bool _isOrganizer;
-  late int _currentAttendees;
-  late int _maxAttendees;
-  // 判断是否已满
-  bool get _isFull => _currentAttendees >= _maxAttendees;
+
+  // 从 widget.meetup 获取最新的参与人数
+  int get _currentAttendees {
+    return widget.meetup.capacity.currentAttendees;
+  }
+
+  int get _maxAttendees {
+    return widget.meetup.capacity.maxAttendees;
+  }
 
   @override
   void initState() {
     super.initState();
 
-    // 初始化本地状态 - 直接使用后端返回的字段
-    _isJoined = widget.meetup.isJoined;
-    _isOrganizer = widget.meetup.isOrganizer;
-    _currentAttendees = widget.meetup.capacity.currentAttendees;
-    _maxAttendees = widget.meetup.capacity.maxAttendees;
-
     // 调试：打印 meetup 数据
     print('🔍 MeetupCard initState:');
     print('   ID: ${widget.meetup.id}');
     print('   Title: ${widget.meetup.title}');
-    print('   isJoined (from backend): $_isJoined');
-    print('   isOrganizer (from backend): $_isOrganizer');
     print('   Attendees: $_currentAttendees / $_maxAttendees');
+
+    // 从 controller 获取初始 joined 状态 - 使用字符串 ID 直接检查
+    _isJoined = _meetupController.isRsvped(widget.meetup.id);
+    print('   rsvpedMeetupIds: ${_meetupController.rsvpedMeetupIds.toList()}');
+    print('   最终状态 _isJoined: $_isJoined');
   }
 
   @override
@@ -2161,20 +2161,19 @@ class _MeetupCardState extends State<_MeetupCard> {
 
     // 当 widget 更新时，检查数据是否变化
     if (oldWidget.meetup.id == widget.meetup.id) {
-      // 同一个 meetup，使用后端返回的 isJoined 字段更新状态
-      final newIsJoined = widget.meetup.isJoined;
-      final newCurrentAttendees = widget.meetup.capacity.currentAttendees;
-      if (_isJoined != newIsJoined ||
-          _currentAttendees != newCurrentAttendees) {
-        print('🔄 Meetup ${widget.meetup.title} 数据更新:');
-        print('   isJoined: $_isJoined -> $newIsJoined');
-        print('   Attendees: $_currentAttendees -> $newCurrentAttendees');
+      // 同一个 meetup，从 controller 更新参与状态 - 使用字符串 ID 直接检查
+      final newIsJoined = _meetupController.isRsvped(widget.meetup.id);
+      if (_isJoined != newIsJoined) {
+        print(
+            '🔄 Meetup ${widget.meetup.title} 参与状态更新: $_isJoined -> $newIsJoined');
         setState(() {
           _isJoined = newIsJoined;
-          _currentAttendees = newCurrentAttendees;
-          _maxAttendees = widget.meetup.capacity.maxAttendees;
         });
       }
+
+      // 参与人数会通过 getter 自动获取最新值，无需手动更新
+      print(
+          '🔄 Meetup ${widget.meetup.title} 数据更新: $_currentAttendees / $_maxAttendees');
     }
   }
 
@@ -2209,32 +2208,23 @@ class _MeetupCardState extends State<_MeetupCard> {
         await meetupRepository.cancelRsvp(meetupIdString);
       }
 
-      // API 调用成功后，直接更新 Controller 的 rsvpedMeetupIds（避免重复调用 API）
-      if (isJoining) {
-        print('✅ 成功加入活动: ${widget.meetup.title}');
-        if (!_meetupController.rsvpedMeetupIds.contains(widget.meetup.id)) {
-          _meetupController.rsvpedMeetupIds.add(widget.meetup.id);
-        }
-      } else {
-        print('✅ 成功退出活动: ${widget.meetup.title}');
-        _meetupController.rsvpedMeetupIds.remove(widget.meetup.id);
-      }
+      // API 调用成功，更新全局 rsvpedMeetups 列表
+      _meetupController.toggleRsvp(widget.meetup.id);
 
-      // API 调用成功，更新本地状态
+      // 更新卡片自己的状�?
       setState(() {
         _isJoined = isJoining;
-        _currentAttendees = _currentAttendees + (isJoining ? 1 : -1);
       });
 
       // 显示成功消息
-      if (isJoining) {
+      if (_isJoined) {
         AppToast.success(
-          l10n.youHaveJoined(widget.meetup.title),
+          l10n.joinedSuccessfully,
           title: l10n.joined,
         );
       } else {
         AppToast.info(
-          l10n.youLeft(widget.meetup.title),
+          l10n.youLeftMeetup,
           title: l10n.leftMeetup,
         );
       }
@@ -2247,127 +2237,76 @@ class _MeetupCardState extends State<_MeetupCard> {
     }
   }
 
-  Future<void> _handleCancelMeetup(BuildContext context) async {
-    final l10n = AppLocalizations.of(context)!;
-    final meetupRepository = Get.find<IMeetupRepository>();
-
-    // 显示确认对话框
-    final confirmed = await Get.dialog<bool>(
-      AlertDialog(
-        title: const Text('取消活动'),
-        content: const Text('确定要取消这个活动吗？此操作无法撤销。'),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(result: false),
-            child: Text(l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () => Get.back(result: true),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
-            child: const Text('确定'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true) return;
-
-    try {
-      await meetupRepository.cancelMeetup(widget.meetup.id);
-      print('✅ 成功取消活动: ${widget.meetup.title}');
-
-      // 显示成功消息
-      AppToast.success(
-        '活动已取消',
-        title: '成功',
-      );
-
-      // 刷新列表数据 - 使用 Repository 直接获取，与 meetup_list_page 保持一致
-      try {
-        final meetups = await meetupRepository.getMeetups(pageSize: 20);
-        _meetupController.meetups.value = meetups;
-        print('✅ 刷新了 ${meetups.length} 个活动');
-      } catch (e) {
-        print('❌ 刷新活动列表失败: $e');
-      }
-    } catch (e) {
-      print('❌ 取消活动失败: $e');
-      AppToast.error('取消活动失败');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final date = widget.meetup.schedule.startTime;
 
-    return Container(
-      width: widget.isMobile ? 280 : 320,
-      margin: const EdgeInsets.only(right: 16),
-      child: Card(
-        elevation: 2,
-        shape: RoundedRectangleBorder(
+    return InkWell(
+      onTap: () {
+        // 跳转到 Meetup 详情页面
+        Get.to(() => MeetupDetailPage(meetup: widget.meetup));
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: widget.isMobile ? 280 : 320,
+        margin: const EdgeInsets.only(right: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: AppColors.borderLight, width: 1),
+          border: Border.all(color: AppColors.borderLight, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 图片和类型标签 - 可点击跳转到详情
-            InkWell(
-              onTap: () {
-                Get.to(() => MeetupDetailPage(meetup: widget.meetup));
-              },
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(12)),
-              child: Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius:
-                        const BorderRadius.vertical(top: Radius.circular(12)),
-                    child: Image.network(
-                      widget.meetup.images.isNotEmpty
-                          ? widget.meetup.images.first
-                          : 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=400',
-                      width: double.infinity,
-                      height: 140,
-                      fit: BoxFit.cover,
-                    ),
+            // 图片和类型标�?
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(12)),
+                  child: Image.network(
+                    widget.meetup.images.isNotEmpty
+                        ? widget.meetup.images.first
+                        : 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=400',
+                    width: double.infinity,
+                    height: 140,
+                    fit: BoxFit.cover,
                   ),
-                  Positioned(
-                    top: 12,
-                    left: 12,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: _getTypeColor(widget.meetup.type.value),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        widget.meetup.type.value,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
+                ),
+                Positioned(
+                  top: 12,
+                  left: 12,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: _getTypeColor(widget.meetup.type.value),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      widget.meetup.type.value,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
 
-            // 内容区域 - 可点击跳转到详情
-            InkWell(
-              onTap: () {
-                Get.to(() => MeetupDetailPage(meetup: widget.meetup));
-              },
-              child: Padding(
-                padding:
-                    const EdgeInsets.fromLTRB(10, 10, 10, 6), // 按钮到卡片底部只留少量空间
+            // 内容
+            Padding(
+              padding: const EdgeInsets.all(10),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -2505,188 +2444,165 @@ class _MeetupCardState extends State<_MeetupCard> {
                       ),
                     ],
                   ),
-                  ],
-                ),
-              ),
-            ),
 
-            // 操作按钮区域
-            Padding(
-              padding: const EdgeInsets.fromLTRB(10, 6, 10, 6),
-              child: _buildActionButton(context),
+                  const SizedBox(height: 10),
+
+                  // Going/RSVP+Chat 按钮逻辑 - 使用本地状�?
+                  // 如果已加入，显示 RSVP（已确认状态）+ Join Chat 两个按钮
+                  if (_isJoined)
+                    Row(
+                      children: [
+                        // RSVP 按钮（已确认状态，点击可取消）
+                        Expanded(
+                          child: SizedBox(
+                            height: 32,
+                            child: ElevatedButton(
+                              onPressed: () => _handleToggleJoin(context),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: const Color(0xFFFF4458),
+                                elevation: 0,
+                                side: const BorderSide(
+                                  color: Color(0xFFFF4458),
+                                  width: 1.5,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 6),
+                              ),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.check_circle,
+                                    size: 14,
+                                  ),
+                                  SizedBox(width: 3),
+                                  Flexible(
+                                    child: Text(
+                                      'RSVP\'d',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        // Join Chat 按钮
+                        Expanded(
+                          child: SizedBox(
+                            height: 32,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                // 跳转到聊天页面并加入该城市的聊天�?
+                                // 检查登录状�?
+                                final authController =
+                                    Get.find<AuthStateController>();
+                                final l10n = AppLocalizations.of(context)!;
+                                if (!authController.isAuthenticated.value) {
+                                  AppToast.warning(
+                                    l10n.pleaseLoginToCreateMeetup,
+                                    title: l10n.loginRequired,
+                                  );
+                                  Get.toNamed(AppRoutes.login);
+                                  return;
+                                }
+
+                                Get.toNamed(
+                                  AppRoutes.cityChat,
+                                  arguments: {
+                                    'city': widget.meetup.location.city,
+                                    'country': widget.meetup.location.country,
+                                    'meetupId': widget.meetup.id,
+                                    'meetupTitle': widget.meetup.title,
+                                  },
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFFF4458),
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 6),
+                              ),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.chat_bubble_outline,
+                                    size: 14,
+                                  ),
+                                  SizedBox(width: 3),
+                                  Flexible(
+                                    child: Text(
+                                      'Chat',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  else
+                    // 如果未加入，显示单个 Going 按钮
+                    SizedBox(
+                      width: double.infinity,
+                      height: 32,
+                      child: ElevatedButton(
+                        onPressed: () => _handleToggleJoin(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFF4458),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.add_circle_outline,
+                              size: 14,
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              'Going',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ],
         ),
       ),
-    );
-  }
-
-  // 构建操作按钮 - 与 meetups_list_page 逻辑保持一致
-  Widget _buildActionButton(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    // 如果是组织者，显示"取消活动"按钮
-    if (_isOrganizer) {
-      final isCancelled = widget.meetup.status == 'cancelled';
-      final isEnded = widget.meetup.isEnded;
-      final isDisabled = isCancelled || isEnded;
-
-      return SizedBox(
-        width: double.infinity,
-        height: 32,
-        child: ElevatedButton(
-          onPressed: isDisabled ? null : () => _handleCancelMeetup(context),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: isCancelled ? AppColors.borderLight : Colors.red,
-            foregroundColor:
-                isCancelled ? AppColors.textSecondary : Colors.white,
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(6),
-            ),
-            disabledBackgroundColor: AppColors.borderLight,
-            disabledForegroundColor: AppColors.textSecondary,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.cancel_outlined, size: 14),
-              SizedBox(width: 4),
-              Text(
-                isCancelled ? '已取消' : '取消活动',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    // 不是组织者，显示 Chat + Join/Leave 按钮
-    final isCancelled = widget.meetup.status == 'cancelled';
-    final isEnded = widget.meetup.isEnded;
-    final isDisabled = isCancelled || isEnded || (_isFull && !_isJoined);
-
-    return Row(
-      children: [
-        // Chat 按钮 - 只有加入了才能点击
-        Expanded(
-          child: SizedBox(
-            height: 32,
-            child: OutlinedButton(
-              onPressed: _isJoined
-                  ? () {
-                      final authController = Get.find<AuthStateController>();
-                      final l10n = AppLocalizations.of(context)!;
-                      if (!authController.isAuthenticated.value) {
-                        AppToast.warning(
-                          l10n.pleaseLoginToCreateMeetup,
-                          title: l10n.loginRequired,
-                        );
-                        Get.toNamed(AppRoutes.login);
-                        return;
-                      }
-
-                      Get.toNamed(
-                        AppRoutes.cityChat,
-                        arguments: {
-                          'city': widget.meetup.location.city,
-                          'country': widget.meetup.location.country,
-                          'meetupId': widget.meetup.id,
-                          'meetupTitle': widget.meetup.title,
-                        },
-                      );
-                    }
-                  : null,
-              style: OutlinedButton.styleFrom(
-                foregroundColor: _isJoined ? Colors.blue : Colors.grey,
-                side: BorderSide(
-                  color: _isJoined ? Colors.blue : Colors.grey.shade300,
-                  width: 1.5,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 6),
-                backgroundColor: _isJoined ? null : Colors.grey.shade50,
-              ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.chat_bubble_outline, size: 14),
-                  SizedBox(width: 3),
-                  Flexible(
-                    child: Text(
-                      'Chat',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 6),
-        // Join/Leave 按钮
-        Expanded(
-          child: SizedBox(
-            height: 32,
-            child: ElevatedButton(
-              onPressed: isDisabled ? null : () => _handleToggleJoin(context),
-              style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    _isJoined ? AppColors.borderLight : const Color(0xFFFF4458),
-                foregroundColor:
-                    _isJoined ? AppColors.textSecondary : Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 6),
-                disabledBackgroundColor: AppColors.borderLight,
-                disabledForegroundColor: AppColors.textSecondary,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    _isJoined ? Icons.check_circle : Icons.add_circle_outline,
-                    size: 14,
-                  ),
-                  const SizedBox(width: 3),
-                  Flexible(
-                    child: Text(
-                      isCancelled
-                          ? '已取消'
-                          : isEnded
-                              ? l10n.ended
-                              : _isFull && !_isJoined
-                                  ? l10n.full
-                                  : _isJoined
-                                      ? 'Leave'
-                                      : 'Join',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 

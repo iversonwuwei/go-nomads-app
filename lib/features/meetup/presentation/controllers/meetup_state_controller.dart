@@ -57,6 +57,7 @@ class MeetupStateController extends GetxController {
 
     return meetups
         .where((m) =>
+            m.status.value != 'cancelled' && // 明确排除已取消的活动
             m.status.value == 'upcoming' &&
             m.schedule.startTime.isAfter(now) &&
             m.schedule.startTime.isBefore(thirtyDaysLater))

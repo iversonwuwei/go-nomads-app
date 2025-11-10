@@ -68,9 +68,6 @@ class _MeetupsListPageState extends State<MeetupsListPage>
   // Meetup Repository
   final IMeetupRepository _meetupRepository = Get.find();
 
-  // Meetup State Controller
-  final MeetupStateController _meetupController = Get.find();
-
   // Auth Controller
   final AuthStateController _authController = Get.find();
 
@@ -129,7 +126,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
       // 从 Repository 加载活动数据 - 不指定 status 以获取所有活动
       // 前端会根据 Tab 进行筛选
       final meetups = await _meetupRepository.getMeetups(
-        pageSize: 100,
+        pageSize: 20,
       );
 
       _meetups.value = meetups;
@@ -172,10 +169,9 @@ class _MeetupsListPageState extends State<MeetupsListPage>
                 m.schedule.startTime.isBefore(now) && m.status != 'cancelled')
             .toList();
         break;
-      case 3: // Cancelled (我创建的已取消活动)
+      case 3: // Cancelled (所有已取消的活动)
         filtered = _meetups
-            .where((m) =>
-                m.status == 'cancelled' && m.organizer.id == _currentUserId)
+            .where((m) => m.status == 'cancelled')
             .toList();
         break;
     }
@@ -300,11 +296,21 @@ class _MeetupsListPageState extends State<MeetupsListPage>
         ],
         bottom: TabBar(
           controller: _tabController,
+          isScrollable: true,
           labelColor: const Color(0xFFFF4458),
-          unselectedLabelColor: AppColors.textSecondary,
-          indicatorColor: const Color(0xFFFF4458),
-          labelStyle: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
-          unselectedLabelStyle: TextStyle(fontSize: 14.sp),
+          unselectedLabelColor: Colors.grey[600],
+          labelStyle:
+              const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+          unselectedLabelStyle:
+              const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+          indicatorSize: TabBarIndicatorSize.label,
+          indicator: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            border: const Border(
+              bottom: BorderSide(color: Color(0xFFFF4458), width: 3),
+            ),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           onTap: (index) => setState(() {}),
           tabs: [
             Tab(text: l10n.allMeetups),
@@ -453,6 +459,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
           _meetups.refresh();
         }
       },
+      onRefresh: _loadMeetups,
     );
   }
 
@@ -480,10 +487,12 @@ class _MeetupsListPageState extends State<MeetupsListPage>
 class _MeetupListCard extends StatefulWidget {
   final Meetup meetup;
   final Function(Meetup) onUpdated;
+  final Future<void> Function()? onRefresh;
 
   const _MeetupListCard({
     required this.meetup,
     required this.onUpdated,
+    this.onRefresh,
   });
 
   @override
@@ -541,6 +550,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
   Future<void> _handleToggleJoin() async {
     final l10n = AppLocalizations.of(context)!;
     final meetupRepository = Get.find<IMeetupRepository>();
+    final meetupController = Get.find<MeetupStateController>();
 
     // 判断是加入还是退出
     final isJoining = !_isJoined;
@@ -550,9 +560,15 @@ class _MeetupListCardState extends State<_MeetupListCard> {
       if (isJoining) {
         await meetupRepository.rsvpToMeetup(widget.meetup.id);
         print('✅ 成功加入活动: ${widget.meetup.title}');
+        // 更新 Controller 的 rsvpedMeetupIds
+        if (!meetupController.rsvpedMeetupIds.contains(widget.meetup.id)) {
+          meetupController.rsvpedMeetupIds.add(widget.meetup.id);
+        }
       } else {
         await meetupRepository.cancelRsvp(widget.meetup.id);
         print('✅ 成功退出活动: ${widget.meetup.title}');
+        // 更新 Controller 的 rsvpedMeetupIds
+        meetupController.rsvpedMeetupIds.remove(widget.meetup.id);
       }
 
       // API 调用成功，更新本地状态
@@ -561,8 +577,10 @@ class _MeetupListCardState extends State<_MeetupListCard> {
         _currentAttendees = _currentAttendees + (isJoining ? 1 : -1);
       });
 
-      // TODO: 通知父级更新全局列表（Meetup 实体是不可变的，需要重新加载列表）
-      // widget.onUpdated(updatedMeetup);
+      // 刷新列表数据
+      if (widget.onRefresh != null) {
+        await widget.onRefresh!();
+      }
 
       // 显示成功消息
       if (isJoining) {
@@ -621,8 +639,10 @@ class _MeetupListCardState extends State<_MeetupListCard> {
         title: '成功',
       );
 
-      // 刷新列表（需要父级重新加载）
-      // TODO: 通知父级更新
+      // 刷新列表数据
+      if (widget.onRefresh != null) {
+        await widget.onRefresh!();
+      }
     } catch (e) {
       print('❌ 取消活动失败: $e');
       AppToast.error('取消活动失败');

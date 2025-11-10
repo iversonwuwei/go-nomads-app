@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../features/city/application/state_controllers/pros_cons_state_controller.dart';
+
 /// Pros & Cons 添加页面
 class ProsAndConsAddPage extends StatefulWidget {
   final String cityId;
@@ -62,14 +64,25 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
 
     isAddingPros.value = true;
     try {
-      await Future.delayed(const Duration(milliseconds: 500));
+      // 调用后端 API 保存数据
+      final controller = Get.find<ProsConsStateController>();
+      final success = await controller.addPros(
+        cityId: widget.cityId,
+        text: prosTextController.text.trim(),
+      );
 
-      prosList.add({
-        'text': prosTextController.text.trim(),
-        'timestamp': DateTime.now().toIso8601String(),
-      });
+      if (success) {
+        // 添加到本地列表显示
+        prosList.add({
+          'text': prosTextController.text.trim(),
+          'timestamp': DateTime.now().toIso8601String(),
+        });
 
-      prosTextController.clear();
+        prosTextController.clear();
+        Get.snackbar('成功', '优点已添加', backgroundColor: Colors.green[100]);
+      } else {
+        Get.snackbar('失败', '添加优点失败，请重试');
+      }
     } catch (e) {
       Get.snackbar('错误', '添加失败: $e');
     } finally {
@@ -83,14 +96,25 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
 
     isAddingCons.value = true;
     try {
-      await Future.delayed(const Duration(milliseconds: 500));
+      // 调用后端 API 保存数据
+      final controller = Get.find<ProsConsStateController>();
+      final success = await controller.addCons(
+        cityId: widget.cityId,
+        text: consTextController.text.trim(),
+      );
 
-      consList.add({
-        'text': consTextController.text.trim(),
-        'timestamp': DateTime.now().toIso8601String(),
-      });
+      if (success) {
+        // 添加到本地列表显示
+        consList.add({
+          'text': consTextController.text.trim(),
+          'timestamp': DateTime.now().toIso8601String(),
+        });
 
-      consTextController.clear();
+        consTextController.clear();
+        Get.snackbar('成功', '挑战已添加', backgroundColor: Colors.green[100]);
+      } else {
+        Get.snackbar('失败', '添加挑战失败，请重试');
+      }
     } catch (e) {
       Get.snackbar('错误', '添加失败: $e');
     } finally {
@@ -296,7 +320,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Text(
-                                      item.text,
+                                      item['text'] ?? '',
                                       style: const TextStyle(fontSize: 15),
                                     ),
                                   ),
@@ -305,7 +329,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                                       const Icon(Icons.arrow_upward,
                                           size: 16, color: Color(0xFFFF4458)),
                                       Text(
-                                        '${item.upvotes}',
+                                        '${item['upvotes'] ?? 0}',
                                         style: const TextStyle(
                                             fontSize: 12,
                                             fontWeight: FontWeight.bold),
@@ -473,7 +497,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Text(
-                                      item.text,
+                                      item['text'] ?? '',
                                       style: const TextStyle(fontSize: 15),
                                     ),
                                   ),
@@ -482,7 +506,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                                       const Icon(Icons.arrow_upward,
                                           size: 16, color: Color(0xFFFF4458)),
                                       Text(
-                                        '${item.upvotes}',
+                                        '${item['upvotes'] ?? 0}',
                                         style: const TextStyle(
                                             fontSize: 12,
                                             fontWeight: FontWeight.bold),

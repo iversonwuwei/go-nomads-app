@@ -3212,7 +3212,9 @@ class _CityDetailPageState extends State<CityDetailPage>
 
     // 如果有变更,刷新数据
     if (result == true) {
-      // TODO: Refresh user content if needed
+      final prosConsController = Get.find<ProsConsStateController>();
+      // 重新加载优缺点数据
+      await prosConsController.loadCityProsCons(cityId);
     }
   }
 

@@ -77,9 +77,9 @@ class _CityListPageState extends State<CityListPage> {
     setState(() {
       _searchQuery = '';
       _searchController.clear();
-      controller.resetFilters();
     });
-    controller.loadInitialCities(); // 清除筛选后重新加载所有城市
+    // 清除所有筛选器并重新加载默认数据
+    controller.clearFilters();
   }
 
   // 构建工具栏
@@ -377,7 +377,8 @@ class _CityListPageState extends State<CityListPage> {
                     if (value.trim().isNotEmpty) {
                       controller.searchCities(value.trim());
                     } else {
-                      controller.loadInitialCities();
+                      // 搜索框为空时，清除所有筛选器
+                      controller.clearFilters();
                     }
                   },
                 ),
@@ -391,7 +392,8 @@ class _CityListPageState extends State<CityListPage> {
                       _searchQuery = '';
                       _searchController.clear();
                     });
-                    controller.loadInitialCities(); // 清除搜索,重新加载所有城市
+                    // 清除搜索和所有筛选器，重新加载默认数据
+                    controller.clearFilters();
                   },
                   borderRadius: BorderRadius.circular(4),
                   child: Padding(
@@ -410,7 +412,8 @@ class _CityListPageState extends State<CityListPage> {
                   if (searchText.isNotEmpty) {
                     controller.searchCities(searchText);
                   } else {
-                    controller.loadInitialCities();
+                    // 搜索框为空时，清除所有筛选器
+                    controller.clearFilters();
                   }
                 },
                 borderRadius: BorderRadius.circular(6),
