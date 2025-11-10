@@ -72,12 +72,6 @@ class CityStateController extends GetxController {
   int get totalCitiesCount => cities.length;
 
   // ==================== Lifecycle ====================
-  @override
-  void onInit() {
-    super.onInit();
-    // 不在这里自动加载，由页面决定何时加载
-    // loadInitialCities();
-  }
 
   // ==================== Public Methods ====================
 

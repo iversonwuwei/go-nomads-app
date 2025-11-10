@@ -6,9 +6,12 @@ import 'package:intl/intl.dart';
 import '../config/app_colors.dart';
 import '../features/meetup/domain/entities/meetup.dart';
 import '../features/meetup/domain/repositories/i_meetup_repository.dart';
+import '../features/meetup/infrastructure/models/meetup_dto.dart';
+import '../features/meetup/presentation/controllers/meetup_state_controller.dart';
 import '../features/user/domain/entities/user.dart';
 import '../generated/app_localizations.dart';
 import '../routes/app_routes.dart';
+import '../services/http_service.dart';
 import '../widgets/app_toast.dart';
 import 'direct_chat_page.dart';
 import 'member_detail_page.dart';
@@ -29,15 +32,25 @@ class MeetupDetailPage extends StatefulWidget {
 class _MeetupDetailPageState extends State<MeetupDetailPage> {
   late Rx<Meetup> _meetup;
   final IMeetupRepository _meetupRepository = Get.find();
+  final _meetupController = Get.find<MeetupStateController>();
   final RxBool _isLoading = true.obs;
   final RxList<Map<String, dynamic>> _participants =
       <Map<String, dynamic>>[].obs;
 
-  // TODO: 需要从认证服务获取当前用户ID
-  String get _currentUserId => 'TODO_CURRENT_USER_ID';
+  // 检查当前用户是否已加入活动 - 使用 controller 的 isRsvped 方法
+  bool get _isJoined => _meetupController.isRsvped(_meetup.value.id);
 
-  // 检查当前用户是否已加入活动
-  bool get _isJoined => _meetup.value.attendeeIds.contains(_currentUserId);
+  // 检查当前用户是否是活动组织者
+  // 优先使用实体自带的 isOrganizer 字段(由后端根据 token 计算)
+  bool get _isOrganizer {
+    // 直接使用实体中的 isOrganizer 字段
+    final result = _meetup.value.isOrganizer;
+
+    print('🔍 组织者判断 - meetup.isOrganizer: $result');
+    print('🔍 组织者判断 - 活动组织者ID: ${_meetup.value.organizer.id}');
+
+    return result;
+  }
 
   @override
   void initState() {
@@ -51,16 +64,25 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     try {
       _isLoading.value = true;
 
-      // 调用 Repository 获取详情
-      final meetup = await _meetupRepository.getMeetupById(widget.meetup.id);
-      
-      if (meetup != null) {
-        _meetup.value = meetup;
-        print('✅ 成功加载活动详情: ${meetup.title}');
-      } else {
-        print('⚠️ 未找到活动详情');
-        AppToast.error('未找到活动信息');
+      // 直接调用 API 获取原始响应，以便提取 participants 数据
+      final httpService = Get.find<HttpService>();
+      final response = await httpService.get('/events/${widget.meetup.id}');
+      final data = response.data as Map<String, dynamic>;
+
+      // 提取 participants 列表
+      if (data['participants'] != null) {
+        final participantsList = data['participants'] as List<dynamic>;
+        _participants.value =
+            participantsList.map((p) => p as Map<String, dynamic>).toList();
+        print('✅ 成功加载 ${_participants.length} 位参与者');
       }
+
+      // 映射为 Meetup 实体
+      final dto = MeetupDto.fromJson(data);
+      final meetup = dto.toDomain();
+
+      _meetup.value = meetup;
+      print('✅ 成功加载活动详情: ${meetup.title}');
     } catch (e) {
       print('❌ 加载活动详情失败: $e');
       AppToast.error('加载活动详情失败');
@@ -264,14 +286,14 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
             l10n.dateAndTime,
             _formatDateTime(_meetup.value.schedule.startTime),
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 20.h),
           _buildInfoRow(
             Icons.location_on,
             l10n.venue,
             _meetup.value.venue.name,
             subtitle: _meetup.value.venue.address,
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 20.h),
           _buildInfoRow(
             Icons.people,
             l10n.attendees,
@@ -501,6 +523,12 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
 
   Widget _buildBottomBar() {
     final l10n = AppLocalizations.of(context)!;
+
+    // 添加调试输出
+    print('🎨 构建底部按钮栏 - _isOrganizer: $_isOrganizer');
+    print('🎨 构建底部按钮栏 - _isJoined: $_isJoined');
+    print('🎨 构建底部按钮栏 - meetup status: ${_meetup.value.status}');
+
     return Obx(() => Container(
           padding: EdgeInsets.all(20.w),
           decoration: BoxDecoration(
@@ -516,73 +544,106 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
           child: SafeArea(
             child: Row(
               children: [
-                // Chat Button - 只有参与了才能点�?
-                OutlinedButton.icon(
-                  onPressed: _isJoined ? _openChat : null,
-                  icon: Icon(Icons.chat_bubble_outline, size: 20.sp),
-                  label: Text(
-                    l10n.chat,
-                    style: TextStyle(
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w600,
+                // 如果是组织者，显示取消活动按钮
+                if (_isOrganizer) ...[
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: _meetup.value.status == 'cancelled' ||
+                              _meetup.value.isEnded
+                          ? null
+                          : _cancelMeetup,
+                      icon: Icon(Icons.cancel_outlined, size: 20.sp),
+                      label: Text(
+                        _meetup.value.status == 'cancelled' ? '已取消' : '取消活动',
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _meetup.value.status == 'cancelled'
+                            ? AppColors.borderLight
+                            : Colors.red,
+                        foregroundColor: _meetup.value.status == 'cancelled'
+                            ? AppColors.textSecondary
+                            : Colors.white,
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        elevation: 0,
+                        disabledBackgroundColor: AppColors.borderLight,
+                      ),
                     ),
                   ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor:
-                        _isJoined ? Colors.blue : Colors.grey,
-                    side: BorderSide(
-                      color: _isJoined
-                          ? Colors.blue
-                          : Colors.grey.shade300,
-                      width: 1.5.w,
+                ]
+                // 如果不是组织者，显示聊天和参与按钮
+                else ...[
+                  // Chat Button - 只有参与了才能点击
+                  OutlinedButton.icon(
+                    onPressed: _isJoined ? _openChat : null,
+                    icon: Icon(Icons.chat_bubble_outline, size: 20.sp),
+                    label: Text(
+                      l10n.chat,
+                      style: TextStyle(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
-                    backgroundColor:
-                        _isJoined ? null : Colors.grey.shade50,
-                  ),
-                ),
-                SizedBox(width: 12.w),
-                // Join Button
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed:
-                        _meetup.value.isEnded || _meetup.value.capacity.isFull
-                        ? null
-                        : _toggleJoin,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _isJoined
-                          ? AppColors.borderLight
-                          : const Color(0xFFFF4458),
-                      foregroundColor:
-                          _isJoined
-                          ? AppColors.textSecondary
-                          : Colors.white,
-                      padding: EdgeInsets.symmetric(vertical: 14.h),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: _isJoined ? Colors.blue : Colors.grey,
+                      side: BorderSide(
+                        color: _isJoined ? Colors.blue : Colors.grey.shade300,
+                        width: 1.5.w,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.r),
                       ),
-                      elevation: 0,
-                      disabledBackgroundColor: AppColors.borderLight,
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 20.w, vertical: 14.h),
+                      backgroundColor: _isJoined ? null : Colors.grey.shade50,
                     ),
-                    child: Text(
-                      _meetup.value.isEnded
-                          ? l10n.ended
-                          : _meetup.value.capacity.isFull
-                              ? l10n.full
-                              : _isJoined
-                                  ? l10n.leaveMeetup
-                                  : l10n.joinMeetup,
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.bold,
+                  ),
+                  SizedBox(width: 12.w),
+                  // Join Button
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _meetup.value.isEnded ||
+                              _meetup.value.capacity.isFull ||
+                              _meetup.value.status == 'cancelled'
+                          ? null
+                          : _toggleJoin,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _isJoined
+                            ? AppColors.borderLight
+                            : const Color(0xFFFF4458),
+                        foregroundColor:
+                            _isJoined ? AppColors.textSecondary : Colors.white,
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        elevation: 0,
+                        disabledBackgroundColor: AppColors.borderLight,
+                      ),
+                      child: Text(
+                        _meetup.value.status == 'cancelled'
+                            ? '已取消'
+                            : _meetup.value.isEnded
+                                ? l10n.ended
+                                : _meetup.value.capacity.isFull
+                                    ? l10n.full
+                                    : _isJoined
+                                        ? l10n.leaveMeetup
+                                        : l10n.joinMeetup,
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
@@ -725,6 +786,47 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
       AppToast.error(
         _isJoined ? '退出活动失败' : '加入活动失败',
       );
+    }
+  }
+
+  Future<void> _cancelMeetup() async {
+    final l10n = AppLocalizations.of(context)!;
+
+    // 显示确认对话框
+    final confirmed = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('确认取消活动'),
+        content:
+            Text('确定要取消活动 "${_meetup.value.title}" 吗？\n\n取消后参与者将收到通知,此操作无法撤销。'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: Text(l10n.no),
+          ),
+          ElevatedButton(
+            onPressed: () => Get.back(result: true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('确认取消'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      // 调用 Controller 的 cancelMeetup 方法
+      // Controller 会自动处理加载状态和错误提示
+      await _meetupController.cancelMeetup(_meetup.value.id);
+
+      // 如果成功,重新加载活动详情以更新 UI
+      await _loadEventDetails();
+    } catch (e) {
+      print('❌ 取消活动异常: $e');
+      // Controller 已经显示了错误提示,这里只打印日志
     }
   }
 

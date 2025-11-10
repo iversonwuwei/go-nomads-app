@@ -14,6 +14,8 @@ class Meetup {
   final List<String> attendeeIds;
   final MeetupStatus status;
   final DateTime createdAt;
+  final bool isJoined; // 用户是否已加入（仅在有 token 时后端返回）
+  final bool isOrganizer; // 当前用户是否是组织者（仅在有 token 时后端返回）
 
   Meetup({
     required this.id,
@@ -29,6 +31,8 @@ class Meetup {
     required this.attendeeIds,
     required this.status,
     required this.createdAt,
+    this.isJoined = false, // 默认为 false
+    this.isOrganizer = false, // 默认为 false
   });
 
   // === 业务逻辑方法 ===
@@ -55,24 +59,30 @@ class Meetup {
   /// 是否即将到来
   bool get isUpcoming => schedule.startTime.isAfter(DateTime.now());
 
-  /// 检查用户是否可以加入
-  bool canJoin(String userId) {
+  /// 当前用户是否可以加入活动
+  bool get canJoin {
     // 已结束或正在进行的活动不能加入
     if (isEnded || isOngoing) return false;
 
     // 已满员不能加入
     if (capacity.isFull) return false;
 
-    // 已经是参与者不能重复加入
-    if (attendeeIds.contains(userId)) return false;
+    // 组织者不需要加入自己的活动
+    if (isOrganizer) return false;
+
+    // 已经加入不能重复加入
+    if (isJoined) return false;
 
     return true;
   }
 
-  /// 检查用户是否可以取消参与
-  bool canLeave(String userId) {
+  /// 当前用户是否可以取消参与
+  bool get canLeave {
+    // 组织者不能取消参与（只能取消活动）
+    if (isOrganizer) return false;
+
     // 不是参与者不能取消
-    if (!attendeeIds.contains(userId)) return false;
+    if (!isJoined) return false;
 
     // 活动已结束不能取消
     if (isEnded) return false;
@@ -80,15 +90,10 @@ class Meetup {
     return true;
   }
 
-  /// 检查用户是否是组织者
-  bool isOrganizer(String userId) {
-    return organizer.id == userId;
-  }
-
-  /// 检查用户是否可以编辑活动
-  bool canEdit(String userId) {
+  /// 当前用户（组织者）是否可以编辑活动
+  bool get canEdit {
     // 只有组织者可以编辑
-    if (!isOrganizer(userId)) return false;
+    if (!isOrganizer) return false;
 
     // 已结束的活动不能编辑
     if (isEnded) return false;
@@ -96,13 +101,16 @@ class Meetup {
     return true;
   }
 
-  /// 检查用户是否可以取消活动
-  bool canCancel(String userId) {
-    // 只有组织者可以取消
-    if (!isOrganizer(userId)) return false;
+  /// 当前用户（组织者）是否可以取消活动
+  bool get canCancelEvent {
+    // 只有组织者可以取消活动
+    if (!isOrganizer) return false;
 
     // 已结束的活动不能取消
     if (isEnded) return false;
+
+    // 已取消的活动不能再次取消
+    if (status == MeetupStatus.cancelled) return false;
 
     return true;
   }

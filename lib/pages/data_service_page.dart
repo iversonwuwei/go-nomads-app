@@ -17,6 +17,7 @@ import '../widgets/copyright_widget.dart';
 import 'city_detail_page.dart';
 import 'create_meetup_page.dart';
 import 'global_map_page.dart';
+import 'meetup_detail_page.dart';
 
 class DataServicePage extends StatefulWidget {
   final bool scrollToCities;
@@ -35,7 +36,7 @@ class _DataServicePageState extends State<DataServicePage>
   bool _hasScrolled = false;
 
   // 本地状态管理
-  bool _isGridView = true;
+  final bool _isGridView = true;
 
   // 获取领域层的 StateController（延迟初始化，避免在构建时查找）
   CityStateController? _cityControllerCache;
@@ -61,7 +62,7 @@ class _DataServicePageState extends State<DataServicePage>
     super.initState();
     // 添加生命周期监听
     WidgetsBinding.instance.addObserver(this);
-    
+
     // 首页不验证 token，直接加载数据
     // 如果有 token 会自动带上，没有就匿名访问
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -145,10 +146,10 @@ class _DataServicePageState extends State<DataServicePage>
   /// 执行城市搜索
   Future<void> _performSearch(String query) async {
     print('🔍 开始搜索城市: $query');
-    
+
     // 调用 CityStateController 的搜索方法，等待后端返回结果
     await _cityController.searchCities(query);
-    
+
     if (mounted) {
       // 搜索完成后显示结果数量
       final resultCount = _cityController.cities.length;
@@ -162,9 +163,12 @@ class _DataServicePageState extends State<DataServicePage>
   /// 清除搜索
   Future<void> _clearSearch() async {
     _searchController.clear();
-    
+
+    // 清除 Controller 中的 searchQuery 状态
+    _cityController.searchQuery.value = '';
+
     print('🧹 清除搜索，重新加载全部城市');
-    
+
     // 重新加载全部城市
     await _cityController.loadInitialCities();
   }
@@ -174,9 +178,9 @@ class _DataServicePageState extends State<DataServicePage>
     return Obx(() {
       final searchQuery = _cityController.searchQuery.value;
       final cityCount = _cityController.cities.length;
-      
+
       if (searchQuery.isEmpty) return const SizedBox.shrink();
-      
+
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
@@ -223,7 +227,8 @@ class _DataServicePageState extends State<DataServicePage>
                       ),
                     ),
                     TextSpan(
-                      text: '$cityCount ${cityCount == 1 ? "city" : "cities"} found',
+                      text:
+                          '$cityCount ${cityCount == 1 ? "city" : "cities"} found',
                       style: const TextStyle(
                         fontWeight: FontWeight.w600,
                       ),
@@ -325,7 +330,7 @@ class _DataServicePageState extends State<DataServicePage>
             ),
 
             const SliverToBoxAdapter(child: SizedBox(height: 8)),
-            
+
             // 搜索结果提示
             if (_searchController.text.trim().isNotEmpty)
               SliverToBoxAdapter(
@@ -336,7 +341,7 @@ class _DataServicePageState extends State<DataServicePage>
                   child: _buildSearchResultHint(isMobile),
                 ),
               ),
-            
+
             if (_searchController.text.trim().isNotEmpty)
               const SliverToBoxAdapter(child: SizedBox(height: 8)),
 
@@ -1238,7 +1243,8 @@ class _DataServicePageState extends State<DataServicePage>
                 child: NotificationListener<ScrollNotification>(
                   onNotification: (ScrollNotification scrollInfo) {
                     // 当滚动到接近末尾时，加载更多数据
-                    if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent * 0.8 &&
+                    if (scrollInfo.metrics.pixels >=
+                            scrollInfo.metrics.maxScrollExtent * 0.8 &&
                         !_meetupController.isLoadingMore.value &&
                         _meetupController.hasMoreData.value) {
                       print('📜 接近滚动末尾，触发加载更多活动');
@@ -1248,7 +1254,8 @@ class _DataServicePageState extends State<DataServicePage>
                   },
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
-                    itemCount: upcomingMeetups.length + (_meetupController.hasMoreData.value ? 1 : 0),
+                    itemCount: upcomingMeetups.length +
+                        (_meetupController.hasMoreData.value ? 1 : 0),
                     itemBuilder: (context, index) {
                       // 如果是最后一项且还有更多数据，显示加载指示器
                       if (index == upcomingMeetups.length) {
@@ -1256,16 +1263,19 @@ class _DataServicePageState extends State<DataServicePage>
                           width: 60,
                           margin: const EdgeInsets.only(left: 12),
                           child: Center(
-                            child: Obx(() => _meetupController.isLoadingMore.value
-                                ? const CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
-                                  )
-                                : const SizedBox.shrink()),
+                            child:
+                                Obx(() => _meetupController.isLoadingMore.value
+                                    ? const CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                                Color(0xFFFF4458)),
+                                      )
+                                    : const SizedBox.shrink()),
                           ),
                         );
                       }
-                      
+
                       final meetup = upcomingMeetups[index];
                       return _MeetupCard(
                         meetup: meetup,
@@ -1329,7 +1339,7 @@ class _DataServicePageState extends State<DataServicePage>
   Widget _buildEmptyCitiesState(bool isMobile, AppLocalizations l10n) {
     // 检查是否正在搜索
     final isSearching = _searchController.text.trim().isNotEmpty;
-    
+
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: isMobile ? 24 : 48,
@@ -1347,7 +1357,9 @@ class _DataServicePageState extends State<DataServicePage>
               shape: BoxShape.circle,
             ),
             child: Icon(
-              isSearching ? Icons.search_off_rounded : Icons.location_city_rounded,
+              isSearching
+                  ? Icons.search_off_rounded
+                  : Icons.location_city_rounded,
               size: isMobile ? 50 : 60,
               color: const Color(0xFFFF4458),
             ),
@@ -1357,9 +1369,7 @@ class _DataServicePageState extends State<DataServicePage>
 
           // 标题
           Text(
-            isSearching 
-                ? 'No cities found'
-                : l10n.noCitiesYet,
+            isSearching ? 'No cities found' : l10n.noCitiesYet,
             style: TextStyle(
               fontSize: isMobile ? 24 : 28,
               fontWeight: FontWeight.bold,
@@ -1916,12 +1926,10 @@ class _DetailOverlay extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildMetricBar(
-                      '�?Overall', data.overallScore ?? 0.0,
+                  _buildMetricBar('�?Overall', data.overallScore ?? 0.0,
                       const Color(0xFFFBBF24)),
                   const SizedBox(height: 6),
-                  _buildMetricBar(
-                      '💰 Cost', data.costScore ?? 0.0,
+                  _buildMetricBar('💰 Cost', data.costScore ?? 0.0,
                       const Color(0xFF4ADE80)),
                   const SizedBox(height: 6),
                   _buildMetricBar('📡 Internet', data.internetScore ?? 0.0,
@@ -1930,8 +1938,7 @@ class _DetailOverlay extends StatelessWidget {
                   _buildMetricBar(
                       '👍 乐趣', data.likedScore ?? 0.0, const Color(0xFF4ADE80)),
                   const SizedBox(height: 6),
-                  _buildMetricBar(
-                      '🛡�?Safety', data.safetyScore ?? 0.0,
+                  _buildMetricBar('🛡�?Safety', data.safetyScore ?? 0.0,
                       const Color(0xFF4ADE80)),
                 ],
               ),
@@ -2142,10 +2149,10 @@ class _MeetupCardState extends State<_MeetupCard> {
     print('   Title: ${widget.meetup.title}');
     print('   Attendees: $_currentAttendees / $_maxAttendees');
 
-    // 从 controller 获取初始 joined 状�?
-    final meetupIdInt = int.tryParse(widget.meetup.id) ?? 0;
-    _isJoined = _meetupController.rsvpedMeetups.contains(meetupIdInt);
-    print('   最终状�?_isJoined: $_isJoined');
+    // 从 controller 获取初始 joined 状态 - 使用字符串 ID 直接检查
+    _isJoined = _meetupController.isRsvped(widget.meetup.id);
+    print('   rsvpedMeetupIds: ${_meetupController.rsvpedMeetupIds.toList()}');
+    print('   最终状态 _isJoined: $_isJoined');
   }
 
   @override
@@ -2154,12 +2161,11 @@ class _MeetupCardState extends State<_MeetupCard> {
 
     // 当 widget 更新时，检查数据是否变化
     if (oldWidget.meetup.id == widget.meetup.id) {
-      // 同一个 meetup，从 controller 更新参与状�?
-      final meetupIdInt = int.tryParse(widget.meetup.id) ?? 0;
-      final newIsJoined = _meetupController.rsvpedMeetups.contains(meetupIdInt);
+      // 同一个 meetup，从 controller 更新参与状态 - 使用字符串 ID 直接检查
+      final newIsJoined = _meetupController.isRsvped(widget.meetup.id);
       if (_isJoined != newIsJoined) {
         print(
-            '🔄 Meetup ${widget.meetup.title} 参与状态更�? $_isJoined -> $newIsJoined');
+            '🔄 Meetup ${widget.meetup.title} 参与状态更新: $_isJoined -> $newIsJoined');
         setState(() {
           _isJoined = newIsJoined;
         });
@@ -2237,9 +2243,8 @@ class _MeetupCardState extends State<_MeetupCard> {
 
     return InkWell(
       onTap: () {
-        // TODO: MeetupDetailPage 需要迁移到使用 Meetup 实体
-        // Get.to(() => MeetupDetailPage(meetup: widget.meetup));
-        AppToast.info('Meetup detail page is under migration');
+        // 跳转到 Meetup 详情页面
+        Get.to(() => MeetupDetailPage(meetup: widget.meetup));
       },
       borderRadius: BorderRadius.circular(12),
       child: Container(

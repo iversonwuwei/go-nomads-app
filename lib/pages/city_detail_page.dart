@@ -10,7 +10,8 @@ import '../features/ai/presentation/controllers/ai_state_controller.dart';
 import '../features/city/application/state_controllers/pros_cons_state_controller.dart';
 import '../features/city/domain/entities/city_detail.dart';
 import '../features/city/presentation/controllers/city_detail_state_controller.dart';
-import '../features/coworking/domain/entities/coworking_space.dart' as coworking;
+import '../features/coworking/domain/entities/coworking_space.dart'
+    as coworking;
 import '../features/coworking/presentation/controllers/coworking_state_controller.dart';
 import '../features/user_city_content/domain/entities/user_city_content.dart';
 import '../features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
@@ -291,6 +292,17 @@ class _CityDetailPageState extends State<CityDetailPage>
         setState(() {
           _currentPage = _tabController.index;
         });
+
+        // 当切换到 Weather tab (索引 6) 时，加载最新天气数据
+        if (_tabController.index == 6) {
+          final weatherController = Get.find<WeatherStateController>();
+          weatherController.loadCityWeather(
+            cityId,
+            includeForecast: true,
+            days: 7,
+            forceRefresh: true, // 强制刷新以获取最新数据
+          );
+        }
       }
     });
 
@@ -311,16 +323,16 @@ class _CityDetailPageState extends State<CityDetailPage>
     final cityDetailController = Get.find<CityDetailStateController>();
     final userContentController = Get.find<UserCityContentStateController>();
     final prosConsController = Get.find<ProsConsStateController>();
-    
+
     // 加载城市详情
     cityDetailController.loadCityDetail(cityId);
-    
+
     // 加载用户生成内容
     userContentController.loadCityPhotos(cityId);
     userContentController.loadCityExpenses(cityId);
     userContentController.loadCityReviews(cityId);
     userContentController.loadCityCostSummary(cityId); // ✅ 加载cost summary
-    
+
     // 加载优缺点
     prosConsController.loadCityProsCons(cityId);
   }
@@ -401,10 +413,12 @@ class _CityDetailPageState extends State<CityDetailPage>
     );
 
     // 使用流式生成方法
-    controller.generateDigitalNomadGuideStream(
+    controller
+        .generateDigitalNomadGuideStream(
       cityId: cityId,
       cityName: cityName,
-    ).then((_) {
+    )
+        .then((_) {
       // 关闭进度对话框
       if (Navigator.of(context).canPop()) {
         Navigator.of(context).pop();
@@ -468,7 +482,7 @@ class _CityDetailPageState extends State<CityDetailPage>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     // 获取所有需要的State Controllers
     final cityDetailController = Get.find<CityDetailStateController>();
     final weatherController = Get.find<WeatherStateController>();
@@ -781,9 +795,11 @@ class _CityDetailPageState extends State<CityDetailPage>
                         ),
                         // 收藏按钮 - 动态状态
                         Obx(() {
-                          final cityController = Get.find<CityDetailStateController>();
+                          final cityController =
+                              Get.find<CityDetailStateController>();
                           final isFavorited = cityController.isFavorited.value;
-                          final isToggling = cityController.isTogglingFavorite.value;
+                          final isToggling =
+                              cityController.isTogglingFavorite.value;
 
                           return Container(
                             decoration: BoxDecoration(
@@ -1338,8 +1354,9 @@ class _CityDetailPageState extends State<CityDetailPage>
   Widget _buildProsConsTab(ProsConsStateController controller) {
     return Obx(() {
       // 显示加载状态
-      final isLoading = controller.isLoadingPros.value || controller.isLoadingCons.value;
-      
+      final isLoading =
+          controller.isLoadingPros.value || controller.isLoadingCons.value;
+
       if (isLoading) {
         return const Center(child: CircularProgressIndicator());
       }
@@ -1530,7 +1547,6 @@ class _CityDetailPageState extends State<CityDetailPage>
     );
   }
 
-
   // Reviews 标签
   Widget _buildReviewsTab(UserCityContentStateController controller) {
     final l10n = AppLocalizations.of(context)!;
@@ -1566,7 +1582,8 @@ class _CityDetailPageState extends State<CityDetailPage>
       }
 
       return RefreshIndicator(
-        onRefresh: () => controller.loadCityReviews(cityId), // ✅ 使用loadCityReviews方法
+        onRefresh: () =>
+            controller.loadCityReviews(cityId), // ✅ 使用loadCityReviews方法
         child: ListView.builder(
           padding:
               const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
@@ -2661,7 +2678,7 @@ class _CityDetailPageState extends State<CityDetailPage>
       if (neighborhoods.isEmpty) {
         return const Center(child: Text('No neighborhoods available'));
       }
-      
+
       return ListView.builder(
         padding:
             const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
@@ -3208,11 +3225,15 @@ class _CityDetailPageState extends State<CityDetailPage>
       ),
     );
 
-    // 如果提交成功,刷新费用列表
-    // 如果提交成功,刷新费用列表
+    // 如果提交成功,刷新费用列表和费用汇总
     if (result != null && result['success'] == true) {
       final userContentController = Get.find<UserCityContentStateController>();
+
+      // 刷新费用列表
       userContentController.loadCityExpenses(cityId);
+
+      // 刷新费用汇总统计（这是费用 tab 显示的数据）
+      userContentController.loadCityCostSummary(cityId);
 
       print('Expenses submitted successfully: ${result['expenses']}');
     }
@@ -3320,7 +3341,8 @@ class _CityDetailPageState extends State<CityDetailPage>
         switch (result) {
           case Success():
             // 刷新照片列表
-            final userContentController = Get.find<UserCityContentStateController>();
+            final userContentController =
+                Get.find<UserCityContentStateController>();
             await userContentController.loadCityPhotos(cityId);
 
             AppToast.success(

@@ -60,6 +60,7 @@ import '../../features/location/application/use_cases/search_cities_use_case.dar
 import '../../features/location/domain/repositories/ilocation_repository.dart';
 import '../../features/location/infrastructure/repositories/location_repository.dart';
 import '../../features/location/presentation/controllers/location_state_controller.dart';
+import '../../features/meetup/application/use_cases/cancel_meetup_use_case.dart';
 import '../../features/meetup/application/use_cases/cancel_rsvp_use_case.dart';
 import '../../features/meetup/application/use_cases/create_meetup_use_case.dart';
 import '../../features/meetup/application/use_cases/get_meetups_by_city_use_case.dart';
@@ -150,19 +151,25 @@ class DependencyInjection {
     _registerHotelDomain();
 
     // 其他领域...
-    
+
     // ⚠️ 强制初始化全局 Controllers，防止路由切换时被删除
     _initializeGlobalControllers();
   }
-  
+
   /// 强制初始化全局 Controllers
   /// 必须在所有依赖注册完成后调用
   static void _initializeGlobalControllers() {
+    // 确保关键依赖已创建
+    Get.find<HttpService>();
+    Get.find<ICityRepository>();
+
     // 立即创建 Controller 实例，确保它们在整个应用生命周期中存活
     Get.find<CityStateController>();
     Get.find<MeetupStateController>();
     Get.find<UserStateController>();
-    
+    Get.find<SkillStateController>();
+    Get.find<InterestStateController>();
+
     print('✅ 全局 Controllers 已强制初始化');
   }
 
@@ -573,6 +580,7 @@ class DependencyInjection {
     Get.lazyPut(() => CreateMeetupUseCase(Get.find<IMeetupRepository>()));
     Get.lazyPut(() => RsvpToMeetupUseCase(Get.find<IMeetupRepository>()));
     Get.lazyPut(() => CancelRsvpUseCase(Get.find<IMeetupRepository>()));
+    Get.lazyPut(() => CancelMeetupUseCase(Get.find<IMeetupRepository>()));
 
     // Controller（fenix: true 允许删除后重新创建）
     Get.lazyPut(
@@ -582,6 +590,7 @@ class DependencyInjection {
         createMeetupUseCase: Get.find<CreateMeetupUseCase>(),
         rsvpToMeetupUseCase: Get.find<RsvpToMeetupUseCase>(),
         cancelRsvpUseCase: Get.find<CancelRsvpUseCase>(),
+        cancelMeetupUseCase: Get.find<CancelMeetupUseCase>(),
       ),
       fenix: true,
     );

@@ -56,15 +56,29 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   // 加载用户资料
   Future<void> _loadUserProfile() async {
     final profileController = Get.find<UserStateController>();
-    final skillController = Get.find<SkillStateController>();
-    final interestController = Get.find<InterestStateController>();
+
+    // 安全地获取或初始化 controller
+    final skillController = Get.isRegistered<SkillStateController>()
+        ? Get.find<SkillStateController>()
+        : null;
+    final interestController = Get.isRegistered<InterestStateController>()
+        ? Get.find<InterestStateController>()
+        : null;
 
     // 并行加载所有数据：用户信息、技能选项、兴趣选项
-    await Future.wait([
+    final futures = <Future>[
       profileController.loadUserProfile(),
-      skillController.getSkills(),
-      interestController.getInterests(),
-    ]);
+    ];
+
+    if (skillController != null) {
+      futures.add(skillController.getSkills());
+    }
+
+    if (interestController != null) {
+      futures.add(interestController.getInterests());
+    }
+
+    await Future.wait(futures);
 
     // 加载后填充输入框
     final user = profileController.currentUser.value;
@@ -306,8 +320,14 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       bool isMobile, UserStateController profileController) {
     final l10n = AppLocalizations.of(Get.context!)!;
 
+    // 安全地获取 controller，如果不存在则不显示加载状态
+    final skillController = Get.isRegistered<SkillStateController>()
+        ? Get.find<SkillStateController>()
+        : null;
+
     return Obx(() {
       final user = profileController.currentUser.value;
+      final isLoading = skillController?.isLoading.value ?? false;
 
       if (user == null) {
         return const SizedBox.shrink();
@@ -328,13 +348,30 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  l10n.skills,
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: isMobile ? 18 : 22,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      l10n.skills,
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: isMobile ? 18 : 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    if (isLoading) ...[
+                      const SizedBox(width: 8),
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColors.accent,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
                 TextButton.icon(
                   icon: Icon(Icons.edit, color: AppColors.accent, size: 20),
@@ -342,12 +379,21 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                     '编辑',
                     style: TextStyle(color: AppColors.accent),
                   ),
-                  onPressed: () => _showSkillsBottomSheet(profileController),
+                  onPressed: isLoading
+                      ? null
+                      : () => _showSkillsBottomSheet(profileController),
                 ),
               ],
             ),
             SizedBox(height: isMobile ? 12 : 16),
-            if (skills.isEmpty)
+            if (isLoading && skills.isEmpty)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24),
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            else if (skills.isEmpty)
               Center(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 24),
@@ -374,7 +420,9 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                         : null,
                     label: Text(skill.name),
                     deleteIcon: const Icon(Icons.close, size: 18),
-                    onDeleted: () => profileController.removeSkill(skill.id),
+                    onDeleted: isLoading
+                        ? null
+                        : () => profileController.removeSkill(skill.id),
                     backgroundColor: AppColors.accent.withValues(alpha: 0.1),
                     labelStyle: TextStyle(
                       color: AppColors.textPrimary,
@@ -396,8 +444,14 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       bool isMobile, UserStateController profileController) {
     final l10n = AppLocalizations.of(Get.context!)!;
 
+    // 安全地获取 controller，如果不存在则不显示加载状态
+    final interestController = Get.isRegistered<InterestStateController>()
+        ? Get.find<InterestStateController>()
+        : null;
+
     return Obx(() {
       final user = profileController.currentUser.value;
+      final isLoading = interestController?.isLoading.value ?? false;
 
       if (user == null) {
         return const SizedBox.shrink();
@@ -418,26 +472,53 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  l10n.interests,
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: isMobile ? 18 : 22,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      l10n.interests,
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: isMobile ? 18 : 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    if (isLoading) ...[
+                      const SizedBox(width: 8),
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            const Color(0xFFBA68C8),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
                 TextButton.icon(
-                  icon: Icon(Icons.edit, color: AppColors.accent, size: 20),
-                  label: Text(
+                  icon: const Icon(Icons.edit,
+                      color: Color(0xFFBA68C8), size: 20),
+                  label: const Text(
                     '编辑',
-                    style: TextStyle(color: AppColors.accent),
+                    style: TextStyle(color: Color(0xFFBA68C8)),
                   ),
-                  onPressed: () => _showInterestsBottomSheet(profileController),
+                  onPressed: isLoading
+                      ? null
+                      : () => _showInterestsBottomSheet(profileController),
                 ),
               ],
             ),
             SizedBox(height: isMobile ? 12 : 16),
-            if (interests.isEmpty)
+            if (isLoading && interests.isEmpty)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24),
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            else if (interests.isEmpty)
               Center(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 24),
@@ -464,8 +545,9 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                         : null,
                     label: Text(interest.name),
                     deleteIcon: const Icon(Icons.close, size: 18),
-                    onDeleted: () =>
-                        profileController.removeInterest(interest.id),
+                    onDeleted: isLoading
+                        ? null
+                        : () => profileController.removeInterest(interest.id),
                     backgroundColor:
                         const Color(0xFFBA68C8).withValues(alpha: 0.1),
                     labelStyle: TextStyle(
@@ -904,33 +986,43 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
   @override
   void initState() {
     super.initState();
-    _loadSkills();
+    // 延迟到下一帧加载，避免在父组件 build 期间触发状态更新
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadSkills();
+    });
   }
 
   Future<void> _loadSkills() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
 
     try {
       await widget.skillController.getSkills();
-
-      final skills = List<Skill>.from(widget.skillController.skills);
       if (!mounted) return;
 
+      final skills = List<Skill>.from(widget.skillController.skills);
+
+      // 先设置数据，再调用预选方法
+      _skillsByCategory = _groupSkillsByCategory(skills);
+      _preselectCurrentSkills();
+
+      if (!mounted) return;
       setState(() {
-        _skillsByCategory = _groupSkillsByCategory(skills);
         _isLoading = false;
-        // 预填充当前用户已有的技能
-        _preselectCurrentSkills();
       });
 
-      final error = widget.skillController.errorMessage.value;
-      if (error != null && error.isNotEmpty && mounted) {
-        Get.snackbar(
-          '加载失败',
-          error,
-          snackPosition: SnackPosition.BOTTOM,
-        );
-      }
+      // 延迟到下一帧检查错误，避免在 build 期间触发状态更新
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final error = widget.skillController.errorMessage.value;
+        if (error != null && error.isNotEmpty) {
+          Get.snackbar(
+            '加载失败',
+            error,
+            snackPosition: SnackPosition.BOTTOM,
+          );
+        }
+      });
     } catch (e) {
       print('❌ 加载技能失败: $e');
       if (!mounted) return;
@@ -1303,34 +1395,44 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
   @override
   void initState() {
     super.initState();
-    _loadInterests();
+    // 延迟到下一帧加载，避免在父组件 build 期间触发状态更新
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadInterests();
+    });
   }
 
   Future<void> _loadInterests() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
 
     try {
       await widget.interestController.getInterests();
+      if (!mounted) return;
 
       final interests =
           List<Interest>.from(widget.interestController.interests);
-      if (!mounted) return;
 
+      // 先设置数据，再调用预选方法
+      _interestsByCategory = _groupInterestsByCategory(interests);
+      _preselectCurrentInterests();
+
+      if (!mounted) return;
       setState(() {
-        _interestsByCategory = _groupInterestsByCategory(interests);
         _isLoading = false;
-        // 预填充当前用户已有的兴趣
-        _preselectCurrentInterests();
       });
 
-      final error = widget.interestController.errorMessage.value;
-      if (error != null && error.isNotEmpty && mounted) {
-        Get.snackbar(
-          '加载失败',
-          error,
-          snackPosition: SnackPosition.BOTTOM,
-        );
-      }
+      // 延迟到下一帧检查错误，避免在 build 期间触发状态更新
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final error = widget.interestController.errorMessage.value;
+        if (error != null && error.isNotEmpty) {
+          Get.snackbar(
+            '加载失败',
+            error,
+            snackPosition: SnackPosition.BOTTOM,
+          );
+        }
+      });
     } catch (e) {
       print('❌ 加载兴趣失败: $e');
       if (!mounted) return;

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../auth/presentation/controllers/auth_state_controller.dart';
 import '../../../user/presentation/controllers/user_state_controller.dart';
+import '../../application/use_cases/cancel_meetup_use_case.dart';
 import '../../application/use_cases/cancel_rsvp_use_case.dart';
 import '../../application/use_cases/create_meetup_use_case.dart';
 import '../../application/use_cases/get_meetups_by_city_use_case.dart';
@@ -19,6 +20,7 @@ class MeetupStateController extends GetxController {
   final CreateMeetupUseCase _createMeetupUseCase;
   final RsvpToMeetupUseCase _rsvpToMeetupUseCase;
   final CancelRsvpUseCase _cancelRsvpUseCase;
+  final CancelMeetupUseCase _cancelMeetupUseCase;
 
   MeetupStateController({
     required GetMeetupsUseCase getMeetupsUseCase,
@@ -26,11 +28,13 @@ class MeetupStateController extends GetxController {
     required CreateMeetupUseCase createMeetupUseCase,
     required RsvpToMeetupUseCase rsvpToMeetupUseCase,
     required CancelRsvpUseCase cancelRsvpUseCase,
+    required CancelMeetupUseCase cancelMeetupUseCase,
   })  : _getMeetupsUseCase = getMeetupsUseCase,
         _getMeetupsByCityUseCase = getMeetupsByCityUseCase,
         _createMeetupUseCase = createMeetupUseCase,
         _rsvpToMeetupUseCase = rsvpToMeetupUseCase,
-        _cancelRsvpUseCase = cancelRsvpUseCase;
+        _cancelRsvpUseCase = cancelRsvpUseCase,
+        _cancelMeetupUseCase = cancelMeetupUseCase;
 
   // State Properties
   final RxList<Meetup> meetups = <Meetup>[].obs;
@@ -38,7 +42,7 @@ class MeetupStateController extends GetxController {
   final RxBool isLoading = false.obs;
   final RxBool isLoadingMore = false.obs; // 加载更多状态
   final RxString errorMessage = ''.obs;
-  
+
   // 分页相关
   final RxInt currentPage = 1.obs;
   final RxBool hasMoreData = true.obs;
@@ -101,12 +105,55 @@ class MeetupStateController extends GetxController {
       );
 
       meetups.value = loadedMeetups;
-      
+
+      // 同步 isJoined 状态到 rsvpedMeetupIds
+      // 清除现有的 RSVP 列表(可选,根据业务需求)
+      // rsvpedMeetupIds.clear();
+
+      print('🔍 开始同步 RSVP 状态...');
+      print('   当前 rsvpedMeetupIds: ${rsvpedMeetupIds.toList()}');
+
+      // 获取当前用户 ID
+      final userController = Get.find<UserStateController>();
+      final currentUserId = userController.currentUser.value?.id;
+      print('   当前用户 ID: $currentUserId');
+
+      // 将后端返回的 isJoined=true 的活动添加到 rsvpedMeetupIds
+      for (final meetup in loadedMeetups) {
+        print(
+            '   检查活动: ${meetup.title} (${meetup.id}), isJoined=${meetup.isJoined}, organizerId=${meetup.organizer.id}');
+
+        // 检查是否应该标记为已加入:
+        // 1. 后端返回 isJoined=true
+        // 2. 用户是活动的组织者(后端可能没有正确返回 isJoined)
+        final shouldBeJoined = meetup.isJoined ||
+            (currentUserId != null && meetup.organizer.id == currentUserId);
+
+        if (shouldBeJoined) {
+          if (!rsvpedMeetupIds.contains(meetup.id)) {
+            rsvpedMeetupIds.add(meetup.id);
+            print(
+                '   ✅ 添加到 rsvpedMeetupIds: ${meetup.title} (${meetup.id})${meetup.organizer.id == currentUserId ? ' [组织者]' : ''}');
+          } else {
+            print('   ℹ️ 已存在于 rsvpedMeetupIds: ${meetup.title} (${meetup.id})');
+          }
+        } else {
+          // 如果后端返回 isJoined=false 且不是组织者,从列表中移除(如果存在)
+          if (rsvpedMeetupIds.contains(meetup.id)) {
+            rsvpedMeetupIds.remove(meetup.id);
+            print('   🔄 从 rsvpedMeetupIds 移除: ${meetup.title} (${meetup.id})');
+          }
+        }
+      }
+
+      print('✅ 已同步 ${rsvpedMeetupIds.length} 个已加入的活动');
+      print('   最终 rsvpedMeetupIds: ${rsvpedMeetupIds.toList()}');
+
       // 如果返回的数据少于 pageSize，说明没有更多数据了
       if (loadedMeetups.length < pageSize) {
         hasMoreData.value = false;
       }
-      
+
       print('✅ 加载了 ${loadedMeetups.length} 个活动');
     } catch (e) {
       errorMessage.value = '加载活动失败: $e';
@@ -146,6 +193,43 @@ class MeetupStateController extends GetxController {
       if (moreMeetups.isNotEmpty) {
         meetups.addAll(moreMeetups);
         currentPage.value = nextPage;
+
+        print('🔍 开始同步更多活动的 RSVP 状态...');
+
+        // 获取当前用户 ID
+        final userController = Get.find<UserStateController>();
+        final currentUserId = userController.currentUser.value?.id;
+
+        // 同步新加载活动的 isJoined 状态到 rsvpedMeetupIds
+        for (final meetup in moreMeetups) {
+          print(
+              '   检查活动: ${meetup.title} (${meetup.id}), isJoined=${meetup.isJoined}, organizerId=${meetup.organizer.id}');
+
+          // 检查是否应该标记为已加入:
+          // 1. 后端返回 isJoined=true
+          // 2. 用户是活动的组织者(后端可能没有正确返回 isJoined)
+          final shouldBeJoined = meetup.isJoined ||
+              (currentUserId != null && meetup.organizer.id == currentUserId);
+
+          if (shouldBeJoined) {
+            if (!rsvpedMeetupIds.contains(meetup.id)) {
+              rsvpedMeetupIds.add(meetup.id);
+              print(
+                  '   ✅ 添加到 rsvpedMeetupIds: ${meetup.title} (${meetup.id})${meetup.organizer.id == currentUserId ? ' [组织者]' : ''}');
+            } else {
+              print(
+                  '   ℹ️ 已存在于 rsvpedMeetupIds: ${meetup.title} (${meetup.id})');
+            }
+          } else {
+            if (rsvpedMeetupIds.contains(meetup.id)) {
+              rsvpedMeetupIds.remove(meetup.id);
+              print(
+                  '   🔄 从 rsvpedMeetupIds 移除: ${meetup.title} (${meetup.id})');
+            }
+          }
+        }
+
+        print('✅ 同步完成,当前共 ${rsvpedMeetupIds.length} 个已加入的活动');
 
         // 如果返回的数据少于 pageSize，说明没有更多数据了
         if (moreMeetups.length < pageSize) {
@@ -306,13 +390,109 @@ class MeetupStateController extends GetxController {
       }
     } catch (e) {
       print('❌ 切换 RSVP 失败: $e');
+
+      // 特殊处理:如果后端返回"已经参加"错误,说明状态不同步,需要修正
+      final errorMessage = e.toString();
+      if (errorMessage.contains('已经参加') ||
+          errorMessage.contains('already joined')) {
+        // 后端说已经参加了,但前端认为没参加,修正状态
+        if (!rsvpedMeetupIds.contains(meetupId)) {
+          rsvpedMeetupIds.add(meetupId);
+          print('🔄 修正 RSVP 状态: 已将 $meetupId 标记为已参加');
+        }
+        Get.snackbar(
+          '提示',
+          '您已经参加了这个活动',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+        );
+      } else if (errorMessage.contains('未参加') ||
+          errorMessage.contains('not joined')) {
+        // 后端说未参加,但前端认为参加了,修正状态
+        if (rsvpedMeetupIds.contains(meetupId)) {
+          rsvpedMeetupIds.remove(meetupId);
+          print('🔄 修正 RSVP 状态: 已将 $meetupId 标记为未参加');
+        }
+        Get.snackbar(
+          '提示',
+          '您还未参加这个活动',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+        );
+      } else {
+        // 其他错误,显示错误信息
+        Get.snackbar(
+          '错误',
+          'RSVP 操作失败: $e',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    }
+  }
+
+  /// 取消活动 (组织者专用)
+  Future<bool> cancelMeetup(String meetupId) async {
+    try {
+      // 检查登录状态
+      if (!_requireLogin(action: '取消活动')) {
+        return false;
+      }
+
+      print('🔄 取消活动: $meetupId');
+
+      final success = await _cancelMeetupUseCase.execute(meetupId);
+
+      if (success) {
+        // 更新本地状态 - 将活动标记为已取消
+        final index = meetups.indexWhere((m) => m.id == meetupId);
+        if (index != -1) {
+          final meetup = meetups[index];
+          final updatedMeetup = Meetup(
+            id: meetup.id,
+            title: meetup.title,
+            type: meetup.type,
+            description: meetup.description,
+            location: meetup.location,
+            venue: meetup.venue,
+            schedule: meetup.schedule,
+            capacity: meetup.capacity,
+            organizer: meetup.organizer,
+            images: meetup.images,
+            attendeeIds: meetup.attendeeIds,
+            status: MeetupStatus.cancelled,
+            createdAt: meetup.createdAt,
+            isJoined: meetup.isJoined,
+            isOrganizer: meetup.isOrganizer,
+          );
+          meetups[index] = updatedMeetup;
+        }
+
+        print('✅ 活动已取消');
+        Get.snackbar(
+          '成功',
+          '活动已取消',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+        return true;
+      }
+
+      return false;
+    } catch (e) {
+      print('❌ 取消活动失败: $e');
       Get.snackbar(
         '错误',
-        'RSVP 操作失败: $e',
+        '取消活动失败: $e',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
+      return false;
     }
   }
 

@@ -42,10 +42,14 @@ class MeetupRepository implements IMeetupRepository {
       print('✅ 获取到 ${items.length} 个活动');
 
       // 转换为领域实体
-      final meetups = items
-          .map((json) => MeetupDto.fromJson(json as Map<String, dynamic>))
-          .map((dto) => dto.toDomain())
-          .toList();
+      final meetups = items.map((json) {
+        final dto = MeetupDto.fromJson(json as Map<String, dynamic>);
+        final meetup = dto.toDomain();
+        // 打印每个活动的 isParticipant 状态
+        print(
+            '   活动: ${meetup.title} - isParticipant: ${json['isParticipant']} -> isJoined: ${meetup.isJoined}');
+        return meetup;
+      }).toList();
 
       return meetups;
     } catch (e, stackTrace) {
@@ -124,10 +128,21 @@ class MeetupRepository implements IMeetupRepository {
       final data = response.data as Map<String, dynamic>;
 
       print('✅ 活动创建成功, ID: ${data['id']}');
+      print('📦 后端返回的数据: $data');
+      print('🔍 organizer 信息: ${data['organizer']}');
+      print('🔍 organizerId: ${data['organizerId']}');
 
       // 转换为领域实体
       final dto = MeetupDto.fromJson(data);
-      return dto.toDomain();
+      final meetup = dto.toDomain();
+
+      print('✅ 转换后的 Meetup:');
+      print('   - ID: ${meetup.id}');
+      print('   - Title: ${meetup.title}');
+      print('   - Organizer ID: ${meetup.organizer.id}');
+      print('   - Organizer Name: ${meetup.organizer.name}');
+
+      return meetup;
     } catch (e, stackTrace) {
       print('❌ MeetupRepository.createMeetup 失败: $e');
       print('   堆栈: $stackTrace');
@@ -140,7 +155,11 @@ class MeetupRepository implements IMeetupRepository {
     try {
       print('📡 RSVP 活动: $meetupId');
 
-      await _httpService.post('/events/$meetupId/join');
+      // 后端需要一个非空的请求体
+      await _httpService.post(
+        '/events/$meetupId/join',
+        data: {}, // 发送空的 JSON 对象
+      );
       print('✅ RSVP 成功');
       return true;
     } catch (e) {
@@ -154,7 +173,8 @@ class MeetupRepository implements IMeetupRepository {
     try {
       print('📡 取消 RSVP: $meetupId');
 
-      await _httpService.post('/events/$meetupId/leave');
+      // 使用 DELETE 方法取消参加
+      await _httpService.delete('/events/$meetupId/join');
       print('✅ 取消 RSVP 成功');
       return true;
     } catch (e) {
@@ -200,8 +220,11 @@ class MeetupRepository implements IMeetupRepository {
     try {
       print('📡 取消活动: $meetupId');
 
-      // TODO: 需要 EventsApiService 支持 cancelEvent 方法
-      throw UnimplementedError('cancelMeetup 尚未实现');
+      // 调用后端 API 取消活动 - 使用专用的 cancel 端点
+      await _httpService.post('/events/$meetupId/cancel');
+
+      print('✅ 活动已取消');
+      return true;
     } catch (e) {
       print('❌ MeetupRepository.cancelMeetup 失败: $e');
       rethrow;

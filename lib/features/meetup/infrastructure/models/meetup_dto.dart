@@ -23,6 +23,7 @@ class MeetupDto {
   final List<String> images;
   final List<String> attendeeIds;
   final bool isJoined;
+  final bool isOrganizer;
   final String status;
   final DateTime createdAt;
 
@@ -48,6 +49,7 @@ class MeetupDto {
     required this.images,
     required this.attendeeIds,
     required this.isJoined,
+    required this.isOrganizer,
     required this.status,
     required this.createdAt,
   });
@@ -93,9 +95,9 @@ class MeetupDto {
       cityId: cityId ?? '',
       cityName: cityName,
       country: country ?? '',
-      venue: json['venue'] as String? ?? json['address'] as String? ?? '',
+      venue: json['location'] as String? ?? json['venue'] as String? ?? '',
       venueAddress:
-          json['venueAddress'] as String? ?? json['address'] as String? ?? '',
+          json['address'] as String? ?? json['venueAddress'] as String? ?? '',
       dateTime: json['dateTime'] != null
           ? DateTime.parse(json['dateTime'] as String)
           : json['startTime'] != null
@@ -124,11 +126,12 @@ class MeetupDto {
           [],
       isJoined:
           json['isJoined'] as bool? ?? json['isParticipant'] as bool? ?? false,
+      isOrganizer: json['isOrganizer'] as bool? ?? false,
       status: json['status'] as String? ?? 'upcoming',
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'] as String)
           : DateTime.now(),
-    );
+    )..printDebugInfo();
   }
 
   Map<String, dynamic> toJson() {
@@ -193,6 +196,16 @@ class MeetupDto {
       attendeeIds: attendeeIds,
       status: MeetupStatus.fromString(status),
       createdAt: createdAt,
+      isJoined: isJoined, // 传递 isJoined 信息
+      isOrganizer: isOrganizer, // 传递 isOrganizer 信息
     );
+  }
+
+  void printDebugInfo() {
+    print('🔍 MeetupDto.fromJson:');
+    print('   title: $title');
+    print('   isJoined: $isJoined');
+    print('   isOrganizer: $isOrganizer');
+    print('   organizerId: $organizerId');
   }
 }

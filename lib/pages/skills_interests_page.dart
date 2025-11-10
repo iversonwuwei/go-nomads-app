@@ -113,7 +113,7 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage>
       if (!hasSkillFailure && !hasInterestFailure) {
         Get.snackbar(
           '保存成功',
-          '已保存 ${skillSuccessCount} 个技能和 ${interestSuccessCount} 个兴趣',
+          '已保存 $skillSuccessCount 个技能和 $interestSuccessCount 个兴趣',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.green,
           colorText: Colors.white,
