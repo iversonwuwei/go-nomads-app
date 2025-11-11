@@ -4,57 +4,100 @@ import 'package:flutter/foundation.dart';
 
 /// API 配置
 class ApiConfig {
+  // ============================================================
   // 环境配置
+  // ============================================================
   static const bool kIsProduction = false;
 
-  // 生产环境地址
-  static const String productionUrl = 'https://api.yourapp.com';
+  // ============================================================
+  // 端口配置
+  // ============================================================
+  /// Gateway 端口 (所有服务统一通过 Gateway 访问)
+  static const int gatewayPort = 5000;
 
-  // 开发环境地址 - 根据平台自动选择
-  static String get developmentUrl {
+  /// AI Service 端口 (用于 SignalR Hub 直连,如需要)
+  static const int aiServicePort = 8009;
+
+  // ============================================================
+  // 主机地址配置
+  // ============================================================
+
+  /// 生产环境主机
+  static const String productionHost = 'api.yourapp.com';
+
+  /// 真机测试主机 - 使用电脑局域网 IP
+  /// 通过 ipconfig (Windows) 或 ifconfig (Mac/Linux) 查看
+  /// ⚠️ 雷电模拟器也需要使用这个地址(雷电使用 VirtualBox 网络,10.0.2.2 无效)
+  static const String physicalDeviceHost = '192.168.110.54';
+
+  /// 开发环境主机 - 根据平台自动选择
+  static String get developmentHost {
     if (kIsWeb) {
-      // Web 环境使用 localhost
-      return 'http://localhost:5000';
+      return 'localhost';
     } else if (Platform.isAndroid) {
-      // Android 模拟器使用特殊地址 10.0.2.2
-      // 雷电/Android 模拟器应该通过 10.0.2.2 访问宿主机映射端口
-      return 'http://10.0.2.2:5000';
+      // Android 模拟器使用特殊地址访问宿主机
+      return '10.0.2.2';
     } else if (Platform.isIOS) {
-      // iOS 模拟器可以使用 localhost
-      return 'http://127.0.0.1:5000';
+      return '127.0.0.1';
     } else {
-      // 其他平台（Desktop等）使用 localhost
-      return 'http://localhost:5000';
+      // 其他平台（Desktop等）
+      return 'localhost';
     }
   }
 
-  // 真机测试地址 - 使用电脑局域网 IP
-  // 通过 ipconfig (Windows) 或 ifconfig (Mac/Linux) 查看
-  // ⚠️ 雷电模拟器也需要使用这个地址(雷电使用 VirtualBox 网络,10.0.2.2 无效)
-  static const String physicalDeviceUrl = 'http://192.168.110.54:5000';
+  // ============================================================
+  // 模式切换
+  // ============================================================
 
-  // 是否使用真机测试地址(手动切换)
-  // ⚠️ 雷电模拟器用户请设置为 true
-  // ⚠️ Android 官方模拟器用户请设置为 false,使用 10.0.2.2
-  static const bool usePhysicalDevice = false;
+  /// 是否使用真机测试地址(手动切换)
+  /// ⚠️ 雷电模拟器用户请设置为 true
+  /// ⚠️ Android 官方模拟器用户请设置为 false
+  static const bool usePhysicalDevice = true;
 
   // ============================================================
-  // CityService 直连配置 (端口 8002)
+  // URL 组装
   // ============================================================
-  // 注意: CityService 和主 API 使用同一个端口 5000,不需要单独配置
 
-  // 基础 URL - 智能选择
+  /// 获取当前主机地址
+  static String get currentHost {
+    if (kIsProduction) {
+      return productionHost;
+    }
+    if (usePhysicalDevice) {
+      return physicalDeviceHost;
+    }
+    return developmentHost;
+  }
+
+  /// 生产环境基础 URL
+  static String get productionUrl => 'https://$productionHost';
+
+  /// 开发环境基础 URL
+  static String get developmentUrl => 'http://$developmentHost:$gatewayPort';
+
+  /// 真机测试基础 URL
+  static String get physicalDeviceUrl =>
+      'http://$physicalDeviceHost:$gatewayPort';
+
+  /// 基础 URL - 智能选择
   static String get baseUrl {
     if (kIsProduction) {
       return productionUrl;
     }
-
-    // 开发模式
     if (usePhysicalDevice) {
       return physicalDeviceUrl;
     }
-
     return developmentUrl;
+  }
+
+  /// AI Service 直连地址 (用于 SignalR Hub)
+  /// 注意: 通常应该通过 Gateway 访问,此配置仅用于特殊场景
+  static String get aiServiceUrl {
+    if (kIsProduction) {
+      return productionUrl; // 生产环境通过 Gateway
+    }
+    final host = usePhysicalDevice ? physicalDeviceHost : developmentHost;
+    return 'http://$host:$aiServicePort';
   }
 
   // API 版本
@@ -259,14 +302,18 @@ class ApiConfig {
   /// 获取当前配置信息（用于调试）
   static String getConfigInfo() {
     return '''
-配置信息:
-- 环境: ${kIsProduction ? '生产' : '开发'}
-- 平台: ${kIsWeb ? 'Web' : Platform.operatingSystem}
-- 基础地址: $currentBaseUrl
-- API地址: $currentApiBaseUrl
-- API版本: $apiVersion
-- 真机模式: ${usePhysicalDevice ? '是' : '否'}
-- 自定义地址: ${_customBaseUrl ?? '未设置'}
+📡 API 配置信息:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🌍 环境: ${kIsProduction ? '生产环境 🚀' : '开发环境 🔧'}
+💻 平台: ${kIsWeb ? 'Web 🌐' : Platform.operatingSystem}
+🏠 当前主机: $currentHost
+🔌 Gateway 端口: $gatewayPort
+📍 基础地址: $currentBaseUrl
+🔗 API地址: $currentApiBaseUrl
+📌 API版本: $apiVersion
+📱 真机模式: ${usePhysicalDevice ? '✅ 是' : '❌ 否'}
+🎯 自定义地址: ${_customBaseUrl ?? '未设置'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ''';
   }
 }

@@ -130,6 +130,37 @@ class AiRepository implements IAiRepository {
   }
 
   @override
+  Future<Result<DigitalNomadGuide?>> getDigitalNomadGuideFromBackend(
+      String cityId) async {
+    try {
+      print('🔍 正在从后端获取数字游民指南...');
+      print('   城市ID: $cityId');
+      print('   API: ${ApiConfig.currentApiBaseUrl}/cities/$cityId/guide');
+
+      final response = await _httpService.get('/cities/$cityId/guide');
+
+      if (response.statusCode == 404) {
+        print('ℹ️ 后端没有该城市的指南数据');
+        return Result.success(null);
+      }
+
+      if (response.statusCode == 200) {
+        final guideData = response.data as Map<String, dynamic>;
+        final guide = DigitalNomadGuide.fromMap(guideData);
+        print('✅ 成功获取指南数据');
+        return Result.success(guide);
+      }
+
+      print('⚠️ 意外的响应状态: ${response.statusCode}');
+      return Result.failure(
+          UnknownException('Unexpected status: ${response.statusCode}'));
+    } catch (e) {
+      print('❌ 获取指南失败: $e');
+      return Result.failure(UnknownException(e.toString()));
+    }
+  }
+
+  @override
   Future<Result<DigitalNomadGuide>> generateDigitalNomadGuide({
     required String cityId,
     required String cityName,
@@ -185,10 +216,11 @@ class AiRepository implements IAiRepository {
 
       // 2. 连接 SignalR 监听任务完成
       final signalRService = SignalRService();
-      
-      // SignalR Hub 在 AIService 上（端口 8009），直接连接
-      const aiServiceBaseUrl = 'http://127.0.0.1:8009';
-      print('🔌 连接到 AIService SignalR Hub: $aiServiceBaseUrl/hubs/notifications');
+
+      // SignalR Hub 直连 AIService (端口 8009)
+      final aiServiceBaseUrl = ApiConfig.aiServiceUrl;
+      print(
+          '🔌 连接到 AIService SignalR Hub: $aiServiceBaseUrl/hubs/notifications');
 
       if (!signalRService.isConnected) {
         await signalRService.connect(aiServiceBaseUrl);

@@ -195,6 +195,18 @@ class GenerateDigitalNomadGuideUseCase
   }
 }
 
+/// 从后端获取数字游民指南
+class GetDigitalNomadGuideUseCase extends UseCase<DigitalNomadGuide?, String> {
+  final IAiRepository _repository;
+
+  GetDigitalNomadGuideUseCase(this._repository);
+
+  @override
+  Future<Result<DigitalNomadGuide?>> execute(String cityId) async {
+    return await _repository.getDigitalNomadGuideFromBackend(cityId);
+  }
+}
+
 /// 生成数字游民指南 (流式方式)
 ///
 /// 注意: 这个Use Case返回Result<void>

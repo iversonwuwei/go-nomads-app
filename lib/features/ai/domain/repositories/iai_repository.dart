@@ -92,6 +92,15 @@ abstract class IAiRepository {
 
   // ==================== 数字游民指南 ====================
 
+  /// 从后端获取数字游民指南
+  ///
+  /// 参数:
+  /// - [cityId]: 城市ID
+  ///
+  /// 返回: Result<DigitalNomadGuide?> - 如果没有数据则返回null
+  Future<Result<DigitalNomadGuide?>> getDigitalNomadGuideFromBackend(
+      String cityId);
+
   /// 生成数字游民指南 (标准方式)
   ///
   /// 参数:

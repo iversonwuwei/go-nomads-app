@@ -476,6 +476,16 @@ class _CityDetailPageState extends State<CityDetailPage>
     _scrollController.dispose();
     _pageController.dispose();
     _tabController.dispose();
+
+    // 🔥 页面销毁时清空指南状态,防止显示错误的城市指南
+    try {
+      final aiController = Get.find<AiStateController>();
+      aiController.resetGuideState();
+      print('🧹 [CityDetailPage] 页面销毁,已清空指南状态');
+    } catch (e) {
+      print('⚠️ [CityDetailPage] 清空指南状态失败: $e');
+    }
+
     super.dispose();
   }
 
@@ -1206,23 +1216,43 @@ class _CityDetailPageState extends State<CityDetailPage>
 
   // Digital Nomad Guide 标签
   Widget _buildGuideTab(AiStateController controller) {
-    // 🔥 页面初始加载时自动从本地或服务端获取指南
+    // 🔥 检查城市是否变化,如果变化则清空旧数据并加载新数据
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!controller.isGeneratingGuide &&
-          !controller.isLoadingGuide &&
-          controller.currentGuide == null) {
-        controller.loadCityGuide(
-          cityId: cityId,
-          cityName: cityName,
-        );
+      final currentGuide = controller.currentGuide;
+      final shouldReload = currentGuide == null ||
+          currentGuide.cityId != cityId ||
+          (!controller.isGeneratingGuide && !controller.isLoadingGuide);
+
+      if (shouldReload) {
+        // 如果是不同城市,先清空旧数据
+        if (currentGuide != null && currentGuide.cityId != cityId) {
+          print('🔄 [GuideTab] 城市切换: ${currentGuide.cityId} → $cityId, 清空旧数据');
+          controller.resetGuideState();
+        }
+
+        // 加载新城市的指南(优先使用缓存)
+        if (!controller.isGeneratingGuide && !controller.isLoadingGuide) {
+          print('📖 [GuideTab] 加载城市指南: $cityName (ID: $cityId)');
+          controller.loadCityGuide(
+            cityId: cityId,
+            cityName: cityName,
+          );
+        }
       }
     });
 
     return Obx(() {
       print(
-          '🔍 [GuideTab] Rebuilding... isLoading=${controller.isLoadingGuide}, isGenerating=${controller.isGeneratingGuide}, guide=${controller.currentGuide != null}, fromCache=${controller.isGuideFromCache}');
+          '🔍 [GuideTab] Rebuilding... cityId=$cityId, isLoading=${controller.isLoadingGuide}, isGenerating=${controller.isGeneratingGuide}, guide=${controller.currentGuide != null}, guideCity=${controller.currentGuide?.cityId}');
 
-      // 显示加载状态
+      // 优先显示指南内容(如果有且是当前城市的)
+      final guide = controller.currentGuide;
+      if (guide != null && guide.cityId == cityId) {
+        print('✅ [GuideTab] Showing guide content for $cityName');
+        return _buildGuideContent(context, guide, controller);
+      }
+
+      // 显示加载或生成状态
       if (controller.isLoadingGuide || controller.isGeneratingGuide) {
         return Center(
           child: Column(
@@ -1258,50 +1288,100 @@ class _CityDetailPageState extends State<CityDetailPage>
         );
       }
 
-      final guide = controller.currentGuide;
-      if (guide == null) {
-        print('⚠️ [GuideTab] Guide is null, showing empty state');
-        // 显示空状态,带有"AI 生成"按钮
-        return Center(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.map_outlined,
-                  size: 60,
-                  color: Colors.grey,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  AppLocalizations.of(context)!.loadingGuide,
-                  style: const TextStyle(fontSize: 16, color: Colors.grey),
+      // 只有在确实没有数据且不在加载中时，才显示空状态
+      print('⚠️ [GuideTab] Guide is null and not loading, showing empty state');
+      // 显示空状态,带有"AI 生成"按钮
+      return Center(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 🔄 生成中的状态提示
+              if (controller.isGeneratingGuide) ...[
+                const CircularProgressIndicator(
+                  color: Color(0xFFFF4458),
                 ),
                 const SizedBox(height: 16),
-                ElevatedButton.icon(
-                  onPressed: () => _showAIGenerateProgressDialog(controller),
-                  icon: const Icon(Icons.auto_awesome),
-                  label: const Text('AI 生成旅游指南'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFF4458),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 32, vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
+                const Text(
+                  '🤖 正在后台生成指南...',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Color(0xFFFF4458),
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
+                const SizedBox(height: 8),
+                Text(
+                  '请稍候,生成完成后会自动显示',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                ),
+                const SizedBox(height: 24),
               ],
-            ),
+              const Icon(
+                Icons.map_outlined,
+                size: 60,
+                color: Colors.grey,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                AppLocalizations.of(context)!.loadingGuide,
+                style: const TextStyle(fontSize: 16, color: Colors.grey),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: controller.isGeneratingGuide
+                        ? null // 🔒 生成中时禁用
+                        : () => _showAIGenerateProgressDialog(controller),
+                    icon: const Icon(Icons.auto_awesome),
+                    label: const Text('前台生成'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFF4458),
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: Colors.grey[300], // 禁用时的背景色
+                      disabledForegroundColor: Colors.grey[500], // 禁用时的文字色
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  OutlinedButton.icon(
+                    onPressed: controller.isGeneratingGuide
+                        ? null // 🔒 生成中时禁用
+                        : () {
+                            controller.generateDigitalNomadGuideInBackground(
+                              cityId: cityId,
+                              cityName: cityName,
+                            );
+                          },
+                    icon: const Icon(Icons.cloud_upload),
+                    label: const Text('后台生成'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFFF4458),
+                      side: const BorderSide(
+                        color: Color(0xFFFF4458),
+                        width: 1.5,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        );
-      }
-
-      print(
-          '✅ [GuideTab] Showing guide content (from ${controller.isGuideFromCache ? "cache" : "server"})');
-      return _buildGuideContent(context, guide, controller);
+        ),
+      );
+      // 空状态结束，显示指南内容的逻辑已在前面处理
     });
   }
 
@@ -1311,53 +1391,96 @@ class _CityDetailPageState extends State<CityDetailPage>
     return ListView(
       padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
       children: [
-        // 缓存状态提示 + AI 重新生成按钮
+        // AI 重新生成按钮
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: controller.isGuideFromCache
-                ? Colors.blue.withValues(alpha: 0.1)
-                : Colors.green.withValues(alpha: 0.1),
+            color: Colors.green.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
             children: [
               Icon(
-                controller.isGuideFromCache
-                    ? Icons.offline_pin
-                    : Icons.cloud_done,
-                color: controller.isGuideFromCache ? Colors.blue : Colors.green,
+                Icons.cloud_done,
+                color: Colors.green,
                 size: 20,
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  controller.isGuideFromCache
-                      ? '📖 本地缓存 (最后更新于 ${_formatCacheTime()})'
-                      : '☁️ 最新生成',
+                  '☁️ 从后端加载',
                   style: TextStyle(
                     fontSize: 13,
-                    color: controller.isGuideFromCache
-                        ? Colors.blue[800]
-                        : Colors.green[800],
+                    color: Colors.green[800],
                   ),
                 ),
               ),
-              TextButton.icon(
-                onPressed: () {
-                  controller.loadCityGuide(
-                    cityId: cityId,
-                    cityName: cityName,
-                    forceRefresh: true,
-                  );
-                },
-                icon: const Icon(Icons.refresh, size: 18),
-                label: const Text('刷新'),
-                style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFFFF4458),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                ),
+              Row(
+                children: [
+                  TextButton.icon(
+                    onPressed: controller.isGeneratingGuide ||
+                            controller.isLoadingGuide
+                        ? null
+                        : () {
+                            // 重新从后端加载指南
+                            controller.loadCityGuide(
+                              cityId: cityId,
+                              cityName: cityName,
+                            );
+                          },
+                    icon: const Icon(Icons.refresh, size: 18),
+                    label: const Text('刷新'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFFFF4458),
+                      disabledForegroundColor: Colors.grey[400],
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 4),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  PopupMenuButton<String>(
+                    icon: Icon(
+                      Icons.auto_awesome,
+                      size: 18,
+                      color: controller.isGeneratingGuide
+                          ? Colors.grey[400]
+                          : const Color(0xFFFF4458),
+                    ),
+                    enabled: !controller.isGeneratingGuide,
+                    onSelected: (value) {
+                      if (value == 'foreground') {
+                        _showAIGenerateProgressDialog(controller);
+                      } else if (value == 'background') {
+                        controller.generateDigitalNomadGuideInBackground(
+                          cityId: cityId,
+                          cityName: cityName,
+                        );
+                      }
+                    },
+                    itemBuilder: (BuildContext context) => [
+                      const PopupMenuItem<String>(
+                        value: 'foreground',
+                        child: Row(
+                          children: [
+                            Icon(Icons.visibility, size: 18),
+                            SizedBox(width: 8),
+                            Text('前台生成'),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuItem<String>(
+                        value: 'background',
+                        child: Row(
+                          children: [
+                            Icon(Icons.cloud_upload, size: 18),
+                            SizedBox(width: 8),
+                            Text('后台生成'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),
@@ -1417,12 +1540,6 @@ class _CityDetailPageState extends State<CityDetailPage>
             )),
       ],
     );
-  }
-
-  // 格式化缓存时间
-  String _formatCacheTime() {
-    // TODO: 从 DAO 获取实际更新时间
-    return '刚刚';
   }
 
   // Pros & Cons 标签
