@@ -2,6 +2,8 @@ import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/ai/application/use_cases/ai_use_cases.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city_detail.dart';
 import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan.dart';
+import 'package:df_admin_mobile/services/database/digital_nomad_guide_dao.dart';
+import 'package:df_admin_mobile/services/database_service.dart';
 import 'package:get/get.dart';
 
 /// AI功能状态控制器
@@ -10,6 +12,7 @@ import 'package:get/get.dart';
 /// - 旅行计划生成 (标准和流式)
 /// - 数字游民指南生成 (标准和流式)
 /// - 旅行计划检索
+/// - 本地缓存管理
 class AiStateController extends GetxController {
   // Use Cases
   final GenerateTravelPlanUseCase _generateTravelPlanUseCase;
@@ -19,6 +22,9 @@ class AiStateController extends GetxController {
   final GenerateDigitalNomadGuideStreamUseCase
       _generateDigitalNomadGuideStreamUseCase;
 
+  // Database DAO
+  DigitalNomadGuideDao? _guideDao;
+
   AiStateController(
     this._generateTravelPlanUseCase,
     this._generateTravelPlanStreamUseCase,
@@ -26,6 +32,22 @@ class AiStateController extends GetxController {
     this._generateDigitalNomadGuideUseCase,
     this._generateDigitalNomadGuideStreamUseCase,
   );
+
+  @override
+  void onInit() {
+    super.onInit();
+    _initializeDao();
+  }
+
+  /// 初始化 DAO
+  Future<void> _initializeDao() async {
+    try {
+      final db = await Get.find<DatabaseService>().database;
+      _guideDao = DigitalNomadGuideDao(db);
+    } catch (e) {
+      print('⚠️ Failed to initialize DigitalNomadGuideDao: $e');
+    }
+  }
 
   // ==================== 可观察状态 ====================
 
@@ -42,6 +64,8 @@ class AiStateController extends GetxController {
   final _guideGenerationMessage = ''.obs;
   final _currentGuide = Rx<DigitalNomadGuide?>(null);
   final _guideError = Rx<String?>(null);
+  final _isLoadingGuide = false.obs; // 从本地加载中
+  final _isGuideFromCache = false.obs; // 是否来自缓存
 
   // ==================== Getters ====================
 
@@ -58,8 +82,72 @@ class AiStateController extends GetxController {
   String get guideGenerationMessage => _guideGenerationMessage.value;
   DigitalNomadGuide? get currentGuide => _currentGuide.value;
   String? get guideError => _guideError.value;
+  bool get isLoadingGuide => _isLoadingGuide.value;
+  bool get isGuideFromCache => _isGuideFromCache.value;
 
   // ==================== 业务方法 ====================
+
+  /// 加载城市指南 (本地优先)
+  ///
+  /// 流程:
+  /// 1. 先从 sqlite 读取本地缓存
+  /// 2. 如果本地有且未过期，直接返回
+  /// 3. 否则从服务端获取并缓存
+  Future<DigitalNomadGuide?> loadCityGuide({
+    required String cityId,
+    required String cityName,
+    bool forceRefresh = false,
+    int maxCacheDays = 30,
+  }) async {
+    try {
+      _isLoadingGuide.value = true;
+      _guideError.value = null;
+
+      // 确保 DAO 已初始化
+      if (_guideDao == null) {
+        await _initializeDao();
+      }
+
+      if (_guideDao == null) {
+        throw Exception('Failed to initialize guide DAO');
+      }
+
+      // 如果不强制刷新，先尝试从本地加载
+      if (!forceRefresh) {
+        final cachedGuide = await _guideDao!.getGuide(cityId);
+        if (cachedGuide != null) {
+          final isExpired = await _guideDao!.isGuideExpired(
+            cityId,
+            maxDays: maxCacheDays,
+          );
+
+          if (!isExpired) {
+            print('✅ 从本地缓存加载城市指南: $cityName');
+            _currentGuide.value = cachedGuide;
+            _isGuideFromCache.value = true;
+            _isLoadingGuide.value = false;
+            return cachedGuide;
+          } else {
+            print('⚠️ 本地指南已过期，需要重新生成');
+          }
+        }
+      }
+
+      // 本地无缓存或已过期，使用流式方式生成
+      _isGuideFromCache.value = false;
+      await generateDigitalNomadGuideStream(
+        cityId: cityId,
+        cityName: cityName,
+      );
+
+      _isLoadingGuide.value = false;
+      return _currentGuide.value;
+    } catch (e) {
+      _guideError.value = e.toString();
+      _isLoadingGuide.value = false;
+      return null;
+    }
+  }
 
   /// 生成旅行计划 (标准方式)
   Future<TravelPlan?> generateTravelPlan({
@@ -233,10 +321,22 @@ class AiStateController extends GetxController {
           _guideGenerationMessage.value = message;
           _guideGenerationProgress.value = progress;
         },
-        onData: (guide) {
+        onData: (guide) async {
           _currentGuide.value = guide;
           _isGeneratingGuide.value = false;
           _guideGenerationProgress.value = 100;
+          _isGuideFromCache.value = false;
+
+          // 🔥 生成成功后自动保存到本地 sqlite
+          try {
+            if (_guideDao != null) {
+              await _guideDao!.saveGuide(guide);
+              print('✅ 城市指南已保存到本地缓存: $cityName');
+            }
+          } catch (e) {
+            print('⚠️ 保存指南到本地失败: $e');
+            // 保存失败不影响主流程
+          }
         },
         onError: (error) {
           _guideError.value = error;
@@ -273,5 +373,37 @@ class AiStateController extends GetxController {
     _guideGenerationMessage.value = '';
     _currentGuide.value = null;
     _guideError.value = null;
+    _isLoadingGuide.value = false;
+    _isGuideFromCache.value = false;
+  }
+
+  /// 删除本地缓存的指南
+  Future<void> deleteCachedGuide(String cityId) async {
+    try {
+      if (_guideDao != null) {
+        await _guideDao!.deleteGuide(cityId);
+        if (_currentGuide.value?.cityId == cityId) {
+          _currentGuide.value = null;
+          _isGuideFromCache.value = false;
+        }
+        print('✅ 已删除本地缓存的城市指南');
+      }
+    } catch (e) {
+      print('⚠️ 删除本地指南失败: $e');
+    }
+  }
+
+  /// 清除所有本地缓存的指南
+  Future<void> clearAllCachedGuides() async {
+    try {
+      if (_guideDao != null) {
+        await _guideDao!.deleteAll();
+        _currentGuide.value = null;
+        _isGuideFromCache.value = false;
+        print('✅ 已清除所有本地缓存的城市指南');
+      }
+    } catch (e) {
+      print('⚠️ 清除本地指南失败: $e');
+    }
   }
 }

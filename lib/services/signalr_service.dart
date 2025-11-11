@@ -4,6 +4,7 @@ import 'package:signalr_netcore/signalr_client.dart';
 
 import '../features/async_task/domain/entities/async_task.dart';
 import '../features/async_task/infrastructure/models/async_task_dto.dart';
+import 'token_storage_service.dart';
 
 /// SignalR 实时通知服务
 /// 管理与后端 SignalR Hub 的连接,接收任务进度和完成通知
@@ -36,17 +37,22 @@ class SignalRService {
     }
 
     try {
+      // 获取认证 token
+      final tokenService = TokenStorageService();
+      final token = await tokenService.getAccessToken();
+      
       // 构建 Hub URL
       final hubUrl = '$baseUrl/hubs/notifications';
       print('🔌 正在连接 SignalR Hub: $hubUrl');
 
-      // 创建连接
+      // 创建连接（带认证）
       _hubConnection = HubConnectionBuilder()
           .withUrl(
             hubUrl,
             options: HttpConnectionOptions(
               skipNegotiation: false,
               transport: HttpTransportType.WebSockets,
+              accessTokenFactory: () async => token ?? '', // 添加认证 token
             ),
           )
           .withAutomaticReconnect()
@@ -106,15 +112,30 @@ class SignalRService {
       if (arguments == null || arguments.isEmpty) return;
 
       try {
-        final data = arguments[0] as Map<String, dynamic>;
-        final taskDto = AsyncTaskDto.fromJson(data);
-        final task = taskDto.toDomain();
+        print('📦 收到 TaskCompleted 事件，原始数据:');
+        print('   arguments 长度: ${arguments.length}');
+        if (arguments.isNotEmpty) {
+          final data = arguments[0] as Map<String, dynamic>;
+          print('   原始 JSON keys: ${data.keys.toList()}');
+          print(
+              '   完整数据: ${data.toString().substring(0, data.toString().length > 500 ? 500 : data.toString().length)}...');
+          
+          final taskDto = AsyncTaskDto.fromJson(data);
+          final task = taskDto.toDomain();
 
-        print(
-            '✅ 收到任务完成通知: ${task.taskId} - PlanId: ${task.result?.planId}');
-        _taskCompletedController.add(task);
-      } catch (e) {
+          print('✅ 收到任务完成通知: ${task.taskId}');
+          print('   - planId: ${task.result?.planId}');
+          print('   - guideId: ${task.result?.guideId}');
+          print('   - hasRawData: ${task.result?.hasRawData}');
+          if (task.result?.rawData != null) {
+            print('   - rawData keys: ${task.result!.rawData!.keys.toList()}');
+          }
+
+          _taskCompletedController.add(task);
+        }
+      } catch (e, stackTrace) {
         print('❌ 解析 TaskCompleted 失败: $e');
+        print('   StackTrace: $stackTrace');
       }
     });
 

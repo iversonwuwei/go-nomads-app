@@ -324,17 +324,16 @@ class DatabaseService {
     // 数字游民指南表
     await db.execute('''
       CREATE TABLE digital_nomad_guides (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        city_id TEXT NOT NULL UNIQUE,
+        city_id TEXT PRIMARY KEY,
         city_name TEXT NOT NULL,
-        overview TEXT,
-        best_areas TEXT,
-        visa_info TEXT,
-        workspace_recommendations TEXT,
-        tips TEXT,
-        essential_info TEXT,
-        created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL
+        overview TEXT NOT NULL,
+        visa_info TEXT NOT NULL,
+        best_areas TEXT NOT NULL,
+        workspace_recommendations TEXT NOT NULL,
+        tips TEXT NOT NULL,
+        essential_info TEXT NOT NULL,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL
       )
     ''');
 
@@ -568,22 +567,23 @@ class DatabaseService {
 
         await db.execute('''
           CREATE TABLE IF NOT EXISTS digital_nomad_guides (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            city_id TEXT NOT NULL UNIQUE,
+            city_id TEXT PRIMARY KEY,
             city_name TEXT NOT NULL,
-            overview TEXT,
-            best_areas TEXT,
-            visa_info TEXT,
-            workspace_recommendations TEXT,
-            tips TEXT,
-            essential_info TEXT,
-            created_at TEXT NOT NULL,
-            updated_at TEXT NOT NULL
+            overview TEXT NOT NULL,
+            visa_info TEXT NOT NULL,
+            best_areas TEXT NOT NULL,
+            workspace_recommendations TEXT NOT NULL,
+            tips TEXT NOT NULL,
+            essential_info TEXT NOT NULL,
+            created_at INTEGER NOT NULL,
+            updated_at INTEGER NOT NULL
           )
         ''');
 
         await db.execute(
-            'CREATE INDEX IF NOT EXISTS idx_guides_city ON digital_nomad_guides(city_id)');
+            'CREATE INDEX IF NOT EXISTS idx_guides_city_id ON digital_nomad_guides(city_id)');
+        await db.execute(
+            'CREATE INDEX IF NOT EXISTS idx_guides_updated_at ON digital_nomad_guides(updated_at DESC)');
 
         print('✅ 数字游民指南表创建完成');
       } catch (e) {

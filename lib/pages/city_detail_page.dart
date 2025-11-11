@@ -1206,22 +1206,53 @@ class _CityDetailPageState extends State<CityDetailPage>
 
   // Digital Nomad Guide 标签
   Widget _buildGuideTab(AiStateController controller) {
+    // 🔥 页面初始加载时自动从本地或服务端获取指南
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!controller.isGeneratingGuide &&
+          !controller.isLoadingGuide &&
+          controller.currentGuide == null) {
+        controller.loadCityGuide(
+          cityId: cityId,
+          cityName: cityName,
+        );
+      }
+    });
+
     return Obx(() {
       print(
-          '🔍 [GuideTab] Rebuilding... isGenerating=${controller.isGeneratingGuide}, guide=${controller.currentGuide != null}');
+          '🔍 [GuideTab] Rebuilding... isLoading=${controller.isLoadingGuide}, isGenerating=${controller.isGeneratingGuide}, guide=${controller.currentGuide != null}, fromCache=${controller.isGuideFromCache}');
 
       // 显示加载状态
-      if (controller.isGeneratingGuide) {
-        return const Center(
+      if (controller.isLoadingGuide || controller.isGeneratingGuide) {
+        return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 16),
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
               Text(
-                '🤖 AI 正在生成旅游指南...',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+                controller.isGeneratingGuide
+                    ? '🤖 AI 正在生成旅游指南...'
+                    : '📖 正在加载旅游指南...',
+                style: const TextStyle(fontSize: 16, color: Colors.grey),
               ),
+              if (controller.isGeneratingGuide) ...[
+                const SizedBox(height: 12),
+                Text(
+                  controller.guideGenerationMessage,
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '${controller.guideGenerationProgress}%',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFFF4458),
+                  ),
+                ),
+              ],
             ],
           ),
         );
@@ -1268,7 +1299,8 @@ class _CityDetailPageState extends State<CityDetailPage>
         );
       }
 
-      print('✅ [GuideTab] Showing guide content');
+      print(
+          '✅ [GuideTab] Showing guide content (from ${controller.isGuideFromCache ? "cache" : "server"})');
       return _buildGuideContent(context, guide, controller);
     });
   }
@@ -1279,21 +1311,58 @@ class _CityDetailPageState extends State<CityDetailPage>
     return ListView(
       padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
       children: [
-        // AI 重新生成按钮
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            TextButton.icon(
-              onPressed: () => _showAIGenerateProgressDialog(controller),
-              icon: const Icon(Icons.refresh, size: 18),
-              label: const Text('AI 重新生成'),
-              style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFFFF4458),
+        // 缓存状态提示 + AI 重新生成按钮
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: controller.isGuideFromCache
+                ? Colors.blue.withValues(alpha: 0.1)
+                : Colors.green.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                controller.isGuideFromCache
+                    ? Icons.offline_pin
+                    : Icons.cloud_done,
+                color: controller.isGuideFromCache ? Colors.blue : Colors.green,
+                size: 20,
               ),
-            ),
-          ],
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  controller.isGuideFromCache
+                      ? '📖 本地缓存 (最后更新于 ${_formatCacheTime()})'
+                      : '☁️ 最新生成',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: controller.isGuideFromCache
+                        ? Colors.blue[800]
+                        : Colors.green[800],
+                  ),
+                ),
+              ),
+              TextButton.icon(
+                onPressed: () {
+                  controller.loadCityGuide(
+                    cityId: cityId,
+                    cityName: cityName,
+                    forceRefresh: true,
+                  );
+                },
+                icon: const Icon(Icons.refresh, size: 18),
+                label: const Text('刷新'),
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFFFF4458),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                ),
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 16),
         Text(
           l10n.overview,
           style: const TextStyle(
@@ -1348,6 +1417,12 @@ class _CityDetailPageState extends State<CityDetailPage>
             )),
       ],
     );
+  }
+
+  // 格式化缓存时间
+  String _formatCacheTime() {
+    // TODO: 从 DAO 获取实际更新时间
+    return '刚刚';
   }
 
   // Pros & Cons 标签

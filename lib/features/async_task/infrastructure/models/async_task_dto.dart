@@ -30,16 +30,20 @@ class AsyncTaskDto {
 
   factory AsyncTaskDto.fromJson(Map<String, dynamic> json) {
     return AsyncTaskDto(
-      taskId: json['taskId'] as String,
-      status: json['status'] as String,
+      taskId: json['taskId'] as String? ?? '',
+      status: json['status'] as String? ?? 'unknown',
       planId: json['planId'] as String?,
       guideId: json['guideId'] as String?,
       result: json['result'] as Map<String, dynamic>?,
       error: json['error'] as String?,
-      progress: json['progress'] as int,
+      progress: (json['progress'] as num?)?.toInt() ?? 0,
       progressMessage: json['progressMessage'] as String?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'] as String)
+          : DateTime.now(),
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'] as String)
+          : DateTime.now(),
       completedAt: json['completedAt'] != null
           ? DateTime.parse(json['completedAt'] as String)
           : null,

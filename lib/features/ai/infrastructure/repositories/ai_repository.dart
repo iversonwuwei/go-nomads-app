@@ -1,6 +1,10 @@
+import 'dart:async';
+
+import 'package:df_admin_mobile/config/api_config.dart';
 import 'package:df_admin_mobile/core/core.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/ai/domain/repositories/iai_repository.dart';
+import 'package:df_admin_mobile/features/async_task/domain/entities/async_task.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city_detail.dart'
     as city_entity;
 import 'package:df_admin_mobile/features/city/infrastructure/models/city_detail_dto.dart'
@@ -8,6 +12,7 @@ import 'package:df_admin_mobile/features/city/infrastructure/models/city_detail_
 import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan.dart'
     as entity;
 import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:df_admin_mobile/services/signalr_service.dart';
 import 'package:get/get.dart';
 
 /// AI服务Repository实现
@@ -155,12 +160,116 @@ class AiRepository implements IAiRepository {
     required Function(String error) onError,
   }) async {
     try {
-      // TODO: 实现流式响应 (需要 HttpService 支持 SSE)
-      return Result.failure(
-        UnknownException('Stream API not yet implemented'),
+      print('🤖 开始异步生成数字游民指南...');
+      print('   城市: $cityName (ID: $cityId)');
+      print('   API Base URL: ${ApiConfig.currentApiBaseUrl}');
+
+      // 1. 创建异步任务
+      onProgress('正在创建生成任务...', 0);
+
+      print('📤 发送请求到: ${ApiConfig.currentApiBaseUrl}/ai/guide/async');
+
+      final createResponse = await _httpService.post(
+        '/ai/guide/async',
+        data: {
+          'cityId': cityId,
+          'cityName': cityName,
+        },
       );
-    } catch (e) {
-      return Result.failure(UnknownException(e.toString()));
+
+      print('✅ API 响应成功！');
+      print('   Response data: ${createResponse.data}');
+
+      final taskId = createResponse.data['taskId'] as String;
+      print('✅ 任务已创建: $taskId');
+
+      onProgress('任务已创建，等待处理...', 10);
+
+      // 2. 连接 SignalR 监听任务完成
+      final signalRService = SignalRService();
+      
+      // SignalR Hub 在 AIService 上（端口 8009），直接连接
+      const aiServiceBaseUrl = 'http://127.0.0.1:8009';
+      print('🔌 连接到 AIService SignalR Hub: $aiServiceBaseUrl/hubs/notifications');
+
+      if (!signalRService.isConnected) {
+        await signalRService.connect(aiServiceBaseUrl);
+      }
+
+      // 订阅任务通知
+      await signalRService.subscribeToTask(taskId);
+
+      // 3. 监听任务事件
+      final completer = Completer<void>();
+      late StreamSubscription<AsyncTask> progressSub;
+      late StreamSubscription<AsyncTask> completedSub;
+      late StreamSubscription<AsyncTask> failedSub;
+
+      progressSub = signalRService.taskProgressStream.listen((task) {
+        if (task.taskId == taskId) {
+          final message = task.progress.message ?? '处理中...';
+          final percent = task.progress.percentage;
+          print('📊 任务进度: $percent% - $message');
+          onProgress(message, percent);
+        }
+      });
+
+      completedSub = signalRService.taskCompletedStream.listen((task) async {
+        if (task.taskId == taskId) {
+          print('✅ 任务完成！');
+
+          try {
+            // 从 task.result.rawData 中直接解析指南数据
+            if (task.result?.rawData != null) {
+              print('📦 解析指南数据...');
+              final dto = city_dto.DigitalNomadGuideDto.fromJson(
+                task.result!.rawData!,
+              );
+              final guide = dto.toDomain() as city_entity.DigitalNomadGuide;
+
+              onProgress('指南生成完成！', 100);
+              onData(guide);
+            } else {
+              throw Exception('任务完成但没有返回指南数据');
+            }
+          } catch (e) {
+            print('❌ 解析指南数据失败: $e');
+            onError('解析指南数据失败: ${e.toString()}');
+          } finally {
+            await progressSub.cancel();
+            await completedSub.cancel();
+            await failedSub.cancel();
+            await signalRService.unsubscribeFromTask(taskId);
+            completer.complete();
+          }
+        }
+      });
+
+      failedSub = signalRService.taskFailedStream.listen((task) async {
+        if (task.taskId == taskId) {
+          print('❌ 任务失败: ${task.error}');
+          onError(task.error ?? '生成失败');
+
+          await progressSub.cancel();
+          await completedSub.cancel();
+          await failedSub.cancel();
+          await signalRService.unsubscribeFromTask(taskId);
+          completer.complete();
+        }
+      });
+
+      // 等待任务完成
+      await completer.future;
+
+      return Result.success(null);
+    } catch (e, stackTrace) {
+      print('❌ 异步任务失败: $e');
+      print('   类型: ${e.runtimeType}');
+      print('   StackTrace: $stackTrace');
+      onError('异步任务失败: ${e.toString()}');
+      return Result.failure(
+        UnknownException('异步任务失败: ${e.toString()}'),
+      );
     }
   }
 }

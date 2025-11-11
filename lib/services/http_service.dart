@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart' as getx;
@@ -391,6 +394,75 @@ class HttpService {
       );
     } on DioException catch (e) {
       throw _handleError(e);
+    }
+  }
+
+  /// SSE (Server-Sent Events) 流式请求
+  /// 用于接收服务器推送的实时数据流
+  Stream<String> getServerSentEvents(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+    Map<String, dynamic>? data,
+  }) async* {
+    try {
+      final tokenService = TokenStorageService();
+      final token = await tokenService.getAccessToken();
+
+      final uri = Uri.parse('${_dio.options.baseUrl}$path');
+      final fullUri = uri.replace(queryParameters: queryParameters);
+
+      if (kDebugMode) {
+        print('🔄 SSE REQUEST => $fullUri');
+      }
+
+      final client = HttpClient();
+      final request = await client.postUrl(fullUri);
+
+      // 设置请求头
+      request.headers.set('Content-Type', 'application/json');
+      request.headers.set('Accept', 'text/event-stream');
+      request.headers.set('Cache-Control', 'no-cache');
+      if (token != null && token.isNotEmpty) {
+        request.headers.set('Authorization', 'Bearer $token');
+      }
+      if (_userId != null && _userId!.isNotEmpty) {
+        request.headers.set('X-User-Id', _userId!);
+      }
+
+      // 发送请求体（使用 UTF-8 编码）
+      if (data != null) {
+        final jsonData = utf8.encode(jsonEncode(data));
+        request.add(jsonData);
+      }
+
+      final response = await request.close();
+
+      if (response.statusCode != 200) {
+        throw HttpException(
+          'SSE request failed',
+          response.statusCode,
+        );
+      }
+
+      // 处理 SSE 流
+      await for (final chunk in response.transform(utf8.decoder)) {
+        final lines = chunk.split('\n');
+        for (final line in lines) {
+          if (line.startsWith('data: ')) {
+            final data = line.substring(6).trim();
+            if (data.isNotEmpty && data != '[DONE]') {
+              yield data;
+            }
+          }
+        }
+      }
+
+      client.close();
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ SSE ERROR: $e');
+      }
+      rethrow;
     }
   }
 
