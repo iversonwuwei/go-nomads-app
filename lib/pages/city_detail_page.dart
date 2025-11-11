@@ -8,7 +8,7 @@ import '../config/app_colors.dart';
 import '../core/domain/result.dart';
 import '../features/ai/presentation/controllers/ai_state_controller.dart';
 import '../features/city/application/state_controllers/pros_cons_state_controller.dart';
-import '../features/city/domain/entities/city_detail.dart';
+import '../features/city/domain/entities/digital_nomad_guide.dart';
 import '../features/city/presentation/controllers/city_detail_state_controller.dart';
 import '../features/coworking/domain/entities/coworking_space.dart'
     as coworking;
@@ -3530,7 +3530,7 @@ class _CityDetailPageState extends State<CityDetailPage>
   Widget buildScoreDimension({
     required IconData icon,
     required String label,
-    required double score,
+    required num score,
     required String description,
     required Color color,
     bool isReversed = false,

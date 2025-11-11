@@ -5,12 +5,11 @@ import 'package:df_admin_mobile/core/core.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/ai/domain/repositories/iai_repository.dart';
 import 'package:df_admin_mobile/features/async_task/domain/entities/async_task.dart';
-import 'package:df_admin_mobile/features/city/domain/entities/city_detail.dart'
-    as city_entity;
-import 'package:df_admin_mobile/features/city/infrastructure/models/city_detail_dto.dart'
-    as city_dto;
+import 'package:df_admin_mobile/features/city/domain/entities/digital_nomad_guide.dart';
 import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan.dart'
     as entity;
+import 'package:df_admin_mobile/services/database/digital_nomad_guide_dao.dart';
+import 'package:df_admin_mobile/services/database_service.dart';
 import 'package:df_admin_mobile/services/http_service.dart';
 import 'package:df_admin_mobile/services/signalr_service.dart';
 import 'package:get/get.dart';
@@ -131,7 +130,7 @@ class AiRepository implements IAiRepository {
   }
 
   @override
-  Future<Result<city_entity.DigitalNomadGuide>> generateDigitalNomadGuide({
+  Future<Result<DigitalNomadGuide>> generateDigitalNomadGuide({
     required String cityId,
     required String cityName,
   }) async {
@@ -142,8 +141,7 @@ class AiRepository implements IAiRepository {
       );
 
       final guideData = response.data as Map<String, dynamic>;
-      final dto = city_dto.DigitalNomadGuideDto.fromJson(guideData);
-      final guide = dto.toDomain() as city_entity.DigitalNomadGuide;
+      final guide = DigitalNomadGuide.fromMap(guideData);
 
       return Result.success(guide);
     } catch (e) {
@@ -156,7 +154,7 @@ class AiRepository implements IAiRepository {
     required String cityId,
     required String cityName,
     required Function(String message, int progress) onProgress,
-    required Function(city_entity.DigitalNomadGuide guide) onData,
+    required Function(DigitalNomadGuide guide) onData,
     required Function(String error) onError,
   }) async {
     try {
@@ -219,22 +217,26 @@ class AiRepository implements IAiRepository {
           print('✅ 任务完成！');
 
           try {
-            // 从 task.result.rawData 中直接解析指南数据
+            // 从 task.result.rawData 中直接获取指南数据
             if (task.result?.rawData != null) {
               print('📦 解析指南数据...');
-              final dto = city_dto.DigitalNomadGuideDto.fromJson(
-                task.result!.rawData!,
-              );
-              final guide = dto.toDomain() as city_entity.DigitalNomadGuide;
+              final rawData = task.result!.rawData!;
+
+              // 从 Map 创建实体
+              final guide = DigitalNomadGuide.fromMap(rawData);
+
+              // 保存到数据库
+              await _saveGuideToDatabase(guide);
 
               onProgress('指南生成完成！', 100);
               onData(guide);
             } else {
               throw Exception('任务完成但没有返回指南数据');
             }
-          } catch (e) {
-            print('❌ 解析指南数据失败: $e');
-            onError('解析指南数据失败: ${e.toString()}');
+          } catch (e, stackTrace) {
+            print('❌ 处理指南数据失败: $e');
+            print('   StackTrace: $stackTrace');
+            onError('处理指南数据失败: ${e.toString()}');
           } finally {
             await progressSub.cancel();
             await completedSub.cancel();
@@ -270,6 +272,20 @@ class AiRepository implements IAiRepository {
       return Result.failure(
         UnknownException('异步任务失败: ${e.toString()}'),
       );
+    }
+  }
+
+  /// 保存指南到数据库
+  Future<void> _saveGuideToDatabase(DigitalNomadGuide guide) async {
+    try {
+      print('💾 保存指南到 SQLite...');
+      final db = await DatabaseService().database;
+      final dao = DigitalNomadGuideDao(db);
+      await dao.saveGuide(guide);
+      print('✅ 指南已保存到 SQLite');
+    } catch (e) {
+      print('⚠️ 保存指南到数据库失败: $e');
+      // 不抛出异常，允许继续执行
     }
   }
 }

@@ -1,6 +1,6 @@
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/ai/application/use_cases/ai_use_cases.dart';
-import 'package:df_admin_mobile/features/city/domain/entities/city_detail.dart';
+import 'package:df_admin_mobile/features/city/domain/entities/digital_nomad_guide.dart';
 import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan.dart';
 import 'package:df_admin_mobile/services/database/digital_nomad_guide_dao.dart';
 import 'package:df_admin_mobile/services/database_service.dart';

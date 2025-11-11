@@ -22,7 +22,7 @@ typedef CityVideo = CityVideoDto;
 typedef VisaInfo = VisaInfoDto;
 typedef BestArea = BestAreaDto;
 typedef NearbyCity = NearbyCityDto;
-typedef DigitalNomadGuide = DigitalNomadGuideDto;
+// typedef DigitalNomadGuide = DigitalNomadGuideDto; // Removed: use independent entity class
 
 /// 鍩庡競璇勫垎璇︾粏鏁版嵁浼犺緭瀵硅薄
 class CityScoresDto {
@@ -1068,18 +1068,7 @@ class DigitalNomadGuideDto {
     };
   }
 
-  DigitalNomadGuide toDomain() {
-    return DigitalNomadGuide(
-      cityId: cityId,
-      cityName: cityName,
-      overview: overview,
-      visaInfo: visaInfo.toDomain(),
-      bestAreas: bestAreas.map((area) => area.toDomain()).toList(),
-      workspaceRecommendations: workspaceRecommendations,
-      tips: tips,
-      essentialInfo: essentialInfo,
-    );
-  }
+  // toDomain method removed - use DigitalNomadGuide entity directly
 }
 
 /// 闄勮繎鍩庡競鏁版嵁浼犺緭瀵硅薄

@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:sqflite/sqflite.dart';
 
-import '../../features/city/domain/entities/city_detail.dart' as entity;
+import '../../features/city/domain/entities/digital_nomad_guide.dart';
 
 /// DigitalNomadGuide 数据访问对象
 /// 负责管理城市指南的本地存储和检索
@@ -43,7 +43,7 @@ class DigitalNomadGuideDao {
   }
 
   /// 保存或更新城市指南
-  Future<void> saveGuide(entity.DigitalNomadGuide guide) async {
+  Future<void> saveGuide(DigitalNomadGuide guide) async {
     final now = DateTime.now().millisecondsSinceEpoch;
     
     // 将 DTO 转为可存储的 Map
@@ -70,7 +70,7 @@ class DigitalNomadGuideDao {
   }
 
   /// 根据城市ID获取指南
-  Future<entity.DigitalNomadGuide?> getGuide(String cityId) async {
+  Future<DigitalNomadGuide?> getGuide(String cityId) async {
     final List<Map<String, dynamic>> maps = await _db.query(
       tableName,
       where: 'city_id = ?',
@@ -111,7 +111,7 @@ class DigitalNomadGuideDao {
   }
 
   /// 获取所有指南（用于管理或调试）
-  Future<List<entity.DigitalNomadGuide>> getAllGuides() async {
+  Future<List<DigitalNomadGuide>> getAllGuides() async {
     final List<Map<String, dynamic>> maps = await _db.query(
       tableName,
       orderBy: 'updated_at DESC',
@@ -163,76 +163,27 @@ class DigitalNomadGuideDao {
   // ==================== 私有辅助方法 ====================
 
   /// 将数据库 Map 转为 DigitalNomadGuide 实体
-  entity.DigitalNomadGuide _mapToGuide(Map<String, dynamic> map) {
-    return entity.DigitalNomadGuide(
-      cityId: map['city_id'] as String,
-      cityName: map['city_name'] as String,
-      overview: map['overview'] as String,
-      visaInfo: _mapToVisaInfo(jsonDecode(map['visa_info'] as String)),
-      bestAreas: (jsonDecode(map['best_areas'] as String) as List)
-          .map((area) => _mapToBestArea(area))
-          .toList(),
-      workspaceRecommendations: List<String>.from(
-        jsonDecode(map['workspace_recommendations'] as String),
-      ),
-      tips: List<String>.from(jsonDecode(map['tips'] as String)),
-      essentialInfo: Map<String, String>.from(
-        jsonDecode(map['essential_info'] as String),
-      ),
-    );
+  DigitalNomadGuide _mapToGuide(Map<String, dynamic> map) {
+    return DigitalNomadGuide.fromMap({
+      'cityId': map['city_id'],
+      'cityName': map['city_name'],
+      'overview': map['overview'],
+      'visaInfo': jsonDecode(map['visa_info'] as String),
+      'bestAreas': jsonDecode(map['best_areas'] as String),
+      'workspaceRecommendations':
+          jsonDecode(map['workspace_recommendations'] as String),
+      'tips': jsonDecode(map['tips'] as String),
+      'essentialInfo': jsonDecode(map['essential_info'] as String),
+    });
   }
 
   /// 将 VisaInfo 转换为 Map
-  Map<String, dynamic> _visaInfoToMap(entity.VisaInfo visaInfo) {
-    return {
-      'type': visaInfo.type,
-      'duration': visaInfo.duration,
-      'requirements': visaInfo.requirements,
-      'cost': visaInfo.cost,
-      'process': visaInfo.process,
-    };
-  }
-
-  /// Map 转 VisaInfo
-  entity.VisaInfo _mapToVisaInfo(Map<String, dynamic> map) {
-    return entity.VisaInfo(
-      type: map['type'] as String,
-      duration: map['duration'] as int,
-      requirements: map['requirements'] as String,
-      cost: (map['cost'] as num).toDouble(),
-      process: map['process'] as String,
-    );
+  Map<String, dynamic> _visaInfoToMap(VisaInfo visaInfo) {
+    return visaInfo.toMap();
   }
 
   /// 将 BestArea 转换为 Map
-  Map<String, dynamic> _bestAreaToMap(entity.BestArea area) {
-    return {
-      'name': area.name,
-      'description': area.description,
-      'entertainmentScore': area.entertainmentScore,
-      'entertainmentDescription': area.entertainmentDescription,
-      'tourismScore': area.tourismScore,
-      'tourismDescription': area.tourismDescription,
-      'economyScore': area.economyScore,
-      'economyDescription': area.economyDescription,
-      'cultureScore': area.cultureScore,
-      'cultureDescription': area.cultureDescription,
-    };
-  }
-
-  /// Map 转 BestArea
-  entity.BestArea _mapToBestArea(Map<String, dynamic> map) {
-    return entity.BestArea(
-      name: map['name'] as String,
-      description: map['description'] as String,
-      entertainmentScore: (map['entertainmentScore'] as num).toDouble(),
-      entertainmentDescription: map['entertainmentDescription'] as String,
-      tourismScore: (map['tourismScore'] as num).toDouble(),
-      tourismDescription: map['tourismDescription'] as String,
-      economyScore: (map['economyScore'] as num).toDouble(),
-      economyDescription: map['economyDescription'] as String,
-      cultureScore: (map['cultureScore'] as num).toDouble(),
-      cultureDescription: map['cultureDescription'] as String,
-    );
+  Map<String, dynamic> _bestAreaToMap(BestArea area) {
+    return area.toMap();
   }
 }
