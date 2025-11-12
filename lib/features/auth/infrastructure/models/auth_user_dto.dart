@@ -7,6 +7,7 @@ class AuthUserDto {
   final String name;
   final String? phone;
   final String? avatar;
+  final String role; // 用户角色
   final String? emailVerifiedAt;
 
   AuthUserDto({
@@ -15,6 +16,7 @@ class AuthUserDto {
     required this.name,
     this.phone,
     this.avatar,
+    this.role = 'user',
     this.emailVerifiedAt,
   });
 
@@ -25,6 +27,7 @@ class AuthUserDto {
       name: json['name'] as String? ?? '',
       phone: json['phone'] as String?,
       avatar: json['avatar'] as String?,
+      role: json['role'] as String? ?? 'user',
       emailVerifiedAt: json['emailVerifiedAt'] as String?,
     );
   }
@@ -36,6 +39,7 @@ class AuthUserDto {
       'name': name,
       if (phone != null) 'phone': phone,
       if (avatar != null) 'avatar': avatar,
+      'role': role,
       if (emailVerifiedAt != null) 'emailVerifiedAt': emailVerifiedAt,
     };
   }
@@ -47,6 +51,7 @@ class AuthUserDto {
       name: name,
       phone: phone,
       avatar: avatar,
+      role: role,
       emailVerifiedAt:
           emailVerifiedAt != null ? DateTime.tryParse(emailVerifiedAt!) : null,
     );
@@ -59,6 +64,7 @@ class AuthUserDto {
       name: user.name,
       phone: user.phone,
       avatar: user.avatar,
+      role: user.role,
       emailVerifiedAt: user.emailVerifiedAt?.toIso8601String(),
     );
   }

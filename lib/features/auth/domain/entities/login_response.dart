@@ -63,6 +63,7 @@ class UserInfo {
   final String name;
   final String email;
   final String? phone;
+  final String role; // 用户角色
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -71,9 +72,12 @@ class UserInfo {
     required this.name,
     required this.email,
     this.phone,
+    this.role = 'user',
     required this.createdAt,
     required this.updatedAt,
   });
 
   bool get hasPhone => phone != null && phone!.isNotEmpty;
+  bool get isAdmin => role == 'admin';
+  bool get isUser => role == 'user';
 }

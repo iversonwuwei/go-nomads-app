@@ -15,6 +15,7 @@ import '../../features/auth/domain/repositories/iauth_database_repository.dart';
 import '../../features/auth/domain/repositories/iauth_repository.dart';
 import '../../features/auth/infrastructure/repositories/auth_database_repository.dart';
 import '../../features/auth/infrastructure/repositories/auth_repository.dart';
+import '../../features/auth/infrastructure/repositories/user_local_repository.dart';
 import '../../features/auth/presentation/controllers/auth_state_controller.dart';
 // Chat Domain
 import '../../features/chat/application/use_cases/chat_use_cases.dart';
@@ -92,8 +93,9 @@ import '../../features/weather/application/use_cases/get_city_weather_use_case.d
 import '../../features/weather/domain/repositories/iweather_repository.dart';
 import '../../features/weather/infrastructure/repositories/weather_repository.dart';
 import '../../features/weather/presentation/controllers/weather_state_controller.dart';
-import '../../services/http_service.dart';
 // Services
+import '../../services/database_service.dart';
+import '../../services/http_service.dart';
 import '../../services/token_storage_service.dart';
 
 /// DDD依赖注入配置
@@ -242,11 +244,25 @@ class DependencyInjection {
 
   /// 注册认证领域依赖
   static void _registerAuthDomain() {
+    // DatabaseService (如果还没注册)
+    if (!Get.isRegistered<DatabaseService>()) {
+      Get.lazyPut<DatabaseService>(() => DatabaseService());
+    }
+
+    // UserLocalRepository - 协调 SharedPreferences 和 SQLite
+    Get.lazyPut<UserLocalRepository>(
+      () => UserLocalRepository(
+        db: Get.find<DatabaseService>(),
+        tokenStorage: Get.find<TokenStorageService>(),
+      ),
+    );
+
     // Repository - 基础认证
     Get.lazyPut<IAuthRepository>(
       () => AuthRepository(
         httpService: Get.find<HttpService>(),
         tokenStorage: Get.find<TokenStorageService>(),
+        userLocalRepo: Get.find<UserLocalRepository>(),
       ),
     );
 

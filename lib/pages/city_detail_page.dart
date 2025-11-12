@@ -8,7 +8,9 @@ import '../config/app_colors.dart';
 import '../core/domain/result.dart';
 import '../features/ai/presentation/controllers/ai_state_controller.dart';
 import '../features/city/application/state_controllers/pros_cons_state_controller.dart';
+import '../features/city/domain/entities/city.dart';
 import '../features/city/domain/entities/digital_nomad_guide.dart';
+import '../features/city/domain/repositories/i_city_repository.dart';
 import '../features/city/presentation/controllers/city_detail_state_controller.dart';
 import '../features/coworking/domain/entities/coworking_space.dart'
     as coworking;
@@ -18,6 +20,7 @@ import '../features/user_city_content/domain/repositories/iuser_city_content_rep
 import '../features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
 import '../features/weather/presentation/controllers/weather_state_controller.dart';
 import '../generated/app_localizations.dart';
+import '../services/token_storage_service.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/skeletons/skeletons.dart';
 import 'add_cost_page.dart';
@@ -131,6 +134,436 @@ class _CityDetailPageState extends State<CityDetailPage>
         ),
       ],
     );
+  }
+
+  /// 构建版主管理蒙层
+  Widget _buildModeratorManagementOverlay(
+      CityDetailStateController controller) {
+    return Obx(() {
+      final city = controller.currentCity.value;
+      if (city == null) return const SizedBox.shrink();
+
+      // 检查是否有版主
+      final hasModerator = city.moderatorId != null;
+
+      return FutureBuilder<bool>(
+        future: _checkIsAdmin(),
+        builder: (context, adminSnapshot) {
+          final isAdmin = adminSnapshot.data ?? false;
+
+          // 如果已有版主且当前用户不是管理员，不显示按钮
+          if (hasModerator && !isAdmin) {
+            return _buildModeratorInfoBanner(city.moderator!);
+          }
+
+          // 如果已有版主且当前用户是管理员，显示版主信息+更换按钮
+          if (hasModerator && isAdmin) {
+            return _buildModeratorInfoWithChange(city.moderator!);
+          }
+
+          // 如果没有版主，根据用户角色显示不同按钮
+          if (isAdmin) {
+            return _buildAssignModeratorButton();
+          } else {
+            return _buildApplyModeratorButton();
+          }
+        },
+      );
+    });
+  }
+
+  /// 检查是否为管理员
+  Future<bool> _checkIsAdmin() async {
+    final tokenService = TokenStorageService();
+    return await tokenService.isAdmin();
+  }
+
+  /// 版主信息横幅（只读）
+  Widget _buildModeratorInfoBanner(Moderator moderator) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.blue.withValues(alpha: 0.9),
+            Colors.blue.shade700.withValues(alpha: 0.9),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 20,
+            backgroundImage: moderator.avatar != null
+                ? NetworkImage(moderator.avatar!)
+                : null,
+            child: moderator.avatar == null
+                ? const Icon(Icons.person, color: Colors.white)
+                : null,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.verified, color: Colors.white, size: 16),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        '城市版主：${moderator.name}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                if (moderator.email != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    moderator.email!,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 版主信息+更换按钮（管理员可见）
+  Widget _buildModeratorInfoWithChange(Moderator moderator) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.blue.withValues(alpha: 0.9),
+            Colors.blue.shade700.withValues(alpha: 0.9),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 20,
+            backgroundImage: moderator.avatar != null
+                ? NetworkImage(moderator.avatar!)
+                : null,
+            child: moderator.avatar == null
+                ? const Icon(Icons.person, color: Colors.white)
+                : null,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.verified, color: Colors.white, size: 16),
+                    const SizedBox(width: 4),
+                    Text(
+                      '版主：${moderator.name}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => _showAssignModeratorDialog(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.blue.shade700,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text('更换版主', style: TextStyle(fontSize: 12)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 申请成为版主按钮（普通用户）
+  Widget _buildApplyModeratorButton() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFFFF4458).withValues(alpha: 0.9),
+            Colors.deepOrange.withValues(alpha: 0.9),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.volunteer_activism, color: Colors.white, size: 24),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Text(
+              '成为城市版主，管理社区内容',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => _showApplyModeratorDialog(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: const Color(0xFFFF4458),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text('立即申请', style: TextStyle(fontSize: 12)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 指定版主按钮（管理员）
+  Widget _buildAssignModeratorButton() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.orange.withValues(alpha: 0.9),
+            Colors.deepOrange.withValues(alpha: 0.9),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.admin_panel_settings, color: Colors.white, size: 24),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Text(
+              '该城市暂无版主',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => _showAssignModeratorDialog(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.orange.shade700,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text('指定版主', style: TextStyle(fontSize: 12)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 申请成为版主对话框
+  void _showApplyModeratorDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: const Row(
+          children: [
+            Icon(Icons.volunteer_activism, color: Color(0xFFFF4458), size: 28),
+            SizedBox(width: 12),
+            Text('申请成为版主'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '您确定要申请成为 $cityName 的版主吗？',
+              style: const TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '版主权限：',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  _buildPermissionItem('管理城市内容和评论'),
+                  _buildPermissionItem('审核用户提交的信息'),
+                  _buildPermissionItem('组织社区活动'),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('取消'),
+          ),
+          ElevatedButton(
+            onPressed: () => _handleApplyModerator(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFF4458),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('确认申请'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 指定版主对话框
+  void _showAssignModeratorDialog() {
+    // TODO: 实现用户搜索和选择功能
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: const Row(
+          children: [
+            Icon(Icons.admin_panel_settings, color: Colors.orange, size: 28),
+            SizedBox(width: 12),
+            Text('指定版主'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('指定版主功能正在开发中...'),
+            const SizedBox(height: 16),
+            Text(
+              '该功能需要用户搜索接口支持',
+              style: TextStyle(color: Colors.grey[600], fontSize: 14),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('关闭'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPermissionItem(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          const Icon(Icons.check_circle, color: Colors.green, size: 16),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(text, style: const TextStyle(fontSize: 14)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 处理申请版主
+  Future<void> _handleApplyModerator() async {
+    Navigator.of(context).pop(); // 关闭对话框
+
+    // 显示加载提示
+    AppToast.info('正在提交申请...');
+
+    try {
+      final controller = Get.find<CityDetailStateController>();
+
+      // 通过 Get.find 获取 repository
+      final repository = Get.find<ICityRepository>();
+
+      final result = await repository.applyModerator(cityId);
+
+      result.fold(
+        onSuccess: (success) {
+          AppToast.success('申请已提交！我们会尽快审核');
+          // 刷新城市信息
+          controller.loadCityDetail(cityId);
+        },
+        onFailure: (error) {
+          AppToast.error('申请失败：${error.message}');
+        },
+      );
+    } catch (e) {
+      AppToast.error('申请失败：${e.toString()}');
+    }
   }
 
   Widget _buildWeatherMetric({
@@ -337,8 +770,114 @@ class _CityDetailPageState extends State<CityDetailPage>
     prosConsController.loadCityProsCons(cityId);
   }
 
+  /// 检查用户是否有权限生成指南（仅管理员）
+  Future<bool> _checkGeneratePermission() async {
+    final isAdmin = await TokenStorageService().isAdmin();
+
+    if (!isAdmin) {
+      _showNoPermissionDialog();
+      return false;
+    }
+
+    return true;
+  }
+
+  /// 显示无权限对话框
+  void _showNoPermissionDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(
+                Icons.lock_outline,
+                color: Colors.orange[700],
+                size: 28,
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                '权限不足',
+                style: TextStyle(fontSize: 18),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                '抱歉，只有管理员才能生成 AI 旅游指南。',
+                style: TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      color: Colors.blue[700],
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '想要成为版主？贡献优质内容即可获得审核资格！',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.blue[800],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('我知道了'),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(context).pop();
+                // TODO: 跳转到申请成为版主的页面
+                AppToast.info('申请版主功能即将上线');
+              },
+              icon: const Icon(Icons.volunteer_activism, size: 18),
+              label: const Text('申请成为版主'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFF4458),
+                foregroundColor: Colors.white,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   /// 显示 AI 生成进度对话框
-  void _showAIGenerateProgressDialog(AiStateController controller) {
+  void _showAIGenerateProgressDialog(AiStateController controller) async {
+    // 先检查权限
+    if (!await _checkGeneratePermission()) {
+      return;
+    }
+
     showDialog(
       context: context,
       barrierDismissible: false, // 不允许点击外部关闭
@@ -716,6 +1255,15 @@ class _CityDetailPageState extends State<CityDetailPage>
                               ),
                             ),
                           ),
+                        ),
+
+                        // 版主管理蒙层 - 在城市名称上方
+                        Positioned(
+                          bottom: 70,
+                          left: 16,
+                          right: 16,
+                          child: _buildModeratorManagementOverlay(
+                              cityDetailController),
                         ),
                       ],
                     ),
@@ -1354,11 +1902,14 @@ class _CityDetailPageState extends State<CityDetailPage>
                   OutlinedButton.icon(
                     onPressed: controller.isGeneratingGuide
                         ? null // 🔒 生成中时禁用
-                        : () {
-                            controller.generateDigitalNomadGuideInBackground(
-                              cityId: cityId,
-                              cityName: cityName,
-                            );
+                        : () async {
+                            // 检查权限
+                            if (await _checkGeneratePermission()) {
+                              controller.generateDigitalNomadGuideInBackground(
+                                cityId: cityId,
+                                cityName: cityName,
+                              );
+                            }
                           },
                     icon: const Icon(Icons.cloud_upload),
                     label: const Text('后台生成'),
@@ -1447,7 +1998,12 @@ class _CityDetailPageState extends State<CityDetailPage>
                           : const Color(0xFFFF4458),
                     ),
                     enabled: !controller.isGeneratingGuide,
-                    onSelected: (value) {
+                    onSelected: (value) async {
+                      // 先检查权限
+                      if (!await _checkGeneratePermission()) {
+                        return;
+                      }
+                      
                       if (value == 'foreground') {
                         _showAIGenerateProgressDialog(controller);
                       } else if (value == 'background') {

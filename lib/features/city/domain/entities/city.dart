@@ -1,3 +1,48 @@
+/// Moderator Domain Entity - 版主实体
+class Moderator {
+  final String id;
+  final String name;
+  final String? email;
+  final String? avatar;
+
+  const Moderator({
+    required this.id,
+    required this.name,
+    this.email,
+    this.avatar,
+  });
+
+  factory Moderator.fromJson(Map<String, dynamic> json) {
+    return Moderator(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      email: json['email'] as String?,
+      avatar: json['avatar'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      if (email != null) 'email': email,
+      if (avatar != null) 'avatar': avatar,
+    };
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Moderator && other.id == id;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
+
+  @override
+  String toString() => 'Moderator(id: $id, name: $name)';
+}
+
 /// City Domain Entity - 城市实体
 ///
 /// 代表系统中的核心城市概念,包含城市的基本信息和业务逻辑
@@ -34,6 +79,10 @@ class City {
   // 用户交互
   final bool isFavorite; // 是否收藏
 
+  // 版主信息
+  final String? moderatorId; // 版主 ID
+  final Moderator? moderator; // 版主详情
+
   const City({
     required this.id,
     required this.name,
@@ -58,6 +107,8 @@ class City {
     this.reviewCount,
     this.coworkingCount,
     this.isFavorite = false,
+    this.moderatorId,
+    this.moderator,
   });
 
   /// Business Logic Methods
@@ -117,6 +168,7 @@ class City {
   /// 从 JSON 创建实体
   factory City.fromJson(Map<String, dynamic> json) {
     final weather = json['weather'] as Map<String, dynamic>?;
+    final moderatorData = json['moderator'] as Map<String, dynamic>?;
 
     return City(
       id: json['id'] as String,
@@ -142,6 +194,9 @@ class City {
       reviewCount: json['reviewCount']?.toInt(),
       coworkingCount: json['coworkingCount']?.toInt(),
       isFavorite: json['isFavorite'] as bool? ?? false,
+      moderatorId: json['moderatorId'] as String?,
+      moderator:
+          moderatorData != null ? Moderator.fromJson(moderatorData) : null,
     );
   }
 
@@ -178,6 +233,8 @@ class City {
       if (reviewCount != null) 'reviewCount': reviewCount,
       if (coworkingCount != null) 'coworkingCount': coworkingCount,
       'isFavorite': isFavorite,
+      if (moderatorId != null) 'moderatorId': moderatorId,
+      if (moderator != null) 'moderator': moderator!.toJson(),
     };
   }
 
@@ -206,6 +263,8 @@ class City {
     int? reviewCount,
     int? coworkingCount,
     bool? isFavorite,
+    String? moderatorId,
+    Moderator? moderator,
   }) {
     return City(
       id: id ?? this.id,
@@ -231,6 +290,8 @@ class City {
       reviewCount: reviewCount ?? this.reviewCount,
       coworkingCount: coworkingCount ?? this.coworkingCount,
       isFavorite: isFavorite ?? this.isFavorite,
+      moderatorId: moderatorId ?? this.moderatorId,
+      moderator: moderator ?? this.moderator,
     );
   }
 

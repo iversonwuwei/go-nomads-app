@@ -102,6 +102,7 @@ class UserInfoDto {
   final String name;
   final String email;
   final String? phone;
+  final String role; // 用户角色
   final String createdAt;
   final String updatedAt;
 
@@ -110,6 +111,7 @@ class UserInfoDto {
     required this.name,
     required this.email,
     this.phone,
+    this.role = 'user',
     required this.createdAt,
     required this.updatedAt,
   });
@@ -120,6 +122,7 @@ class UserInfoDto {
       'name': name,
       'email': email,
       'phone': phone,
+      'role': role,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
     };
@@ -131,6 +134,7 @@ class UserInfoDto {
       name: json['name'] as String,
       email: json['email'] as String,
       phone: json['phone'] as String?,
+      role: json['role'] as String? ?? 'user',
       createdAt: json['createdAt'] as String,
       updatedAt: json['updatedAt'] as String,
     );
@@ -142,6 +146,7 @@ class UserInfoDto {
       name: name,
       email: email,
       phone: phone,
+      role: role,
       createdAt: DateTime.parse(createdAt),
       updatedAt: DateTime.parse(updatedAt),
     );

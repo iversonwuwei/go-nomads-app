@@ -5,6 +5,7 @@ class AuthUser {
   final String name;
   final String? phone;
   final String? avatar;
+  final String role; // 用户角色: user, admin, etc.
   final DateTime? emailVerifiedAt;
 
   AuthUser({
@@ -13,8 +14,15 @@ class AuthUser {
     required this.name,
     this.phone,
     this.avatar,
+    this.role = 'user', // 默认为普通用户
     this.emailVerifiedAt,
   });
 
   bool get isEmailVerified => emailVerifiedAt != null;
+  
+  /// 是否为管理员
+  bool get isAdmin => role == 'admin';
+
+  /// 是否为普通用户
+  bool get isUser => role == 'user';
 }

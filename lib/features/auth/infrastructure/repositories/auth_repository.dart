@@ -8,17 +8,21 @@ import '../../domain/entities/auth_user.dart';
 import '../../domain/repositories/iauth_repository.dart';
 import '../models/auth_token_dto.dart';
 import '../models/auth_user_dto.dart';
+import 'user_local_repository.dart';
 
 /// 认证仓储实现
 class AuthRepository extends BaseRepository implements IAuthRepository {
   final HttpService _httpService;
   final TokenStorageService _tokenStorage;
+  final UserLocalRepository _userLocalRepo;
 
   AuthRepository({
     required HttpService httpService,
     required TokenStorageService tokenStorage,
+    required UserLocalRepository userLocalRepo,
   })  : _httpService = httpService,
-        _tokenStorage = tokenStorage {
+        _tokenStorage = tokenStorage,
+        _userLocalRepo = userLocalRepo {
     // 设置 token 刷新回调
     _httpService.setTokenRefreshCallback(_handleTokenRefresh);
   }
@@ -75,6 +79,22 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
         // 自动持久化token
         await persistToken(token);
 
+        // 保存用户完整信息（使用 UserLocalRepository 协调存储）
+        final userData = data['data']?['user'];
+        if (userData != null) {
+          final user = AuthUser(
+            id: userData['id'] as String,
+            name: userData['name'] as String,
+            email: userData['email'] as String,
+            phone: userData['phone'] as String?,
+            avatar: userData['avatar'] as String?,
+            role: userData['role'] as String? ?? 'user',
+          );
+
+          // 保存到 SharedPreferences + SQLite
+          await _userLocalRepo.saveUser(user);
+        }
+
         return token;
       } else {
         throw ServerException('登录失败');
@@ -111,6 +131,22 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
         // 自动持久化token
         await persistToken(token);
 
+        // 保存用户完整信息（使用 UserLocalRepository 协调存储）
+        final userData = data['data']?['user'];
+        if (userData != null) {
+          final user = AuthUser(
+            id: userData['id'] as String,
+            name: userData['name'] as String,
+            email: userData['email'] as String,
+            phone: userData['phone'] as String?,
+            avatar: userData['avatar'] as String?,
+            role: userData['role'] as String? ?? 'user',
+          );
+
+          // 保存到 SharedPreferences + SQLite
+          await _userLocalRepo.saveUser(user);
+        }
+
         return token;
       } else {
         throw ServerException('注册失败');
@@ -133,6 +169,9 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
 
       // 清除持久化的token
       await clearPersistedToken();
+      
+      // 清除用户数据（SharedPreferences + SQLite 可选清除）
+      await _userLocalRepo.clearUserData();
     });
   }
 

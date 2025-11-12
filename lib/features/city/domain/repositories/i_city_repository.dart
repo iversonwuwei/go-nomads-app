@@ -98,4 +98,17 @@ abstract class ICityRepository implements IRepository {
     bool includeForecast = true,
     int days = 7,
   });
+
+  /// 申请成为城市版主
+  ///
+  /// [cityId] 城市ID
+  /// 返回 true 表示申请成功
+  Future<Result<bool>> applyModerator(String cityId);
+
+  /// 指定用户为城市版主（仅管理员）
+  ///
+  /// [cityId] 城市ID
+  /// [userId] 用户ID
+  /// 返回 true 表示指定成功
+  Future<Result<bool>> assignModerator(String cityId, String userId);
 }

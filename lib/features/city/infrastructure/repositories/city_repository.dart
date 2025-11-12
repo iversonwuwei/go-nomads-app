@@ -470,4 +470,37 @@ class CityRepository implements ICityRepository {
       return Failure(UnknownException('获取城市天气失败: ${e.toString()}'));
     }
   }
+
+  @override
+  Future<Result<bool>> applyModerator(String cityId) async {
+    try {
+      await _httpService.post(
+        '$_baseUrl/moderator/apply',
+        data: {'cityId': cityId},
+      );
+      return const Success(true);
+    } on HttpException catch (e) {
+      return Failure(_convertHttpException(e));
+    } catch (e) {
+      return Failure(UnknownException('申请成为版主失败: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Result<bool>> assignModerator(String cityId, String userId) async {
+    try {
+      await _httpService.post(
+        '$_baseUrl/moderator/assign',
+        data: {
+          'cityId': cityId,
+          'userId': userId,
+        },
+      );
+      return const Success(true);
+    } on HttpException catch (e) {
+      return Failure(_convertHttpException(e));
+    } catch (e) {
+      return Failure(UnknownException('指定版主失败: ${e.toString()}'));
+    }
+  }
 }
