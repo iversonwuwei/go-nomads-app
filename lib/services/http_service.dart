@@ -145,7 +145,10 @@ class HttpService {
                 '❌ ERROR[${error.response?.statusCode}] => ${error.requestOptions.uri}');
             print('Message: ${error.message}');
             if (error.response?.data != null) {
-              print('Response: ${error.response?.data}');
+              // 完整打印响应数据，包括错误详情
+              final responseData = error.response!.data;
+              print('完整响应数据:');
+              print(jsonEncode(responseData));
             }
           }
 
@@ -567,6 +570,7 @@ class HttpService {
     }
 
     String errorMessage;
+    List<String> errors = [];
 
     switch (error.type) {
       case DioExceptionType.connectionTimeout:
@@ -579,7 +583,33 @@ class HttpService {
         errorMessage = '响应超时，请稍后重试';
         break;
       case DioExceptionType.badResponse:
-        errorMessage = _handleStatusCode(error.response?.statusCode);
+        // 尝试解析后端返回的详细错误信息
+        if (error.response?.data != null) {
+          final responseData = error.response!.data;
+
+          // 检查是否有 errors 字段（后端验证错误格式）
+          if (responseData is Map<String, dynamic> &&
+              responseData['errors'] != null) {
+            final errorsData = responseData['errors'];
+            if (errorsData is Map<String, dynamic>) {
+              // 提取所有验证错误
+              errorsData.forEach((field, messages) {
+                if (messages is List) {
+                  errors.addAll(messages.map((e) => '$field: $e'));
+                } else if (messages is String) {
+                  errors.add('$field: $messages');
+                }
+              });
+              errorMessage = errors.isNotEmpty ? errors.join('\n') : '请求参数错误';
+            } else {
+              errorMessage = _handleStatusCode(error.response?.statusCode);
+            }
+          } else {
+            errorMessage = _handleStatusCode(error.response?.statusCode);
+          }
+        } else {
+          errorMessage = _handleStatusCode(error.response?.statusCode);
+        }
         break;
       case DioExceptionType.cancel:
         errorMessage = '请求已取消';
@@ -595,7 +625,7 @@ class HttpService {
         errorMessage = '网络请求失败';
     }
 
-    return HttpException(errorMessage, error.response?.statusCode);
+    return HttpException(errorMessage, error.response?.statusCode, errors);
   }
 
   /// 处理 HTTP 状态码

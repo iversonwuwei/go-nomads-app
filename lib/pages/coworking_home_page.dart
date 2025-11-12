@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import '../config/app_colors.dart';
 import '../core/core.dart';
 import '../features/city/application/use_cases/city_use_cases.dart';
+import '../features/city/domain/repositories/i_city_repository.dart';
 import '../generated/app_localizations.dart';
 import '../widgets/app_toast.dart';
 
@@ -20,14 +21,12 @@ class CoworkingHomePage extends StatefulWidget {
 }
 
 class _CoworkingHomePageState extends State<CoworkingHomePage> {
-  late final GetCitiesWithCoworkingCountUseCase _getCitiesUseCase;
   List<Map<String, dynamic>> _cities = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _getCitiesUseCase = Get.find<GetCitiesWithCoworkingCountUseCase>();
     _loadCitiesWithCoworkingCount();
   }
 
@@ -113,8 +112,21 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
 
       print('🏙️ 开始获取城市列表(含Coworking数量)...');
 
+      // 防御性地获取 UseCase 实例,带错误处理
+      GetCitiesWithCoworkingCountUseCase? getCitiesUseCase;
+      try {
+        getCitiesUseCase = Get.find<GetCitiesWithCoworkingCountUseCase>();
+      } catch (e) {
+        print('❌ 无法找到 GetCitiesWithCoworkingCountUseCase: $e');
+        print('⚠️ 尝试重新初始化依赖...');
+
+        // 尝试直接创建 UseCase
+        final repository = Get.find<ICityRepository>();
+        getCitiesUseCase = GetCitiesWithCoworkingCountUseCase(repository);
+      }
+
       // 使用 UseCase 获取数据
-      final result = await _getCitiesUseCase.execute(
+      final result = await getCitiesUseCase.execute(
         const GetCitiesWithCoworkingCountParams(
           page: 1,
           pageSize: 100,
@@ -318,6 +330,12 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
       ),
       child: InkWell(
         onTap: () async {
+          // 添加调试日志
+          print('🏙️ 点击城市卡片:');
+          print('   城市ID: ${city['id']}');
+          print('   城市名称: ${city['name']}');
+          print('   Coworking数量: ${city['spaces']}');
+          
           // 等待列表页返回,如果返回 true 则刷新城市列表
           final result = await Navigator.push(
             context,

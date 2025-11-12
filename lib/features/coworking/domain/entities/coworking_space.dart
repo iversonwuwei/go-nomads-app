@@ -120,6 +120,7 @@ class CoworkingSpace {
 
 /// Location 值对象
 class Location {
+  final String? cityId; // 添加 cityId 字段
   final String address;
   final String city;
   final String country;
@@ -127,6 +128,7 @@ class Location {
   final double longitude;
 
   Location({
+    this.cityId, // 添加到构造函数
     required this.address,
     required this.city,
     required this.country,

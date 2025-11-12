@@ -26,25 +26,39 @@ class CoworkingListPage extends StatefulWidget {
 class _CoworkingListPageState extends State<CoworkingListPage> {
   bool _isGridView = true;
   late final CoworkingStateController controller;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     controller = Get.find<CoworkingStateController>();
-    controller.loadCoworkingsByCity(widget.cityId, cityName: widget.cityName);
+    _scrollController.addListener(_onScroll);
+
+    // 刷新数据，重置分页
+    controller.loadCoworkingsByCity(widget.cityId, refresh: true);
   }
 
-  /// 刷新数据(仅重新加载数据,不重建整个页面)
+  /// 监听滚动，实现无限滚动加载
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent * 0.9) {
+      // 滚动到 90% 位置时加载更多
+      controller.loadMoreCoworkingSpaces();
+    }
+  }
+
+  /// 刷新数据(下拉刷新)
   Future<void> _refreshData() async {
     await controller.loadCoworkingsByCity(
       widget.cityId,
-      cityName: widget.cityName,
+      refresh: true, // 刷新模式，重置分页
     );
   }
 
   @override
   void dispose() {
-    // 不删除 controller,因为可能其他页面还在使用
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -217,9 +231,15 @@ class _CoworkingListPageState extends State<CoworkingListPage> {
               }
 
               return ListView.builder(
+                controller: _scrollController, // 添加滚动控制器
                 padding: const EdgeInsets.all(16),
-                itemCount: controller.filteredSpaces.length,
+                itemCount: controller.filteredSpaces.length + 1, // +1 用于底部加载指示器
                 itemBuilder: (context, index) {
+                  // 最后一项显示加载指示器
+                  if (index == controller.filteredSpaces.length) {
+                    return _buildLoadMoreIndicator();
+                  }
+                  
                   final space = controller.filteredSpaces[index];
                   return _buildCoworkingCard(context, space);
                 },
@@ -560,5 +580,39 @@ class _CoworkingListPageState extends State<CoworkingListPage> {
         ],
       ),
     );
+  }
+
+  /// 底部加载指示器
+  Widget _buildLoadMoreIndicator() {
+    return Obx(() {
+      // 如果正在加载更多，显示加载指示器
+      if (controller.isLoadingMore.value) {
+        return const Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+      }
+
+      // 如果没有更多数据，显示提示
+      if (!controller.hasMore.value && controller.filteredSpaces.isNotEmpty) {
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Center(
+            child: Text(
+              '没有更多数据了',
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: 14,
+              ),
+            ),
+          ),
+        );
+      }
+
+      // 其他情况不显示任何内容
+      return const SizedBox.shrink();
+    });
   }
 }

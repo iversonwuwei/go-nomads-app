@@ -37,6 +37,7 @@ class CoworkingStateController extends GetxController {
   final RxBool isLoadingSpaces = false.obs;
   final RxBool isLoadingDetail = false.obs;
   final RxBool isLoadingCount = false.obs;
+  final RxBool isLoadingMore = false.obs; // 加载更多状态
 
   /// 加载状态简写 (用于兼容旧页面)
   RxBool get isLoading => isLoadingSpaces;
@@ -47,18 +48,38 @@ class CoworkingStateController extends GetxController {
   /// Coworking 数量
   final RxInt coworkingCount = 0.obs;
 
+  // === 分页状态 ===
+  final RxInt currentPage = 1.obs;
+  final RxBool hasMore = true.obs;
+  final int pageSize = 20;
+  final RxString currentCityId = ''.obs;
+
   // === 业务方法 ===
 
   /// 加载城市的 Coworking 空间列表
   Future<void> loadCoworkingSpacesByCity(
     String cityId, {
-    int page = 1,
-    int pageSize = 100,
+    bool refresh = false, // 是否刷新（重新加载第一页）
   }) async {
     // 防止重复加载
     if (isLoadingSpaces.value) {
       return;
     }
+
+    // 如果是刷新，重置分页状态
+    if (refresh) {
+      currentPage.value = 1;
+      hasMore.value = true;
+      coworkingSpaces.clear();
+      filteredSpaces.clear();
+    }
+
+    currentCityId.value = cityId;
+
+    print('🏢 开始加载 Coworking 列表:');
+    print('   城市ID: $cityId');
+    print('   页码: ${currentPage.value}');
+    print('   页大小: $pageSize');
 
     isLoadingSpaces.value = true;
     errorMessage.value = '';
@@ -67,27 +88,92 @@ class CoworkingStateController extends GetxController {
       final result = await _getCoworkingSpacesByCityUseCase.execute(
         GetCoworkingSpacesByCityParams(
           cityId: cityId,
-          page: page,
+          page: currentPage.value,
           pageSize: pageSize,
         ),
       );
 
       result.fold(
         onSuccess: (spaces) {
-          coworkingSpaces.assignAll(spaces);
+          print('✅ 成功加载 ${spaces.length} 个 Coworking 空间');
+
+          // 判断是否还有更多数据
+          if (spaces.length < pageSize) {
+            hasMore.value = false;
+          }
+
+          // 如果是第一页，替换数据；否则追加数据
+          if (currentPage.value == 1) {
+            coworkingSpaces.assignAll(spaces);
+          } else {
+            coworkingSpaces.addAll(spaces);
+          }
+          
           _applyFilters(); // 应用筛选
-          // print('✅ 成功加载 ${spaces.length} 个 Coworking 空间');
         },
         onFailure: (exception) {
           errorMessage.value = exception.message;
-          // print('❌ 加载 Coworking 列表失败: ${exception.message}');
         },
       );
     } catch (e) {
       errorMessage.value = '加载失败: $e';
-      // print('❌ 加载 Coworking 列表异常: $e');
     } finally {
       isLoadingSpaces.value = false;
+    }
+  }
+
+  /// 加载更多 Coworking 空间
+  Future<void> loadMoreCoworkingSpaces() async {
+    // 检查是否可以加载更多
+    if (isLoadingMore.value || !hasMore.value || currentCityId.value.isEmpty) {
+      return;
+    }
+
+    print('📄 加载更多 Coworking:');
+    print('   当前页: ${currentPage.value}');
+    print('   下一页: ${currentPage.value + 1}');
+
+    isLoadingMore.value = true;
+
+    try {
+      currentPage.value++;
+
+      final result = await _getCoworkingSpacesByCityUseCase.execute(
+        GetCoworkingSpacesByCityParams(
+          cityId: currentCityId.value,
+          page: currentPage.value,
+          pageSize: pageSize,
+        ),
+      );
+
+      result.fold(
+        onSuccess: (spaces) {
+          print('✅ 加载更多成功: ${spaces.length} 个空间');
+
+          // 判断是否还有更多数据
+          if (spaces.length < pageSize) {
+            hasMore.value = false;
+            print('📭 没有更多数据了');
+          }
+
+          // 追加新数据
+          coworkingSpaces.addAll(spaces);
+          _applyFilters();
+        },
+        onFailure: (exception) {
+          // 加载失败，页码回退
+          currentPage.value--;
+          errorMessage.value = exception.message;
+          print('❌ 加载更多失败: ${exception.message}');
+        },
+      );
+    } catch (e) {
+      // 异常，页码回退
+      currentPage.value--;
+      errorMessage.value = '加载更多失败: $e';
+      print('❌ 加载更多异常: $e');
+    } finally {
+      isLoadingMore.value = false;
     }
   }
 
@@ -163,8 +249,12 @@ class CoworkingStateController extends GetxController {
   // === 筛选和排序功能 ===
 
   /// 兼容旧页面的方法名
-  Future<void> loadCoworkingsByCity(String cityId, {String? cityName}) async {
-    await loadCoworkingSpacesByCity(cityId);
+  Future<void> loadCoworkingsByCity(
+    String cityId, {
+    String? cityName,
+    bool refresh = false,
+  }) async {
+    await loadCoworkingSpacesByCity(cityId, refresh: refresh);
   }
 
   /// 切换筛选条件

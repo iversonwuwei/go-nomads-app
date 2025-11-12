@@ -12,6 +12,7 @@ typedef CoworkingReview = CoworkingReviewDto;
 class CoworkingSpaceDto {
   final String id;
   final String name;
+  final String? cityId; // 添加 cityId 字段
   final String address;
   final String city;
   final String country;
@@ -35,6 +36,7 @@ class CoworkingSpaceDto {
   CoworkingSpaceDto({
     required this.id,
     required this.name,
+    this.cityId, // 添加到构造函数
     required this.address,
     required this.city,
     required this.country,
@@ -57,9 +59,13 @@ class CoworkingSpaceDto {
   });
 
   Map<String, dynamic> toJson() {
+    // 获取可用的设施列表
+    final availableAmenities = amenities.getAvailableAmenities();
+    
     return {
       'id': id,
       'name': name,
+      'cityId': cityId, // 使用传入的 cityId
       'address': address,
       'city': city,
       'country': country,
@@ -67,16 +73,30 @@ class CoworkingSpaceDto {
       'longitude': longitude,
       'imageUrl': imageUrl,
       'images': images,
+      'description': description,
+      // 扁平化 pricing 字段
+      'pricePerHour': pricing.hourlyRate,
+      'pricePerDay': pricing.dailyRate,
+      'pricePerMonth': pricing.monthlyRate,
+      'currency': pricing.currency,
+      // 扁平化 amenities 字段 - 后端期望 string[]
+      'amenities': availableAmenities,
+      'hasMeetingRoom': amenities.hasMeetingRoom,
+      'hasCoffee': amenities.hasCoffee,
+      'hasParking': amenities.hasParking,
+      'has247Access': amenities.has24HourAccess,
+      // 扁平化 specs 字段
+      'wifiSpeed': specs.wifiSpeed,
+      'capacity': specs.capacity,
+      // openingHours
+      'openingHours': openingHours.isNotEmpty ? openingHours.join('; ') : null,
+      // contact info - 空字符串转为 null 避免后端验证失败
+      'phone': phone.isNotEmpty ? phone : null,
+      'email': email.isNotEmpty ? email : null,
+      'website': website.isNotEmpty ? website : null,
+      // metadata
       'rating': rating,
       'reviewCount': reviewCount,
-      'description': description,
-      'pricing': pricing.toJson(),
-      'amenities': amenities.toJson(),
-      'specs': specs.toJson(),
-      'openingHours': openingHours,
-      'phone': phone,
-      'email': email,
-      'website': website,
       'isVerified': isVerified,
       'lastUpdated': lastUpdated,
     };
@@ -87,6 +107,7 @@ class CoworkingSpaceDto {
     return CoworkingSpaceDto(
       id: json['id'] ?? '',
       name: json['name'] ?? '',
+      cityId: json['cityId'], // 添加 cityId
       address: json['address'] ?? '',
       city: json['city'] ?? '',
       country: json['country'] ?? '',
@@ -96,7 +117,7 @@ class CoworkingSpaceDto {
           ? (json['longitude'] as num).toDouble()
           : 0.0,
       imageUrl: json['imageUrl'] ?? '',
-      images: json['images'] != null
+      images: json['images'] != null && json['images'] is List
           ? List<String>.from(json['images'])
           : (json['imageUrl'] != null && json['imageUrl'].toString().isNotEmpty
               ? [json['imageUrl'].toString()]
@@ -106,9 +127,9 @@ class CoworkingSpaceDto {
       description: json['description'] ?? '',
       // 适配后端扁平化的 pricing 字段
       pricing: CoworkingPricingDto.fromJson({
-        'hourly': json['pricePerHour'],
-        'daily': json['pricePerDay'],
-        'monthly': json['pricePerMonth'],
+        'hourlyRate': json['pricePerHour'],
+        'dailyRate': json['pricePerDay'],
+        'monthlyRate': json['pricePerMonth'],
         'currency': json['currency'] ?? 'CNY',
       }),
       // 适配后端扁平化的 amenities 字段
@@ -134,7 +155,7 @@ class CoworkingSpaceDto {
         'meetingRooms': json['meetingRooms'],
         'wifiSpeed': json['wifiSpeed'],
       }),
-      openingHours: json['openingHours'] != null
+      openingHours: json['openingHours'] != null && json['openingHours'] is List
           ? List<String>.from(json['openingHours'])
           : [],
       phone: json['phone'] ?? '',

@@ -828,6 +828,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
         id: '', // 新创建时 ID 为空，由后端生成
         name: _nameController.text,
         location: Location(
+          cityId: _selectedCityId, // 添加 cityId
           address: _addressController.text,
           city: _selectedCity ?? '',
           country: _selectedCountry ?? '',
