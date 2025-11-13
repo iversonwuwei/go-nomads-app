@@ -39,7 +39,7 @@ class NotificationRepository implements INotificationRepository {
 
       return Result.success(notifications);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(NetworkException('获取通知列表失败: ${e.toString()}'));
     }
   }
 
@@ -53,7 +53,7 @@ class NotificationRepository implements INotificationRepository {
       final count = response.data['count'] as int? ?? 0;
       return Result.success(count);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(NetworkException('获取未读数量失败: ${e.toString()}'));
     }
   }
 
@@ -67,7 +67,7 @@ class NotificationRepository implements INotificationRepository {
 
       return Result.success(true);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(NetworkException('标记通知已读失败: ${e.toString()}'));
     }
   }
 
@@ -81,7 +81,7 @@ class NotificationRepository implements INotificationRepository {
 
       return Result.success(true);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(NetworkException('批量标记已读失败: ${e.toString()}'));
     }
   }
 
@@ -95,7 +95,7 @@ class NotificationRepository implements INotificationRepository {
 
       return Result.success(true);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(NetworkException('标记全部已读失败: ${e.toString()}'));
     }
   }
 
@@ -108,7 +108,7 @@ class NotificationRepository implements INotificationRepository {
 
       return Result.success(true);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(NetworkException('删除通知失败: ${e.toString()}'));
     }
   }
 
@@ -139,7 +139,7 @@ class NotificationRepository implements INotificationRepository {
       );
       return Result.success(notification);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(NetworkException('发送通知失败: ${e.toString()}'));
     }
   }
 
@@ -170,7 +170,7 @@ class NotificationRepository implements INotificationRepository {
 
       return Result.success(notifications);
     } catch (e) {
-      return Result.failure(e.toString());
+      return Result.failure(NetworkException('发送管理员通知失败: ${e.toString()}'));
     }
   }
 }

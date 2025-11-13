@@ -26,37 +26,40 @@ class AppNotification extends Equatable {
     this.readAt,
   });
 
-  /// 从 JSON 创建
+  /// 从 JSON 创建 (API 返回 camelCase)
   factory AppNotification.fromJson(Map<String, dynamic> json) {
     return AppNotification(
       id: json['id'] as String,
-      userId: json['userId'] as String,
+      userId: json['userId'] as String, // API 字段: userId (camelCase)
       title: json['title'] as String,
       message: json['message'] as String,
       type: NotificationType.fromString(json['type'] as String),
-      relatedId: json['relatedId'] as String?,
-      metadata: json['metadata'] as Map<String, dynamic>?,
-      isRead: json['isRead'] as bool? ?? false,
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      relatedId: json['relatedId'] as String?, // API 字段: relatedId
+      metadata: json['metadata'] != null
+          ? Map<String, dynamic>.from(json['metadata'] as Map)
+          : null,
+      isRead: json['isRead'] as bool? ?? false, // API 字段: isRead
+      createdAt:
+          DateTime.parse(json['createdAt'] as String), // API 字段: createdAt
       readAt: json['readAt'] != null 
-          ? DateTime.parse(json['readAt'] as String)
+          ? DateTime.parse(json['readAt'] as String) // API 字段: readAt
           : null,
     );
   }
 
-  /// 转换为 JSON
+  /// 转换为 JSON (API 接收 camelCase)
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'userId': userId,
+      'userId': userId, // API 字段: userId (camelCase)
       'title': title,
       'message': message,
       'type': type.value,
-      'relatedId': relatedId,
+      'relatedId': relatedId, // API 字段: relatedId
       'metadata': metadata,
-      'isRead': isRead,
-      'createdAt': createdAt.toIso8601String(),
-      'readAt': readAt?.toIso8601String(),
+      'isRead': isRead, // API 字段: isRead
+      'createdAt': createdAt.toIso8601String(), // API 字段: createdAt
+      'readAt': readAt?.toIso8601String(), // API 字段: readAt
     };
   }
 

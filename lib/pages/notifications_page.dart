@@ -209,12 +209,12 @@ class _NotificationsPageState extends State<NotificationsPage>
           decoration: BoxDecoration(
             color: notification.isRead
                 ? Colors.white
-                : AppColors.accent.withOpacity(0.05),
+                : AppColors.accent.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: notification.isRead
                   ? AppColors.border
-                  : AppColors.accent.withOpacity(0.2),
+                  : AppColors.accent.withValues(alpha: 0.2),
             ),
           ),
           child: Row(
@@ -225,7 +225,7 @@ class _NotificationsPageState extends State<NotificationsPage>
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Center(

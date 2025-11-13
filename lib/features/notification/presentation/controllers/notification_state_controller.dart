@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 
+import '../../../../core/domain/result.dart';
 import '../../domain/entities/app_notification.dart';
 import '../../domain/repositories/i_notification_repository.dart';
 
@@ -47,7 +48,7 @@ class NotificationStateController extends GetxController {
         notifications.value = data;
       },
       onFailure: (error) {
-        errorMessage.value = error;
+        errorMessage.value = error.message;
       },
     );
 
@@ -155,6 +156,7 @@ class NotificationStateController extends GetxController {
   }
 
   /// 刷新（下拉刷新）
+  @override
   Future<void> refresh() async {
     await Future.wait([
       loadNotifications(),
