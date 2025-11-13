@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
+import '../config/supabase_config.dart';
 import '../controllers/locale_controller.dart';
 import '../features/interest/domain/entities/interest.dart';
 import '../features/interest/presentation/controllers/interest_state_controller.dart';
@@ -10,6 +11,7 @@ import '../features/skill/presentation/controllers/skill_state_controller.dart';
 import '../features/user/domain/entities/user.dart';
 import '../features/user/presentation/controllers/user_state_controller.dart';
 import '../generated/app_localizations.dart';
+import '../utils/image_upload_helper.dart';
 import '../widgets/app_toast.dart';
 
 /// 用户资料编辑页面 - 浅色性冷淡风格
@@ -35,6 +37,10 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _bioController = TextEditingController();
+
+  // 头像上传状态
+  bool _uploadingAvatar = false;
+  String? _newAvatarUrl;
 
   @override
   void initState() {
@@ -102,6 +108,43 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     });
   }
 
+  // 处理头像上传
+  Future<void> _handleAvatarUpload() async {
+    if (!SupabaseConfig.isConfigured) {
+      AppToast.error('Supabase 未配置，请联系管理员');
+      return;
+    }
+
+    setState(() => _uploadingAvatar = true);
+
+    try {
+      final avatarUrl = await ImageUploadHelper.uploadAvatar(context);
+
+      if (avatarUrl != null && mounted) {
+        setState(() {
+          _newAvatarUrl = avatarUrl;
+          _uploadingAvatar = false;
+        });
+
+        AppToast.success(
+          '头像上传成功',
+          title: '成功',
+        );
+
+        // TODO: 这里可以立即调用 API 保存头像 URL 到后端
+        // await profileController.updateAvatar(avatarUrl);
+      } else {
+        setState(() => _uploadingAvatar = false);
+      }
+    } catch (e) {
+      debugPrint('❌ 头像上传失败: $e');
+      if (mounted) {
+        setState(() => _uploadingAvatar = false);
+        AppToast.error('头像上传失败: $e');
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -151,7 +194,20 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
+                  // TODO: 保存所有更改到后端
+                  // 包括：name, bio, avatarUrl (_newAvatarUrl)
+
+                  if (_newAvatarUrl != null) {
+                    // 如果上传了新头像，这里应该调用 API 保存
+                    debugPrint('新头像 URL: $_newAvatarUrl');
+                    // await profileController.updateProfile(
+                    //   name: _nameController.text,
+                    //   bio: _bioController.text,
+                    //   avatarUrl: _newAvatarUrl,
+                    // );
+                  }
+
                   AppToast.success(
                     l10n.profileUpdatedSuccessfully,
                     title: l10n.saved,
@@ -188,8 +244,9 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     return Obx(() {
       final user = profileController.currentUser.value;
 
-      // 生成头像 URL (如果没有 avatarUrl，使用用户名生成)
-      final avatarUrl = user?.avatarUrl ??
+      // 使用新上传的头像或原头像
+      final avatarUrl = _newAvatarUrl ??
+          user?.avatarUrl ??
           'https://ui-avatars.com/api/?name=${Uri.encodeComponent(user?.name ?? 'User')}&background=FF9800&color=fff&size=200';
 
       return Container(
@@ -208,21 +265,41 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                   radius: isMobile ? 50 : 70,
                   backgroundImage: NetworkImage(avatarUrl),
                   backgroundColor: Colors.orange,
+                  child: _uploadingAvatar
+                      ? Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black54,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 3,
+                            ),
+                          ),
+                        )
+                      : null,
                 ),
                 Positioned(
                   bottom: 0,
                   right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppColors.accent,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
-                    child: const Icon(
-                      Icons.camera_alt,
-                      color: Colors.white,
-                      size: 20,
+                  child: GestureDetector(
+                    onTap: _uploadingAvatar ? null : _handleAvatarUpload,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color:
+                            _uploadingAvatar ? Colors.grey : AppColors.accent,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                      child: Icon(
+                        _uploadingAvatar
+                            ? Icons.hourglass_empty
+                            : Icons.camera_alt,
+                        color: Colors.white,
+                        size: 20,
+                      ),
                     ),
                   ),
                 ),

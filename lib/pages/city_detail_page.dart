@@ -15,6 +15,8 @@ import '../features/city/presentation/controllers/city_detail_state_controller.d
 import '../features/coworking/domain/entities/coworking_space.dart'
     as coworking;
 import '../features/coworking/presentation/controllers/coworking_state_controller.dart';
+import '../features/notification/domain/entities/app_notification.dart';
+import '../features/notification/presentation/controllers/notification_state_controller.dart';
 import '../features/user_city_content/domain/entities/user_city_content.dart';
 import '../features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
 import '../features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
@@ -552,8 +554,27 @@ class _CityDetailPageState extends State<CityDetailPage>
       final result = await repository.applyModerator(cityId);
 
       result.fold(
-        onSuccess: (success) {
+        onSuccess: (success) async {
           AppToast.success('申请已提交！我们会尽快审核');
+          
+          // 发送通知给所有管理员
+          if (Get.isRegistered<NotificationStateController>()) {
+            final notificationController =
+                Get.find<NotificationStateController>();
+            final city = controller.currentCity.value;
+
+            await notificationController.sendToAdmins(
+              title: '新的版主申请',
+              message: '用户申请成为 ${city?.name ?? '某城市'} 的版主，请及时审核',
+              type: NotificationType.moderatorApplication,
+              relatedId: cityId,
+              metadata: {
+                'cityName': city?.name ?? '',
+                'cityId': cityId,
+              },
+            );
+          }
+          
           // 刷新城市信息
           controller.loadCityDetail(cityId);
         },

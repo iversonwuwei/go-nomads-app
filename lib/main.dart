@@ -3,12 +3,14 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+import 'config/supabase_config.dart';
 import 'controllers/bottom_nav_controller.dart';
 import 'controllers/locale_controller.dart';
 import 'core/di/dependency_injection.dart';
 import 'generated/app_localizations.dart';
 import 'routes/app_routes.dart';
 import 'services/app_init_service.dart';
+import 'services/image_upload_service.dart';
 import 'services/location_service.dart';
 import 'services/notification_service.dart';
 
@@ -31,13 +33,29 @@ void main() async {
   Get.put(BottomNavController(), permanent: true);
   print('✅ 全局控制器初始化完成');
 
-  // � 初始化通知服务
+  // 📢 初始化通知服务
   print('📢 初始化通知服务...');
   try {
     await Get.putAsync(() => NotificationService().init(), permanent: true);
     print('✅ 通知服务初始化成功');
   } catch (e) {
     print('❌ 通知服务初始化失败: $e');
+  }
+
+  // 📸 初始化 Supabase Storage（图片上传）
+  if (SupabaseConfig.isConfigured) {
+    print('📸 初始化 Supabase Storage...');
+    try {
+      await ImageUploadService().initialize(
+        url: SupabaseConfig.url,
+        anonKey: SupabaseConfig.anonKey,
+      );
+      print('✅ Supabase Storage 初始化成功');
+    } catch (e) {
+      print('❌ Supabase Storage 初始化失败: $e');
+    }
+  } else {
+    print('⚠️ Supabase 未配置，跳过初始化');
   }
 
   // Restore login state from persisted token
