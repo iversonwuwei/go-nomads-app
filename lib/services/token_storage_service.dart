@@ -13,11 +13,13 @@ class TokenStorageService {
   static const String _userIdKey = 'user_id';
   static const String _userNameKey = 'user_name';
   static const String _userEmailKey = 'user_email';
+  static const String _tokenExpiresAtKey = 'token_expires_at';
 
   /// 保存访问令牌和刷新令牌
   Future<void> saveTokens({
     required String accessToken,
     String? refreshToken,
+    DateTime? expiresAt,
   }) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(ApiConfig.authTokenKey, accessToken);
@@ -26,6 +28,13 @@ class TokenStorageService {
       await prefs.setString(ApiConfig.refreshTokenKey, refreshToken);
     } else {
       await prefs.remove(ApiConfig.refreshTokenKey);
+    }
+
+    // 保存过期时间
+    if (expiresAt != null) {
+      await prefs.setString(_tokenExpiresAtKey, expiresAt.toIso8601String());
+    } else {
+      await prefs.remove(_tokenExpiresAtKey);
     }
   }
 
@@ -79,6 +88,20 @@ class TokenStorageService {
     return prefs.getString(_userEmailKey);
   }
 
+  /// 读取 Token 过期时间
+  Future<DateTime?> getTokenExpiresAt() async {
+    final prefs = await SharedPreferences.getInstance();
+    final expiresAtString = prefs.getString(_tokenExpiresAtKey);
+    if (expiresAtString == null) return null;
+
+    try {
+      return DateTime.parse(expiresAtString);
+    } catch (e) {
+      print('⚠️ 解析 token 过期时间失败: $e');
+      return null;
+    }
+  }
+
   /// 检查用户是否为管理员
   Future<bool> isAdmin() async {
     final role = await getUserRole();
@@ -90,6 +113,7 @@ class TokenStorageService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(ApiConfig.authTokenKey);
     await prefs.remove(ApiConfig.refreshTokenKey);
+    await prefs.remove(_tokenExpiresAtKey);
     await prefs.remove(_userRoleKey);
     await prefs.remove(_userIdKey);
     await prefs.remove(_userNameKey);

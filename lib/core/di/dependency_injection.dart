@@ -171,6 +171,7 @@ class DependencyInjection {
     Get.find<UserStateController>();
     Get.find<SkillStateController>();
     Get.find<InterestStateController>();
+    Get.find<ChatStateController>();
 
     print('✅ 全局 Controllers 已强制初始化');
   }

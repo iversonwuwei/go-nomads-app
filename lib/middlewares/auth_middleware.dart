@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../features/auth/presentation/controllers/auth_state_controller.dart';
+import '../routes/app_routes.dart';
+
 /// 认证中间件 - 用于保护需要登录才能访问的页面
-/// 
-/// **工作原理：**
-/// GetX 的 middleware.redirect() 是同步方法，无法 await token 检查
 ///
-/// **实际的验证架构：**
-/// 1. Bottom Nav 点击时检查 token（异步，主要验证点）
-/// 2. HTTP 请求返回 401 时清除并跳转登录（后端验证）
-/// 3. Middleware 仅作为路由配置说明，不做实际验证
+/// **工作原理：**
+/// 1. 检查 AuthStateController 的 isAuthenticated 状态
+/// 2. 如果未登录，重定向到登录页面
+/// 3. 如果已登录，允许访问目标页面
 ///
 /// **白名单路由（不使用此 middleware）：**
 /// - `/` (home) - 首页，支持匿名访问
@@ -21,10 +21,52 @@ class AuthMiddleware extends GetMiddleware {
 
   @override
   RouteSettings? redirect(String? route) {
-    // ⚠️ redirect 方法不能是 async，无法直接检查 token
-    // 真正的验证在：
-    // 1. Bottom Nav 点击时异步检查 token
-    // 2. HTTP 层收到 401 时跳转登录
-    return null; // 允许访问，由其他层验证
+    try {
+      // 获取 AuthStateController
+      final authController = Get.find<AuthStateController>();
+
+      // 1️⃣ 检查是否已登录
+      if (!authController.isAuthenticated.value) {
+        print('⚠️ AuthMiddleware: 未登录，重定向到登录页面 (from: $route)');
+        return const RouteSettings(name: AppRoutes.login);
+      }
+
+      // 2️⃣ 检查 Token 是否存在且未过期
+      final token = authController.currentToken.value;
+
+      if (token == null) {
+        print('⚠️ AuthMiddleware: Token 为空，重定向到登录页面 (from: $route)');
+        // 清除无效的登录状态
+        authController.isAuthenticated.value = false;
+        authController.currentUser.value = null;
+        return const RouteSettings(name: AppRoutes.login);
+      }
+
+      // 3️⃣ 检查 Token 是否过期
+      if (token.isExpired) {
+        print('⚠️ AuthMiddleware: Token 已过期，重定向到登录页面 (from: $route)');
+        print('   ExpiresAt: ${token.expiresAt}');
+        print('   Current: ${DateTime.now()}');
+
+        // 清除过期的认证状态
+        authController.isAuthenticated.value = false;
+        authController.currentUser.value = null;
+        authController.currentToken.value = null;
+
+        // 异步清除存储的 token
+        authController.logout();
+
+        return const RouteSettings(name: AppRoutes.login);
+      }
+
+      // ✅ Token 有效，允许访问
+      print('✅ AuthMiddleware: Token 有效，允许访问 $route');
+      print('   ExpiresAt: ${token.expiresAt}');
+      return null;
+    } catch (e) {
+      // AuthStateController 未就绪，重定向到登录页
+      print('⚠️ AuthMiddleware: 发生异常，重定向到登录页面 (error: $e)');
+      return const RouteSettings(name: AppRoutes.login);
+    }
   }
 }

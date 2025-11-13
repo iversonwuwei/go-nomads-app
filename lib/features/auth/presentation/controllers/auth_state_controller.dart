@@ -9,6 +9,7 @@ import '../../application/use_cases/auth_use_cases.dart';
 import '../../domain/entities/auth_token.dart';
 import '../../domain/entities/auth_user.dart';
 import '../../domain/repositories/iauth_database_repository.dart';
+import '../../domain/repositories/iauth_repository.dart';
 
 /// 认证状态控制器
 class AuthStateController extends GetxController {
@@ -55,6 +56,25 @@ class AuthStateController extends GetxController {
     super.onInit();
     // 优先从数据库恢复登录状态
     _checkLoginStatusWithDatabase();
+    // 立即加载 token 到内存
+    _loadTokenToMemory();
+  }
+
+  /// 从存储加载 token 到内存（用于同步检查过期状态）
+  Future<void> _loadTokenToMemory() async {
+    final authRepository = Get.find<IAuthRepository>();
+    final result = await authRepository.getPersistedToken();
+
+    result.fold(
+      onSuccess: (token) {
+        currentToken.value = token;
+        print('📥 Token 已加载到内存: expiresAt=${token?.expiresAt}');
+      },
+      onFailure: (_) {
+        currentToken.value = null;
+        print('⚠️ 加载 Token 失败');
+      },
+    );
   }
 
   /// 检查登录状态 (优先从数据库)
@@ -120,6 +140,30 @@ class AuthStateController extends GetxController {
         return false;
       },
     );
+  }
+
+  /// 验证 Token 是否有效（检查是否过期）
+  Future<bool> validateToken() async {
+    try {
+      // 从 Repository 获取持久化的 token
+      final authRepository = Get.find<IAuthRepository>();
+      final isAuth = await authRepository.isAuthenticated();
+
+      print('🔍 Token 验证结果: $isAuth');
+
+      if (!isAuth) {
+        // Token 无效或过期，清除认证状态
+        isAuthenticated.value = false;
+        currentUser.value = null;
+        currentToken.value = null;
+        return false;
+      }
+
+      return true;
+    } catch (e) {
+      print('❌ Token 验证异常: $e');
+      return false;
+    }
   }
 
   /// 登录

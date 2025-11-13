@@ -1,318 +1,792 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 
-import '../config/app_colors.dart';
 import '../features/chat/domain/entities/chat.dart';
 import '../features/chat/presentation/controllers/chat_state_controller.dart';
 import '../generated/app_localizations.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/skeletons/skeletons.dart';
 
-
+/// 城市聊天室页面 - WeChat 风格设计
+///
+/// 设计理念:
+/// - 简洁的列表界面,清晰的层级结构
+/// - 绿色作为主题色(WeChat 风格)
+/// - 流畅的动画和过渡效果
+/// - 支持长按回复、滑动删除等交互
 class CityChatPage extends StatelessWidget {
   const CityChatPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<ChatStateController>();
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 768;
+
+    return Obx(() {
+      if (controller.isLoading && controller.currentRoom == null) {
+        return const ChatListSkeleton();
+      }
+
+      if (controller.currentRoom == null) {
+        return _ChatRoomsListView(controller: controller);
+      }
+
+      return _ChatRoomView(controller: controller);
+    });
+  }
+}
+
+/// 聊天室列表视图
+class _ChatRoomsListView extends StatelessWidget {
+  final ChatStateController controller;
+
+  const _ChatRoomsListView({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Obx(() {
-        if (controller.isLoading && controller.currentRoom == null) {
-          return const ChatListSkeleton();
-        }
-
-        // Show chat rooms list if no room is selected
-        if (controller.currentRoom == null) {
-          return _buildChatRoomsList(context, controller, isMobile);
-        }
-
-        // Show chat room
-        return _buildChatRoom(context, controller, isMobile);
-      }),
+      backgroundColor: const Color(0xFFF5F5F5),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFEDEDED),
+        elevation: 0,
+        systemOverlayStyle: SystemUiOverlayStyle.dark,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Get.back(),
+        ),
+        title: Text(
+          l10n.cityChats,
+          style: const TextStyle(
+            color: Colors.black,
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add_circle_outline, color: Colors.black),
+            onPressed: () => AppToast.info('创建聊天室功能即将推出'),
+          ),
+        ],
+      ),
+      body: controller.chatRooms.isEmpty
+          ? _buildEmptyState(context)
+          : ListView.separated(
+              itemCount: controller.chatRooms.length,
+              separatorBuilder: (_, __) => const Divider(
+                height: 1,
+                indent: 72,
+                color: Color(0xFFE5E5E5),
+              ),
+              itemBuilder: (context, index) {
+                final room = controller.chatRooms[index];
+                return _ChatRoomItem(room: room, controller: controller);
+              },
+            ),
     );
   }
 
-  // Chat Rooms List
-  Widget _buildChatRoomsList(
-      BuildContext context, ChatStateController controller, bool isMobile) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return CustomScrollView(
-      slivers: [
-        SliverAppBar(
-          expandedHeight: 0,
-          floating: true,
-          pinned: true,
-          backgroundColor: Colors.white,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_outlined,
-                color: AppColors.backButtonDark),
-            onPressed: () => Get.back(),
+  Widget _buildEmptyState(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.chat_bubble_outline_rounded,
+            size: 80,
+            color: Colors.grey[400],
           ),
-          iconTheme: const IconThemeData(color: AppColors.backButtonDark),
-          title: Text(
-            l10n.cityChats,
-            style: const TextStyle(
-              color: Color(0xFF1a1a1a),
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+          const SizedBox(height: 16),
+          Text(
+            '暂无聊天室',
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 16,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 聊天室列表项
+class _ChatRoomItem extends StatelessWidget {
+  final ChatRoom room;
+  final ChatStateController controller;
+
+  const _ChatRoomItem({required this.room, required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white,
+      child: InkWell(
+        onTap: () => controller.joinRoom(room),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              _buildAvatar(),
+              const SizedBox(width: 12),
+              Expanded(child: _buildInfo()),
+            ],
           ),
         ),
-        SliverPadding(
-          padding: EdgeInsets.all(isMobile ? 16 : 24),
-          sliver: SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final room = controller.chatRooms[index];
-                return _buildChatRoomCard(room, controller, isMobile);
-              },
-              childCount: controller.chatRooms.length,
+      ),
+    );
+  }
+
+  Widget _buildAvatar() {
+    return Stack(
+      children: [
+        Container(
+          width: 52,
+          height: 52,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF07C160), Color(0xFF059C4C)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: const Icon(Icons.people, color: Colors.white, size: 28),
+        ),
+        if (room.stats.onlineUsers > 0)
+          Positioned(
+            right: -2,
+            top: -2,
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: const BoxDecoration(
+                color: Color(0xFFFF3B30),
+                shape: BoxShape.circle,
+              ),
+              constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+              child: Text(
+                room.stats.onlineUsers > 99
+                    ? '99+'
+                    : '${room.stats.onlineUsers}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
             ),
           ),
+      ],
+    );
+  }
+
+  Widget _buildInfo() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                room.displayName,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              _formatTime(room.lastMessage?.timestamp ?? DateTime.now()),
+              style: const TextStyle(fontSize: 12, color: Color(0xFF999999)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          room.lastMessage?.message ?? '${room.stats.onlineUsers} 人在线',
+          style: const TextStyle(fontSize: 14, color: Color(0xFF999999)),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
       ],
     );
   }
 
-  Widget _buildChatRoomCard(
-      ChatRoom room, ChatStateController controller, bool isMobile) {
-    return InkWell(
-      onTap: () => controller.joinRoom(room),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE5E7EB)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${room.location.city}, ${room.location.country}',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1a1a1a),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF10B981),
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            '${room.stats.onlineUsers} online • ${room.stats.totalMembers} members',
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: Color(0xFF6b7280),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                  color: Color(0xFF9ca3af),
-                ),
-              ],
-            ),
-            if (room.lastMessage != null) ...[
-              const SizedBox(height: 12),
-              const Divider(height: 1, color: Color(0xFFE5E7EB)),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  if (room.lastMessage!.author.userAvatar != null)
-                    CircleAvatar(
-                      radius: 12,
-                      backgroundImage:
-                          NetworkImage(room.lastMessage!.author.userAvatar!),
-                    ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: RichText(
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      text: TextSpan(
-                        children: [
-                          TextSpan(
-                            text: '${room.lastMessage!.author.userName}: ',
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF374151),
-                            ),
-                          ),
-                          TextSpan(
-                            text: room.lastMessage!.message,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: Color(0xFF6b7280),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    _formatTime(room.lastMessage!.timestamp),
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: Color(0xFF9ca3af),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
+  String _formatTime(DateTime time) {
+    final now = DateTime.now();
+    final diff = now.difference(time);
+
+    if (diff.inMinutes < 1) return '刚刚';
+    if (diff.inHours < 1) return '${diff.inMinutes}分钟前';
+    if (diff.inDays < 1) return '${diff.inHours}小时前';
+    if (diff.inDays < 7) return '${diff.inDays}天前';
+    return '${time.month}/${time.day}';
+  }
+}
+
+/// 聊天室详情视图
+class _ChatRoomView extends StatefulWidget {
+  final ChatStateController controller;
+
+  const _ChatRoomView({required this.controller});
+
+  @override
+  State<_ChatRoomView> createState() => _ChatRoomViewState();
+}
+
+class _ChatRoomViewState extends State<_ChatRoomView> {
+  final _textController = TextEditingController();
+  final _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 
-  // Chat Room
-  Widget _buildChatRoom(
-      BuildContext context, ChatStateController controller, bool isMobile) {
-    final room = controller.currentRoom!;
-
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 1,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_outlined,
-              color: AppColors.backButtonDark),
-          onPressed: () {
-            controller.leaveRoom();
-          },
-        ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '${room.location.city}, ${room.location.country}',
-              style: const TextStyle(
-                color: Color(0xFF1a1a1a),
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              '${room.stats.onlineUsers} online',
-              style: const TextStyle(
-                color: Color(0xFF6b7280),
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.people, color: Color(0xFF1a1a1a)),
-            onPressed: () => _showOnlineUsers(controller),
-          ),
-        ],
-      ),
+      backgroundColor: const Color(0xFFF5F5F5),
+      appBar: _buildAppBar(),
       body: Column(
         children: [
-          // Messages
           Expanded(
-            child: Obx(() {
-              if (controller.isLoading) {
-                return const MessagesSkeleton();
-              }
-
-              return ListView.builder(
-                reverse: true,
-                padding: const EdgeInsets.all(16),
-                itemCount: controller.messages.length,
-                itemBuilder: (context, index) {
-                  final message = controller.messages[index];
-                  final isMe = message.author.userId == _getCurrentUserId();
-                  return _buildMessageBubble(message, isMe, controller);
-                },
-              );
-            }),
+            child: Obx(() => widget.controller.messages.isEmpty
+                ? _buildEmptyMessages()
+                : _buildMessagesList()),
           ),
-
-          // Reply Preview
           Obx(() {
-            if (controller.replyTo != null) {
-              return _buildReplyPreview(controller);
+            if (widget.controller.replyTo != null) {
+              return _buildReplyBar();
             }
             return const SizedBox.shrink();
           }),
-
-          // Input
-          _buildMessageInput(controller),
+          _buildInputBar(),
         ],
       ),
     );
   }
 
-  Widget _buildMessageBubble(
-      ChatMessage message, bool isMe, ChatStateController controller) {
-    return GestureDetector(
-      onLongPress: () {
-        if (!isMe) {
-          controller.setReplyTo(message);
-        }
+  PreferredSizeWidget _buildAppBar() {
+    final room = widget.controller.currentRoom!;
+    return AppBar(
+      backgroundColor: const Color(0xFFEDEDED),
+      elevation: 0,
+      systemOverlayStyle: SystemUiOverlayStyle.dark,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.black),
+        onPressed: () => widget.controller.leaveRoom(),
+      ),
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            room.displayName,
+            style: const TextStyle(
+              color: Colors.black,
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          Text(
+            '${room.stats.onlineUsers}人在线',
+            style: const TextStyle(color: Color(0xFF999999), fontSize: 12),
+          ),
+        ],
+      ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.more_horiz, color: Colors.black),
+          onPressed: () => _showRoomMenu(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyMessages() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.chat_outlined, size: 64, color: Color(0xFFCCCCCC)),
+          SizedBox(height: 16),
+          Text(
+            '开始聊天吧',
+            style: TextStyle(color: Color(0xFF999999), fontSize: 16),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessagesList() {
+    return ListView.builder(
+      controller: _scrollController,
+      reverse: true,
+      padding: const EdgeInsets.all(16),
+      itemCount: widget.controller.messages.length,
+      itemBuilder: (context, index) {
+        final message = widget.controller.messages[index];
+        final isMe = message.author.userId == 'currentUserId'; // TODO: 实际用户ID
+        return _MessageBubble(
+          message: message,
+          isMe: isMe,
+          onLongPress: () {
+            if (!isMe) widget.controller.setReplyTo(message);
+          },
+        );
       },
+    );
+  }
+
+  Widget _buildReplyBar() {
+    final replyTo = widget.controller.replyTo!;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: const Color(0xFFF3F4F6),
+      child: Row(
+        children: [
+          Container(
+            width: 3,
+            height: 40,
+            decoration: BoxDecoration(
+              color: const Color(0xFF07C160),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '回复 ${replyTo.author.userName}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF07C160),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  replyTo.message,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style:
+                      const TextStyle(fontSize: 13, color: Color(0xFF666666)),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close, size: 20),
+            onPressed: () => widget.controller.clearReplyTo(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInputBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: const Color(0xFFE5E5E5))),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 4,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            // 语音按钮
+            Container(
+              margin: const EdgeInsets.only(bottom: 6),
+              child: IconButton(
+                icon: const Icon(Icons.mic_none_rounded,
+                    color: Color(0xFF666666), size: 26),
+                onPressed: () => _showMoreOptions(),
+              ),
+            ),
+            // 输入框
+            Expanded(
+              child: Container(
+                constraints: const BoxConstraints(maxHeight: 120),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF7F7F7),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: TextField(
+                  controller: _textController,
+                  decoration: const InputDecoration(
+                    hintText: '说点什么...',
+                    hintStyle:
+                        TextStyle(color: Color(0xFFBBBBBB), fontSize: 16),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(vertical: 8),
+                  ),
+                  maxLines: null,
+                  textCapitalization: TextCapitalization.sentences,
+                  style: const TextStyle(fontSize: 16, height: 1.5),
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            // 表情/更多按钮
+            if (_textController.text.trim().isEmpty)
+              Container(
+                margin: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.emoji_emotions_outlined,
+                          color: Color(0xFF666666), size: 26),
+                      onPressed: () => AppToast.info('表情功能即将推出'),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.add_circle_outline,
+                          color: Color(0xFF666666), size: 26),
+                      onPressed: () => _showMoreOptions(),
+                    ),
+                  ],
+                ),
+              )
+            else
+              _buildSendButton(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSendButton() {
+    final hasText = _textController.text.trim().isNotEmpty;
+    return GestureDetector(
+      onTap: hasText ? _sendMessage : null,
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: hasText ? const Color(0xFF07C160) : const Color(0xFFE5E5E5),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: const Icon(Icons.send, color: Colors.white, size: 20),
+      ),
+    );
+  }
+
+  void _sendMessage() {
+    final text = _textController.text.trim();
+    if (text.isNotEmpty) {
+      widget.controller.sendMessage(text);
+      _textController.clear();
+    }
+  }
+
+  void _showRoomMenu() {
+    Get.bottomSheet(
+      Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 顶部拖动条
+              Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 20),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE0E0E0),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              _buildMenuOption(
+                icon: Icons.people_outline,
+                title: '查看成员',
+                onTap: () {
+                  Get.back();
+                  AppToast.info('成员列表功能即将推出');
+                },
+              ),
+              _buildMenuOption(
+                icon: Icons.search,
+                title: '搜索聊天记录',
+                onTap: () {
+                  Get.back();
+                  AppToast.info('搜索功能即将推出');
+                },
+              ),
+              _buildMenuOption(
+                icon: Icons.notifications_off_outlined,
+                title: '消息免打扰',
+                onTap: () {
+                  Get.back();
+                  AppToast.success('已开启消息免打扰');
+                },
+              ),
+              _buildMenuOption(
+                icon: Icons.volume_off_outlined,
+                title: '静音',
+                onTap: () {
+                  Get.back();
+                  AppToast.success('已静音');
+                },
+              ),
+              const Divider(height: 1, thickness: 8, color: Color(0xFFF5F5F5)),
+              _buildMenuOption(
+                icon: Icons.exit_to_app,
+                title: '退出聊天室',
+                titleColor: Colors.red,
+                iconColor: Colors.red,
+                onTap: () {
+                  Get.back();
+                  widget.controller.leaveRoom();
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuOption({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    Color? iconColor,
+    Color? titleColor,
+  }) {
+    return InkWell(
+      onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Row(
+          children: [
+            Icon(icon, color: iconColor ?? const Color(0xFF333333), size: 24),
+            const SizedBox(width: 16),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                color: titleColor ?? const Color(0xFF333333),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showMoreOptions() {
+    Get.bottomSheet(
+      Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFFF5F5F5),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 拖动条
+                Container(
+                  margin: const EdgeInsets.only(bottom: 20),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFCCCCCC),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                // 功能网格
+                GridView.count(
+                  shrinkWrap: true,
+                  crossAxisCount: 4,
+                  mainAxisSpacing: 16,
+                  crossAxisSpacing: 16,
+                  children: [
+                    _buildMoreOption(
+                      icon: Icons.photo_library,
+                      label: '相册',
+                      onTap: () async {
+                        Get.back();
+                        final ImagePicker picker = ImagePicker();
+                        final XFile? image = await picker.pickImage(
+                          source: ImageSource.gallery,
+                        );
+                        if (image != null) {
+                          AppToast.success('已选择图片');
+                        }
+                      },
+                    ),
+                    _buildMoreOption(
+                      icon: Icons.camera_alt,
+                      label: '拍摄',
+                      onTap: () async {
+                        Get.back();
+                        final ImagePicker picker = ImagePicker();
+                        final XFile? image = await picker.pickImage(
+                          source: ImageSource.camera,
+                        );
+                        if (image != null) {
+                          AppToast.success('已拍摄照片');
+                        }
+                      },
+                    ),
+                    _buildMoreOption(
+                      icon: Icons.location_on,
+                      label: '位置',
+                      onTap: () {
+                        Get.back();
+                        AppToast.info('位置分享功能即将推出');
+                      },
+                    ),
+                    _buildMoreOption(
+                      icon: Icons.mic,
+                      label: '语音',
+                      onTap: () {
+                        Get.back();
+                        AppToast.info('语音功能即将推出');
+                      },
+                    ),
+                    _buildMoreOption(
+                      icon: Icons.videocam,
+                      label: '视频',
+                      onTap: () {
+                        Get.back();
+                        AppToast.info('视频功能即将推出');
+                      },
+                    ),
+                    _buildMoreOption(
+                      icon: Icons.person_add,
+                      label: '名片',
+                      onTap: () {
+                        Get.back();
+                        AppToast.info('名片分享功能即将推出');
+                      },
+                    ),
+                    _buildMoreOption(
+                      icon: Icons.folder,
+                      label: '文件',
+                      onTap: () {
+                        Get.back();
+                        AppToast.info('文件功能即将推出');
+                      },
+                    ),
+                    _buildMoreOption(
+                      icon: Icons.favorite,
+                      label: '收藏',
+                      onTap: () {
+                        Get.back();
+                        AppToast.info('收藏功能即将推出');
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMoreOption({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Icon(icon, color: const Color(0xFF666666), size: 28),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Color(0xFF666666),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 消息气泡
+class _MessageBubble extends StatelessWidget {
+  final ChatMessage message;
+  final bool isMe;
+  final VoidCallback? onLongPress;
+
+  const _MessageBubble({
+    required this.message,
+    required this.isMe,
+    this.onLongPress,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onLongPress: onLongPress,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 16),
         child: Row(
           mainAxisAlignment:
               isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (!isMe) ...[
-              GestureDetector(
-                onTap: () {
-                  // 点击头像查看成员详情
-                  _showUserDetail(message);
-                },
-                child: Hero(
-                  tag:
-                      'message_avatar_${message.author.userId}_${message.timestamp.millisecondsSinceEpoch}',
-                  child: CircleAvatar(
-                    radius: 16,
-                    backgroundImage: NetworkImage(
-                        message.author.userAvatar ??
-                        'https://i.pravatar.cc/300'),
-                  ),
+              CircleAvatar(
+                radius: 18,
+                backgroundImage: NetworkImage(
+                  message.author.userAvatar ?? 'https://i.pravatar.cc/150',
                 ),
               ),
               const SizedBox(width: 8),
@@ -324,566 +798,45 @@ class CityChatPage extends StatelessWidget {
                 children: [
                   if (!isMe)
                     Padding(
-                      padding: const EdgeInsets.only(left: 4, bottom: 4),
+                      padding: const EdgeInsets.only(bottom: 4),
                       child: Text(
                         message.author.userName,
                         style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF6b7280),
-                        ),
+                            fontSize: 12, color: Color(0xFF999999)),
                       ),
                     ),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 10),
+                        horizontal: 12, vertical: 10),
                     decoration: BoxDecoration(
-                      color: isMe ? const Color(0xFFFF4458) : Colors.white,
+                      color: isMe ? const Color(0xFF95EC69) : Colors.white,
                       borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(isMe ? 16 : 4),
-                        topRight: Radius.circular(isMe ? 4 : 16),
-                        bottomLeft: const Radius.circular(16),
-                        bottomRight: const Radius.circular(16),
+                        topLeft: Radius.circular(isMe ? 18 : 4),
+                        topRight: Radius.circular(isMe ? 4 : 18),
+                        bottomLeft: const Radius.circular(18),
+                        bottomRight: const Radius.circular(18),
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (message.replyTo?.message != null) ...[
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            margin: const EdgeInsets.only(bottom: 8),
-                            decoration: BoxDecoration(
-                              color: (isMe
-                                      ? Colors.white
-                                      : const Color(0xFFF3F4F6))
-                                  .withValues(alpha: 0.3),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  message.replyTo!.userName,
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: isMe
-                                        ? Colors.white.withValues(alpha: 0.8)
-                                        : const Color(0xFF6b7280),
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  message.replyTo!.message,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: isMe
-                                        ? Colors.white.withValues(alpha: 0.7)
-                                        : const Color(0xFF9ca3af),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                        Text(
-                          message.message,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color:
-                                isMe ? Colors.white : const Color(0xFF1a1a1a),
-                            height: 1.4,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 4, right: 4, top: 4),
                     child: Text(
-                      _formatTime(message.timestamp),
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: Color(0xFF9ca3af),
-                      ),
+                      message.message,
+                      style: const TextStyle(fontSize: 16, color: Colors.black),
                     ),
                   ),
                 ],
               ),
             ),
+            if (isMe) ...[
+              const SizedBox(width: 8),
+              CircleAvatar(
+                radius: 18,
+                backgroundImage: NetworkImage(
+                  message.author.userAvatar ?? 'https://i.pravatar.cc/150',
+                ),
+              ),
+            ],
           ],
         ),
       ),
     );
   }
-
-  Widget _buildReplyPreview(ChatStateController controller) {
-    final reply = controller.replyTo!;
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: const BoxDecoration(
-        color: Color(0xFFF3F4F6),
-        border: Border(
-          top: BorderSide(color: Color(0xFFE5E7EB)),
-        ),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.reply, size: 20, color: Color(0xFFFF4458)),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Replying to ${reply.author.userName}',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFFFF4458),
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  reply.message,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF6b7280),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.close, size: 20),
-            onPressed: controller.clearReplyTo,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMessageInput(ChatStateController controller) {
-    final textController = TextEditingController();
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Color(0xFFE5E7EB)),
-        ),
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            icon:
-                const Icon(Icons.add_circle_outline, color: Color(0xFFFF4458)),
-            onPressed: () => _showAttachmentOptions(controller),
-          ),
-          Expanded(
-            child: TextField(
-              controller: textController,
-              decoration: InputDecoration(
-                hintText: 'Type a message...',
-                hintStyle: const TextStyle(color: Color(0xFF9ca3af)),
-                filled: true,
-                fillColor: const Color(0xFFF3F4F6),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              ),
-              maxLines: null,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Container(
-            width: 44,
-            height: 44,
-            decoration: const BoxDecoration(
-              color: Color(0xFFFF4458),
-              shape: BoxShape.circle,
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.send, color: Colors.white, size: 20),
-              onPressed: () {
-                if (textController.text.trim().isNotEmpty) {
-                  controller.sendMessage(textController.text);
-                  textController.clear();
-                }
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showAttachmentOptions(ChatStateController controller) {
-    final l10n = AppLocalizations.of(Get.context!)!;
-
-    Get.bottomSheet(
-      Container(
-        constraints: const BoxConstraints(maxHeight: 450),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: 12),
-                Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE5E7EB),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      l10n.sendAttachment,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF1a1a1a),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    children: [
-                      _buildAttachmentOption(
-                        icon: Icons.image_outlined,
-                        iconColor: const Color(0xFF8B5CF6),
-                        iconBgColor:
-                            const Color(0xFF8B5CF6).withValues(alpha: 0.1),
-                        title: l10n.photoVideo,
-                        subtitle: l10n.sharePhotosAndVideos,
-                        onTap: () {
-                          Get.back();
-                          _handleImageUpload(controller);
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      _buildAttachmentOption(
-                        icon: Icons.location_on_outlined,
-                        iconColor: const Color(0xFFEF4444),
-                        iconBgColor:
-                            const Color(0xFFEF4444).withValues(alpha: 0.1),
-                        title: l10n.location,
-                        subtitle: l10n.shareYourLocation,
-                        onTap: () {
-                          Get.back();
-                          _handleLocationShare(controller);
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      _buildAttachmentOption(
-                        icon: Icons.insert_drive_file_outlined,
-                        iconColor: const Color(0xFF3B82F6),
-                        iconBgColor:
-                            const Color(0xFF3B82F6).withValues(alpha: 0.1),
-                        title: l10n.document,
-                        subtitle: l10n.shareFilesAndDocuments,
-                        onTap: () {
-                          Get.back();
-                          _handleDocumentUpload(controller);
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      _buildAttachmentOption(
-                        icon: Icons.contact_page_outlined,
-                        iconColor: const Color(0xFF10B981),
-                        iconBgColor:
-                            const Color(0xFF10B981).withValues(alpha: 0.1),
-                        title: l10n.contact,
-                        subtitle: l10n.shareContactInformation,
-                        onTap: () {
-                          Get.back();
-                          _handleContactShare(controller);
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-              ],
-            ),
-          ),
-        ),
-      ),
-      isDismissible: true,
-      enableDrag: true,
-    );
-  }
-
-  Widget _buildAttachmentOption({
-    required IconData icon,
-    required Color iconColor,
-    required Color iconBgColor,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          border: Border.all(color: const Color(0xFFE5E7EB)),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: iconBgColor,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: iconColor, size: 24),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF1a1a1a),
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF6B7280),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(
-              Icons.arrow_forward_ios,
-              size: 16,
-              color: Color(0xFF9CA3AF),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _handleImageUpload(ChatStateController controller) {
-    final l10n = AppLocalizations.of(Get.context!)!;
-    // TODO: 实现图片上传功能
-    AppToast.info(
-      l10n.imageUploadComingSoon,
-      title: l10n.photoVideo,
-    );
-  }
-
-  void _handleLocationShare(ChatStateController controller) {
-    final l10n = AppLocalizations.of(Get.context!)!;
-    // TODO: 实现位置分享功能
-    AppToast.info(
-      l10n.locationSharingComingSoon,
-      title: l10n.location,
-    );
-  }
-
-  void _handleDocumentUpload(ChatStateController controller) {
-    final l10n = AppLocalizations.of(Get.context!)!;
-    // TODO: 实现文档上传功能
-    AppToast.info(
-      l10n.documentUploadComingSoon,
-      title: l10n.document,
-    );
-  }
-
-  void _handleContactShare(ChatStateController controller) {
-    final l10n = AppLocalizations.of(Get.context!)!;
-    // TODO: 实现联系人分享功能
-    AppToast.info(
-      l10n.contactSharingComingSoon,
-      title: l10n.contact,
-    );
-  }
-
-  void _showOnlineUsers(ChatStateController controller) {
-    final l10n = AppLocalizations.of(Get.context!)!;
-
-    Get.bottomSheet(
-      Container(
-        height: 400,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: const Color(0xFFE5E7EB),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  Text(
-                    l10n.onlineMembers,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1a1a1a),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: Obx(() {
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: controller.onlineUsers.length,
-                  itemBuilder: (context, index) {
-                    final user = controller.onlineUsers[index];
-                    return ListTile(
-                      onTap: () {
-                        // TODO: 暂不支持查看用户详情
-                        Get.snackbar('提示', '此功能即将推出');
-                      },
-                      leading: Hero(
-                        tag: 'user_avatar_${user.id}',
-                        child: Stack(
-                          children: [
-                            CircleAvatar(
-                              radius: 20,
-                              backgroundImage: NetworkImage(
-                                  user.avatar ?? 'https://i.pravatar.cc/300'),
-                            ),
-                            if (user.isOnline)
-                              Positioned(
-                                right: 0,
-                                bottom: 0,
-                                child: Container(
-                                  width: 12,
-                                  height: 12,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF10B981),
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                        color: Colors.white, width: 2),
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                      title: Text(
-                        user.name,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      subtitle: Text(
-                        user.isOnline
-                            ? l10n.online
-                            : l10n.lastSeen(_formatTime(user.lastSeen!)),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: user.isOnline
-                              ? const Color(0xFF10B981)
-                              : const Color(0xFF9ca3af),
-                        ),
-                      ),
-                    );
-                  },
-                );
-              }),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  String _formatTime(DateTime time) {
-    final l10n = AppLocalizations.of(Get.context!)!;
-    final now = DateTime.now();
-    final diff = now.difference(time);
-
-    if (diff.inMinutes < 1) return l10n.justNow;
-    if (diff.inHours < 1) return l10n.minutesAgo(diff.inMinutes);
-    if (diff.inDays < 1) return l10n.hoursAgo(diff.inHours);
-    if (diff.inDays < 7) return l10n.daysAgo(diff.inDays);
-
-    final months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec'
-    ];
-    return '${months[time.month - 1]} ${time.day}';
-  }
-
-  String? _getCurrentUserId() {
-    // TODO: 从 UserStateController 获取当前用户ID
-    return null;
-  }
-
-  // TODO: 实现从 ChatMessage 查看用户详情的功能
-  void _showUserDetail(ChatMessage message) {
-    // 暂不支持从消息查看用户详情
-    Get.snackbar('提示', '此功能即将推出');
-  }
-
 }

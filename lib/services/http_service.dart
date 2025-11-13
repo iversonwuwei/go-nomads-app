@@ -3,9 +3,11 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart' as getx;
 
 import '../config/api_config.dart';
+import '../features/auth/presentation/controllers/auth_state_controller.dart';
 import '../routes/app_routes.dart';
 import 'token_storage_service.dart';
 
@@ -33,12 +35,15 @@ class HttpService {
   late Dio _dio;
   String? _authToken;
   String? _userId;
-  
+
   // Token 刷新回调
   Future<String?> Function()? _onTokenRefreshCallback;
 
   // 用于防止重复刷新
   bool _isRefreshing = false;
+
+  // 用于防止重复跳转登录页
+  bool _isRedirectingToLogin = false;
 
   static const String apiResponseMetaKey = '__apiResponseMeta';
   static const String apiResponseRawKey = '__apiResponseRaw';
@@ -62,6 +67,69 @@ class HttpService {
     _setupInterceptors();
   }
 
+  /// 处理 401 未授权错误 - 清除认证并跳转登录页
+  Future<void> _handleUnauthorized({String? reason}) async {
+    // 防止重复跳转
+    if (_isRedirectingToLogin) {
+      if (kDebugMode) {
+        print('⏭️ 已在跳转登录页，跳过重复操作');
+      }
+      return;
+    }
+
+    _isRedirectingToLogin = true;
+
+    if (kDebugMode) {
+      print('🔥 处理 401 错误: ${reason ?? "Token 无效或已过期"}');
+    }
+
+    // 清除所有认证信息
+    final tokenService = TokenStorageService();
+    await tokenService.clearTokens();
+    _authToken = null;
+    _userId = null;
+
+    // 更新 AuthStateController 状态
+    try {
+      final authController = getx.Get.find<AuthStateController>();
+      authController.isAuthenticated.value = false;
+      authController.currentUser.value = null;
+      authController.currentToken.value = null;
+    } catch (e) {
+      if (kDebugMode) {
+        print('⚠️ 无法更新 AuthStateController: $e');
+      }
+    }
+
+    // 延迟显示提示并跳转（确保在正确的上下文中）
+    Future.delayed(Duration.zero, () {
+      try {
+        // 显示提示
+        getx.Get.snackbar(
+          'Session Expired',
+          reason ?? 'Your session has expired. Please login again.',
+          snackPosition: getx.SnackPosition.TOP,
+          backgroundColor: const Color(0xFFFF4458),
+          colorText: const Color(0xFFFFFFFF),
+          duration: const Duration(seconds: 3),
+        );
+
+        // 跳转到登录页
+        getx.Get.offAllNamed(AppRoutes.login);
+
+        // 重置标志
+        Future.delayed(const Duration(seconds: 1), () {
+          _isRedirectingToLogin = false;
+        });
+      } catch (e) {
+        if (kDebugMode) {
+          print('❌ 跳转登录页失败: $e');
+        }
+        _isRedirectingToLogin = false;
+      }
+    });
+  }
+
   /// 设置拦截器
   void _setupInterceptors() {
     // 请求拦截器
@@ -71,7 +139,7 @@ class HttpService {
           // 从 SQLite/SharedPreferences 动态获取 token
           final tokenService = TokenStorageService();
           final token = await tokenService.getAccessToken();
-          
+
           // 添加认证 token
           if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
@@ -189,15 +257,7 @@ class HttpService {
               if (kDebugMode) {
                 print('❌ 无 refresh token，跳转登录页面');
               }
-              
-              // 🔥 清除所有认证信息
-              await tokenService.clearTokens();
-              _authToken = null;
-              _userId = null;
-              
-              // 🔥 跳转到登录页面
-              getx.Get.offAllNamed(AppRoutes.login);
-              
+              await _handleUnauthorized(reason: 'Please login to continue');
               return handler.next(error);
             }
 
@@ -240,27 +300,15 @@ class HttpService {
                   if (kDebugMode) {
                     print('❌ Token 刷新失败，清除认证信息并跳转登录页');
                   }
-                  
-                  // 🔥 刷新失败，清除所有认证信息
-                  await tokenService.clearTokens();
-                  _authToken = null;
-                  _userId = null;
-                  
-                  // 🔥 跳转到登录页面
-                  getx.Get.offAllNamed(AppRoutes.login);
+                  await _handleUnauthorized(
+                      reason: 'Session expired. Please login again.');
                 }
               } catch (refreshError) {
                 if (kDebugMode) {
                   print('❌ Token 刷新异常: $refreshError');
                 }
-                
-                // 🔥 刷新异常，清除所有认证信息
-                await tokenService.clearTokens();
-                _authToken = null;
-                _userId = null;
-                
-                // 🔥 跳转到登录页面
-                getx.Get.offAllNamed(AppRoutes.login);
+                await _handleUnauthorized(
+                    reason: 'Authentication failed. Please login again.');
               } finally {
                 _isRefreshing = false;
               }
@@ -269,14 +317,7 @@ class HttpService {
               if (kDebugMode) {
                 print('❌ 无 Token 刷新回调，跳转登录页面');
               }
-              
-              // 🔥 清除所有认证信息
-              await tokenService.clearTokens();
-              _authToken = null;
-              _userId = null;
-              
-              // 🔥 跳转到登录页面
-              getx.Get.offAllNamed(AppRoutes.login);
+              await _handleUnauthorized(reason: 'Please login to continue');
             }
           }
 
@@ -298,7 +339,7 @@ class HttpService {
   void clearAuthToken() {
     _authToken = null;
   }
-  
+
   /// 设置 Token 刷新回调
   /// 当收到 401 错误时，会调用此回调尝试刷新 token
   /// 回调应返回新的 access token，如果刷新失败返回 null

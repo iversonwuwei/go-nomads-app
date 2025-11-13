@@ -17,8 +17,6 @@ import '../widgets/app_toast.dart';
 import '../widgets/copyright_widget.dart';
 import 'city_detail_page.dart';
 import 'create_meetup_page.dart';
-import 'global_map_page.dart';
-import 'meetup_detail_page.dart';
 
 class DataServicePage extends StatefulWidget {
   final bool scrollToCities;
@@ -121,17 +119,17 @@ class _DataServicePageState extends State<DataServicePage>
     ]);
   }
 
-  /// 检查登录状态，未登录则跳转到登录页
+  /// 严格检查登录状态和 Token 有效性
+  /// 在发起任何请求前就验证 token，而不是等到 HTTP 拦截器
   bool _checkLoginAndNavigate(VoidCallback onLoggedIn) {
-    // 使用 AuthStateController 检查登录状态（更可靠）
     final authController = Get.find<AuthStateController>();
 
-    print('🔒 DataServicePage: 检查登录状态');
-    print('   当前登录状态: ${authController.isAuthenticated.value}');
+    print('🔒 [严格验证] 检查登录状态...');
 
+    // 1️⃣ 检查登录状态
     if (!authController.isAuthenticated.value) {
-      print('⚠️ 用户未登录，跳转到登录页');
-      AppToast.info(
+      print('❌ 用户未登录');
+      AppToast.warning(
         'Please login to access this feature',
         title: 'Login Required',
       );
@@ -139,7 +137,49 @@ class _DataServicePageState extends State<DataServicePage>
       return false;
     }
 
-    print('✅ 用户已登录，执行操作');
+    // 2️⃣ 检查 Token 是否存在
+    final token = authController.currentToken.value;
+    if (token == null) {
+      print('❌ Token 为空，清除登录状态');
+      authController.isAuthenticated.value = false;
+      authController.currentUser.value = null;
+
+      AppToast.error(
+        'Invalid session. Please login again.',
+        title: 'Authentication Error',
+      );
+      Get.toNamed(AppRoutes.login);
+      return false;
+    }
+
+    // 3️⃣ 检查 Token 是否过期 (关键检查！)
+    if (token.isExpired) {
+      print('❌ Token 已过期');
+      print('   ExpiresAt: ${token.expiresAt}');
+      print('   Current: ${DateTime.now()}');
+
+      // 立即清除过期状态
+      authController.isAuthenticated.value = false;
+      authController.currentUser.value = null;
+      authController.currentToken.value = null;
+
+      // 异步清除存储
+      authController.logout();
+
+      AppToast.error(
+        'Your session has expired. Please login again.',
+        title: 'Session Expired',
+      );
+      Get.toNamed(AppRoutes.login);
+      return false;
+    }
+
+    // ✅ 所有检查通过，执行操作
+    print('✅ Token 验证通过，允许操作');
+    print('   ExpiresAt: ${token.expiresAt}');
+    print(
+        '   Remaining: ${token.expiresAt!.difference(DateTime.now()).inMinutes} minutes');
+
     onLoggedIn();
     return true;
   }
@@ -812,7 +852,7 @@ class _DataServicePageState extends State<DataServicePage>
             size: 20,
           ),
           onPressed: () {
-            Get.to(() => const GlobalMapPage());
+            Get.toNamed(AppRoutes.globalMap);
           },
         ),
       ],
@@ -2318,7 +2358,7 @@ class _MeetupCardState extends State<_MeetupCard> {
             // 图片和类型标签 - 可点击跳转到详情
             InkWell(
               onTap: () {
-                Get.to(() => MeetupDetailPage(meetup: widget.meetup));
+                Get.toNamed(AppRoutes.meetupDetail, arguments: widget.meetup);
               },
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(12)),
@@ -2363,135 +2403,45 @@ class _MeetupCardState extends State<_MeetupCard> {
             // 内容区域 - 可点击跳转到详情
             InkWell(
               onTap: () {
-                Get.to(() => MeetupDetailPage(meetup: widget.meetup));
+                Get.toNamed(AppRoutes.meetupDetail, arguments: widget.meetup);
               },
               child: Padding(
                 padding:
                     const EdgeInsets.fromLTRB(10, 10, 10, 6), // 按钮到卡片底部只留少量空间
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 标题
-                  Text(
-                    widget.meetup.title,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 标题
+                    Text(
+                      widget.meetup.title,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
 
-                  const SizedBox(height: 6),
+                    const SizedBox(height: 6),
 
-                  // 日期、地点、组织�?- 合并为紧凑显�?
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 日期和时�?
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.calendar_today_outlined,
-                            size: 13,
-                            color: AppColors.textSecondary,
-                          ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              '${_formatDate(date)} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}',
-                              style: const TextStyle(
-                                fontSize: 11,
-                                color: AppColors.textSecondary,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      // 地点
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.location_on_outlined,
-                            size: 13,
-                            color: AppColors.textSecondary,
-                          ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              widget.meetup.venue.name.isNotEmpty
-                                  ? widget.meetup.venue.name
-                                  : widget.meetup.location.city,
-                              style: const TextStyle(
-                                fontSize: 11,
-                                color: AppColors.textSecondary,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  // 参加人数和组织�?- 合并为一�?
-                  Row(
-                    children: [
-                      // 参加人数
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.people_outline,
-                            size: 13,
-                            color: AppColors.textSecondary,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '$_currentAttendees',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: AppColors.textSecondary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 12),
-                      // 剩余名额
-                      if ((_maxAttendees - _currentAttendees) > 0)
-                        Text(
-                          '${_maxAttendees - _currentAttendees} left',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: Color(0xFFFF4458),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      const Spacer(),
-                      // 组织�?
-                      Flexible(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                    // 日期、地点、组织�?- 合并为紧凑显�?
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 日期和时�?
+                        Row(
                           children: [
                             const Icon(
-                              Icons.person_outline,
+                              Icons.calendar_today_outlined,
                               size: 13,
                               color: AppColors.textSecondary,
                             ),
-                            const SizedBox(width: 3),
-                            Flexible(
+                            const SizedBox(width: 4),
+                            Expanded(
                               child: Text(
-                                widget.meetup.organizer.name,
+                                '${_formatDate(date)} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}',
                                 style: const TextStyle(
                                   fontSize: 11,
                                   color: AppColors.textSecondary,
@@ -2502,9 +2452,99 @@ class _MeetupCardState extends State<_MeetupCard> {
                             ),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
+                        const SizedBox(height: 4),
+                        // 地点
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.location_on_outlined,
+                              size: 13,
+                              color: AppColors.textSecondary,
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                widget.meetup.venue.name.isNotEmpty
+                                    ? widget.meetup.venue.name
+                                    : widget.meetup.location.city,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.textSecondary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    // 参加人数和组织�?- 合并为一�?
+                    Row(
+                      children: [
+                        // 参加人数
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.people_outline,
+                              size: 13,
+                              color: AppColors.textSecondary,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '$_currentAttendees',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: AppColors.textSecondary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(width: 12),
+                        // 剩余名额
+                        if ((_maxAttendees - _currentAttendees) > 0)
+                          Text(
+                            '${_maxAttendees - _currentAttendees} left',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Color(0xFFFF4458),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        const Spacer(),
+                        // 组织�?
+                        Flexible(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.person_outline,
+                                size: 13,
+                                color: AppColors.textSecondary,
+                              ),
+                              const SizedBox(width: 3),
+                              Flexible(
+                                child: Text(
+                                  widget.meetup.organizer.name,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: AppColors.textSecondary,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),

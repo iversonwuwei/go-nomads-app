@@ -43,7 +43,6 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
     final l10n = AppLocalizations.of(context)!;
     final allImages = _allImages;
     final hasMultipleImages = allImages.length > 1;
-    ;
     return Scaffold(
       body: CustomScrollView(
         slivers: [
