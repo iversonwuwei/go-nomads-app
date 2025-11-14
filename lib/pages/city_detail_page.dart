@@ -2761,58 +2761,49 @@ class _CityDetailPageState extends State<CityDetailPage>
               },
             ),
           ),
-          // 添加按钮（仅 admin/moderator 可见）
-          FutureBuilder<bool>(
-            future: _canUserManageContent(),
-            builder: (context, snapshot) {
-              if (snapshot.data != true) return const SizedBox.shrink();
-              return Positioned(
-                right: 16,
-                bottom: 16,
-                child: FloatingActionButton(
-                  heroTag: 'add_photo',
-                  onPressed: () async {
-                    await Get.dialog<ImageSource>(
-                      Dialog(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20)),
-                        child: Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.photo_library,
-                                  color: Color(0xFFFF4458), size: 48),
-                              const SizedBox(height: 16),
-                              const Text('Share a Photo',
-                                  style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold)),
-                              const SizedBox(height: 24),
-                              ListTile(
-                                leading: const Icon(Icons.camera_alt),
-                                title: const Text('Camera'),
-                                onTap: () =>
-                                    Get.back(result: ImageSource.camera),
-                              ),
-                              ListTile(
-                                leading: const Icon(Icons.photo_library),
-                                title: const Text('Gallery'),
-                                onTap: () =>
-                                    Get.back(result: ImageSource.gallery),
-                              ),
-                            ],
+          // 添加按钮（所有用户可见）
+          Positioned(
+            right: 16,
+            bottom: 16,
+            child: FloatingActionButton(
+              heroTag: 'add_photo',
+              onPressed: () async {
+                await Get.dialog<ImageSource>(
+                  Dialog(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.photo_library,
+                              color: Color(0xFFFF4458), size: 48),
+                          const SizedBox(height: 16),
+                          const Text('Share a Photo',
+                              style: TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 24),
+                          ListTile(
+                            leading: const Icon(Icons.camera_alt),
+                            title: const Text('Camera'),
+                            onTap: () => Get.back(result: ImageSource.camera),
                           ),
-                        ),
+                          ListTile(
+                            leading: const Icon(Icons.photo_library),
+                            title: const Text('Gallery'),
+                            onTap: () => Get.back(result: ImageSource.gallery),
+                          ),
+                        ],
                       ),
-                    );
-                    // 这里可以添加上传照片的逻辑
-                  },
-                  backgroundColor: const Color(0xFFFF4458),
-                  child: const Icon(Icons.add, color: Colors.white),
-                ),
-              );
-            },
+                    ),
+                  ),
+                );
+                // 这里可以添加上传照片的逻辑
+              },
+              backgroundColor: const Color(0xFFFF4458),
+              child: const Icon(Icons.add, color: Colors.white),
+            ),
           ),
         ],
       );
