@@ -85,8 +85,8 @@ class AuthStateController extends GetxController {
       onSuccess: (isAuth) {
         isAuthenticated.value = isAuth;
         if (isAuth) {
-          // ❌ 不在这里自动加载用户信息，避免 token 过期时发送 401 请求
-          // _loadCurrentUser();
+          // ✅ 加载并刷新用户信息(会更新本地缓存的角色)
+          _loadCurrentUser();
           _autoRefreshToken();
         }
       },

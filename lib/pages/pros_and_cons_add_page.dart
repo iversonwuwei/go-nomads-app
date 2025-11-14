@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../features/city/application/state_controllers/pros_cons_state_controller.dart';
+import '../services/token_storage_service.dart';
 
 /// Pros & Cons 添加页面
 class ProsAndConsAddPage extends StatefulWidget {
@@ -33,6 +34,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
   final RxBool isLoadingCons = false.obs;
   final RxList<dynamic> prosList = <dynamic>[].obs;
   final RxList<dynamic> consList = <dynamic>[].obs;
+  final RxBool canDelete = false.obs;
 
   bool get hasChanges =>
       prosTextController.text.isNotEmpty ||
@@ -48,6 +50,50 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
       vsync: this,
       initialIndex: widget.initialTab, // 设置初始 tab
     );
+    _checkPermissions();
+    _loadData();
+  }
+
+  /// 检查用户权限
+  Future<void> _checkPermissions() async {
+    final isAdmin = await TokenStorageService().isAdmin();
+    canDelete.value = isAdmin;
+  }
+
+  /// 加载已有数据
+  Future<void> _loadData() async {
+    final controller = Get.find<ProsConsStateController>();
+
+    isLoadingPros.value = true;
+    isLoadingCons.value = true;
+
+    await controller.loadCityProsCons(widget.cityId);
+
+    // 同步数据到本地列表
+    prosList.value = controller.prosList
+        .map((item) => {
+              'id': item.id,
+              'text': item.text,
+              'upvotes': item.upvotes,
+              'downvotes': item.downvotes,
+              'userId': item.userId,
+              'timestamp': item.createdAt.toIso8601String(),
+            })
+        .toList();
+
+    consList.value = controller.consList
+        .map((item) => {
+              'id': item.id,
+              'text': item.text,
+              'upvotes': item.upvotes,
+              'downvotes': item.downvotes,
+              'userId': item.userId,
+              'timestamp': item.createdAt.toIso8601String(),
+            })
+        .toList();
+
+    isLoadingPros.value = false;
+    isLoadingCons.value = false;
   }
 
   @override
@@ -72,14 +118,11 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
       );
 
       if (success) {
-        // 添加到本地列表显示
-        prosList.add({
-          'text': prosTextController.text.trim(),
-          'timestamp': DateTime.now().toIso8601String(),
-        });
-
         prosTextController.clear();
         Get.snackbar('成功', '优点已添加', backgroundColor: Colors.green[100]);
+        
+        // 重新加载数据
+        await _loadData();
       } else {
         Get.snackbar('失败', '添加优点失败，请重试');
       }
@@ -87,6 +130,82 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
       Get.snackbar('错误', '添加失败: $e');
     } finally {
       isAddingPros.value = false;
+    }
+  }
+
+  /// 删除优点
+  Future<void> deletePros(String id) async {
+    // 确认对话框
+    final confirmed = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('确认删除'),
+        content: const Text('确定要删除这条优点吗？'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Get.back(result: true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('删除'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      final controller = Get.find<ProsConsStateController>();
+      final success = await controller.deleteProsCons(widget.cityId, id, true);
+
+      if (success) {
+        Get.snackbar('成功', '优点已删除', backgroundColor: Colors.green[100]);
+        await _loadData();
+      } else {
+        Get.snackbar('失败', '删除失败，请重试');
+      }
+    } catch (e) {
+      Get.snackbar('错误', '删除失败: $e');
+    }
+  }
+
+  /// 删除挑战
+  Future<void> deleteCons(String id) async {
+    // 确认对话框
+    final confirmed = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('确认删除'),
+        content: const Text('确定要删除这条挑战吗？'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Get.back(result: true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('删除'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      final controller = Get.find<ProsConsStateController>();
+      final success = await controller.deleteProsCons(widget.cityId, id, false);
+
+      if (success) {
+        Get.snackbar('成功', '挑战已删除', backgroundColor: Colors.green[100]);
+        await _loadData();
+      } else {
+        Get.snackbar('失败', '删除失败，请重试');
+      }
+    } catch (e) {
+      Get.snackbar('错误', '删除失败: $e');
     }
   }
 
@@ -104,14 +223,11 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
       );
 
       if (success) {
-        // 添加到本地列表显示
-        consList.add({
-          'text': consTextController.text.trim(),
-          'timestamp': DateTime.now().toIso8601String(),
-        });
-
         consTextController.clear();
         Get.snackbar('成功', '挑战已添加', backgroundColor: Colors.green[100]);
+        
+        // 重新加载数据
+        await _loadData();
       } else {
         Get.snackbar('失败', '添加挑战失败，请重试');
       }
@@ -336,6 +452,15 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                                       ),
                                     ],
                                   ),
+                                  if (canDelete.value) const SizedBox(width: 8),
+                                  if (canDelete.value)
+                                    IconButton(
+                                      icon: const Icon(Icons.delete_outline,
+                                          color: Colors.red, size: 20),
+                                      onPressed: () => deletePros(item['id']),
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                    ),
                                 ],
                               ),
                             ),
@@ -513,6 +638,15 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                                       ),
                                     ],
                                   ),
+                                  if (canDelete.value) const SizedBox(width: 8),
+                                  if (canDelete.value)
+                                    IconButton(
+                                      icon: const Icon(Icons.delete_outline,
+                                          color: Colors.red, size: 20),
+                                      onPressed: () => deleteCons(item['id']),
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                    ),
                                 ],
                               ),
                             ),

@@ -387,6 +387,21 @@ class CityRepository implements ICityRepository {
   }
 
   @override
+  Future<Result<void>> deleteProsCons(String cityId, String id) async {
+    try {
+      final endpoint = '$_baseUrl/$cityId/user-content/pros-cons/$id';
+
+      await _httpService.delete(endpoint);
+
+      return const Success(null);
+    } on HttpException catch (e) {
+      return Failure(_convertHttpException(e));
+    } catch (e) {
+      return Failure(UnknownException('删除失败: ${e.toString()}'));
+    }
+  }
+
+  @override
   Future<Result<List<Map<String, dynamic>>>> getCountries() async {
     try {
       final response = await _httpService.get('$_baseUrl/countries');

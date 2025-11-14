@@ -76,6 +76,13 @@ abstract class ICityRepository implements IRepository {
     required bool isUpvote,
   });
 
+  /// 删除优缺点（逻辑删除）
+  ///
+  /// [cityId] 城市ID
+  /// [id] ProsCons ID
+  /// 返回 void 表示删除成功
+  Future<Result<void>> deleteProsCons(String cityId, String id);
+
   /// 获取所有国家列表
   Future<Result<List<Map<String, dynamic>>>> getCountries();
 

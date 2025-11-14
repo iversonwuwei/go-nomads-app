@@ -252,6 +252,42 @@ class ProsConsStateController extends GetxController {
     return sorted;
   }
 
+  /// 删除优缺点(逻辑删除)
+  Future<bool> deleteProsCons(String cityId, String id, bool isPro) async {
+    isAdding.value = true;
+    error.value = null;
+
+    try {
+      print('📡 删除${isPro ? '优点' : '缺点'}: $id');
+
+      final result = await _repository.deleteProsCons(cityId, id);
+
+      return result.fold(
+        onSuccess: (_) {
+          // 从本地列表移除
+          if (isPro) {
+            prosList.removeWhere((item) => item.id == id);
+          } else {
+            consList.removeWhere((item) => item.id == id);
+          }
+          print('✅ 删除成功');
+          return true;
+        },
+        onFailure: (err) {
+          error.value = err.message;
+          print('❌ 删除失败: ${err.message}');
+          return false;
+        },
+      );
+    } catch (e) {
+      error.value = '删除失败: $e';
+      print('❌ 异常: $e');
+      return false;
+    } finally {
+      isAdding.value = false;
+    }
+  }
+
   /// 清空数据
   void clearData() {
     prosList.clear();

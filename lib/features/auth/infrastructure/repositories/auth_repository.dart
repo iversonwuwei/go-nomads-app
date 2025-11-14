@@ -209,7 +209,12 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
       if (response.statusCode == 200 && response.data != null) {
         final data = response.data as Map<String, dynamic>;
         final userDto = AuthUserDto.fromJson(data);
-        return userDto.toDomain();
+        final user = userDto.toDomain();
+
+        // 更新本地缓存的用户信息(包括角色)
+        await _userLocalRepo.saveUser(user);
+
+        return user;
       } else {
         throw ServerException('获取用户信息失败');
       }

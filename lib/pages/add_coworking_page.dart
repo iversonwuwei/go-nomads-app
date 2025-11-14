@@ -34,8 +34,8 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
   final _formKey = GlobalKey<FormState>();
   final RxBool _isSubmitting = false.obs;
 
-  final LocationStateController _locationController =
-      Get.find<LocationStateController>();
+  // 延迟获取 LocationStateController，如果不存在则初始化
+  late final LocationStateController _locationController;
 
   // Basic Info
   final _nameController = TextEditingController();
@@ -106,6 +106,10 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
   @override
   void initState() {
     super.initState();
+    
+    // 获取 LocationStateController (已在 DI 中注册)
+    _locationController = Get.find<LocationStateController>();
+    
     // 如果从城市详情页传入了城市名称，设置为选中
     if (widget.cityName != null) {
       _selectedCity = widget.cityName;
