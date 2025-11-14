@@ -7,14 +7,14 @@ import '../config/supabase_config.dart';
 import '../services/image_upload_service.dart';
 
 /// 图片上传工具类
-/// 
+///
 /// 提供便捷的图片选择和上传方法
 class ImageUploadHelper {
   static final _picker = ImagePicker();
   static final _uploadService = ImageUploadService();
 
   /// 从相机拍照并上传
-  /// 
+  ///
   /// [bucket] 存储桶名称
   /// [folder] 文件夹路径
   /// [compress] 是否压缩
@@ -49,7 +49,7 @@ class ImageUploadHelper {
   }
 
   /// 从相册选择图片并上传
-  /// 
+  ///
   /// [bucket] 存储桶名称
   /// [folder] 文件夹路径
   /// [compress] 是否压缩
@@ -84,7 +84,7 @@ class ImageUploadHelper {
   }
 
   /// 选择多张图片并上传
-  /// 
+  ///
   /// [maxImages] 最多选择多少张，默认 9 张
   static Future<List<String>> pickMultipleAndUpload({
     String? bucket,
@@ -104,9 +104,10 @@ class ImageUploadHelper {
 
       // 限制数量
       final selectedImages = images.take(maxImages).toList();
-      
-      final imageFiles = selectedImages.map((xFile) => File(xFile.path)).toList();
-      
+
+      final imageFiles =
+          selectedImages.map((xFile) => File(xFile.path)).toList();
+
       return await _uploadService.uploadMultipleImages(
         imageFiles: imageFiles,
         bucket: bucket ?? SupabaseConfig.defaultBucket,
@@ -121,7 +122,7 @@ class ImageUploadHelper {
   }
 
   /// 显示图片来源选择对话框
-  /// 
+  ///
   /// 让用户选择从相机拍照或从相册选择
   static Future<String?> showImageSourceDialog(
     BuildContext context, {
@@ -173,7 +174,7 @@ class ImageUploadHelper {
   }
 
   /// 上传头像（专用优化）
-  /// 
+  ///
   /// 头像使用更高的压缩质量和固定尺寸
   static Future<String?> uploadAvatar(BuildContext context) async {
     final source = await showModalBottomSheet<ImageSource>(
@@ -220,10 +221,13 @@ class ImageUploadHelper {
 
       if (image == null) return null;
 
+      // 获取用户ID作为文件夹名
+      final userId = await _uploadService.getUserIdForUpload();
+
       return await _uploadService.uploadImage(
         imageFile: File(image.path),
         bucket: SupabaseConfig.buckets['avatars']!,
-        folder: 'avatars',
+        folder: 'avatars/$userId', // avatars/{userId}/xxx.jpg
         compress: true,
         quality: SupabaseConfig.avatarQuality,
         maxWidth: SupabaseConfig.avatarMaxSize,
@@ -321,7 +325,8 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
                   const Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.add_photo_alternate, size: 48, color: Colors.grey),
+                      Icon(Icons.add_photo_alternate,
+                          size: 48, color: Colors.grey),
                       SizedBox(height: 8),
                       Text('点击上传图片', style: TextStyle(color: Colors.grey)),
                     ],

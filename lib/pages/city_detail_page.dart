@@ -1049,6 +1049,13 @@ class _CityDetailPageState extends State<CityDetailPage>
     super.dispose();
   }
 
+  /// 检查用户是否有权限管理内容（admin 或 moderator）
+  Future<bool> _canUserManageContent() async {
+    final tokenService = TokenStorageService();
+    final role = await tokenService.getUserRole();
+    return role == 'admin' || role == 'moderator';
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -1468,106 +1475,16 @@ class _CityDetailPageState extends State<CityDetailPage>
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       tabs: [
-                        Tab(
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(l10n.scores),
-                              const SizedBox(width: 4),
-                              GestureDetector(
-                                onTap: () => _showShareScoreDialog(),
-                                child: Container(
-                                  padding: const EdgeInsets.all(2),
-                                  child: const Icon(Icons.add_circle, size: 16),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                        Tab(text: l10n.scores),
                         Tab(text: l10n.guide),
-                        Tab(
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(l10n.prosAndCons),
-                              const SizedBox(width: 4),
-                              GestureDetector(
-                                onTap: () => _showAddProsConsPage(),
-                                child: Container(
-                                  padding: const EdgeInsets.all(2),
-                                  child: const Icon(Icons.add_circle, size: 16),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Tab(
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(l10n.reviews),
-                              const SizedBox(width: 4),
-                              GestureDetector(
-                                onTap: () => _showShareReviewDialog(),
-                                child: Container(
-                                  padding: const EdgeInsets.all(2),
-                                  child: const Icon(Icons.add_circle, size: 16),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Tab(
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(l10n.cost),
-                              const SizedBox(width: 4),
-                              GestureDetector(
-                                onTap: () => _showShareCostDialog(),
-                                child: Container(
-                                  padding: const EdgeInsets.all(2),
-                                  child: const Icon(Icons.add_circle, size: 16),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Tab(
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(l10n.photos),
-                              const SizedBox(width: 4),
-                              GestureDetector(
-                                onTap: () => _showSharePhotoDialog(),
-                                child: Container(
-                                  padding: const EdgeInsets.all(2),
-                                  child: const Icon(Icons.add_circle, size: 16),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                        Tab(text: l10n.prosAndCons),
+                        Tab(text: l10n.reviews),
+                        Tab(text: l10n.cost),
+                        Tab(text: l10n.photos),
                         Tab(text: l10n.weather),
                         Tab(text: l10n.hotels),
                         Tab(text: l10n.neighborhoods),
-                        Tab(
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(l10n.coworking),
-                              const SizedBox(width: 4),
-                              GestureDetector(
-                                onTap: () => _showAddCoworkingPage(),
-                                child: Container(
-                                  padding: const EdgeInsets.all(2),
-                                  child: const Icon(Icons.add_circle, size: 16),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                        Tab(text: l10n.coworking),
                       ],
                     ),
                   ),
@@ -1721,18 +1638,39 @@ class _CityDetailPageState extends State<CityDetailPage>
         },
       ];
 
-      return ListView.builder(
-        padding:
-            const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
-        itemCount: scoreItems.length,
-        itemBuilder: (context, index) {
-          final item = scoreItems[index];
-          return _buildScoreItem(
-            icon: item['icon'] as IconData,
-            label: item['label'] as String,
-            score: item['value'] as double,
-          );
-        },
+      return Stack(
+        children: [
+          ListView.builder(
+            padding:
+                const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
+            itemCount: scoreItems.length,
+            itemBuilder: (context, index) {
+              final item = scoreItems[index];
+              return _buildScoreItem(
+                icon: item['icon'] as IconData,
+                label: item['label'] as String,
+                score: item['value'] as double,
+              );
+            },
+          ),
+          // 添加按钮（仅 admin/moderator 可见）
+          FutureBuilder<bool>(
+            future: _canUserManageContent(),
+            builder: (context, snapshot) {
+              if (snapshot.data != true) return const SizedBox.shrink();
+              return Positioned(
+                right: 16,
+                bottom: 16,
+                child: FloatingActionButton(
+                  heroTag: 'add_score',
+                  onPressed: _showShareScoreDialog,
+                  backgroundColor: const Color(0xFFFF4458),
+                  child: const Icon(Icons.add, color: Colors.white),
+                ),
+              );
+            },
+          ),
+        ],
       );
     });
   }
@@ -2245,6 +2183,23 @@ class _CityDetailPageState extends State<CityDetailPage>
                     )),
             ],
           ),
+          // 添加按钮（仅 admin/moderator 可见）
+          FutureBuilder<bool>(
+            future: _canUserManageContent(),
+            builder: (context, snapshot) {
+              if (snapshot.data != true) return const SizedBox.shrink();
+              return Positioned(
+                right: 16,
+                bottom: 16,
+                child: FloatingActionButton(
+                  heroTag: 'add_pros_cons',
+                  onPressed: () => _showAddProsConsPage(),
+                  backgroundColor: const Color(0xFFFF4458),
+                  child: const Icon(Icons.add, color: Colors.white),
+                ),
+              );
+            },
+          ),
         ],
       );
     });
@@ -2350,16 +2305,18 @@ class _CityDetailPageState extends State<CityDetailPage>
         );
       }
 
-      return RefreshIndicator(
-        onRefresh: () =>
-            controller.loadCityReviews(cityId), // ✅ 使用loadCityReviews方法
-        child: ListView.builder(
-          padding:
-              const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
-          itemCount: realUserReviews.length, // ✅ 只显示真实评论
-          itemBuilder: (context, index) {
-            final review = realUserReviews[index]; // ✅ 直接使用真实评论
-            return Card(
+      return Stack(
+        children: [
+          RefreshIndicator(
+            onRefresh: () =>
+                controller.loadCityReviews(cityId), // ✅ 使用loadCityReviews方法
+            child: ListView.builder(
+              padding:
+                  const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
+              itemCount: realUserReviews.length, // ✅ 只显示真实评论
+              itemBuilder: (context, index) {
+                final review = realUserReviews[index]; // ✅ 直接使用真实评论
+                return Card(
               margin: const EdgeInsets.only(bottom: 16),
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -2507,10 +2464,12 @@ class _CityDetailPageState extends State<CityDetailPage>
       final shopping = communityCost?.shopping ?? 0.0;
       final other = communityCost?.other ?? 0.0;
 
-      return ListView(
-        padding:
-            const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
+      return Stack(
         children: [
+          ListView(
+            padding:
+                const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
+            children: [
           // ✅ 社区综合费用统计 - 标题左侧,贡献者右侧
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -2621,7 +2580,35 @@ class _CityDetailPageState extends State<CityDetailPage>
           ),
           const SizedBox(height: 32),
         ], // children 数组闭合
-      ); // ListView 闭合
+      ), // ListView 闭合
+          // 添加按钮（仅 admin/moderator 可见）
+          FutureBuilder<bool>(
+            future: _canUserManageContent(),
+            builder: (context, snapshot) {
+              if (snapshot.data != true) return const SizedBox.shrink();
+              return Positioned(
+                right: 16,
+                bottom: 16,
+                child: FloatingActionButton(
+                  heroTag: 'add_cost',
+                  onPressed: () async {
+                    final result = await Get.to(() => AddCostPage(
+                          cityId: cityId,
+                          cityName: cityName,
+                        ));
+                    if (result != null && result['success'] == true) {
+                      controller.loadCityExpenses(cityId);
+                      controller.loadCityCostSummary(cityId);
+                    }
+                  },
+                  backgroundColor: const Color(0xFFFF4458),
+                  child: const Icon(Icons.add, color: Colors.white),
+                ),
+              );
+            },
+          ),
+        ],
+      );
     }); // Obx 闭合
   }
 
@@ -2694,9 +2681,11 @@ class _CityDetailPageState extends State<CityDetailPage>
         );
       }
 
-      return RefreshIndicator(
-        onRefresh: () => controller.loadCityPhotos(cityId),
-        child: GridView.builder(
+      return Stack(
+        children: [
+          RefreshIndicator(
+            onRefresh: () => controller.loadCityPhotos(cityId),
+            child: GridView.builder(
           padding: const EdgeInsets.only(left: 8, right: 8, top: 8, bottom: 96),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 3,
@@ -2741,6 +2730,54 @@ class _CityDetailPageState extends State<CityDetailPage>
             );
           },
         ),
+          ),
+          // 添加按钮（仅 admin/moderator 可见）
+          FutureBuilder<bool>(
+            future: _canUserManageContent(),
+            builder: (context, snapshot) {
+              if (snapshot.data != true) return const SizedBox.shrink();
+              return Positioned(
+                right: 16,
+                bottom: 16,
+                child: FloatingActionButton(
+                  heroTag: 'add_photo',
+                  onPressed: () async {
+                    final source = await Get.dialog<ImageSource>(
+                      Dialog(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.photo_library, color: Color(0xFFFF4458), size: 48),
+                              const SizedBox(height: 16),
+                              const Text('Share a Photo', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 24),
+                              ListTile(
+                                leading: const Icon(Icons.camera_alt),
+                                title: const Text('Camera'),
+                                onTap: () => Get.back(result: ImageSource.camera),
+                              ),
+                              ListTile(
+                                leading: const Icon(Icons.photo_library),
+                                title: const Text('Gallery'),
+                                onTap: () => Get.back(result: ImageSource.gallery),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                    // 这里可以添加上传照片的逻辑
+                  },
+                  backgroundColor: const Color(0xFFFF4458),
+                  child: const Icon(Icons.add, color: Colors.white),
+                ),
+              );
+            },
+          ),
+        ],
       );
     });
   }
@@ -3429,6 +3466,31 @@ class _CityDetailPageState extends State<CityDetailPage>
               ],
             ),
           ),
+          // 添加按钮（仅 admin/moderator 可见）
+          FutureBuilder<bool>(
+            future: _canUserManageContent(),
+            builder: (context, snapshot) {
+              if (snapshot.data != true) return const SizedBox.shrink();
+              return Positioned(
+                right: 16,
+                bottom: 16,
+                child: FloatingActionButton(
+                  heroTag: 'add_review',
+                  onPressed: () async {
+                    final result = await Get.to(() => AddReviewPage(
+                          cityId: cityId,
+                          cityName: cityName,
+                        ));
+                    if (result != null && result['success'] == true) {
+                      controller.loadCityReviews(cityId);
+                    }
+                  },
+                  backgroundColor: const Color(0xFFFF4458),
+                  child: const Icon(Icons.add, color: Colors.white),
+                ),
+              );
+            },
+          ),
         ],
       );
     });
@@ -3654,14 +3716,35 @@ class _CityDetailPageState extends State<CityDetailPage>
       }
 
       // 显示共享办公空间列表
-      return ListView.builder(
-        padding:
-            const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
-        itemCount: controller.coworkingSpaces.length,
-        itemBuilder: (context, index) {
-          final space = controller.coworkingSpaces[index];
-          return _buildCoworkingSpaceCard(space);
-        },
+      return Stack(
+        children: [
+          ListView.builder(
+            padding:
+                const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
+            itemCount: controller.coworkingSpaces.length,
+            itemBuilder: (context, index) {
+              final space = controller.coworkingSpaces[index];
+              return _buildCoworkingSpaceCard(space);
+            },
+          ),
+          // 添加按钮（仅 admin/moderator 可见）
+          FutureBuilder<bool>(
+            future: _canUserManageContent(),
+            builder: (context, snapshot) {
+              if (snapshot.data != true) return const SizedBox.shrink();
+              return Positioned(
+                right: 16,
+                bottom: 16,
+                child: FloatingActionButton(
+                  heroTag: 'add_coworking',
+                  onPressed: _showAddCoworkingPage,
+                  backgroundColor: const Color(0xFFFF4458),
+                  child: const Icon(Icons.add, color: Colors.white),
+                ),
+              );
+            },
+          ),
+        ],
       );
     });
   }
@@ -3953,23 +4036,6 @@ class _CityDetailPageState extends State<CityDetailPage>
     );
   }
 
-  /// 分享指南信息
-  /// 分享评论 - 跳转到独立页面
-  void _showShareReviewDialog() async {
-    final result = await Get.to(() => AddReviewPage(
-          cityId: cityId,
-          cityName: cityName,
-        ));
-
-    // 如果提交成功,刷新评论列表
-    if (result != null && result['success'] == true) {
-      final userContentController = Get.find<UserCityContentStateController>();
-      userContentController.loadCityReviews(cityId);
-
-      print('Review submitted successfully: ${result['review']}');
-    }
-  }
-
   /// 添加 Pros & Cons
   /// [initialTab] 初始显示的 tab (0=优点, 1=挑战)
   void _showAddProsConsPage({int initialTab = 0}) async {
@@ -3985,100 +4051,6 @@ class _CityDetailPageState extends State<CityDetailPage>
       // 重新加载优缺点数据
       await prosConsController.loadCityProsCons(cityId);
     }
-  }
-
-  /// 分享费用信息
-  void _showShareCostDialog() async {
-    final result = await Get.to(
-      () => AddCostPage(
-        cityId: cityId,
-        cityName: cityName,
-      ),
-    );
-
-    // 如果提交成功,刷新费用列表和费用汇总
-    if (result != null && result['success'] == true) {
-      final userContentController = Get.find<UserCityContentStateController>();
-
-      // 刷新费用列表
-      userContentController.loadCityExpenses(cityId);
-
-      // 刷新费用汇总统计（这是费用 tab 显示的数据）
-      userContentController.loadCityCostSummary(cityId);
-
-      print('Expenses submitted successfully: ${result['expenses']}');
-    }
-  }
-
-  /// 分享照片
-  void _showSharePhotoDialog() async {
-    // 显示选择对话框
-    final source = await Get.dialog<ImageSource>(
-      Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.photo_camera,
-                  color: Color(0xFFFF4458), size: 48),
-              const SizedBox(height: 16),
-              const Text(
-                'Upload Photos',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Share your favorite photos from $cityName',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey[600]),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => Get.back(result: ImageSource.camera),
-                      icon: const Icon(Icons.camera_alt),
-                      label: Text(AppLocalizations.of(context)!.camera),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFFFF4458),
-                        side: const BorderSide(color: Color(0xFFFF4458)),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () => Get.back(result: ImageSource.gallery),
-                      icon: const Icon(Icons.photo_library),
-                      label: Text(AppLocalizations.of(context)!.gallery),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFF4458),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-
-    if (source == null) return;
-
-    await pickAndUploadImage(source);
   }
 
   /// 选择并上传图片

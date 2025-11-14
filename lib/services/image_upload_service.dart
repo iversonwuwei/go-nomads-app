@@ -12,7 +12,7 @@ import '../config/api_config.dart';
 import 'token_storage_service.dart';
 
 /// 图片上传服务
-/// 
+///
 /// 使用 Supabase Storage 作为图片存储后端
 /// 支持图片压缩、进度回调、错误重试等功能
 class ImageUploadService {
@@ -24,7 +24,7 @@ class ImageUploadService {
   final _tokenStorage = TokenStorageService();
 
   /// 初始化 Supabase 客户端
-  /// 
+  ///
   /// 在 app 启动时调用一次即可
   /// ```dart
   /// await ImageUploadService().initialize(
@@ -45,7 +45,7 @@ class ImageUploadService {
         authFlowType: AuthFlowType.pkce,
       ),
     );
-    
+
     _supabase = Supabase.instance.client;
     debugPrint('✅ Supabase Storage 初始化成功');
   }
@@ -59,7 +59,7 @@ class ImageUploadService {
   }
 
   /// 上传图片到 Supabase Storage
-  /// 
+  ///
   /// [imageFile] 要上传的图片文件
   /// [bucket] 存储桶名称，默认 'user-uploads'
   /// [folder] 文件夹路径，默认使用用户ID
@@ -68,7 +68,7 @@ class ImageUploadService {
   /// [maxWidth] 最大宽度，默认 1920
   /// [maxHeight] 最大高度，默认 1920
   /// [onProgress] 上传进度回调 (当前字节数, 总字节数)
-  /// 
+  ///
   /// 返回图片的公开访问 URL
   Future<String> uploadImage({
     required File imageFile,
@@ -85,9 +85,9 @@ class ImageUploadService {
       _validateImageFile(imageFile);
 
       // 2. 压缩图片（如果需要）
-      final fileToUpload = compress 
+      final fileToUpload = compress
           ? await _compressImage(
-              imageFile, 
+              imageFile,
               quality: quality,
               maxWidth: maxWidth,
               maxHeight: maxHeight,
@@ -101,12 +101,11 @@ class ImageUploadService {
       final filePath = '$uploadFolder/$fileName';
 
       debugPrint('📤 开始上传图片: $filePath');
-      debugPrint('📦 文件大小: ${(fileToUpload.lengthSync() / 1024).toStringAsFixed(2)} KB');
+      debugPrint(
+          '📦 文件大小: ${(fileToUpload.lengthSync() / 1024).toStringAsFixed(2)} KB');
 
       // 4. 上传到 Supabase
-      final storageResponse = await client.storage
-          .from(bucket)
-          .upload(
+      final storageResponse = await client.storage.from(bucket).upload(
             filePath,
             fileToUpload,
             fileOptions: FileOptions(
@@ -119,9 +118,7 @@ class ImageUploadService {
       debugPrint('✅ 图片上传成功: $storageResponse');
 
       // 5. 获取公开 URL
-      final publicUrl = client.storage
-          .from(bucket)
-          .getPublicUrl(filePath);
+      final publicUrl = client.storage.from(bucket).getPublicUrl(filePath);
 
       debugPrint('🔗 图片 URL: $publicUrl');
 
@@ -142,7 +139,7 @@ class ImageUploadService {
   }
 
   /// 上传多张图片
-  /// 
+  ///
   /// 返回所有图片的 URL 列表
   Future<List<String>> uploadMultipleImages({
     required List<File> imageFiles,
@@ -155,7 +152,7 @@ class ImageUploadService {
     Function(int current, int total)? onProgress,
   }) async {
     final urls = <String>[];
-    
+
     for (int i = 0; i < imageFiles.length; i++) {
       try {
         final url = await uploadImage(
@@ -167,7 +164,7 @@ class ImageUploadService {
           maxWidth: maxWidth,
           maxHeight: maxHeight,
         );
-        
+
         urls.add(url);
         onProgress?.call(i + 1, imageFiles.length);
       } catch (e) {
@@ -175,12 +172,12 @@ class ImageUploadService {
         // 继续上传其他图片
       }
     }
-    
+
     return urls;
   }
 
   /// 删除图片
-  /// 
+  ///
   /// [imageUrl] 图片的完整 URL
   /// [bucket] 存储桶名称
   Future<void> deleteImage({
@@ -190,13 +187,11 @@ class ImageUploadService {
     try {
       // 从 URL 中提取文件路径
       final filePath = _extractFilePathFromUrl(imageUrl, bucket);
-      
+
       debugPrint('🗑️ 删除图片: $filePath');
-      
-      await client.storage
-          .from(bucket)
-          .remove([filePath]);
-      
+
+      await client.storage.from(bucket).remove([filePath]);
+
       debugPrint('✅ 图片删除成功');
     } catch (e) {
       debugPrint('❌ 图片删除失败: $e');
@@ -210,16 +205,13 @@ class ImageUploadService {
     String bucket = 'user-uploads',
   }) async {
     try {
-      final filePaths = imageUrls
-          .map((url) => _extractFilePathFromUrl(url, bucket))
-          .toList();
-      
+      final filePaths =
+          imageUrls.map((url) => _extractFilePathFromUrl(url, bucket)).toList();
+
       debugPrint('🗑️ 批量删除 ${filePaths.length} 张图片');
-      
-      await client.storage
-          .from(bucket)
-          .remove(filePaths);
-      
+
+      await client.storage.from(bucket).remove(filePaths);
+
       debugPrint('✅ 批量删除成功');
     } catch (e) {
       debugPrint('❌ 批量删除失败: $e');
@@ -257,8 +249,9 @@ class ImageUploadService {
 
       final originalSize = file.lengthSync();
       final compressedSize = File(result.path).lengthSync();
-      final ratio = ((1 - compressedSize / originalSize) * 100).toStringAsFixed(1);
-      
+      final ratio =
+          ((1 - compressedSize / originalSize) * 100).toStringAsFixed(1);
+
       debugPrint('🗜️ 图片压缩完成:');
       debugPrint('   原始: ${(originalSize / 1024).toStringAsFixed(2)} KB');
       debugPrint('   压缩: ${(compressedSize / 1024).toStringAsFixed(2)} KB');
@@ -286,7 +279,14 @@ class ImageUploadService {
 
     // 检查文件类型
     final ext = path.extension(file.path).toLowerCase();
-    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic'];
+    const allowedExtensions = [
+      '.jpg',
+      '.jpeg',
+      '.png',
+      '.gif',
+      '.webp',
+      '.heic'
+    ];
     if (!allowedExtensions.contains(ext)) {
       throw Exception('不支持的图片格式，仅支持: ${allowedExtensions.join(", ")}');
     }
@@ -331,31 +331,36 @@ class ImageUploadService {
     } catch (e) {
       debugPrint('⚠️ 无法获取用户 ID: $e');
     }
-    
+
     // 如果获取失败，使用临时 ID
     return 'guest';
+  }
+
+  /// 公开方法：获取用户ID用于上传
+  Future<String> getUserIdForUpload() async {
+    return await _getUserId();
   }
 
   /// 从 URL 中提取文件路径
   String _extractFilePathFromUrl(String url, String bucket) {
     // URL 格式: https://xxx.supabase.co/storage/v1/object/public/bucket-name/path/to/file.jpg
     // 提取: path/to/file.jpg
-    
+
     final uri = Uri.parse(url);
     final segments = uri.pathSegments;
-    
+
     // 找到 bucket 名称后的所有路径
     final bucketIndex = segments.indexOf(bucket);
     if (bucketIndex == -1) {
       throw Exception('无法从 URL 中提取文件路径');
     }
-    
+
     final filePath = segments.sublist(bucketIndex + 1).join('/');
     return filePath;
   }
 
   /// 上传图片并保存记录到后端
-  /// 
+  ///
   /// 这是一个完整的流程：上传图片 → 保存 URL 到数据库
   Future<Map<String, dynamic>> uploadAndSaveImage({
     required File imageFile,

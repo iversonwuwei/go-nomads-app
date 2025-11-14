@@ -28,7 +28,7 @@ class ApiConfig {
   /// 真机测试主机 - 使用电脑局域网 IP
   /// 通过 ipconfig (Windows) 或 ifconfig (Mac/Linux) 查看
   /// ⚠️ 雷电模拟器也需要使用这个地址(雷电使用 VirtualBox 网络,10.0.2.2 无效)
-  static const String physicalDeviceHost = '192.168.110.54';
+  static const String physicalDeviceHost = '192.168.110.68';
 
   /// 开发环境主机 - 根据平台自动选择
   static String get developmentHost {
@@ -52,7 +52,7 @@ class ApiConfig {
   /// 是否使用真机测试地址(手动切换)
   /// ⚠️ 雷电模拟器用户请设置为 true
   /// ⚠️ Android 官方模拟器用户请设置为 false
-  static const bool usePhysicalDevice = false;
+  static const bool usePhysicalDevice = true;
 
   // ============================================================
   // URL 组装
@@ -108,7 +108,7 @@ class ApiConfig {
 
   // 超时配置 (毫秒)
   static const int connectTimeout = 30000;
-  static const int receiveTimeout = 30000;
+  static const int receiveTimeout = 60000; // 增加到60秒,因为城市列表需要获取天气数据
   static const int sendTimeout = 30000;
 
   // 认证相关
