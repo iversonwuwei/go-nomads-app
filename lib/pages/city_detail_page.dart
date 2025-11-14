@@ -556,7 +556,7 @@ class _CityDetailPageState extends State<CityDetailPage>
       result.fold(
         onSuccess: (success) async {
           AppToast.success('申请已提交！我们会尽快审核');
-          
+
           // 发送通知给所有管理员
           if (Get.isRegistered<NotificationStateController>()) {
             final notificationController =
@@ -574,7 +574,7 @@ class _CityDetailPageState extends State<CityDetailPage>
               },
             );
           }
-          
+
           // 刷新城市信息
           controller.loadCityDetail(cityId);
         },
@@ -1962,7 +1962,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                       if (!await _checkGeneratePermission()) {
                         return;
                       }
-                      
+
                       if (value == 'foreground') {
                         _showAIGenerateProgressDialog(controller);
                       } else if (value == 'background') {
@@ -2311,133 +2311,162 @@ class _CityDetailPageState extends State<CityDetailPage>
             onRefresh: () =>
                 controller.loadCityReviews(cityId), // ✅ 使用loadCityReviews方法
             child: ListView.builder(
-              padding:
-                  const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
+              padding: const EdgeInsets.only(
+                  left: 16, right: 16, top: 16, bottom: 96),
               itemCount: realUserReviews.length, // ✅ 只显示真实评论
               itemBuilder: (context, index) {
                 final review = realUserReviews[index]; // ✅ 直接使用真实评论
                 return Card(
-              margin: const EdgeInsets.only(bottom: 16),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // ✅ 有头像显示头像,没有头像显示用户名首字母
-                        CircleAvatar(
-                          backgroundColor: const Color(0xFFFF4458),
-                          backgroundImage: review.userAvatar != null &&
-                                  review.userAvatar!.isNotEmpty
-                              ? NetworkImage(review.userAvatar!)
-                              : null,
-                          child: review.userAvatar == null ||
-                                  review.userAvatar!.isEmpty
-                              ? Text(
-                                  review.username.isNotEmpty
-                                      ? review.username
-                                          .substring(0, 1)
-                                          .toUpperCase()
-                                      : '?',
-                                  style: const TextStyle(color: Colors.white),
-                                )
-                              : null,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                review.username, // ✅ 使用真实用户名
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              if (review.visitDate != null)
-                                Text(
-                                  '${l10n.visited} ${_formatDate(review.visitDate!, l10n)}',
-                                  style: TextStyle(
-                                      fontSize: 12, color: Colors.grey[600]),
-                                ),
-                            ],
-                          ),
-                        ),
                         Row(
                           children: [
-                            const Icon(Icons.star,
-                                color: Colors.amber, size: 16),
-                            Text(' ${review.rating}'),
+                            // ✅ 有头像显示头像,没有头像显示用户名首字母
+                            CircleAvatar(
+                              backgroundColor: const Color(0xFFFF4458),
+                              backgroundImage: review.userAvatar != null &&
+                                      review.userAvatar!.isNotEmpty
+                                  ? NetworkImage(review.userAvatar!)
+                                  : null,
+                              child: review.userAvatar == null ||
+                                      review.userAvatar!.isEmpty
+                                  ? Text(
+                                      review.username.isNotEmpty
+                                          ? review.username
+                                              .substring(0, 1)
+                                              .toUpperCase()
+                                          : '?',
+                                      style:
+                                          const TextStyle(color: Colors.white),
+                                    )
+                                  : null,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    review.username, // ✅ 使用真实用户名
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  if (review.visitDate != null)
+                                    Text(
+                                      '${l10n.visited} ${_formatDate(review.visitDate!, l10n)}',
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey[600]),
+                                    ),
+                                ],
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                const Icon(Icons.star,
+                                    color: Colors.amber, size: 16),
+                                Text(' ${review.rating}'),
+                              ],
+                            ),
                           ],
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          review.title,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          review.content,
+                          style:
+                              TextStyle(fontSize: 14, color: Colors.grey[700]),
+                        ),
+                        // ✅ 始终显示图片区域（有图显示图片，无图显示占位符）
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          height: 100,
+                          child: review.photoUrls.isNotEmpty
+                              ? ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: review.photoUrls.length,
+                                  itemBuilder: (context, photoIndex) {
+                                    return Container(
+                                      width: 100,
+                                      margin: const EdgeInsets.only(right: 8),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(8),
+                                        image: DecorationImage(
+                                          image: NetworkImage(
+                                              review.photoUrls[photoIndex]),
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                )
+                              : Container(
+                                  width: 100,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[200],
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: Colors.grey[300]!,
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: Icon(
+                                      Icons.image_not_supported,
+                                      color: Colors.grey[400],
+                                      size: 40,
+                                    ),
+                                  ),
+                                ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '${l10n.posted} ${_formatDate(review.createdAt, l10n)}',
+                          style:
+                              TextStyle(fontSize: 12, color: Colors.grey[500]),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
-                    Text(
-                      review.title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      review.content,
-                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                    ),
-                    // ✅ 始终显示图片区域（有图显示图片，无图显示占位符）
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      height: 100,
-                      child: review.photoUrls.isNotEmpty
-                          ? ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: review.photoUrls.length,
-                              itemBuilder: (context, photoIndex) {
-                                return Container(
-                                  width: 100,
-                                  margin: const EdgeInsets.only(right: 8),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                    image: DecorationImage(
-                                      image: NetworkImage(
-                                          review.photoUrls[photoIndex]),
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                );
-                              },
-                            )
-                          : Container(
-                              width: 100,
-                              decoration: BoxDecoration(
-                                color: Colors.grey[200],
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: Colors.grey[300]!,
-                                  width: 1,
-                                ),
-                              ),
-                              child: Center(
-                                child: Icon(
-                                  Icons.image_not_supported,
-                                  color: Colors.grey[400],
-                                  size: 40,
-                                ),
-                              ),
-                            ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '${l10n.posted} ${_formatDate(review.createdAt, l10n)}',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                    ),
-                  ],
+                  ),
+                );
+              },
+            ),
+          ),
+          // 添加按钮（仅 admin/moderator 可见）
+          FutureBuilder<bool>(
+            future: _canUserManageContent(),
+            builder: (context, snapshot) {
+              if (snapshot.data != true) return const SizedBox.shrink();
+              return Positioned(
+                right: 16,
+                bottom: 16,
+                child: FloatingActionButton(
+                  heroTag: 'add_review',
+                  onPressed: () async {
+                    await Get.to(() => AddReviewPage(
+                          cityId: cityId,
+                          cityName: cityName,
+                        ));
+                    controller.loadCityReviews(cityId);
+                  },
+                  backgroundColor: const Color(0xFFFF4458),
+                  child: const Icon(Icons.add, color: Colors.white),
                 ),
-              ),
-            );
-          },
-        ),
+              );
+            },
+          ),
+        ],
       );
     });
   }
@@ -2470,117 +2499,117 @@ class _CityDetailPageState extends State<CityDetailPage>
             padding:
                 const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
             children: [
-          // ✅ 社区综合费用统计 - 标题左侧,贡献者右侧
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                l10n.communityCostSummary,
-                style: const TextStyle(
-                  fontSize: 18, // 缩小字号以适应小屏幕
-                  fontWeight: FontWeight.bold,
-                ),
+              // ✅ 社区综合费用统计 - 标题左侧,贡献者右侧
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    l10n.communityCostSummary,
+                    style: const TextStyle(
+                      fontSize: 18, // 缩小字号以适应小屏幕
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '$contributorCount ${contributorCount != 1 ? l10n.contributors : l10n.contributor}',
+                      style: TextStyle(
+                        fontSize: 11, // 缩小字号
+                        color: Colors.green[700],
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
               ),
+              const SizedBox(height: 16),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.green.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '$contributorCount ${contributorCount != 1 ? l10n.contributors : l10n.contributor}',
-                  style: TextStyle(
-                    fontSize: 11, // 缩小字号
-                    color: Colors.green[700],
-                    fontWeight: FontWeight.bold,
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF6B73FF), Color(0xFF000DFF)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      l10n.averageCommunityCost,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '\$${total.toStringAsFixed(0)}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      l10n.basedOnRealExpenses(
+                          totalExpenseCount, totalExpenseCount != 1 ? 's' : ''),
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.8),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF6B73FF), Color(0xFF000DFF)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+              const SizedBox(height: 24),
+              // 费用分类明细 - 始终显示所有分类（即使为 0）
+              _buildCostCategoryCard(
+                category: l10n.accommodation,
+                amount: accommodation,
+                icon: Icons.hotel,
+                color: Colors.purple,
               ),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              children: [
-                Text(
-                  l10n.averageCommunityCost,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '\$${total.toStringAsFixed(0)}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  l10n.basedOnRealExpenses(
-                      totalExpenseCount, totalExpenseCount != 1 ? 's' : ''),
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          // 费用分类明细 - 始终显示所有分类（即使为 0）
-          _buildCostCategoryCard(
-            category: l10n.accommodation,
-            amount: accommodation,
-            icon: Icons.hotel,
-            color: Colors.purple,
-          ),
-          _buildCostCategoryCard(
-            category: l10n.food,
-            amount: food,
-            icon: Icons.restaurant,
-            color: Colors.orange,
-          ),
-          _buildCostCategoryCard(
-            category: l10n.transportation,
-            amount: transportation,
-            icon: Icons.directions_car,
-            color: Colors.blue,
-          ),
-          _buildCostCategoryCard(
-            category: l10n.activity,
-            amount: activity,
-            icon: Icons.local_activity,
-            color: Colors.green,
-          ),
-          _buildCostCategoryCard(
-            category: l10n.shopping,
-            amount: shopping,
-            icon: Icons.shopping_bag,
-            color: Colors.pink,
-          ),
-          _buildCostCategoryCard(
-            category: 'Other',
-            amount: other,
-            icon: Icons.more_horiz,
-            color: Colors.grey,
-          ),
-          const SizedBox(height: 32),
-        ], // children 数组闭合
-      ), // ListView 闭合
+              _buildCostCategoryCard(
+                category: l10n.food,
+                amount: food,
+                icon: Icons.restaurant,
+                color: Colors.orange,
+              ),
+              _buildCostCategoryCard(
+                category: l10n.transportation,
+                amount: transportation,
+                icon: Icons.directions_car,
+                color: Colors.blue,
+              ),
+              _buildCostCategoryCard(
+                category: l10n.activity,
+                amount: activity,
+                icon: Icons.local_activity,
+                color: Colors.green,
+              ),
+              _buildCostCategoryCard(
+                category: l10n.shopping,
+                amount: shopping,
+                icon: Icons.shopping_bag,
+                color: Colors.pink,
+              ),
+              _buildCostCategoryCard(
+                category: 'Other',
+                amount: other,
+                icon: Icons.more_horiz,
+                color: Colors.grey,
+              ),
+              const SizedBox(height: 32),
+            ], // children 数组闭合
+          ), // ListView 闭合
           // 添加按钮（仅 admin/moderator 可见）
           FutureBuilder<bool>(
             future: _canUserManageContent(),
@@ -2686,50 +2715,51 @@ class _CityDetailPageState extends State<CityDetailPage>
           RefreshIndicator(
             onRefresh: () => controller.loadCityPhotos(cityId),
             child: GridView.builder(
-          padding: const EdgeInsets.only(left: 8, right: 8, top: 8, bottom: 96),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            crossAxisSpacing: 8,
-            mainAxisSpacing: 8,
-          ),
-          itemCount: realUserPhotos.length, // ✅ 只显示真实照片
-          itemBuilder: (context, index) {
-            final photo = realUserPhotos[index]; // ✅ 直接使用真实照片
-            return GestureDetector(
-              onTap: () => _showPhotoDetail(photo),
-              child: Stack(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      image: DecorationImage(
-                        image: NetworkImage(photo.imageUrl),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  // 用户头像标识
-                  Positioned(
-                    top: 4,
-                    right: 4,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.5),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.person,
-                        size: 16,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
+              padding:
+                  const EdgeInsets.only(left: 8, right: 8, top: 8, bottom: 96),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
               ),
-            );
-          },
-        ),
+              itemCount: realUserPhotos.length, // ✅ 只显示真实照片
+              itemBuilder: (context, index) {
+                final photo = realUserPhotos[index]; // ✅ 直接使用真实照片
+                return GestureDetector(
+                  onTap: () => _showPhotoDetail(photo),
+                  child: Stack(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          image: DecorationImage(
+                            image: NetworkImage(photo.imageUrl),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      // 用户头像标识
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.5),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.person,
+                            size: 16,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
           // 添加按钮（仅 admin/moderator 可见）
           FutureBuilder<bool>(
@@ -2742,27 +2772,34 @@ class _CityDetailPageState extends State<CityDetailPage>
                 child: FloatingActionButton(
                   heroTag: 'add_photo',
                   onPressed: () async {
-                    final source = await Get.dialog<ImageSource>(
+                    await Get.dialog<ImageSource>(
                       Dialog(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20)),
                         child: Padding(
                           padding: const EdgeInsets.all(24),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.photo_library, color: Color(0xFFFF4458), size: 48),
+                              const Icon(Icons.photo_library,
+                                  color: Color(0xFFFF4458), size: 48),
                               const SizedBox(height: 16),
-                              const Text('Share a Photo', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                              const Text('Share a Photo',
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold)),
                               const SizedBox(height: 24),
                               ListTile(
                                 leading: const Icon(Icons.camera_alt),
                                 title: const Text('Camera'),
-                                onTap: () => Get.back(result: ImageSource.camera),
+                                onTap: () =>
+                                    Get.back(result: ImageSource.camera),
                               ),
                               ListTile(
                                 leading: const Icon(Icons.photo_library),
                                 title: const Text('Gallery'),
-                                onTap: () => Get.back(result: ImageSource.gallery),
+                                onTap: () =>
+                                    Get.back(result: ImageSource.gallery),
                               ),
                             ],
                           ),
@@ -3465,31 +3502,6 @@ class _CityDetailPageState extends State<CityDetailPage>
                 ),
               ],
             ),
-          ),
-          // 添加按钮（仅 admin/moderator 可见）
-          FutureBuilder<bool>(
-            future: _canUserManageContent(),
-            builder: (context, snapshot) {
-              if (snapshot.data != true) return const SizedBox.shrink();
-              return Positioned(
-                right: 16,
-                bottom: 16,
-                child: FloatingActionButton(
-                  heroTag: 'add_review',
-                  onPressed: () async {
-                    final result = await Get.to(() => AddReviewPage(
-                          cityId: cityId,
-                          cityName: cityName,
-                        ));
-                    if (result != null && result['success'] == true) {
-                      controller.loadCityReviews(cityId);
-                    }
-                  },
-                  backgroundColor: const Color(0xFFFF4458),
-                  child: const Icon(Icons.add, color: Colors.white),
-                ),
-              );
-            },
           ),
         ],
       );
