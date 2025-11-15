@@ -41,10 +41,10 @@ class UserLocalRepository {
         'users',
         {
           'id': user.id,
-          'phone': user.phone ?? '',
+          'phone': user.phone, // 允许为 null
           'nickname': user.name,
           'email': user.email,
-          'avatar': user.avatar ?? '',
+          'avatar': user.avatar, // 允许为 null
           'bio': '', // 可以扩展
           'created_at': DateTime.now().toIso8601String(),
           'updated_at': DateTime.now().toIso8601String(),
@@ -132,8 +132,8 @@ class UserLocalRepository {
         {
           'nickname': user.name,
           'email': user.email,
-          'phone': user.phone ?? '',
-          'avatar': user.avatar ?? '',
+          'phone': user.phone, // 允许为 null
+          'avatar': user.avatar, // 允许为 null
           'updated_at': DateTime.now().toIso8601String(),
         },
         where: 'id = ?',
@@ -192,10 +192,10 @@ class UserLocalRepository {
           'users',
           {
             'id': user.id,
-            'phone': user.phone ?? '',
+            'phone': user.phone, // 允许为 null
             'nickname': user.name,
             'email': user.email,
-            'avatar': user.avatar ?? '',
+            'avatar': user.avatar, // 允许为 null
             'created_at': DateTime.now().toIso8601String(),
             'updated_at': DateTime.now().toIso8601String(),
           },

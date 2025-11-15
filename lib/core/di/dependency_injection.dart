@@ -88,6 +88,10 @@ import '../../features/user_city_content/application/use_cases/user_city_content
 import '../../features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
 import '../../features/user_city_content/infrastructure/repositories/user_city_content_repository.dart';
 import '../../features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
+// User Management Domain
+import '../../features/user_management/domain/repositories/iuser_management_repository.dart';
+import '../../features/user_management/infrastructure/repositories/user_management_repository.dart';
+import '../../features/user_management/presentation/controllers/user_management_state_controller.dart';
 import '../../features/weather/application/use_cases/get_city_weather_use_case.dart';
 // Weather Domain
 import '../../features/weather/domain/repositories/iweather_repository.dart';
@@ -151,6 +155,9 @@ class DependencyInjection {
 
     // Hotel 领域
     _registerHotelDomain();
+
+    // UserManagement 领域
+    _registerUserManagementDomain();
 
     // 其他领域...
 
@@ -812,6 +819,20 @@ class DependencyInjection {
         getUserBookingsUseCase: Get.find<GetUserBookingsUseCase>(),
         cancelBookingUseCase: Get.find<CancelBookingUseCase>(),
       ),
+    );
+  }
+
+  /// 注册用户管理领域依赖
+  static void _registerUserManagementDomain() {
+    // Repository
+    Get.lazyPut<IUserManagementRepository>(
+      () => UserManagementRepository(Get.find<HttpService>()),
+    );
+
+    // Controller
+    Get.lazyPut(
+      () =>
+          UserManagementStateController(Get.find<IUserManagementRepository>()),
     );
   }
 }

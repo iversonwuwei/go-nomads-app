@@ -25,6 +25,7 @@ import '../generated/app_localizations.dart';
 import '../services/token_storage_service.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/skeletons/skeletons.dart';
+import 'add_cost_page.dart';
 import 'add_coworking_page.dart';
 import 'add_review_page.dart';
 import 'coworking_detail_page.dart';
@@ -1058,6 +1059,20 @@ class _CityDetailPageState extends State<CityDetailPage>
     return role == 'admin' || role == 'moderator';
   }
 
+  /// 检查用户是否为管理员或版主（用于区分跳转行为）
+  Future<bool> _isAdminOrModerator() async {
+    final tokenService = TokenStorageService();
+    final role = await tokenService.getUserRole();
+    return role == 'admin' || role == 'moderator';
+  }
+
+  /// 检查用户是否已登录
+  Future<bool> _isUserLoggedIn() async {
+    final tokenService = TokenStorageService();
+    final token = await tokenService.getAccessToken();
+    return token != null && token.isNotEmpty;
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -1114,12 +1129,12 @@ class _CityDetailPageState extends State<CityDetailPage>
                     ),
                   ),
                   actions: [
-                    // 添加按钮 - 根据当前标签页动态显示
+                    // 添加按钮 - 所有登录用户都可见，但跳转行为不同
                     AnimatedBuilder(
                       animation: _tabController,
                       builder: (context, child) {
                         return FutureBuilder<bool>(
-                          future: _canUserManageContent(),
+                          future: _isUserLoggedIn(),
                           builder: (context, snapshot) {
                             if (snapshot.data != true)
                               return const SizedBox.shrink();
@@ -1128,52 +1143,93 @@ class _CityDetailPageState extends State<CityDetailPage>
                             IconData icon;
                             VoidCallback? onPressed;
 
-                            // 根据当前标签页显示对应的管理按钮 (admin/版主)
+                            // 根据当前标签页显示对应的按钮
                             if (currentTab == 0) {
-                              // Scores - 评分不需要管理页面,只有添加功能
+                              // Scores - 所有用户直接添加评分
                               icon = Icons.star_rate;
                               onPressed = _showShareScoreDialog;
                             } else if (currentTab == 2) {
-                              // Pros & Cons - 跳转到管理列表页面
+                              // Pros & Cons
                               icon = Icons.edit_note;
                               onPressed = () async {
-                                await Get.to(() => ManageProsConsPage(
-                                      cityId: cityId,
-                                      cityName: cityName,
-                                    ));
-                                prosConsController.loadCityProsCons(cityId);
+                                final isAdminOrMod =
+                                    await _isAdminOrModerator();
+                                if (isAdminOrMod) {
+                                  // Admin/Moderator: 跳转到管理列表页面
+                                  await Get.to(() => ManageProsConsPage(
+                                        cityId: cityId,
+                                        cityName: cityName,
+                                      ));
+                                  prosConsController.loadCityProsCons(cityId);
+                                } else {
+                                  // 普通用户: 直接跳转到添加页面
+                                  await Get.to(() => ProsAndConsAddPage(
+                                        cityId: cityId,
+                                        cityName: cityName,
+                                      ));
+                                  prosConsController.loadCityProsCons(cityId);
+                                }
                               };
                             } else if (currentTab == 3) {
-                              // Reviews - 跳转到管理列表页面
+                              // Reviews
                               icon = Icons.edit_note;
                               onPressed = () async {
-                                await Get.to(() => ManageReviewsPage(
-                                      cityId: cityId,
-                                      cityName: cityName,
-                                    ));
-                                userContentController.loadCityReviews(cityId);
+                                final isAdminOrMod =
+                                    await _isAdminOrModerator();
+                                if (isAdminOrMod) {
+                                  // Admin/Moderator: 跳转到管理列表页面
+                                  await Get.to(() => ManageReviewsPage(
+                                        cityId: cityId,
+                                        cityName: cityName,
+                                      ));
+                                  userContentController.loadCityReviews(cityId);
+                                } else {
+                                  // 普通用户: 直接跳转到添加页面
+                                  await Get.to(() => AddReviewPage(
+                                        cityId: cityId,
+                                        cityName: cityName,
+                                      ));
+                                  userContentController.loadCityReviews(cityId);
+                                }
                               };
                             } else if (currentTab == 4) {
-                              // Cost - 跳转到管理列表页面
+                              // Cost
                               icon = Icons.edit_note;
                               onPressed = () async {
-                                await Get.to(() => ManageCostPage(
-                                      cityId: cityId,
-                                      cityName: cityName,
-                                    ));
-                                userContentController.loadCityExpenses(cityId);
-                                userContentController
-                                    .loadCityCostSummary(cityId);
+                                final isAdminOrMod =
+                                    await _isAdminOrModerator();
+                                if (isAdminOrMod) {
+                                  // Admin/Moderator: 跳转到管理列表页面
+                                  await Get.to(() => ManageCostPage(
+                                        cityId: cityId,
+                                        cityName: cityName,
+                                      ));
+                                  userContentController
+                                      .loadCityExpenses(cityId);
+                                  userContentController
+                                      .loadCityCostSummary(cityId);
+                                } else {
+                                  // 普通用户: 直接跳转到添加页面
+                                  await Get.to(() => AddCostPage(
+                                        cityId: cityId,
+                                        cityName: cityName,
+                                      ));
+                                  userContentController
+                                      .loadCityExpenses(cityId);
+                                  userContentController
+                                      .loadCityCostSummary(cityId);
+                                }
                               };
                             } else if (currentTab == 5) {
-                              // Photos - 保持原有对话框形式
+                              // Photos - 所有用户都用对话框形式
                               icon = Icons.add_photo_alternate;
                               onPressed = () =>
                                   _showAddPhotoDialog(userContentController);
                             } else if (currentTab == 9) {
-                              // Coworking - 暂时保持原样(需要后端删除API)
+                              // Coworking
                               icon = Icons.add_business;
                               onPressed = () async {
+                                // 所有用户都直接跳转到添加页面
                                 final result =
                                     await Get.to(() => AddCoworkingPage(
                                           cityId: cityId,

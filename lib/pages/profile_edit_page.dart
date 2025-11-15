@@ -10,7 +10,10 @@ import '../features/skill/domain/entities/skill.dart';
 import '../features/skill/presentation/controllers/skill_state_controller.dart';
 import '../features/user/domain/entities/user.dart';
 import '../features/user/presentation/controllers/user_state_controller.dart';
+import '../features/user_management/domain/repositories/iuser_management_repository.dart';
+import '../features/user_management/presentation/controllers/user_management_state_controller.dart';
 import '../generated/app_localizations.dart';
+import '../services/token_storage_service.dart';
 import '../utils/image_upload_helper.dart';
 import '../widgets/app_toast.dart';
 
@@ -42,12 +45,17 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   bool _uploadingAvatar = false;
   String? _newAvatarUrl;
 
+  // 当前用户角色
+  bool _isAdmin = false;
+  UserManagementStateController? _userManagementController;
+
   @override
   void initState() {
     super.initState();
     // 延迟到下一帧执行，避免在 build 过程中触发状态更新
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadUserProfile();
+      _checkAdminRole();
     });
   }
 
@@ -57,6 +65,41 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     _emailController.dispose();
     _bioController.dispose();
     super.dispose();
+  }
+
+  // 检查用户是否为管理员
+  Future<void> _checkAdminRole() async {
+    final role = await TokenStorageService().getUserRole();
+    debugPrint('🔍 检查用户角色: $role');
+
+    final isAdmin = await TokenStorageService().isAdmin();
+    debugPrint('🔍 是否管理员: $isAdmin');
+
+    if (mounted) {
+      setState(() {
+        _isAdmin = isAdmin;
+        if (_isAdmin) {
+          // 安全地获取或初始化用户管理 controller
+          try {
+            if (Get.isRegistered<UserManagementStateController>()) {
+              _userManagementController =
+                  Get.find<UserManagementStateController>();
+            } else {
+              // 如果未注册，强制创建实例
+              _userManagementController = Get.put(
+                UserManagementStateController(
+                    Get.find<IUserManagementRepository>()),
+              );
+            }
+            debugPrint('✅ UserManagementStateController 初始化成功');
+          } catch (e) {
+            debugPrint('❌ 获取 UserManagementStateController 失败: $e');
+          }
+        } else {
+          debugPrint('⚠️ 当前用户不是管理员，不显示管理区域');
+        }
+      });
+    }
   }
 
   // 加载用户资料
@@ -187,6 +230,12 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
             // 账户操作
             _buildAccountActionsSection(isMobile),
+
+            // 管理员权限管理区域（仅管理员可见）
+            if (_isAdmin) ...[
+              const SizedBox(height: 24),
+              _buildAdminManagementSection(isMobile),
+            ],
 
             const SizedBox(height: 32),
 
@@ -1035,6 +1084,357 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       ),
     );
   }
+
+  /// 构建管理员权限管理区域
+  Widget _buildAdminManagementSection(bool isMobile) {
+    if (_userManagementController == null) return const SizedBox.shrink();
+
+    return Container(
+      padding: EdgeInsets.all(isMobile ? 16 : 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '🔐 管理员权限管理',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: isMobile ? 18 : 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Obx(() => Text(
+                    '已选择 ${_userManagementController!.selectedUserIds.length} 人',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 14,
+                    ),
+                  )),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // 角色加载状态提示
+          Obx(() {
+            if (_userManagementController!.roles.isEmpty) {
+              return Container(
+                padding: const EdgeInsets.all(12),
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.warning_amber_rounded,
+                        color: Colors.orange, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '⚠️ 角色数据未加载，批量操作功能受限\n请确认后端 /api/v1/roles 接口已正确配置',
+                        style: TextStyle(
+                          color: Colors.orange.shade800,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+            return const SizedBox.shrink();
+          }),
+
+          // 操作按钮行
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () => _batchSetAdmin(),
+                  icon: const Icon(Icons.admin_panel_settings, size: 18),
+                  label: const Text('设为管理员'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _batchSetUser(),
+                  icon: const Icon(Icons.person, size: 18),
+                  label: const Text('设为普通用户'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.textPrimary,
+                    side: BorderSide(color: AppColors.border),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _userManagementController!.toggleSelectAll(),
+                  icon: const Icon(Icons.check_box, size: 18),
+                  label: const Text('全选/取消全选'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.textSecondary,
+                    side: BorderSide(color: AppColors.border),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () =>
+                      _userManagementController!.loadUsers(refresh: true),
+                  icon: const Icon(Icons.refresh, size: 18),
+                  label: const Text('刷新'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.textSecondary,
+                    side: BorderSide(color: AppColors.border),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // 用户列表
+          Container(
+            height: 400,
+            decoration: BoxDecoration(
+              border: Border.all(color: AppColors.border),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Obx(() {
+              if (_userManagementController!.isLoading.value &&
+                  _userManagementController!.users.isEmpty) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              if (_userManagementController!.errorMessage.value.isNotEmpty) {
+                return Center(
+                  child: Text(
+                    _userManagementController!.errorMessage.value,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                );
+              }
+
+              if (_userManagementController!.users.isEmpty) {
+                return const Center(child: Text('暂无用户'));
+              }
+
+              return NotificationListener<ScrollNotification>(
+                onNotification: (ScrollNotification scrollInfo) {
+                  if (scrollInfo.metrics.pixels ==
+                      scrollInfo.metrics.maxScrollExtent) {
+                    _userManagementController!.loadUsers();
+                  }
+                  return false;
+                },
+                child: ListView.builder(
+                  itemCount: _userManagementController!.users.length +
+                      (_userManagementController!.hasMoreData.value ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (index == _userManagementController!.users.length) {
+                      return const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: CircularProgressIndicator(),
+                        ),
+                      );
+                    }
+
+                    final user = _userManagementController!.users[index];
+                    final isSelected = _userManagementController!
+                        .selectedUserIds
+                        .contains(user.id);
+
+                    return CheckboxListTile(
+                      value: isSelected,
+                      onChanged: (checked) {
+                        _userManagementController!.toggleUserSelection(user.id);
+                      },
+                      title: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 16,
+                            backgroundImage: user.avatarUrl != null
+                                ? NetworkImage(user.avatarUrl!)
+                                : null,
+                            child: user.avatarUrl == null
+                                ? Text(user.name.substring(0, 1).toUpperCase())
+                                : null,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  user.name,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                if (user.email != null)
+                                  Text(
+                                    user.email!,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      subtitle: Row(
+                        children: [
+                          _buildRoleBadge(user.role),
+                          const SizedBox(width: 8),
+                          Text(
+                            '加入于 ${_formatDate(user.createdAt)}',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: AppColors.textTertiary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      activeColor: AppColors.accent,
+                      dense: true,
+                    );
+                  },
+                ),
+              );
+            }),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRoleBadge(String role) {
+    Color badgeColor;
+    String roleText;
+
+    switch (role.toLowerCase()) {
+      case 'admin':
+        badgeColor = Colors.red;
+        roleText = '管理员';
+        break;
+      case 'moderator':
+        badgeColor = Colors.orange;
+        roleText = '版主';
+        break;
+      default:
+        badgeColor = Colors.grey;
+        roleText = '用户';
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: badgeColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: badgeColor.withValues(alpha: 0.3)),
+      ),
+      child: Text(
+        roleText,
+        style: TextStyle(
+          fontSize: 11,
+          color: badgeColor,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays < 1) {
+      return '今天';
+    } else if (difference.inDays < 30) {
+      return '${difference.inDays}天前';
+    } else if (difference.inDays < 365) {
+      return '${(difference.inDays / 30).floor()}个月前';
+    } else {
+      return '${(difference.inDays / 365).floor()}年前';
+    }
+  }
+
+  Future<void> _batchSetAdmin() async {
+    if (_userManagementController == null) return;
+
+    if (_userManagementController!.selectedUserIds.isEmpty) {
+      AppToast.warning('请先选择要设置的用户');
+      return;
+    }
+
+    final success = await _userManagementController!.batchSetAdmin();
+
+    if (success) {
+      AppToast.success(
+        '已成功将 ${_userManagementController!.selectedUserIds.length} 个用户设为管理员',
+        title: '成功',
+      );
+    } else {
+      AppToast.error(
+        _userManagementController!.errorMessage.value.isNotEmpty
+            ? _userManagementController!.errorMessage.value
+            : '批量设置管理员失败',
+        title: '失败',
+      );
+    }
+  }
+
+  Future<void> _batchSetUser() async {
+    if (_userManagementController == null) return;
+
+    if (_userManagementController!.selectedUserIds.isEmpty) {
+      AppToast.warning('请先选择要设置的用户');
+      return;
+    }
+
+    final success = await _userManagementController!.batchSetUser();
+
+    if (success) {
+      AppToast.success(
+        '已成功将 ${_userManagementController!.selectedUserIds.length} 个用户设为普通用户',
+        title: '成功',
+      );
+    } else {
+      AppToast.error(
+        _userManagementController!.errorMessage.value.isNotEmpty
+            ? _userManagementController!.errorMessage.value
+            : '批量设置用户失败',
+        title: '失败',
+      );
+    }
+  }
 }
 
 // 技能选择底部抽屉组件
@@ -1856,3 +2256,5 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
     return categoryMap[category] ?? category;
   }
 }
+
+// 技能选择底部抽屉组件

@@ -31,7 +31,7 @@ class DatabaseService {
     // 打开数据库,如果不存在则创建
     return await openDatabase(
       path,
-      version: 8, // 升级到版本8 - tokens表添加expires_at字段
+      version: 9, // 升级到版本9 - users表id改为TEXT类型以支持UUID
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -39,11 +39,11 @@ class DatabaseService {
 
   /// 创建数据库表
   Future<void> _onCreate(Database db, int version) async {
-    // 用户表
+    // 用户表 - 使用 TEXT 作为主键以支持 UUID
     await db.execute('''
       CREATE TABLE users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        phone TEXT UNIQUE NOT NULL,
+        id TEXT PRIMARY KEY,
+        phone TEXT UNIQUE,
         password TEXT,
         nickname TEXT,
         avatar TEXT,
@@ -617,6 +617,49 @@ class DatabaseService {
         print('✅ 后台任务表创建完成');
       } catch (e) {
         print('⚠️ 创建后台任务表时出错: $e');
+      }
+    }
+
+    if (oldVersion < 9 && newVersion >= 9) {
+      // 版本 8 -> 9: 重建 users 表，将 id 从 INTEGER 改为 TEXT 以支持 UUID
+      try {
+        print('👤 开始迁移 users 表...');
+
+        // 1. 备份现有数据
+        final existingUsers = await db.query('users');
+
+        // 2. 删除旧表
+        await db.execute('DROP TABLE IF EXISTS users');
+
+        // 3. 创建新表（id 为 TEXT）
+        await db.execute('''
+          CREATE TABLE users (
+            id TEXT PRIMARY KEY,
+            phone TEXT UNIQUE,
+            password TEXT,
+            nickname TEXT,
+            avatar TEXT,
+            email TEXT,
+            bio TEXT,
+            city TEXT,
+            country TEXT,
+            occupation TEXT,
+            skills TEXT,
+            interests TEXT,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+          )
+        ''');
+
+        // 4. 如果有旧数据，尝试迁移（注意：INTEGER id 无法直接转换为 UUID）
+        if (existingUsers.isNotEmpty) {
+          print('⚠️ 检测到 ${existingUsers.length} 个旧用户记录，但无法迁移（ID 类型不兼容）');
+          print('ℹ️ 用户需要重新登录以创建新的用户记录');
+        }
+
+        print('✅ users 表迁移完成');
+      } catch (e) {
+        print('⚠️ 迁移 users 表时出错: $e');
       }
     }
   }
