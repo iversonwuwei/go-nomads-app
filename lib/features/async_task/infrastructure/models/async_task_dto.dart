@@ -29,24 +29,60 @@ class AsyncTaskDto {
   });
 
   factory AsyncTaskDto.fromJson(Map<String, dynamic> json) {
+    // 支持 camelCase 和 PascalCase 字段名
+    final taskId = json['taskId'] as String? ?? json['TaskId'] as String? ?? '';
+    final status =
+        json['status'] as String? ?? json['Status'] as String? ?? 'unknown';
+    final planId = json['planId'] as String? ?? json['PlanId'] as String?;
+    final guideId = json['guideId'] as String? ?? json['GuideId'] as String?;
+    final result = json['result'] as Map<String, dynamic>? ??
+        json['Result'] as Map<String, dynamic>?;
+    final error = json['error'] as String? ?? json['Error'] as String?;
+
+    // Progress 字段支持多种格式
+    int progress = 0;
+    if (json['progress'] != null) {
+      progress = (json['progress'] as num).toInt();
+    } else if (json['Progress'] != null) {
+      progress = (json['Progress'] as num).toInt();
+    }
+
+    // ProgressMessage 字段支持多种格式
+    String? progressMessage;
+    if (json['progressMessage'] != null) {
+      progressMessage = json['progressMessage'] as String;
+    } else if (json['ProgressMessage'] != null) {
+      progressMessage = json['ProgressMessage'] as String;
+    } else if (json['currentStep'] != null) {
+      progressMessage = json['currentStep'] as String;
+    } else if (json['CurrentStep'] != null) {
+      progressMessage = json['CurrentStep'] as String;
+    }
+    
     return AsyncTaskDto(
-      taskId: json['taskId'] as String? ?? '',
-      status: json['status'] as String? ?? 'unknown',
-      planId: json['planId'] as String?,
-      guideId: json['guideId'] as String?,
-      result: json['result'] as Map<String, dynamic>?,
-      error: json['error'] as String?,
-      progress: (json['progress'] as num?)?.toInt() ?? 0,
-      progressMessage: json['progressMessage'] as String?,
+      taskId: taskId,
+      status: status,
+      planId: planId,
+      guideId: guideId,
+      result: result,
+      error: error,
+      progress: progress,
+      progressMessage: progressMessage,
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'] as String)
-          : DateTime.now(),
+          : (json['CreatedAt'] != null
+              ? DateTime.parse(json['CreatedAt'] as String)
+              : DateTime.now()),
       updatedAt: json['updatedAt'] != null
           ? DateTime.parse(json['updatedAt'] as String)
-          : DateTime.now(),
+          : (json['UpdatedAt'] != null
+              ? DateTime.parse(json['UpdatedAt'] as String)
+              : DateTime.now()),
       completedAt: json['completedAt'] != null
           ? DateTime.parse(json['completedAt'] as String)
-          : null,
+          : (json['CompletedAt'] != null
+              ? DateTime.parse(json['CompletedAt'] as String)
+              : null),
     );
   }
 

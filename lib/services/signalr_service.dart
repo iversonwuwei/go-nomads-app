@@ -41,8 +41,8 @@ class SignalRService {
       final tokenService = TokenStorageService();
       final token = await tokenService.getAccessToken();
       
-      // 构建 Hub URL
-      final hubUrl = '$baseUrl/hubs/notifications';
+      // 构建 Hub URL - 使用 ai-progress hub
+      final hubUrl = '$baseUrl/hubs/ai-progress';
       print('🔌 正在连接 SignalR Hub: $hubUrl');
 
       // 创建连接（带认证）
@@ -91,25 +91,42 @@ class SignalRService {
 
   /// 注册 SignalR 事件处理器
   void _registerEventHandlers() {
+    print('🔧 注册 SignalR 事件处理器...');
+    
     // TaskProgress: 任务进度更新
     _hubConnection?.on('TaskProgress', (arguments) {
-      if (arguments == null || arguments.isEmpty) return;
+      print('🎯 收到 TaskProgress 事件！');
+      print('   参数数量: ${arguments?.length ?? 0}');
+
+      if (arguments == null || arguments.isEmpty) {
+        print('❌ TaskProgress 参数为空');
+        return;
+      }
 
       try {
+        print('📊 原始 TaskProgress 数据: ${arguments[0]}');
         final data = arguments[0] as Map<String, dynamic>;
         final taskDto = AsyncTaskDto.fromJson(data);
         final task = taskDto.toDomain();
 
         print('📊 收到任务进度: ${task.taskId} - ${task.progress.percentage}%');
+        print('   消息: ${task.progress.message}');
         _taskProgressController.add(task);
       } catch (e) {
         print('❌ 解析 TaskProgress 失败: $e');
+        print('   原始数据: ${arguments[0]}');
       }
     });
 
     // TaskCompleted: 任务完成
     _hubConnection?.on('TaskCompleted', (arguments) {
-      if (arguments == null || arguments.isEmpty) return;
+      print('🎯 收到 TaskCompleted 事件！');
+      print('   参数数量: ${arguments?.length ?? 0}');
+
+      if (arguments == null || arguments.isEmpty) {
+        print('❌ TaskCompleted 参数为空');
+        return;
+      }
 
       try {
         print('📦 收到 TaskCompleted 事件，原始数据:');
@@ -136,14 +153,22 @@ class SignalRService {
       } catch (e, stackTrace) {
         print('❌ 解析 TaskCompleted 失败: $e');
         print('   StackTrace: $stackTrace');
+        print('   原始数据: ${arguments[0]}');
       }
     });
 
     // TaskFailed: 任务失败
     _hubConnection?.on('TaskFailed', (arguments) {
-      if (arguments == null || arguments.isEmpty) return;
+      print('🎯 收到 TaskFailed 事件！');
+      print('   参数数量: ${arguments?.length ?? 0}');
+
+      if (arguments == null || arguments.isEmpty) {
+        print('❌ TaskFailed 参数为空');
+        return;
+      }
 
       try {
+        print('❌ 原始 TaskFailed 数据: ${arguments[0]}');
         final data = arguments[0] as Map<String, dynamic>;
         final taskDto = AsyncTaskDto.fromJson(data);
         final task = taskDto.toDomain();
@@ -152,8 +177,11 @@ class SignalRService {
         _taskFailedController.add(task);
       } catch (e) {
         print('❌ 解析 TaskFailed 失败: $e');
+        print('   原始数据: ${arguments[0]}');
       }
     });
+
+    print('✅ SignalR 事件处理器注册完成');
   }
 
   /// 订阅任务通知

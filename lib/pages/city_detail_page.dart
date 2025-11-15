@@ -902,11 +902,59 @@ class _CityDetailPageState extends State<CityDetailPage>
       return;
     }
 
+    print('🎬 [ProgressDialog] 准备显示对话框');
+    print(
+        '   当前状态: isGenerating=${controller.isGeneratingGuide}, progress=${controller.guideGenerationProgress}%');
+
+    // 显示对话框
     showDialog(
       context: context,
       barrierDismissible: false, // 不允许点击外部关闭
       builder: (BuildContext dialogContext) {
+        bool hasSetupWorker = false;
+        Worker? statusWorker;
+
         return Obx(() {
+          // 只在第一次构建时设置监听器，并且确保生成已开始
+          if (!hasSetupWorker && controller.isGeneratingGuide) {
+            hasSetupWorker = true;
+            print('🔧 [ProgressDialog] 设置状态监听器');
+
+            statusWorker = ever(
+              controller.isGeneratingGuideRx,
+              (isGenerating) {
+                print('🔔 [ProgressDialog] 状态变化: isGenerating=$isGenerating');
+
+                if (isGenerating == false) {
+                  // 延迟关闭，让用户看到 100% 进度
+                  Future.delayed(const Duration(milliseconds: 1000), () {
+                    print('🚪 [ProgressDialog] 准备关闭对话框');
+
+                    if (Navigator.of(dialogContext).canPop()) {
+                      Navigator.of(dialogContext).pop();
+                      print('✅ [ProgressDialog] 对话框已关闭');
+
+                      // 显示结果提示
+                      if (controller.currentGuide != null) {
+                        AppToast.success('AI 旅游指南生成成功!');
+                        // 重新加载指南数据
+                        controller.loadCityGuide(
+                          cityId: cityId,
+                          cityName: cityName,
+                        );
+                      } else if (controller.guideError != null) {
+                        AppToast.error('生成失败: ${controller.guideError}');
+                      }
+
+                      // 清理监听器
+                      statusWorker?.dispose();
+                    }
+                  });
+                }
+              },
+            );
+          }
+
           return AlertDialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
@@ -942,7 +990,9 @@ class _CityDetailPageState extends State<CityDetailPage>
                   children: [
                     Expanded(
                       child: Text(
-                        controller.guideGenerationMessage,
+                        controller.guideGenerationMessage.isEmpty
+                            ? '准备开始生成...'
+                            : controller.guideGenerationMessage,
                         style: TextStyle(
                           color: Colors.grey[600],
                           fontSize: 14,
@@ -961,44 +1011,28 @@ class _CityDetailPageState extends State<CityDetailPage>
               ],
             ),
             actions: [
-              // 取消按钮
-              TextButton(
-                onPressed: () {
-                  // 关闭对话框
-                  Navigator.of(dialogContext).pop();
-                },
-                child: const Text('取消'),
-              ),
+              // 取消按钮 - 只在生成中时显示
+              if (controller.isGeneratingGuide)
+                TextButton(
+                  onPressed: () {
+                    print('❌ [ProgressDialog] 用户取消');
+                    statusWorker?.dispose();
+                    Navigator.of(dialogContext).pop();
+                  },
+                  child: const Text('取消'),
+                ),
             ],
           );
         });
       },
     );
 
-    // 使用流式生成方法
-    controller
-        .generateDigitalNomadGuideStream(
+    // 启动异步生成任务
+    print('🚀 [ProgressDialog] 启动生成任务');
+    controller.generateDigitalNomadGuideStream(
       cityId: cityId,
       cityName: cityName,
-    )
-        .then((_) {
-      // 关闭进度对话框
-      if (Navigator.of(context).canPop()) {
-        Navigator.of(context).pop();
-      }
-
-      if (controller.currentGuide != null) {
-        AppToast.success('AI 旅游指南生成成功!');
-      } else if (controller.guideError != null) {
-        AppToast.error('生成失败: ${controller.guideError}');
-      }
-    }).catchError((error) {
-      // 关闭进度对话框
-      if (Navigator.of(context).canPop()) {
-        Navigator.of(context).pop();
-      }
-      AppToast.error('生成失败: $error');
-    });
+    );
   }
 
   // 获取城市展示图片列表

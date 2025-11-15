@@ -180,6 +180,9 @@ class DependencyInjection {
     Get.find<InterestStateController>();
     Get.find<ChatStateController>();
 
+    // 确保常用的 UseCase 也被初始化（防止 lazyPut 延迟导致找不到）
+    Get.find<GetCitiesWithCoworkingCountUseCase>();
+
     print('✅ 全局 Controllers 已强制初始化');
   }
 

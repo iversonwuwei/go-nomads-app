@@ -58,6 +58,7 @@ class AiStateController extends GetxController {
 
   // 数字游民指南
   bool get isGeneratingGuide => _isGeneratingGuide.value;
+  RxBool get isGeneratingGuideRx => _isGeneratingGuide; // 暴露 Rx 对象用于监听
   int get guideGenerationProgress => _guideGenerationProgress.value;
   String get guideGenerationMessage => _guideGenerationMessage.value;
   DigitalNomadGuide? get currentGuide => _currentGuide.value;
@@ -274,44 +275,64 @@ class AiStateController extends GetxController {
     required String cityId,
     required String cityName,
   }) async {
+    print('🎯 [Controller] generateDigitalNomadGuideStream 开始');
+    print('   cityId: $cityId');
+    print('   cityName: $cityName');
+    
     _isGeneratingGuide.value = true;
     _guideGenerationProgress.value = 0;
     _guideGenerationMessage.value = '';
     _guideError.value = null;
+    _currentGuide.value = null; // 清空之前的结果
 
-    final result = await _generateDigitalNomadGuideStreamUseCase.execute(
-      GenerateDigitalNomadGuideStreamParams(
-        cityId: cityId,
-        cityName: cityName,
-        onProgress: (message, progress) {
-          _guideGenerationMessage.value = message;
-          _guideGenerationProgress.value = progress;
-        },
-        onData: (guide) async {
-          _currentGuide.value = guide;
-          _isGeneratingGuide.value = false;
-          _guideGenerationProgress.value = 100;
+    print('✅ [Controller] 初始状态设置完成: isGenerating=true, progress=0');
 
-          // ✅ 生成成功,后端会自动保存到Supabase
-          print('✅ 城市指南生成成功: $cityName (后端已自动保存)');
-        },
-        onError: (error) {
-          _guideError.value = error;
-          _isGeneratingGuide.value = false;
-        },
-      ),
-    );
+    try {
+      // 调用异步生成方法，该方法会等待任务完成才返回
+      await _generateDigitalNomadGuideStreamUseCase.execute(
+        GenerateDigitalNomadGuideStreamParams(
+          cityId: cityId,
+          cityName: cityName,
+          onProgress: (message, progress) {
+            print('📊 [Controller] 收到进度: $progress% - $message');
+            _guideGenerationMessage.value = message;
+            _guideGenerationProgress.value = progress;
+          },
+          onData: (guide) async {
+            print('✅ [Controller] 收到完成事件');
+            print('   guide.cityName: ${guide.cityName}');
+            
+            _currentGuide.value = guide;
+            _guideGenerationProgress.value = 100;
+            _guideGenerationMessage.value = '生成完成！';
+            
+            // 延迟一下再设置 false，确保 UI 能看到 100%
+            await Future.delayed(const Duration(milliseconds: 500));
+            _isGeneratingGuide.value = false;
 
-    // 如果execute本身失败(不是SSE事件中的失败)
-    result.fold(
-      onSuccess: (_) {
-        // SSE流正常启动,实际结果通过回调处理
-      },
-      onFailure: (exception) {
-        _guideError.value = exception.message;
+            print('✅ [Controller] 城市指南生成成功: $cityName');
+          },
+          onError: (error) {
+            print('❌ [Controller] 收到错误: $error');
+            _guideError.value = error;
+            _isGeneratingGuide.value = false;
+          },
+        ),
+      );
+      
+      print('✅ [Controller] generateDigitalNomadGuideStream 执行完成');
+
+      // 方法返回后，如果状态还是 true，说明被中途取消或异常
+      if (_isGeneratingGuide.value) {
+        print('⚠️ [Controller] 任务结束但状态异常，重置状态');
         _isGeneratingGuide.value = false;
-      },
-    );
+      }
+    } catch (e, stackTrace) {
+      print('❌ [Controller] generateDigitalNomadGuideStream 异常: $e');
+      print('   StackTrace: $stackTrace');
+      _guideError.value = e.toString();
+      _isGeneratingGuide.value = false;
+    }
   }
 
   /// 后台生成数字游民指南 (不阻塞UI, 完成后通知用户)
