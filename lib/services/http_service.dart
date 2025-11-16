@@ -246,6 +246,8 @@ class HttpService {
           if (error.response?.statusCode == 401) {
             if (kDebugMode) {
               print('⚠️ 401 Unauthorized - 认证失败');
+              print('完整响应数据:');
+              print(error.response?.data);
             }
 
             // 检查是否有 refresh token
@@ -300,17 +302,19 @@ class HttpService {
                   if (kDebugMode) {
                     print('❌ Token 刷新失败，清除认证信息并跳转登录页');
                   }
+                  _isRefreshing = false;
                   await _handleUnauthorized(
                       reason: 'Session expired. Please login again.');
+                  return handler.next(error);
                 }
               } catch (refreshError) {
                 if (kDebugMode) {
                   print('❌ Token 刷新异常: $refreshError');
                 }
+                _isRefreshing = false;
                 await _handleUnauthorized(
                     reason: 'Authentication failed. Please login again.');
-              } finally {
-                _isRefreshing = false;
+                return handler.next(error);
               }
             } else if (_onTokenRefreshCallback == null) {
               // 没有刷新回调，直接跳转登录
@@ -318,6 +322,13 @@ class HttpService {
                 print('❌ 无 Token 刷新回调，跳转登录页面');
               }
               await _handleUnauthorized(reason: 'Please login to continue');
+              return handler.next(error);
+            } else if (_isRefreshing) {
+              // 正在刷新中，等待刷新完成
+              if (kDebugMode) {
+                print('⏳ Token 正在刷新中，等待完成...');
+              }
+              return handler.next(error);
             }
           }
 

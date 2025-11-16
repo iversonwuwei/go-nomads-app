@@ -231,4 +231,22 @@ class UserManagementStateController extends GetxController {
       isLoading.value = false;
     }
   }
+
+  @override
+  void onClose() {
+    // 清空所有响应式变量
+    users.clear();
+    roles.clear();
+    selectedUserIds.clear();
+    
+    // 重置加载状态
+    isLoading.value = false;
+    errorMessage.value = '';
+    
+    // 重置分页状态
+    currentPage.value = 1;
+    hasMoreData.value = true;
+    
+    super.onClose();
+  }
 }

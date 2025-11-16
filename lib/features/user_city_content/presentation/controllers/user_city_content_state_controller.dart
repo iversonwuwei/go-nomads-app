@@ -400,4 +400,24 @@ class UserCityContentStateController extends GetxController {
     clearStats();
     clearCostSummary();
   }
+
+  @override
+  void onClose() {
+    // 清空所有响应式变量
+    photos.clear();
+    expenses.clear();
+    reviews.clear();
+    myReview.value = null;
+    stats.value = null;
+    costSummary.value = null;
+    
+    // 重置加载状态
+    isLoadingPhotos.value = false;
+    isLoadingExpenses.value = false;
+    isLoadingReviews.value = false;
+    isLoadingStats.value = false;
+    isLoadingCostSummary.value = false;
+    
+    super.onClose();
+  }
 }

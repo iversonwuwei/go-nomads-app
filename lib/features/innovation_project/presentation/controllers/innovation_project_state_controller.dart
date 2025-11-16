@@ -332,4 +332,18 @@ class InnovationProjectStateController extends GetxController {
   void clearCurrentProject() {
     currentProject.value = null;
   }
+
+  @override
+  void onClose() {
+    // 清空所有响应式变量
+    projects.clear();
+    currentProject.value = null;
+    teamMembers.clear();
+    
+    // 重置加载状态
+    isLoading.value = false;
+    errorMessage.value = null;
+    
+    super.onClose();
+  }
 }

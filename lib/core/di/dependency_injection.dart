@@ -55,9 +55,11 @@ import '../../features/interest/infrastructure/repositories/interest_repository.
 import '../../features/interest/presentation/controllers/interest_state_controller.dart';
 // Location Domain
 import '../../features/location/application/use_cases/get_cities_by_country_use_case.dart';
+import '../../features/location/application/use_cases/get_city_by_id_use_case.dart'
+    as location_use_cases;
 import '../../features/location/application/use_cases/get_countries_use_case.dart';
 import '../../features/location/application/use_cases/search_cities_use_case.dart'
-    as location_use_cases;
+    as location_search_use_cases;
 import '../../features/location/domain/repositories/ilocation_repository.dart';
 import '../../features/location/infrastructure/repositories/location_repository.dart';
 import '../../features/location/presentation/controllers/location_state_controller.dart';
@@ -179,6 +181,7 @@ class DependencyInjection {
     Get.find<SkillStateController>();
     Get.find<InterestStateController>();
     Get.find<ChatStateController>();
+    Get.find<LocationStateController>(); // 添加 LocationStateController 初始化
 
     // 确保常用的 UseCase 也被初始化（防止 lazyPut 延迟导致找不到）
     Get.find<GetCitiesWithCoworkingCountUseCase>();
@@ -334,7 +337,9 @@ class DependencyInjection {
     Get.lazyPut(() => GetCountriesUseCase(Get.find<ILocationRepository>()));
     Get.lazyPut(
         () => GetCitiesByCountryUseCase(Get.find<ILocationRepository>()));
-    Get.lazyPut(() => location_use_cases.SearchCitiesUseCase(
+    Get.lazyPut(() =>
+        location_use_cases.GetCityByIdUseCase(Get.find<ILocationRepository>()));
+    Get.lazyPut(() => location_search_use_cases.SearchCitiesUseCase(
         Get.find<ILocationRepository>()));
 
     // Controller
@@ -342,7 +347,9 @@ class DependencyInjection {
       () => LocationStateController(
         getCountriesUseCase: Get.find<GetCountriesUseCase>(),
         getCitiesByCountryUseCase: Get.find<GetCitiesByCountryUseCase>(),
-        searchCitiesUseCase: Get.find<location_use_cases.SearchCitiesUseCase>(),
+        getCityByIdUseCase: Get.find<location_use_cases.GetCityByIdUseCase>(),
+        searchCitiesUseCase:
+            Get.find<location_search_use_cases.SearchCitiesUseCase>(),
       ),
     );
   }
@@ -356,7 +363,8 @@ class DependencyInjection {
 
     // Use Cases
     Get.lazyPut(() => GetCitiesUseCase(Get.find<ICityRepository>()));
-    Get.lazyPut(() => GetCityByIdUseCase(Get.find<ICityRepository>()));
+    Get.lazyPut(() => GetCityByIdUseCase(Get.find<ICityRepository>()),
+        tag: 'city_domain'); // 添加tag区分City domain
     Get.lazyPut(() => SearchCityListUseCase(Get.find<ICityRepository>()));
     Get.lazyPut(() => GetRecommendedCitiesUseCase(Get.find<ICityRepository>()));
     Get.lazyPut(() => GetPopularCitiesUseCase(Get.find<ICityRepository>()));
@@ -388,7 +396,8 @@ class DependencyInjection {
     // Detail Controller
     Get.lazyPut(
       () => CityDetailStateController(
-        getCityByIdUseCase: Get.find<GetCityByIdUseCase>(),
+        getCityByIdUseCase: Get.find<GetCityByIdUseCase>(
+            tag: 'city_domain'), // 使用tag获取City domain的UseCase
         toggleCityFavoriteUseCase: Get.find<ToggleCityFavoriteUseCase>(),
       ),
     );

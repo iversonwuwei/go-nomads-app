@@ -354,10 +354,32 @@ class ChatStateController extends GetxController {
 
   @override
   void onClose() {
-    // 离开当前聊天室
+    // 离开当前聊天室(异步操作)
     if (_currentRoomId.value != null) {
       leaveRoom();
     }
+    
+    // 清空所有响应式变量
+    _chatRooms.clear();
+    _currentRoom.value = null;
+    _currentRoomId.value = null;
+    _messages.clear();
+    _replyTo.value = null;
+    _onlineUsers.clear();
+    _roomMembers.clear();
+    
+    // 重置加载状态
+    _isLoading.value = false;
+    _isSendingMessage.value = false;
+    _isLoadingMessages.value = false;
+    
+    // 重置分页状态
+    _currentPage.value = 1;
+    _hasMoreMessages.value = true;
+    
+    // 清空错误信息
+    _errorMessage.value = null;
+    
     super.onClose();
   }
 }

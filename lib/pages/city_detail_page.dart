@@ -28,6 +28,7 @@ import '../widgets/skeletons/skeletons.dart';
 import 'add_cost_page.dart';
 import 'add_coworking_page.dart';
 import 'add_review_page.dart';
+import 'assign_moderator_page.dart';
 import 'coworking_detail_page.dart';
 import 'create_travel_plan_page.dart';
 import 'hotel_list_page.dart';
@@ -151,36 +152,38 @@ class _CityDetailPageState extends State<CityDetailPage>
       // 检查是否有版主
       final hasModerator = city.moderatorId != null;
 
-      return FutureBuilder<bool>(
-        future: _checkIsAdmin(),
-        builder: (context, adminSnapshot) {
-          final isAdmin = adminSnapshot.data ?? false;
+      // 直接使用后端返回的权限字段
+      final isAdmin = city.isCurrentUserAdmin;
+      final isModerator = city.isCurrentUserModerator;
 
-          // 如果已有版主且当前用户不是管理员，不显示按钮
-          if (hasModerator && !isAdmin) {
-            return _buildModeratorInfoBanner(city.moderator!);
-          }
+      // 调试日志
+      print('🔍 [版主管理] hasModerator: $hasModerator');
+      print('🔍 [版主管理] isAdmin: $isAdmin');
+      print('🔍 [版主管理] isModerator: $isModerator');
+      print('🔍 [版主管理] moderatorId: ${city.moderatorId}');
+      print('🔍 [版主管理] moderator: ${city.moderator?.name}');
 
-          // 如果已有版主且当前用户是管理员，显示版主信息+更换按钮
-          if (hasModerator && isAdmin) {
-            return _buildModeratorInfoWithChange(city.moderator!);
-          }
+      // 如果已有版主且当前用户不是管理员也不是该城市版主，只显示版主信息
+      if (hasModerator && !isAdmin && !isModerator) {
+        print('✅ [版主管理] 显示只读版主信息');
+        return _buildModeratorInfoBanner(city.moderator!);
+      }
 
-          // 如果没有版主，根据用户角色显示不同按钮
-          if (isAdmin) {
-            return _buildAssignModeratorButton();
-          } else {
-            return _buildApplyModeratorButton();
-          }
-        },
-      );
+      // 如果已有版主且当前用户是管理员或该城市版主，显示版主信息+更换按钮
+      if (hasModerator && (isAdmin || isModerator)) {
+        print('✅ [版主管理] 显示版主信息+管理按钮');
+        return _buildModeratorInfoWithChange(city.moderator!);
+      }
+
+      // 如果没有版主，根据用户角色显示不同按钮
+      if (isAdmin) {
+        print('✅ [版主管理] 显示指定版主按钮（管理员）');
+        return _buildAssignModeratorButton();
+      } else {
+        print('✅ [版主管理] 显示申请成为版主按钮（普通用户）');
+        return _buildApplyModeratorButton();
+      }
     });
-  }
-
-  /// 检查是否为管理员
-  Future<bool> _checkIsAdmin() async {
-    final tokenService = TokenStorageService();
-    return await tokenService.isAdmin();
   }
 
   /// 版主信息横幅（只读）
@@ -489,41 +492,22 @@ class _CityDetailPageState extends State<CityDetailPage>
     );
   }
 
-  /// 指定版主对话框
-  void _showAssignModeratorDialog() {
-    // TODO: 实现用户搜索和选择功能
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: const Row(
-          children: [
-            Icon(Icons.admin_panel_settings, color: Colors.orange, size: 28),
-            SizedBox(width: 12),
-            Text('指定版主'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('指定版主功能正在开发中...'),
-            const SizedBox(height: 16),
-            Text(
-              '该功能需要用户搜索接口支持',
-              style: TextStyle(color: Colors.grey[600], fontSize: 14),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('关闭'),
-          ),
-        ],
-      ),
-    );
+  /// 指定版主 - 跳转到专门的指定版主页面
+  void _showAssignModeratorDialog() async {
+    final result = await Get.to(() => AssignModeratorPage(
+          cityId: cityId,
+          cityName: cityName,
+        ));
+
+    // 如果指定成功或页面返回,重新加载城市详情
+    if (result == true) {
+      print('✅ [CityDetail] 版主指定成功，重新加载数据');
+      await reloadCityData();
+    } else if (result == null) {
+      // 用户点击返回按钮，也重新加载以防有更改
+      print('🔄 [CityDetail] 从指定版主页面返回，重新加载数据');
+      await reloadCityData();
+    }
   }
 
   Widget _buildPermissionItem(String text) {
@@ -721,6 +705,7 @@ class _CityDetailPageState extends State<CityDetailPage>
   }
 
   @override
+  @override
   void initState() {
     super.initState();
 
@@ -760,6 +745,13 @@ class _CityDetailPageState extends State<CityDetailPage>
             forceRefresh: true, // 强制刷新以获取最新数据
           );
         }
+        
+        // 当切换到 Coworking tab (索引 9) 时，加载最新共享办公空间数据
+        if (_tabController.index == 9) {
+          final coworkingController = Get.find<CoworkingStateController>();
+          coworkingController.loadCoworkingSpacesByCity(cityId);
+          print('🔄 [TabSwitch] 切换到 Coworking tab，重新加载数据');
+        }
       }
     });
 
@@ -791,6 +783,27 @@ class _CityDetailPageState extends State<CityDetailPage>
     userContentController.loadCityCostSummary(cityId); // ✅ 加载cost summary
 
     // 加载优缺点
+    prosConsController.loadCityProsCons(cityId);
+  }
+
+  /// 当页面重新可见时重新加载数据
+  Future<void> reloadCityData() async {
+    print('🔄 [CityDetail] 重新加载城市数据: $cityId');
+
+    final cityDetailController = Get.find<CityDetailStateController>();
+    final userContentController = Get.find<UserCityContentStateController>();
+    final prosConsController = Get.find<ProsConsStateController>();
+
+    // 重新加载城市详情（强制刷新）
+    await cityDetailController.loadCityDetail(cityId);
+
+    // 重新加载用户生成内容
+    userContentController.loadCityPhotos(cityId);
+    userContentController.loadCityExpenses(cityId);
+    userContentController.loadCityReviews(cityId);
+    userContentController.loadCityCostSummary(cityId);
+
+    // 重新加载优缺点
     prosConsController.loadCityProsCons(cityId);
   }
 
@@ -1120,12 +1133,19 @@ class _CityDetailPageState extends State<CityDetailPage>
     final prosConsController = Get.find<ProsConsStateController>();
 
     return Scaffold(
-      body: Stack(
-        children: [
-          NestedScrollView(
-            controller: _scrollController,
-            headerSliverBuilder: (context, innerBoxIsScrolled) {
-              return [
+      body: Obx(() {
+        // 🎨 加载时显示完整骨架屏
+        if (cityDetailController.isLoading.value) {
+          return const CityDetailSkeleton();
+        }
+
+        // 显示实际内容
+        return Stack(
+          children: [
+            NestedScrollView(
+              controller: _scrollController,
+              headerSliverBuilder: (context, innerBoxIsScrolled) {
+                return [
                 // 大图 Banner - 现代化设计
                 SliverAppBar(
                   expandedHeight: 320,
@@ -1264,10 +1284,16 @@ class _CityDetailPageState extends State<CityDetailPage>
                               icon = Icons.add_business;
                               onPressed = () async {
                                 // 所有用户都直接跳转到添加页面
+                                  final cityDetailController =
+                                      Get.find<CityDetailStateController>();
+                                  final city =
+                                      cityDetailController.currentCity.value;
+                                
                                 final result =
                                     await Get.to(() => AddCoworkingPage(
                                           cityId: cityId,
                                           cityName: cityName,
+                                            countryName: city?.country,
                                         ));
                                 if (result != null &&
                                     result['success'] == true) {
@@ -1688,12 +1714,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                 ),
               ];
             },
-            body: Obx(() {
-              if (cityDetailController.isLoading.value) {
-                return const CityDetailSkeleton();
-              }
-
-              return TabBarView(
+              body: TabBarView(
                 controller: _tabController,
                 children: [
                   _buildScoresTab(context, cityDetailController),
@@ -1707,8 +1728,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                   _buildNeighborhoodsTab(cityDetailController),
                   _buildCoworkingTab(coworkingController),
                 ],
-              );
-            }),
+              ),
           ),
 
           // Floating AI Travel Plan Button
@@ -1786,7 +1806,8 @@ class _CityDetailPageState extends State<CityDetailPage>
             ),
           ),
         ],
-      ),
+        ); // body: Obx 结束
+      }), // Scaffold 的 body 结束
     );
   }
 
@@ -4399,11 +4420,28 @@ class _CityDetailPageState extends State<CityDetailPage>
 
   /// 添加 Coworking Space
   void _showAddCoworkingPage() async {
+    // 获取城市详情控制器，读取完整的城市信息
+    final cityDetailController = Get.find<CityDetailStateController>();
+    final city = cityDetailController.currentCity.value;
+
+    print('🔍 [_showAddCoworkingPage] 城市数据检查:');
+    print('   currentCity: ${city != null ? "已加载" : "null"}');
+    print('   city.name: ${city?.name}');
+    print('   city.country: ${city?.country}');
+    print('   city.region: ${city?.region}');
+    
     final result = await Get.to(() => AddCoworkingPage(
           cityName: cityName,
           cityId: cityId,
+          countryName: city?.country, // 传递国家信息
         ));
-    if (result != null) {
+    
+    // 无论是否成功，返回时都重新加载数据
+    final coworkingController = Get.find<CoworkingStateController>();
+    coworkingController.loadCoworkingSpacesByCity(cityId);
+    print('🔄 [AddCoworking] 返回页面，重新加载 coworking 数据');
+
+    if (result != null && result == true) {
       AppToast.success(
         'Your coworking space will be reviewed and added soon!',
         title: 'Success',
@@ -4435,9 +4473,20 @@ class _CityDetailPageState extends State<CityDetailPage>
 
   /// 添加 Coworking Space
   void showAddCoworkingPage() async {
+    // 获取城市详情控制器，读取完整的城市信息
+    final cityDetailController = Get.find<CityDetailStateController>();
+    final city = cityDetailController.currentCity.value;
+
+    print('🔍 [showAddCoworkingPage] 城市数据检查:');
+    print('   currentCity: ${city != null ? "已加载" : "null"}');
+    print('   city.name: ${city?.name}');
+    print('   city.country: ${city?.country}');
+    print('   city.region: ${city?.region}');
+    
     final result = await Get.to(() => AddCoworkingPage(
           cityName: cityName,
           cityId: cityId,
+          countryName: city?.country, // 传递国家信息
         ));
     if (result != null) {
       AppToast.success(

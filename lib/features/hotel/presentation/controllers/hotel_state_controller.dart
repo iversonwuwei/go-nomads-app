@@ -313,4 +313,19 @@ class HotelStateController extends GetxController {
       },
     );
   }
+
+  @override
+  void onClose() {
+    // 清空所有响应式变量
+    hotels.clear();
+    currentHotel.value = null;
+    roomTypes.clear();
+    bookings.clear();
+    
+    // 重置加载状态
+    isLoading.value = false;
+    errorMessage.value = null;
+    
+    super.onClose();
+  }
 }

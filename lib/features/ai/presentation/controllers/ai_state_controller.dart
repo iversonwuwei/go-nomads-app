@@ -421,4 +421,24 @@ class AiStateController extends GetxController {
     _guideError.value = null;
     _isLoadingGuide.value = false;
   }
+
+  @override
+  void onClose() {
+    // 清空所有响应式变量 - 旅行计划
+    _isGeneratingTravelPlan.value = false;
+    _travelPlanGenerationProgress.value = 0;
+    _travelPlanGenerationMessage.value = '';
+    _currentTravelPlan.value = null;
+    _travelPlanError.value = null;
+    
+    // 清空所有响应式变量 - 数字游民指南
+    _isGeneratingGuide.value = false;
+    _guideGenerationProgress.value = 0;
+    _guideGenerationMessage.value = '';
+    _currentGuide.value = null;
+    _guideError.value = null;
+    _isLoadingGuide.value = false;
+    
+    super.onClose();
+  }
 }

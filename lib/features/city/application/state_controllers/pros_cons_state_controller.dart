@@ -297,7 +297,19 @@ class ProsConsStateController extends GetxController {
 
   @override
   void onClose() {
-    clearData();
+    // 清空所有响应式变量
+    prosList.clear();
+    consList.clear();
+    
+    // 重置加载状态
+    isLoadingPros.value = false;
+    isLoadingCons.value = false;
+    isAdding.value = false;
+    isVoting.value = false;
+    
+    // 清空错误信息
+    error.value = null;
+    
     super.onClose();
   }
 }

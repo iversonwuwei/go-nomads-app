@@ -97,4 +97,18 @@ class WeatherStateController extends GetxController {
     hasError.value = false;
     errorMessage.value = null;
   }
+
+  @override
+  void onClose() {
+    // 清空所有响应式变量
+    weather.value = null;
+    isLoading.value = false;
+    hasError.value = false;
+    errorMessage.value = null;
+    
+    // 清空跟踪变量
+    _lastLoadedCityId = '';
+    
+    super.onClose();
+  }
 }

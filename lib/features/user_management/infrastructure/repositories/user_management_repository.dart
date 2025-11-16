@@ -16,6 +16,9 @@ class UserManagementRepository implements IUserManagementRepository {
     required int pageSize,
   }) async {
     try {
+      print(
+          '📡 [UserManagementRepo] getUsers 调用开始: page=$page, pageSize=$pageSize');
+      
       final response = await _httpService.get(
         '/users',
         queryParameters: {
@@ -24,17 +27,48 @@ class UserManagementRepository implements IUserManagementRepository {
         },
       );
 
+      print(
+          '📡 [UserManagementRepo] HTTP 响应: statusCode=${response.statusCode}');
+      print(
+          '📡 [UserManagementRepo] response.data type: ${response.data?.runtimeType}');
+      
       if (response.statusCode == 200 && response.data != null) {
-        final items = (response.data['items'] as List?)
-                ?.map((json) => SimpleUserDto.fromJson(json).toEntity())
-                .toList() ??
-            [];
+        print(
+            '📡 [UserManagementRepo] response.data keys: ${response.data is Map ? (response.data as Map).keys.toList() : 'not a map'}');
 
-        return Result.success(items);
+        final dataMap = response.data as Map<String, dynamic>?;
+        if (dataMap != null && dataMap['items'] != null) {
+          final itemsList = dataMap['items'] as List?;
+          print(
+              '📡 [UserManagementRepo] items count: ${itemsList?.length ?? 0}');
+
+          if (itemsList != null && itemsList.isNotEmpty) {
+            print('📡 [UserManagementRepo] 第一个用户原始数据: ${itemsList[0]}');
+          }
+
+          final items = itemsList?.map((json) {
+                try {
+                  final dto = SimpleUserDto.fromJson(json);
+                  print(
+                      '📡 [UserManagementRepo] DTO解析成功: id=${dto.id}, name=${dto.name}, role=${dto.roleName}');
+                  return dto.toEntity();
+                } catch (e) {
+                  print('❌ [UserManagementRepo] DTO解析失败: $e, json=$json');
+                  rethrow;
+                }
+              }).toList() ??
+              [];
+
+          print('✅ [UserManagementRepo] 最终返回 ${items.length} 个用户');
+          return Result.success(items);
+        }
       }
 
+      print('❌ [UserManagementRepo] 获取用户列表失败');
       return Result.failure(const ServerException('获取用户列表失败'));
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('❌ [UserManagementRepo] 异常: $e');
+      print('❌ [UserManagementRepo] 堆栈: $stackTrace');
       return Result.failure(ServerException('获取用户列表失败: $e'));
     }
   }

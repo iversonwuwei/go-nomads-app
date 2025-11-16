@@ -505,10 +505,14 @@ class CityRepository implements ICityRepository {
   Future<Result<bool>> assignModerator(String cityId, String userId) async {
     try {
       await _httpService.post(
-        '$_baseUrl/moderator/assign',
+        '$_baseUrl/$cityId/moderators',
         data: {
-          'cityId': cityId,
           'userId': userId,
+          'canEditCity': true,
+          'canManageCoworks': true,
+          'canManageCosts': true,
+          'canManageVisas': true,
+          'canModerateChats': true,
         },
       );
       return const Success(true);

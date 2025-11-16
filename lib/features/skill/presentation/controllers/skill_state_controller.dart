@@ -197,4 +197,15 @@ class SkillStateController extends GetxController {
       },
     );
   }
+
+  @override
+  void onClose() {
+    // 清空所有响应式变量
+    skills.clear();
+    userSkills.clear();
+    isLoading.value = false;
+    errorMessage.value = null;
+    
+    super.onClose();
+  }
 }

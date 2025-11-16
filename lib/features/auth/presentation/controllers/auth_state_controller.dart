@@ -369,4 +369,12 @@ class AuthStateController extends GetxController {
   Future<void> refreshUser() async {
     await _loadCurrentUser();
   }
+
+  @override
+  void onClose() {
+    // 注意: AuthStateController 通常是全局单例(permanent: true)
+    // 不会被 GetX 销毁,所以这里不需要清理数据
+    // 如果需要清理,应该调用 logout() 方法
+    super.onClose();
+  }
 }

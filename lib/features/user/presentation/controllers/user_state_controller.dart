@@ -397,4 +397,21 @@ class UserStateController extends GetxController {
       currentUser.value?.hasCompletedProfile ?? false;
   bool get isActiveNomad => currentUser.value?.isActiveNomad ?? false;
   int get experienceLevel => currentUser.value?.experienceLevel ?? 1;
+
+  @override
+  void onClose() {
+    // 清空所有响应式变量
+    currentUser.value = null;
+    isLoading.value = false;
+    errorMessage.value = '';
+    
+    // 清空收藏城市状态
+    favoriteCityIds.clear();
+    
+    // 重置编辑模式状态
+    isEditMode.value = false;
+    loginStateChanged.value = false;
+    
+    super.onClose();
+  }
 }

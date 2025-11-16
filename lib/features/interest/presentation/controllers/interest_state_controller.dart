@@ -198,4 +198,15 @@ class InterestStateController extends GetxController {
       },
     );
   }
+
+  @override
+  void onClose() {
+    // 清空所有响应式变量
+    interests.clear();
+    userInterests.clear();
+    isLoading.value = false;
+    errorMessage.value = null;
+    
+    super.onClose();
+  }
 }

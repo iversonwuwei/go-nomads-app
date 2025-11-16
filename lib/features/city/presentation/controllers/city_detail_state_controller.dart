@@ -178,7 +178,20 @@ class CityDetailStateController extends GetxController {
 
   @override
   void onClose() {
-    // print('🗑️ CityDetailStateController 被销毁');
+    // print('🗑️ CityDetailStateController 被销毁 - 清理所有数据');
+    
+    // 清空所有响应式变量
+    currentCity.value = null;
+    isLoading.value = false;
+    hasError.value = false;
+    errorMessage.value = null;
+    isFavorited.value = false;
+    isTogglingFavorite.value = false;
+    currentTabIndex.value = 0;
+    
+    // 清空跟踪变量
+    _lastLoadedCityId = '';
+    
     super.onClose();
   }
 }

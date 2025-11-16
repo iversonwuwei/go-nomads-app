@@ -73,6 +73,40 @@ class CityStateController extends GetxController {
 
   // ==================== Lifecycle ====================
 
+  @override
+  void onClose() {
+    // 清空所有响应式变量
+    cities.clear();
+    recommendedCities.clear();
+    popularCities.clear();
+    favoriteCities.clear();
+    
+    // 重置加载状态
+    isLoading.value = false;
+    isLoadingMore.value = false;
+    hasError.value = false;
+    errorMessage.value = null;
+    
+    // 重置分页状态
+    _currentPage = 1;
+    _hasMoreData = true;
+    
+    // 重置筛选状态
+    searchQuery.value = '';
+    selectedCountryId.value = null;
+    selectedRegions.clear();
+    selectedCountries.clear();
+    selectedCities.clear();
+    minPrice.value = 0.0;
+    maxPrice.value = 5000.0;
+    minInternet.value = 0.0;
+    minRating.value = 0.0;
+    maxAqi.value = 500;
+    selectedClimates.clear();
+    
+    super.onClose();
+  }
+
   // ==================== Public Methods ====================
 
   /// 初始加载城市列表 (第一页)

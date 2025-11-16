@@ -359,4 +359,22 @@ class CommunityStateController extends GetxController {
   Future<void> refresh() async {
     await loadCommunityData();
   }
+
+  @override
+  void onClose() {
+    // 清空所有响应式变量
+    tripReports.clear();
+    recommendations.clear();
+    questions.clear();
+    answers.clear();
+    
+    // 重置选择状态
+    selectedCategory.value = 'All';
+    selectedCity.value = 'All Cities';
+    
+    // 重置加载状态
+    isLoading.value = true;
+    
+    super.onClose();
+  }
 }

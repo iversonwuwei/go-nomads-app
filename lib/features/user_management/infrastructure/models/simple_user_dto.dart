@@ -21,13 +21,16 @@ class SimpleUserDto {
   });
 
   factory SimpleUserDto.fromJson(Map<String, dynamic> json) {
+    // 后端返回的是 role 字段（字符串），不是 roleId/roleName
+    final role = json['role'] as String? ?? 'user';
+    
     return SimpleUserDto(
       id: json['id'] as String,
       name: json['name'] as String,
       email: json['email'] as String?,
       avatarUrl: json['avatarUrl'] as String?,
-      roleId: json['roleId'] as String,
-      roleName: json['roleName'] as String,
+      roleId: role, // 使用 role 作为 roleId
+      roleName: role, // 使用 role 作为 roleName
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
   }

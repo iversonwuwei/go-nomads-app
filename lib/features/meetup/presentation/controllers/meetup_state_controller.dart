@@ -607,7 +607,19 @@ class MeetupStateController extends GetxController {
 
   @override
   void onClose() {
-    print('👋 MeetupStateController 关闭');
+    print('👋 MeetupStateController 关闭 - 清理所有数据');
+    
+    // 清空所有响应式变量
+    meetups.clear();
+    rsvpedMeetupIds.clear();
+    isLoading.value = false;
+    isLoadingMore.value = false;
+    errorMessage.value = '';
+    
+    // 重置分页状态
+    currentPage.value = 1;
+    hasMoreData.value = true;
+    
     super.onClose();
   }
 }

@@ -83,6 +83,10 @@ class City {
   final String? moderatorId; // 版主 ID
   final Moderator? moderator; // 版主详情
 
+  // 当前用户权限（由后端返回）
+  final bool isCurrentUserModerator; // 当前用户是否为该城市版主
+  final bool isCurrentUserAdmin; // 当前用户是否为管理员
+
   const City({
     required this.id,
     required this.name,
@@ -109,6 +113,8 @@ class City {
     this.isFavorite = false,
     this.moderatorId,
     this.moderator,
+    this.isCurrentUserModerator = false,
+    this.isCurrentUserAdmin = false,
   });
 
   /// Business Logic Methods
@@ -197,6 +203,8 @@ class City {
       moderatorId: json['moderatorId'] as String?,
       moderator:
           moderatorData != null ? Moderator.fromJson(moderatorData) : null,
+      isCurrentUserModerator: json['isCurrentUserModerator'] as bool? ?? false,
+      isCurrentUserAdmin: json['isCurrentUserAdmin'] as bool? ?? false,
     );
   }
 
@@ -235,6 +243,8 @@ class City {
       'isFavorite': isFavorite,
       if (moderatorId != null) 'moderatorId': moderatorId,
       if (moderator != null) 'moderator': moderator!.toJson(),
+      'isCurrentUserModerator': isCurrentUserModerator,
+      'isCurrentUserAdmin': isCurrentUserAdmin,
     };
   }
 
@@ -265,6 +275,8 @@ class City {
     bool? isFavorite,
     String? moderatorId,
     Moderator? moderator,
+    bool? isCurrentUserModerator,
+    bool? isCurrentUserAdmin,
   }) {
     return City(
       id: id ?? this.id,
@@ -292,6 +304,9 @@ class City {
       isFavorite: isFavorite ?? this.isFavorite,
       moderatorId: moderatorId ?? this.moderatorId,
       moderator: moderator ?? this.moderator,
+      isCurrentUserModerator:
+          isCurrentUserModerator ?? this.isCurrentUserModerator,
+      isCurrentUserAdmin: isCurrentUserAdmin ?? this.isCurrentUserAdmin,
     );
   }
 

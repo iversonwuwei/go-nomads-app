@@ -163,4 +163,15 @@ class NotificationStateController extends GetxController {
       loadUnreadCount(),
     ]);
   }
+
+  @override
+  void onClose() {
+    // 清空所有响应式变量
+    notifications.clear();
+    unreadCount.value = 0;
+    isLoading.value = false;
+    errorMessage.value = '';
+    
+    super.onClose();
+  }
 }

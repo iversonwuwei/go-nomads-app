@@ -42,6 +42,7 @@ class CityDto {
       id: id,
       name: name,
       region: region,
+      countryId: countryId,
     );
   }
 }

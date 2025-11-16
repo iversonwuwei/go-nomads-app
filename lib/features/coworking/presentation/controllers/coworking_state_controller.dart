@@ -354,7 +354,25 @@ class CoworkingStateController extends GetxController {
 
   @override
   void onClose() {
-    clearCoworkingData();
+    // 清空所有响应式变量
+    coworkingSpaces.clear();
+    filteredSpaces.clear();
+    selectedFilters.clear();
+    currentCoworking.value = null;
+    coworkingCount.value = 0;
+    errorMessage.value = '';
+    
+    // 重置加载状态
+    isLoadingSpaces.value = false;
+    isLoadingDetail.value = false;
+    isLoadingCount.value = false;
+    isLoadingMore.value = false;
+    
+    // 重置分页状态
+    currentPage.value = 1;
+    hasMore.value = true;
+    currentCityId.value = '';
+    
     super.onClose();
   }
 }

@@ -4,6 +4,7 @@ import 'package:df_admin_mobile/features/country/domain/entities/country_option.
 import 'package:get/get.dart';
 
 import '../../application/use_cases/get_cities_by_country_use_case.dart';
+import '../../application/use_cases/get_city_by_id_use_case.dart';
 import '../../application/use_cases/get_countries_use_case.dart';
 import '../../application/use_cases/search_cities_use_case.dart';
 
@@ -13,14 +14,17 @@ import '../../application/use_cases/search_cities_use_case.dart';
 class LocationStateController extends GetxController {
   final GetCountriesUseCase _getCountriesUseCase;
   final GetCitiesByCountryUseCase _getCitiesByCountryUseCase;
+  final GetCityByIdUseCase _getCityByIdUseCase;
   final SearchCitiesUseCase _searchCitiesUseCase;
 
   LocationStateController({
     required GetCountriesUseCase getCountriesUseCase,
     required GetCitiesByCountryUseCase getCitiesByCountryUseCase,
+    required GetCityByIdUseCase getCityByIdUseCase,
     required SearchCitiesUseCase searchCitiesUseCase,
   })  : _getCountriesUseCase = getCountriesUseCase,
         _getCitiesByCountryUseCase = getCitiesByCountryUseCase,
+        _getCityByIdUseCase = getCityByIdUseCase,
         _searchCitiesUseCase = searchCitiesUseCase;
 
   // === 状态管理 ===
@@ -154,6 +158,31 @@ class LocationStateController extends GetxController {
     searchResults.clear();
   }
 
+  /// 根据 ID 获取城市信息（包含 countryId）
+  Future<Result<CityOption>> getCityById(String cityId) async {
+    errorMessage.value = '';
+
+    try {
+      final result = await _getCityByIdUseCase.execute(
+        GetCityByIdParams(cityId: cityId),
+      );
+
+      result.fold(
+        onSuccess: (_) {},
+        onFailure: (exception) {
+          errorMessage.value = exception.message;
+        },
+      );
+
+      return result;
+    } catch (e) {
+      errorMessage.value = '获取城市信息失败: $e';
+      return Result.failure(
+        Exception('获取城市信息失败: $e') as dynamic,
+      );
+    }
+  }
+
   /// 根据国家ID获取国家名称
   String? getCountryName(String countryId) {
     final country = countries.firstWhereOrNull((c) => c.id == countryId);
@@ -170,7 +199,19 @@ class LocationStateController extends GetxController {
 
   @override
   void onClose() {
-    clearAll();
+    // 清空所有响应式变量
+    countries.clear();
+    citiesByCountry.clear();
+    searchResults.clear();
+    
+    // 重置加载状态
+    isLoadingCountries.value = false;
+    isLoadingCities.value = false;
+    isSearching.value = false;
+    
+    // 清空错误信息
+    errorMessage.value = '';
+    
     super.onClose();
   }
 }
