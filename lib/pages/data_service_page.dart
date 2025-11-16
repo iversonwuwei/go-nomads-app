@@ -76,6 +76,12 @@ class _DataServicePageState extends State<DataServicePage>
     WidgetsBinding.instance.removeObserver(this);
     _scrollController.dispose();
     _searchController.dispose();
+    
+    // 清空搜索条件和结果
+    if (_cityControllerCache != null) {
+      _cityControllerCache!.searchQuery.value = '';
+    }
+    
     super.dispose();
   }
 

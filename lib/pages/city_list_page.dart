@@ -51,6 +51,10 @@ class _CityListPageState extends State<CityListPage> {
   void dispose() {
     _searchController.dispose();
     _scrollController.dispose();
+    
+    // 清空搜索条件和结果
+    controller.searchQuery.value = '';
+    
     super.dispose();
   }
 
