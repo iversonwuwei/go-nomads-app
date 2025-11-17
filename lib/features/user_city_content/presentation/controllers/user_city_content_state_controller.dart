@@ -4,6 +4,10 @@ import 'package:df_admin_mobile/features/user_city_content/application/use_cases
 import 'package:df_admin_mobile/features/user_city_content/domain/entities/user_city_content.dart';
 import 'package:get/get.dart';
 
+import '../../../user/application/use_cases/user_use_cases.dart'
+    as user_use_cases;
+import '../../../user/domain/entities/user.dart';
+
 /// User City Content State Controller - DDD Presentation Layer
 class UserCityContentStateController extends GetxController {
   // Use Cases
@@ -12,6 +16,7 @@ class UserCityContentStateController extends GetxController {
   final GetCityPhotosUseCase _getCityPhotosUseCase;
   final DeleteCityPhotoUseCase _deleteCityPhotoUseCase;
   final GetMyPhotosUseCase _getMyPhotosUseCase;
+  final user_use_cases.BatchGetUsersUseCase _batchGetUsersUseCase;
 
   final AddCityExpenseUseCase _addCityExpenseUseCase;
   final GetCityExpensesUseCase _getCityExpensesUseCase;
@@ -34,6 +39,9 @@ class UserCityContentStateController extends GetxController {
   final stats = Rxn<CityUserContentStats>();
   final costSummary = Rxn<CityCostSummary>();
 
+  final RxMap<String, String> photoUploaderNames = <String, String>{}.obs;
+  final Set<String> _pendingUserNameFetches = <String>{};
+
   final isLoadingPhotos = false.obs;
   final isLoadingExpenses = false.obs;
   final isLoadingReviews = false.obs;
@@ -46,6 +54,7 @@ class UserCityContentStateController extends GetxController {
     required GetCityPhotosUseCase getCityPhotosUseCase,
     required DeleteCityPhotoUseCase deleteCityPhotoUseCase,
     required GetMyPhotosUseCase getMyPhotosUseCase,
+    required user_use_cases.BatchGetUsersUseCase batchGetUsersUseCase,
     required AddCityExpenseUseCase addCityExpenseUseCase,
     required GetCityExpensesUseCase getCityExpensesUseCase,
     required DeleteCityExpenseUseCase deleteCityExpenseUseCase,
@@ -61,6 +70,7 @@ class UserCityContentStateController extends GetxController {
         _getCityPhotosUseCase = getCityPhotosUseCase,
         _deleteCityPhotoUseCase = deleteCityPhotoUseCase,
         _getMyPhotosUseCase = getMyPhotosUseCase,
+        _batchGetUsersUseCase = batchGetUsersUseCase,
         _addCityExpenseUseCase = addCityExpenseUseCase,
         _getCityExpensesUseCase = getCityExpensesUseCase,
         _deleteCityExpenseUseCase = deleteCityExpenseUseCase,
@@ -81,11 +91,12 @@ class UserCityContentStateController extends GetxController {
       GetCityPhotosUseCaseParams(cityId: cityId, onlyMine: onlyMine),
     );
 
-    result.fold(
-      onSuccess: (data) {
+    await result.fold(
+      onSuccess: (data) async {
         photos.value = data;
+        await _hydrateUploaderNamesFromPhotos(data);
       },
-      onFailure: (exception) {
+      onFailure: (exception) async {
         // print('Failed to load photos: ${exception.message}');
       },
     );
@@ -110,12 +121,13 @@ class UserCityContentStateController extends GetxController {
       ),
     );
 
-    return result.fold(
-      onSuccess: (photo) {
+    return await result.fold(
+      onSuccess: (photo) async {
         photos.insert(0, photo);
+        await _hydrateUploaderNamesFromPhotos([photo]);
         return true;
       },
-      onFailure: (exception) {
+      onFailure: (exception) async {
         // print('Failed to add photo: ${exception.message}');
         return false;
       },
@@ -144,17 +156,18 @@ class UserCityContentStateController extends GetxController {
       ),
     );
 
-    return result.fold(
-      onSuccess: (createdPhotos) {
+    return await result.fold(
+      onSuccess: (createdPhotos) async {
         if (createdPhotos.isNotEmpty) {
           photos.insertAll(0, createdPhotos);
+          await _hydrateUploaderNamesFromPhotos(createdPhotos);
         }
         if (reloadAfterSubmit) {
           loadCityPhotos(cityId);
         }
         return true;
       },
-      onFailure: (_) => false,
+      onFailure: (_) async => false,
     );
   }
 
@@ -180,16 +193,73 @@ class UserCityContentStateController extends GetxController {
 
     final result = await _getMyPhotosUseCase.execute(NoParams());
 
-    result.fold(
-      onSuccess: (data) {
+    await result.fold(
+      onSuccess: (data) async {
         photos.value = data;
+        await _hydrateUploaderNamesFromPhotos(data);
       },
-      onFailure: (exception) {
+      onFailure: (exception) async {
         // print('Failed to load my photos: ${exception.message}');
       },
     );
 
     isLoadingPhotos.value = false;
+  }
+
+  Future<void> _hydrateUploaderNamesFromPhotos(
+      Iterable<UserCityPhoto> source) async {
+    final userIds = source
+        .map((photo) => photo.userId.trim())
+        .where((id) => id.isNotEmpty)
+        .toSet();
+
+    final missing = userIds
+        .where((id) => !photoUploaderNames.containsKey(id))
+        .where((id) => !_pendingUserNameFetches.contains(id))
+        .toList();
+
+    if (missing.isEmpty) {
+      return;
+    }
+
+    _pendingUserNameFetches.addAll(missing);
+
+    final result = await _batchGetUsersUseCase.execute(
+      user_use_cases.BatchGetUsersParams(userIds: missing),
+    );
+
+    result.fold(
+      onSuccess: (users) {
+        for (final user in users) {
+          photoUploaderNames[user.id] = _resolveDisplayName(user);
+        }
+        photoUploaderNames.refresh();
+      },
+      onFailure: (_) {
+        // Ignore failures and fall back to truncated IDs in the UI
+      },
+    );
+
+    _pendingUserNameFetches.removeAll(missing);
+  }
+
+  String _resolveDisplayName(User user) {
+    final name = user.name.trim();
+    if (name.isNotEmpty) {
+      return name;
+    }
+
+    final username = user.username.trim();
+    if (username.isNotEmpty) {
+      return username;
+    }
+
+    final email = user.email?.trim();
+    if (email != null && email.isNotEmpty) {
+      return email;
+    }
+
+    return user.id;
   }
 
   // ==================== Expense Methods ====================

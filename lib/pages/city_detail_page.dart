@@ -2958,99 +2958,151 @@ class _CityDetailPageState extends State<CityDetailPage>
         );
       }
 
+      final groupedMap = <String, _PhotoGroup>{};
+      for (final photo in realUserPhotos) {
+        final resolvedTitle = _resolvePhotoTitle(photo, l10n);
+        final groupKey = '${photo.userId}::$resolvedTitle';
+        final group = groupedMap.putIfAbsent(
+          groupKey,
+          () => _PhotoGroup(
+            title: resolvedTitle,
+            uploaderId: photo.userId,
+          ),
+        );
+        group.photos.add(photo);
+        if (photo.createdAt.isAfter(group.latestUpload)) {
+          group.latestUpload = photo.createdAt;
+        }
+      }
+
+      final groupedList = groupedMap.values.toList()
+        ..sort((a, b) => b.latestUpload.compareTo(a.latestUpload));
+
+      final slivers = <Widget>[
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Text(
+              l10n.photos,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+      ];
+
+      for (var i = 0; i < groupedList.length; i++) {
+        final group = groupedList[i];
+        final uploaderName = _resolveUploaderName(controller, group.uploaderId);
+        slivers.add(
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(16, i == 0 ? 8 : 16, 16, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    group.title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+
+        slivers.add(
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            sliver: SliverGrid(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 1,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final photo = group.photos[index];
+                  final globalIndex = realUserPhotos
+                      .indexWhere((element) => element.id == photo.id);
+                  final initialIndex = globalIndex >= 0 ? globalIndex : 0;
+
+                  return GestureDetector(
+                    onTap: () =>
+                        _showPhotoGallery(realUserPhotos, initialIndex),
+                    child: Hero(
+                      tag: 'city-photo-${photo.id}',
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            Positioned.fill(
+                              child: Image.network(
+                                photo.imageUrl,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            Positioned(
+                              top: 6,
+                              right: 6,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.45),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(
+                                  Icons.zoom_in,
+                                  size: 14,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                childCount: group.photos.length,
+              ),
+            ),
+          ),
+        );
+
+        slivers.add(
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                16,
+                8,
+                16,
+                i == groupedList.length - 1 ? 96 : 16,
+              ),
+              child: Text(
+                '$uploaderName | ${l10n.uploaded} ${_formatDate(group.latestUpload, l10n)}',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+
       return RefreshIndicator(
         onRefresh: () => controller.loadCityPhotos(cityId),
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                child: Text(
-                  l10n.photos,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
-              sliver: SliverGrid(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 0.8,
-                ),
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final photo = realUserPhotos[index];
-                    final title = (photo.caption?.trim().isNotEmpty ?? false)
-                        ? photo.caption!.trim()
-                        : '${l10n.photo} ${index + 1}';
-
-                    return GestureDetector(
-                      onTap: () => _showPhotoGallery(realUserPhotos, index),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Hero(
-                              tag: 'city-photo-${photo.id}-$index',
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Stack(
-                                  children: [
-                                    Positioned.fill(
-                                      child: Image.network(
-                                        photo.imageUrl,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                    Positioned(
-                                      top: 6,
-                                      right: 6,
-                                      child: Container(
-                                        padding: const EdgeInsets.all(4),
-                                        decoration: BoxDecoration(
-                                          color: Colors.black
-                                              .withValues(alpha: 0.45),
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                        child: const Icon(
-                                          Icons.zoom_in,
-                                          size: 14,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                  childCount: realUserPhotos.length,
-                ),
-              ),
-            ),
-          ],
+          slivers: slivers,
         ),
       );
     });
@@ -3101,7 +3153,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                     itemBuilder: (context, index) {
                       final photo = photos[index];
                       return Hero(
-                        tag: 'city-photo-${photo.id}-$index',
+                        tag: 'city-photo-${photo.id}',
                         child: InteractiveViewer(
                           minScale: 0.9,
                           maxScale: 4,
@@ -4614,6 +4666,35 @@ class _CityDetailPageState extends State<CityDetailPage>
     }
   }
 
+  String _resolvePhotoTitle(UserCityPhoto photo, AppLocalizations l10n) {
+    if (photo.caption?.trim().isNotEmpty ?? false) {
+      return photo.caption!.trim();
+    }
+    final id = photo.id;
+    if (id.length <= 8) {
+      return '${l10n.photo} $id';
+    }
+    return '${l10n.photo} ${id.substring(0, 4)}...${id.substring(id.length - 4)}';
+  }
+
+  String _formatUploaderId(String userId) {
+    if (userId.length <= 8) {
+      return userId;
+    }
+    return '${userId.substring(0, 4)}...${userId.substring(userId.length - 4)}';
+  }
+
+  String _resolveUploaderName(
+    UserCityContentStateController controller,
+    String uploaderId,
+  ) {
+    final cachedName = controller.photoUploaderNames[uploaderId];
+    if (cachedName != null && cachedName.trim().isNotEmpty) {
+      return cachedName.trim();
+    }
+    return _formatUploaderId(uploaderId);
+  }
+
   /// 添加 Coworking Space
   void showAddCoworkingPage() async {
     // 获取城市详情控制器，读取完整的城市信息
@@ -4640,6 +4721,17 @@ class _CityDetailPageState extends State<CityDetailPage>
   }
 
   /// 分享社区信息
+}
+
+class _PhotoGroup {
+  _PhotoGroup({required this.title, required this.uploaderId})
+      : photos = [],
+        latestUpload = DateTime.fromMillisecondsSinceEpoch(0);
+
+  final String title;
+  final String uploaderId;
+  final List<UserCityPhoto> photos;
+  DateTime latestUpload;
 }
 
 // SliverAppBarDelegate for pinned tab bar

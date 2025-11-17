@@ -542,6 +542,7 @@ class DependencyInjection {
         getCityPhotosUseCase: Get.find<GetCityPhotosUseCase>(),
         deleteCityPhotoUseCase: Get.find<DeleteCityPhotoUseCase>(),
         getMyPhotosUseCase: Get.find<GetMyPhotosUseCase>(),
+        batchGetUsersUseCase: Get.find<user_use_cases.BatchGetUsersUseCase>(),
         addCityExpenseUseCase: Get.find<AddCityExpenseUseCase>(),
         getCityExpensesUseCase: Get.find<GetCityExpensesUseCase>(),
         deleteCityExpenseUseCase: Get.find<DeleteCityExpenseUseCase>(),
