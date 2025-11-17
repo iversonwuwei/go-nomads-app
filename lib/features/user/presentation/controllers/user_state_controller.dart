@@ -18,6 +18,7 @@ import '../../domain/entities/user.dart';
 class UserStateController extends GetxController {
   // Use Cases注入 - 基础用户操作
   final user_use_cases.GetUserProfileUseCase _getCurrentUserUseCase;
+  final user_use_cases.GetUserUseCase _getUserUseCase;
   final user_use_cases.UpdateUserUseCase _updateUserUseCase;
 
   // Use Cases注入 - 收藏城市
@@ -29,6 +30,7 @@ class UserStateController extends GetxController {
 
   UserStateController({
     required user_use_cases.GetUserProfileUseCase getCurrentUserUseCase,
+    required user_use_cases.GetUserUseCase getUserUseCase,
     required user_use_cases.UpdateUserUseCase updateUserUseCase,
     required AddFavoriteCityUseCase addFavoriteCityUseCase,
     required RemoveFavoriteCityUseCase removeFavoriteCityUseCase,
@@ -36,6 +38,7 @@ class UserStateController extends GetxController {
     required GetFavoriteCityIdsUseCase getFavoriteCityIdsUseCase,
     required ToggleFavoriteCityUseCase toggleFavoriteCityUseCase,
   })  : _getCurrentUserUseCase = getCurrentUserUseCase,
+        _getUserUseCase = getUserUseCase,
         _updateUserUseCase = updateUserUseCase,
         _addFavoriteCityUseCase = addFavoriteCityUseCase,
         _removeFavoriteCityUseCase = removeFavoriteCityUseCase,
@@ -186,6 +189,24 @@ class UserStateController extends GetxController {
   /// 刷新用户信息
   @override
   Future<void> refresh() => loadCurrentUser();
+
+  /// 按ID获取用户信息（用于查看其他用户资料）
+  Future<User?> getUserById(String userId) async {
+    if (userId.isEmpty) {
+      return null;
+    }
+
+    final result =
+        await _getUserUseCase(user_use_cases.GetUserParams(userId: userId));
+
+    return result.fold(
+      onSuccess: (user) => user,
+      onFailure: (exception) {
+        _handleException(exception, silent: true);
+        return null;
+      },
+    );
+  }
 
   /// 清除用户状态
   void clearUser() {

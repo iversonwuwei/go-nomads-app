@@ -22,6 +22,7 @@ import '../features/user_city_content/domain/repositories/iuser_city_content_rep
 import '../features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
 import '../features/weather/presentation/controllers/weather_state_controller.dart';
 import '../generated/app_localizations.dart';
+import '../routes/app_routes.dart';
 import '../routes/route_refresh_observer.dart';
 import '../services/token_storage_service.dart';
 import '../widgets/app_toast.dart';
@@ -226,22 +227,7 @@ class _CityDetailPageState extends State<CityDetailPage>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    const Icon(Icons.verified, color: Colors.white, size: 16),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        '城市版主：${moderator.name}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                _buildModeratorHeader(moderator, label: '城市版主：'),
                 if (moderator.email != null) ...[
                   const SizedBox(height: 4),
                   Text(
@@ -296,20 +282,7 @@ class _CityDetailPageState extends State<CityDetailPage>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    const Icon(Icons.verified, color: Colors.white, size: 16),
-                    const SizedBox(width: 4),
-                    Text(
-                      '版主：${moderator.name}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
+                _buildModeratorHeader(moderator, label: '版主：'),
               ],
             ),
           ),
@@ -327,6 +300,76 @@ class _CityDetailPageState extends State<CityDetailPage>
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildModeratorHeader(Moderator moderator, {required String label}) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        const Icon(Icons.verified, color: Colors.white, size: 16),
+        const SizedBox(width: 4),
+        Flexible(
+          child: Wrap(
+            spacing: 4,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
+              _buildModeratorNameLink(moderator),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildModeratorNameLink(Moderator moderator) {
+    return GestureDetector(
+      onTap: () => _openModeratorProfile(moderator),
+      behavior: HitTestBehavior.translucent,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            moderator.name,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              decoration: TextDecoration.underline,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Icon(
+            Icons.open_in_new,
+            size: 14,
+            color: Colors.white.withValues(alpha: 0.9),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openModeratorProfile(Moderator moderator) {
+    if (moderator.id.isEmpty) {
+      AppToast.info('无法打开用户资料');
+      return;
+    }
+
+    Get.toNamed(
+      AppRoutes.userProfile,
+      arguments: {
+        'userId': moderator.id,
+        'username': moderator.name,
+        if (moderator.avatar != null) 'avatarUrl': moderator.avatar,
+        if (moderator.email != null) 'email': moderator.email,
+      },
     );
   }
 

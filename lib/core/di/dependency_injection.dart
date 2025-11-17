@@ -245,6 +245,7 @@ class DependencyInjection {
     Get.lazyPut(
       () => UserStateController(
         getCurrentUserUseCase: Get.find<user_use_cases.GetUserProfileUseCase>(),
+        getUserUseCase: Get.find<user_use_cases.GetUserUseCase>(),
         updateUserUseCase: Get.find<user_use_cases.UpdateUserUseCase>(),
         addFavoriteCityUseCase: Get.find<AddFavoriteCityUseCase>(),
         removeFavoriteCityUseCase: Get.find<RemoveFavoriteCityUseCase>(),
