@@ -100,16 +100,18 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                             );
                           },
                         ),
-                  // 渐变遮罩
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Colors.black.withAlpha(128),
-                        ],
+                  // 渐变遮罩 (忽略手势，避免阻挡图片滑动)
+                  IgnorePointer(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withAlpha(128),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -279,8 +281,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                 ListTile(
                   leading: const Icon(Icons.location_on, color: Colors.red),
                   title: Text(widget.space.location.address),
-                  subtitle:
-                      Text(
+                  subtitle: Text(
                       '${widget.space.location.city}, ${widget.space.location.country}'),
                 ),
 

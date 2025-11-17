@@ -1,17 +1,18 @@
-import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../config/app_colors.dart';
+import '../config/supabase_config.dart';
 import '../core/domain/result.dart';
 import '../features/city/domain/entities/city_option.dart';
 import '../features/coworking/domain/entities/coworking_space.dart';
 import '../features/coworking/domain/repositories/icoworking_repository.dart';
 import '../features/location/presentation/controllers/location_state_controller.dart';
 import '../generated/app_localizations.dart';
+import '../services/image_upload_service.dart';
+import '../utils/image_upload_helper.dart';
 import '../widgets/app_toast.dart';
 import 'maplibre_picker_page.dart';
 
@@ -103,8 +104,11 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
   final List<String> _openingHours = [];
 
   // Images
-  File? _selectedImage;
-  final ImagePicker _picker = ImagePicker();
+  static const int maxCoworkingImages = 5;
+  final List<String> _coworkingImageUrls = [];
+  bool _isUploadingImages = false;
+  String? _imageUploadStatus;
+  final ImageUploadService _imageUploadService = ImageUploadService();
 
   String? _normalizeInput(String? value) {
     if (value == null) return null;
@@ -142,6 +146,14 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
 
     return null;
   }
+
+  int get _remainingImageSlots =>
+      maxCoworkingImages - _coworkingImageUrls.length;
+
+  String get _imageUploadBucket =>
+      SupabaseConfig.buckets['coworkingPhotos'] ?? SupabaseConfig.defaultBucket;
+
+  String get _imageUploadFolder => 'coworking/${_selectedCityId ?? 'general'}';
 
   @override
   void initState() {
@@ -888,156 +900,199 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
 
   Widget _buildImageSection() {
     final l10n = AppLocalizations.of(context)!;
+    final canAddMore = _remainingImageSlots > 0;
 
+    final tiles = List<Widget>.generate(
+      _coworkingImageUrls.length,
+      (index) => _buildImagePreviewTile(_coworkingImageUrls[index], index),
+    );
+
+    if (canAddMore) {
+      tiles.add(_buildAddImageTile(l10n));
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              l10n.addCoverPhoto,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            Text(
+              '${_coworkingImageUrls.length}/$maxCoworkingImages',
+              style: const TextStyle(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: tiles,
+        ),
+        if (_isUploadingImages) ...[
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              const SizedBox(
+                height: 18,
+                width: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              const SizedBox(width: 8),
+              Text(_imageUploadStatus ?? 'Uploading...'),
+            ],
+          ),
+        ],
+        const SizedBox(height: 8),
+        Text(
+          'You can upload up to $maxCoworkingImages photos',
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey[600],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildImagePreviewTile(String imageUrl, int index) {
+    return Stack(
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            width: 120,
+            height: 120,
+            color: Colors.grey[200],
+            child: Image.network(
+              imageUrl,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
+            ),
+          ),
+        ),
+        Positioned(
+          top: 6,
+          right: 6,
+          child: IconButton(
+            onPressed: () => _removeImageAt(index),
+            icon: const Icon(Icons.close, size: 18, color: Colors.white),
+            style: IconButton.styleFrom(
+              backgroundColor: Colors.black45,
+              padding: const EdgeInsets.all(4),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAddImageTile(AppLocalizations l10n) {
     return GestureDetector(
-      onTap: _showImageSourceDialog,
+      onTap: _showImageOptions,
       child: Container(
-        height: 200,
+        width: 120,
+        height: 120,
         decoration: BoxDecoration(
           color: Colors.grey[100],
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: Colors.grey[300]!),
         ),
-        child: _selectedImage != null
-            ? Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Image.file(
-                      _selectedImage!,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      height: double.infinity,
-                    ),
-                  ),
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: IconButton(
-                      onPressed: () {
-                        setState(() {
-                          _selectedImage = null;
-                        });
-                      },
-                      icon: const Icon(Icons.close, color: Colors.white),
-                      style: IconButton.styleFrom(
-                        backgroundColor: Colors.black54,
-                        padding: const EdgeInsets.all(8),
-                      ),
-                    ),
-                  ),
-                ],
-              )
-            : Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.add_photo_alternate,
-                      size: 64, color: Colors.grey[400]),
-                  const SizedBox(height: 12),
-                  Text(
-                    l10n.addCoverPhoto,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    l10n.tapToChoosePhoto,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[500],
-                    ),
-                  ),
-                ],
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.add_photo_alternate, size: 32, color: Colors.grey[500]),
+            const SizedBox(height: 8),
+            Text(
+              l10n.tapToChoosePhoto,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
               ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Future<void> _showImageSourceDialog() async {
+  Future<void> _showImageOptions() async {
     final l10n = AppLocalizations.of(context)!;
 
-    showModalBottomSheet(
+    if (_remainingImageSlots <= 0) {
+      AppToast.info('You can upload up to $maxCoworkingImages photos');
+      return;
+    }
+
+    await showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.transparent,
-      builder: (BuildContext context) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
-            ),
-          ),
-          child: SafeArea(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: 12),
-                Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  l10n.chooseImageSource,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                ListTile(
-                  leading: Icon(Icons.photo_library, color: AppColors.accent),
-                  title: Text(
-                    l10n.photoLibrary,
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _pickImage(ImageSource.gallery);
-                  },
-                ),
-                ListTile(
-                  leading: Icon(Icons.camera_alt, color: AppColors.accent),
-                  title: Text(
-                    l10n.camera,
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _pickImage(ImageSource.camera);
-                  },
-                ),
-                const SizedBox(height: 8),
-              ],
-            ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: Text('${l10n.photoLibrary} (multi-select)'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _addImagesFromGallery();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: Text(l10n.camera),
+                onTap: () {
+                  Navigator.pop(context);
+                  _addImageFromCamera();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.close),
+                title: Text(l10n.cancel),
+                onTap: () => Navigator.pop(context),
+              ),
+            ],
           ),
         );
       },
     );
   }
 
-  Future<void> _pickImage(ImageSource source) async {
+  Future<void> _addImagesFromGallery() async {
     final l10n = AppLocalizations.of(context)!;
 
+    setState(() {
+      _isUploadingImages = true;
+      _imageUploadStatus = null;
+    });
+
     try {
-      final XFile? image = await _picker.pickImage(
-        source: source,
-        maxWidth: 1920,
-        maxHeight: 1080,
-        imageQuality: 85,
+      final newUrls = await ImageUploadHelper.pickMultipleAndUpload(
+        bucket: _imageUploadBucket,
+        folder: _imageUploadFolder,
+        maxImages: _remainingImageSlots,
+        onProgress: (current, total) {
+          setState(() {
+            _imageUploadStatus = '上传进度 $current / $total';
+          });
+        },
       );
 
-      if (image != null) {
+      if (newUrls.isNotEmpty) {
         setState(() {
-          _selectedImage = File(image.path);
+          _coworkingImageUrls.addAll(newUrls);
         });
       }
     } catch (e) {
@@ -1045,6 +1100,64 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
         l10n.failedToPickImage(e.toString()),
         title: l10n.error,
       );
+    } finally {
+      setState(() {
+        _isUploadingImages = false;
+        _imageUploadStatus = null;
+      });
+    }
+  }
+
+  Future<void> _addImageFromCamera() async {
+    final l10n = AppLocalizations.of(context)!;
+
+    setState(() {
+      _isUploadingImages = true;
+      _imageUploadStatus = null;
+    });
+
+    try {
+      final url = await ImageUploadHelper.captureAndUpload(
+        bucket: _imageUploadBucket,
+        folder: _imageUploadFolder,
+      );
+
+      if (url != null) {
+        setState(() {
+          _coworkingImageUrls.add(url);
+        });
+      }
+    } catch (e) {
+      AppToast.error(
+        l10n.failedToPickImage(e.toString()),
+        title: l10n.error,
+      );
+    } finally {
+      setState(() {
+        _isUploadingImages = false;
+        _imageUploadStatus = null;
+      });
+    }
+  }
+
+  Future<void> _removeImageAt(int index) async {
+    if (index < 0 || index >= _coworkingImageUrls.length) {
+      return;
+    }
+
+    final url = _coworkingImageUrls[index];
+
+    setState(() {
+      _coworkingImageUrls.removeAt(index);
+    });
+
+    try {
+      await _imageUploadService.deleteImage(
+        imageUrl: url,
+        bucket: _imageUploadBucket,
+      );
+    } catch (e) {
+      print('Failed to delete image: $e');
     }
   }
 
@@ -1159,8 +1272,9 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
           website: _websiteController.text,
         ),
         spaceInfo: SpaceInfo(
-          imageUrl: _selectedImage?.path ?? '', // TODO: 上传图片到 Supabase Storage
-          images: _selectedImage != null ? [_selectedImage!.path] : [],
+          imageUrl:
+              _coworkingImageUrls.isNotEmpty ? _coworkingImageUrls.first : '',
+          images: _coworkingImageUrls,
           rating: 0.0,
           reviewCount: 0,
           description: _descriptionController.text,
