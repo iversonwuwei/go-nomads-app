@@ -14,6 +14,15 @@ abstract class IUserCityContentRepository {
     DateTime? takenAt,
   });
 
+  /// Batch submit up to 10 photos with metadata so backend can resolve coordinates
+  Future<Result<List<UserCityPhoto>>> submitCityPhotoCollection({
+    required String cityId,
+    required String title,
+    required List<String> imageUrls,
+    String? description,
+    String? locationNote,
+  });
+
   /// Get photos for a specific city
   Future<Result<List<UserCityPhoto>>> getCityPhotos({
     required String cityId,

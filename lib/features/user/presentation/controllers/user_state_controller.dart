@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/core.dart';
@@ -61,7 +62,7 @@ class UserStateController extends GetxController {
     super.onInit();
     // 延迟初始化，等待 AuthStateController 准备好
     Future.microtask(() => _initializeIfLoggedIn());
-    
+
     // 监听登录状态变化
     _setupAuthStateListener();
   }
@@ -70,11 +71,11 @@ class UserStateController extends GetxController {
   void _setupAuthStateListener() {
     try {
       final authController = Get.find<AuthStateController>();
-      
+
       // 监听认证状态变化
       ever(authController.isAuthenticated, (isAuthenticated) {
         print('🔔 UserStateController: 认证状态变化 -> $isAuthenticated');
-        
+
         if (isAuthenticated) {
           // 登录成功，加载用户数据
           print('✅ 用户已登录，加载用户数据...');
@@ -124,7 +125,7 @@ class UserStateController extends GetxController {
       },
       onFailure: (exception) {
         errorMessage.value = exception.message;
-        
+
         // 如果是未授权错误，清除用户数据并静默处理
         if (exception is UnauthorizedException) {
           print('⚠️ 加载用户数据失败: Token 无效或过期');
@@ -171,7 +172,7 @@ class UserStateController extends GetxController {
     return result.fold(
       onSuccess: (updatedUser) {
         currentUser.value = updatedUser;
-        Get.snackbar('成功', '用户信息已更新');
+        _showSnackbar('成功', '用户信息已更新');
         return true;
       },
       onFailure: (exception) {
@@ -242,7 +243,7 @@ class UserStateController extends GetxController {
       onSuccess: (success) {
         if (success) {
           favoriteCityIds.add(cityId);
-          Get.snackbar('成功', '已添加到收藏');
+          _showSnackbar('成功', '已添加到收藏');
         }
         return success;
       },
@@ -262,7 +263,7 @@ class UserStateController extends GetxController {
       onSuccess: (success) {
         if (success) {
           favoriteCityIds.remove(cityId);
-          Get.snackbar('成功', '已取消收藏');
+          _showSnackbar('成功', '已取消收藏');
         }
         return success;
       },
@@ -322,13 +323,7 @@ class UserStateController extends GetxController {
     // 如果是静默模式，或者 Get context 还不可用，则不显示 Snackbar
     if (!silent) {
       try {
-        // 检查 Get.context 是否可用
-        if (Get.context != null) {
-          Get.snackbar(title, message);
-        } else {
-          print('⚠️ 无法显示 Snackbar: Get.context 不可用');
-          print('   错误: $title - $message');
-        }
+        _showSnackbar(title, message);
       } catch (e) {
         print('⚠️ 显示 Snackbar 失败: $e');
         print('   错误: $title - $message');
@@ -404,14 +399,40 @@ class UserStateController extends GetxController {
     currentUser.value = null;
     isLoading.value = false;
     errorMessage.value = '';
-    
+
     // 清空收藏城市状态
     favoriteCityIds.clear();
-    
+
     // 重置编辑模式状态
     isEditMode.value = false;
     loginStateChanged.value = false;
-    
+
     super.onClose();
+  }
+
+  /// Safely displays a snackbar only after the overlay/navigator is ready.
+  void _showSnackbar(String title, String message) {
+    if (_canAccessOverlay) {
+      Get.snackbar(title, message);
+      return;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_canAccessOverlay) {
+        Get.snackbar(title, message);
+      } else {
+        print('⚠️ 无法显示 Snackbar: Overlay 未就绪');
+        print('   信息: $title - $message');
+      }
+    });
+  }
+
+  bool get _canAccessOverlay {
+    if (Get.overlayContext != null) {
+      return true;
+    }
+
+    final navigatorState = Get.key.currentState;
+    return navigatorState?.overlay != null;
   }
 }

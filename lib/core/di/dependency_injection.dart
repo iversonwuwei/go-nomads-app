@@ -485,6 +485,9 @@ class DependencyInjection {
     Get.lazyPut(() => AddCityPhotoUseCase(
           Get.find<IUserCityContentRepository>(),
         ));
+    Get.lazyPut(() => SubmitCityPhotosUseCase(
+          Get.find<IUserCityContentRepository>(),
+        ));
     Get.lazyPut(() => GetCityPhotosUseCase(
           Get.find<IUserCityContentRepository>(),
         ));
@@ -535,6 +538,7 @@ class DependencyInjection {
     Get.lazyPut(
       () => UserCityContentStateController(
         addCityPhotoUseCase: Get.find<AddCityPhotoUseCase>(),
+        submitCityPhotosUseCase: Get.find<SubmitCityPhotosUseCase>(),
         getCityPhotosUseCase: Get.find<GetCityPhotosUseCase>(),
         deleteCityPhotoUseCase: Get.find<DeleteCityPhotoUseCase>(),
         getMyPhotosUseCase: Get.find<GetMyPhotosUseCase>(),

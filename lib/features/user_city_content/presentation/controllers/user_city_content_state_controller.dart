@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 class UserCityContentStateController extends GetxController {
   // Use Cases
   final AddCityPhotoUseCase _addCityPhotoUseCase;
+  final SubmitCityPhotosUseCase _submitCityPhotosUseCase;
   final GetCityPhotosUseCase _getCityPhotosUseCase;
   final DeleteCityPhotoUseCase _deleteCityPhotoUseCase;
   final GetMyPhotosUseCase _getMyPhotosUseCase;
@@ -41,6 +42,7 @@ class UserCityContentStateController extends GetxController {
 
   UserCityContentStateController({
     required AddCityPhotoUseCase addCityPhotoUseCase,
+    required SubmitCityPhotosUseCase submitCityPhotosUseCase,
     required GetCityPhotosUseCase getCityPhotosUseCase,
     required DeleteCityPhotoUseCase deleteCityPhotoUseCase,
     required GetMyPhotosUseCase getMyPhotosUseCase,
@@ -55,6 +57,7 @@ class UserCityContentStateController extends GetxController {
     required GetCityStatsUseCase getCityStatsUseCase,
     required GetCityCostSummaryUseCase getCityCostSummaryUseCase,
   })  : _addCityPhotoUseCase = addCityPhotoUseCase,
+        _submitCityPhotosUseCase = submitCityPhotosUseCase,
         _getCityPhotosUseCase = getCityPhotosUseCase,
         _deleteCityPhotoUseCase = deleteCityPhotoUseCase,
         _getMyPhotosUseCase = getMyPhotosUseCase,
@@ -116,6 +119,42 @@ class UserCityContentStateController extends GetxController {
         // print('Failed to add photo: ${exception.message}');
         return false;
       },
+    );
+  }
+
+  Future<bool> submitPhotoCollection({
+    required String cityId,
+    required String title,
+    required List<String> imageUrls,
+    String? description,
+    String? locationNote,
+    bool reloadAfterSubmit = true,
+  }) async {
+    if (imageUrls.isEmpty) {
+      return false;
+    }
+
+    final result = await _submitCityPhotosUseCase.execute(
+      SubmitCityPhotosParams(
+        cityId: cityId,
+        title: title,
+        imageUrls: imageUrls,
+        description: description,
+        locationNote: locationNote,
+      ),
+    );
+
+    return result.fold(
+      onSuccess: (createdPhotos) {
+        if (createdPhotos.isNotEmpty) {
+          photos.insertAll(0, createdPhotos);
+        }
+        if (reloadAfterSubmit) {
+          loadCityPhotos(cityId);
+        }
+        return true;
+      },
+      onFailure: (_) => false,
     );
   }
 
@@ -410,14 +449,14 @@ class UserCityContentStateController extends GetxController {
     myReview.value = null;
     stats.value = null;
     costSummary.value = null;
-    
+
     // 重置加载状态
     isLoadingPhotos.value = false;
     isLoadingExpenses.value = false;
     isLoadingReviews.value = false;
     isLoadingStats.value = false;
     isLoadingCostSummary.value = false;
-    
+
     super.onClose();
   }
 }

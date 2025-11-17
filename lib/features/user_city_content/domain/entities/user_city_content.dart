@@ -6,6 +6,10 @@ class UserCityPhoto {
   final String imageUrl;
   final String? caption;
   final String? location;
+  final String? placeName;
+  final String? address;
+  final double? latitude;
+  final double? longitude;
   final DateTime? takenAt;
   final DateTime createdAt;
 
@@ -16,6 +20,10 @@ class UserCityPhoto {
     required this.imageUrl,
     this.caption,
     this.location,
+    this.placeName,
+    this.address,
+    this.latitude,
+    this.longitude,
     this.takenAt,
     required this.createdAt,
   });
@@ -24,6 +32,10 @@ class UserCityPhoto {
   bool get hasCaption => caption != null && caption!.isNotEmpty;
 
   bool get hasLocation => location != null && location!.isNotEmpty;
+
+  bool get hasPoiName => placeName != null && placeName!.isNotEmpty;
+
+  bool get hasCoordinates => latitude != null && longitude != null;
 
   bool get hasTakenDate => takenAt != null;
 

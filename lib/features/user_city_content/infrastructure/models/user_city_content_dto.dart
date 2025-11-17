@@ -9,6 +9,10 @@ class UserCityPhotoDto {
   final String imageUrl;
   final String? caption;
   final String? location;
+  final String? placeName;
+  final String? address;
+  final double? latitude;
+  final double? longitude;
   final DateTime? takenAt;
   final DateTime createdAt;
 
@@ -19,6 +23,10 @@ class UserCityPhotoDto {
     required this.imageUrl,
     this.caption,
     this.location,
+    this.placeName,
+    this.address,
+    this.latitude,
+    this.longitude,
     this.takenAt,
     required this.createdAt,
   });
@@ -31,6 +39,10 @@ class UserCityPhotoDto {
       imageUrl: json['imageUrl'],
       caption: json['caption'],
       location: json['location'],
+      placeName: json['placeName'],
+      address: json['address'],
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
       takenAt: json['takenAt'] != null ? DateTime.parse(json['takenAt']) : null,
       createdAt: DateTime.parse(json['createdAt']),
     );
@@ -44,6 +56,10 @@ class UserCityPhotoDto {
       'imageUrl': imageUrl,
       'caption': caption,
       'location': location,
+      'placeName': placeName,
+      'address': address,
+      'latitude': latitude,
+      'longitude': longitude,
       'takenAt': takenAt?.toIso8601String(),
       'createdAt': createdAt.toIso8601String(),
     };
@@ -57,6 +73,10 @@ class UserCityPhotoDto {
       imageUrl: imageUrl,
       caption: caption,
       location: location,
+      placeName: placeName,
+      address: address,
+      latitude: latitude,
+      longitude: longitude,
       takenAt: takenAt,
       createdAt: createdAt,
     );

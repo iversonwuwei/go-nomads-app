@@ -163,6 +163,8 @@ class ApiConfig {
   // 照片相关
   static const String cityPhotosEndpoint =
       '/cities/{cityId}/user-content/photos';
+  static const String cityPhotoBatchEndpoint =
+      '/cities/{cityId}/user-content/photos/batch';
   static const String cityPhotoDetailEndpoint =
       '/cities/{cityId}/user-content/photos/{photoId}';
   static const String myPhotosEndpoint = '/user/city-content/photos';

@@ -278,12 +278,13 @@ class AiStateController extends GetxController {
     print('🎯 [Controller] generateDigitalNomadGuideStream 开始');
     print('   cityId: $cityId');
     print('   cityName: $cityName');
-    
+
     _isGeneratingGuide.value = true;
     _guideGenerationProgress.value = 0;
     _guideGenerationMessage.value = '';
     _guideError.value = null;
-    _currentGuide.value = null; // 清空之前的结果
+
+    // 保留当前指南，只有当生成成功时才更新，失败时保持旧数据
 
     print('✅ [Controller] 初始状态设置完成: isGenerating=true, progress=0');
 
@@ -301,11 +302,11 @@ class AiStateController extends GetxController {
           onData: (guide) async {
             print('✅ [Controller] 收到完成事件');
             print('   guide.cityName: ${guide.cityName}');
-            
+
             _currentGuide.value = guide;
             _guideGenerationProgress.value = 100;
             _guideGenerationMessage.value = '生成完成！';
-            
+
             // 延迟一下再设置 false，确保 UI 能看到 100%
             await Future.delayed(const Duration(milliseconds: 500));
             _isGeneratingGuide.value = false;
@@ -319,7 +320,7 @@ class AiStateController extends GetxController {
           },
         ),
       );
-      
+
       print('✅ [Controller] generateDigitalNomadGuideStream 执行完成');
 
       // 方法返回后，如果状态还是 true，说明被中途取消或异常
@@ -430,7 +431,7 @@ class AiStateController extends GetxController {
     _travelPlanGenerationMessage.value = '';
     _currentTravelPlan.value = null;
     _travelPlanError.value = null;
-    
+
     // 清空所有响应式变量 - 数字游民指南
     _isGeneratingGuide.value = false;
     _guideGenerationProgress.value = 0;
@@ -438,7 +439,7 @@ class AiStateController extends GetxController {
     _currentGuide.value = null;
     _guideError.value = null;
     _isLoadingGuide.value = false;
-    
+
     super.onClose();
   }
 }

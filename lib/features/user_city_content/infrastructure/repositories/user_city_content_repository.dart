@@ -44,6 +44,49 @@ class UserCityContentRepository implements IUserCityContentRepository {
   }
 
   @override
+  Future<Result<List<entity.UserCityPhoto>>> submitCityPhotoCollection({
+    required String cityId,
+    required String title,
+    required List<String> imageUrls,
+    String? description,
+    String? locationNote,
+  }) async {
+    try {
+      final endpoint =
+          ApiConfig.cityPhotoBatchEndpoint.replaceAll('{cityId}', cityId);
+      final response = await _httpService.post(
+        _buildUrl(endpoint),
+        data: {
+          'title': title,
+          'description': description,
+          'locationNote': locationNote,
+          'imageUrls': imageUrls,
+        },
+      );
+
+      final dataPayload = response.data;
+      final List<dynamic> rawList = dataPayload is List
+          ? dataPayload
+          : (dataPayload['items'] as List<dynamic>? ?? []);
+
+      final createdPhotos = rawList
+          .map((json) => UserCityPhotoDto.fromJson(json).toDomain())
+          .toList();
+
+      return Result.success(createdPhotos);
+    } catch (e) {
+      return Result.failure(UnknownException(
+        'Failed to submit city photos: ${e.toString()}',
+        code: 'SUBMIT_CITY_PHOTOS_ERROR',
+        details: {
+          'cityId': cityId,
+          'error': e.toString(),
+        },
+      ));
+    }
+  }
+
+  @override
   Future<Result<List<entity.UserCityPhoto>>> getCityPhotos(
       {required String cityId, bool onlyMine = false}) async {
     try {

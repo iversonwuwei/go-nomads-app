@@ -30,6 +30,7 @@ import 'add_cost_page.dart';
 import 'add_coworking_page.dart';
 import 'add_review_page.dart';
 import 'assign_moderator_page.dart';
+import 'city_photo_submission_page.dart';
 import 'coworking_detail_page.dart';
 import 'create_travel_plan_page.dart';
 import 'hotel_list_page.dart';
@@ -1324,8 +1325,20 @@ class _CityDetailPageState extends State<CityDetailPage>
                               } else if (currentTab == 5) {
                                 // Photos - 所有用户都用对话框形式
                                 icon = Icons.add_photo_alternate;
-                                onPressed = () =>
-                                    _showAddPhotoDialog(userContentController);
+                                onPressed = () async {
+                                  final result = await Get.to(
+                                    () => CityPhotoSubmissionPage(
+                                      cityId: cityId,
+                                      cityName: cityName,
+                                    ),
+                                  );
+                                  if (result != null &&
+                                      result is Map &&
+                                      result['uploaded'] == true) {
+                                    userContentController
+                                        .loadCityPhotos(cityId);
+                                  }
+                                };
                               } else if (currentTab == 9) {
                                 // Coworking
                                 icon = Icons.add_business;
@@ -2916,6 +2929,7 @@ class _CityDetailPageState extends State<CityDetailPage>
   Widget _buildPhotosTab(UserCityContentStateController controller) {
     return Obx(() {
       final realUserPhotos = controller.photos; // ✅ 使用photos属性
+      final l10n = AppLocalizations.of(context)!;
 
       // 如果正在加载
       if (controller.isLoadingPhotos.value && realUserPhotos.isEmpty) {
@@ -2946,154 +2960,219 @@ class _CityDetailPageState extends State<CityDetailPage>
 
       return RefreshIndicator(
         onRefresh: () => controller.loadCityPhotos(cityId),
-        child: GridView.builder(
-          padding: const EdgeInsets.all(8),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            crossAxisSpacing: 8,
-            mainAxisSpacing: 8,
-          ),
-          itemCount: realUserPhotos.length, // ✅ 只显示真实照片
-          itemBuilder: (context, index) {
-            final photo = realUserPhotos[index]; // ✅ 直接使用真实照片
-            return GestureDetector(
-              onTap: () => _showPhotoDetail(photo),
-              child: Stack(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      image: DecorationImage(
-                        image: NetworkImage(photo.imageUrl),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Text(
+                  l10n.photos,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
                   ),
-                  // 用户头像标识
-                  Positioned(
-                    top: 4,
-                    right: 4,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.5),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.person,
-                        size: 16,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            );
-          },
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+              sliver: SliverGrid(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 4,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 0.8,
+                ),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final photo = realUserPhotos[index];
+                    final title = (photo.caption?.trim().isNotEmpty ?? false)
+                        ? photo.caption!.trim()
+                        : '${l10n.photo} ${index + 1}';
+
+                    return GestureDetector(
+                      onTap: () => _showPhotoGallery(realUserPhotos, index),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Hero(
+                              tag: 'city-photo-${photo.id}-$index',
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Stack(
+                                  children: [
+                                    Positioned.fill(
+                                      child: Image.network(
+                                        photo.imageUrl,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                    Positioned(
+                                      top: 6,
+                                      right: 6,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          color: Colors.black
+                                              .withValues(alpha: 0.45),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                        child: const Icon(
+                                          Icons.zoom_in,
+                                          size: 14,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  childCount: realUserPhotos.length,
+                ),
+              ),
+            ),
+          ],
         ),
       );
     });
   }
 
-  /// 显示添加照片对话框
-  void _showAddPhotoDialog(UserCityContentStateController controller) async {
-    final source = await Get.dialog<ImageSource>(
-      Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.photo_library,
-                  color: Color(0xFFFF4458), size: 48),
-              const SizedBox(height: 16),
-              const Text('Share a Photo',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 24),
-              ListTile(
-                leading: const Icon(Icons.camera_alt),
-                title: const Text('Camera'),
-                onTap: () => Get.back(result: ImageSource.camera),
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: const Text('Gallery'),
-                onTap: () => Get.back(result: ImageSource.gallery),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+  /// 全屏查看照片集合
+  void _showPhotoGallery(List<UserCityPhoto> photos, int initialIndex) {
+    if (photos.isEmpty) return;
 
-    if (source != null) {
-      // TODO: 实现照片上传逻辑
-      AppToast.info('照片上传功能待实现...');
-    }
-  }
-
-  /// 显示照片详情对话框
-  void _showPhotoDetail(UserCityPhoto photo) {
     final l10n = AppLocalizations.of(context)!;
+    final pageController = PageController(initialPage: initialIndex);
+    int currentIndex = initialIndex;
 
     Get.dialog(
-      Dialog(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 照片
-            ClipRRect(
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(12)),
-              child: Image.network(
-                photo.imageUrl,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
-            ),
-            // 信息
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (photo.caption != null) ...[
-                    Text(
-                      photo.caption!,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+      StatefulBuilder(
+        builder: (context, setState) {
+          return Dialog(
+            insetPadding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
+            backgroundColor: Colors.black,
+            child: Column(
+              children: [
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white),
+                        onPressed: Get.back,
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                  ],
-                  if (photo.location != null) ...[
-                    Row(
-                      children: [
-                        const Icon(Icons.location_on,
-                            size: 16, color: Colors.grey),
-                        const SizedBox(width: 4),
-                        Text(
-                          photo.location!,
-                          style:
-                              TextStyle(fontSize: 14, color: Colors.grey[600]),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                  ],
-                  Text(
-                    '${l10n.uploaded} ${_formatDate(photo.createdAt, l10n)}',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      const Spacer(),
+                      Text(
+                        '${currentIndex + 1}/${photos.length}',
+                        style: const TextStyle(color: Colors.white70),
+                      ),
+                      const SizedBox(width: 12),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                Expanded(
+                  child: PageView.builder(
+                    controller: pageController,
+                    onPageChanged: (value) => setState(() {
+                      currentIndex = value;
+                    }),
+                    itemCount: photos.length,
+                    itemBuilder: (context, index) {
+                      final photo = photos[index];
+                      return Hero(
+                        tag: 'city-photo-${photo.id}-$index',
+                        child: InteractiveViewer(
+                          minScale: 0.9,
+                          maxScale: 4,
+                          child: Center(
+                            child: Image.network(
+                              photo.imageUrl,
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        (photos[currentIndex].caption?.trim().isNotEmpty ??
+                                false)
+                            ? photos[currentIndex].caption!.trim()
+                            : l10n.photo,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      if ((photos[currentIndex].location?.isNotEmpty ??
+                              false) ||
+                          photos[currentIndex].placeName?.isNotEmpty == true)
+                        Row(
+                          children: [
+                            const Icon(Icons.location_on,
+                                size: 16, color: Colors.white54),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                photos[currentIndex].placeName?.isNotEmpty ==
+                                        true
+                                    ? photos[currentIndex].placeName!
+                                    : (photos[currentIndex].location ?? ''),
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${l10n.uploaded} ${_formatDate(photos[currentIndex].createdAt, l10n)}',
+                        style: const TextStyle(
+                          color: Colors.white60,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
+      barrierColor: Colors.black87,
     );
   }
 

@@ -25,6 +25,42 @@ class AddCityPhotoUseCase
   }
 }
 
+/// Submit multiple photos with metadata
+class SubmitCityPhotosUseCase
+    extends UseCase<List<UserCityPhoto>, SubmitCityPhotosParams> {
+  final IUserCityContentRepository _repository;
+
+  SubmitCityPhotosUseCase(this._repository);
+
+  @override
+  Future<Result<List<UserCityPhoto>>> execute(
+      SubmitCityPhotosParams params) async {
+    return await _repository.submitCityPhotoCollection(
+      cityId: params.cityId,
+      title: params.title,
+      imageUrls: params.imageUrls,
+      description: params.description,
+      locationNote: params.locationNote,
+    );
+  }
+}
+
+class SubmitCityPhotosParams {
+  final String cityId;
+  final String title;
+  final List<String> imageUrls;
+  final String? description;
+  final String? locationNote;
+
+  SubmitCityPhotosParams({
+    required this.cityId,
+    required this.title,
+    required this.imageUrls,
+    this.description,
+    this.locationNote,
+  });
+}
+
 class AddCityPhotoUseCaseParams {
   final String cityId;
   final String imageUrl;
