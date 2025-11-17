@@ -9,6 +9,7 @@ import '../core/domain/result.dart';
 import '../features/ai/presentation/controllers/ai_state_controller.dart';
 import '../features/city/application/state_controllers/pros_cons_state_controller.dart';
 import '../features/city/domain/entities/city.dart';
+import '../features/city/domain/entities/city_rating_item.dart';
 import '../features/city/domain/entities/digital_nomad_guide.dart';
 import '../features/city/domain/repositories/i_city_repository.dart';
 import '../features/city/presentation/controllers/city_detail_state_controller.dart';
@@ -26,6 +27,7 @@ import '../routes/app_routes.dart';
 import '../routes/route_refresh_observer.dart';
 import '../services/token_storage_service.dart';
 import '../widgets/app_toast.dart';
+import '../widgets/rating_item_dialog.dart';
 import '../widgets/skeletons/skeletons.dart';
 import 'add_cost_page.dart';
 import 'add_coworking_page.dart';
@@ -35,6 +37,7 @@ import 'city_photo_submission_page.dart';
 import 'coworking_detail_page.dart';
 import 'create_travel_plan_page.dart';
 import 'hotel_list_page.dart';
+import 'manage_city_ratings_page.dart';
 import 'manage_cost_page.dart';
 import 'manage_pros_cons_page.dart';
 import 'manage_reviews_page.dart';
@@ -79,6 +82,12 @@ class _CityDetailPageState extends State<CityDetailPage>
   late final String cityImage;
   late final double overallScore;
   late final int reviewCount;
+  List<CityRatingItem> _customRatingItems = [];
+
+  String _generateRatingId() {
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    return 'rating_${timestamp}_${_customRatingItems.length}';
+  }
 
   // 根据天气代码返回对应的 FontAwesome 图标
   IconData _getWeatherIcon(String weatherIcon, {bool isNight = false}) {
@@ -1208,6 +1217,40 @@ class _CityDetailPageState extends State<CityDetailPage>
     return token != null && token.isNotEmpty;
   }
 
+  Future<void> _handleScoreAddAction() async {
+    final isAdminOrMod = await _isAdminOrModerator();
+    if (!mounted) return;
+
+    if (isAdminOrMod) {
+      final result = await Get.to<List<CityRatingItem>>(
+        () => ManageCityRatingsPage(
+          cityId: cityId,
+          cityName: cityName,
+          initialRatings: List<CityRatingItem>.from(_customRatingItems),
+        ),
+      );
+
+      if (!mounted) return;
+
+      if (result != null) {
+        setState(() => _customRatingItems = List<CityRatingItem>.from(result));
+        AppToast.success('评分数据已更新');
+      }
+      return;
+    }
+
+    final newItem = await showRatingItemDialog(
+      context: context,
+      idBuilder: _generateRatingId,
+    );
+    if (!mounted) return;
+
+    if (newItem != null) {
+      setState(() => _customRatingItems = [..._customRatingItems, newItem]);
+      AppToast.success('感谢你的评分贡献！');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -1288,9 +1331,9 @@ class _CityDetailPageState extends State<CityDetailPage>
 
                               // 根据当前标签页显示对应的按钮
                               if (currentTab == 0) {
-                                // Scores - 所有用户直接添加评分
+                                // Scores - 权限控制: 普通用户弹窗, 管理角色前往数据列表
                                 icon = Icons.star_rate;
-                                onPressed = _showShareScoreDialog;
+                                onPressed = () => _handleScoreAddAction();
                               } else if (currentTab == 2) {
                                 // Pros & Cons
                                 icon = Icons.edit_note;
@@ -1933,44 +1976,55 @@ class _CityDetailPageState extends State<CityDetailPage>
         return Center(child: Text(l10n.noData));
       }
 
-      // ✅ 只使用City实体中的5个基本评分
-      final scoreItems = [
-        {
-          'icon': Icons.star,
-          'label': l10n.overall,
-          'value': city.overallScore ?? 0.0
-        },
-        {
-          'icon': Icons.attach_money,
-          'label': l10n.cost,
-          'value': city.costScore ?? 0.0
-        },
-        {
-          'icon': Icons.wifi,
-          'label': l10n.internet,
-          'value': city.internetScore ?? 0.0
-        },
-        {
-          'icon': Icons.security,
-          'label': l10n.safety,
-          'value': city.safetyScore ?? 0.0
-        },
-        {
-          'icon': Icons.favorite,
-          'label': 'Liked',
-          'value': city.likedScore ?? 0.0
-        },
+      final defaultItems = [
+        CityRatingItem.fromIcon(
+          id: 'overall',
+          label: l10n.overall,
+          icon: Icons.star,
+          score: city.overallScore ?? 0.0,
+          isDefault: true,
+        ),
+        CityRatingItem.fromIcon(
+          id: 'cost',
+          label: l10n.cost,
+          icon: Icons.attach_money,
+          score: city.costScore ?? 0.0,
+          isDefault: true,
+        ),
+        CityRatingItem.fromIcon(
+          id: 'internet',
+          label: l10n.internet,
+          icon: Icons.wifi,
+          score: city.internetScore ?? 0.0,
+          isDefault: true,
+        ),
+        CityRatingItem.fromIcon(
+          id: 'safety',
+          label: l10n.safety,
+          icon: Icons.security,
+          score: city.safetyScore ?? 0.0,
+          isDefault: true,
+        ),
+        CityRatingItem.fromIcon(
+          id: 'liked',
+          label: 'Liked',
+          icon: Icons.favorite,
+          score: city.likedScore ?? 0.0,
+          isDefault: true,
+        ),
       ];
+
+      final allItems = [...defaultItems, ..._customRatingItems];
 
       return ListView.builder(
         padding: const EdgeInsets.all(16),
-        itemCount: scoreItems.length,
+        itemCount: allItems.length,
         itemBuilder: (context, index) {
-          final item = scoreItems[index];
+          final item = allItems[index];
           return _buildScoreItem(
-            icon: item['icon'] as IconData,
-            label: item['label'] as String,
-            score: item['value'] as double,
+            icon: item.icon,
+            label: item.label,
+            score: item.score,
           );
         },
       );
@@ -4385,56 +4439,6 @@ class _CityDetailPageState extends State<CityDetailPage>
   }
 
   // ========== 分享对话框方�?==========
-
-  /// 分享评分信息
-  void _showShareScoreDialog() {
-    Get.dialog(
-      Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.star, color: Color(0xFFFF4458), size: 48),
-              const SizedBox(height: 16),
-              const Text(
-                'Share Your Scores',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Help the community by rating different aspects of $cityName',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey[600]),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Get.back();
-                    AppToast.info(
-                      'Score submission feature will be available soon!',
-                      title: 'Coming Soon',
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFF4458),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(AppLocalizations.of(context)!.startRating),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   /// 添加 Pros & Cons
   /// [initialTab] 初始显示的 tab (0=优点, 1=挑战)
