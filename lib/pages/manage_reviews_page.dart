@@ -232,8 +232,8 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
             await _loadData();
           }
         },
-        child: const Icon(Icons.add),
         tooltip: '添加评论',
+        child: const Icon(Icons.add),
       ),
     );
   }

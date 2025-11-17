@@ -6,24 +6,28 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../generated/app_localizations.dart';
+import '../routes/route_refresh_observer.dart';
 
 /// Coworking List Page
 /// 共享办公空间列表页面
 class CoworkingListPage extends StatefulWidget {
   final String cityId;
   final String cityName;
+  final String? countryName;
 
   const CoworkingListPage({
     super.key,
     required this.cityId,
     required this.cityName,
+    this.countryName,
   });
 
   @override
   State<CoworkingListPage> createState() => _CoworkingListPageState();
 }
 
-class _CoworkingListPageState extends State<CoworkingListPage> {
+class _CoworkingListPageState extends State<CoworkingListPage>
+  with RouteAwareRefreshMixin<CoworkingListPage> {
   bool _isGridView = true;
   late final CoworkingStateController controller;
   final ScrollController _scrollController = ScrollController();
@@ -53,6 +57,11 @@ class _CoworkingListPageState extends State<CoworkingListPage> {
       widget.cityId,
       refresh: true, // 刷新模式，重置分页
     );
+  }
+
+  @override
+  Future<void> onRouteResume() async {
+    await _refreshData();
   }
 
   @override
@@ -86,17 +95,20 @@ class _CoworkingListPageState extends State<CoworkingListPage> {
               builder: (context) => AddCoworkingPage(
                 cityId: widget.cityId,
                 cityName: widget.cityName,
+                countryName: widget.countryName,
               ),
             ),
           );
 
+          if (!context.mounted) return;
+
           // 如果成功添加,刷新列表并通知上级页面
-          if (result == true && mounted) {
+          if (result == true) {
             await _refreshData();
+
+            if (!context.mounted) return;
             // 通知 CoworkingHomePage 也需要刷新
-            if (mounted) {
-              Navigator.pop(context, true);
-            }
+            Navigator.pop(context, true);
           }
         },
         child: const Icon(Icons.add),
@@ -239,7 +251,7 @@ class _CoworkingListPageState extends State<CoworkingListPage> {
                   if (index == controller.filteredSpaces.length) {
                     return _buildLoadMoreIndicator();
                   }
-                  
+
                   final space = controller.filteredSpaces[index];
                   return _buildCoworkingCard(context, space);
                 },

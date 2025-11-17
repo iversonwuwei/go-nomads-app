@@ -266,6 +266,7 @@ class AppRoutes {
         return CoworkingListPage(
           cityId: args['cityId'],
           cityName: args['cityName'],
+          countryName: args['countryName'],
         );
       },
       middlewares: [AuthMiddleware()],
@@ -282,6 +283,7 @@ class AppRoutes {
         return AddCoworkingPage(
           cityId: args['cityId'],
           cityName: args['cityName'],
+          countryName: args['countryName'],
         );
       },
       middlewares: [AuthMiddleware()],

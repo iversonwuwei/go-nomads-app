@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import '../config/app_colors.dart';
 import '../generated/app_localizations.dart';
 import '../widgets/app_toast.dart';
-import 'amap_native_picker_page.dart';
+import 'maplibre_picker_page.dart';
 import 'travel_plan_page.dart';
 
 /// 创建旅行计划页面 - 完整页面版本
@@ -272,7 +272,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                               onPressed: () async {
                                 try {
                                   final result = await Get.to(
-                                    () => const AmapNativePickerPage(),
+                                    () => const MapLibrePickerPage(),
                                   );
                                   if (result != null && result is Map) {
                                     final address =

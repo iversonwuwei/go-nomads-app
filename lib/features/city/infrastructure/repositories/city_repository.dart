@@ -115,9 +115,9 @@ class CityRepository implements ICityRepository {
       List<dynamic> items;
       if (response.data is Map<String, dynamic>) {
         final dataMap = response.data as Map<String, dynamic>;
-        items = (dataMap['data'] as List<dynamic>?) ?? 
-                (dataMap['items'] as List<dynamic>?) ?? 
-                [];
+        items = (dataMap['data'] as List<dynamic>?) ??
+            (dataMap['items'] as List<dynamic>?) ??
+            [];
       } else if (response.data is List) {
         items = response.data as List<dynamic>;
       } else {
@@ -505,14 +505,10 @@ class CityRepository implements ICityRepository {
   Future<Result<bool>> assignModerator(String cityId, String userId) async {
     try {
       await _httpService.post(
-        '$_baseUrl/$cityId/moderators',
+        '$_baseUrl/moderator/assign',
         data: {
+          'cityId': cityId,
           'userId': userId,
-          'canEditCity': true,
-          'canManageCoworks': true,
-          'canManageCosts': true,
-          'canManageVisas': true,
-          'canModerateChats': true,
         },
       );
       return const Success(true);

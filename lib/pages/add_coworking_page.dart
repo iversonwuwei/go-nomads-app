@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -12,7 +13,7 @@ import '../features/coworking/domain/repositories/icoworking_repository.dart';
 import '../features/location/presentation/controllers/location_state_controller.dart';
 import '../generated/app_localizations.dart';
 import '../widgets/app_toast.dart';
-import 'amap_native_picker_page.dart';
+import 'maplibre_picker_page.dart';
 
 /// Add Coworking Space Page
 /// 添加共享办公空间页面
@@ -105,24 +106,76 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
   File? _selectedImage;
   final ImagePicker _picker = ImagePicker();
 
+  String? _normalizeInput(String? value) {
+    if (value == null) return null;
+    final trimmed = value.trim();
+    return trimmed.isEmpty ? null : trimmed;
+  }
+
+  String _resolveLocaleCode() {
+    final locale = Get.locale ?? ui.PlatformDispatcher.instance.locale;
+    return locale.languageCode.toLowerCase();
+  }
+
+  String? _getRouteValue(String key) {
+    final args = Get.arguments;
+    if (args is Map) {
+      final dynamic value = args[key];
+      if (value != null) {
+        final normalized = value.toString().trim();
+        if (normalized.isNotEmpty) {
+          return normalized;
+        }
+      }
+    }
+
+    final parameters = Get.parameters;
+    if (parameters.containsKey(key)) {
+      final value = parameters[key];
+      if (value != null) {
+        final normalized = value.trim();
+        if (normalized.isNotEmpty) {
+          return normalized;
+        }
+      }
+    }
+
+    return null;
+  }
+
   @override
   void initState() {
     super.initState();
-    
+
     // 获取 LocationStateController (已在 DI 中注册)
     _locationController = Get.find<LocationStateController>();
-    
-    // 如果从城市详情页传入了 cityId，则根据 cityId 初始化国家和城市
-    if (widget.cityId != null && widget.cityId!.isNotEmpty) {
-      print('🏙️ [AddCoworking] 从城市详情页跳转，cityId: ${widget.cityId}');
-      _initializeFromCityId(widget.cityId!);
+
+    final paramCityId =
+        _normalizeInput(widget.cityId) ?? _getRouteValue('cityId');
+    final paramCityName =
+        _normalizeInput(widget.cityName) ?? _getRouteValue('cityName');
+    final paramCountryName =
+        _normalizeInput(widget.countryName) ?? _getRouteValue('countryName');
+
+    // 仅当参数中包含 cityId 时才进行国家和城市的初始化
+    if (paramCityId != null) {
+      print('🏙️ [AddCoworking] 从参数中读取 cityId: $paramCityId');
+      _initializeFromCityId(
+        paramCityId,
+        fallbackCityName: paramCityName,
+        fallbackCountryName: paramCountryName,
+      );
     } else {
-      print('📝 [AddCoworking] 正常路径进入，不进行预填充');
+      print('📝 [AddCoworking] 未提供 cityId，跳过国家/城市预填充');
     }
   }
 
   /// 根据 cityId 初始化国家和城市信息
-  Future<void> _initializeFromCityId(String cityId) async {
+  Future<void> _initializeFromCityId(
+    String cityId, {
+    String? fallbackCityName,
+    String? fallbackCountryName,
+  }) async {
     try {
       print('🔍 [AddCoworking] _initializeFromCityId 开始');
       print('   cityId: $cityId');
@@ -133,8 +186,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
         await _locationController.loadCountries();
       }
 
-      final localeCode =
-          Localizations.localeOf(context).languageCode.toLowerCase();
+      final localeCode = _resolveLocaleCode();
 
       // 2. 直接通过 cityId 获取城市信息（包含 countryId）
       print('🔍 [AddCoworking] 通过 API 获取城市信息（包含 countryId）...');
@@ -158,9 +210,9 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
 
       // 3. 如果通过 API 没获取到 countryId，则使用传入的 countryName 来查找（fallback）
       if (foundCountryId == null &&
-          widget.countryName != null &&
-          widget.countryName!.isNotEmpty) {
-        final trimmedCountryName = widget.countryName!.trim();
+          fallbackCountryName != null &&
+          fallbackCountryName.isNotEmpty) {
+        final trimmedCountryName = fallbackCountryName.trim();
         print(
             '🔍 [AddCoworking] fallback: 使用传入的 countryName: "$trimmedCountryName"');
 
@@ -213,8 +265,8 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
 
       // 4. 最后的兜底方案：遍历所有国家查找
 
-      if (widget.countryName != null && widget.countryName!.isNotEmpty) {
-        final trimmedCountryName = widget.countryName!.trim();
+      if (fallbackCountryName != null && fallbackCountryName.isNotEmpty) {
+        final trimmedCountryName = fallbackCountryName.trim();
         print('🔍 [AddCoworking] 使用传入的 countryName: "$trimmedCountryName"');
         print(
             '🔍 [AddCoworking] countryName长度: ${trimmedCountryName.length}, 编码: ${trimmedCountryName.codeUnits}');
@@ -276,7 +328,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
             print('⚠️ [AddCoworking] 在 ${country.name} 中未找到 cityId=$cityId');
           }
         } else {
-          print('⚠️ [AddCoworking] 未找到匹配的国家: "${widget.countryName}"');
+          print('⚠️ [AddCoworking] 未找到匹配的国家: "$fallbackCountryName"');
           print('⚠️ [AddCoworking] 尝试过的匹配方式: displayName, name, nameZh');
           print('⚠️ [AddCoworking] 将fallback到遍历所有国家');
         }
@@ -336,28 +388,28 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
         print('⚠️ [AddCoworking] 未找到 cityId=$cityId 对应的城市');
 
         // 如果传入了 cityName 和 countryName，直接使用（即使在列表中找不到）
-        if (widget.cityName != null && widget.countryName != null) {
+        if (fallbackCityName != null && fallbackCountryName != null) {
           setState(() {
-            _selectedCountry = widget.countryName;
-            _selectedCity = widget.cityName;
+            _selectedCountry = fallbackCountryName;
+            _selectedCity = fallbackCityName;
             _selectedCityId = cityId;
           });
           print(
-              '📝 [AddCoworking] 直接使用传入的参数: ${widget.countryName} > ${widget.cityName}');
+              '📝 [AddCoworking] 直接使用传入的参数: $fallbackCountryName > $fallbackCityName');
         }
       }
     } catch (e) {
       print('❌ [AddCoworking] 初始化失败: $e');
 
       // 降级处理：使用传入的参数
-      if (widget.cityName != null && widget.countryName != null) {
+      if (fallbackCityName != null && fallbackCountryName != null) {
         setState(() {
-          _selectedCountry = widget.countryName;
-          _selectedCity = widget.cityName;
+          _selectedCountry = fallbackCountryName;
+          _selectedCity = fallbackCityName;
           _selectedCityId = cityId;
         });
         print(
-            '🔄 [AddCoworking] 降级处理，使用传入参数: ${widget.countryName} > ${widget.cityName}');
+            '🔄 [AddCoworking] 降级处理，使用传入参数: $fallbackCountryName > $fallbackCityName');
       }
     }
   }
@@ -803,13 +855,29 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
             : Text(l10n.pickLocationOnMap),
         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
         onTap: () async {
-          final result = await Get.to(() => const AmapNativePickerPage());
+          // 获取当前地址字段的内容作为搜索关键词
+          final addressQuery = _addressController.text.trim();
+
+          print('🗺️ [AddCoworking] 打开地图选择器');
+          print('   地址参数: "$addressQuery"');
+          print('   当前经纬度: $_latitude, $_longitude');
+
+          final result = await Get.to(() => MapLibrePickerPage(
+                initialLatitude: _latitude != 0 ? _latitude : null,
+                initialLongitude: _longitude != 0 ? _longitude : null,
+                searchQuery: addressQuery.isNotEmpty ? addressQuery : null,
+              ));
+
           if (result != null && result is Map<String, dynamic>) {
             setState(() {
+              // 更新经纬度
               _latitude = result['latitude'] ?? 0.0;
               _longitude = result['longitude'] ?? 0.0;
-              if (result['address'] != null) {
-                _addressController.text = result['address'];
+
+              // 只更新名称字段（如果有POI名称的话）
+              if (result['name'] != null &&
+                  result['name'].toString().isNotEmpty) {
+                _nameController.text = result['name'];
               }
             });
           }
@@ -1351,59 +1419,52 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
             },
             builder: (field) {
               final displayCity = field.value ?? _selectedCity;
-              final isLoadingCities =
-                  _locationController.isLoadingCities.value;
+              final isLoadingCities = _locationController.isLoadingCities.value;
 
               return GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onTap: () async {
-                  if (_selectedCountryId == null) {
-                    AppToast.info(
-                      l10n.selectCountryFirst,
-                      title: l10n.notice,
-                    );
-                    return;
-                  }
+                onTap: (_selectedCountryId == null || isLoadingCities)
+                    ? null
+                    : () async {
+                        FocusScope.of(context).unfocus();
 
-                  if (isLoadingCities) {
-                    AppToast.info(l10n.loading, title: l10n.notice);
-                    return;
-                  }
+                        // 使用缓存的城市列表
+                        List<String> options =
+                            List<String>.from(cachedCityNames);
 
-                  FocusScope.of(context).unfocus();
+                        if (options.isEmpty) {
+                          AppToast.info(l10n.noData, title: l10n.notice);
+                          return;
+                        }
 
-                  // 使用缓存的城市列表
-                  List<String> options = List<String>.from(cachedCityNames);
+                        _showOptionPicker(
+                          options: options,
+                          title: l10n.selectCity,
+                          initialValue: _selectedCity,
+                          onSelected: (value) {
+                            final selectedCity = cachedCities
+                                .firstWhereOrNull((city) => city.name == value);
 
-                  if (options.isEmpty) {
-                    AppToast.info(l10n.noData, title: l10n.notice);
-                    return;
-                  }
-
-                  _showOptionPicker(
-                    options: options,
-                    title: l10n.selectCity,
-                    initialValue: _selectedCity,
-                    onSelected: (value) {
-                      final selectedCity = cachedCities
-                          .firstWhereOrNull((city) => city.name == value);
-
-                      setState(() {
-                        _selectedCity = value;
-                        _selectedCityId = selectedCity?.id;
-                      });
-                      field.didChange(value);
-                    },
-                  );
-                },
+                            setState(() {
+                              _selectedCity = value;
+                              _selectedCityId = selectedCity?.id;
+                            });
+                            field.didChange(value);
+                          },
+                        );
+                      },
                 child: InputDecorator(
                   decoration: InputDecoration(
-                    hintText: l10n.selectCity,
+                    hintText: _selectedCountryId == null
+                        ? l10n.selectCountryFirst
+                        : (isLoadingCities ? l10n.loading : l10n.selectCity),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                     filled: true,
-                    fillColor: Colors.grey[50],
+                    fillColor: (_selectedCountryId == null || isLoadingCities)
+                        ? Colors.grey[200]
+                        : Colors.grey[50],
                     suffixIcon: isLoadingCities
                         ? const Padding(
                             padding: EdgeInsets.all(8),
@@ -1482,7 +1543,9 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                   ),
                   TextButton(
                     onPressed: () {
-                      Get.back();
+                      if (Get.isBottomSheetOpen == true) {
+                        Get.back();
+                      }
                     },
                     child: Text(
                       AppLocalizations.of(context)!.done,
@@ -1518,7 +1581,9 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                         : null,
                     onTap: () {
                       onSelected(option);
-                      Get.back();
+                      if (Get.isBottomSheetOpen == true) {
+                        Get.back();
+                      }
                     },
                   );
                 },

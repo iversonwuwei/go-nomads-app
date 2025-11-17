@@ -22,6 +22,7 @@ import '../features/user_city_content/domain/repositories/iuser_city_content_rep
 import '../features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
 import '../features/weather/presentation/controllers/weather_state_controller.dart';
 import '../generated/app_localizations.dart';
+import '../routes/route_refresh_observer.dart';
 import '../services/token_storage_service.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/skeletons/skeletons.dart';
@@ -59,7 +60,9 @@ class CityDetailPage extends StatefulWidget {
 }
 
 class _CityDetailPageState extends State<CityDetailPage>
-    with SingleTickerProviderStateMixin {
+    with
+        SingleTickerProviderStateMixin,
+        RouteAwareRefreshMixin<CityDetailPage> {
   late PageController _pageController;
   late TabController _tabController;
   int _currentPage = 0;
@@ -745,7 +748,7 @@ class _CityDetailPageState extends State<CityDetailPage>
             forceRefresh: true, // 强制刷新以获取最新数据
           );
         }
-        
+
         // 当切换到 Coworking tab (索引 9) 时，加载最新共享办公空间数据
         if (_tabController.index == 9) {
           final coworkingController = Get.find<CoworkingStateController>();
@@ -807,11 +810,29 @@ class _CityDetailPageState extends State<CityDetailPage>
     prosConsController.loadCityProsCons(cityId);
   }
 
-  /// 检查用户是否有权限生成指南（仅管理员）
-  Future<bool> _checkGeneratePermission() async {
-    final isAdmin = await TokenStorageService().isAdmin();
+  @override
+  Future<void> onRouteResume() async {
+    await reloadCityData();
+  }
 
-    if (!isAdmin) {
+  /// 检查用户是否有权限生成指南（管理员或当前城市版主）
+  Future<bool> _checkGeneratePermission() async {
+    try {
+      final cityDetailController = Get.find<CityDetailStateController>();
+      final city = cityDetailController.currentCity.value;
+      if (city != null &&
+          (city.isCurrentUserAdmin || city.isCurrentUserModerator)) {
+        return true;
+      }
+    } catch (_) {
+      // 如果 controller 尚未就绪，继续执行后备判断
+    }
+
+    final tokenService = TokenStorageService();
+    final role = await tokenService.getUserRole();
+    final hasPermission = role == 'admin' || role == 'moderator';
+
+    if (!hasPermission) {
       _showNoPermissionDialog();
       return false;
     }
@@ -847,7 +868,7 @@ class _CityDetailPageState extends State<CityDetailPage>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                '抱歉，只有管理员才能生成 AI 旅游指南。',
+                '抱歉，只有管理员或该城市的版主才能生成 AI 旅游指南。',
                 style: TextStyle(fontSize: 16),
               ),
               const SizedBox(height: 16),
@@ -1099,15 +1120,38 @@ class _CityDetailPageState extends State<CityDetailPage>
     super.dispose();
   }
 
-  /// 检查用户是否有权限管理内容（admin 或 moderator）
+  /// 检查用户是否有权限管理内容（admin 或当前城市的版主）
   Future<bool> _canUserManageContent() async {
     final tokenService = TokenStorageService();
     final role = await tokenService.getUserRole();
-    return role == 'admin' || role == 'moderator';
+
+    // 1. 检查是否为全局管理员
+    if (role == 'admin') {
+      return true;
+    }
+
+    // 2. 检查是否为当前城市的版主
+    final cityDetailController = Get.find<CityDetailStateController>();
+    final city = cityDetailController.currentCity.value;
+    if (city != null && city.isCurrentUserModerator) {
+      return true;
+    }
+
+    return false;
   }
 
   /// 检查用户是否为管理员或版主（用于区分跳转行为）
   Future<bool> _isAdminOrModerator() async {
+    try {
+      final cityDetailController = Get.find<CityDetailStateController>();
+      final city = cityDetailController.currentCity.value;
+      if (city != null) {
+        return city.isCurrentUserAdmin || city.isCurrentUserModerator;
+      }
+    } catch (_) {
+      // 如果当前城市信息尚未加载，退回到 Token 判断逻辑
+    }
+
     final tokenService = TokenStorageService();
     final role = await tokenService.getUserRole();
     return role == 'admin' || role == 'moderator';
@@ -1146,196 +1190,17 @@ class _CityDetailPageState extends State<CityDetailPage>
               controller: _scrollController,
               headerSliverBuilder: (context, innerBoxIsScrolled) {
                 return [
-                // 大图 Banner - 现代化设计
-                SliverAppBar(
-                  expandedHeight: 320,
-                  pinned: true,
-                  elevation: _appBarOpacity > 0 ? 4 : 0,
-                  backgroundColor: Color.lerp(
-                    Colors.transparent,
-                    Colors.white,
-                    _appBarOpacity,
-                  ),
-                  leading: Container(
-                    margin: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: _appBarOpacity > 0.5
-                          ? Colors.grey.withValues(alpha: 0.1)
-                          : Colors.black.withValues(alpha: 0.3),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.2),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+                  // 大图 Banner - 现代化设计
+                  SliverAppBar(
+                    expandedHeight: 320,
+                    pinned: true,
+                    elevation: _appBarOpacity > 0 ? 4 : 0,
+                    backgroundColor: Color.lerp(
+                      Colors.transparent,
+                      Colors.white,
+                      _appBarOpacity,
                     ),
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.arrow_back_ios_new,
-                        color: _appBarOpacity > 0.5
-                            ? Colors.black87
-                            : Colors.white,
-                        size: 20,
-                      ),
-                      onPressed: () => Get.back(),
-                    ),
-                  ),
-                  actions: [
-                    // 添加按钮 - 所有登录用户都可见，但跳转行为不同
-                    AnimatedBuilder(
-                      animation: _tabController,
-                      builder: (context, child) {
-                        return FutureBuilder<bool>(
-                          future: _isUserLoggedIn(),
-                          builder: (context, snapshot) {
-                            if (snapshot.data != true)
-                              return const SizedBox.shrink();
-
-                            final currentTab = _tabController.index;
-                            IconData icon;
-                            VoidCallback? onPressed;
-
-                            // 根据当前标签页显示对应的按钮
-                            if (currentTab == 0) {
-                              // Scores - 所有用户直接添加评分
-                              icon = Icons.star_rate;
-                              onPressed = _showShareScoreDialog;
-                            } else if (currentTab == 2) {
-                              // Pros & Cons
-                              icon = Icons.edit_note;
-                              onPressed = () async {
-                                final isAdminOrMod =
-                                    await _isAdminOrModerator();
-                                if (isAdminOrMod) {
-                                  // Admin/Moderator: 跳转到管理列表页面
-                                  await Get.to(() => ManageProsConsPage(
-                                        cityId: cityId,
-                                        cityName: cityName,
-                                      ));
-                                  prosConsController.loadCityProsCons(cityId);
-                                } else {
-                                  // 普通用户: 直接跳转到添加页面
-                                  await Get.to(() => ProsAndConsAddPage(
-                                        cityId: cityId,
-                                        cityName: cityName,
-                                      ));
-                                  prosConsController.loadCityProsCons(cityId);
-                                }
-                              };
-                            } else if (currentTab == 3) {
-                              // Reviews
-                              icon = Icons.edit_note;
-                              onPressed = () async {
-                                final isAdminOrMod =
-                                    await _isAdminOrModerator();
-                                if (isAdminOrMod) {
-                                  // Admin/Moderator: 跳转到管理列表页面
-                                  await Get.to(() => ManageReviewsPage(
-                                        cityId: cityId,
-                                        cityName: cityName,
-                                      ));
-                                  userContentController.loadCityReviews(cityId);
-                                } else {
-                                  // 普通用户: 直接跳转到添加页面
-                                  await Get.to(() => AddReviewPage(
-                                        cityId: cityId,
-                                        cityName: cityName,
-                                      ));
-                                  userContentController.loadCityReviews(cityId);
-                                }
-                              };
-                            } else if (currentTab == 4) {
-                              // Cost
-                              icon = Icons.edit_note;
-                              onPressed = () async {
-                                final isAdminOrMod =
-                                    await _isAdminOrModerator();
-                                if (isAdminOrMod) {
-                                  // Admin/Moderator: 跳转到管理列表页面
-                                  await Get.to(() => ManageCostPage(
-                                        cityId: cityId,
-                                        cityName: cityName,
-                                      ));
-                                  userContentController
-                                      .loadCityExpenses(cityId);
-                                  userContentController
-                                      .loadCityCostSummary(cityId);
-                                } else {
-                                  // 普通用户: 直接跳转到添加页面
-                                  await Get.to(() => AddCostPage(
-                                        cityId: cityId,
-                                        cityName: cityName,
-                                      ));
-                                  userContentController
-                                      .loadCityExpenses(cityId);
-                                  userContentController
-                                      .loadCityCostSummary(cityId);
-                                }
-                              };
-                            } else if (currentTab == 5) {
-                              // Photos - 所有用户都用对话框形式
-                              icon = Icons.add_photo_alternate;
-                              onPressed = () =>
-                                  _showAddPhotoDialog(userContentController);
-                            } else if (currentTab == 9) {
-                              // Coworking
-                              icon = Icons.add_business;
-                              onPressed = () async {
-                                // 所有用户都直接跳转到添加页面
-                                  final cityDetailController =
-                                      Get.find<CityDetailStateController>();
-                                  final city =
-                                      cityDetailController.currentCity.value;
-                                
-                                final result =
-                                    await Get.to(() => AddCoworkingPage(
-                                          cityId: cityId,
-                                          cityName: cityName,
-                                            countryName: city?.country,
-                                        ));
-                                if (result != null &&
-                                    result['success'] == true) {
-                                  coworkingController
-                                      .loadCoworkingSpacesByCity(cityId);
-                                }
-                              };
-                            } else {
-                              return const SizedBox.shrink();
-                            }
-
-                            return Container(
-                              margin: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [
-                                    Color(0xFFFF4458),
-                                    Color(0xFFFF6B7A)
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(12),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFFFF4458)
-                                        .withValues(alpha: 0.3),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: IconButton(
-                                icon: Icon(icon, color: Colors.white, size: 20),
-                                onPressed: onPressed,
-                                tooltip: 'Add content',
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                    const SizedBox(width: 4),
-                    Container(
+                    leading: Container(
                       margin: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: _appBarOpacity > 0.5
@@ -1352,368 +1217,553 @@ class _CityDetailPageState extends State<CityDetailPage>
                       ),
                       child: IconButton(
                         icon: Icon(
-                          Icons.share,
+                          Icons.arrow_back_ios_new,
                           color: _appBarOpacity > 0.5
                               ? Colors.black87
                               : Colors.white,
                           size: 20,
                         ),
-                        onPressed: () {
-                          // TODO: 实现分享功能
-                        },
+                        onPressed: () => Get.back(),
                       ),
                     ),
-                  ],
-                  flexibleSpace: FlexibleSpaceBar(
-                    centerTitle: true,
-                    titlePadding: const EdgeInsets.only(bottom: 16),
-                    title: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        gradient: _appBarOpacity > 0.5
-                            ? null
-                            : LinearGradient(
-                                colors: [
-                                  Colors.black.withValues(alpha: 0.6),
-                                  Colors.black.withValues(alpha: 0.3),
-                                ],
-                              ),
-                        color: _appBarOpacity > 0.5 ? Colors.transparent : null,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        cityName,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 24,
-                          color: _appBarOpacity > 0.5
-                              ? const Color(0xFFFF4458)
-                              : Colors.white,
-                          shadows: _appBarOpacity > 0.5
-                              ? []
-                              : const [
-                                  Shadow(
-                                    offset: Offset(0, 2),
-                                    blurRadius: 4,
-                                    color: Colors.black54,
-                                  ),
-                                ],
-                        ),
-                      ),
-                    ),
-                    background: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        // PageView carousel - 城市图片轮播
-                        PageView.builder(
-                          controller: _pageController,
-                          onPageChanged: (index) {
-                            setState(() {
-                              _currentPage = index;
-                            });
-                          },
-                          itemCount: _getCityImages().length,
-                          itemBuilder: (context, index) {
-                            return Stack(
-                              fit: StackFit.expand,
-                              children: [
-                                // 城市图片
-                                Image.network(
-                                  _getCityImages()[index],
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      color: Colors.grey[300],
-                                      child: const Center(
-                                        child: Icon(
-                                          Icons.image_not_supported,
-                                          size: 64,
-                                          color: Colors.grey,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  loadingBuilder:
-                                      (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Container(
-                                      color: Colors.grey[200],
-                                      child: Center(
-                                        child: CircularProgressIndicator(
-                                          value: loadingProgress
-                                                      .expectedTotalBytes !=
-                                                  null
-                                              ? loadingProgress
-                                                      .cumulativeBytesLoaded /
-                                                  loadingProgress
-                                                      .expectedTotalBytes!
-                                              : null,
-                                          color: const Color(0xFFFF4458),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                                // 增强渐变遮罩 - 更现代的三层渐变
-                                Container(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      colors: [
-                                        Colors.black.withValues(alpha: 0.3),
-                                        Colors.transparent,
-                                        Colors.black.withValues(alpha: 0.8),
-                                      ],
-                                      stops: const [0.0, 0.5, 1.0],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                        // 现代化轮播指示器
-                        Positioned(
-                          top: 24,
-                          left: 0,
-                          right: 0,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: List.generate(
-                              _getCityImages().length,
-                              (index) => AnimatedContainer(
-                                duration: const Duration(milliseconds: 300),
-                                margin:
-                                    const EdgeInsets.symmetric(horizontal: 4),
-                                width: _currentPage == index ? 24 : 8,
-                                height: 8,
+                    actions: [
+                      // 添加按钮 - 所有登录用户都可见，但跳转行为不同
+                      AnimatedBuilder(
+                        animation: _tabController,
+                        builder: (context, child) {
+                          return FutureBuilder<bool>(
+                            future: _isUserLoggedIn(),
+                            builder: (context, snapshot) {
+                              if (snapshot.data != true) {
+                                return const SizedBox.shrink();
+                              }
+
+                              final currentTab = _tabController.index;
+                              IconData icon;
+                              VoidCallback? onPressed;
+
+                              // 根据当前标签页显示对应的按钮
+                              if (currentTab == 0) {
+                                // Scores - 所有用户直接添加评分
+                                icon = Icons.star_rate;
+                                onPressed = _showShareScoreDialog;
+                              } else if (currentTab == 2) {
+                                // Pros & Cons
+                                icon = Icons.edit_note;
+                                onPressed = () async {
+                                  final isAdminOrMod =
+                                      await _isAdminOrModerator();
+                                  if (isAdminOrMod) {
+                                    // Admin/Moderator: 跳转到管理列表页面
+                                    await Get.to(() => ManageProsConsPage(
+                                          cityId: cityId,
+                                          cityName: cityName,
+                                        ));
+                                    prosConsController.loadCityProsCons(cityId);
+                                  } else {
+                                    // 普通用户: 直接跳转到添加页面
+                                    await Get.to(() => ProsAndConsAddPage(
+                                          cityId: cityId,
+                                          cityName: cityName,
+                                        ));
+                                    prosConsController.loadCityProsCons(cityId);
+                                  }
+                                };
+                              } else if (currentTab == 3) {
+                                // Reviews
+                                icon = Icons.edit_note;
+                                onPressed = () async {
+                                  final isAdminOrMod =
+                                      await _isAdminOrModerator();
+                                  if (isAdminOrMod) {
+                                    // Admin/Moderator: 跳转到管理列表页面
+                                    await Get.to(() => ManageReviewsPage(
+                                          cityId: cityId,
+                                          cityName: cityName,
+                                        ));
+                                    userContentController
+                                        .loadCityReviews(cityId);
+                                  } else {
+                                    // 普通用户: 直接跳转到添加页面
+                                    await Get.to(() => AddReviewPage(
+                                          cityId: cityId,
+                                          cityName: cityName,
+                                        ));
+                                    userContentController
+                                        .loadCityReviews(cityId);
+                                  }
+                                };
+                              } else if (currentTab == 4) {
+                                // Cost
+                                icon = Icons.edit_note;
+                                onPressed = () async {
+                                  final isAdminOrMod =
+                                      await _isAdminOrModerator();
+                                  if (isAdminOrMod) {
+                                    // Admin/Moderator: 跳转到管理列表页面
+                                    await Get.to(() => ManageCostPage(
+                                          cityId: cityId,
+                                          cityName: cityName,
+                                        ));
+                                    userContentController
+                                        .loadCityExpenses(cityId);
+                                    userContentController
+                                        .loadCityCostSummary(cityId);
+                                  } else {
+                                    // 普通用户: 直接跳转到添加页面
+                                    await Get.to(() => AddCostPage(
+                                          cityId: cityId,
+                                          cityName: cityName,
+                                        ));
+                                    userContentController
+                                        .loadCityExpenses(cityId);
+                                    userContentController
+                                        .loadCityCostSummary(cityId);
+                                  }
+                                };
+                              } else if (currentTab == 5) {
+                                // Photos - 所有用户都用对话框形式
+                                icon = Icons.add_photo_alternate;
+                                onPressed = () =>
+                                    _showAddPhotoDialog(userContentController);
+                              } else if (currentTab == 9) {
+                                // Coworking
+                                icon = Icons.add_business;
+                                onPressed = () async {
+                                  // 所有用户都直接跳转到添加页面
+                                  final cityDetailController =
+                                      Get.find<CityDetailStateController>();
+                                  final city =
+                                      cityDetailController.currentCity.value;
+
+                                  final result =
+                                      await Get.to(() => AddCoworkingPage(
+                                            cityId: cityId,
+                                            cityName: cityName,
+                                            countryName: city?.country,
+                                          ));
+                                  if (result != null &&
+                                      result['success'] == true) {
+                                    coworkingController
+                                        .loadCoworkingSpacesByCity(cityId);
+                                  }
+                                };
+                              } else {
+                                return const SizedBox.shrink();
+                              }
+
+                              return Container(
+                                margin: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(4),
-                                  color: _currentPage == index
-                                      ? Colors.white
-                                      : Colors.white.withValues(alpha: 0.5),
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Color(0xFFFF4458),
+                                      Color(0xFFFF6B7A)
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
                                   boxShadow: [
                                     BoxShadow(
-                                      color:
-                                          Colors.black.withValues(alpha: 0.3),
-                                      blurRadius: 4,
+                                      color: const Color(0xFFFF4458)
+                                          .withValues(alpha: 0.3),
+                                      blurRadius: 8,
                                       offset: const Offset(0, 2),
                                     ),
                                   ],
                                 ),
+                                child: IconButton(
+                                  icon:
+                                      Icon(icon, color: Colors.white, size: 20),
+                                  onPressed: onPressed,
+                                  tooltip: 'Add content',
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                      const SizedBox(width: 4),
+                      Container(
+                        margin: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: _appBarOpacity > 0.5
+                              ? Colors.grey.withValues(alpha: 0.1)
+                              : Colors.black.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: IconButton(
+                          icon: Icon(
+                            Icons.share,
+                            color: _appBarOpacity > 0.5
+                                ? Colors.black87
+                                : Colors.white,
+                            size: 20,
+                          ),
+                          onPressed: () {
+                            // TODO: 实现分享功能
+                          },
+                        ),
+                      ),
+                    ],
+                    flexibleSpace: FlexibleSpaceBar(
+                      centerTitle: true,
+                      titlePadding: const EdgeInsets.only(bottom: 16),
+                      title: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          gradient: _appBarOpacity > 0.5
+                              ? null
+                              : LinearGradient(
+                                  colors: [
+                                    Colors.black.withValues(alpha: 0.6),
+                                    Colors.black.withValues(alpha: 0.3),
+                                  ],
+                                ),
+                          color:
+                              _appBarOpacity > 0.5 ? Colors.transparent : null,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          cityName,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 24,
+                            color: _appBarOpacity > 0.5
+                                ? const Color(0xFFFF4458)
+                                : Colors.white,
+                            shadows: _appBarOpacity > 0.5
+                                ? []
+                                : const [
+                                    Shadow(
+                                      offset: Offset(0, 2),
+                                      blurRadius: 4,
+                                      color: Colors.black54,
+                                    ),
+                                  ],
+                          ),
+                        ),
+                      ),
+                      background: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          // PageView carousel - 城市图片轮播
+                          PageView.builder(
+                            controller: _pageController,
+                            onPageChanged: (index) {
+                              setState(() {
+                                _currentPage = index;
+                              });
+                            },
+                            itemCount: _getCityImages().length,
+                            itemBuilder: (context, index) {
+                              return Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  // 城市图片
+                                  Image.network(
+                                    _getCityImages()[index],
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Container(
+                                        color: Colors.grey[300],
+                                        child: const Center(
+                                          child: Icon(
+                                            Icons.image_not_supported,
+                                            size: 64,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    loadingBuilder:
+                                        (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return Container(
+                                        color: Colors.grey[200],
+                                        child: Center(
+                                          child: CircularProgressIndicator(
+                                            value: loadingProgress
+                                                        .expectedTotalBytes !=
+                                                    null
+                                                ? loadingProgress
+                                                        .cumulativeBytesLoaded /
+                                                    loadingProgress
+                                                        .expectedTotalBytes!
+                                                : null,
+                                            color: const Color(0xFFFF4458),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  // 增强渐变遮罩 - 更现代的三层渐变
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        colors: [
+                                          Colors.black.withValues(alpha: 0.3),
+                                          Colors.transparent,
+                                          Colors.black.withValues(alpha: 0.8),
+                                        ],
+                                        stops: const [0.0, 0.5, 1.0],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                          // 现代化轮播指示器
+                          Positioned(
+                            top: 24,
+                            left: 0,
+                            right: 0,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: List.generate(
+                                _getCityImages().length,
+                                (index) => AnimatedContainer(
+                                  duration: const Duration(milliseconds: 300),
+                                  margin:
+                                      const EdgeInsets.symmetric(horizontal: 4),
+                                  width: _currentPage == index ? 24 : 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(4),
+                                    color: _currentPage == index
+                                        ? Colors.white
+                                        : Colors.white.withValues(alpha: 0.5),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color:
+                                            Colors.black.withValues(alpha: 0.3),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                        ),
 
-                        // 版主管理蒙层 - 在城市名称上方
-                        Positioned(
-                          bottom: 70,
-                          left: 16,
-                          right: 16,
-                          child: _buildModeratorManagementOverlay(
-                              cityDetailController),
-                        ),
-                      ],
+                          // 版主管理蒙层 - 在城市名称上方
+                          Positioned(
+                            bottom: 70,
+                            left: 16,
+                            right: 16,
+                            child: _buildModeratorManagementOverlay(
+                                cityDetailController),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
 
-                // 现代化评分信息卡片
-                SliverToBoxAdapter(
-                  child: Container(
-                    margin: const EdgeInsets.all(16),
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.08),
-                          blurRadius: 20,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        // 评分徽章
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 10,
+                  // 现代化评分信息卡片
+                  SliverToBoxAdapter(
+                    child: Container(
+                      margin: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.08),
+                            blurRadius: 20,
+                            offset: const Offset(0, 4),
                           ),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          // 评分徽章
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 10,
                             ),
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFFFF4458)
-                                    .withValues(alpha: 0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.star_rounded,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                overallScore.toStringAsFixed(1),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '$reviewCount reviews',
-                                style: TextStyle(
-                                  color: Colors.grey[800],
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'From digital nomads',
-                                style: TextStyle(
-                                  color: Colors.grey[500],
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        // 收藏按钮 - 动态状态
-                        Obx(() {
-                          final cityController =
-                              Get.find<CityDetailStateController>();
-                          final isFavorited = cityController.isFavorited.value;
-                          final isToggling =
-                              cityController.isTogglingFavorite.value;
-
-                          return Container(
                             decoration: BoxDecoration(
-                              color: isFavorited
-                                  ? const Color(0xFFFF4458)
-                                      .withValues(alpha: 0.1)
-                                  : Colors.grey[100],
-                              borderRadius: BorderRadius.circular(12),
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFFF4458)
+                                      .withValues(alpha: 0.3),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
-                            child: isToggling
-                                ? const SizedBox(
-                                    width: 48,
-                                    height: 48,
-                                    child: Center(
-                                      child: SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                            Color(0xFFFF4458),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.star_rounded,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  overallScore.toStringAsFixed(1),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '$reviewCount reviews',
+                                  style: TextStyle(
+                                    color: Colors.grey[800],
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'From digital nomads',
+                                  style: TextStyle(
+                                    color: Colors.grey[500],
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          // 收藏按钮 - 动态状态
+                          Obx(() {
+                            final cityController =
+                                Get.find<CityDetailStateController>();
+                            final isFavorited =
+                                cityController.isFavorited.value;
+                            final isToggling =
+                                cityController.isTogglingFavorite.value;
+
+                            return Container(
+                              decoration: BoxDecoration(
+                                color: isFavorited
+                                    ? const Color(0xFFFF4458)
+                                        .withValues(alpha: 0.1)
+                                    : Colors.grey[100],
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: isToggling
+                                  ? const SizedBox(
+                                      width: 48,
+                                      height: 48,
+                                      child: Center(
+                                        child: SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                              Color(0xFFFF4458),
+                                            ),
                                           ),
                                         ),
                                       ),
+                                    )
+                                  : IconButton(
+                                      icon: Icon(
+                                        isFavorited
+                                            ? Icons.favorite
+                                            : Icons.favorite_border,
+                                        color: isFavorited
+                                            ? const Color(0xFFFF4458)
+                                            : Colors.grey[700],
+                                        size: 22,
+                                      ),
+                                      onPressed: () {
+                                        cityController.toggleFavorite();
+                                      },
                                     ),
-                                  )
-                                : IconButton(
-                                    icon: Icon(
-                                      isFavorited
-                                          ? Icons.favorite
-                                          : Icons.favorite_border,
-                                      color: isFavorited
-                                          ? const Color(0xFFFF4458)
-                                          : Colors.grey[700],
-                                      size: 22,
-                                    ),
-                                    onPressed: () {
-                                      cityController.toggleFavorite();
-                                    },
-                                  ),
-                          );
-                        }),
-                        const SizedBox(width: 8),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            borderRadius: BorderRadius.circular(12),
+                            );
+                          }),
+                          const SizedBox(width: 8),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: IconButton(
+                              icon: Icon(Icons.share_outlined,
+                                  color: Colors.grey[700], size: 22),
+                              onPressed: () {},
+                            ),
                           ),
-                          child: IconButton(
-                            icon: Icon(Icons.share_outlined,
-                                color: Colors.grey[700], size: 22),
-                            onPressed: () {},
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
 
-                // 现代化标签页导航
-                SliverPersistentHeader(
-                  pinned: true,
-                  delegate: _SliverAppBarDelegate(
-                    TabBar(
-                      controller: _tabController,
-                      isScrollable: true,
-                      labelColor: const Color(0xFFFF4458),
-                      unselectedLabelColor: Colors.grey[600],
-                      labelStyle: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15,
-                      ),
-                      unselectedLabelStyle: const TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 15,
-                      ),
-                      indicatorSize: TabBarIndicatorSize.label,
-                      indicator: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border(
-                          bottom: BorderSide(
-                            color: const Color(0xFFFF4458),
-                            width: 3,
+                  // 现代化标签页导航
+                  SliverPersistentHeader(
+                    pinned: true,
+                    delegate: _SliverAppBarDelegate(
+                      TabBar(
+                        controller: _tabController,
+                        isScrollable: true,
+                        labelColor: const Color(0xFFFF4458),
+                        unselectedLabelColor: Colors.grey[600],
+                        labelStyle: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                        ),
+                        unselectedLabelStyle: const TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 15,
+                        ),
+                        indicatorSize: TabBarIndicatorSize.label,
+                        indicator: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border(
+                            bottom: BorderSide(
+                              color: const Color(0xFFFF4458),
+                              width: 3,
+                            ),
                           ),
                         ),
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        tabs: [
+                          Tab(text: l10n.scores),
+                          Tab(text: l10n.guide),
+                          Tab(text: l10n.prosAndCons),
+                          Tab(text: l10n.reviews),
+                          Tab(text: l10n.cost),
+                          Tab(text: l10n.photos),
+                          Tab(text: l10n.weather),
+                          Tab(text: l10n.hotels),
+                          Tab(text: l10n.neighborhoods),
+                          Tab(text: l10n.coworking),
+                        ],
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      tabs: [
-                        Tab(text: l10n.scores),
-                        Tab(text: l10n.guide),
-                        Tab(text: l10n.prosAndCons),
-                        Tab(text: l10n.reviews),
-                        Tab(text: l10n.cost),
-                        Tab(text: l10n.photos),
-                        Tab(text: l10n.weather),
-                        Tab(text: l10n.hotels),
-                        Tab(text: l10n.neighborhoods),
-                        Tab(text: l10n.coworking),
-                      ],
                     ),
                   ),
-                ),
-              ];
-            },
+                ];
+              },
               body: TabBarView(
                 controller: _tabController,
                 children: [
@@ -1729,83 +1779,83 @@ class _CityDetailPageState extends State<CityDetailPage>
                   _buildCoworkingTab(coworkingController),
                 ],
               ),
-          ),
+            ),
 
-          // Floating AI Travel Plan Button
-          Positioned(
-            bottom: 16,
-            right: 16,
-            child: Material(
-              elevation: 6,
-              shadowColor: const Color(0xFFFF4458).withValues(alpha: 0.4),
-              borderRadius: BorderRadius.circular(28),
-              child: InkWell(
-                onTap: () {
-                  // 跳转到创建旅行计划页�?
-                  Get.to(
-                    () => CreateTravelPlanPage(
-                      cityId: cityId,
-                      cityName: cityName,
-                    ),
-                  );
-                },
+            // Floating AI Travel Plan Button
+            Positioned(
+              bottom: 16,
+              right: 16,
+              child: Material(
+                elevation: 6,
+                shadowColor: const Color(0xFFFF4458).withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(28),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(28),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFFF4458).withValues(alpha: 0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 3),
+                child: InkWell(
+                  onTap: () {
+                    // 跳转到创建旅行计划页�?
+                    Get.to(
+                      () => CreateTravelPlanPage(
+                        cityId: cityId,
+                        cityName: cityName,
                       ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.25),
-                          shape: BoxShape.circle,
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(28),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 12),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(28),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFF4458).withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
                         ),
-                        child: const Icon(
-                          Icons.auto_awesome,
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.25),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.auto_awesome,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        const Text(
+                          'AI Travel Plan',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Icon(
+                          Icons.arrow_forward_rounded,
                           color: Colors.white,
                           size: 16,
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      const Text(
-                        'AI Travel Plan',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.3,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      const Icon(
-                        Icons.arrow_forward_rounded,
-                        color: Colors.white,
-                        size: 16,
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
         ); // body: Obx 结束
       }), // Scaffold 的 body 结束
     );
@@ -2481,23 +2531,37 @@ class _CityDetailPageState extends State<CityDetailPage>
 
       // 如果为空
       if (realUserReviews.isEmpty) {
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.rate_review, size: 64, color: Colors.grey[300]),
-              const SizedBox(height: 16),
-              Text(
-                'No reviews yet',
-                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: ConstrainedBox(
+                constraints:
+                    BoxConstraints(minHeight: constraints.maxHeight - 96),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.rate_review,
+                          size: 64, color: Colors.grey[300]),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No reviews yet',
+                        style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Be the first to write a review!',
+                        style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Be the first to write a review!',
-                style: TextStyle(fontSize: 14, color: Colors.grey[500]),
-              ),
-            ],
-          ),
+            );
+          },
         );
       }
 
@@ -4429,13 +4493,13 @@ class _CityDetailPageState extends State<CityDetailPage>
     print('   city.name: ${city?.name}');
     print('   city.country: ${city?.country}');
     print('   city.region: ${city?.region}');
-    
+
     final result = await Get.to(() => AddCoworkingPage(
           cityName: cityName,
           cityId: cityId,
           countryName: city?.country, // 传递国家信息
         ));
-    
+
     // 无论是否成功，返回时都重新加载数据
     final coworkingController = Get.find<CoworkingStateController>();
     coworkingController.loadCoworkingSpacesByCity(cityId);
@@ -4482,7 +4546,7 @@ class _CityDetailPageState extends State<CityDetailPage>
     print('   city.name: ${city?.name}');
     print('   city.country: ${city?.country}');
     print('   city.region: ${city?.region}');
-    
+
     final result = await Get.to(() => AddCoworkingPage(
           cityName: cityName,
           cityId: cityId,

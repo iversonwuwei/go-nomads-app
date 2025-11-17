@@ -11,6 +11,7 @@ import '../features/meetup/domain/repositories/i_meetup_repository.dart';
 import '../features/meetup/presentation/controllers/meetup_state_controller.dart';
 import '../generated/app_localizations.dart';
 import '../routes/app_routes.dart';
+import '../routes/route_refresh_observer.dart';
 import '../widgets/app_toast.dart';
 import 'create_meetup_page.dart';
 import 'meetup_detail_page.dart';
@@ -24,7 +25,9 @@ class MeetupsListPage extends StatefulWidget {
 }
 
 class _MeetupsListPageState extends State<MeetupsListPage>
-    with SingleTickerProviderStateMixin {
+    with
+        SingleTickerProviderStateMixin,
+        RouteAwareRefreshMixin<MeetupsListPage> {
   late TabController _tabController;
   final RxBool _isLoading = false.obs;
   final RxList<Meetup> _meetups = <Meetup>[].obs;
@@ -141,6 +144,11 @@ class _MeetupsListPageState extends State<MeetupsListPage>
     }
   }
 
+  @override
+  Future<void> onRouteResume() async {
+    await _loadMeetups();
+  }
+
   List<Meetup> get _filteredMeetups {
     final now = DateTime.now();
     List<Meetup> filtered = [];
@@ -170,9 +178,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
             .toList();
         break;
       case 3: // Cancelled (所有已取消的活动)
-        filtered = _meetups
-            .where((m) => m.status == 'cancelled')
-            .toList();
+        filtered = _meetups.where((m) => m.status == 'cancelled').toList();
         break;
     }
 

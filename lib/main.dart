@@ -9,6 +9,7 @@ import 'controllers/locale_controller.dart';
 import 'core/di/dependency_injection.dart';
 import 'generated/app_localizations.dart';
 import 'routes/app_routes.dart';
+import 'routes/route_refresh_observer.dart';
 import 'services/app_init_service.dart';
 import 'services/image_upload_service.dart';
 import 'services/location_service.dart';
@@ -100,6 +101,7 @@ class MyApp extends StatelessWidget {
 
               initialRoute: AppRoutes.home,
               getPages: AppRoutes.getPages,
+              navigatorObservers: [appRouteObserver],
             ));
       },
     );

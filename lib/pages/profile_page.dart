@@ -7,6 +7,7 @@ import '../features/user/domain/entities/user.dart';
 import '../features/user/presentation/controllers/user_state_controller.dart';
 import '../generated/app_localizations.dart';
 import '../routes/app_routes.dart';
+import '../routes/route_refresh_observer.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/skeletons/skeletons.dart';
 
@@ -17,7 +18,8 @@ class ProfilePage extends StatefulWidget {
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _ProfilePageState extends State<ProfilePage>
+    with RouteAwareRefreshMixin<ProfilePage> {
   @override
   void initState() {
     super.initState();
@@ -127,6 +129,11 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   @override
+  Future<void> onRouteResume() async {
+    await _loadUserData();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final controller = Get.find<UserStateController>();
     final authController = Get.find<AuthStateController>();
@@ -142,7 +149,7 @@ class _ProfilePageState extends State<ProfilePage> {
           }
 
           final user = controller.currentUser.value;
-          
+
           // 如果用户数据为空，检查是否需要跳转登录
           if (user == null) {
             // 检查认证状态
@@ -173,55 +180,57 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 // Content
                 SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isMobile ? 16 : 32,
-                    vertical: isMobile ? 24 : 32, // 减少顶部留白，SafeArea 已处�?
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isMobile ? 16 : 32,
+                      vertical: isMobile ? 24 : 32, // 减少顶部留白，SafeArea 已处�?
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Login Notice (if not logged in)
+                        if (!controller.isLoggedIn)
+                          _buildLoginNotice(context, isMobile),
+
+                        // Profile Header
+                        _buildProfileHeader(
+                            context, user, controller, isMobile),
+                        const SizedBox(height: 32),
+
+                        // My Travel Plans (AI Generated)
+                        _buildTravelPlansSection(context, isMobile),
+                        const SizedBox(height: 32),
+
+                        // Stats
+                        _buildStatsSection(context, user.stats, isMobile),
+                        const SizedBox(height: 32),
+
+                        // Badges
+                        _buildBadgesSection(context, user.badges, isMobile),
+                        const SizedBox(height: 32),
+
+                        // Skills & Interests
+                        _buildSkillsAndInterests(
+                            context, user, controller, isMobile),
+                        const SizedBox(height: 32),
+
+                        // Travel History
+                        _buildTravelHistory(
+                            context, user.travelHistory, isMobile),
+                        const SizedBox(height: 32),
+
+                        // Social Links
+                        _buildSocialLinks(context, user.socialLinks, isMobile),
+
+                        const SizedBox(height: 48),
+
+                        // Legacy API Profile Link
+                        _buildLegacyProfileLink(context),
+                      ],
+                    ),
                   ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Login Notice (if not logged in)
-                    if (!controller.isLoggedIn)
-                      _buildLoginNotice(context, isMobile),
-
-                    // Profile Header
-                    _buildProfileHeader(context, user, controller, isMobile),
-                    const SizedBox(height: 32),
-
-                    // My Travel Plans (AI Generated)
-                    _buildTravelPlansSection(context, isMobile),
-                    const SizedBox(height: 32),
-
-                    // Stats
-                    _buildStatsSection(context, user.stats, isMobile),
-                    const SizedBox(height: 32),
-
-                    // Badges
-                    _buildBadgesSection(context, user.badges, isMobile),
-                    const SizedBox(height: 32),
-
-                    // Skills & Interests
-                    _buildSkillsAndInterests(
-                        context, user, controller, isMobile),
-                    const SizedBox(height: 32),
-
-                    // Travel History
-                    _buildTravelHistory(context, user.travelHistory, isMobile),
-                    const SizedBox(height: 32),
-
-                    // Social Links
-                    _buildSocialLinks(context, user.socialLinks, isMobile),
-
-                    const SizedBox(height: 48),
-
-                    // Legacy API Profile Link
-                    _buildLegacyProfileLink(context),
-                  ],
                 ),
-              ),
-            ),
-          ],
+              ],
             ),
           );
         }),
@@ -443,8 +452,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 '🌍', stats.countriesVisited.toString(), 'Countries', isMobile),
             _buildStatCard(
                 '🏙️', stats.citiesVisited.toString(), l10n.cities, isMobile),
-            _buildStatCard(
-                '📅', stats.reviewsWritten.toString(), 'Days nomading', isMobile),
+            _buildStatCard('📅', stats.reviewsWritten.toString(),
+                'Days nomading', isMobile),
             _buildStatCard(
                 '🤝', stats.photosShared.toString(), 'Meetups', isMobile),
             _buildStatCard(
@@ -821,8 +830,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                        '${trip.cityName}, ${trip.countryName ?? "Unknown"}',
+                    Text('${trip.cityName}, ${trip.countryName ?? "Unknown"}',
                         style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -1195,6 +1203,3 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 }
-
-
-

@@ -9,6 +9,7 @@ import '../core/core.dart';
 import '../features/city/application/use_cases/city_use_cases.dart';
 import '../features/city/domain/repositories/i_city_repository.dart';
 import '../generated/app_localizations.dart';
+import '../routes/route_refresh_observer.dart';
 import '../widgets/app_toast.dart';
 
 /// Coworking Home Page
@@ -20,7 +21,8 @@ class CoworkingHomePage extends StatefulWidget {
   State<CoworkingHomePage> createState() => _CoworkingHomePageState();
 }
 
-class _CoworkingHomePageState extends State<CoworkingHomePage> {
+class _CoworkingHomePageState extends State<CoworkingHomePage>
+    with RouteAwareRefreshMixin<CoworkingHomePage> {
   List<Map<String, dynamic>> _cities = [];
   bool _isLoading = true;
 
@@ -102,6 +104,11 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
   /// 刷新数据(仅重新加载数据,不重建整个页面)
   Future<void> _refreshData() async {
     await _loadCitiesWithCoworkingCount();
+  }
+
+  @override
+  Future<void> onRouteResume() async {
+    await _refreshData();
   }
 
   /// 加载城市及其coworking空间数量
@@ -335,7 +342,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
           print('   城市ID: ${city['id']}');
           print('   城市名称: ${city['name']}');
           print('   Coworking数量: ${city['spaces']}');
-          
+
           // 等待列表页返回,如果返回 true 则刷新城市列表
           final result = await Navigator.push(
             context,
@@ -343,6 +350,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
               builder: (context) => CoworkingListPage(
                 cityId: city['id'],
                 cityName: city['name'],
+                countryName: city['country'] as String?,
               ),
             ),
           );

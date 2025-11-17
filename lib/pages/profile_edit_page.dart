@@ -13,6 +13,7 @@ import '../features/user/presentation/controllers/user_state_controller.dart';
 import '../features/user_management/domain/repositories/iuser_management_repository.dart';
 import '../features/user_management/presentation/controllers/user_management_state_controller.dart';
 import '../generated/app_localizations.dart';
+import '../routes/route_refresh_observer.dart';
 import '../services/token_storage_service.dart';
 import '../utils/image_upload_helper.dart';
 import '../widgets/app_toast.dart';
@@ -25,7 +26,8 @@ class ProfileEditPage extends StatefulWidget {
   State<ProfileEditPage> createState() => _ProfileEditPageState();
 }
 
-class _ProfileEditPageState extends State<ProfileEditPage> {
+class _ProfileEditPageState extends State<ProfileEditPage>
+    with RouteAwareRefreshMixin<ProfileEditPage> {
   // 用户偏好设置
   bool _notifications = true;
   bool _travelHistoryVisible = true;
@@ -153,8 +155,13 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
   // 处理头像上传
   Future<void> _handleAvatarUpload() async {
+    final l10n = AppLocalizations.of(context)!;
+
     if (!SupabaseConfig.isConfigured) {
-      AppToast.error('Supabase 未配置，请联系管理员');
+      AppToast.error(
+        'Supabase 未配置，请联系管理员',
+        title: l10n.error,
+      );
       return;
     }
 
@@ -163,29 +170,56 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     try {
       final avatarUrl = await ImageUploadHelper.uploadAvatar(context);
 
-      if (avatarUrl != null && mounted) {
-        setState(() {
-          _newAvatarUrl = avatarUrl;
-          _uploadingAvatar = false;
-        });
+      if (avatarUrl == null) {
+        return;
+      }
 
+      if (!mounted) {
+        return;
+      }
+
+      final previousAvatar = _newAvatarUrl;
+      setState(() {
+        _newAvatarUrl = avatarUrl;
+      });
+
+      final profileController = Get.find<UserStateController>();
+      final updateSuccess =
+          await profileController.updateUser({'avatarUrl': avatarUrl});
+
+      if (updateSuccess) {
         AppToast.success(
-          '头像上传成功',
-          title: '成功',
+          l10n.profileUpdatedSuccessfully,
+          title: l10n.success,
         );
-
-        // TODO: 这里可以立即调用 API 保存头像 URL 到后端
-        // await profileController.updateAvatar(avatarUrl);
       } else {
-        setState(() => _uploadingAvatar = false);
+        setState(() {
+          _newAvatarUrl = previousAvatar;
+        });
+        AppToast.error(
+          '头像保存失败，请稍后重试',
+          title: l10n.error,
+        );
       }
     } catch (e) {
       debugPrint('❌ 头像上传失败: $e');
       if (mounted) {
+        AppToast.error(
+          '头像上传失败: $e',
+          title: l10n.error,
+        );
+      }
+    } finally {
+      if (mounted) {
         setState(() => _uploadingAvatar = false);
-        AppToast.error('头像上传失败: $e');
       }
     }
+  }
+
+  @override
+  Future<void> onRouteResume() async {
+    await _loadUserProfile();
+    await _checkAdminRole();
   }
 
   @override
@@ -1128,9 +1162,10 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 padding: const EdgeInsets.all(12),
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
+                  color: Colors.orange.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                  border:
+                      Border.all(color: Colors.orange.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [

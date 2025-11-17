@@ -187,8 +187,8 @@ class _ManageProsConsPageState extends State<ManageProsConsPage>
               ));
           await _loadData();
         },
-        child: const Icon(Icons.add),
         tooltip: '添加',
+        child: const Icon(Icons.add),
       ),
     );
   }

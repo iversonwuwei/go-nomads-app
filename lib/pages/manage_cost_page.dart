@@ -257,7 +257,7 @@ class _ManageCostPageState extends State<ManageCostPage> {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          '${expense.amount.toStringAsFixed(2)}',
+                          expense.amount.toStringAsFixed(2),
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -298,8 +298,8 @@ class _ManageCostPageState extends State<ManageCostPage> {
             await _loadData();
           }
         },
-        child: const Icon(Icons.add),
         tooltip: '添加费用',
+        child: const Icon(Icons.add),
       ),
     );
   }

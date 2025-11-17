@@ -6,11 +6,13 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../config/app_colors.dart';
+import '../config/supabase_config.dart';
 import '../features/city/domain/entities/city_option.dart';
 import '../features/location/presentation/controllers/location_state_controller.dart';
 import '../features/meetup/domain/entities/meetup.dart';
 import '../features/meetup/presentation/controllers/meetup_state_controller.dart';
 import '../generated/app_localizations.dart';
+import '../services/image_upload_service.dart';
 import '../widgets/app_toast.dart';
 import 'venue_map_picker_page.dart';
 
@@ -44,6 +46,10 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
   // 图片相关
   final List<XFile> _selectedImages = [];
   final ImagePicker _imagePicker = ImagePicker();
+  final ImageUploadService _imageUploadService = ImageUploadService();
+  bool _isUploadingImages = false;
+  double _uploadProgress = 0.0;
+  bool _isSubmitting = false;
 
   final LocationStateController _locationController =
       Get.find<LocationStateController>();
@@ -326,6 +332,80 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
     );
   }
 
+  Future<List<String>> _uploadVenueImages() async {
+    if (_selectedImages.isEmpty) {
+      return [];
+    }
+
+    if (!SupabaseConfig.isConfigured) {
+      final l10n = AppLocalizations.of(context)!;
+      AppToast.error(
+        'Image upload service is not configured. Please contact support.',
+        title: l10n.error,
+      );
+      throw Exception('Supabase not configured');
+    }
+
+    if (mounted) {
+      setState(() {
+        _isUploadingImages = true;
+        _uploadProgress = 0.0;
+      });
+    }
+
+    final l10n = AppLocalizations.of(context)!;
+    final imageFiles =
+        _selectedImages.map((image) => File(image.path)).toList();
+    final sanitizedFolderSegment = (_selectedCityId?.isNotEmpty == true
+            ? _selectedCityId!
+            : (_selectedCity ?? 'general'))
+        .replaceAll(RegExp(r'[^a-zA-Z0-9-_]'), '_');
+    final folderPath = 'meetups/$sanitizedFolderSegment/venues';
+
+    AppToast.info(
+      'Uploading ${imageFiles.length} venue photo${imageFiles.length > 1 ? 's' : ''}...',
+      title: l10n.notice,
+    );
+
+    try {
+      final uploadedUrls = await _imageUploadService.uploadMultipleImages(
+        imageFiles: imageFiles,
+        bucket: SupabaseConfig.defaultBucket,
+        folder: folderPath,
+        onProgress: (current, total) {
+          if (!mounted) return;
+          setState(() {
+            _uploadProgress = total == 0 ? 0 : current / total;
+          });
+        },
+      );
+
+      if (uploadedUrls.isEmpty) {
+        throw Exception('No venue photos were uploaded');
+      }
+
+      AppToast.success(
+        'Uploaded ${uploadedUrls.length} venue photo${uploadedUrls.length > 1 ? 's' : ''}',
+        title: l10n.success,
+      );
+
+      return uploadedUrls;
+    } catch (e) {
+      AppToast.error(
+        'Failed to upload venue photos: $e',
+        title: l10n.error,
+      );
+      rethrow;
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUploadingImages = false;
+          _uploadProgress = 0.0;
+        });
+      }
+    }
+  }
+
   void _showOptionPicker({
     required List<String> options,
     required String title,
@@ -429,60 +509,88 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
   }
 
   void _createMeetup() async {
-    if (_formKey.currentState!.validate()) {
-      if (_selectedCity == null ||
-          _selectedDate == null ||
-          _selectedTime == null) {
-        final l10n = AppLocalizations.of(context)!;
-        AppToast.error(
-          l10n.pleaseFillAllFields,
-          title: l10n.error,
-        );
+    if (_isUploadingImages || _isSubmitting) {
+      return;
+    }
+
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    if (_selectedCity == null ||
+        _selectedDate == null ||
+        _selectedTime == null) {
+      final l10n = AppLocalizations.of(context)!;
+      AppToast.error(
+        l10n.pleaseFillAllFields,
+        title: l10n.error,
+      );
+      return;
+    }
+
+    try {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = true;
+        });
+      }
+
+      final startDateTime = DateTime(
+        _selectedDate!.year,
+        _selectedDate!.month,
+        _selectedDate!.day,
+        _selectedTime!.hour,
+        _selectedTime!.minute,
+      );
+
+      final meetupType = MeetupType.fromString(_typeController.text.isEmpty
+          ? 'social'
+          : _typeController.text.toLowerCase());
+
+      List<String> uploadedImageUrls = [];
+      if (_selectedImages.isNotEmpty) {
+        uploadedImageUrls = await _uploadVenueImages();
+      }
+
+      final createdMeetup = await meetupController.createMeetup(
+        title: _titleController.text,
+        type: meetupType,
+        description: _descriptionController.text,
+        cityId: _selectedCityId ?? '',
+        venue: _venueController.text,
+        venueAddress: _venueController.text,
+        startTime: startDateTime,
+        maxAttendees: _maxAttendees.toInt(),
+        imageUrl: uploadedImageUrls.isNotEmpty ? uploadedImageUrls.first : null,
+        images: uploadedImageUrls.isEmpty ? null : uploadedImageUrls,
+      );
+
+      if (createdMeetup == null) {
         return;
       }
 
-      try {
-        // 组合日期和时间
-        final startDateTime = DateTime(
-          _selectedDate!.year,
-          _selectedDate!.month,
-          _selectedDate!.day,
-          _selectedTime!.hour,
-          _selectedTime!.minute,
-        );
+      final l10n = AppLocalizations.of(context)!;
+      AppToast.success(
+        l10n.meetupCreatedSuccess,
+        title: l10n.success,
+      );
 
-        // 根据活动类型文本创建 MeetupType
-        final meetupType = MeetupType.fromString(_typeController.text.isEmpty
-            ? 'social'
-            : _typeController.text.toLowerCase());
+      await _showAddToCalendarDialog();
 
-        await meetupController.createMeetup(
-          title: _titleController.text,
-          type: meetupType,
-          description: _descriptionController.text,
-          cityId: _selectedCityId ?? '',
-          venue: _venueController.text,
-          venueAddress: _venueController.text, // 使用 venue 作为 address
-          startTime: startDateTime,
-          maxAttendees: _maxAttendees.toInt(),
-          images: _selectedImages.map((image) => image.path).toList(),
-        );
+      if (mounted) {
+        setState(() {
+          _selectedImages.clear();
+        });
+      }
 
-        // 显示成功消息
-        final l10n = AppLocalizations.of(context)!;
-        AppToast.success(
-          l10n.meetupCreatedSuccess,
-          title: l10n.success,
-        );
-
-        // 先显示添加到日历的对话框
-        await _showAddToCalendarDialog();
-
-        // 对话框关闭后，返回到列表页并触发刷新
-        Get.back(result: true);
-      } catch (e) {
-        print('❌ 创建 meetup 失败: $e');
-        // 错误已经在 controller 中通过 AppToast 显示了
+      Get.back(result: true);
+    } catch (e) {
+      print('❌ 创建 meetup 失败: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
       }
     }
   }
@@ -1435,6 +1543,49 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                 },
               ),
 
+            if (_isUploadingImages)
+              Padding(
+                padding: const EdgeInsets.only(top: 12, bottom: 4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            value: _uploadProgress > 0 ? _uploadProgress : null,
+                            valueColor: const AlwaysStoppedAnimation(
+                              Color(0xFFFF4458),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Uploading venue photos... (${(_uploadProgress * 100).clamp(0, 100).toStringAsFixed(0)}%)',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    LinearProgressIndicator(
+                      value: _uploadProgress > 0 ? _uploadProgress : null,
+                      minHeight: 4,
+                      backgroundColor: Colors.grey.shade200,
+                      valueColor:
+                          const AlwaysStoppedAnimation(Color(0xFFFF4458)),
+                    ),
+                  ],
+                ),
+              ),
+
             // 如果没有图片，显示添加按钮
             if (_selectedImages.isEmpty)
               InkWell(
@@ -1483,28 +1634,59 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
             const SizedBox(height: 32),
 
             // Create Button
-            SizedBox(
-              height: 48,
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _createMeetup,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFF4458),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+            Obx(() {
+              final isControllerLoading = meetupController.isLoading.value;
+              final isProcessing =
+                  isControllerLoading || _isUploadingImages || _isSubmitting;
+              final buttonLabel = AppLocalizations.of(context)!.createMeetup;
+
+              return SizedBox(
+                height: 48,
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: isProcessing ? null : _createMeetup,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF4458),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
+                  child: isProcessing
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: const AlwaysStoppedAnimation(
+                                  Colors.white,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              buttonLabel,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        )
+                      : Text(
+                          buttonLabel,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                 ),
-                child: Text(
-                  AppLocalizations.of(context)!.createMeetup,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
+              );
+            }),
 
             // 底部安全区域间距
             SizedBox(height: MediaQuery.of(context).padding.bottom + 32),

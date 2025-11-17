@@ -7,6 +7,7 @@ import '../core/core.dart';
 import '../features/city/domain/entities/city.dart';
 import '../features/city/presentation/controllers/city_state_controller.dart';
 import '../generated/app_localizations.dart';
+import '../routes/route_refresh_observer.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/skeletons/skeletons.dart';
 import 'city_detail_page.dart';
@@ -20,7 +21,8 @@ class CityListPage extends StatefulWidget {
   State<CityListPage> createState() => _CityListPageState();
 }
 
-class _CityListPageState extends State<CityListPage> {
+class _CityListPageState extends State<CityListPage>
+    with RouteAwareRefreshMixin<CityListPage> {
   final CityStateController controller = Get.find<CityStateController>();
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -45,16 +47,17 @@ class _CityListPageState extends State<CityListPage> {
     ever(controller.maxPrice, (_) => setState(() {}));
     ever(controller.minInternet, (_) => setState(() {}));
     ever(controller.minRating, (_) => setState(() {}));
+    ever(controller.cities, (_) => _syncFollowedStatusFromController());
   }
 
   @override
   void dispose() {
     _searchController.dispose();
     _scrollController.dispose();
-    
+
     // 清空搜索条件和结果
     controller.searchQuery.value = '';
-    
+
     super.dispose();
   }
 
@@ -195,6 +198,12 @@ class _CityListPageState extends State<CityListPage> {
       backgroundColor: Colors.transparent,
       builder: (context) => _CityFilterDrawer(controller: controller),
     );
+  }
+
+  @override
+  Future<void> onRouteResume() async {
+    await controller.loadInitialCities();
+    _syncFollowedStatusFromController();
   }
 
   @override
@@ -568,7 +577,7 @@ class _CityListPageState extends State<CityListPage> {
                 Positioned(
                   top: 12,
                   right: 12,
-                  child: _buildFollowButton(city.id),
+                  child: _buildFollowButton(city),
                 ),
               ],
             ),
@@ -856,11 +865,11 @@ class _CityListPageState extends State<CityListPage> {
   }
 
   // 构建关注按钮
-  Widget _buildFollowButton(String cityId) {
-    final isFollowed = _followedCities[cityId] ?? false;
+  Widget _buildFollowButton(City city) {
+    final isFollowed = _isCityFollowed(city);
 
     return GestureDetector(
-      onTap: () => _toggleFollow(cityId),
+      onTap: () => _toggleFollow(city),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
@@ -899,8 +908,13 @@ class _CityListPageState extends State<CityListPage> {
     );
   }
 
+  bool _isCityFollowed(City city) {
+    return _followedCities[city.id] ?? city.isFavorite;
+  }
+
   // 切换关注状态
-  void _toggleFollow(String cityId) async {
+  void _toggleFollow(City city) async {
+    final cityId = city.id;
     if (_isLoadingFollowedCities) {
       return; // 正在加载时不允许操作
     }
@@ -939,6 +953,15 @@ class _CityListPageState extends State<CityListPage> {
       });
       AppToast.error('操作失败: $e');
     }
+  }
+
+  void _syncFollowedStatusFromController() {
+    if (!mounted) return;
+    setState(() {
+      for (final city in controller.cities) {
+        _followedCities[city.id] = city.isFavorite;
+      }
+    });
   }
 
   /// 加载用户已关注的城市列表
