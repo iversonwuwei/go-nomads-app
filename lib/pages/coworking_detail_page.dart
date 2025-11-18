@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../features/coworking/application/use_cases/coworking_comment_use_cases.dart';
+import '../features/coworking/domain/entities/coworking_comment.dart';
 import '../features/coworking/domain/entities/coworking_space.dart';
+import '../features/coworking/presentation/pages/add_coworking_comment_page.dart';
 import '../generated/app_localizations.dart';
 import '../widgets/coworking_verification_badge.dart';
 import 'osm_navigation_page.dart';
@@ -25,11 +28,53 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
   final PageController _pageController = PageController();
   int _currentImageIndex = 0;
   late CoworkingSpace _space;
+  List<CoworkingComment> _comments = [];
+  bool _isLoadingComments = false;
 
   @override
   void initState() {
     super.initState();
     _space = widget.space;
+    _loadComments();
+  }
+
+  Future<void> _loadComments() async {
+    setState(() {
+      _isLoadingComments = true;
+    });
+
+    try {
+      final commentUseCases = Get.find<CoworkingCommentUseCases>();
+      final comments = await commentUseCases.getComments(
+        _space.id,
+        page: 1,
+        pageSize: 5, // 只显示最新5条评论
+      );
+
+      setState(() {
+        _comments = comments;
+        _isLoadingComments = false;
+      });
+    } catch (e) {
+      print('加载评论失败: $e');
+      setState(() {
+        _isLoadingComments = false;
+      });
+    }
+  }
+
+  Future<void> _navigateToAddComment() async {
+    final result = await Get.to<bool>(
+      () => AddCoworkingCommentPage(
+        coworkingId: _space.id,
+        coworkingName: _space.name,
+      ),
+    );
+
+    if (result == true) {
+      // 刷新评论列表
+      await _loadComments();
+    }
   }
 
   @override
@@ -330,6 +375,11 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
 
                 // Contact
                 _buildContactSection(context),
+
+                const Divider(),
+
+                // Comments
+                _buildCommentsSection(context),
 
                 const SizedBox(height: 100),
               ],
@@ -1015,6 +1065,191 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                       color: Colors.green,
                     ),
                   ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// 评论区域
+  Widget _buildCommentsSection(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                '用户评论',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              TextButton.icon(
+                onPressed: _navigateToAddComment,
+                icon: const Icon(Icons.add_comment, size: 20),
+                label: const Text('发表评论'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (_isLoadingComments)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(32.0),
+                child: CircularProgressIndicator(),
+              ),
+            )
+          else if (_comments.isEmpty)
+            Container(
+              padding: const EdgeInsets.all(32),
+              alignment: Alignment.center,
+              child: Column(
+                children: [
+                  Icon(Icons.comment_outlined,
+                      size: 48, color: Colors.grey[400]),
+                  const SizedBox(height: 16),
+                  Text(
+                    '暂无评论',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '成为第一个发表评论的人',
+                    style: TextStyle(
+                      color: Colors.grey[500],
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            Column(
+              children: _comments.map((comment) {
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: Colors.blue[100],
+                              child: Text(
+                                comment.userId.substring(0, 1).toUpperCase(),
+                                style: TextStyle(
+                                  color: Colors.blue[700],
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    comment.userId.substring(0, 8),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  Text(
+                                    _formatDate(comment.createdAt),
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        // 评分星级
+                        if (comment.rating > 0)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Row(
+                              children: List.generate(5, (index) {
+                                return Icon(
+                                  index < comment.rating
+                                      ? Icons.star
+                                      : Icons.star_border,
+                                  color: Colors.amber,
+                                  size: 18,
+                                );
+                              }),
+                            ),
+                          ),
+                        Text(
+                          comment.content,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            height: 1.5,
+                          ),
+                        ),
+                        if (comment.images != null &&
+                            comment.images!.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 12),
+                            child: Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: comment.images!.take(3).map((imageUrl) {
+                                return ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.network(
+                                    imageUrl,
+                                    width: 100,
+                                    height: 100,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Container(
+                                        width: 100,
+                                        height: 100,
+                                        color: Colors.grey[300],
+                                        child: const Icon(Icons.image),
+                                      );
+                                    },
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          if (_comments.isNotEmpty && _comments.length >= 5)
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: Center(
+                child: TextButton(
+                  onPressed: () {
+                    // TODO: 跳转到查看所有评论页面
+                    Get.snackbar(
+                      '提示',
+                      '查看所有评论功能开发中',
+                      snackPosition: SnackPosition.BOTTOM,
+                    );
+                  },
+                  child: const Text('查看更多评论'),
                 ),
               ),
             ),

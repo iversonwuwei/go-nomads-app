@@ -33,9 +33,12 @@ import '../../features/city/presentation/controllers/city_state_controller.dart'
 import '../../features/community/domain/repositories/i_community_repository.dart';
 import '../../features/community/infrastructure/repositories/community_repository.dart';
 import '../../features/community/presentation/controllers/community_state_controller.dart';
+import '../../features/coworking/application/use_cases/coworking_comment_use_cases.dart';
 // Coworking Domain
 import '../../features/coworking/application/use_cases/coworking_use_cases.dart';
+import '../../features/coworking/domain/repositories/icoworking_comment_repository.dart';
 import '../../features/coworking/domain/repositories/icoworking_repository.dart';
+import '../../features/coworking/infrastructure/repositories/coworking_comment_repository.dart';
 import '../../features/coworking/infrastructure/repositories/coworking_repository.dart';
 import '../../features/coworking/presentation/controllers/coworking_state_controller.dart';
 // Hotel Domain
@@ -436,6 +439,10 @@ class DependencyInjection {
       () => CoworkingRepository(),
     );
 
+    Get.lazyPut<ICoworkingCommentRepository>(
+      () => CoworkingCommentRepository(),
+    );
+
     // Use Cases - 查询类
     Get.lazyPut(() => GetCoworkingSpacesByCityUseCase(
           Get.find<ICoworkingRepository>(),
@@ -465,6 +472,11 @@ class DependencyInjection {
         ));
     Get.lazyPut(() => SubmitCoworkingVerificationUseCase(
           Get.find<ICoworkingRepository>(),
+        ));
+
+    // Use Cases - 评论
+    Get.lazyPut(() => CoworkingCommentUseCases(
+          Get.find<ICoworkingCommentRepository>(),
         ));
 
     // Controller
