@@ -463,6 +463,9 @@ class DependencyInjection {
     Get.lazyPut(() => DeleteCoworkingUseCase(
           Get.find<ICoworkingRepository>(),
         ));
+    Get.lazyPut(() => SubmitCoworkingVerificationUseCase(
+          Get.find<ICoworkingRepository>(),
+        ));
 
     // Controller
     Get.lazyPut(
@@ -471,6 +474,8 @@ class DependencyInjection {
             Get.find<GetCoworkingSpacesByCityUseCase>(),
         getCoworkingByIdUseCase: Get.find<GetCoworkingByIdUseCase>(),
         getCityCoworkingCountUseCase: Get.find<GetCityCoworkingCountUseCase>(),
+        submitCoworkingVerificationUseCase:
+            Get.find<SubmitCoworkingVerificationUseCase>(),
       ),
     );
   }

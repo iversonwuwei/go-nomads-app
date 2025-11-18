@@ -27,6 +27,7 @@ import '../routes/app_routes.dart';
 import '../routes/route_refresh_observer.dart';
 import '../services/token_storage_service.dart';
 import '../widgets/app_toast.dart';
+import '../widgets/coworking_verification_badge.dart';
 import '../widgets/rating_item_dialog.dart';
 import '../widgets/skeletons/skeletons.dart';
 import 'add_cost_page.dart';
@@ -4245,41 +4246,18 @@ class _CityDetailPageState extends State<CityDetailPage>
                     ),
                   ),
                 ),
-                // Verified 徽章
-                if (space.isVerified)
-                  Positioned(
-                    top: 12,
-                    right: 12,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.blue,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.verified,
-                            size: 14,
-                            color: Colors.white,
-                          ),
-                          SizedBox(width: 4),
-                          Text(
-                            'Verified',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
+                // Verification 徽章
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: CoworkingVerificationBadge(
+                    space: space,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
                     ),
                   ),
+                ),
               ],
             ),
 

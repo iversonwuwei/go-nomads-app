@@ -12,6 +12,9 @@ class CoworkingSpace {
   final OperationHours operationHours;
   final bool isVerified;
   final DateTime? lastUpdated;
+  final String? createdBy;
+  final int verificationVotes;
+  final bool isOwner;
 
   CoworkingSpace({
     required this.id,
@@ -25,6 +28,9 @@ class CoworkingSpace {
     required this.operationHours,
     this.isVerified = false,
     this.lastUpdated,
+    this.createdBy,
+    this.verificationVotes = 0,
+    this.isOwner = false,
   });
 
   // === 业务逻辑方法 ===

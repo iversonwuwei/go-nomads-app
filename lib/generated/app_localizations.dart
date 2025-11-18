@@ -1568,6 +1568,36 @@ abstract class AppLocalizations {
   /// **'访问网站'**
   String get visitWebsite;
 
+  /// 提交共享办公认证时弹窗的标题
+  ///
+  /// In zh, this message translates to:
+  /// **'空间认证'**
+  String get coworkingVerifyTitle;
+
+  /// 未登录用户点击认证徽章时的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'请先登录再进行空间认证。'**
+  String get coworkingVerifyLoginRequired;
+
+  /// 提交共享办公认证前的确认文案
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要为 {spaceName} 提交认证吗？'**
+  String coworkingVerifyMessage(String spaceName);
+
+  /// 认证成功后的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'认证已提交，感谢你的贡献！'**
+  String get coworkingVerifySuccess;
+
+  /// 认证失败后的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'认证提交失败，请稍后再试。'**
+  String get coworkingVerifyFailed;
+
   /// No description provided for @shareLocation.
   ///
   /// In zh, this message translates to:

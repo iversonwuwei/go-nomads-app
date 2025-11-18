@@ -257,6 +257,32 @@
   "callNow": "立即呼叫",
   "bookNow": "立即预订",
   "visitWebsite": "访问网站",
+  "coworkingVerifyTitle": "空间认证",
+  "@coworkingVerifyTitle": {
+    "description": "提交共享办公认证时弹窗的标题"
+  },
+  "coworkingVerifyLoginRequired": "请先登录再进行空间认证。",
+  "@coworkingVerifyLoginRequired": {
+    "description": "未登录用户点击认证徽章时的提示"
+  },
+  "coworkingVerifyMessage": "确定要为 {spaceName} 提交认证吗？",
+  "@coworkingVerifyMessage": {
+    "description": "提交共享办公认证前的确认文案",
+    "placeholders": {
+      "spaceName": {
+        "type": "String",
+        "example": "Nomad Hub 上海"
+      }
+    }
+  },
+  "coworkingVerifySuccess": "认证已提交，感谢你的贡献！",
+  "@coworkingVerifySuccess": {
+    "description": "认证成功后的提示"
+  },
+  "coworkingVerifyFailed": "认证提交失败，请稍后再试。",
+  "@coworkingVerifyFailed": {
+    "description": "认证失败后的提示"
+  },
   "shareLocation": "分享位置",
   "addToFavorites": "添加到收藏",
   "removeFromFavorites": "从收藏移除",

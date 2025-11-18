@@ -257,6 +257,32 @@
   "callNow": "Call Now",
   "bookNow": "Book Now",
   "visitWebsite": "Visit Website",
+  "coworkingVerifyTitle": "Verify Coworking Space",
+  "@coworkingVerifyTitle": {
+    "description": "Dialog title shown when a user is about to verify a coworking space"
+  },
+  "coworkingVerifyLoginRequired": "Please log in before verifying a space.",
+  "@coworkingVerifyLoginRequired": {
+    "description": "Snackbar body shown when unauthenticated users tap the verification badge"
+  },
+  "coworkingVerifyMessage": "Are you sure you want to verify {spaceName} for the community?",
+  "@coworkingVerifyMessage": {
+    "description": "Confirmation copy shown before submitting a coworking verification vote",
+    "placeholders": {
+      "spaceName": {
+        "type": "String",
+        "example": "Nomad Hub Bali"
+      }
+    }
+  },
+  "coworkingVerifySuccess": "Thanks! Your verification helps keep listings trustworthy.",
+  "@coworkingVerifySuccess": {
+    "description": "Snackbar body shown when verification succeeds"
+  },
+  "coworkingVerifyFailed": "Verification failed. Please try again later.",
+  "@coworkingVerifyFailed": {
+    "description": "Snackbar body shown when verification submission fails"
+  },
   "shareLocation": "Share Location",
   "addToFavorites": "Add to Favorites",
   "removeFromFavorites": "Remove from Favorites",

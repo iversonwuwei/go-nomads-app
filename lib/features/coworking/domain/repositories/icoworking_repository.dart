@@ -40,4 +40,7 @@ abstract class ICoworkingRepository {
 
   /// 删除 Coworking 空间
   Future<Result<void>> deleteCoworkingSpace(String id);
+
+  /// 提交 Coworking 空间认证
+  Future<Result<CoworkingSpace>> submitVerification(String id);
 }

@@ -746,6 +746,23 @@ class AppLocalizationsZh extends AppLocalizations {
   String get visitWebsite => '访问网站';
 
   @override
+  String get coworkingVerifyTitle => '空间认证';
+
+  @override
+  String get coworkingVerifyLoginRequired => '请先登录再进行空间认证。';
+
+  @override
+  String coworkingVerifyMessage(String spaceName) {
+    return '确定要为 $spaceName 提交认证吗？';
+  }
+
+  @override
+  String get coworkingVerifySuccess => '认证已提交，感谢你的贡献！';
+
+  @override
+  String get coworkingVerifyFailed => '认证提交失败，请稍后再试。';
+
+  @override
   String get shareLocation => '分享位置';
 
   @override

@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 
 import '../generated/app_localizations.dart';
 import '../routes/route_refresh_observer.dart';
+import '../widgets/coworking_verification_badge.dart';
 
 /// Coworking List Page
 /// 共享办公空间列表页面
@@ -27,7 +28,7 @@ class CoworkingListPage extends StatefulWidget {
 }
 
 class _CoworkingListPageState extends State<CoworkingListPage>
-  with RouteAwareRefreshMixin<CoworkingListPage> {
+    with RouteAwareRefreshMixin<CoworkingListPage> {
   bool _isGridView = true;
   late final CoworkingStateController controller;
   final ScrollController _scrollController = ScrollController();
@@ -365,45 +366,11 @@ class _CoworkingListPageState extends State<CoworkingListPage>
                     },
                   ),
                 ),
-                if (space.isVerified)
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Builder(
-                      builder: (context) {
-                        final l10n = AppLocalizations.of(context)!;
-                        return Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.blue,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.verified,
-                                size: 14,
-                                color: Colors.white,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                l10n.verified,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ),
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: CoworkingVerificationBadge(space: space),
+                ),
               ],
             ),
 

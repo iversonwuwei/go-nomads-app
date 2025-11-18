@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../features/coworking/domain/entities/coworking_space.dart';
 import '../generated/app_localizations.dart';
+import '../widgets/coworking_verification_badge.dart';
 import 'osm_navigation_page.dart';
 
 /// Coworking Detail Page
@@ -23,6 +24,13 @@ class CoworkingDetailPage extends StatefulWidget {
 class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
   final PageController _pageController = PageController();
   int _currentImageIndex = 0;
+  late CoworkingSpace _space;
+
+  @override
+  void initState() {
+    super.initState();
+    _space = widget.space;
+  }
 
   @override
   void dispose() {
@@ -33,8 +41,8 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
   // 获取所有图片列表
   List<String> get _allImages {
     final images = <String>[];
-    images.add(widget.space.spaceInfo.imageUrl);
-    images.addAll(widget.space.spaceInfo.images);
+    images.add(_space.spaceInfo.imageUrl);
+    images.addAll(_space.spaceInfo.images);
     return images;
   }
 
@@ -52,7 +60,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
-                widget.space.name,
+                _space.name,
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -91,7 +99,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                           },
                         )
                       : Image.network(
-                          widget.space.spaceInfo.imageUrl,
+                          _space.spaceInfo.imageUrl,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
                             return Container(
@@ -197,14 +205,14 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                                 size: 18, color: Colors.amber),
                             const SizedBox(width: 4),
                             Text(
-                              widget.space.spaceInfo.rating.toStringAsFixed(1),
+                              _space.spaceInfo.rating.toStringAsFixed(1),
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
                               ),
                             ),
                             Text(
-                              ' (${widget.space.spaceInfo.reviewCount} ${l10n.reviews})',
+                              ' (${_space.spaceInfo.reviewCount} ${l10n.reviews})',
                               style: TextStyle(
                                 color: Colors.grey[600],
                                 fontSize: 14,
@@ -214,37 +222,21 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                         ),
                       ),
 
-                      // Verified Badge
-                      if (widget.space.isVerified)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.blue[50],
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.verified,
-                                  size: 18, color: Colors.blue),
-                              const SizedBox(width: 4),
-                              Text(
-                                l10n.verified,
-                                style: const TextStyle(
-                                  color: Colors.blue,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
+                      CoworkingVerificationBadge(
+                        space: _space,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
                         ),
+                        onVerified: (updatedSpace) {
+                          setState(() {
+                            _space = updatedSpace;
+                          });
+                        },
+                      ),
 
                       // Last Updated Badge
-                      if (widget.space.lastUpdated != null)
+                      if (_space.lastUpdated != null)
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 12,
@@ -261,7 +253,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                                   size: 18, color: Colors.grey),
                               const SizedBox(width: 4),
                               Text(
-                                'Updated ${_formatDate(widget.space.lastUpdated!)}',
+                                'Updated ${_formatDate(_space.lastUpdated!)}',
                                 style: TextStyle(
                                   color: Colors.grey[700],
                                   fontWeight: FontWeight.w500,
@@ -280,9 +272,9 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                 // Address
                 ListTile(
                   leading: const Icon(Icons.location_on, color: Colors.red),
-                  title: Text(widget.space.location.address),
+                  title: Text(_space.location.address),
                   subtitle: Text(
-                      '${widget.space.location.city}, ${widget.space.location.country}'),
+                      '${_space.location.city}, ${_space.location.country}'),
                 ),
 
                 const Divider(),
@@ -302,7 +294,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        widget.space.spaceInfo.description,
+                        _space.spaceInfo.description,
                         style: TextStyle(
                           fontSize: 15,
                           color: Colors.grey[700],
@@ -331,10 +323,10 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                 const Divider(),
 
                 // Opening Hours
-                if (widget.space.operationHours.hasHours)
+                if (_space.operationHours.hasHours)
                   _buildOpeningHoursSection(context),
 
-                if (widget.space.operationHours.hasHours) const Divider(),
+                if (_space.operationHours.hasHours) const Divider(),
 
                 // Contact
                 _buildContactSection(context),
@@ -370,7 +362,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                 ),
                 onPressed: () {
                   // 跳转到 OSM Navigation 页面进行导航
-                  Get.to(() => OSMNavigationPage(coworkingSpace: widget.space));
+                  Get.to(() => OSMNavigationPage(coworkingSpace: _space));
                 },
               ),
             ),
@@ -382,8 +374,8 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                onPressed: widget.space.contactInfo.hasWebsite
-                    ? () => _launchURL(widget.space.contactInfo.website)
+                onPressed: _space.contactInfo.hasWebsite
+                    ? () => _launchURL(_space.contactInfo.website)
                     : null,
               ),
             ),
@@ -411,23 +403,22 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
           const SizedBox(height: 16),
           Row(
             children: [
-              if (widget.space.pricing.hourlyRate != null)
+              if (_space.pricing.hourlyRate != null)
                 Expanded(
                   child: _buildPriceCard(
                     l10n.hourly,
-                    widget.space.pricing.hourlyRate!,
-                    widget.space.pricing.currency,
+                    _space.pricing.hourlyRate!,
+                    _space.pricing.currency,
                     Icons.access_time,
                   ),
                 ),
-              if (widget.space.pricing.dailyRate != null) ...[
-                if (widget.space.pricing.hourlyRate != null)
-                  const SizedBox(width: 8),
+              if (_space.pricing.dailyRate != null) ...[
+                if (_space.pricing.hourlyRate != null) const SizedBox(width: 8),
                 Expanded(
                   child: _buildPriceCard(
                     l10n.daily,
-                    widget.space.pricing.dailyRate!,
-                    widget.space.pricing.currency,
+                    _space.pricing.dailyRate!,
+                    _space.pricing.currency,
                     Icons.today,
                   ),
                 ),
@@ -437,30 +428,29 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
           const SizedBox(height: 8),
           Row(
             children: [
-              if (widget.space.pricing.weeklyRate != null)
+              if (_space.pricing.weeklyRate != null)
                 Expanded(
                   child: _buildPriceCard(
                     l10n.weekly,
-                    widget.space.pricing.weeklyRate!,
-                    widget.space.pricing.currency,
+                    _space.pricing.weeklyRate!,
+                    _space.pricing.currency,
                     Icons.date_range,
                   ),
                 ),
-              if (widget.space.pricing.monthlyRate != null) ...[
-                if (widget.space.pricing.weeklyRate != null)
-                  const SizedBox(width: 8),
+              if (_space.pricing.monthlyRate != null) ...[
+                if (_space.pricing.weeklyRate != null) const SizedBox(width: 8),
                 Expanded(
                   child: _buildPriceCard(
                     l10n.monthly,
-                    widget.space.pricing.monthlyRate!,
-                    widget.space.pricing.currency,
+                    _space.pricing.monthlyRate!,
+                    _space.pricing.currency,
                     Icons.calendar_month,
                   ),
                 ),
               ],
             ],
           ),
-          if (widget.space.pricing.hasFreeTrial) ...[
+          if (_space.pricing.hasFreeTrial) ...[
             const SizedBox(height: 12),
             Container(
               width: double.infinity,
@@ -476,7 +466,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      '${l10n.freeTrialAvailable} ${widget.space.pricing.trialDuration ?? ''}',
+                      '${l10n.freeTrialAvailable} ${_space.pricing.trialDuration ?? ''}',
                       style: TextStyle(
                         color: Colors.green[700],
                         fontWeight: FontWeight.w600,
@@ -546,7 +536,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
               Expanded(
                 child: _buildSpecCard(
                   l10n.wifiSpeed,
-                  '${widget.space.specs.wifiSpeed?.toStringAsFixed(0) ?? 'N/A'} Mbps',
+                  '${_space.specs.wifiSpeed?.toStringAsFixed(0) ?? 'N/A'} Mbps',
                   Icons.wifi,
                   Colors.blue,
                 ),
@@ -555,7 +545,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
               Expanded(
                 child: _buildSpecCard(
                   l10n.capacity,
-                  '${widget.space.specs.capacity ?? 'N/A'} ${l10n.people}',
+                  '${_space.specs.capacity ?? 'N/A'} ${l10n.people}',
                   Icons.people,
                   Colors.green,
                 ),
@@ -565,22 +555,22 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
           const SizedBox(height: 8),
           Row(
             children: [
-              if (widget.space.specs.numberOfDesks != null)
+              if (_space.specs.numberOfDesks != null)
                 Expanded(
                   child: _buildSpecCard(
                     l10n.desks,
-                    '${widget.space.specs.numberOfDesks}',
+                    '${_space.specs.numberOfDesks}',
                     Icons.desk,
                     Colors.orange,
                   ),
                 ),
-              if (widget.space.specs.numberOfMeetingRooms != null) ...[
-                if (widget.space.specs.numberOfDesks != null)
+              if (_space.specs.numberOfMeetingRooms != null) ...[
+                if (_space.specs.numberOfDesks != null)
                   const SizedBox(width: 8),
                 Expanded(
                   child: _buildSpecCard(
                     l10n.meetingRooms,
-                    '${widget.space.specs.numberOfMeetingRooms}',
+                    '${_space.specs.numberOfMeetingRooms}',
                     Icons.meeting_room,
                     Colors.purple,
                   ),
@@ -588,27 +578,27 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
               ],
             ],
           ),
-          if (widget.space.specs.noiseLevel != null) ...[
+          if (_space.specs.noiseLevel != null) ...[
             const SizedBox(height: 8),
             _buildSpecCard(
               l10n.noiseLevel,
-              _getNoiseDisplayText(widget.space.specs.noiseLevel!, l10n),
+              _getNoiseDisplayText(_space.specs.noiseLevel!, l10n),
               Icons.volume_down,
               Colors.red,
             ),
           ],
           // 空间类型
-          if (widget.space.specs.spaceType != null) ...[
+          if (_space.specs.spaceType != null) ...[
             const SizedBox(height: 8),
             _buildSpecCard(
               'Space Type',
-              _getSpaceTypeDisplayText(widget.space.specs.spaceType!, l10n),
+              _getSpaceTypeDisplayText(_space.specs.spaceType!, l10n),
               Icons.dashboard,
               Colors.indigo,
             ),
           ],
           // 自然光
-          if (widget.space.specs.hasNaturalLight) ...[
+          if (_space.specs.hasNaturalLight) ...[
             const SizedBox(height: 8),
             _buildSpecCard(
               'Natural Light',
@@ -688,7 +678,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
   /// 设施区域
   Widget _buildAmenitiesSection(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final amenities = widget.space.amenities.getAvailableAmenities();
+    final amenities = _space.amenities.getAvailableAmenities();
 
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -787,7 +777,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
             ),
           ),
           const SizedBox(height: 16),
-          ...widget.space.operationHours.hours.map((hours) => Padding(
+          ..._space.operationHours.hours.map((hours) => Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Row(
                   children: [
@@ -821,10 +811,9 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
             ),
           ),
           const SizedBox(height: 16),
-          if (widget.space.contactInfo.phone.isNotEmpty)
+          if (_space.contactInfo.phone.isNotEmpty)
             InkWell(
-              onTap: () =>
-                  _makePhoneCall(context, widget.space.contactInfo.phone),
+              onTap: () => _makePhoneCall(context, _space.contactInfo.phone),
               borderRadius: BorderRadius.circular(12),
               child: Container(
                 padding: const EdgeInsets.all(16),
@@ -861,7 +850,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            widget.space.contactInfo.phone,
+                            _space.contactInfo.phone,
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -904,13 +893,12 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                 ),
               ),
             ),
-          if (widget.space.contactInfo.phone.isNotEmpty &&
-              widget.space.contactInfo.email.isNotEmpty)
+          if (_space.contactInfo.phone.isNotEmpty &&
+              _space.contactInfo.email.isNotEmpty)
             const SizedBox(height: 12),
-          if (widget.space.contactInfo.email.isNotEmpty)
+          if (_space.contactInfo.email.isNotEmpty)
             InkWell(
-              onTap: () =>
-                  _launchURL('mailto:${widget.space.contactInfo.email}'),
+              onTap: () => _launchURL('mailto:${_space.contactInfo.email}'),
               borderRadius: BorderRadius.circular(12),
               child: Container(
                 padding: const EdgeInsets.all(16),
@@ -947,7 +935,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            widget.space.contactInfo.email,
+                            _space.contactInfo.email,
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -967,13 +955,13 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                 ),
               ),
             ),
-          if ((widget.space.contactInfo.phone.isNotEmpty ||
-                  widget.space.contactInfo.email.isNotEmpty) &&
-              widget.space.contactInfo.hasWebsite)
+          if ((_space.contactInfo.phone.isNotEmpty ||
+                  _space.contactInfo.email.isNotEmpty) &&
+              _space.contactInfo.hasWebsite)
             const SizedBox(height: 12),
-          if (widget.space.contactInfo.hasWebsite)
+          if (_space.contactInfo.hasWebsite)
             InkWell(
-              onTap: () => _launchURL(widget.space.contactInfo.website),
+              onTap: () => _launchURL(_space.contactInfo.website),
               borderRadius: BorderRadius.circular(12),
               child: Container(
                 padding: const EdgeInsets.all(16),
@@ -1010,7 +998,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            widget.space.contactInfo.website,
+                            _space.contactInfo.website,
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,

@@ -229,3 +229,31 @@ class DeleteCoworkingParams extends UseCaseParams {
 
   const DeleteCoworkingParams({required this.id});
 }
+
+/// 提交 Coworking 认证 Use Case
+class SubmitCoworkingVerificationUseCase
+    extends UseCase<CoworkingSpace, SubmitCoworkingVerificationParams> {
+  final ICoworkingRepository _repository;
+
+  SubmitCoworkingVerificationUseCase(this._repository);
+
+  @override
+  Future<Result<CoworkingSpace>> execute(
+    SubmitCoworkingVerificationParams params,
+  ) async {
+    if (params.coworkingId.isEmpty) {
+      return Result.failure(
+        ValidationException('Coworking 空间ID不能为空', code: 'INVALID_ID'),
+      );
+    }
+
+    return _repository.submitVerification(params.coworkingId);
+  }
+}
+
+/// 提交 Coworking 认证参数
+class SubmitCoworkingVerificationParams extends UseCaseParams {
+  final String coworkingId;
+
+  const SubmitCoworkingVerificationParams({required this.coworkingId});
+}

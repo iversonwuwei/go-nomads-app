@@ -21,7 +21,7 @@ class CoworkingRepository implements ICoworkingRepository {
       print('📡 Repository 调用 API:');
       print('   路径: /coworking');
       print('   参数: cityId=$cityId, page=$page, pageSize=$pageSize');
-      
+
       final response = await _httpService.get(
         '/coworking',
         queryParameters: {
@@ -153,7 +153,7 @@ class CoworkingRepository implements ICoworkingRepository {
         '/coworking/cities/counts',
         data: {'cityIds': cityIds},
       );
-      
+
       if (response.data['success'] == true && response.data['data'] != null) {
         final counts = response.data['data'] as Map<String, dynamic>;
         return Result.success(counts.map((k, v) => MapEntry(k, v as int)));
@@ -239,8 +239,7 @@ class CoworkingRepository implements ICoworkingRepository {
           await _httpService.put('/coworking/$id', data: requestData);
 
       if (response.data['success'] == true && response.data['data'] != null) {
-        final updatedDto =
-            CoworkingSpaceDto.fromJson(
+        final updatedDto = CoworkingSpaceDto.fromJson(
             response.data['data'] as Map<String, dynamic>);
         final updatedSpace = updatedDto.toDomain();
 
@@ -269,6 +268,46 @@ class CoworkingRepository implements ICoworkingRepository {
         UnknownException(
           '删除 Coworking 空间失败: ${e.toString()}',
           code: 'COWORKING_DELETE_ERROR',
+          details: stackTrace.toString(),
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<Result<entity.CoworkingSpace>> submitVerification(String id) async {
+    try {
+      final response = await _httpService.post('/coworking/$id/verifications');
+
+      Map<String, dynamic>? payload;
+      if (response.data is Map<String, dynamic>) {
+        final data = response.data as Map<String, dynamic>;
+        if (data['data'] is Map<String, dynamic>) {
+          payload = data['data'] as Map<String, dynamic>;
+        } else {
+          payload = data;
+        }
+      }
+
+      if (payload == null) {
+        throw ServerException('认证接口返回格式无效');
+      }
+
+      final dto = CoworkingSpaceDto.fromJson(payload);
+      return Result.success(dto.toDomain());
+    } on HttpException catch (e) {
+      return Result.failure(
+        UnknownException(
+          e.message,
+          code: 'COWORKING_VERIFY_HTTP_${e.statusCode}',
+          details: e.errors.isEmpty ? null : e.errors.join('\n'),
+        ),
+      );
+    } catch (e, stackTrace) {
+      return Result.failure(
+        UnknownException(
+          '提交认证失败: ${e.toString()}',
+          code: 'COWORKING_VERIFY_ERROR',
           details: stackTrace.toString(),
         ),
       );

@@ -10,14 +10,19 @@ class CoworkingStateController extends GetxController {
   final GetCoworkingSpacesByCityUseCase _getCoworkingSpacesByCityUseCase;
   final GetCoworkingByIdUseCase _getCoworkingByIdUseCase;
   final GetCityCoworkingCountUseCase _getCityCoworkingCountUseCase;
+  final SubmitCoworkingVerificationUseCase _submitCoworkingVerificationUseCase;
 
   CoworkingStateController({
     required GetCoworkingSpacesByCityUseCase getCoworkingSpacesByCityUseCase,
     required GetCoworkingByIdUseCase getCoworkingByIdUseCase,
     required GetCityCoworkingCountUseCase getCityCoworkingCountUseCase,
+    required SubmitCoworkingVerificationUseCase
+        submitCoworkingVerificationUseCase,
   })  : _getCoworkingSpacesByCityUseCase = getCoworkingSpacesByCityUseCase,
         _getCoworkingByIdUseCase = getCoworkingByIdUseCase,
-        _getCityCoworkingCountUseCase = getCityCoworkingCountUseCase;
+        _getCityCoworkingCountUseCase = getCityCoworkingCountUseCase,
+        _submitCoworkingVerificationUseCase =
+            submitCoworkingVerificationUseCase;
 
   // === 状态管理 ===
 
@@ -53,6 +58,7 @@ class CoworkingStateController extends GetxController {
   final RxBool hasMore = true.obs;
   final int pageSize = 20;
   final RxString currentCityId = ''.obs;
+  final RxSet<String> verifyingCoworkingIds = <String>{}.obs;
 
   // === 业务方法 ===
 
@@ -108,7 +114,7 @@ class CoworkingStateController extends GetxController {
           } else {
             coworkingSpaces.addAll(spaces);
           }
-          
+
           _applyFilters(); // 应用筛选
         },
         onFailure: (exception) {
@@ -342,6 +348,61 @@ class CoworkingStateController extends GetxController {
     // 暂时保持原顺序
   }
 
+  /// 提交 Coworking 认证
+  Future<Result<CoworkingSpace>> submitVerification(String coworkingId) async {
+    if (coworkingId.isEmpty) {
+      return Result.failure(
+        ValidationException('Coworking 空间ID不能为空', code: 'INVALID_ID'),
+      );
+    }
+
+    if (verifyingCoworkingIds.contains(coworkingId)) {
+      return Result.failure(
+        ValidationException('正在提交认证，请稍候', code: 'VERIFYING'),
+      );
+    }
+
+    verifyingCoworkingIds.add(coworkingId);
+    errorMessage.value = '';
+
+    try {
+      final result = await _submitCoworkingVerificationUseCase.execute(
+        SubmitCoworkingVerificationParams(coworkingId: coworkingId),
+      );
+
+      result.fold(
+        onSuccess: (space) {
+          _replaceCoworking(space);
+        },
+        onFailure: (exception) {
+          errorMessage.value = exception.message;
+        },
+      );
+
+      return result;
+    } finally {
+      verifyingCoworkingIds.remove(coworkingId);
+    }
+  }
+
+  void _replaceCoworking(CoworkingSpace updated) {
+    final listIndex = coworkingSpaces.indexWhere((s) => s.id == updated.id);
+    if (listIndex != -1) {
+      coworkingSpaces[listIndex] = updated;
+    }
+
+    final filteredIndex = filteredSpaces.indexWhere((s) => s.id == updated.id);
+    if (filteredIndex != -1) {
+      filteredSpaces[filteredIndex] = updated;
+    }
+
+    if (currentCoworking.value?.id == updated.id) {
+      currentCoworking.value = updated;
+    }
+
+    _applyFilters();
+  }
+
   /// 清空数据
   void clearCoworkingData() {
     coworkingSpaces.clear();
@@ -350,6 +411,7 @@ class CoworkingStateController extends GetxController {
     currentCoworking.value = null;
     coworkingCount.value = 0;
     errorMessage.value = '';
+    verifyingCoworkingIds.clear();
   }
 
   @override
@@ -361,18 +423,19 @@ class CoworkingStateController extends GetxController {
     currentCoworking.value = null;
     coworkingCount.value = 0;
     errorMessage.value = '';
-    
+
     // 重置加载状态
     isLoadingSpaces.value = false;
     isLoadingDetail.value = false;
     isLoadingCount.value = false;
     isLoadingMore.value = false;
-    
+
     // 重置分页状态
     currentPage.value = 1;
     hasMore.value = true;
     currentCityId.value = '';
-    
+    verifyingCoworkingIds.clear();
+
     super.onClose();
   }
 }

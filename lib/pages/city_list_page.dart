@@ -667,9 +667,9 @@ class _CityListPageState extends State<CityListPage>
                         Colors.orange,
                       ),
                       _buildInfoChip(
-                        Icons.wifi,
-                        '${((city.internetScore ?? 0) * 20).toInt()} Mbps',
-                        Colors.blue,
+                        Icons.star,
+                        '${(city.overallScore ?? 0.0).toStringAsFixed(1)} / 5',
+                        Colors.amber,
                       ),
                       _buildInfoChip(
                         Icons.attach_money,

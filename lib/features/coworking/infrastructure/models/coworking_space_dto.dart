@@ -32,6 +32,9 @@ class CoworkingSpaceDto {
   final String website;
   final bool isVerified;
   final String? lastUpdated;
+  final String? createdBy;
+  final int verificationVotes;
+  final bool isOwner;
 
   CoworkingSpaceDto({
     required this.id,
@@ -56,12 +59,15 @@ class CoworkingSpaceDto {
     this.website = '',
     this.isVerified = false,
     this.lastUpdated,
+    this.createdBy,
+    this.verificationVotes = 0,
+    this.isOwner = false,
   });
 
   Map<String, dynamic> toJson() {
     // 获取可用的设施列表
     final availableAmenities = amenities.getAvailableAmenities();
-    
+
     return {
       'id': id,
       'name': name,
@@ -99,6 +105,8 @@ class CoworkingSpaceDto {
       'reviewCount': reviewCount,
       'isVerified': isVerified,
       'lastUpdated': lastUpdated,
+      'createdBy': createdBy,
+      'verificationVotes': verificationVotes,
     };
   }
 
@@ -161,8 +169,11 @@ class CoworkingSpaceDto {
       phone: json['phone'] ?? '',
       email: json['email'] ?? '',
       website: json['website'] ?? '',
-      isVerified: json['isVerified'] ?? json['isActive'] ?? false,
+      isVerified: _parseVerificationStatus(json),
       lastUpdated: json['updatedAt'] ?? json['lastUpdated'],
+      createdBy: json['createdBy']?.toString(),
+      verificationVotes: _parseVerificationVotes(json),
+      isOwner: json['isOwner'] == true,
     );
   }
 
@@ -196,7 +207,54 @@ class CoworkingSpaceDto {
       operationHours: entity.OperationHours(hours: openingHours),
       isVerified: isVerified,
       lastUpdated: lastUpdated != null ? DateTime.tryParse(lastUpdated!) : null,
+      createdBy: createdBy,
+      verificationVotes: verificationVotes,
+      isOwner: isOwner,
     );
+  }
+
+  /// 后端返回 verificationStatus 字段时转换为布尔值
+  static bool _parseVerificationStatus(Map<String, dynamic> json) {
+    final status = (json['verificationStatus'] ?? json['verification_status'])
+        ?.toString()
+        .toLowerCase();
+
+    if (status == 'verified') return true;
+
+    // 兼容旧数据，仅当明确为 verified 时才返回 true
+    if (json.containsKey('isVerified')) {
+      final legacyValue = json['isVerified'];
+      if (legacyValue is bool) return legacyValue;
+      if (legacyValue is String) {
+        final normalized = legacyValue.toLowerCase();
+        return normalized == 'true' || normalized == '1';
+      }
+    }
+
+    return false;
+  }
+
+  static int _parseVerificationVotes(Map<String, dynamic> json) {
+    final dynamic value =
+        json['verificationVotes'] ?? json['verification_votes'];
+    if (value == null) {
+      return 0;
+    }
+
+    if (value is int) {
+      return value;
+    }
+
+    if (value is String) {
+      final parsed = int.tryParse(value);
+      return parsed ?? 0;
+    }
+
+    if (value is num) {
+      return value.toInt();
+    }
+
+    return 0;
   }
 
   // factory CoworkingSpaceDto.fromLegacyModel(legacy.CoworkingSpace model) {

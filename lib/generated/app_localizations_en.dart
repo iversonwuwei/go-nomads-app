@@ -747,6 +747,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get visitWebsite => 'Visit Website';
 
   @override
+  String get coworkingVerifyTitle => 'Verify Coworking Space';
+
+  @override
+  String get coworkingVerifyLoginRequired =>
+      'Please log in before verifying a space.';
+
+  @override
+  String coworkingVerifyMessage(String spaceName) {
+    return 'Are you sure you want to verify $spaceName for the community?';
+  }
+
+  @override
+  String get coworkingVerifySuccess =>
+      'Thanks! Your verification helps keep listings trustworthy.';
+
+  @override
+  String get coworkingVerifyFailed =>
+      'Verification failed. Please try again later.';
+
+  @override
   String get shareLocation => 'Share Location';
 
   @override
