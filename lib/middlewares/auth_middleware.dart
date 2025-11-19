@@ -12,9 +12,10 @@ import '../routes/app_routes.dart';
 /// 3. 如果已登录，允许访问目标页面
 ///
 /// **白名单路由（不使用此 middleware）：**
-/// - `/` (home) - 首页，支持匿名访问
 /// - `/login` - 登录页
 /// - `/register` - 注册页
+///
+/// **所有其他路由（包括首页）都需要认证**
 class AuthMiddleware extends GetMiddleware {
   @override
   int? get priority => 1;

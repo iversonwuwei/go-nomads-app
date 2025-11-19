@@ -132,13 +132,8 @@ class AppRoutes {
 
   static List<GetPage> getPages = [
     // ============================================================================
-    // ✅ 白名单路由：不需要认证
+    // ✅ 白名单路由：不需要认证（仅登录和注册）
     // ============================================================================
-    GetPage(
-      name: home,
-      page: () => const BottomNavLayout(child: DataServicePage()),
-      // 🚫 无 middleware - 首页支持匿名访问
-    ),
     GetPage(
       name: login,
       page: () => const NomadsLoginPage(),
@@ -148,6 +143,15 @@ class AppRoutes {
       name: register,
       page: () => const RegisterPage(),
       // 🚫 无 middleware - 注册页
+    ),
+
+    // ============================================================================
+    // 🔒 首页 - 需要认证
+    // ============================================================================
+    GetPage(
+      name: home,
+      page: () => const BottomNavLayout(child: DataServicePage()),
+      middlewares: [AuthMiddleware()],
     ),
 
     // ============================================================================

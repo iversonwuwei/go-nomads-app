@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import 'base_skeleton.dart';
 
@@ -13,148 +14,347 @@ class ProfileSkeleton extends BaseSkeleton {
 class _ProfileSkeletonState extends BaseSkeletonState<ProfileSkeleton> {
   @override
   Widget buildSkeleton(BuildContext context) {
+    final isMobile = Get.width < 600;
+    
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 头像
-          _buildAvatar(),
-          const SizedBox(height: 16),
-
-          // 用户名
-          _buildName(),
-          const SizedBox(height: 8),
-
-          // 邮箱或其他信息
-          _buildEmail(),
+          // Profile Header
+          _buildProfileHeader(isMobile),
           const SizedBox(height: 24),
 
-          // 统计卡片
-          _buildStatsCards(),
+          // Travel Plans Section (空状态容器)
+          _buildTravelPlansSection(),
           const SizedBox(height: 24),
 
-          // 列表项
-          ..._buildListItems(),
+          // Stats Section
+          _buildStatsSection(isMobile),
+          const SizedBox(height: 24),
+
+          // Badges Section
+          _buildBadgesSection(),
+          const SizedBox(height: 24),
+
+          // Skills and Interests Section
+          _buildSkillsAndInterestsSection(),
+          const SizedBox(height: 24),
+
+          // Travel History Section
+          _buildTravelHistorySection(),
+          const SizedBox(height: 24),
+
+          // Social Links Section
+          _buildSocialLinksSection(),
         ],
       ),
     );
   }
 
-  Widget _buildAvatar() {
-    return SkeletonCircle(
-      shimmerController: shimmerController,
-      size: 100,
-    );
-  }
+  Widget _buildProfileHeader(bool isMobile) {
+    final avatarSize = isMobile ? 80.0 : 120.0;
 
-  Widget _buildName() {
-    return SkeletonBox(
-      shimmerController: shimmerController,
-      width: 150,
-      height: 20,
-      borderRadius: 4,
-    );
-  }
-
-  Widget _buildEmail() {
-    return SkeletonBox(
-      shimmerController: shimmerController,
-      width: 200,
-      height: 16,
-      borderRadius: 4,
-    );
-  }
-
-  Widget _buildStatsCards() {
     return Row(
       children: [
-        Expanded(
-          child: SkeletonCard(
-            shimmerController: shimmerController,
-            height: 80,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SkeletonBox(
-                  shimmerController: shimmerController,
-                  width: 60,
-                  height: 20,
-                  borderRadius: 4,
-                ),
-                const SizedBox(height: 8),
-                SkeletonBox(
-                  shimmerController: shimmerController,
-                  width: 80,
-                  height: 14,
-                  borderRadius: 4,
-                ),
-              ],
-            ),
-          ),
+        // 头像
+        SkeletonCircle(
+          shimmerController: shimmerController,
+          size: avatarSize,
         ),
         const SizedBox(width: 16),
+        
+        // 用户信息
         Expanded(
-          child: SkeletonCard(
-            shimmerController: shimmerController,
-            height: 80,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SkeletonBox(
-                  shimmerController: shimmerController,
-                  width: 60,
-                  height: 20,
-                  borderRadius: 4,
-                ),
-                const SizedBox(height: 8),
-                SkeletonBox(
-                  shimmerController: shimmerController,
-                  width: 80,
-                  height: 14,
-                  borderRadius: 4,
-                ),
-              ],
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 用户名
+              SkeletonBox(
+                shimmerController: shimmerController,
+                width: isMobile ? 120 : 180,
+                height: isMobile ? 20 : 28,
+                borderRadius: 4,
+              ),
+              const SizedBox(height: 8),
+
+              // 邮箱
+              SkeletonBox(
+                shimmerController: shimmerController,
+                width: isMobile ? 150 : 220,
+                height: 14,
+                borderRadius: 4,
+              ),
+              const SizedBox(height: 8),
+
+              // 按钮行
+              Row(
+                children: [
+                  SkeletonBox(
+                    shimmerController: shimmerController,
+                    width: 80,
+                    height: 32,
+                    borderRadius: 8,
+                  ),
+                  const SizedBox(width: 8),
+                  SkeletonBox(
+                    shimmerController: shimmerController,
+                    width: 80,
+                    height: 32,
+                    borderRadius: 8,
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ],
     );
   }
 
-  List<Widget> _buildListItems() {
-    return List.generate(4, (index) {
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: SkeletonCard(
+  Widget _buildTravelPlansSection() {
+    return SkeletonCard(
+      shimmerController: shimmerController,
+      height: 120,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SkeletonCircle(
+              shimmerController: shimmerController,
+              size: 48,
+            ),
+            const SizedBox(height: 12),
+            SkeletonBox(
+              shimmerController: shimmerController,
+              width: 180,
+              height: 16,
+              borderRadius: 4,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatsSection(bool isMobile) {
+    final cardWidth = isMobile ? (Get.width - 44) / 2 : null;
+
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: List.generate(6, (index) {
+        return SkeletonCard(
           shimmerController: shimmerController,
-          height: 60,
-          child: Row(
+          width: cardWidth,
+          height: 100,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               SkeletonBox(
                 shimmerController: shimmerController,
-                width: 24,
+                width: 40,
                 height: 24,
-                borderRadius: 6,
+                borderRadius: 4,
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: SkeletonBox(
-                  shimmerController: shimmerController,
-                  width: double.infinity,
-                  height: 16,
-                  borderRadius: 4,
-                ),
-              ),
+              const SizedBox(height: 8),
               SkeletonBox(
                 shimmerController: shimmerController,
-                width: 16,
-                height: 16,
+                width: 80,
+                height: 14,
                 borderRadius: 4,
               ),
             ],
           ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildBadgesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section 标题
+        SkeletonBox(
+          shimmerController: shimmerController,
+          width: 100,
+          height: 20,
+          borderRadius: 4,
         ),
-      );
-    });
+        const SizedBox(height: 12),
+
+        // Badges wrap
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: List.generate(4, (index) {
+            return SkeletonCard(
+              shimmerController: shimmerController,
+              width: 80,
+              height: 100,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SkeletonCircle(
+                    shimmerController: shimmerController,
+                    size: 40,
+                  ),
+                  const SizedBox(height: 8),
+                  SkeletonBox(
+                    shimmerController: shimmerController,
+                    width: 60,
+                    height: 12,
+                    borderRadius: 4,
+                  ),
+                ],
+              ),
+            );
+          }),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSkillsAndInterestsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Skills 部分
+        SkeletonBox(
+          shimmerController: shimmerController,
+          width: 80,
+          height: 20,
+          borderRadius: 4,
+        ),
+        const SizedBox(height: 12),
+
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: List.generate(5, (index) {
+            return SkeletonBox(
+              shimmerController: shimmerController,
+              width: 60 + (index * 10.0),
+              height: 32,
+              borderRadius: 16,
+            );
+          }),
+        ),
+        
+        const SizedBox(height: 24),
+
+        // Interests 部分
+        SkeletonBox(
+          shimmerController: shimmerController,
+          width: 80,
+          height: 20,
+          borderRadius: 4,
+        ),
+        const SizedBox(height: 12),
+
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: List.generate(5, (index) {
+            return SkeletonBox(
+              shimmerController: shimmerController,
+              width: 70 + (index * 8.0),
+              height: 32,
+              borderRadius: 16,
+            );
+          }),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTravelHistorySection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section 标题
+        SkeletonBox(
+          shimmerController: shimmerController,
+          width: 120,
+          height: 20,
+          borderRadius: 4,
+        ),
+        const SizedBox(height: 12),
+
+        // 旅行历史列表项
+        ...List.generate(3, (index) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: SkeletonCard(
+              shimmerController: shimmerController,
+              height: 80,
+              child: Row(
+                children: [
+                  SkeletonBox(
+                    shimmerController: shimmerController,
+                    width: 60,
+                    height: 60,
+                    borderRadius: 8,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SkeletonBox(
+                          shimmerController: shimmerController,
+                          width: 150,
+                          height: 16,
+                          borderRadius: 4,
+                        ),
+                        const SizedBox(height: 8),
+                        SkeletonBox(
+                          shimmerController: shimmerController,
+                          width: 100,
+                          height: 14,
+                          borderRadius: 4,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _buildSocialLinksSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section 标题
+        SkeletonBox(
+          shimmerController: shimmerController,
+          width: 100,
+          height: 20,
+          borderRadius: 4,
+        ),
+        const SizedBox(height: 12),
+
+        // 社交链接按钮
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: List.generate(4, (index) {
+            return SkeletonBox(
+              shimmerController: shimmerController,
+              width: 48,
+              height: 48,
+              borderRadius: 24,
+            );
+          }),
+        ),
+      ],
+    );
   }
 }
