@@ -13,6 +13,8 @@ import '../features/city/domain/entities/city_rating_item.dart';
 import '../features/city/domain/entities/digital_nomad_guide.dart';
 import '../features/city/domain/repositories/i_city_repository.dart';
 import '../features/city/presentation/controllers/city_detail_state_controller.dart';
+import '../features/city/presentation/controllers/city_rating_controller.dart';
+import '../features/city/presentation/widgets/city_ratings_card.dart';
 import '../features/coworking/domain/entities/coworking_space.dart'
     as coworking;
 import '../features/coworking/presentation/controllers/coworking_state_controller.dart';
@@ -1171,6 +1173,17 @@ class _CityDetailPageState extends State<CityDetailPage>
       print('⚠️ [CityDetailPage] 清空指南状态失败: $e');
     }
 
+    // 🔥 清空评分数据,防止跳转到其他城市时显示旧数据
+    try {
+      final ratingController = Get.find<CityRatingController>();
+      ratingController.statistics.clear();
+      ratingController.categories.clear();
+      ratingController.overallScore.value = 0.0;
+      print('🧹 [CityDetailPage] 页面销毁,已清空评分数据');
+    } catch (e) {
+      print('⚠️ [CityDetailPage] 清空评分数据失败: $e');
+    }
+
     super.dispose();
   }
 
@@ -1688,45 +1701,54 @@ class _CityDetailPageState extends State<CityDetailPage>
                       ),
                       child: Row(
                         children: [
-                          // 评分徽章
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 10,
-                            ),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
+                          // 评分徽章 - 从 CityRatingController 动态获取
+                          Obx(() {
+                            final ratingController =
+                                Get.find<CityRatingController>();
+                            final score = ratingController.overallScore.value;
+
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 10,
                               ),
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFFFF4458)
-                                      .withValues(alpha: 0.3),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 4),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    Color(0xFFFF4458),
+                                    Color(0xFFFF6B7A)
+                                  ],
                                 ),
-                              ],
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.star_rounded,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  overallScore.toStringAsFixed(1),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFFF4458)
+                                        .withValues(alpha: 0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ),
+                                ],
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.star_rounded,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    score.toStringAsFixed(1),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
                           const SizedBox(width: 16),
                           Expanded(
                             child: Column(
@@ -1977,108 +1999,17 @@ class _CityDetailPageState extends State<CityDetailPage>
         return Center(child: Text(l10n.noData));
       }
 
-      final defaultItems = [
-        CityRatingItem.fromIcon(
-          id: 'overall',
-          label: l10n.overall,
-          icon: Icons.star,
-          score: city.overallScore ?? 0.0,
-          isDefault: true,
-        ),
-        CityRatingItem.fromIcon(
-          id: 'cost',
-          label: l10n.cost,
-          icon: Icons.attach_money,
-          score: city.costScore ?? 0.0,
-          isDefault: true,
-        ),
-        CityRatingItem.fromIcon(
-          id: 'internet',
-          label: l10n.internet,
-          icon: Icons.wifi,
-          score: city.internetScore ?? 0.0,
-          isDefault: true,
-        ),
-        CityRatingItem.fromIcon(
-          id: 'safety',
-          label: l10n.safety,
-          icon: Icons.security,
-          score: city.safetyScore ?? 0.0,
-          isDefault: true,
-        ),
-        CityRatingItem.fromIcon(
-          id: 'liked',
-          label: 'Liked',
-          icon: Icons.favorite,
-          score: city.likedScore ?? 0.0,
-          isDefault: true,
-        ),
-      ];
-
-      final allItems = [...defaultItems, ..._customRatingItems];
-
-      return ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: allItems.length,
-        itemBuilder: (context, index) {
-          final item = allItems[index];
-          return _buildScoreItem(
-            icon: item.icon,
-            label: item.label,
-            score: item.score,
-          );
-        },
+      return ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        children: [
+          // 用户评分系统（极简风格）
+          CityRatingsCard(cityId: city.id),
+        ],
       );
     });
   }
 
-  Widget _buildScoreItem({
-    required IconData icon,
-    required String label,
-    required double score,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
-          Icon(icon, color: const Color(0xFFFF4458), size: 24),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                LinearProgressIndicator(
-                  value: score / 5,
-                  backgroundColor: Colors.grey[200],
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                    Color(0xFFFF4458),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            score.toStringAsFixed(1),
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Digital Nomad Guide 标签
+  // Digital Nomad Guide 标签页
   Widget _buildGuideTab(AiStateController controller) {
     // 🔥 检查城市是否变化,如果变化则清空旧数据并加载新数据
     WidgetsBinding.instance.addPostFrameCallback((_) {

@@ -26,8 +26,12 @@ import '../../features/city/application/state_controllers/pros_cons_state_contro
 import '../../features/city/application/use_cases/city_use_cases.dart';
 // City Domain
 import '../../features/city/domain/repositories/i_city_repository.dart';
+import '../../features/city/domain/repositories/icity_rating_repository.dart';
+import '../../features/city/domain/usecases/city_rating_usecases.dart';
+import '../../features/city/infrastructure/repositories/city_rating_repository.dart';
 import '../../features/city/infrastructure/repositories/city_repository.dart';
 import '../../features/city/presentation/controllers/city_detail_state_controller.dart';
+import '../../features/city/presentation/controllers/city_rating_controller.dart';
 import '../../features/city/presentation/controllers/city_state_controller.dart';
 // Community Domain
 import '../../features/community/domain/repositories/i_community_repository.dart';
@@ -364,6 +368,9 @@ class DependencyInjection {
     Get.lazyPut<ICityRepository>(
       () => CityRepository(Get.find<HttpService>()),
     );
+    Get.lazyPut<ICityRatingRepository>(
+      () => CityRatingRepository(),
+    );
 
     // Use Cases
     Get.lazyPut(() => GetCitiesUseCase(Get.find<ICityRepository>()));
@@ -381,6 +388,7 @@ class DependencyInjection {
     Get.lazyPut(() => GetCityProsConsUseCase(Get.find<ICityRepository>()));
     Get.lazyPut(
         () => GetCitiesWithCoworkingCountUseCase(Get.find<ICityRepository>()));
+    Get.lazyPut(() => CityRatingUseCases(Get.find<ICityRatingRepository>()));
 
     // Controller（permanent: true 防止路由切换时被销毁）
     Get.lazyPut(
@@ -411,6 +419,11 @@ class DependencyInjection {
       () => ProsConsStateController(
         Get.find<ICityRepository>(),
       ),
+    );
+
+    // City Rating Controller
+    Get.lazyPut(
+      () => CityRatingController(Get.find<CityRatingUseCases>()),
     );
   }
 

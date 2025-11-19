@@ -75,6 +75,9 @@ class City {
   final int? meetupCount; // Meetup 数量
   final int? reviewCount; // 评论数量
   final int? coworkingCount; // Coworking 空间数量
+  
+  // 社区数据
+  final double? averageCost; // 平均花费（社区统计）
 
   // 用户交互
   final bool isFavorite; // 是否收藏
@@ -110,6 +113,7 @@ class City {
     this.meetupCount,
     this.reviewCount,
     this.coworkingCount,
+    this.averageCost,
     this.isFavorite = false,
     this.moderatorId,
     this.moderator,
@@ -176,6 +180,10 @@ class City {
     final weather = json['weather'] as Map<String, dynamic>?;
     final moderatorData = json['moderator'] as Map<String, dynamic>?;
 
+    // 调试日志
+    print(
+        '🔍 City.fromJson: reviewCount=${json['reviewCount']}, averageCost=${json['averageCost']}');
+    
     return City(
       id: json['id'] as String,
       name: json['name'] as String? ?? 'Unknown',
@@ -199,6 +207,7 @@ class City {
       meetupCount: json['meetupCount']?.toInt(),
       reviewCount: json['reviewCount']?.toInt(),
       coworkingCount: json['coworkingCount']?.toInt(),
+      averageCost: json['averageCost']?.toDouble(),
       isFavorite: json['isFavorite'] as bool? ?? false,
       moderatorId: json['moderatorId'] as String?,
       moderator:
@@ -240,6 +249,7 @@ class City {
       if (meetupCount != null) 'meetupCount': meetupCount,
       if (reviewCount != null) 'reviewCount': reviewCount,
       if (coworkingCount != null) 'coworkingCount': coworkingCount,
+      if (averageCost != null) 'averageCost': averageCost,
       'isFavorite': isFavorite,
       if (moderatorId != null) 'moderatorId': moderatorId,
       if (moderator != null) 'moderator': moderator!.toJson(),
@@ -272,6 +282,7 @@ class City {
     int? meetupCount,
     int? reviewCount,
     int? coworkingCount,
+    double? averageCost,
     bool? isFavorite,
     String? moderatorId,
     Moderator? moderator,
@@ -301,6 +312,7 @@ class City {
       meetupCount: meetupCount ?? this.meetupCount,
       reviewCount: reviewCount ?? this.reviewCount,
       coworkingCount: coworkingCount ?? this.coworkingCount,
+      averageCost: averageCost ?? this.averageCost,
       isFavorite: isFavorite ?? this.isFavorite,
       moderatorId: moderatorId ?? this.moderatorId,
       moderator: moderator ?? this.moderator,

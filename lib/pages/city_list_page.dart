@@ -513,6 +513,10 @@ class _CityListPageState extends State<CityListPage>
 
   // 城市卡片
   Widget _buildCityCard(City city, bool isMobile) {
+    // 调试日志
+    print(
+        '🏙️ City: ${city.name}, ReviewCount: ${city.reviewCount}, AverageCost: ${city.averageCost}, OverallScore: ${city.overallScore}');
+    
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -671,11 +675,19 @@ class _CityListPageState extends State<CityListPage>
                         '${(city.overallScore ?? 0.0).toStringAsFixed(1)} / 5',
                         Colors.amber,
                       ),
-                      _buildInfoChip(
-                        Icons.attach_money,
-                        '\$${((city.costScore ?? 0) * 500).toInt()}',
-                        Colors.green,
-                      ),
+                      // 使用后端返回的真实平均花费数据
+                      if (city.averageCost != null && city.averageCost! > 0)
+                        _buildInfoChip(
+                          Icons.attach_money,
+                          '\$${city.averageCost!.toInt()}',
+                          Colors.green,
+                        )
+                      else
+                        _buildInfoChip(
+                          Icons.attach_money,
+                          '\$---',
+                          Colors.grey,
+                        ),
                       if (city.airQualityIndex != null)
                         _buildInfoChip(
                           Icons.air,
