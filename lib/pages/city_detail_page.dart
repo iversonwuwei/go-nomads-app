@@ -876,27 +876,55 @@ class _CityDetailPageState extends State<CityDetailPage>
 
   /// 检查用户是否有权限生成指南（管理员或当前城市版主）
   Future<bool> _checkGeneratePermission() async {
+    print('🔐 [权限检查] 开始检查生成权限...');
+    
     try {
       final cityDetailController = Get.find<CityDetailStateController>();
       final city = cityDetailController.currentCity.value;
-      if (city != null &&
-          (city.isCurrentUserAdmin || city.isCurrentUserModerator)) {
-        return true;
+      
+      if (city != null) {
+        print('🔐 [权限检查] 城市信息:');
+        print('   cityId: ${city.id}');
+        print('   cityName: ${city.name}');
+        print('   isCurrentUserAdmin: ${city.isCurrentUserAdmin}');
+        print('   isCurrentUserModerator: ${city.isCurrentUserModerator}');
+        print('   moderatorId: ${city.moderatorId}');
+
+        // 检查是否是管理员或该城市的版主
+        if (city.isCurrentUserAdmin) {
+          print('✅ [权限检查] 当前用户是管理员，允许生成');
+          return true;
+        }
+
+        if (city.isCurrentUserModerator) {
+          print('✅ [权限检查] 当前用户是该城市版主，允许生成');
+          return true;
+        }
+        
+        print('❌ [权限检查] 当前用户既不是管理员也不是该城市版主');
+        _showNoPermissionDialog();
+        return false;
+      } else {
+        print('⚠️ [权限检查] 城市信息为空');
       }
-    } catch (_) {
-      // 如果 controller 尚未就绪，继续执行后备判断
+    } catch (e) {
+      print('❌ [权限检查] 获取城市信息异常: $e');
     }
 
+    // 如果无法获取城市信息，从 token 获取角色（仅检查 admin）
+    print('🔐 [权限检查] 从 token 获取角色信息...');
     final tokenService = TokenStorageService();
     final role = await tokenService.getUserRole();
-    final hasPermission = role == 'admin' || role == 'moderator';
+    print('   用户角色: $role');
 
-    if (!hasPermission) {
-      _showNoPermissionDialog();
-      return false;
+    if (role == 'admin') {
+      print('✅ [权限检查] 用户是管理员，允许生成');
+      return true;
     }
 
-    return true;
+    print('❌ [权限检查] 用户无权限生成指南');
+    _showNoPermissionDialog();
+    return false;
   }
 
   /// 显示无权限对话框
@@ -2145,7 +2173,13 @@ class _CityDetailPageState extends State<CityDetailPage>
                   ElevatedButton.icon(
                     onPressed: controller.isGeneratingGuide
                         ? null
-                        : () => _showAIGenerateProgressDialog(controller),
+                        : () async {
+                            // 先检查权限
+                            if (!await _checkGeneratePermission()) {
+                              return;
+                            }
+                            _showAIGenerateProgressDialog(controller);
+                          },
                     icon: const Icon(Icons.auto_awesome),
                     label: const Text('AI 生成指南'),
                     style: ElevatedButton.styleFrom(

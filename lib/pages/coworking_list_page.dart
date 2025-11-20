@@ -74,136 +74,122 @@ class _CoworkingListPageState extends State<CoworkingListPage>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: Text(widget.cityName),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          onPressed: () => Get.back(),
+        ),
+        title: Text(
+          widget.cityName,
+          style: const TextStyle(
+            color: Colors.black87,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         actions: [
+          // 视图切换按钮
           IconButton(
-            icon: const Icon(Icons.filter_list),
+            icon: Icon(
+              _isGridView ? Icons.view_list_outlined : Icons.grid_view_outlined,
+              color: Colors.black54,
+              size: 20,
+            ),
             onPressed: () {
-              // TODO: 实现筛选功能
+              setState(() {
+                _isGridView = !_isGridView;
+              });
+            },
+          ),
+          // 排序按钮
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.sort, color: Colors.black54, size: 20),
+            onSelected: (value) {
+              switch (value) {
+                case 'rating':
+                  controller.sortByRating();
+                  break;
+                case 'price':
+                  controller.sortByPrice();
+                  break;
+                case 'distance':
+                  controller.sortByDistance();
+                  break;
+              }
+            },
+            itemBuilder: (context) {
+              return [
+                PopupMenuItem(
+                  value: 'rating',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.star, size: 20),
+                      const SizedBox(width: 8),
+                      Text(l10n.rating),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'price',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.attach_money, size: 20),
+                      const SizedBox(width: 8),
+                      Text(l10n.price),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'distance',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.location_on, size: 20),
+                      const SizedBox(width: 8),
+                      Text(l10n.distance),
+                    ],
+                  ),
+                ),
+              ];
+            },
+          ),
+          // 添加按钮
+          IconButton(
+            icon: const Icon(Icons.add_circle_outline, color: Colors.black54),
+            onPressed: () async {
+              // 跳转到添加页面,预填充当前城市信息
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddCoworkingPage(
+                    cityId: widget.cityId,
+                    cityName: widget.cityName,
+                    countryName: widget.countryName,
+                  ),
+                ),
+              );
+
+              if (!context.mounted) return;
+
+              // 如果成功添加,刷新列表并通知上级页面
+              if (result == true) {
+                await _refreshData();
+
+                if (!context.mounted) return;
+                // 通知 CoworkingHomePage 也需要刷新
+                Navigator.pop(context, true);
+              }
             },
           ),
         ],
       ),
-      // 添加浮动按钮用于快速添加 Coworking
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          // 跳转到添加页面,预填充当前城市信息
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => AddCoworkingPage(
-                cityId: widget.cityId,
-                cityName: widget.cityName,
-                countryName: widget.countryName,
-              ),
-            ),
-          );
-
-          if (!context.mounted) return;
-
-          // 如果成功添加,刷新列表并通知上级页面
-          if (result == true) {
-            await _refreshData();
-
-            if (!context.mounted) return;
-            // 通知 CoworkingHomePage 也需要刷新
-            Navigator.pop(context, true);
-          }
-        },
-        child: const Icon(Icons.add),
-      ),
       body: Column(
         children: [
-          // Toolbar
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            color: Colors.white,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Obx(() => Text(
-                      '${controller.filteredSpaces.length} spaces',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    )),
-                Row(
-                  children: [
-                    // Grid/List toggle
-                    IconButton(
-                      icon: Icon(
-                        _isGridView
-                            ? Icons.view_list_outlined
-                            : Icons.grid_view_outlined,
-                        size: 20,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _isGridView = !_isGridView;
-                        });
-                      },
-                    ),
-                    // Sort
-                    PopupMenuButton<String>(
-                      icon: const Icon(Icons.sort, size: 20),
-                      onSelected: (value) {
-                        switch (value) {
-                          case 'rating':
-                            controller.sortByRating();
-                            break;
-                          case 'price':
-                            controller.sortByPrice();
-                            break;
-                          case 'distance':
-                            controller.sortByDistance();
-                            break;
-                        }
-                      },
-                      itemBuilder: (context) {
-                        final l10n = AppLocalizations.of(context)!;
-                        return [
-                          PopupMenuItem(
-                            value: 'rating',
-                            child: Row(
-                              children: [
-                                const Icon(Icons.star, size: 20),
-                                const SizedBox(width: 8),
-                                Text(l10n.rating),
-                              ],
-                            ),
-                          ),
-                          PopupMenuItem(
-                            value: 'price',
-                            child: Row(
-                              children: [
-                                const Icon(Icons.attach_money, size: 20),
-                                const SizedBox(width: 8),
-                                Text(l10n.price),
-                              ],
-                            ),
-                          ),
-                          PopupMenuItem(
-                            value: 'distance',
-                            child: Row(
-                              children: [
-                                const Icon(Icons.location_on, size: 20),
-                                const SizedBox(width: 8),
-                                Text(l10n.distance),
-                              ],
-                            ),
-                          ),
-                        ];
-                      },
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          _buildFilterChips(controller),
           Expanded(
             child: Obx(() {
               if (controller.isLoading.value) {
@@ -231,11 +217,6 @@ class _CoworkingListPageState extends State<CoworkingListPage>
                               color: Colors.grey[600],
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          TextButton(
-                            onPressed: () => controller.clearFilters(),
-                            child: Text(l10n.reset),
-                          ),
                         ],
                       ),
                     );
@@ -261,69 +242,6 @@ class _CoworkingListPageState extends State<CoworkingListPage>
           ),
         ],
       ),
-    );
-  }
-
-  /// 筛选条件
-  Widget _buildFilterChips(CoworkingStateController controller) {
-    return Builder(
-      builder: (context) {
-        final l10n = AppLocalizations.of(context)!;
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Obx(() => Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      _buildFilterChip(
-                        controller,
-                        'WiFi',
-                        Icons.wifi,
-                      ),
-                      _buildFilterChip(
-                        controller,
-                        '24/7',
-                        Icons.access_time,
-                      ),
-                      _buildFilterChip(
-                        controller,
-                        l10n.meetingRooms,
-                        Icons.meeting_room,
-                      ),
-                      _buildFilterChip(
-                        controller,
-                        'Coffee',
-                        Icons.coffee,
-                      ),
-                      if (controller.selectedFilters.isNotEmpty)
-                        ActionChip(
-                          avatar: const Icon(Icons.clear, size: 18),
-                          label: Text(l10n.reset),
-                          onPressed: () => controller.clearFilters(),
-                        ),
-                    ],
-                  )),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildFilterChip(
-    CoworkingStateController controller,
-    String label,
-    IconData icon,
-  ) {
-    final isSelected = controller.selectedFilters.contains(label);
-    return FilterChip(
-      avatar: Icon(icon, size: 18),
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (_) => controller.toggleFilter(label),
     );
   }
 

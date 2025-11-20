@@ -15,10 +15,7 @@ class ApiConfig {
   /// Gateway 端口 (所有服务统一通过 Gateway 访问)
   static const int gatewayPort = 5000;
 
-  /// AI Service 端口 (用于 SignalR Hub 直连,如需要)
-  static const int aiServicePort = 8009;
-
-  /// Message Service 端口 (SignalR Hub)
+  /// Message Service 端口 (SignalR Hub 需要直连)
   static const int messageServicePort = 5005;
 
   // ============================================================
@@ -55,7 +52,7 @@ class ApiConfig {
   /// 是否使用真机测试地址(手动切换)
   /// ⚠️ 雷电模拟器用户请设置为 true
   /// ⚠️ Android 官方模拟器用户请设置为 false
-  static const bool usePhysicalDevice = true;
+  static const bool usePhysicalDevice = false;
 
   // ============================================================
   // URL 组装
@@ -93,20 +90,11 @@ class ApiConfig {
     return developmentUrl;
   }
 
-  /// AI Service 直连地址 (用于 SignalR Hub)
-  /// 注意: 通常应该通过 Gateway 访问,此配置仅用于特殊场景
-  static String get aiServiceUrl {
-    if (kIsProduction) {
-      return productionUrl; // 生产环境通过 Gateway
-    }
-    final host = usePhysicalDevice ? physicalDeviceHost : developmentHost;
-    return 'http://$host:$aiServicePort';
-  }
-
-  /// Message Service 地址 (SignalR Hub 专用)
+  /// Message Service 地址 (SignalR Hub 需要直连,不经过 Gateway)
+  /// SignalR WebSocket 连接需要保持长连接,因此直连 MessageService
   static String get messageServiceBaseUrl {
     if (kIsProduction) {
-      return productionUrl; // 生产环境通过 Gateway
+      return productionUrl; // 生产环境通过专用域名
     }
     final host = usePhysicalDevice ? physicalDeviceHost : developmentHost;
     return 'http://$host:$messageServicePort';
@@ -197,6 +185,21 @@ class ApiConfig {
   // 统计相关
   static const String cityUserContentStatsEndpoint =
       '/cities/{cityId}/user-content/stats';
+
+  // ============================================================
+  // Cache Service Endpoints - /api/v1/cache (通过 Gateway 访问)
+  // 注意: 这些端点通过 Gateway 转发到 CacheService
+  // ============================================================
+  static const String cityScoreEndpoint = '/cache/scores/city/{cityId}';
+  static const String cityScoreBatchEndpoint = '/cache/scores/city/batch';
+  static const String coworkingScoreEndpoint =
+      '/cache/scores/coworking/{coworkingId}';
+  static const String coworkingScoreBatchEndpoint =
+      '/cache/scores/coworking/batch';
+  static const String invalidateCityScoreEndpoint =
+      '/cache/scores/city/{cityId}';
+  static const String invalidateCoworkingScoreEndpoint =
+      '/cache/scores/coworking/{coworkingId}';
 
   // ============================================================
   // Product Endpoints - /api/v1/products

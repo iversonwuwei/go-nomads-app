@@ -31,9 +31,6 @@ class _CityListPageState extends State<CityListPage>
 
   String _searchQuery = '';
 
-  // 排序状态
-  String _sortBy = 'popular'; // popular, cost, internet, safety
-
   @override
   void initState() {
     super.initState();
@@ -96,13 +93,7 @@ class _CityListPageState extends State<CityListPage>
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          _sortBy == 'popular'
-              ? l10n.popular
-              : _sortBy == 'cost'
-                  ? l10n.cost
-                  : _sortBy == 'internet'
-                      ? l10n.internet
-                      : l10n.safety,
+          l10n.popular,
           style: const TextStyle(
             color: AppColors.textPrimary,
             fontSize: 14,
@@ -111,49 +102,6 @@ class _CityListPageState extends State<CityListPage>
         ),
         Row(
           children: [
-            // 筛选按钮
-            Container(
-              margin: const EdgeInsets.only(right: 8),
-              decoration: BoxDecoration(
-                color: controller.hasActiveFilters
-                    ? const Color(0xFFFF4458).withValues(alpha: 0.1)
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: controller.hasActiveFilters
-                      ? const Color(0xFFFF4458)
-                      : AppColors.borderLight,
-                  width: 1.5,
-                ),
-              ),
-              child: Stack(
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      Icons.tune_outlined,
-                      color: controller.hasActiveFilters
-                          ? const Color(0xFFFF4458)
-                          : AppColors.textSecondary,
-                      size: 20,
-                    ),
-                    onPressed: () => _showFilterDrawer(),
-                  ),
-                  if (controller.hasActiveFilters)
-                    Positioned(
-                      right: 8,
-                      top: 8,
-                      child: Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFFF4458),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
             // 全球地图按钮
             IconButton(
               icon: const FaIcon(
@@ -165,38 +113,9 @@ class _CityListPageState extends State<CityListPage>
                 Get.to(() => const GlobalMapPage());
               },
             ),
-            // 排序
-            PopupMenuButton<String>(
-              icon: const Icon(Icons.sort_outlined,
-                  color: AppColors.textSecondary, size: 20),
-              onSelected: (value) {
-                setState(() {
-                  _sortBy = value;
-                });
-              },
-              itemBuilder: (context) {
-                final l10n = AppLocalizations.of(context)!;
-                return [
-                  PopupMenuItem(value: 'popular', child: Text(l10n.popular)),
-                  PopupMenuItem(value: 'cost', child: Text(l10n.cost)),
-                  PopupMenuItem(value: 'internet', child: Text(l10n.internet)),
-                  PopupMenuItem(value: 'safety', child: Text(l10n.safety)),
-                ];
-              },
-            ),
           ],
         ),
       ],
-    );
-  }
-
-  // 显示筛选抽屉
-  void _showFilterDrawer() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _CityFilterDrawer(controller: controller),
     );
   }
 
@@ -1008,6 +927,7 @@ class _CityListPageState extends State<CityListPage>
 }
 
 // 城市筛选抽屉
+// ignore: unused_element
 class _CityFilterDrawer extends StatelessWidget {
   final CityStateController controller;
 
