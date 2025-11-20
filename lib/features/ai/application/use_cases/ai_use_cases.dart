@@ -48,7 +48,7 @@ class GenerateTravelPlanStreamParams {
   final double? customBudget;
   final String? currency;
   final List<String>? selectedAttractions;
-  final Function(String message, int progress) onProgress;
+  final Function(String message, int progress, bool completed) onProgress;
   final Function(TravelPlan plan) onData;
   final Function(String error) onError;
 
@@ -94,7 +94,7 @@ class GenerateDigitalNomadGuideParams {
 class GenerateDigitalNomadGuideStreamParams {
   final String cityId;
   final String cityName;
-  final Function(String message, int progress) onProgress;
+  final Function(String message, int progress, bool completed) onProgress;
   final Function(DigitalNomadGuide guide) onData;
   final Function(String error) onError;
 

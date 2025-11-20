@@ -75,7 +75,7 @@ abstract class IAiRepository {
     double? customBudget,
     String? currency,
     List<String>? selectedAttractions,
-    required Function(String message, int progress) onProgress,
+    required Function(String message, int progress, bool completed) onProgress,
     required Function(TravelPlan plan) onData,
     required Function(String error) onError,
   });
@@ -134,7 +134,7 @@ abstract class IAiRepository {
   Future<Result<void>> generateDigitalNomadGuideStream({
     required String cityId,
     required String cityName,
-    required Function(String message, int progress) onProgress,
+    required Function(String message, int progress, bool completed) onProgress,
     required Function(DigitalNomadGuide guide) onData,
     required Function(String error) onError,
   });

@@ -102,7 +102,7 @@ class AiRepository implements IAiRepository {
     double? customBudget,
     String? currency,
     List<String>? selectedAttractions,
-    required Function(String message, int progress) onProgress,
+    required Function(String message, int progress, bool completed) onProgress,
     required Function(entity.TravelPlan plan) onData,
     required Function(String error) onError,
   }) async {
@@ -194,7 +194,7 @@ class AiRepository implements IAiRepository {
   Future<Result<void>> generateDigitalNomadGuideStream({
     required String cityId,
     required String cityName,
-    required Function(String message, int progress) onProgress,
+    required Function(String message, int progress, bool completed) onProgress,
     required Function(DigitalNomadGuide guide) onData,
     required Function(String error) onError,
   }) async {
@@ -215,7 +215,7 @@ class AiRepository implements IAiRepository {
           '🔌 连接到 MessageService SignalR Hub: $messageServiceUrl/hubs/ai-progress');
 
       if (!signalRService.isConnected) {
-        onProgress('正在连接实时通信服务...', 5);
+        onProgress('正在连接实时通信服务...', 5, false);
         await signalRService.connect(messageServiceUrl);
         print('✅ SignalR 连接已建立');
       }
@@ -224,7 +224,7 @@ class AiRepository implements IAiRepository {
       await Future.delayed(const Duration(milliseconds: 500));
 
       // 2. 创建异步任务
-      onProgress('正在创建生成任务...', 10);
+      onProgress('正在创建生成任务...', 10, false);
 
       print('📤 发送请求到: ${ApiConfig.currentApiBaseUrl}/ai/guide/async');
 
@@ -242,13 +242,13 @@ class AiRepository implements IAiRepository {
       final taskId = createResponse.data['taskId'] as String;
       print('✅ 任务已创建: $taskId');
 
-      onProgress('正在订阅任务事件...', 15);
+      onProgress('正在订阅任务事件...', 15, false);
 
       // 3. 订阅任务通知
       await signalRService.subscribeToTask(taskId);
       print('📢 客户端订阅任务: $taskId');
 
-      onProgress('任务已创建，等待AI处理...', 20);
+      onProgress('任务已创建，等待AI处理...', 20, false);
 
       // 4. 监听任务事件
       final completer = Completer<void>();
@@ -262,8 +262,9 @@ class AiRepository implements IAiRepository {
         if (task.taskId == taskId) {
           final message = task.progress.message ?? '处理中...';
           final percent = task.progress.percentage;
-          print('📊 任务进度: $percent% - $message');
-          onProgress(message, percent);
+          final completed = task.progress.completed;
+          print('📊 任务进度: $percent% - $message - completed: $completed');
+          onProgress(message, percent, completed);
         }
       });
 
@@ -283,7 +284,7 @@ class AiRepository implements IAiRepository {
               // 保存到数据库
               await _saveGuideToDatabase(guide);
 
-              onProgress('指南生成完成！', 100);
+              onProgress('指南生成完成！', 100, true);
               onData(guide);
             } else {
               throw Exception('任务完成但没有返回指南数据');
@@ -298,7 +299,7 @@ class AiRepository implements IAiRepository {
             await completedSub.cancel();
             await failedSub.cancel();
             await signalRService.unsubscribeFromTask(taskId);
-            
+
             if (!completer.isCompleted) {
               completer.complete();
             }
@@ -316,7 +317,7 @@ class AiRepository implements IAiRepository {
           await completedSub.cancel();
           await failedSub.cancel();
           await signalRService.unsubscribeFromTask(taskId);
-          
+
           if (!completer.isCompleted) {
             completer.complete();
           }

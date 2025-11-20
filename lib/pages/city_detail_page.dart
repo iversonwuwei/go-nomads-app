@@ -82,7 +82,7 @@ class _CityDetailPageState extends State<CityDetailPage>
   // 添加滚动控制器和透明度状态
   final ScrollController _scrollController = ScrollController();
   double _appBarOpacity = 0.0;
-  
+
   // 定时器用于检查后台任务状态
   Timer? _backgroundTaskTimer;
 
@@ -1019,74 +1019,66 @@ class _CityDetailPageState extends State<CityDetailPage>
     print(
         '   当前状态: isGenerating=${controller.isGeneratingGuide}, progress=${controller.guideGenerationProgress}%');
 
+    // 在显示对话框之前设置监听器
+    Worker? statusWorker;
+
     // 显示对话框
     showDialog(
       context: context,
       barrierDismissible: false, // 不允许点击外部关闭
       builder: (BuildContext dialogContext) {
-        bool hasSetupWorker = false;
-        Worker? statusWorker;
-        bool? previousState; // 移到外层，让 ever 回调能持久访问
-
-        return Obx(() {
-          // 实时显示当前状态（用于调试）
-          print(
-              '🔄 [ProgressDialog] Obx rebuild - isGenerating=${controller.isGeneratingGuide}, progress=${controller.guideGenerationProgress}%');
-
-          //只在第一次构建时设置监听器（不依赖 isGeneratingGuide 状态）
-          if (!hasSetupWorker) {
-            hasSetupWorker = true;
-            previousState = controller.isGeneratingGuide; // 初始化
-            print('🔧 [ProgressDialog] 设置状态监听器');
-            print(
-                '   初始状态: previousState=$previousState, isGenerating=${controller.isGeneratingGuide}');
+        // 🎯 在对话框显示后立即设置监听器
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (statusWorker == null) {
+            print('🔧 [ProgressDialog] 设置 ever 监听器');
+            print('   当前 isGuideCompleted 值: ${controller.isGuideCompleted}');
 
             statusWorker = ever(
-              controller.isGeneratingGuideRx,
-              (isGenerating) {
-                print(
-                    '🔔 [ProgressDialog] 状态变化: previous=$previousState, current=$isGenerating');
+              controller.isGuideCompletedRx,
+              (completed) {
+                print('🔔 [ProgressDialog] ever 回调被触发！completed=$completed');
 
-                // 检测从 true->false 的转换 (任务完成)
-                if (previousState == true && isGenerating == false) {
-                  print('✅✅✅ [ProgressDialog] 任务已完成 (true->false)，准备关闭对话框');
-                  // 延迟关闭，让用户看到 100% 进度
-                  Future.delayed(const Duration(milliseconds: 1000), () {
-                    print('🚪 [ProgressDialog] 准备关闭对话框');
+                if (completed) {
+                  print('🎉 [ProgressDialog] 任务已完成，800ms后关闭对话框');
+
+                  Future.delayed(const Duration(milliseconds: 800), () {
+                    print('🚪 [ProgressDialog] 执行关闭操作');
 
                     if (Navigator.of(dialogContext).canPop()) {
                       Navigator.of(dialogContext).pop();
                       print('✅ [ProgressDialog] 对话框已关闭');
 
-                      // 显示结果提示
-                      if (controller.currentGuide != null) {
-                        AppToast.success('AI 旅游指南生成成功!');
-                        // 重新加载指南数据
+                      // 清理监听器
+                      statusWorker?.dispose();
+                      statusWorker = null;
+
+                      // 延迟500ms加载最新guide数据
+                      Future.delayed(const Duration(milliseconds: 500), () {
+                        print('🔄 [ProgressDialog] 重新加载 guide 数据');
                         controller.loadCityGuide(
                           cityId: cityId,
                           cityName: cityName,
                         );
-                      } else if (controller.guideError != null) {
-                        AppToast.error('生成失败: ${controller.guideError}');
-                      }
 
-                      // 清理监听器
-                      statusWorker?.dispose();
+                        if (controller.currentGuide != null) {
+                          AppToast.success('AI 旅游指南生成成功!');
+                        } else if (controller.guideError != null) {
+                          AppToast.error('生成失败: ${controller.guideError}');
+                        }
+                      });
+                    } else {
+                      print('❌ [ProgressDialog] 无法关闭 - canPop=false');
                     }
                   });
-                } else if ((previousState == false || previousState == null) &&
-                    isGenerating == true) {
-                  print('🚀 [ProgressDialog] 任务已启动 ($previousState->true)');
-                } else {
-                  print(
-                      'ℹ️ [ProgressDialog] 状态转换: $previousState -> $isGenerating');
                 }
-
-                // 更新前一个状态
-                previousState = isGenerating;
               },
             );
           }
+        });
+
+        return Obx(() {
+          print(
+              '🔄 [ProgressDialog] Obx rebuild - progress=${controller.guideGenerationProgress}%, completed=${controller.isGuideCompleted}');
 
           return AlertDialog(
             shape: RoundedRectangleBorder(
@@ -1195,34 +1187,49 @@ class _CityDetailPageState extends State<CityDetailPage>
 
             final signalr = SignalRService();
 
-            // 监听任务完成事件 - 这是真正的完成信号
+            // 🎯 关键：监听任务完成状态，completed=true时自动关闭
+            Worker? progressWorker;
+            progressWorker = ever(
+              controller.isGuideCompletedRx,
+              (completed) {
+                print(
+                    '📊 [BackgroundDialog] 完成状态更新: completed=$completed, progress=${controller.guideGenerationProgress}%');
+
+                if (completed) {
+                  print(
+                      '🎉 [BackgroundDialog] 任务已完成，准备关闭对话框'); // 延迟800ms让用户看到100%完成状态
+                  Future.delayed(const Duration(milliseconds: 800), () {
+                    if (Navigator.of(dialogContext).canPop()) {
+                      Navigator.of(dialogContext).pop();
+                      print('✅ [BackgroundDialog] 对话框已关闭');
+
+                      // 清理所有监听器
+                      completedSubscription?.cancel();
+                      failedSubscription?.cancel();
+                      progressWorker?.dispose();
+
+                      // 延迟加载guide数据
+                      Future.delayed(const Duration(milliseconds: 500), () {
+                        print('🔄 [BackgroundDialog] 重新加载 guide 数据');
+                        controller.loadCityGuide(
+                          cityId: cityId,
+                          cityName: cityName,
+                        );
+                        AppToast.success('AI 旅游指南生成成功！');
+                      });
+                    }
+                  });
+                }
+              },
+            );
+
+            // 监听任务完成事件（用于日志记录）
             completedSubscription = signalr.taskCompletedStream.listen((task) {
               if (task.result?.guideId != null) {
                 print('✅ [BackgroundDialog] 接收到任务完成信号: ${task.taskId}');
-                print('   Progress: ${controller.guideGenerationProgress}%');
-
-                // 延迟关闭，让用户看到100%完成状态
-                Future.delayed(const Duration(milliseconds: 1500), () {
-                  print('🚪 [BackgroundDialog] 任务已完成，关闭对话框');
-
-                  if (Navigator.of(dialogContext).canPop()) {
-                    Navigator.of(dialogContext).pop();
-                    print('✅ [BackgroundDialog] 对话框已关闭');
-
-                    // 清理监听器
-                    completedSubscription?.cancel();
-                    failedSubscription?.cancel();
-
-                    // 对话框关闭后，延迟加载 guide，确保数据库已写入
-                    Future.delayed(const Duration(seconds: 2), () {
-                      print('🔄 [BackgroundDialog] 重新加载 guide 数据');
-                      controller.loadCityGuide(
-                        cityId: cityId,
-                        cityName: cityName,
-                      );
-                    });
-                  }
-                });
+                print(
+                    '   Current Progress: ${controller.guideGenerationProgress}%');
+                // 不在这里关闭对话框，由进度监听器处理
               }
             });
 
@@ -2226,7 +2233,7 @@ class _CityDetailPageState extends State<CityDetailPage>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // 首先检查并同步后台任务状态
       controller.checkAndSyncBackgroundTaskStatus(cityId);
-      
+
       final currentGuide = controller.currentGuide;
       final hasBackgroundTask =
           BackgroundTaskService.to.hasCityActiveTask(cityId);
@@ -2236,7 +2243,7 @@ class _CityDetailPageState extends State<CityDetailPage>
         controller.isGeneratingGuideRx.value = true;
         print('🔄 [GuideTab] 发现后台任务运行中，设置生成状态');
       }
-      
+
       final shouldReload = currentGuide == null ||
           currentGuide.cityId != cityId ||
           (!controller.isGeneratingGuide &&
@@ -2368,7 +2375,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                     onPressed:
                         (controller.isGeneratingGuide || hasBackgroundTask)
                             ? null // 🔒 生成中或有后台任务时禁用
-                        : () => _showAIGenerateProgressDialog(controller),
+                            : () => _showAIGenerateProgressDialog(controller),
                     icon: const Icon(Icons.auto_awesome),
                     label: const Text('前台生成'),
                     style: ElevatedButton.styleFrom(

@@ -53,6 +53,7 @@ class AiStateController extends GetxController {
   final _isGeneratingGuide = false.obs;
   final _guideGenerationProgress = 0.obs;
   final _guideGenerationMessage = ''.obs;
+  final _isGuideCompleted = false.obs; // 任务是否已完成（100%）
   final _currentGuide = Rx<DigitalNomadGuide?>(null);
   final _guideError = Rx<String?>(null);
   final _isLoadingGuide = false.obs; // 从后端API加载中
@@ -70,7 +71,11 @@ class AiStateController extends GetxController {
   bool get isGeneratingGuide => _isGeneratingGuide.value;
   RxBool get isGeneratingGuideRx => _isGeneratingGuide; // 暴露 Rx 对象用于监听
   int get guideGenerationProgress => _guideGenerationProgress.value;
+  RxInt get guideGenerationProgressRx =>
+      _guideGenerationProgress; // 暴露 Rx 对象用于监听进度
   String get guideGenerationMessage => _guideGenerationMessage.value;
+  bool get isGuideCompleted => _isGuideCompleted.value;
+  RxBool get isGuideCompletedRx => _isGuideCompleted; // 暴露完成状态
   DigitalNomadGuide? get currentGuide => _currentGuide.value;
   String? get guideError => _guideError.value;
   bool get isLoadingGuide => _isLoadingGuide.value;
@@ -205,7 +210,7 @@ class AiStateController extends GetxController {
         customBudget: customBudget,
         currency: currency,
         selectedAttractions: selectedAttractions,
-        onProgress: (message, progress) {
+        onProgress: (message, progress, completed) {
           _travelPlanGenerationMessage.value = message;
           _travelPlanGenerationProgress.value = progress;
         },
@@ -304,10 +309,12 @@ class AiStateController extends GetxController {
         GenerateDigitalNomadGuideStreamParams(
           cityId: cityId,
           cityName: cityName,
-          onProgress: (message, progress) {
-            print('📊 [Controller] 收到进度: $progress% - $message');
+          onProgress: (message, progress, completed) {
+            print(
+                '📊 [Controller] 收到进度: $progress% - $message - completed: $completed');
             _guideGenerationMessage.value = message;
             _guideGenerationProgress.value = progress;
+            _isGuideCompleted.value = completed; // ✅ 更新完成状态
           },
           onData: (guide) async {
             print('✅ [Controller] 收到完成事件');
@@ -358,6 +365,8 @@ class AiStateController extends GetxController {
       // 🔒 设置生成状态
       _isGeneratingGuide.value = true;
       _guideError.value = null;
+      _isGuideCompleted.value = false; // 🔄 重置完成状态
+      _guideGenerationProgress.value = 0; // 🔄 重置进度
 
       // 显示开始生成的提示
       Get.snackbar(
@@ -381,9 +390,9 @@ class AiStateController extends GetxController {
             if (task.result?.guideId != null) {
               print('✅ [SignalR] Guide 任务完成: ${task.taskId}');
               _isGeneratingGuide.value = false;
-              
+
               // 注意：不在这里加载 guide，由对话框关闭后延迟加载，确保数据已写入数据库
-              
+
               Get.snackbar(
                 '✅ 生成成功',
                 '"$cityName"的数字游民指南已生成完成!',
@@ -391,7 +400,7 @@ class AiStateController extends GetxController {
                 duration: const Duration(seconds: 3),
                 backgroundColor: Get.theme.colorScheme.primaryContainer,
               );
-              
+
               // 取消订阅
               _taskCompletedSubscription?.cancel();
               _taskFailedSubscription?.cancel();
@@ -405,7 +414,7 @@ class AiStateController extends GetxController {
             print('❌ [SignalR] 任务失败: ${task.taskId} - ${task.error}');
             _isGeneratingGuide.value = false;
             _guideError.value = task.error;
-            
+
             Get.snackbar(
               '❌ 生成失败',
               task.error ?? '"$cityName"的指南生成失败',
@@ -413,7 +422,7 @@ class AiStateController extends GetxController {
               duration: const Duration(seconds: 3),
               backgroundColor: Get.theme.colorScheme.errorContainer,
             );
-            
+
             // 取消订阅
             _taskCompletedSubscription?.cancel();
             _taskFailedSubscription?.cancel();
@@ -424,9 +433,10 @@ class AiStateController extends GetxController {
           _taskProgressSubscription?.cancel();
           _taskProgressSubscription = signalr.taskProgressStream.listen((task) {
             print(
-                '📊 [SignalR] 进度: ${task.progress.percentage}% - ${task.progress.message ?? ""}');
+                '📊 [SignalR] 进度: ${task.progress.percentage}% - ${task.progress.message ?? ""} - completed: ${task.progress.completed}');
             _guideGenerationProgress.value = task.progress.percentage;
             _guideGenerationMessage.value = task.progress.message ?? '';
+            _isGuideCompleted.value = task.progress.completed; // 更新完成状态
           });
         } else {
           print('⚠️ [AiController] SignalR 未连接，将使用轮询机制');

@@ -40,7 +40,7 @@ class SignalRService {
       // 获取认证 token
       final tokenService = TokenStorageService();
       final token = await tokenService.getAccessToken();
-      
+
       // 构建 Hub URL - 使用 ai-progress hub
       final hubUrl = '$baseUrl/hubs/ai-progress';
       print('🔌 正在连接 SignalR Hub: $hubUrl');
@@ -92,7 +92,7 @@ class SignalRService {
   /// 注册 SignalR 事件处理器
   void _registerEventHandlers() {
     print('🔧 注册 SignalR 事件处理器...');
-    
+
     // TaskProgress: 任务进度更新
     _hubConnection?.on('TaskProgress', (arguments) {
       print('🎯 收到 TaskProgress 事件！');
@@ -104,13 +104,19 @@ class SignalRService {
       }
 
       try {
-        print('📊 原始 TaskProgress 数据: ${arguments[0]}');
         final data = arguments[0] as Map<String, dynamic>;
+        print('📊 原始 TaskProgress JSON数据:');
+        print('   完整JSON: $data');
+        print('   progress: ${data['progress'] ?? data['Progress']}');
+        print('   completed (小写): ${data['completed']}');
+        print('   Completed (大写): ${data['Completed']}');
+
         final taskDto = AsyncTaskDto.fromJson(data);
         final task = taskDto.toDomain();
 
         print('📊 收到任务进度: ${task.taskId} - ${task.progress.percentage}%');
         print('   消息: ${task.progress.message}');
+        print('   ✅ completed字段: ${task.progress.completed}');
         _taskProgressController.add(task);
       } catch (e) {
         print('❌ 解析 TaskProgress 失败: $e');
@@ -136,7 +142,7 @@ class SignalRService {
           print('   原始 JSON keys: ${data.keys.toList()}');
           print(
               '   完整数据: ${data.toString().substring(0, data.toString().length > 500 ? 500 : data.toString().length)}...');
-          
+
           final taskDto = AsyncTaskDto.fromJson(data);
           final task = taskDto.toDomain();
 
