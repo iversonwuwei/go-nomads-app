@@ -1,4 +1,5 @@
 import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/async_task/domain/entities/async_task.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/digital_nomad_guide.dart';
 import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan.dart';
 
@@ -75,7 +76,7 @@ abstract class IAiRepository {
     double? customBudget,
     String? currency,
     List<String>? selectedAttractions,
-    required Function(String message, int progress, bool completed) onProgress,
+    required Function(String message, int progress) onProgress,
     required Function(TravelPlan plan) onData,
     required Function(String error) onError,
   });
@@ -134,7 +135,7 @@ abstract class IAiRepository {
   Future<Result<void>> generateDigitalNomadGuideStream({
     required String cityId,
     required String cityName,
-    required Function(String message, int progress, bool completed) onProgress,
+    required Function(AsyncTask task) onProgress,
     required Function(DigitalNomadGuide guide) onData,
     required Function(String error) onError,
   });

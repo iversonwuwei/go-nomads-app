@@ -1,6 +1,7 @@
 import 'package:df_admin_mobile/core/application/use_case.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/ai/domain/repositories/iai_repository.dart';
+import 'package:df_admin_mobile/features/async_task/domain/entities/async_task.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/digital_nomad_guide.dart';
 import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan.dart';
 
@@ -48,7 +49,7 @@ class GenerateTravelPlanStreamParams {
   final double? customBudget;
   final String? currency;
   final List<String>? selectedAttractions;
-  final Function(String message, int progress, bool completed) onProgress;
+  final Function(String message, int progress) onProgress;
   final Function(TravelPlan plan) onData;
   final Function(String error) onError;
 
@@ -94,7 +95,7 @@ class GenerateDigitalNomadGuideParams {
 class GenerateDigitalNomadGuideStreamParams {
   final String cityId;
   final String cityName;
-  final Function(String message, int progress, bool completed) onProgress;
+  final Function(AsyncTask task) onProgress;
   final Function(DigitalNomadGuide guide) onData;
   final Function(String error) onError;
 

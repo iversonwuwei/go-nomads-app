@@ -210,7 +210,7 @@ class AiStateController extends GetxController {
         customBudget: customBudget,
         currency: currency,
         selectedAttractions: selectedAttractions,
-        onProgress: (message, progress, completed) {
+        onProgress: (message, progress) {
           _travelPlanGenerationMessage.value = message;
           _travelPlanGenerationProgress.value = progress;
         },
@@ -309,7 +309,10 @@ class AiStateController extends GetxController {
         GenerateDigitalNomadGuideStreamParams(
           cityId: cityId,
           cityName: cityName,
-          onProgress: (message, progress, completed) {
+          onProgress: (task) {
+            final message = task.progress.message ?? '处理中...';
+            final progress = task.progress.percentage;
+            final completed = task.progress.completed;
             print(
                 '📊 [Controller] 收到进度: $progress% - $message - completed: $completed');
             _guideGenerationMessage.value = message;
