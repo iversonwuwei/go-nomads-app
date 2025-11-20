@@ -18,6 +18,9 @@ class ApiConfig {
   /// AI Service 端口 (用于 SignalR Hub 直连,如需要)
   static const int aiServicePort = 8009;
 
+  /// Message Service 端口 (SignalR Hub)
+  static const int messageServicePort = 5005;
+
   // ============================================================
   // 主机地址配置
   // ============================================================
@@ -98,6 +101,15 @@ class ApiConfig {
     }
     final host = usePhysicalDevice ? physicalDeviceHost : developmentHost;
     return 'http://$host:$aiServicePort';
+  }
+
+  /// Message Service 地址 (SignalR Hub 专用)
+  static String get messageServiceBaseUrl {
+    if (kIsProduction) {
+      return productionUrl; // 生产环境通过 Gateway
+    }
+    final host = usePhysicalDevice ? physicalDeviceHost : developmentHost;
+    return 'http://$host:$messageServicePort';
   }
 
   // API 版本

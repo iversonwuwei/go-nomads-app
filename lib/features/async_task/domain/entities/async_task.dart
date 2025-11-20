@@ -127,11 +127,13 @@ class TaskProgress {
   final int percentage; // 0-100
   final String? message; // 进度消息
   final int estimatedTimeSeconds; // 预估剩余时间(秒)
+  final bool completed; // 是否真正完成（后端确认）
 
   TaskProgress({
     required this.percentage,
     this.message,
     required this.estimatedTimeSeconds,
+    this.completed = false,
   });
 
   /// 验证进度值有效性

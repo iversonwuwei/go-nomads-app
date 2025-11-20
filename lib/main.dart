@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+import 'config/api_config.dart';
 import 'config/supabase_config.dart';
 import 'controllers/bottom_nav_controller.dart';
 import 'controllers/locale_controller.dart';
@@ -11,9 +12,11 @@ import 'generated/app_localizations.dart';
 import 'routes/app_routes.dart';
 import 'routes/route_refresh_observer.dart';
 import 'services/app_init_service.dart';
+import 'services/background_task_service.dart';
 import 'services/image_upload_service.dart';
 import 'services/location_service.dart';
 import 'services/notification_service.dart';
+import 'services/signalr_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,7 +35,28 @@ void main() async {
   // 初始化其他全局控制器
   print('🎯 初始化全局控制器...');
   Get.put(BottomNavController(), permanent: true);
+  Get.put(BackgroundTaskService(), permanent: true);
   print('✅ 全局控制器初始化完成');
+
+  // 🔌 初始化 SignalR 实时通信
+  print('🔌 初始化 SignalR 实时通信...');
+  try {
+    final signalrService = SignalRService();
+    await signalrService.connect(ApiConfig.messageServiceBaseUrl);
+    print('✅ SignalR 连接成功');
+  } catch (e) {
+    print('⚠️ SignalR 连接失败: $e (将使用轮询机制作为备选)');
+  }
+
+  // 🔌 初始化 SignalR 实时通信
+  print('🔌 初始化 SignalR 实时通信...');
+  try {
+    final signalrService = SignalRService();
+    await signalrService.connect(ApiConfig.messageServiceBaseUrl);
+    print('✅ SignalR 连接成功');
+  } catch (e) {
+    print('❌ SignalR 连接失败: $e (将继续使用轮询机制)');
+  }
 
   // 📢 初始化通知服务
   print('📢 初始化通知服务...');

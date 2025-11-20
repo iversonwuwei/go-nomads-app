@@ -10,6 +10,7 @@ class AsyncTaskDto {
   final String? error;
   final int progress;
   final String? progressMessage;
+  final bool completed; // 后端确认任务完成
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? completedAt;
@@ -23,6 +24,7 @@ class AsyncTaskDto {
     this.error,
     required this.progress,
     this.progressMessage,
+    this.completed = false,
     required this.createdAt,
     required this.updatedAt,
     this.completedAt,
@@ -58,6 +60,14 @@ class AsyncTaskDto {
     } else if (json['CurrentStep'] != null) {
       progressMessage = json['CurrentStep'] as String;
     }
+
+    // Completed 字段支持
+    bool completed = false;
+    if (json['completed'] != null) {
+      completed = json['completed'] as bool;
+    } else if (json['Completed'] != null) {
+      completed = json['Completed'] as bool;
+    }
     
     return AsyncTaskDto(
       taskId: taskId,
@@ -68,6 +78,7 @@ class AsyncTaskDto {
       error: error,
       progress: progress,
       progressMessage: progressMessage,
+      completed: completed,
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'] as String)
           : (json['CreatedAt'] != null
@@ -96,6 +107,7 @@ class AsyncTaskDto {
       'error': error,
       'progress': progress,
       'progressMessage': progressMessage,
+      'completed': completed,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'completedAt': completedAt?.toIso8601String(),
@@ -119,6 +131,7 @@ class AsyncTaskDto {
         percentage: progress,
         message: progressMessage,
         estimatedTimeSeconds: estimatedTimeSeconds,
+        completed: completed,
       ),
       timestamps: TaskTimestamps(
         createdAt: createdAt,
