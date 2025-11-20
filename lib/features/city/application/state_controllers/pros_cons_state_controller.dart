@@ -27,6 +27,11 @@ class ProsConsStateController extends GetxController {
   // 错误信息
   final RxnString error = RxnString();
 
+  // 记录当前会话用户已投票的条目,避免重复触发
+  final RxSet<String> votedItemIds = <String>{}.obs;
+
+  bool hasUserVoted(String id) => votedItemIds.contains(id);
+
   /// 加载城市的所有优缺点
   Future<void> loadCityProsCons(String cityId) async {
     await Future.wait([
@@ -39,6 +44,7 @@ class ProsConsStateController extends GetxController {
   Future<void> loadPros(String cityId) async {
     isLoadingPros.value = true;
     error.value = null;
+    prosList.clear(); // 先清空旧数据
 
     try {
       print('📡 加载城市优点: $cityId');
@@ -70,6 +76,7 @@ class ProsConsStateController extends GetxController {
   Future<void> loadCons(String cityId) async {
     isLoadingCons.value = true;
     error.value = null;
+    consList.clear(); // 先清空旧数据
 
     try {
       print('📡 加载城市缺点: $cityId');
@@ -199,27 +206,9 @@ class ProsConsStateController extends GetxController {
 
       return result.fold(
         onSuccess: (_) {
-          // 更新本地数据
-          final list = isPro ? prosList : consList;
-          final index = list.indexWhere((item) => item.id == id);
-
-          if (index != -1) {
-            final item = list[index];
-            final updatedItem = ProsCons(
-              id: item.id,
-              userId: item.userId,
-              cityId: item.cityId,
-              text: item.text,
-              upvotes: isUpvote ? item.upvotes + 1 : item.upvotes,
-              downvotes: !isUpvote ? item.downvotes + 1 : item.downvotes,
-              isPro: item.isPro,
-              createdAt: item.createdAt,
-              updatedAt: DateTime.now(),
-            );
-
-            list[index] = updatedItem;
-          }
-
+          // 投票成功，不在本地更新数据
+          // 因为后端投票逻辑是切换：有投票则删除，无投票则新增
+          // 前端无法判断是新增还是删除，所以由调用方重新加载数据
           print('✅ 投票成功');
           return true;
         },
@@ -293,6 +282,7 @@ class ProsConsStateController extends GetxController {
     prosList.clear();
     consList.clear();
     error.value = null;
+    votedItemIds.clear();
   }
 
   @override
@@ -300,16 +290,17 @@ class ProsConsStateController extends GetxController {
     // 清空所有响应式变量
     prosList.clear();
     consList.clear();
-    
+
     // 重置加载状态
     isLoadingPros.value = false;
     isLoadingCons.value = false;
     isAdding.value = false;
     isVoting.value = false;
-    
+
     // 清空错误信息
     error.value = null;
-    
+    votedItemIds.clear();
+
     super.onClose();
   }
 }

@@ -24,27 +24,25 @@ class ProsAndConsAddPage extends StatefulWidget {
 class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  late final ProsConsStateController _prosConsController;
 
   // 本地状态管理
   final TextEditingController prosTextController = TextEditingController();
   final TextEditingController consTextController = TextEditingController();
   final RxBool isAddingPros = false.obs;
   final RxBool isAddingCons = false.obs;
-  final RxBool isLoadingPros = false.obs;
-  final RxBool isLoadingCons = false.obs;
-  final RxList<dynamic> prosList = <dynamic>[].obs;
-  final RxList<dynamic> consList = <dynamic>[].obs;
   final RxBool canDelete = false.obs;
 
   bool get hasChanges =>
       prosTextController.text.isNotEmpty ||
       consTextController.text.isNotEmpty ||
-      prosList.isNotEmpty ||
-      consList.isNotEmpty;
+      _prosConsController.prosList.isNotEmpty ||
+      _prosConsController.consList.isNotEmpty;
 
   @override
   void initState() {
     super.initState();
+    _prosConsController = Get.find<ProsConsStateController>();
     _tabController = TabController(
       length: 2,
       vsync: this,
@@ -65,38 +63,8 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
 
   /// 加载已有数据
   Future<void> _loadData() async {
-    final controller = Get.find<ProsConsStateController>();
-
-    isLoadingPros.value = true;
-    isLoadingCons.value = true;
-
-    await controller.loadCityProsCons(widget.cityId);
-
-    // 同步数据到本地列表
-    prosList.value = controller.prosList
-        .map((item) => {
-              'id': item.id,
-              'text': item.text,
-              'upvotes': item.upvotes,
-              'downvotes': item.downvotes,
-              'userId': item.userId,
-              'timestamp': item.createdAt.toIso8601String(),
-            })
-        .toList();
-
-    consList.value = controller.consList
-        .map((item) => {
-              'id': item.id,
-              'text': item.text,
-              'upvotes': item.upvotes,
-              'downvotes': item.downvotes,
-              'userId': item.userId,
-              'timestamp': item.createdAt.toIso8601String(),
-            })
-        .toList();
-
-    isLoadingPros.value = false;
-    isLoadingCons.value = false;
+    // 直接调用 controller 加载数据，不需要同步到本地列表
+    await _prosConsController.loadCityProsCons(widget.cityId);
   }
 
   @override
@@ -114,8 +82,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
     isAddingPros.value = true;
     try {
       // 调用后端 API 保存数据
-      final controller = Get.find<ProsConsStateController>();
-      final success = await controller.addPros(
+      final success = await _prosConsController.addPros(
         cityId: widget.cityId,
         text: prosTextController.text.trim(),
       );
@@ -160,8 +127,8 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
     if (confirmed != true) return;
 
     try {
-      final controller = Get.find<ProsConsStateController>();
-      final success = await controller.deleteProsCons(widget.cityId, id, true);
+      final success =
+          await _prosConsController.deleteProsCons(widget.cityId, id, true);
 
       if (success) {
         Get.snackbar('成功', '优点已删除', backgroundColor: Colors.green[100]);
@@ -198,8 +165,8 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
     if (confirmed != true) return;
 
     try {
-      final controller = Get.find<ProsConsStateController>();
-      final success = await controller.deleteProsCons(widget.cityId, id, false);
+      final success =
+          await _prosConsController.deleteProsCons(widget.cityId, id, false);
 
       if (success) {
         Get.snackbar('成功', '挑战已删除', backgroundColor: Colors.green[100]);
@@ -212,6 +179,74 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
     }
   }
 
+  Future<void> _handleVote(String id, bool isPro) async {
+    if (id.isEmpty) return;
+
+    // Flutter 只需要传 isUpvote=true 给后端
+    // 后端会自动判断：没投过就创建，投过就删除（取消）
+    final success = await _prosConsController.upvote(id, isPro);
+    if (success) {
+      await _loadData(); // 重新加载数据以获取最新的投票状态和投票数
+    } else {
+      final message = _prosConsController.error.value ?? '操作失败，请稍后再试';
+      Get.snackbar('失败', message);
+    }
+  }
+
+  Widget _buildVoteChip({
+    required int count,
+    required VoidCallback? onTap,
+    bool? currentUserVoted, // null=未登录/未投票, true=已点赞, false=已点踩
+  }) {
+    // 如果是点赞按钮且用户已点赞，则显示激活状态
+    final bool isActive = currentUserVoted == true;
+    final Color activeColor = const Color(0xFFFF4458);
+    final Color inactiveColor = Colors.grey;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: isActive ? const Color(0xFFFFEEF2) : Colors.grey[100],
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isActive
+                  ? activeColor.withOpacity(0.4)
+                  : inactiveColor.withOpacity(0.2),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.thumb_up,
+                size: 18,
+                color: isActive ? activeColor : inactiveColor,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '$count',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: activeColor,
+                ),
+              ),
+              Text(
+                '投票',
+                style: TextStyle(fontSize: 10, color: activeColor),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   /// 添加挑战
   Future<void> addCons() async {
     if (consTextController.text.trim().isEmpty) return;
@@ -219,8 +254,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
     isAddingCons.value = true;
     try {
       // 调用后端 API 保存数据
-      final controller = Get.find<ProsConsStateController>();
-      final success = await controller.addCons(
+      final success = await _prosConsController.addCons(
         cityId: widget.cityId,
         text: consTextController.text.trim(),
       );
@@ -249,7 +283,11 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () {
-            Get.back(result: hasChanges);
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop(hasChanges);
+            } else {
+              Get.back(result: hasChanges, closeOverlays: false);
+            }
           },
         ),
         bottom: TabBar(
@@ -402,9 +440,9 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
 
           // 列表区域
           Expanded(
-            child: isLoadingPros.value
+            child: _prosConsController.isLoadingPros.value
                 ? const Center(child: CircularProgressIndicator())
-                : prosList.isEmpty
+                : _prosConsController.prosList.isEmpty
                     ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -422,9 +460,10 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                       )
                     : ListView.builder(
                         padding: const EdgeInsets.all(16),
-                        itemCount: prosList.length,
+                        itemCount: _prosConsController.prosList.length,
                         itemBuilder: (context, index) {
-                          final item = prosList[index];
+                          final item = _prosConsController.prosList[index];
+                          final itemId = item.id;
                           return Card(
                             margin: const EdgeInsets.only(bottom: 12),
                             child: Padding(
@@ -439,28 +478,23 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Text(
-                                      item['text'] ?? '',
+                                      item.text,
                                       style: const TextStyle(fontSize: 15),
                                     ),
                                   ),
-                                  Column(
-                                    children: [
-                                      const Icon(Icons.arrow_upward,
-                                          size: 16, color: Color(0xFFFF4458)),
-                                      Text(
-                                        '${item['upvotes'] ?? 0}',
-                                        style: const TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ],
+                                  _buildVoteChip(
+                                    count: item.upvotes,
+                                    onTap: itemId.isEmpty
+                                        ? null
+                                        : () => _handleVote(itemId, true),
+                                    currentUserVoted: item.currentUserVoted,
                                   ),
                                   if (canDelete.value) const SizedBox(width: 8),
                                   if (canDelete.value)
                                     IconButton(
                                       icon: const Icon(Icons.delete_outline,
                                           color: Colors.red, size: 20),
-                                      onPressed: () => deletePros(item['id']),
+                                      onPressed: () => deletePros(item.id),
                                       padding: EdgeInsets.zero,
                                       constraints: const BoxConstraints(),
                                     ),
@@ -588,9 +622,9 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
 
           // 列表区域
           Expanded(
-            child: isLoadingCons.value
+            child: _prosConsController.isLoadingCons.value
                 ? const Center(child: CircularProgressIndicator())
-                : consList.isEmpty
+                : _prosConsController.consList.isEmpty
                     ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -608,9 +642,10 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                       )
                     : ListView.builder(
                         padding: const EdgeInsets.all(16),
-                        itemCount: consList.length,
+                        itemCount: _prosConsController.consList.length,
                         itemBuilder: (context, index) {
-                          final item = consList[index];
+                          final item = _prosConsController.consList[index];
+                          final itemId = item.id;
                           return Card(
                             margin: const EdgeInsets.only(bottom: 12),
                             child: Padding(
@@ -625,28 +660,23 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Text(
-                                      item['text'] ?? '',
+                                      item.text,
                                       style: const TextStyle(fontSize: 15),
                                     ),
                                   ),
-                                  Column(
-                                    children: [
-                                      const Icon(Icons.arrow_upward,
-                                          size: 16, color: Color(0xFFFF4458)),
-                                      Text(
-                                        '${item['upvotes'] ?? 0}',
-                                        style: const TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ],
+                                  _buildVoteChip(
+                                    count: item.upvotes,
+                                    onTap: itemId.isEmpty
+                                        ? null
+                                        : () => _handleVote(itemId, false),
+                                    currentUserVoted: item.currentUserVoted,
                                   ),
                                   if (canDelete.value) const SizedBox(width: 8),
                                   if (canDelete.value)
                                     IconButton(
                                       icon: const Icon(Icons.delete_outline,
                                           color: Colors.red, size: 20),
-                                      onPressed: () => deleteCons(item['id']),
+                                      onPressed: () => deleteCons(item.id),
                                       padding: EdgeInsets.zero,
                                       constraints: const BoxConstraints(),
                                     ),

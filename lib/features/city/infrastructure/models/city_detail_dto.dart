@@ -197,6 +197,7 @@ class ProsConsDto {
   final bool isPro;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final bool? currentUserVoted; // null=未登录/未投票, true=已点赞, false=已点踩
 
   ProsConsDto({
     required this.id,
@@ -208,6 +209,7 @@ class ProsConsDto {
     required this.isPro,
     required this.createdAt,
     required this.updatedAt,
+    this.currentUserVoted,
   });
 
   factory ProsConsDto.fromJson(Map<String, dynamic> json) {
@@ -221,6 +223,7 @@ class ProsConsDto {
       isPro: json['isPro'] as bool? ?? true,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
+      currentUserVoted: json['currentUserVoted'] as bool?,
     );
   }
 
@@ -249,6 +252,7 @@ class ProsConsDto {
       isPro: isPro,
       createdAt: createdAt,
       updatedAt: updatedAt,
+      currentUserVoted: currentUserVoted,
     );
   }
 

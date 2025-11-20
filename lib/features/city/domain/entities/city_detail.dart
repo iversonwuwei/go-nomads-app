@@ -96,6 +96,7 @@ class ProsCons {
   final bool isPro;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final bool? currentUserVoted; // null=未登录/未投票, true=已点赞, false=已点踩
 
   const ProsCons({
     required this.id,
@@ -107,6 +108,7 @@ class ProsCons {
     required this.isPro,
     required this.createdAt,
     required this.updatedAt,
+    this.currentUserVoted,
   });
 
   /// 净投票数

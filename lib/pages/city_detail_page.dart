@@ -11,6 +11,7 @@ import '../core/domain/result.dart';
 import '../features/ai/presentation/controllers/ai_state_controller.dart';
 import '../features/city/application/state_controllers/pros_cons_state_controller.dart';
 import '../features/city/domain/entities/city.dart';
+import '../features/city/domain/entities/city_detail.dart' show ProsCons;
 import '../features/city/domain/entities/city_rating_item.dart';
 import '../features/city/domain/entities/digital_nomad_guide.dart';
 import '../features/city/domain/repositories/i_city_repository.dart';
@@ -2341,40 +2342,38 @@ class _CityDetailPageState extends State<CityDetailPage>
                   onTap: () => _showAddProsConsPage(initialTab: 0),
                 )
               else
-                ...controller.prosList.map((item) => Card(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.check_circle,
-                              color: Colors.green,
-                              size: 24,
+                ...controller.prosList.map((item) {
+                  final hasVoted = controller.hasUserVoted(item.id);
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.check_circle,
+                            color: Colors.green,
+                            size: 24,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              item.text,
+                              style: const TextStyle(fontSize: 15),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                item.text,
-                                style: const TextStyle(fontSize: 15),
-                              ),
-                            ),
-                            Column(
-                              children: [
-                                const Icon(Icons.arrow_upward,
-                                    size: 16, color: Color(0xFFFF4458)),
-                                Text(
-                                  '${item.upvotes}',
-                                  style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                          ),
+                          _buildProsConsVoteBadge(
+                            hasVoted: hasVoted,
+                            count: item.upvotes,
+                            onTap: hasVoted
+                                ? null
+                                : () => _handleProsConsVote(item),
+                          ),
+                        ],
                       ),
-                    )),
+                    ),
+                  );
+                }),
               const SizedBox(height: 24),
               const Text(
                 '挑战',
@@ -2395,40 +2394,38 @@ class _CityDetailPageState extends State<CityDetailPage>
                   onTap: () => _showAddProsConsPage(initialTab: 1),
                 )
               else
-                ...controller.consList.map((item) => Card(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.cancel,
-                              color: Colors.red,
-                              size: 24,
+                ...controller.consList.map((item) {
+                  final hasVoted = controller.hasUserVoted(item.id);
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.cancel,
+                            color: Colors.red,
+                            size: 24,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              item.text,
+                              style: const TextStyle(fontSize: 15),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                item.text,
-                                style: const TextStyle(fontSize: 15),
-                              ),
-                            ),
-                            Column(
-                              children: [
-                                const Icon(Icons.arrow_upward,
-                                    size: 16, color: Color(0xFFFF4458)),
-                                Text(
-                                  '${item.upvotes}',
-                                  style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                          ),
+                          _buildProsConsVoteBadge(
+                            hasVoted: hasVoted,
+                            count: item.upvotes,
+                            onTap: hasVoted
+                                ? null
+                                : () => _handleProsConsVote(item),
+                          ),
+                        ],
                       ),
-                    )),
+                    ),
+                  );
+                }),
             ],
           ),
           // 添加按钮（仅 admin/moderator 可见）
@@ -2515,6 +2512,52 @@ class _CityDetailPageState extends State<CityDetailPage>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildProsConsVoteBadge({
+    required bool hasVoted,
+    required int count,
+    required VoidCallback? onTap,
+  }) {
+    const accent = Color(0xFFFF4458);
+    final Color color = hasVoted ? Colors.grey : accent;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: hasVoted ? null : onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: hasVoted
+                ? Colors.grey.withOpacity(0.12)
+                : const Color(0xFFFFEEF2),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: color.withOpacity(0.35)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.thumb_up, size: 18, color: color),
+              const SizedBox(height: 4),
+              Text(
+                '$count',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+              Text(
+                hasVoted ? '已投' : '投票',
+                style: TextStyle(fontSize: 10, color: color),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -4323,6 +4366,22 @@ class _CityDetailPageState extends State<CityDetailPage>
       final prosConsController = Get.find<ProsConsStateController>();
       // 重新加载优缺点数据
       await prosConsController.loadCityProsCons(cityId);
+    }
+  }
+
+  Future<void> _handleProsConsVote(ProsCons item) async {
+    final controller = Get.find<ProsConsStateController>();
+    if (controller.hasUserVoted(item.id)) {
+      AppToast.info('你已经为该条目投过票啦');
+      return;
+    }
+
+    final success = await controller.upvote(item.id, item.isPro);
+    if (success) {
+      AppToast.success('感谢你的投票！');
+    } else {
+      final message = controller.error.value ?? '投票失败，请稍后再试';
+      AppToast.error(message);
     }
   }
 
