@@ -102,20 +102,6 @@ abstract class IAiRepository {
   Future<Result<DigitalNomadGuide?>> getDigitalNomadGuideFromBackend(
       String cityId);
 
-  /// 生成数字游民指南 (标准方式)
-  ///
-  /// 参数:
-  /// - [cityId]: 城市ID
-  /// - [cityName]: 城市名称
-  ///
-  /// 返回: Result<DigitalNomadGuide>
-  ///
-  /// 超时: 3分钟 (AI生成时间)
-  Future<Result<DigitalNomadGuide>> generateDigitalNomadGuide({
-    required String cityId,
-    required String cityName,
-  });
-
   /// 生成数字游民指南 (流式方式)
   ///
   /// 使用Server-Sent Events实时推送生成进度

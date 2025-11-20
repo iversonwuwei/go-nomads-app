@@ -171,26 +171,6 @@ class AiRepository implements IAiRepository {
   }
 
   @override
-  Future<Result<DigitalNomadGuide>> generateDigitalNomadGuide({
-    required String cityId,
-    required String cityName,
-  }) async {
-    try {
-      final response = await _httpService.post(
-        '/ai/digital-nomad-guide',
-        data: {'cityId': cityId, 'cityName': cityName},
-      );
-
-      final guideData = response.data as Map<String, dynamic>;
-      final guide = DigitalNomadGuide.fromMap(guideData);
-
-      return Result.success(guide);
-    } catch (e) {
-      return Result.failure(UnknownException(e.toString()));
-    }
-  }
-
-  @override
   Future<Result<void>> generateDigitalNomadGuideStream({
     required String cityId,
     required String cityName,

@@ -80,17 +80,6 @@ class GetTravelPlanByIdParams {
   });
 }
 
-/// 生成数字游民指南参数
-class GenerateDigitalNomadGuideParams {
-  final String cityId;
-  final String cityName;
-
-  const GenerateDigitalNomadGuideParams({
-    required this.cityId,
-    required this.cityName,
-  });
-}
-
 /// 生成数字游民指南流式参数
 class GenerateDigitalNomadGuideStreamParams {
   final String cityId;
@@ -176,23 +165,6 @@ class GetTravelPlanByIdUseCase
   @override
   Future<Result<TravelPlan>> execute(GetTravelPlanByIdParams params) async {
     return await _repository.getTravelPlanById(params.planId);
-  }
-}
-
-/// 生成数字游民指南 (标准方式)
-class GenerateDigitalNomadGuideUseCase
-    extends UseCase<DigitalNomadGuide, GenerateDigitalNomadGuideParams> {
-  final IAiRepository _repository;
-
-  GenerateDigitalNomadGuideUseCase(this._repository);
-
-  @override
-  Future<Result<DigitalNomadGuide>> execute(
-      GenerateDigitalNomadGuideParams params) async {
-    return await _repository.generateDigitalNomadGuide(
-      cityId: params.cityId,
-      cityName: params.cityName,
-    );
   }
 }
 

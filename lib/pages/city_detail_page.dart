@@ -29,8 +29,6 @@ import '../features/weather/presentation/controllers/weather_state_controller.da
 import '../generated/app_localizations.dart';
 import '../routes/app_routes.dart';
 import '../routes/route_refresh_observer.dart';
-import '../services/background_task_service.dart';
-import '../services/signalr_service.dart';
 import '../services/token_storage_service.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/coworking_verification_badge.dart';
@@ -82,9 +80,6 @@ class _CityDetailPageState extends State<CityDetailPage>
   // 添加滚动控制器和透明度状态
   final ScrollController _scrollController = ScrollController();
   double _appBarOpacity = 0.0;
-
-  // 定时器用于检查后台任务状态
-  Timer? _backgroundTaskTimer;
 
   // 从 Get.arguments 或构造函数获取参数
   late final String cityId;
@@ -850,22 +845,6 @@ class _CityDetailPageState extends State<CityDetailPage>
 
     // 加载优缺点
     prosConsController.loadCityProsCons(cityId);
-
-    // 启动定时器检查后台任务状态 (每3秒检查一次)
-    _startBackgroundTaskStatusChecker();
-  }
-
-  /// 启动后台任务状态检查器
-  void _startBackgroundTaskStatusChecker() {
-    _backgroundTaskTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      try {
-        final aiController = Get.find<AiStateController>();
-        aiController.checkAndSyncBackgroundTaskStatus(cityId);
-      } catch (e) {
-        // 忽略错误，可能是控制器未初始化
-        print('⚠️ [Timer] 无法检查后台任务状态: $e');
-      }
-    });
   }
 
   /// 当页面重新可见时重新加载数据
@@ -1160,188 +1139,6 @@ class _CityDetailPageState extends State<CityDetailPage>
     );
   }
 
-  // 后台生成进度对话框（监听 SignalR 推送）
-  void _showBackgroundGenerateProgressDialog(
-      AiStateController controller) async {
-    // 先检查权限
-    if (!await _checkGeneratePermission()) {
-      return;
-    }
-
-    print('🎬 [BackgroundDialog] 准备显示后台生成对话框');
-
-    // 显示对话框
-    showDialog(
-      context: context,
-      barrierDismissible: false, // 不允许点击外部关闭
-      builder: (BuildContext dialogContext) {
-        bool hasSetupListener = false;
-        StreamSubscription? completedSubscription;
-        StreamSubscription? failedSubscription;
-
-        return Obx(() {
-          // 只在第一次构建时设置监听器
-          if (!hasSetupListener) {
-            hasSetupListener = true;
-            print('🔧 [BackgroundDialog] 设置 SignalR Stream 监听器');
-
-            final signalr = SignalRService();
-
-            // 🎯 关键：监听任务完成状态，completed=true时自动关闭
-            Worker? progressWorker;
-            progressWorker = ever(
-              controller.isGuideCompletedRx,
-              (completed) {
-                print(
-                    '📊 [BackgroundDialog] 完成状态更新: completed=$completed, progress=${controller.guideGenerationProgress}%');
-
-                if (completed) {
-                  print(
-                      '🎉 [BackgroundDialog] 任务已完成，准备关闭对话框'); // 延迟800ms让用户看到100%完成状态
-                  Future.delayed(const Duration(milliseconds: 800), () {
-                    if (Navigator.of(dialogContext).canPop()) {
-                      Navigator.of(dialogContext).pop();
-                      print('✅ [BackgroundDialog] 对话框已关闭');
-
-                      // 清理所有监听器
-                      completedSubscription?.cancel();
-                      failedSubscription?.cancel();
-                      progressWorker?.dispose();
-
-                      // 延迟加载guide数据
-                      Future.delayed(const Duration(milliseconds: 500), () {
-                        print('🔄 [BackgroundDialog] 重新加载 guide 数据');
-                        controller.loadCityGuide(
-                          cityId: cityId,
-                          cityName: cityName,
-                        );
-                        AppToast.success('AI 旅游指南生成成功！');
-                      });
-                    }
-                  });
-                }
-              },
-            );
-
-            // 监听任务完成事件（用于日志记录）
-            completedSubscription = signalr.taskCompletedStream.listen((task) {
-              if (task.result?.guideId != null) {
-                print('✅ [BackgroundDialog] 接收到任务完成信号: ${task.taskId}');
-                print(
-                    '   Current Progress: ${controller.guideGenerationProgress}%');
-                // 不在这里关闭对话框，由进度监听器处理
-              }
-            });
-
-            // 监听任务失败事件
-            failedSubscription = signalr.taskFailedStream.listen((task) {
-              print('❌ [BackgroundDialog] 接收到任务失败信号: ${task.taskId}');
-
-              // 立即关闭对话框
-              if (Navigator.of(dialogContext).canPop()) {
-                Navigator.of(dialogContext).pop();
-                print('✅ [BackgroundDialog] 对话框已关闭（失败）');
-
-                // 清理监听器
-                completedSubscription?.cancel();
-                failedSubscription?.cancel();
-              }
-            });
-          }
-
-          return AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: const Row(
-              children: [
-                Icon(
-                  Icons.cloud_upload,
-                  color: Color(0xFFFF4458),
-                  size: 28,
-                ),
-                SizedBox(width: 12),
-                Text(
-                  'AI 后台生成中',
-                  style: TextStyle(fontSize: 18),
-                ),
-              ],
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: 16),
-                LinearProgressIndicator(
-                  value: controller.guideGenerationProgress > 0
-                      ? controller.guideGenerationProgress / 100
-                      : null, // null = 不确定进度模式
-                  backgroundColor: Colors.grey[200],
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                    Color(0xFFFF4458),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        controller.guideGenerationMessage.isEmpty
-                            ? '正在创建后台任务...'
-                            : controller.guideGenerationMessage,
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                    if (controller.guideGenerationProgress > 0)
-                      Text(
-                        '${controller.guideGenerationProgress}%',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '后台任务通过 SignalR 实时推送进度',
-                  style: TextStyle(
-                    color: Colors.grey[500],
-                    fontSize: 12,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-              ],
-            ),
-            actions: [
-              // 取消按钮 - 只在生成中时显示
-              if (controller.isGeneratingGuide)
-                TextButton(
-                  onPressed: () {
-                    print('❌ [BackgroundDialog] 用户取消');
-                    completedSubscription?.cancel();
-                    failedSubscription?.cancel();
-                    Navigator.of(dialogContext).pop();
-                  },
-                  child: const Text('取消'),
-                ),
-            ],
-          );
-        });
-      },
-    );
-
-    // 启动后台异步任务
-    print('🚀 [BackgroundDialog] 启动后台生成任务');
-    controller.generateDigitalNomadGuideInBackground(
-      cityId: cityId,
-      cityName: cityName,
-    );
-  }
-
   // 获取城市展示图片列表
   List<String> _getCityImages() {
     // 基于城市主图片生成多张展示图�?
@@ -1380,7 +1177,6 @@ class _CityDetailPageState extends State<CityDetailPage>
     _scrollController.dispose();
     _pageController.dispose();
     _tabController.dispose();
-    _backgroundTaskTimer?.cancel(); // 清理定时器
 
     // 🔥 页面销毁时清空指南状态,防止显示错误的城市指南
     try {
@@ -2231,24 +2027,10 @@ class _CityDetailPageState extends State<CityDetailPage>
   Widget _buildGuideTab(AiStateController controller) {
     // 🔥 检查城市是否变化,如果变化则清空旧数据并加载新数据
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // 首先检查并同步后台任务状态
-      controller.checkAndSyncBackgroundTaskStatus(cityId);
-
       final currentGuide = controller.currentGuide;
-      final hasBackgroundTask =
-          BackgroundTaskService.to.hasCityActiveTask(cityId);
 
-      // 如果有后台任务在运行，设置生成状态
-      if (hasBackgroundTask && !controller.isGeneratingGuide) {
-        controller.isGeneratingGuideRx.value = true;
-        print('🔄 [GuideTab] 发现后台任务运行中，设置生成状态');
-      }
-
-      final shouldReload = currentGuide == null ||
-          currentGuide.cityId != cityId ||
-          (!controller.isGeneratingGuide &&
-              !controller.isLoadingGuide &&
-              !hasBackgroundTask);
+      final shouldReload =
+          currentGuide == null || currentGuide.cityId != cityId;
 
       if (shouldReload) {
         // 如果是不同城市,先清空旧数据
@@ -2258,9 +2040,7 @@ class _CityDetailPageState extends State<CityDetailPage>
         }
 
         // 加载新城市的指南(优先使用缓存)
-        if (!controller.isGeneratingGuide &&
-            !controller.isLoadingGuide &&
-            !hasBackgroundTask) {
+        if (!controller.isGeneratingGuide && !controller.isLoadingGuide) {
           print('📖 [GuideTab] 加载城市指南: $cityName (ID: $cityId)');
           controller.loadCityGuide(
             cityId: cityId,
@@ -2271,22 +2051,18 @@ class _CityDetailPageState extends State<CityDetailPage>
     });
 
     return Obx(() {
-      final hasBackgroundTask =
-          BackgroundTaskService.to.hasCityActiveTask(cityId);
       print(
-          '🔍 [GuideTab] Rebuilding... cityId=$cityId, isLoading=${controller.isLoadingGuide}, isGenerating=${controller.isGeneratingGuide}, hasBackgroundTask=$hasBackgroundTask, guide=${controller.currentGuide != null}, guideCity=${controller.currentGuide?.cityId}');
+          '🔍 [GuideTab] Rebuilding... cityId=$cityId, isLoading=${controller.isLoadingGuide}, isGenerating=${controller.isGeneratingGuide}, guide=${controller.currentGuide != null}, guideCity=${controller.currentGuide?.cityId}');
 
-      // 优先显示指南内容(如果有且是当前城市的且没有后台任务在运行)
+      // 优先显示指南内容(如果有且是当前城市的)
       final guide = controller.currentGuide;
-      if (guide != null && guide.cityId == cityId && !hasBackgroundTask) {
+      if (guide != null && guide.cityId == cityId) {
         print('✅ [GuideTab] Showing guide content for $cityName');
         return _buildGuideContent(context, guide, controller);
       }
 
-      // 显示加载或生成状态（包括后台任务）
-      if (controller.isLoadingGuide ||
-          controller.isGeneratingGuide ||
-          hasBackgroundTask) {
+      // 显示加载或生成状态
+      if (controller.isLoadingGuide || controller.isGeneratingGuide) {
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -2294,33 +2070,27 @@ class _CityDetailPageState extends State<CityDetailPage>
               const CircularProgressIndicator(),
               const SizedBox(height: 16),
               Text(
-                hasBackgroundTask
-                    ? '🤖 AI 正在后台生成旅游指南...'
-                    : controller.isGeneratingGuide
-                        ? '🤖 AI 正在生成旅游指南...'
-                        : '📖 正在加载旅游指南...',
+                controller.isGeneratingGuide
+                    ? '🤖 AI 正在生成旅游指南...'
+                    : '📖 正在加载旅游指南...',
                 style: const TextStyle(fontSize: 16, color: Colors.grey),
               ),
-              if (controller.isGeneratingGuide || hasBackgroundTask) ...[
+              if (controller.isGeneratingGuide) ...[
                 const SizedBox(height: 12),
                 Text(
-                  hasBackgroundTask
-                      ? '请稍候，后台任务正在进行中...\n完成后会自动刷新显示'
-                      : controller.guideGenerationMessage,
+                  controller.guideGenerationMessage,
                   style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                   textAlign: TextAlign.center,
                 ),
-                if (!hasBackgroundTask) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    '${controller.guideGenerationProgress}%',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFFFF4458),
-                    ),
+                const SizedBox(height: 8),
+                Text(
+                  '${controller.guideGenerationProgress}%',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFFF4458),
                   ),
-                ],
+                ),
               ],
             ],
           ),
@@ -2343,7 +2113,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                 ),
                 const SizedBox(height: 16),
                 const Text(
-                  '🤖 正在后台生成指南...',
+                  '🤖 正在生成指南...',
                   style: TextStyle(
                     fontSize: 16,
                     color: Color(0xFFFF4458),
@@ -2372,43 +2142,16 @@ class _CityDetailPageState extends State<CityDetailPage>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ElevatedButton.icon(
-                    onPressed:
-                        (controller.isGeneratingGuide || hasBackgroundTask)
-                            ? null // 🔒 生成中或有后台任务时禁用
-                            : () => _showAIGenerateProgressDialog(controller),
+                    onPressed: controller.isGeneratingGuide
+                        ? null
+                        : () => _showAIGenerateProgressDialog(controller),
                     icon: const Icon(Icons.auto_awesome),
-                    label: const Text('前台生成'),
+                    label: const Text('AI 生成指南'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFFF4458),
                       foregroundColor: Colors.white,
                       disabledBackgroundColor: Colors.grey[300], // 禁用时的背景色
                       disabledForegroundColor: Colors.grey[500], // 禁用时的文字色
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  OutlinedButton.icon(
-                    onPressed: (controller.isGeneratingGuide ||
-                            hasBackgroundTask)
-                        ? null // 🔒 生成中或有后台任务时禁用
-                        : () async {
-                            // 检查权限
-                            if (await _checkGeneratePermission()) {
-                              _showBackgroundGenerateProgressDialog(controller);
-                            }
-                          },
-                    icon: const Icon(Icons.cloud_upload),
-                    label: const Text('后台生成'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFFFF4458),
-                      side: const BorderSide(
-                        color: Color(0xFFFF4458),
-                        width: 1.5,
-                      ),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 24, vertical: 16),
                       shape: RoundedRectangleBorder(
@@ -2479,49 +2222,26 @@ class _CityDetailPageState extends State<CityDetailPage>
                     ),
                   ),
                   const SizedBox(width: 4),
-                  PopupMenuButton<String>(
-                    icon: Icon(
-                      Icons.auto_awesome,
-                      size: 18,
-                      color: controller.isGeneratingGuide
-                          ? Colors.grey[400]
-                          : const Color(0xFFFF4458),
+                  TextButton.icon(
+                    onPressed: controller.isGeneratingGuide ||
+                            controller.isLoadingGuide
+                        ? null
+                        : () async {
+                            if (!await _checkGeneratePermission()) {
+                              return;
+                            }
+                            _showAIGenerateProgressDialog(controller);
+                          },
+                    icon: const Icon(Icons.auto_awesome, size: 18),
+                    label: const Text('AI 生成'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFFFF4458),
+                      disabledForegroundColor: Colors.grey[400],
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
                     ),
-                    enabled: !controller.isGeneratingGuide,
-                    onSelected: (value) async {
-                      // 先检查权限
-                      if (!await _checkGeneratePermission()) {
-                        return;
-                      }
-
-                      if (value == 'foreground') {
-                        _showAIGenerateProgressDialog(controller);
-                      } else if (value == 'background') {
-                        _showBackgroundGenerateProgressDialog(controller);
-                      }
-                    },
-                    itemBuilder: (BuildContext context) => [
-                      const PopupMenuItem<String>(
-                        value: 'foreground',
-                        child: Row(
-                          children: [
-                            Icon(Icons.visibility, size: 18),
-                            SizedBox(width: 8),
-                            Text('前台生成'),
-                          ],
-                        ),
-                      ),
-                      const PopupMenuItem<String>(
-                        value: 'background',
-                        child: Row(
-                          children: [
-                            Icon(Icons.cloud_upload, size: 18),
-                            SizedBox(width: 8),
-                            Text('后台生成'),
-                          ],
-                        ),
-                      ),
-                    ],
                   ),
                 ],
               ),

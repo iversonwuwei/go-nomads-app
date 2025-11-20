@@ -608,9 +608,6 @@ class DependencyInjection {
     Get.lazyPut(() => GetDigitalNomadGuideUseCase(
           Get.find<IAiRepository>(),
         ));
-    Get.lazyPut(() => GenerateDigitalNomadGuideUseCase(
-          Get.find<IAiRepository>(),
-        ));
     Get.lazyPut(() => GenerateDigitalNomadGuideStreamUseCase(
           Get.find<IAiRepository>(),
         ));
@@ -621,7 +618,6 @@ class DependencyInjection {
         Get.find<GenerateTravelPlanUseCase>(),
         Get.find<GenerateTravelPlanStreamUseCase>(),
         Get.find<GetTravelPlanByIdUseCase>(),
-        Get.find<GenerateDigitalNomadGuideUseCase>(),
         Get.find<GenerateDigitalNomadGuideStreamUseCase>(),
         Get.find<GetDigitalNomadGuideUseCase>(),
       ),

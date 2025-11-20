@@ -51,7 +51,10 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
       initialIndex: widget.initialTab, // 设置初始 tab
     );
     _checkPermissions();
-    _loadData();
+    // 延迟到首帧之后再加载，避免在构建阶段触发 setState/Obx
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadData();
+    });
   }
 
   /// 检查用户权限
@@ -120,7 +123,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
       if (success) {
         prosTextController.clear();
         Get.snackbar('成功', '优点已添加', backgroundColor: Colors.green[100]);
-        
+
         // 重新加载数据
         await _loadData();
       } else {
@@ -225,7 +228,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
       if (success) {
         consTextController.clear();
         Get.snackbar('成功', '挑战已添加', backgroundColor: Colors.green[100]);
-        
+
         // 重新加载数据
         await _loadData();
       } else {
