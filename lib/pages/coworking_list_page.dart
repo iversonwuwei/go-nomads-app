@@ -29,7 +29,6 @@ class CoworkingListPage extends StatefulWidget {
 
 class _CoworkingListPageState extends State<CoworkingListPage>
     with RouteAwareRefreshMixin<CoworkingListPage> {
-  bool _isGridView = true;
   late final CoworkingStateController controller;
   final ScrollController _scrollController = ScrollController();
 
@@ -94,19 +93,6 @@ class _CoworkingListPageState extends State<CoworkingListPage>
           ),
         ),
         actions: [
-          // 视图切换按钮
-          IconButton(
-            icon: Icon(
-              _isGridView ? Icons.view_list_outlined : Icons.grid_view_outlined,
-              color: Colors.black54,
-              size: 20,
-            ),
-            onPressed: () {
-              setState(() {
-                _isGridView = !_isGridView;
-              });
-            },
-          ),
           // 排序按钮
           PopupMenuButton<String>(
             icon: const Icon(Icons.sort, color: Colors.black54, size: 20),
