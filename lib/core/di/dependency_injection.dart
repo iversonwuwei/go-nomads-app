@@ -42,8 +42,10 @@ import '../../features/coworking/application/use_cases/coworking_comment_use_cas
 import '../../features/coworking/application/use_cases/coworking_use_cases.dart';
 import '../../features/coworking/domain/repositories/icoworking_comment_repository.dart';
 import '../../features/coworking/domain/repositories/icoworking_repository.dart';
+import '../../features/coworking/domain/repositories/icoworking_review_repository.dart';
 import '../../features/coworking/infrastructure/repositories/coworking_comment_repository.dart';
 import '../../features/coworking/infrastructure/repositories/coworking_repository.dart';
+import '../../features/coworking/infrastructure/repositories/coworking_review_repository.dart';
 import '../../features/coworking/presentation/controllers/coworking_state_controller.dart';
 // Hotel Domain
 import '../../features/hotel/application/use_cases/hotel_use_cases.dart';
@@ -454,6 +456,10 @@ class DependencyInjection {
 
     Get.lazyPut<ICoworkingCommentRepository>(
       () => CoworkingCommentRepository(),
+    );
+
+    Get.lazyPut<ICoworkingReviewRepository>(
+      () => CoworkingReviewRepository(),
     );
 
     // Use Cases - 查询类

@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../../config/supabase_config.dart';
 import '../../../../services/image_upload_service.dart';
-import '../../application/use_cases/coworking_comment_use_cases.dart';
+import '../../infrastructure/repositories/coworking_review_repository.dart';
 
 /// Coworking 评论创建页面
 class AddCoworkingCommentPage extends StatefulWidget {
@@ -24,14 +25,17 @@ class AddCoworkingCommentPage extends StatefulWidget {
 }
 
 class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
+  final TextEditingController _titleController = TextEditingController();
   final TextEditingController _commentController = TextEditingController();
   final List<XFile> _selectedImages = [];
   final _imagePicker = ImagePicker();
   bool _isSubmitting = false;
   int _rating = 0; // 评分 (0-5 星)
+  DateTime? _visitDate;
 
   @override
   void dispose() {
+    _titleController.dispose();
     _commentController.dispose();
     super.dispose();
   }
@@ -53,6 +57,23 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
       });
     } catch (e) {
       print('选择图片失败: $e');
+    }
+  }
+
+  Future<void> _selectVisitDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _visitDate ?? DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      helpText: '选择访问日期',
+      cancelText: '取消',
+      confirmText: '确定',
+    );
+    if (picked != null && picked != _visitDate) {
+      setState(() {
+        _visitDate = picked;
+      });
     }
   }
 
@@ -78,11 +99,25 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
     });
 
     try {
-      final commentUseCases = Get.find<CoworkingCommentUseCases>();
+      final reviewRepository = Get.find<CoworkingReviewRepository>();
 
       // 上传图片到存储服务
       List<String>? imageUrls;
       if (_selectedImages.isNotEmpty) {
+        // 检查 Supabase 配置
+        if (!SupabaseConfig.isConfigured) {
+          Get.snackbar(
+            '错误',
+            '图片上传服务未配置，请联系技术支持',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.red.withValues(alpha: 0.1),
+          );
+          setState(() {
+            _isSubmitting = false;
+          });
+          return;
+        }
+
         try {
           final imageUploadService = ImageUploadService();
 
@@ -90,38 +125,71 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
           final imageFiles =
               _selectedImages.map((xFile) => File(xFile.path)).toList();
 
-          // 上传图片到 Supabase Storage (coworking-comments 文件夹)
+          // 显示上传提示
+          Get.snackbar(
+            '上传中',
+            '正在上传 ${imageFiles.length} 张图片...',
+            snackPosition: SnackPosition.BOTTOM,
+            duration: const Duration(seconds: 2),
+          );
+
+          debugPrint('📤 开始上传 ${imageFiles.length} 张图片');
+
+          // 上传图片到 Supabase Storage
           imageUrls = await imageUploadService.uploadMultipleImages(
             imageFiles: imageFiles,
-            bucket: 'user-uploads',
-            folder: 'coworking-comments',
+            bucket: SupabaseConfig.defaultBucket,
+            folder: 'coworking-reviews/${widget.coworkingId}',
             compress: true,
             quality: 85,
             maxWidth: 1920,
             maxHeight: 1920,
             onProgress: (current, total) {
-              debugPrint('上传进度: $current/$total');
+              debugPrint('📊 上传进度: $current/$total');
             },
           );
 
+          if (imageUrls.isEmpty) {
+            throw Exception('未能上传任何图片');
+          }
+
           debugPrint('✅ 图片上传成功: ${imageUrls.length} 张');
+          debugPrint('📸 图片 URLs: $imageUrls');
+
+          Get.snackbar(
+            '成功',
+            '已上传 ${imageUrls.length} 张图片',
+            snackPosition: SnackPosition.BOTTOM,
+            duration: const Duration(seconds: 1),
+          );
         } catch (e) {
           debugPrint('❌ 图片上传失败: $e');
           Get.snackbar(
             '警告',
-            '图片上传失败，评论将不包含图片',
+            '图片上传失败: ${e.toString()}',
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: Colors.orange.withValues(alpha: 0.1),
+            duration: const Duration(seconds: 3),
           );
           imageUrls = null;
         }
       }
 
-      await commentUseCases.createComment(
+      debugPrint('🚀 准备提交评论：');
+      debugPrint('  - coworkingId: ${widget.coworkingId}');
+      debugPrint('  - rating: $_rating');
+      debugPrint('  - title: ${_titleController.text}');
+      debugPrint('  - content: $content');
+      debugPrint('  - photoUrls: $imageUrls');
+      debugPrint('  - visitDate: $_visitDate');
+
+      await reviewRepository.addReview(
         coworkingId: widget.coworkingId,
+        rating: _rating.toDouble(),
+        title: _titleController.text.trim(),
         content: content,
-        rating: _rating,
-        images: imageUrls,
+        visitDate: _visitDate,
+        photoUrls: imageUrls,
       );
 
       debugPrint('✅ 评论创建成功，准备关闭页面');
@@ -183,6 +251,50 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
             children: [
               // 评分区域
               _buildRatingSection(),
+              const SizedBox(height: 24),
+
+              // 标题输入框
+              TextField(
+                controller: _titleController,
+                maxLength: 100,
+                decoration: InputDecoration(
+                  labelText: '评价标题',
+                  hintText: '用一句话总结您的体验',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  filled: true,
+                  fillColor: Colors.grey[50],
+                ),
+                enabled: !_isSubmitting,
+              ),
+              const SizedBox(height: 24),
+
+              // 访问日期选择器
+              InkWell(
+                onTap: _isSubmitting ? null : _selectVisitDate,
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    labelText: '访问日期（可选）',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[50],
+                    suffixIcon: const Icon(Icons.calendar_today),
+                  ),
+                  child: Text(
+                    _visitDate == null
+                        ? '选择您的访问日期'
+                        : '${_visitDate!.year}-${_visitDate!.month.toString().padLeft(2, '0')}-${_visitDate!.day.toString().padLeft(2, '0')}',
+                    style: TextStyle(
+                      color: _visitDate == null
+                          ? Colors.grey[600]
+                          : Colors.black87,
+                    ),
+                  ),
+                ),
+              ),
               const SizedBox(height: 24),
 
               // 评论输入框

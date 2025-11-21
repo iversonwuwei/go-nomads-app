@@ -52,7 +52,7 @@ class ApiConfig {
   /// 是否使用真机测试地址(手动切换)
   /// ⚠️ 雷电模拟器用户请设置为 true
   /// ⚠️ Android 官方模拟器用户请设置为 false
-  static const bool usePhysicalDevice = false;
+  static const bool usePhysicalDevice = true;
 
   // ============================================================
   // URL 组装
@@ -190,7 +190,7 @@ class ApiConfig {
   // Cache Service Endpoints - /api/v1/cache (通过 Gateway 访问)
   // 注意: 这些端点通过 Gateway 转发到 CacheService
   // ============================================================
-  
+
   // 评分缓存
   static const String cityScoreEndpoint = '/cache/scores/city/{cityId}';
   static const String cityScoreBatchEndpoint = '/cache/scores/city/batch';
@@ -202,7 +202,7 @@ class ApiConfig {
       '/cache/scores/city/{cityId}';
   static const String invalidateCoworkingScoreEndpoint =
       '/cache/scores/coworking/{coworkingId}';
-  
+
   // 费用缓存
   static const String cityCostEndpoint = '/cache/costs/city/{cityId}';
   static const String cityCostBatchEndpoint = '/cache/costs/city/batch';

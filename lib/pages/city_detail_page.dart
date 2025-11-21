@@ -877,11 +877,11 @@ class _CityDetailPageState extends State<CityDetailPage>
   /// 检查用户是否有权限生成指南（管理员或当前城市版主）
   Future<bool> _checkGeneratePermission() async {
     print('🔐 [权限检查] 开始检查生成权限...');
-    
+
     try {
       final cityDetailController = Get.find<CityDetailStateController>();
       final city = cityDetailController.currentCity.value;
-      
+
       if (city != null) {
         print('🔐 [权限检查] 城市信息:');
         print('   cityId: ${city.id}');
@@ -900,7 +900,7 @@ class _CityDetailPageState extends State<CityDetailPage>
           print('✅ [权限检查] 当前用户是该城市版主，允许生成');
           return true;
         }
-        
+
         print('❌ [权限检查] 当前用户既不是管理员也不是该城市版主');
         _showNoPermissionDialog();
         return false;
@@ -2644,168 +2644,136 @@ class _CityDetailPageState extends State<CityDetailPage>
         );
       }
 
-      return Stack(
-        children: [
-          RefreshIndicator(
-            onRefresh: () =>
-                controller.loadCityReviews(cityId), // ✅ 使用loadCityReviews方法
-            child: ListView.builder(
-              padding: const EdgeInsets.only(
-                  left: 16, right: 16, top: 16, bottom: 96),
-              itemCount: realUserReviews.length, // ✅ 只显示真实评论
-              itemBuilder: (context, index) {
-                final review = realUserReviews[index]; // ✅ 直接使用真实评论
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+      return RefreshIndicator(
+        onRefresh: () =>
+            controller.loadCityReviews(cityId), // ✅ 使用loadCityReviews方法
+        child: ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: realUserReviews.length, // ✅ 只显示真实评论
+          itemBuilder: (context, index) {
+            final review = realUserReviews[index]; // ✅ 直接使用真实评论
+            return Card(
+              margin: const EdgeInsets.only(bottom: 16),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        Row(
-                          children: [
-                            // ✅ 有头像显示头像,没有头像显示用户名首字母
-                            CircleAvatar(
-                              backgroundColor: const Color(0xFFFF4458),
-                              backgroundImage: review.userAvatar != null &&
-                                      review.userAvatar!.isNotEmpty
-                                  ? NetworkImage(review.userAvatar!)
-                                  : null,
-                              child: review.userAvatar == null ||
-                                      review.userAvatar!.isEmpty
-                                  ? Text(
-                                      review.username.isNotEmpty
-                                          ? review.username
-                                              .substring(0, 1)
-                                              .toUpperCase()
-                                          : '?',
-                                      style:
-                                          const TextStyle(color: Colors.white),
-                                    )
-                                  : null,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    review.username, // ✅ 使用真实用户名
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  if (review.visitDate != null)
-                                    Text(
-                                      '${l10n.visited} ${_formatDate(review.visitDate!, l10n)}',
-                                      style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey[600]),
-                                    ),
-                                ],
-                              ),
-                            ),
-                            Row(
-                              children: [
-                                const Icon(Icons.star,
-                                    color: Colors.amber, size: 16),
-                                Text(' ${review.rating}'),
-                              ],
-                            ),
-                          ],
+                        // ✅ 有头像显示头像,没有头像显示用户名首字母
+                        CircleAvatar(
+                          backgroundColor: const Color(0xFFFF4458),
+                          backgroundImage: review.userAvatar != null &&
+                                  review.userAvatar!.isNotEmpty
+                              ? NetworkImage(review.userAvatar!)
+                              : null,
+                          child: review.userAvatar == null ||
+                                  review.userAvatar!.isEmpty
+                              ? Text(
+                                  review.username.isNotEmpty
+                                      ? review.username
+                                          .substring(0, 1)
+                                          .toUpperCase()
+                                      : '?',
+                                  style: const TextStyle(color: Colors.white),
+                                )
+                              : null,
                         ),
-                        const SizedBox(height: 12),
-                        Text(
-                          review.title,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                review.username, // ✅ 使用真实用户名
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              if (review.visitDate != null)
+                                Text(
+                                  '${l10n.visited} ${_formatDate(review.visitDate!, l10n)}',
+                                  style: TextStyle(
+                                      fontSize: 12, color: Colors.grey[600]),
+                                ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          review.content,
-                          style:
-                              TextStyle(fontSize: 14, color: Colors.grey[700]),
-                        ),
-                        // ✅ 始终显示图片区域（有图显示图片，无图显示占位符）
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          height: 100,
-                          child: review.photoUrls.isNotEmpty
-                              ? ListView.builder(
-                                  scrollDirection: Axis.horizontal,
-                                  itemCount: review.photoUrls.length,
-                                  itemBuilder: (context, photoIndex) {
-                                    return Container(
-                                      width: 100,
-                                      margin: const EdgeInsets.only(right: 8),
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(8),
-                                        image: DecorationImage(
-                                          image: NetworkImage(
-                                              review.photoUrls[photoIndex]),
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                )
-                              : Container(
-                                  width: 100,
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[200],
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                      color: Colors.grey[300]!,
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: Center(
-                                    child: Icon(
-                                      Icons.image_not_supported,
-                                      color: Colors.grey[400],
-                                      size: 40,
-                                    ),
-                                  ),
-                                ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '${l10n.posted} ${_formatDate(review.createdAt, l10n)}',
-                          style:
-                              TextStyle(fontSize: 12, color: Colors.grey[500]),
+                        Row(
+                          children: [
+                            const Icon(Icons.star,
+                                color: Colors.amber, size: 16),
+                            Text(' ${review.rating}'),
+                          ],
                         ),
                       ],
                     ),
-                  ),
-                );
-              },
-            ),
-          ),
-          // 添加按钮（仅 admin/moderator 可见）
-          FutureBuilder<bool>(
-            future: _canUserManageContent(),
-            builder: (context, snapshot) {
-              if (snapshot.data != true) return const SizedBox.shrink();
-              return Positioned(
-                right: 16,
-                bottom: 16,
-                child: FloatingActionButton(
-                  heroTag: 'add_review',
-                  onPressed: () async {
-                    await Get.to(() => AddReviewPage(
-                          cityId: cityId,
-                          cityName: cityName,
-                        ));
-                    controller.loadCityReviews(cityId);
-                  },
-                  backgroundColor: const Color(0xFFFF4458),
-                  child: const Icon(Icons.add, color: Colors.white),
+                    const SizedBox(height: 12),
+                    Text(
+                      review.title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      review.content,
+                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                    ),
+                    // ✅ 始终显示图片区域（有图显示图片，无图显示占位符）
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 100,
+                      child: review.photoUrls.isNotEmpty
+                          ? ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: review.photoUrls.length,
+                              itemBuilder: (context, photoIndex) {
+                                return Container(
+                                  width: 100,
+                                  margin: const EdgeInsets.only(right: 8),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                    image: DecorationImage(
+                                      image: NetworkImage(
+                                          review.photoUrls[photoIndex]),
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                );
+                              },
+                            )
+                          : Container(
+                              width: 100,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[200],
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: Colors.grey[300]!,
+                                  width: 1,
+                                ),
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  Icons.image_not_supported,
+                                  color: Colors.grey[400],
+                                  size: 40,
+                                ),
+                              ),
+                            ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '${l10n.posted} ${_formatDate(review.createdAt, l10n)}',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                    ),
+                  ],
                 ),
-              );
-            },
-          ),
-        ],
+              ),
+            );
+          },
+        ),
       );
     });
   }

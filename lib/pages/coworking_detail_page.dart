@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../features/coworking/application/use_cases/coworking_comment_use_cases.dart';
-import '../features/coworking/domain/entities/coworking_comment.dart';
+import '../features/coworking/domain/entities/coworking_review.dart'
+    as review_entity;
 import '../features/coworking/domain/entities/coworking_space.dart';
-import '../features/coworking/presentation/pages/add_coworking_comment_page.dart';
+import '../features/coworking/domain/repositories/icoworking_review_repository.dart';
 import '../generated/app_localizations.dart';
 import '../widgets/coworking_verification_badge.dart';
+import 'add_coworking_review_page.dart';
+import 'coworking_reviews_page.dart';
 import 'osm_navigation_page.dart';
 
 /// Coworking Detail Page
@@ -28,7 +30,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
   final PageController _pageController = PageController();
   int _currentImageIndex = 0;
   late CoworkingSpace _space;
-  List<CoworkingComment> _comments = [];
+  List<review_entity.CoworkingReview> _comments = [];
   bool _isLoadingComments = false;
 
   @override
@@ -44,15 +46,15 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
     });
 
     try {
-      final commentUseCases = Get.find<CoworkingCommentUseCases>();
-      final comments = await commentUseCases.getComments(
-        _space.id,
+      final reviewRepository = Get.find<ICoworkingReviewRepository>();
+      final reviews = await reviewRepository.getCoworkingReviews(
+        coworkingId: _space.id,
         page: 1,
-        pageSize: 5, // 只显示最新5条评论
+        pageSize: 3, // 只显示最新3条评论
       );
 
       setState(() {
-        _comments = comments;
+        _comments = reviews;
         _isLoadingComments = false;
       });
     } catch (e) {
@@ -65,7 +67,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
 
   Future<void> _navigateToAddComment() async {
     final result = await Get.to<bool>(
-      () => AddCoworkingCommentPage(
+      () => AddCoworkingReviewPage(
         coworkingId: _space.id,
         coworkingName: _space.name,
       ),
@@ -233,37 +235,49 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                     spacing: 12,
                     runSpacing: 8,
                     children: [
-                      // Rating
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.amber[50],
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.star,
-                                size: 18, color: Colors.amber),
-                            const SizedBox(width: 4),
-                            Text(
-                              _space.spaceInfo.rating.toStringAsFixed(1),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                      // Rating - 可点击跳转到评论列表
+                      InkWell(
+                        onTap: () {
+                          Get.to(() => CoworkingReviewsPage(
+                                coworkingId: _space.id,
+                                coworkingName: _space.name,
+                              ))?.then((_) => _loadComments());
+                        },
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.amber[50],
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.star,
+                                  size: 18, color: Colors.amber),
+                              const SizedBox(width: 4),
+                              Text(
+                                _space.spaceInfo.rating.toStringAsFixed(1),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
                               ),
-                            ),
-                            Text(
-                              ' (${_space.spaceInfo.reviewCount} ${l10n.reviews})',
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 14,
+                              Text(
+                                ' (${_space.spaceInfo.reviewCount} ${l10n.reviews})',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 14,
+                                ),
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 4),
+                              Icon(Icons.chevron_right,
+                                  size: 16, color: Colors.grey[600]),
+                            ],
+                          ),
                         ),
                       ),
 
@@ -1146,13 +1160,20 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                           children: [
                             CircleAvatar(
                               backgroundColor: Colors.blue[100],
-                              child: Text(
-                                comment.userId.substring(0, 1).toUpperCase(),
-                                style: TextStyle(
-                                  color: Colors.blue[700],
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                              backgroundImage: comment.userAvatar != null
+                                  ? NetworkImage(comment.userAvatar!)
+                                  : null,
+                              child: comment.userAvatar == null
+                                  ? Text(
+                                      comment.username
+                                          .substring(0, 1)
+                                          .toUpperCase(),
+                                      style: TextStyle(
+                                        color: Colors.blue[700],
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    )
+                                  : null,
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -1160,7 +1181,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    comment.userId.substring(0, 8),
+                                    comment.username,
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w600,
                                       fontSize: 14,
@@ -1186,13 +1207,24 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                             child: Row(
                               children: List.generate(5, (index) {
                                 return Icon(
-                                  index < comment.rating
+                                  index < comment.rating.toInt()
                                       ? Icons.star
                                       : Icons.star_border,
                                   color: Colors.amber,
                                   size: 18,
                                 );
                               }),
+                            ),
+                          ),
+                        if (comment.title.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Text(
+                              comment.title,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                              ),
                             ),
                           ),
                         Text(
@@ -1202,14 +1234,14 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                             height: 1.5,
                           ),
                         ),
-                        if (comment.images != null &&
-                            comment.images!.isNotEmpty)
+                        if (comment.photoUrls.isNotEmpty)
                           Padding(
                             padding: const EdgeInsets.only(top: 12),
                             child: Wrap(
                               spacing: 8,
                               runSpacing: 8,
-                              children: comment.images!.take(3).map((imageUrl) {
+                              children:
+                                  comment.photoUrls.take(3).map((imageUrl) {
                                 return ClipRRect(
                                   borderRadius: BorderRadius.circular(8),
                                   child: Image.network(
@@ -1236,18 +1268,16 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                 );
               }).toList(),
             ),
-          if (_comments.isNotEmpty && _comments.length >= 5)
+          if (_comments.isNotEmpty && _comments.length >= 3)
             Padding(
               padding: const EdgeInsets.only(top: 16),
               child: Center(
                 child: TextButton(
                   onPressed: () {
-                    // TODO: 跳转到查看所有评论页面
-                    Get.snackbar(
-                      '提示',
-                      '查看所有评论功能开发中',
-                      snackPosition: SnackPosition.BOTTOM,
-                    );
+                    Get.to(() => CoworkingReviewsPage(
+                          coworkingId: _space.id,
+                          coworkingName: _space.name,
+                        ))?.then((_) => _loadComments());
                   },
                   child: const Text('查看更多评论'),
                 ),
