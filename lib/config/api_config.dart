@@ -190,6 +190,8 @@ class ApiConfig {
   // Cache Service Endpoints - /api/v1/cache (通过 Gateway 访问)
   // 注意: 这些端点通过 Gateway 转发到 CacheService
   // ============================================================
+  
+  // 评分缓存
   static const String cityScoreEndpoint = '/cache/scores/city/{cityId}';
   static const String cityScoreBatchEndpoint = '/cache/scores/city/batch';
   static const String coworkingScoreEndpoint =
@@ -200,6 +202,11 @@ class ApiConfig {
       '/cache/scores/city/{cityId}';
   static const String invalidateCoworkingScoreEndpoint =
       '/cache/scores/coworking/{coworkingId}';
+  
+  // 费用缓存
+  static const String cityCostEndpoint = '/cache/costs/city/{cityId}';
+  static const String cityCostBatchEndpoint = '/cache/costs/city/batch';
+  static const String invalidateCityCostEndpoint = '/cache/costs/city/{cityId}';
 
   // ============================================================
   // Product Endpoints - /api/v1/products

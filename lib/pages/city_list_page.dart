@@ -589,24 +589,14 @@ class _CityListPageState extends State<CityListPage>
                         '${_truncateToOneDecimal(city.temperature ?? 0)}°',
                         Colors.orange,
                       ),
-                      _buildInfoChip(
-                        Icons.star,
-                        '${(city.overallScore ?? 0.0).toStringAsFixed(1)} / 5',
-                        Colors.amber,
-                      ),
                       // 使用后端返回的真实平均花费数据
-                      if (city.averageCost != null && city.averageCost! > 0)
-                        _buildInfoChip(
-                          Icons.attach_money,
-                          '\$${city.averageCost!.toInt()}',
-                          Colors.green,
-                        )
-                      else
-                        _buildInfoChip(
-                          Icons.attach_money,
-                          '\$---',
-                          Colors.grey,
-                        ),
+                      _buildInfoChip(
+                        Icons.attach_money,
+                        '${city.averageCost != null && city.averageCost! > 0 ? city.averageCost!.toInt() : 0}',
+                        city.averageCost != null && city.averageCost! > 0
+                            ? Colors.green
+                            : Colors.grey,
+                      ),
                       if (city.airQualityIndex != null)
                         _buildInfoChip(
                           Icons.air,
