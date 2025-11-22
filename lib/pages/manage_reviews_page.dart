@@ -27,8 +27,11 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
   @override
   void initState() {
     super.initState();
-    _checkPermissions();
-    _loadData();
+    // 延迟到 build 完成后再更新状态，避免在 build 期间触发 setState
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkPermissions();
+      _loadData();
+    });
   }
 
   Future<void> _checkPermissions() async {
@@ -222,19 +225,6 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
           },
         );
       }),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final result = await Get.to(() => AddReviewPage(
-                cityId: widget.cityId,
-                cityName: widget.cityName,
-              ));
-          if (result != null && result['success'] == true) {
-            await _loadData();
-          }
-        },
-        tooltip: '添加评论',
-        child: const Icon(Icons.add),
-      ),
     );
   }
 

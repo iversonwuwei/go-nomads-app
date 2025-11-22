@@ -708,6 +708,10 @@ class _AddReviewPageState extends State<AddReviewPage> {
       // 实际的 API 调用
       final apiService = Get.find<IUserCityContentRepository>();
 
+      print('🔄 Submitting review for city: ${widget.cityId}');
+      print('   Rating: ${_rating.value.round()}');
+      print('   Title: ${_titleController.text.trim()}');
+      
       final result = await apiService.upsertCityReview(
         cityId: widget.cityId,
         rating: _rating.value.round(),
@@ -716,29 +720,56 @@ class _AddReviewPageState extends State<AddReviewPage> {
         // visitDate: 可以添加一个日期选择器
       );
 
+      print('✅ API Response: ${result.runtimeType}');
+
       switch (result) {
         case Success(:final data):
-          Get.back(result: {
-            'success': true,
-            'review': data,
-          });
+          print('✅ Success! Review data: $data');
 
-          AppToast.success(
-            l10n.reviewSubmitted,
-            title: l10n.success,
-          );
+          // 先重置按钮状态,让用户看到提交完成
+          _isSubmitting.value = false;
+
+          // 显示成功提示
+          if (mounted) {
+            AppToast.success(
+              l10n.reviewSubmitted,
+              title: l10n.success,
+            );
+          }
+
+          print('🔙 等待 Toast 显示后跳转...');
+
+          // 等待 Toast 显示
+          await Future.delayed(const Duration(milliseconds: 800));
+
+          // 返回上一页并传递结果
+          if (mounted) {
+            print('✅ Widget mounted, calling Get.back()');
+            Get.back(result: {
+              'success': true,
+              'review': data,
+            });
+            print('✅ Get.back() called');
+          } else {
+            print('❌ Widget not mounted, cannot navigate');
+          }
+          return;
+          
         case Failure(:final exception):
+          print('❌ Failure: $exception');
           AppToast.error(
             l10n.failedToSubmitReview(exception.toString()),
             title: l10n.error,
           );
+          _isSubmitting.value = false;
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('❌ Exception caught: $e');
+      print('Stack trace: $stackTrace');
       AppToast.error(
         l10n.failedToSubmitReview('$e'),
         title: l10n.error,
       );
-    } finally {
       _isSubmitting.value = false;
     }
   }

@@ -126,21 +126,33 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
 
       print('✅ 评论提交成功: ${result.id}');
 
+      // 先重置按钮状态,让用户看到提交完成
+      _isSubmitting.value = false;
+
+      // 显示成功提示
       if (mounted) {
         AppToast.success('评论提交成功！');
-        // 延迟一下让 Toast 显示
-        await Future.delayed(const Duration(milliseconds: 500));
-        Get.back(result: true);
       }
+
+      print('🔙 等待 Toast 显示后跳转...');
+
+      // 等待 Toast 显示
+      await Future.delayed(const Duration(milliseconds: 800));
+
+      // 返回上一页
+      if (mounted) {
+        print('✅ Widget mounted, calling Get.back()');
+        Get.back(result: true);
+        print('✅ Get.back() called');
+      } else {
+        print('❌ Widget not mounted, cannot navigate');
+      }
+      return;
+      
     } catch (e) {
       print('❌ 提交评论失败: $e');
-      if (mounted) {
-        AppToast.error('提交失败: $e');
-      }
-    } finally {
-      if (mounted) {
-        _isSubmitting.value = false;
-      }
+      AppToast.error('提交失败: $e');
+      _isSubmitting.value = false;
     }
   }
 

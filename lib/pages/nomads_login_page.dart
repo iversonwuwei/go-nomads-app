@@ -467,8 +467,15 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                         color: const Color(0xFF4CAF50), // Green for phone
                         label: 'Phone',
                       ),
-                      // 占位，保持对齐
-                      const SizedBox(width: 100),
+                      _buildSocialLoginButton(
+                        onPressed: () {
+                          AppToast.info('Xiaohongshu Sign In',
+                              title: 'Xiaohongshu');
+                        },
+                        icon: FontAwesomeIcons.book, // 使用书本图标代表小红书
+                        color: const Color(0xFFFF2442), // 小红书品牌红色
+                        label: '小红书',
+                      ),
                     ],
                   ),
 
