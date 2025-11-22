@@ -370,7 +370,10 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                 child: CircleAvatar(
                   radius: 30.r,
                   backgroundImage:
-                      NetworkImage(_meetup.value.organizer.avatarUrl ?? ''),
+                      (_meetup.value.organizer.avatarUrl != null &&
+                          _meetup.value.organizer.avatarUrl!.isNotEmpty)
+                      ? NetworkImage(_meetup.value.organizer.avatarUrl!)
+                      : null,
                 ),
               ),
               SizedBox(width: 16.w),
@@ -497,7 +500,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                         final participantUser = _createBasicUserModel(
                           userId,
                           userName,
-                          userAvatar ?? 'https://i.pravatar.cc/150?u=$userId',
+                          userAvatar ?? '',
                         );
                         Get.to(() => MemberDetailPage(user: participantUser));
                       },
@@ -505,9 +508,13 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                         message: userName,
                         child: CircleAvatar(
                           radius: 20.r,
-                          backgroundImage: NetworkImage(
-                            userAvatar ?? 'https://i.pravatar.cc/150?u=$userId',
-                          ),
+                          backgroundImage:
+                              (userAvatar != null && userAvatar.isNotEmpty)
+                                  ? NetworkImage(userAvatar)
+                                  : null,
+                          child: (userAvatar == null || userAvatar.isEmpty)
+                              ? Icon(Icons.person, size: 20.r)
+                              : null,
                         ),
                       ),
                     ),
@@ -931,15 +938,19 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                     final participantUser = _createBasicUserModel(
                       userId,
                       userName,
-                      userAvatar ?? 'https://i.pravatar.cc/150?u=$userId',
+                      userAvatar ?? '',
                     );
                     Get.back(); // 关闭对话�?
                     Get.to(() => MemberDetailPage(user: participantUser));
                   },
                   leading: CircleAvatar(
-                    backgroundImage: NetworkImage(
-                      userAvatar ?? 'https://i.pravatar.cc/150?u=$userId',
-                    ),
+                    backgroundImage:
+                        (userAvatar != null && userAvatar.isNotEmpty)
+                            ? NetworkImage(userAvatar)
+                            : null,
+                    child: (userAvatar == null || userAvatar.isEmpty)
+                        ? const Icon(Icons.person)
+                        : null,
                   ),
                   title: Text(userName, style: TextStyle(fontSize: 14.sp)),
                   subtitle: Text(

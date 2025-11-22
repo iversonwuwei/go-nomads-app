@@ -67,9 +67,14 @@ class _DirectChatPageState extends State<DirectChatPage> {
                 children: [
                   CircleAvatar(
                     radius: 20,
-                    backgroundImage: NetworkImage(
-                      widget.user.avatarUrl ?? 'https://i.pravatar.cc/150',
-                    ),
+                    backgroundImage: (widget.user.avatarUrl != null &&
+                            widget.user.avatarUrl!.isNotEmpty)
+                        ? NetworkImage(widget.user.avatarUrl!)
+                        : null,
+                    child: (widget.user.avatarUrl == null ||
+                            widget.user.avatarUrl!.isEmpty)
+                        ? const Icon(Icons.person, size: 24)
+                        : null,
                   ),
                   // 在线状态指示器
                   Positioned(
@@ -273,9 +278,14 @@ class _DirectChatPageState extends State<DirectChatPage> {
                 },
                 child: CircleAvatar(
                   radius: 18,
-                  backgroundImage: NetworkImage(
-                    widget.user.avatarUrl ?? 'https://i.pravatar.cc/150',
-                  ),
+                  backgroundImage: (widget.user.avatarUrl != null &&
+                          widget.user.avatarUrl!.isNotEmpty)
+                      ? NetworkImage(widget.user.avatarUrl!)
+                      : null,
+                  child: (widget.user.avatarUrl == null ||
+                          widget.user.avatarUrl!.isEmpty)
+                      ? const Icon(Icons.person, size: 20)
+                      : null,
                 ),
               ),
               const SizedBox(width: 8),

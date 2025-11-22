@@ -107,28 +107,6 @@ class GetCoworkingSpacesParams extends UseCaseParams {
   });
 }
 
-/// 批量获取城市 Coworking 数量 Use Case
-class GetCoworkingCountByCitiesUseCase
-    extends UseCase<Map<String, int>, GetCoworkingCountByCitiesParams> {
-  final ICoworkingRepository _repository;
-
-  GetCoworkingCountByCitiesUseCase(this._repository);
-
-  @override
-  Future<Result<Map<String, int>>> execute(
-    GetCoworkingCountByCitiesParams params,
-  ) async {
-    return await _repository.getCoworkingCountByCities(params.cityIds);
-  }
-}
-
-/// 批量获取城市 Coworking 数量参数
-class GetCoworkingCountByCitiesParams extends UseCaseParams {
-  final List<String> cityIds;
-
-  const GetCoworkingCountByCitiesParams({required this.cityIds});
-}
-
 /// 创建 Coworking 空间 Use Case
 class CreateCoworkingUseCase
     extends UseCase<CoworkingSpace, CreateCoworkingParams> {

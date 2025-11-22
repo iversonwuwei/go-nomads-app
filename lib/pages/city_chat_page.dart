@@ -785,9 +785,14 @@ class _MessageBubble extends StatelessWidget {
             if (!isMe) ...[
               CircleAvatar(
                 radius: 18,
-                backgroundImage: NetworkImage(
-                  message.author.userAvatar ?? 'https://i.pravatar.cc/150',
-                ),
+                backgroundImage: (message.author.userAvatar != null &&
+                        message.author.userAvatar!.isNotEmpty)
+                    ? NetworkImage(message.author.userAvatar!)
+                    : null,
+                child: (message.author.userAvatar == null ||
+                        message.author.userAvatar!.isEmpty)
+                    ? const Icon(Icons.person, size: 20)
+                    : null,
               ),
               const SizedBox(width: 8),
             ],
@@ -829,9 +834,14 @@ class _MessageBubble extends StatelessWidget {
               const SizedBox(width: 8),
               CircleAvatar(
                 radius: 18,
-                backgroundImage: NetworkImage(
-                  message.author.userAvatar ?? 'https://i.pravatar.cc/150',
-                ),
+                backgroundImage: (message.author.userAvatar != null &&
+                        message.author.userAvatar!.isNotEmpty)
+                    ? NetworkImage(message.author.userAvatar!)
+                    : null,
+                child: (message.author.userAvatar == null ||
+                        message.author.userAvatar!.isEmpty)
+                    ? const Icon(Icons.person, size: 20)
+                    : null,
               ),
             ],
           ],

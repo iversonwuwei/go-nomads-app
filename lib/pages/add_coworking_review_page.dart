@@ -7,7 +7,6 @@ import 'package:image_picker/image_picker.dart';
 
 import '../config/app_colors.dart';
 import '../features/coworking/domain/repositories/icoworking_review_repository.dart';
-import '../generated/app_localizations.dart';
 import '../widgets/app_toast.dart';
 
 /// 添加 Coworking Review 页面
@@ -105,13 +104,18 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
     _isSubmitting.value = true;
 
     try {
+      print('📝 开始提交评论...');
+      print('   coworkingId: ${widget.coworkingId}');
+      print('   rating: ${_rating.value}');
+      print('   title: ${_titleController.text.trim()}');
+      
       final repository = Get.find<ICoworkingReviewRepository>();
 
       // TODO: 上传图片到服务器获取 URLs
       // 这里暂时传递空数组，实际应该先上传图片
       final photoUrls = <String>[];
 
-      await repository.addReview(
+      final result = await repository.addReview(
         coworkingId: widget.coworkingId,
         rating: _rating.value,
         title: _titleController.text.trim(),
@@ -120,12 +124,23 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
         photoUrls: photoUrls.isNotEmpty ? photoUrls : null,
       );
 
-      AppToast.success('评论提交成功！');
-      Get.back(result: true);
+      print('✅ 评论提交成功: ${result.id}');
+
+      if (mounted) {
+        AppToast.success('评论提交成功！');
+        // 延迟一下让 Toast 显示
+        await Future.delayed(const Duration(milliseconds: 500));
+        Get.back(result: true);
+      }
     } catch (e) {
-      AppToast.error('提交失败: $e');
+      print('❌ 提交评论失败: $e');
+      if (mounted) {
+        AppToast.error('提交失败: $e');
+      }
     } finally {
-      _isSubmitting.value = false;
+      if (mounted) {
+        _isSubmitting.value = false;
+      }
     }
   }
 
@@ -140,8 +155,6 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(

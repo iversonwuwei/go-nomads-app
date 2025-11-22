@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 import '../config/app_colors.dart';
@@ -454,50 +455,100 @@ class _RegisterPageState extends State<RegisterPage> {
 
                   const SizedBox(height: 24),
 
-                  // 社交登录按钮
+                  // 社交登录按钮 - 第一行
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      // Google 登录
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            AppToast.info(
-                              l10n.googleAuthComingSoon,
-                              title: l10n.googleSignIn,
-                            );
-                          },
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            side: BorderSide(color: Colors.grey.shade300),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          icon: const Icon(Icons.g_mobiledata, size: 24),
-                          label: const Text('Google'),
-                        ),
+                      _buildSocialLoginButton(
+                        onPressed: () {
+                          AppToast.info(
+                            l10n.googleAuthComingSoon,
+                            title: l10n.googleSignIn,
+                          );
+                        },
+                        icon: FontAwesomeIcons.google,
+                        color: const Color(0xFFDB4437), // Google Red
+                        label: 'Google',
                       ),
-                      const SizedBox(width: 12),
-                      // Apple 登录
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            AppToast.info(
-                              l10n.appleAuthComingSoon,
-                              title: l10n.appleSignIn,
-                            );
-                          },
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            side: BorderSide(color: Colors.grey.shade300),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          icon: const Icon(Icons.apple, size: 24),
-                          label: const Text('Apple'),
-                        ),
+                      _buildSocialLoginButton(
+                        onPressed: () {
+                          AppToast.info(
+                            l10n.appleAuthComingSoon,
+                            title: l10n.appleSignIn,
+                          );
+                        },
+                        icon: FontAwesomeIcons.apple,
+                        color: Colors.black,
+                        label: 'Apple',
                       ),
+                      _buildSocialLoginButton(
+                        onPressed: () {
+                          AppToast.info('WeChat Sign In', title: 'WeChat');
+                        },
+                        icon: FontAwesomeIcons.weixin, // WeChat icon
+                        color: const Color(0xFF09BB07), // WeChat Green
+                        label: 'WeChat',
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // 社交登录按钮 - 第二行
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildSocialLoginButton(
+                        onPressed: () {
+                          AppToast.info('Twitter Sign In', title: 'Twitter');
+                        },
+                        icon: FontAwesomeIcons.xTwitter, // X/Twitter icon
+                        color: Colors.black,
+                        label: 'Twitter',
+                      ),
+                      _buildSocialLoginButton(
+                        onPressed: () {
+                          AppToast.info('Alipay Sign In', title: 'Alipay');
+                        },
+                        icon: FontAwesomeIcons.alipay,
+                        color: const Color(0xFF1677FF), // Alipay Blue
+                        label: 'Alipay',
+                      ),
+                      _buildSocialLoginButton(
+                        onPressed: () {
+                          AppToast.info('QQ Sign In', title: 'QQ');
+                        },
+                        icon: FontAwesomeIcons.qq,
+                        color: const Color(0xFF12B7F5), // QQ Blue
+                        label: 'QQ',
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // 社交登录按钮 - 第三行
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildSocialLoginButton(
+                        onPressed: () {
+                          AppToast.info('TikTok Sign In', title: 'TikTok');
+                        },
+                        icon: FontAwesomeIcons.tiktok,
+                        color: Colors.black,
+                        label: 'TikTok',
+                      ),
+                      _buildSocialLoginButton(
+                        onPressed: () {
+                          AppToast.info('Phone Sign In', title: 'Phone');
+                        },
+                        icon: FontAwesomeIcons.mobile,
+                        color: const Color(0xFF4CAF50), // Green for phone
+                        label: 'Phone',
+                      ),
+                      // 占位,保持对齐
+                      const SizedBox(width: 100),
                     ],
                   ),
 
@@ -635,6 +686,46 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildSocialLoginButton({
+    required VoidCallback onPressed,
+    required IconData icon,
+    required Color color,
+    required String label,
+  }) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: 100,
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FaIcon(
+              icon,
+              size: 28,
+              color: color,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade700,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -275,7 +275,7 @@ class CommunityRepository implements ICommunityRepository {
         id: '1',
         userId: 'user1',
         userName: 'Sarah Chen',
-        userAvatar: 'https://i.pravatar.cc/150?img=1',
+        userAvatar: '',
         city: 'Chiang Mai',
         country: 'Thailand',
         startDate: DateTime.now().subtract(const Duration(days: 60)),
@@ -323,7 +323,7 @@ class CommunityRepository implements ICommunityRepository {
         id: '2',
         userId: 'user2',
         userName: 'Marco Silva',
-        userAvatar: 'https://i.pravatar.cc/150?img=2',
+        userAvatar: '',
         city: 'Lisbon',
         country: 'Portugal',
         startDate: DateTime.now().subtract(const Duration(days: 90)),
@@ -404,7 +404,7 @@ class CommunityRepository implements ICommunityRepository {
         tags: ['Fast WiFi', 'Community', 'Coffee', '24/7 Access'],
         userId: 'user1',
         userName: 'Sarah Chen',
-        userAvatar: 'https://i.pravatar.cc/150?img=1',
+        userAvatar: '',
       ),
       CityRecommendation(
         id: 'rec2',
@@ -434,7 +434,7 @@ class CommunityRepository implements ICommunityRepository {
         tags: ['Specialty Coffee', 'WiFi', 'Latte Art', 'Quiet'],
         userId: 'user3',
         userName: 'Alex Kim',
-        userAvatar: 'https://i.pravatar.cc/150?img=3',
+        userAvatar: '',
       ),
       // Lisbon Recommendations
       CityRecommendation(
@@ -466,7 +466,7 @@ class CommunityRepository implements ICommunityRepository {
         tags: ['Design', 'Community', 'Events', 'Market'],
         userId: 'user2',
         userName: 'Marco Silva',
-        userAvatar: 'https://i.pravatar.cc/150?img=2',
+        userAvatar: '',
       ),
       // Bangkok Recommendation
       CityRecommendation(
@@ -497,7 +497,7 @@ class CommunityRepository implements ICommunityRepository {
         tags: ['Market', 'Local Food', 'Fresh Produce', 'Authentic'],
         userId: 'user4',
         userName: 'Emma Wong',
-        userAvatar: 'https://i.pravatar.cc/150?img=4',
+        userAvatar: '',
       ),
     ];
   }
@@ -508,7 +508,7 @@ class CommunityRepository implements ICommunityRepository {
         id: 'q1',
         userId: 'user5',
         userName: 'David Park',
-        userAvatar: 'https://i.pravatar.cc/150?img=5',
+        userAvatar: '',
         city: 'Chiang Mai',
         title: '清迈 Nimman 区和老城区,哪个更适合数字游民?',
         content: '''
@@ -533,7 +533,7 @@ class CommunityRepository implements ICommunityRepository {
         id: 'q2',
         userId: 'user6',
         userName: 'Sophie Laurent',
-        userAvatar: 'https://i.pravatar.cc/150?img=6',
+        userAvatar: '',
         city: 'Bali',
         title: '巴厘岛的签证政策更新了吗?',
         content: '''
@@ -558,7 +558,7 @@ class CommunityRepository implements ICommunityRepository {
         id: 'q3',
         userId: 'user7',
         userName: 'Lucas Müller',
-        userAvatar: 'https://i.pravatar.cc/150?img=7',
+        userAvatar: '',
         city: 'Lisbon',
         title: '里斯本的物价最近涨了很多吗?',
         content: '''
@@ -591,7 +591,7 @@ class CommunityRepository implements ICommunityRepository {
           questionId: questionId,
           userId: 'user1',
           userName: 'Sarah Chen',
-          userAvatar: 'https://i.pravatar.cc/150?img=1',
+          userAvatar: '',
           content: '''
 我在清迈住了6个月,两个区域都住过。
 
@@ -621,7 +621,7 @@ class CommunityRepository implements ICommunityRepository {
           questionId: questionId,
           userId: 'user8',
           userName: 'Tom Anderson',
-          userAvatar: 'https://i.pravatar.cc/150?img=8',
+          userAvatar: '',
           content: '''
 我推荐老城区!Nimman 太吵了,到处都是游客。
 

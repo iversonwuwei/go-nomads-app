@@ -475,9 +475,6 @@ class DependencyInjection {
     Get.lazyPut(() => GetCoworkingSpacesUseCase(
           Get.find<ICoworkingRepository>(),
         ));
-    Get.lazyPut(() => GetCoworkingCountByCitiesUseCase(
-          Get.find<ICoworkingRepository>(),
-        ));
 
     // Use Cases - 命令类
     Get.lazyPut(() => CreateCoworkingUseCase(

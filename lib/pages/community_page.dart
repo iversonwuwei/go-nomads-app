@@ -103,8 +103,14 @@ class CommunityPage extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 20,
-                  backgroundImage: NetworkImage(
-                      report.userAvatar ?? 'https://i.pravatar.cc/300'),
+                  backgroundImage: (report.userAvatar != null &&
+                          report.userAvatar!.isNotEmpty)
+                      ? NetworkImage(report.userAvatar!)
+                      : null,
+                  child:
+                      (report.userAvatar == null || report.userAvatar!.isEmpty)
+                          ? const Icon(Icons.person, size: 24)
+                          : null,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -638,8 +644,14 @@ class CommunityPage extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 16,
-                backgroundImage: NetworkImage(
-                    question.userAvatar ?? 'https://i.pravatar.cc/300'),
+                backgroundImage: (question.userAvatar != null &&
+                        question.userAvatar!.isNotEmpty)
+                    ? NetworkImage(question.userAvatar!)
+                    : null,
+                child: (question.userAvatar == null ||
+                        question.userAvatar!.isEmpty)
+                    ? const Icon(Icons.person, size: 18)
+                    : null,
               ),
               const SizedBox(width: 10),
               Expanded(

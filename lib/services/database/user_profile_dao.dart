@@ -503,7 +503,7 @@ class UserProfileDao {
     await saveBasicInfo(UserBasicInfoDto(
       accountId: accountId,
       name: name,
-      avatarUrl: 'https://i.pravatar.cc/300?img=$accountId',
+      avatarUrl: '',
       createdAt: now,
       updatedAt: now,
     ));

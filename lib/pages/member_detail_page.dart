@@ -85,9 +85,14 @@ class MemberDetailPage extends StatelessWidget {
                           ),
                           child: CircleAvatar(
                             radius: 73,
-                            backgroundImage: NetworkImage(
-                              user.avatarUrl ?? 'https://i.pravatar.cc/300',
-                            ),
+                            backgroundImage: (user.avatarUrl != null &&
+                                    user.avatarUrl!.isNotEmpty)
+                                ? NetworkImage(user.avatarUrl!)
+                                : null,
+                            child: (user.avatarUrl == null ||
+                                    user.avatarUrl!.isEmpty)
+                                ? const Icon(Icons.person, size: 40)
+                                : null,
                           ),
                         ),
                       ),

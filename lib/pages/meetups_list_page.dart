@@ -715,7 +715,8 @@ class _MeetupListCardState extends State<_MeetupListCard> {
                 ClipRRect(
                   borderRadius:
                       BorderRadius.vertical(top: Radius.circular(16.r)),
-                  child: widget.meetup.images.isNotEmpty
+                  child: (widget.meetup.images.isNotEmpty &&
+                          widget.meetup.images.first.isNotEmpty)
                       ? Image.network(
                           widget.meetup.images.first,
                           width: double.infinity,
@@ -821,9 +822,15 @@ class _MeetupListCardState extends State<_MeetupListCard> {
                     children: [
                       CircleAvatar(
                         radius: 16.r,
-                        backgroundImage: NetworkImage(
-                            widget.meetup.organizer.avatarUrl ??
-                                'https://i.pravatar.cc/150'),
+                        backgroundImage: (widget.meetup.organizer.avatarUrl !=
+                                    null &&
+                                widget.meetup.organizer.avatarUrl!.isNotEmpty)
+                            ? NetworkImage(widget.meetup.organizer.avatarUrl!)
+                            : null,
+                        child: (widget.meetup.organizer.avatarUrl == null ||
+                                widget.meetup.organizer.avatarUrl!.isEmpty)
+                            ? Icon(Icons.person, size: 16.r)
+                            : null,
                       ),
                       SizedBox(width: 8.w),
                       Expanded(

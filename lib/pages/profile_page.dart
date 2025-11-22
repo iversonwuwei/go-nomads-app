@@ -242,7 +242,8 @@ class _ProfilePageState extends State<ProfilePage>
   Widget _buildAvatarContent(User user, bool isMobile) {
     final hasAvatar = user.avatarUrl != null &&
         user.avatarUrl!.isNotEmpty &&
-        user.avatarUrl != 'https://i.pravatar.cc/300';
+        user.avatarUrl != null &&
+        user.avatarUrl!.isNotEmpty;
 
     if (hasAvatar) {
       return Image.network(
