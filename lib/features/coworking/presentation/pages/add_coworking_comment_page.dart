@@ -384,13 +384,13 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.amber[100],
+                      color: const Color(0xFFFFA000), // 深黄色背景
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       _rating.toStringAsFixed(1),
                       style: const TextStyle(
-                        color: Colors.amber,
+                        color: Colors.white, // 白色文字
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
