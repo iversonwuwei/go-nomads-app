@@ -33,4 +33,7 @@ abstract class ICityRatingRepository {
 
   /// 删除评分项
   Future<void> deleteCategory(String cityId, String categoryId);
+
+  /// 初始化默认评分项
+  Future<void> initializeDefaultCategories();
 }

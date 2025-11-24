@@ -135,4 +135,20 @@ class CityRatingRepository implements ICityRatingRepository {
       throw Exception('删除评分项失败: ${e.toString()}');
     }
   }
+
+  @override
+  Future<void> initializeDefaultCategories() async {
+    try {
+      print('🎬 [CityRatingRepository] 开始初始化默认评分项...');
+      final response = await _httpService.post(
+        '/cities/00000000-0000-0000-0000-000000000000/ratings/categories/initialize',
+        data: {},
+      );
+
+      print('✅ [CityRatingRepository] 初始化完成: ${response.data}');
+    } catch (e) {
+      print('❌ [CityRatingRepository] 初始化失败: $e');
+      throw Exception('初始化默认评分项失败: ${e.toString()}');
+    }
+  }
 }

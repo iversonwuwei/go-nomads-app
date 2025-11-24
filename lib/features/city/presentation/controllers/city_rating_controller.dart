@@ -61,16 +61,41 @@ class CityRatingController extends GetxController {
       print('  - statistics: ${info.statistics.length} 项');
       print('  - overallScore: ${info.overallScore}');
 
-      if (info.categories.isNotEmpty) {
-        print('  - 评分项列表:');
-        for (var cat in info.categories) {
-          print('    * ${cat.name} (${cat.nameEn}) - ${cat.icon}');
+      // 如果没有评分项，尝试初始化默认评分项
+      if (info.categories.isEmpty) {
+        print('⚠️ [CityRatingController] 没有评分项，开始初始化默认评分项...');
+        try {
+          await _useCases.initializeDefaultCategories();
+          print('✅ [CityRatingController] 默认评分项初始化成功，重新加载数据...');
+
+          // 重新加载数据
+          final updatedInfo = await _useCases.getCityRatings(cityId);
+          categories.value = updatedInfo.categories;
+          statistics.value = updatedInfo.statistics;
+          overallScore.value = updatedInfo.overallScore;
+
+          print('📊 [CityRatingController] 重新加载后的数据:');
+          print('  - categories: ${updatedInfo.categories.length} 项');
+          print('  - statistics: ${updatedInfo.statistics.length} 项');
+        } catch (e) {
+          print('❌ [CityRatingController] 初始化默认评分项失败: $e');
+          // 初始化失败也不影响，继续显示空列表
+          categories.value = info.categories;
+          statistics.value = info.statistics;
+          overallScore.value = info.overallScore;
         }
+      } else {
+        if (info.categories.isNotEmpty) {
+          print('  - 评分项列表:');
+          for (var cat in info.categories) {
+            print('    * ${cat.name} (${cat.nameEn}) - ${cat.icon}');
+          }
+        }
+        
+        categories.value = info.categories;
+        statistics.value = info.statistics;
+        overallScore.value = info.overallScore;
       }
-      
-      categories.value = info.categories;
-      statistics.value = info.statistics;
-      overallScore.value = info.overallScore;
       
       print('✅ [CityRatingController] 评分数据加载完成');
     } catch (e) {

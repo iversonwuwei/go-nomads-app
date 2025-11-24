@@ -85,20 +85,6 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 调试信息 - 显示数据确实存在
-            Container(
-              padding: const EdgeInsets.all(16),
-              color: Colors.blue.withOpacity(0.1),
-              child: Text(
-                '📊 评分数据已加载: ${controller.statistics.length} 项',
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.blue,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
             // 评分项列表
             ListView.separated(
               shrinkWrap: true,
@@ -126,13 +112,13 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
     final userRating = stat.userRating ?? 0;
     final averageRating = stat.averageRating;
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // 左侧：评分项内容
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 左侧：评分项内容
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -224,12 +210,11 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
               ],
             ),
           ),
-        ),
 
-        const SizedBox(width: 16),
+          const SizedBox(width: 16),
 
-        // 右侧：加权平均分
-        SizedBox(
+          // 右侧：加权平均分
+          SizedBox(
           width: 48,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -257,7 +242,8 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
             ],
           ),
         ),
-      ],
+        ],
+      ),
     );
   }
 

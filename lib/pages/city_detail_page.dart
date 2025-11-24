@@ -1302,20 +1302,12 @@ class _CityDetailPageState extends State<CityDetailPage>
     if (!mounted) return;
 
     if (isAdminOrMod) {
-      final result = await Get.to<List<CityRatingItem>>(
+      await Get.to(
         () => ManageCityRatingsPage(
           cityId: cityId,
           cityName: cityName,
-          initialRatings: List<CityRatingItem>.from(_customRatingItems),
         ),
       );
-
-      if (!mounted) return;
-
-      if (result != null) {
-        setState(() => _customRatingItems = List<CityRatingItem>.from(result));
-        AppToast.success('评分数据已更新');
-      }
       return;
     }
 
@@ -1344,6 +1336,7 @@ class _CityDetailPageState extends State<CityDetailPage>
     final prosConsController = Get.find<ProsConsStateController>();
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: Obx(() {
         // 🎨 加载时显示完整骨架屏
         if (cityDetailController.isLoading.value) {
@@ -2055,7 +2048,7 @@ class _CityDetailPageState extends State<CityDetailPage>
       }
 
       return ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        padding: EdgeInsets.zero,
         children: [
           // 用户评分系统（极简风格）
           CityRatingsCard(cityId: city.id),

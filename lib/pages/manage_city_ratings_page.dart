@@ -1,6 +1,5 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/features/city/domain/entities/city_rating_item.dart';
-import 'package:df_admin_mobile/widgets/rating_item_dialog.dart';
+import 'package:df_admin_mobile/features/city/presentation/controllers/city_rating_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -8,13 +7,11 @@ import 'package:get/get.dart';
 class ManageCityRatingsPage extends StatefulWidget {
   final String cityId;
   final String cityName;
-  final List<CityRatingItem> initialRatings;
 
   const ManageCityRatingsPage({
     super.key,
     required this.cityId,
     required this.cityName,
-    required this.initialRatings,
   });
 
   @override
@@ -22,48 +19,112 @@ class ManageCityRatingsPage extends StatefulWidget {
 }
 
 class _ManageCityRatingsPageState extends State<ManageCityRatingsPage> {
-  late List<CityRatingItem> _customRatings;
+  late final CityRatingController _controller;
 
   @override
   void initState() {
     super.initState();
-    _customRatings = List<CityRatingItem>.from(widget.initialRatings);
+    // 确保 Controller 已初始化
+    _controller = Get.find<CityRatingController>();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadData();
+    });
   }
 
-  String _generateRatingId() {
-    return 'rating_${DateTime.now().millisecondsSinceEpoch}_${_customRatings.length}';
+  Future<void> _loadData() async {
+    print('🔍 [ManageCityRatingsPage] 加载评分项数据: cityId=${widget.cityId}');
+    await _controller.loadCityRatings(widget.cityId);
   }
 
   Future<void> _addRating() async {
-    final result = await showRatingItemDialog(
-      context: context,
-      idBuilder: _generateRatingId,
+    final nameController = TextEditingController();
+    final nameEnController = TextEditingController();
+    final descController = TextEditingController();
+    String selectedIcon = 'star';
+
+    final confirmed = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('添加评分项'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: '评分项名称（中文）',
+                  hintText: '例如：美食',
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: nameEnController,
+                decoration: const InputDecoration(
+                  labelText: '评分项名称（英文）',
+                  hintText: '例如：Food',
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: descController,
+                decoration: const InputDecoration(
+                  labelText: '描述（可选）',
+                  hintText: '简短描述',
+                ),
+                maxLines: 2,
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                value: selectedIcon,
+                decoration: const InputDecoration(labelText: '图标'),
+                items: const [
+                  DropdownMenuItem(value: 'star', child: Text('星星')),
+                  DropdownMenuItem(value: 'restaurant', child: Text('餐厅')),
+                  DropdownMenuItem(value: 'wifi', child: Text('网络')),
+                  DropdownMenuItem(value: 'security', child: Text('安全')),
+                  DropdownMenuItem(value: 'directions_bus', child: Text('交通')),
+                  DropdownMenuItem(value: 'local_hospital', child: Text('医疗')),
+                  DropdownMenuItem(value: 'wb_sunny', child: Text('天气')),
+                  DropdownMenuItem(value: 'attach_money', child: Text('成本')),
+                  DropdownMenuItem(value: 'people', child: Text('人群')),
+                  DropdownMenuItem(value: 'language', child: Text('语言')),
+                ],
+                onChanged: (value) {
+                  if (value != null) selectedIcon = value;
+                },
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Get.back(result: true),
+            child: const Text('添加'),
+          ),
+        ],
+      ),
     );
-    if (result != null) {
-      setState(() => _customRatings.add(result));
+
+    if (confirmed == true && nameController.text.trim().isNotEmpty) {
+      await _controller.createCategory(
+        name: nameController.text.trim(),
+        nameEn: nameEnController.text.trim().isEmpty ? null : nameEnController.text.trim(),
+        description: descController.text.trim().isEmpty ? null : descController.text.trim(),
+        icon: selectedIcon,
+      );
     }
   }
 
-  Future<void> _editRating(CityRatingItem item) async {
-    final updated = await showRatingItemDialog(
-      context: context,
-      initial: item,
-      idBuilder: () => item.id,
-    );
-    if (updated != null) {
-      final index =
-          _customRatings.indexWhere((element) => element.id == item.id);
-      if (index != -1) {
-        setState(() => _customRatings[index] = updated);
-      }
-    }
-  }
-
-  Future<void> _deleteRating(CityRatingItem item) async {
+  Future<void> _deleteRating(String categoryId, String categoryName) async {
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
         title: const Text('删除评分项'),
-        content: Text('确定要删除“${item.label}”吗？'),
+        content: Text('确定要删除"$categoryName"吗？'),
         actions: [
           TextButton(
             onPressed: () => Get.back(result: false),
@@ -79,24 +140,35 @@ class _ManageCityRatingsPageState extends State<ManageCityRatingsPage> {
     );
 
     if (confirmed == true) {
-      setState(
-          () => _customRatings.removeWhere((element) => element.id == item.id));
+      await _controller.deleteCategory(categoryId);
     }
   }
 
   void _finish() {
-    Get.back(result: _customRatings);
+    Get.back();
+  }
+
+  IconData _getIcon(String? iconName) {
+    final iconMap = {
+      'attach_money': FontAwesomeIcons.dollarSign,
+      'wb_sunny': FontAwesomeIcons.sun,
+      'directions_bus': FontAwesomeIcons.bus,
+      'restaurant': FontAwesomeIcons.utensils,
+      'security': FontAwesomeIcons.shieldHalved,
+      'wifi': FontAwesomeIcons.wifi,
+      'local_activity': FontAwesomeIcons.ticket,
+      'local_hospital': FontAwesomeIcons.hospitalUser,
+      'people': FontAwesomeIcons.users,
+      'language': FontAwesomeIcons.globe,
+      'star': FontAwesomeIcons.star,
+    };
+    return iconMap[iconName] ?? FontAwesomeIcons.star;
   }
 
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) {
-          _finish();
-        }
-      },
+      canPop: true,
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: AppColors.cityPrimary,
@@ -114,46 +186,61 @@ class _ManageCityRatingsPageState extends State<ManageCityRatingsPage> {
             ),
           ],
         ),
-        body: _customRatings.isEmpty
-            ? _buildEmptyState()
-            : ListView.separated(
-                padding: const EdgeInsets.all(16),
-                itemBuilder: (context, index) {
-                  final item = _customRatings[index];
-                  return Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+        body: Obx(() {
+          print('📊 [ManageCityRatingsPage] 渲染UI:');
+          print('  - isLoading: ${_controller.isLoading.value}');
+          print('  - categories: ${_controller.categories.length} 项');
+          print('  - statistics: ${_controller.statistics.length} 项');
+
+          if (_controller.isLoading.value) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (_controller.categories.isEmpty) {
+            return _buildEmptyState();
+          }
+
+          return ListView.separated(
+            padding: const EdgeInsets.all(16),
+            itemBuilder: (context, index) {
+              final category = _controller.categories[index];
+              final stat = _controller.statistics.firstWhereOrNull(
+                (s) => s.categoryId == category.id,
+              );
+
+              return Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: const Color(0xFFFF4458).withValues(alpha: 0.1),
+                    child: Icon(
+                      _getIcon(category.icon),
+                      color: const Color(0xFFFF4458),
                     ),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor:
-                            const Color(0xFFFF4458).withValues(alpha: 0.1),
-                        child: Icon(item.getIcon(),
-                            color: const Color(0xFFFF4458)),
-                      ),
-                      title: Text(item.label),
-                      subtitle: Text('评分: ${item.score.toStringAsFixed(1)}'),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(FontAwesomeIcons.pen),
-                            tooltip: '编辑',
-                            onPressed: () => _editRating(item),
-                          ),
-                          IconButton(
-                            icon: const Icon(FontAwesomeIcons.trash),
-                            tooltip: '删除',
-                            onPressed: () => _deleteRating(item),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
-                itemCount: _customRatings.length,
-              ),
+                  ),
+                  title: Text(category.name),
+                  subtitle: Text(
+                    '${category.nameEn ?? ""} • 评分: ${stat?.averageRating.toStringAsFixed(1) ?? "0.0"} (${stat?.ratingCount ?? 0}人)',
+                  ),
+                  trailing: category.isDefault
+                      ? const Chip(
+                          label: Text('默认', style: TextStyle(fontSize: 12)),
+                          padding: EdgeInsets.symmetric(horizontal: 8),
+                        )
+                      : IconButton(
+                          icon: const Icon(FontAwesomeIcons.trash),
+                          tooltip: '删除',
+                          onPressed: () => _deleteRating(category.id, category.name),
+                        ),
+                ),
+              );
+            },
+            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            itemCount: _controller.categories.length,
+          );
+        }),
       ),
     );
   }
@@ -169,12 +256,12 @@ class _ManageCityRatingsPageState extends State<ManageCityRatingsPage> {
                 size: 72, color: Colors.grey.withValues(alpha: 0.4)),
             const SizedBox(height: 16),
             const Text(
-              '暂无自定义评分项',
+              '暂无评分项',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             const Text(
-              '点击下方按钮，添加第一个评分项，让城市信息更加丰富',
+              '点击右上角加号，添加第一个评分项',
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),

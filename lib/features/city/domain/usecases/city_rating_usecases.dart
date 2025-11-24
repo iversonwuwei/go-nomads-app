@@ -72,4 +72,9 @@ class CityRatingUseCases {
   Future<void> deleteCategory(String cityId, String categoryId) {
     return _repository.deleteCategory(cityId, categoryId);
   }
+
+  /// 初始化默认评分项
+  Future<void> initializeDefaultCategories() {
+    return _repository.initializeDefaultCategories();
+  }
 }
