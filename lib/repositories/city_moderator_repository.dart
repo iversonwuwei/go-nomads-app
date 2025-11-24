@@ -2,9 +2,9 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-import '../config/api_config.dart';
-import '../models/city_moderator.dart';
-import '../services/token_storage_service.dart';
+import 'package:df_admin_mobile/config/api_config.dart';
+import 'package:df_admin_mobile/models/city_moderator.dart';
+import 'package:df_admin_mobile/services/token_storage_service.dart';
 
 /// 城市版主 Repository
 class CityModeratorRepository {

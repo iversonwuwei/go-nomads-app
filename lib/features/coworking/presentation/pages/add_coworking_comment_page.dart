@@ -1,12 +1,13 @@
 import 'dart:io';
 
+import 'package:df_admin_mobile/config/supabase_config.dart';
+import 'package:df_admin_mobile/features/coworking/infrastructure/repositories/coworking_review_repository.dart';
+import 'package:df_admin_mobile/services/image_upload_service.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-
-import '../../../../config/supabase_config.dart';
-import '../../../../services/image_upload_service.dart';
-import '../../infrastructure/repositories/coworking_review_repository.dart';
 
 /// Coworking 评论创建页面
 class AddCoworkingCommentPage extends StatefulWidget {
@@ -48,11 +49,7 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
         // 限制最多 5 张图片
         if (_selectedImages.length > 5) {
           _selectedImages.removeRange(5, _selectedImages.length);
-          Get.snackbar(
-            '提示',
-            '最多只能上传 5 张图片',
-            snackPosition: SnackPosition.BOTTOM,
-          );
+          AppToast.error('最多只能上传 5 张图片');
         }
       });
     } catch (e) {
@@ -86,11 +83,7 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
   Future<void> _submitComment() async {
     final content = _commentController.text.trim();
     if (content.isEmpty) {
-      Get.snackbar(
-        '提示',
-        '请输入评论内容',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      AppToast.error('请输入评论内容');
       return;
     }
 
@@ -106,12 +99,7 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
       if (_selectedImages.isNotEmpty) {
         // 检查 Supabase 配置
         if (!SupabaseConfig.isConfigured) {
-          Get.snackbar(
-            '错误',
-            '图片上传服务未配置，请联系技术支持',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.red.withValues(alpha: 0.1),
-          );
+          AppToast.error('图片上传服务未配置，请联系技术支持');
           setState(() {
             _isSubmitting = false;
           });
@@ -126,12 +114,7 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
               _selectedImages.map((xFile) => File(xFile.path)).toList();
 
           // 显示上传提示
-          Get.snackbar(
-            '上传中',
-            '正在上传 ${imageFiles.length} 张图片...',
-            snackPosition: SnackPosition.BOTTOM,
-            duration: const Duration(seconds: 2),
-          );
+          AppToast.info('正在上传 ${imageFiles.length} 张图片...');
 
           debugPrint('📤 开始上传 ${imageFiles.length} 张图片');
 
@@ -156,21 +139,10 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
           debugPrint('✅ 图片上传成功: ${imageUrls.length} 张');
           debugPrint('📸 图片 URLs: $imageUrls');
 
-          Get.snackbar(
-            '成功',
-            '已上传 ${imageUrls.length} 张图片',
-            snackPosition: SnackPosition.BOTTOM,
-            duration: const Duration(seconds: 1),
-          );
+          AppToast.success('已上传 ${imageUrls.length} 张图片');
         } catch (e) {
           debugPrint('❌ 图片上传失败: $e');
-          Get.snackbar(
-            '警告',
-            '图片上传失败: ${e.toString()}',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.orange.withValues(alpha: 0.1),
-            duration: const Duration(seconds: 3),
-          );
+          AppToast.warning('图片上传失败: ${e.toString()}');
           imageUrls = null;
         }
       }
@@ -200,12 +172,7 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
       }
     } catch (e) {
       debugPrint('❌ 评论创建失败: $e');
-      Get.snackbar(
-        '错误',
-        '发布评论失败: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withValues(alpha: 0.1),
-      );
+      AppToast.error('发布评论失败: ${e.toString()}');
     } finally {
       setState(() {
         _isSubmitting = false;
@@ -281,7 +248,7 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
                     ),
                     filled: true,
                     fillColor: Colors.grey[50],
-                    suffixIcon: const Icon(Icons.calendar_today),
+                    suffixIcon: const Icon(FontAwesomeIcons.calendar),
                   ),
                   child: Text(
                     _visitDate == null
@@ -317,7 +284,7 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
               // 图片上传区域标题
               Row(
                 children: [
-                  const Icon(Icons.photo_library, size: 20),
+                  const Icon(FontAwesomeIcons.images, size: 20),
                   const SizedBox(width: 8),
                   Text(
                     '添加图片 (${_selectedImages.length}/5)',
@@ -353,7 +320,7 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
         children: [
           const Row(
             children: [
-              Icon(Icons.star, color: Colors.amber, size: 20),
+              Icon(FontAwesomeIcons.star, color: Colors.amber, size: 20),
               SizedBox(width: 8),
               Text(
                 '您的评分',
@@ -378,7 +345,9 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   child: Icon(
-                    index < _rating ? Icons.star : Icons.star_border,
+                    index < _rating
+                        ? FontAwesomeIcons.star
+                        : FontAwesomeIcons.star,
                     color: Colors.amber,
                     size: 40,
                   ),
@@ -471,7 +440,7 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
-                    Icons.close,
+                    FontAwesomeIcons.xmark,
                     color: Colors.white,
                     size: 16,
                   ),
@@ -502,7 +471,7 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.add_photo_alternate_outlined,
+              FontAwesomeIcons.photoFilm,
               size: 32,
               color: Colors.grey[600],
             ),

@@ -1,16 +1,15 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/core/core.dart';
+import 'package:df_admin_mobile/features/city/application/use_cases/city_use_cases.dart';
+import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/pages/add_coworking_page.dart';
 import 'package:df_admin_mobile/pages/coworking_list_page.dart';
+import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import '../config/app_colors.dart';
-import '../core/core.dart';
-import '../features/city/application/use_cases/city_use_cases.dart';
-import '../features/city/domain/repositories/i_city_repository.dart';
-import '../generated/app_localizations.dart';
-import '../routes/route_refresh_observer.dart';
-import '../widgets/app_toast.dart';
 
 /// Coworking Home Page
 /// 共享办公空间首页 - 城市选择
@@ -216,7 +215,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage>
         title: Text(l10n.coworkingSpaces),
         backgroundColor: AppColors.background,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(FontAwesomeIcons.arrowLeft),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -244,7 +243,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage>
                         await _refreshData();
                       }
                     },
-                    icon: const Icon(Icons.add_circle_outline, size: 24),
+                    icon: const Icon(FontAwesomeIcons.circlePlus, size: 24),
                     label: Builder(
                       builder: (context) {
                         final l10n = AppLocalizations.of(context)!;
@@ -274,7 +273,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage>
                 Row(
                   children: [
                     const Icon(
-                      Icons.explore,
+                      FontAwesomeIcons.compass,
                       color: Color(0xFF6366F1),
                       size: 24,
                     ),
@@ -374,7 +373,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage>
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
                         color: Colors.grey[300],
-                        child: const Icon(Icons.location_city, size: 50),
+                        child: const Icon(FontAwesomeIcons.city, size: 50),
                       );
                     },
                   ),

@@ -1,4 +1,4 @@
-import '../../domain/entities/auth_token.dart';
+import 'package:df_admin_mobile/features/auth/domain/entities/auth_token.dart';
 
 /// 认证令牌DTO
 class AuthTokenDto {

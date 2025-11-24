@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 
-import '../services/location_service.dart';
+import 'package:df_admin_mobile/services/location_service.dart';
 
 /// 位置控制器
 /// 用于在页面中管理位置相关的状态和逻辑

@@ -1,4 +1,4 @@
-import '../../domain/entities/coworking_comment.dart';
+import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_comment.dart';
 
 /// Coworking 评论 DTO
 class CoworkingCommentDto {

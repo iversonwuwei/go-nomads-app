@@ -1,4 +1,5 @@
-import '../../domain/entities/trip_report.dart' as domain;
+import 'package:df_admin_mobile/features/community/domain/entities/trip_report.dart'
+    as domain;
 
 /// TripReport DTO
 class TripReportDto {

@@ -1,4 +1,5 @@
-import '../../domain/entities/skill.dart' as domain;
+import 'package:df_admin_mobile/features/skill/domain/entities/skill.dart'
+    as domain;
 
 /// Skill DTO
 class SkillDto {

@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
-import '../config/app_colors.dart';
-import '../core/domain/result.dart';
-import '../features/user_city_content/domain/entities/user_city_content.dart';
-import '../features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
-import '../generated/app_localizations.dart';
-import '../widgets/app_toast.dart';
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/user_city_content/domain/entities/user_city_content.dart';
+import 'package:df_admin_mobile/features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 
 class AddCostPage extends StatefulWidget {
   final String cityId;
@@ -296,7 +297,7 @@ class _AddCostPageState extends State<AddCostPage> {
         backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.black),
+          icon: const Icon(FontAwesomeIcons.xmark, color: Colors.black),
           onPressed: () => Get.back(),
         ),
         title: Column(
@@ -584,7 +585,7 @@ class _AddCostPageState extends State<AddCostPage> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(
-                Icons.calculate,
+                FontAwesomeIcons.calculator,
                 color: Colors.white,
                 size: 32,
               ),

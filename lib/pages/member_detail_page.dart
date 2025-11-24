@@ -1,10 +1,12 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/features/user/domain/entities/user.dart'
+    as models;
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../config/app_colors.dart';
-import '../features/user/domain/entities/user.dart' as models;
-import '../generated/app_localizations.dart';
-import '../widgets/app_toast.dart';
 import 'direct_chat_page.dart';
 import 'invite_to_meetup_page.dart';
 
@@ -40,7 +42,7 @@ class MemberDetailPage extends StatelessWidget {
                   ],
                 ),
                 child: const Icon(
-                  Icons.arrow_back,
+                  FontAwesomeIcons.arrowLeft,
                   color: Color(0xFF1a1a1a),
                   size: 20,
                 ),
@@ -91,7 +93,7 @@ class MemberDetailPage extends StatelessWidget {
                                 : null,
                             child: (user.avatarUrl == null ||
                                     user.avatarUrl!.isEmpty)
-                                ? const Icon(Icons.person, size: 40)
+                                ? const Icon(FontAwesomeIcons.user, size: 40)
                                 : null,
                           ),
                         ),
@@ -121,7 +123,7 @@ class MemberDetailPage extends StatelessWidget {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   const Icon(
-                                    Icons.verified,
+                                    FontAwesomeIcons.circleCheck,
                                     color: Colors.white,
                                     size: 16,
                                   ),
@@ -180,7 +182,7 @@ class MemberDetailPage extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 const Icon(
-                                  Icons.location_on,
+                                  FontAwesomeIcons.locationDot,
                                   size: 16,
                                   color: Color(0xFFFF4458),
                                 ),
@@ -252,7 +254,7 @@ class MemberDetailPage extends StatelessWidget {
                         child: _buildStatCard(
                           AppLocalizations.of(context)!.cities,
                           user.stats.citiesVisited.toString(),
-                          Icons.location_city,
+                          FontAwesomeIcons.city,
                           const Color(0xFFFF4458),
                         ),
                       ),
@@ -261,7 +263,7 @@ class MemberDetailPage extends StatelessWidget {
                         child: _buildStatCard(
                           AppLocalizations.of(context)!.countries,
                           user.stats.countriesVisited.toString(),
-                          Icons.flag,
+                          FontAwesomeIcons.flag,
                           const Color(0xFF3B82F6),
                         ),
                       ),
@@ -270,7 +272,7 @@ class MemberDetailPage extends StatelessWidget {
                         child: _buildStatCard(
                           AppLocalizations.of(context)!.meetups,
                           user.stats.reviewsWritten.toString(),
-                          Icons.people,
+                          FontAwesomeIcons.users,
                           const Color(0xFF10B981),
                         ),
                       ),
@@ -290,7 +292,7 @@ class MemberDetailPage extends StatelessWidget {
                             child: ElevatedButton.icon(
                               onPressed: () =>
                                   Get.to(() => InviteToMeetupPage(user: user)),
-                              icon: const Icon(Icons.event),
+                              icon: const Icon(FontAwesomeIcons.calendarDays),
                               label: Text(l10n.inviteToMeetup),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF10B981),
@@ -312,7 +314,7 @@ class MemberDetailPage extends StatelessWidget {
                                 // 跳转到一对一聊天页面
                                 Get.to(() => DirectChatPage(user: user));
                               },
-                              icon: const Icon(Icons.message),
+                              icon: const Icon(FontAwesomeIcons.message),
                               label: Text(l10n.sendMessage),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFFFF4458),
@@ -343,7 +345,7 @@ class MemberDetailPage extends StatelessWidget {
                                 );
                               },
                               icon: const Icon(
-                                Icons.favorite_border,
+                                FontAwesomeIcons.heart,
                                 color: Color(0xFFFF4458),
                               ),
                             ),
@@ -457,7 +459,7 @@ class MemberDetailPage extends StatelessWidget {
               Row(
                 children: [
                   const Icon(
-                    Icons.emoji_events,
+                    FontAwesomeIcons.trophy,
                     color: Color(0xFFFF6F00),
                     size: 24,
                   ),
@@ -545,7 +547,7 @@ class MemberDetailPage extends StatelessWidget {
           Row(
             children: [
               const Icon(
-                Icons.travel_explore,
+                FontAwesomeIcons.earthAmericas,
                 color: Color(0xFF1976D2),
                 size: 24,
               ),
@@ -596,7 +598,7 @@ class MemberDetailPage extends StatelessWidget {
                             // TODO: Navigate to full travel history page
                           },
                           icon: const Icon(
-                            Icons.arrow_forward,
+                            FontAwesomeIcons.arrowRight,
                             size: 18,
                           ),
                           label: Text(
@@ -709,7 +711,7 @@ class MemberDetailPage extends StatelessWidget {
                 Row(
                   children: [
                     const Icon(
-                      Icons.calendar_today,
+                      FontAwesomeIcons.calendar,
                       size: 14,
                       color: Color(0xFFFF6F00),
                     ),
@@ -853,7 +855,7 @@ class MemberDetailPage extends StatelessWidget {
           Row(
             children: [
               const Icon(
-                Icons.favorite,
+                FontAwesomeIcons.heart,
                 color: Color(0xFFC2185B),
                 size: 24,
               ),
@@ -962,7 +964,7 @@ class MemberDetailPage extends StatelessWidget {
           Row(
             children: [
               const Icon(
-                Icons.stars,
+                FontAwesomeIcons.star,
                 color: Color(0xFF1976D2),
                 size: 24,
               ),

@@ -1,8 +1,8 @@
+import 'package:df_admin_mobile/features/city/domain/entities/city_rating_item.dart';
+import 'package:df_admin_mobile/widgets/rating_item_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import '../features/city/domain/entities/city_rating_item.dart';
-import '../widgets/rating_item_dialog.dart';
 
 class ManageCityRatingsPage extends StatefulWidget {
   final String cityId;
@@ -100,12 +100,12 @@ class _ManageCityRatingsPageState extends State<ManageCityRatingsPage> {
         appBar: AppBar(
           title: Text('${widget.cityName} - 评分数据'),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new),
+            icon: const Icon(FontAwesomeIcons.arrowLeft),
             onPressed: _finish,
           ),
           actions: [
             IconButton(
-              icon: const Icon(Icons.add),
+              icon: const Icon(FontAwesomeIcons.plus),
               tooltip: '添加评分项',
               onPressed: _addRating,
             ),
@@ -125,7 +125,8 @@ class _ManageCityRatingsPageState extends State<ManageCityRatingsPage> {
                       leading: CircleAvatar(
                         backgroundColor:
                             const Color(0xFFFF4458).withValues(alpha: 0.1),
-                        child: Icon(item.icon, color: const Color(0xFFFF4458)),
+                        child: Icon(item.getIcon(),
+                            color: const Color(0xFFFF4458)),
                       ),
                       title: Text(item.label),
                       subtitle: Text('评分: ${item.score.toStringAsFixed(1)}'),
@@ -133,12 +134,12 @@ class _ManageCityRatingsPageState extends State<ManageCityRatingsPage> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.edit),
+                            icon: const Icon(FontAwesomeIcons.pen),
                             tooltip: '编辑',
                             onPressed: () => _editRating(item),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.delete_outline),
+                            icon: const Icon(FontAwesomeIcons.trash),
                             tooltip: '删除',
                             onPressed: () => _deleteRating(item),
                           ),
@@ -161,7 +162,7 @@ class _ManageCityRatingsPageState extends State<ManageCityRatingsPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.star_rate,
+            Icon(FontAwesomeIcons.star,
                 size: 72, color: Colors.grey.withValues(alpha: 0.4)),
             const SizedBox(height: 16),
             const Text(
@@ -176,7 +177,7 @@ class _ManageCityRatingsPageState extends State<ManageCityRatingsPage> {
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: _addRating,
-              icon: const Icon(Icons.add),
+              icon: const Icon(FontAwesomeIcons.plus),
               label: const Text('添加评分项'),
             ),
           ],

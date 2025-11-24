@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 
-import '../routes/app_routes.dart';
+import 'package:df_admin_mobile/routes/app_routes.dart';
 
 /// 底部导航控制器
 /// 管理底部导航栏的状态和页面切换

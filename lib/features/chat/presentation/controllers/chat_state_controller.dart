@@ -2,8 +2,9 @@ import 'package:df_admin_mobile/core/application/use_case.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:get/get.dart';
 
-import '../../application/use_cases/chat_use_cases.dart';
-import '../../domain/entities/chat.dart';
+import 'package:df_admin_mobile/features/chat/application/use_cases/chat_use_cases.dart';
+import 'package:df_admin_mobile/features/chat/domain/entities/chat.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 
 /// Chat State Controller
 ///
@@ -99,7 +100,7 @@ class ChatStateController extends GetxController {
       },
       onFailure: (exception) {
         _errorMessage.value = exception.message;
-        Get.snackbar('错误', exception.message);
+        AppToast.error(exception.message);
       },
     );
 
@@ -142,7 +143,7 @@ class ChatStateController extends GetxController {
       },
       onFailure: (exception) {
         _errorMessage.value = exception.message;
-        Get.snackbar('错误', '加入聊天室失败: ${exception.message}');
+        AppToast.error('加入聊天室失败: ${exception.message}');
       },
     );
 
@@ -168,7 +169,7 @@ class ChatStateController extends GetxController {
         _hasMoreMessages.value = true;
       },
       onFailure: (exception) {
-        Get.snackbar('错误', '离开聊天室失败: ${exception.message}');
+        AppToast.error('离开聊天室失败: ${exception.message}');
       },
     );
   }
@@ -208,7 +209,7 @@ class ChatStateController extends GetxController {
       },
       onFailure: (exception) {
         _errorMessage.value = exception.message;
-        Get.snackbar('错误', '加载消息失败: ${exception.message}');
+        AppToast.error('加载消息失败: ${exception.message}');
       },
     );
 
@@ -246,7 +247,7 @@ class ChatStateController extends GetxController {
       },
       onFailure: (exception) {
         _errorMessage.value = exception.message;
-        Get.snackbar('错误', '发送消息失败: ${exception.message}');
+        AppToast.error('发送消息失败: ${exception.message}');
       },
     );
 
@@ -268,10 +269,10 @@ class ChatStateController extends GetxController {
       onSuccess: (_) {
         // 从列表中移除消息
         _messages.removeWhere((msg) => msg.id == messageId);
-        Get.snackbar('成功', '消息已删除');
+        AppToast.success('消息已删除');
       },
       onFailure: (exception) {
-        Get.snackbar('错误', '删除消息失败: ${exception.message}');
+        AppToast.error('删除消息失败: ${exception.message}');
       },
     );
   }

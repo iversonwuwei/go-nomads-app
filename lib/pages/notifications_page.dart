@@ -1,11 +1,11 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/features/notification/domain/entities/app_notification.dart';
+import 'package:df_admin_mobile/features/notification/presentation/controllers/notification_state_controller.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:timeago/timeago.dart' as timeago;
-
-import '../../../config/app_colors.dart';
-import '../../../features/notification/domain/entities/app_notification.dart';
-import '../../../features/notification/presentation/controllers/notification_state_controller.dart';
-import '../../../widgets/app_toast.dart';
 
 /// 通知列表页面
 class NotificationsPage extends StatefulWidget {
@@ -23,7 +23,7 @@ class _NotificationsPageState extends State<NotificationsPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    
+
     // 设置中文 timeago
     timeago.setLocaleMessages('zh_CN', timeago.ZhCnMessages());
   }
@@ -76,7 +76,7 @@ class _NotificationsPageState extends State<NotificationsPage>
             final hasUnread = controller.unreadCount.value > 0;
             return hasUnread
                 ? IconButton(
-                    icon: const Icon(Icons.done_all),
+                    icon: const Icon(FontAwesomeIcons.checkDouble),
                     tooltip: '全部标记为已读',
                     onPressed: () async {
                       final success = await controller.markAllAsRead();
@@ -115,7 +115,8 @@ class _NotificationsPageState extends State<NotificationsPage>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error_outline, size: 64, color: AppColors.iconSecondary),
+              Icon(FontAwesomeIcons.circleExclamation,
+                  size: 64, color: AppColors.iconSecondary),
               const SizedBox(height: 16),
               Text(
                 controller.errorMessage.value,
@@ -140,7 +141,8 @@ class _NotificationsPageState extends State<NotificationsPage>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.notifications_none, size: 64, color: AppColors.iconSecondary),
+              Icon(FontAwesomeIcons.bell,
+                  size: 64, color: AppColors.iconSecondary),
               const SizedBox(height: 16),
               Text(
                 isRead == null
@@ -176,7 +178,8 @@ class _NotificationsPageState extends State<NotificationsPage>
     bool isMobile,
   ) {
     final color = Color(
-      int.parse(notification.type.colorHex.substring(1), radix: 16) + 0xFF000000,
+      int.parse(notification.type.colorHex.substring(1), radix: 16) +
+          0xFF000000,
     );
 
     return Dismissible(
@@ -188,7 +191,7 @@ class _NotificationsPageState extends State<NotificationsPage>
         ),
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
-        child: const Icon(Icons.delete, color: Colors.white),
+        child: const Icon(FontAwesomeIcons.trash, color: Colors.white),
       ),
       direction: DismissDirection.endToStart,
       onDismissed: (_) {
@@ -200,7 +203,7 @@ class _NotificationsPageState extends State<NotificationsPage>
           if (!notification.isRead) {
             await controller.markAsRead(notification.id);
           }
-          
+
           // 导航到相关页面
           _handleNotificationTap(notification);
         },
@@ -235,9 +238,9 @@ class _NotificationsPageState extends State<NotificationsPage>
                   ),
                 ),
               ),
-              
+
               const SizedBox(width: 12),
-              
+
               // 内容
               Expanded(
                 child: Column(
@@ -258,7 +261,7 @@ class _NotificationsPageState extends State<NotificationsPage>
                             ),
                           ),
                         ),
-                        
+
                         // 未读指示器
                         if (!notification.isRead)
                           Container(
@@ -271,9 +274,9 @@ class _NotificationsPageState extends State<NotificationsPage>
                           ),
                       ],
                     ),
-                    
+
                     const SizedBox(height: 4),
-                    
+
                     // 消息内容
                     Text(
                       notification.message,
@@ -284,9 +287,9 @@ class _NotificationsPageState extends State<NotificationsPage>
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    
+
                     const SizedBox(height: 8),
-                    
+
                     // 时间
                     Text(
                       timeago.format(notification.createdAt, locale: 'zh_CN'),
@@ -312,7 +315,7 @@ class _NotificationsPageState extends State<NotificationsPage>
         // Get.toNamed('/admin/moderator-applications');
         AppToast.info('审核功能开发中');
         break;
-        
+
       case NotificationType.moderatorApproved:
       case NotificationType.moderatorRejected:
         // 跳转到相关城市页面
@@ -320,18 +323,18 @@ class _NotificationsPageState extends State<NotificationsPage>
           Get.toNamed('/city/${notification.relatedId}');
         }
         break;
-        
+
       case NotificationType.cityUpdate:
         if (notification.relatedId != null) {
           Get.toNamed('/city/${notification.relatedId}');
         }
         break;
-        
+
       case NotificationType.systemAnnouncement:
         // 显示详情对话框
         _showAnnouncementDialog(notification);
         break;
-        
+
       case NotificationType.other:
         break;
     }

@@ -1,8 +1,8 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/controllers/location_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import '../config/app_colors.dart';
-import '../controllers/location_controller.dart';
 
 /// 位置权限请求对话框
 class LocationPermissionDialog extends StatelessWidget {
@@ -30,7 +30,7 @@ class LocationPermissionDialog extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: const Icon(
-                Icons.location_on,
+                FontAwesomeIcons.locationDot,
                 size: 40,
                 color: Color(0xFFFF4458),
               ),
@@ -151,18 +151,20 @@ class LocationInfoWidget extends StatelessWidget {
         );
       }
 
-      if (!controller.hasPermission.value || controller.currentPosition.value == null) {
+      if (!controller.hasPermission.value ||
+          controller.currentPosition.value == null) {
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: const Color(0xFFFF4458).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFFF4458).withValues(alpha: 0.3)),
+            border: Border.all(
+                color: const Color(0xFFFF4458).withValues(alpha: 0.3)),
           ),
           child: Row(
             children: [
               const Icon(
-                Icons.location_off,
+                FontAwesomeIcons.locationDot,
                 color: Color(0xFFFF4458),
                 size: 20,
               ),
@@ -204,7 +206,7 @@ class LocationInfoWidget extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(
-                Icons.location_on,
+                FontAwesomeIcons.locationDot,
                 color: Color(0xFFFF4458),
                 size: 20,
               ),
@@ -234,7 +236,7 @@ class LocationInfoWidget extends StatelessWidget {
               ),
             ),
             IconButton(
-              icon: const Icon(Icons.refresh, size: 20),
+              icon: const Icon(FontAwesomeIcons.arrowsRotate, size: 20),
               color: AppColors.textSecondary,
               onPressed: () => controller.refreshLocation(),
             ),

@@ -1,10 +1,10 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
-
-import '../config/app_colors.dart';
-import '../generated/app_localizations.dart';
-import '../widgets/app_toast.dart';
 
 /// Flutter-only MapLibre implementation of the venue picker.
 class VenueMapPickerPage extends StatefulWidget {
@@ -244,7 +244,7 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
         backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_outlined,
+          icon: const Icon(FontAwesomeIcons.arrowLeft,
               color: AppColors.backButtonDark),
           onPressed: () => Get.back(),
         ),
@@ -369,7 +369,7 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    Icons.location_city,
+                    FontAwesomeIcons.city,
                     size: 16,
                     color: Colors.grey[700],
                   ),
@@ -405,7 +405,7 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    Icons.layers_outlined,
+                    FontAwesomeIcons.layerGroup,
                     size: 14,
                     color: Colors.grey[600],
                   ),
@@ -541,7 +541,8 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Icon(Icons.star, size: 14, color: Colors.amber[700]),
+                      Icon(FontAwesomeIcons.star,
+                          size: 14, color: Colors.amber[700]),
                       const SizedBox(width: 4),
                       Text(
                         venue['rating'].toString(),
@@ -592,13 +593,13 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
   IconData _getMarkerIcon(String type) {
     switch (type) {
       case 'Restaurants':
-        return Icons.restaurant;
+        return FontAwesomeIcons.utensils;
       case 'Coworking':
-        return Icons.apartment;
+        return FontAwesomeIcons.building;
       case 'Hotels':
-        return Icons.hotel;
+        return FontAwesomeIcons.hotel;
       default:
-        return Icons.place_outlined;
+        return FontAwesomeIcons.locationPin;
     }
   }
 

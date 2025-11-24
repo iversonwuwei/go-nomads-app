@@ -1,4 +1,4 @@
-import '../entities/coworking_comment.dart';
+import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_comment.dart';
 
 /// Coworking 评论仓储接口
 abstract class ICoworkingCommentRepository {

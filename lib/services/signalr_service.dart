@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:signalr_netcore/signalr_client.dart';
 
-import '../features/async_task/domain/entities/async_task.dart';
-import '../features/async_task/infrastructure/models/async_task_dto.dart';
+import 'package:df_admin_mobile/features/async_task/domain/entities/async_task.dart';
+import 'package:df_admin_mobile/features/async_task/infrastructure/models/async_task_dto.dart';
 import 'token_storage_service.dart';
 
 /// SignalR 实时通知服务

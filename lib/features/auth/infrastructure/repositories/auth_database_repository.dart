@@ -1,8 +1,8 @@
-import '../../../../core/domain/result.dart';
-import '../../../../services/database/token_dao.dart';
-import '../../domain/entities/auth_token.dart';
-import '../../domain/entities/auth_user.dart';
-import '../../domain/repositories/iauth_database_repository.dart';
+import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/services/database/token_dao.dart';
+import 'package:df_admin_mobile/features/auth/domain/entities/auth_token.dart';
+import 'package:df_admin_mobile/features/auth/domain/entities/auth_user.dart';
+import 'package:df_admin_mobile/features/auth/domain/repositories/iauth_database_repository.dart';
 
 /// 认证数据库仓储实现
 ///

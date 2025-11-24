@@ -1,13 +1,13 @@
-import 'package:flutter/widgets.dart';
+import 'package:df_admin_mobile/core/core.dart';
+import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:df_admin_mobile/features/interest/presentation/controllers/interest_state_controller.dart';
+import 'package:df_admin_mobile/features/skill/presentation/controllers/skill_state_controller.dart';
+import 'package:df_admin_mobile/features/user/application/use_cases/favorite_city_use_cases.dart';
+import 'package:df_admin_mobile/features/user/application/use_cases/user_use_cases.dart'
+    as user_use_cases;
+import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:get/get.dart';
-
-import '../../../../core/core.dart';
-import '../../../auth/presentation/controllers/auth_state_controller.dart';
-import '../../../interest/presentation/controllers/interest_state_controller.dart';
-import '../../../skill/presentation/controllers/skill_state_controller.dart';
-import '../../application/use_cases/favorite_city_use_cases.dart';
-import '../../application/use_cases/user_use_cases.dart' as user_use_cases;
-import '../../domain/entities/user.dart';
 
 /// 用户状态控制器 (重构版 - DDD)
 ///
@@ -136,6 +136,8 @@ class UserStateController extends GetxController {
           currentUser.value = null; // 清除无效的用户数据
           favoriteCityIds.clear();
           loginStateChanged.toggle();
+          // 静默处理,不显示Snackbar
+          _handleException(exception, silent: true);
         } else {
           // 其他错误显示提示
           _handleException(exception, silent: false);
@@ -375,7 +377,7 @@ class UserStateController extends GetxController {
       return success;
     } catch (e) {
       errorMessage.value = '移除技能失败: $e';
-      Get.snackbar('错误', '移除技能失败');
+      AppToast.error('移除技能失败');
       return false;
     }
   }
@@ -402,7 +404,7 @@ class UserStateController extends GetxController {
       return success;
     } catch (e) {
       errorMessage.value = '移除兴趣失败: $e';
-      Get.snackbar('错误', '移除兴趣失败');
+      AppToast.error('移除兴趣失败');
       return false;
     }
   }
@@ -431,29 +433,13 @@ class UserStateController extends GetxController {
     super.onClose();
   }
 
-  /// Safely displays a snackbar only after the overlay/navigator is ready.
+  /// Safely displays a toast message.
+  /// 根据title判断是成功还是失败消息
   void _showSnackbar(String title, String message) {
-    if (_canAccessOverlay) {
-      Get.snackbar(title, message);
-      return;
+    if (title == '成功') {
+      AppToast.success(message);
+    } else {
+      AppToast.error(message);
     }
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_canAccessOverlay) {
-        Get.snackbar(title, message);
-      } else {
-        print('⚠️ 无法显示 Snackbar: Overlay 未就绪');
-        print('   信息: $title - $message');
-      }
-    });
-  }
-
-  bool get _canAccessOverlay {
-    if (Get.overlayContext != null) {
-      return true;
-    }
-
-    final navigatorState = Get.key.currentState;
-    return navigatorState?.overlay != null;
   }
 }

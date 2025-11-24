@@ -1,10 +1,11 @@
-import '../../../../config/api_config.dart';
-import '../../../../core/core.dart';
-import '../../../../services/http_service.dart';
-import '../../domain/entities/city.dart';
-import '../../domain/entities/city_detail.dart';
-import '../../domain/repositories/i_city_repository.dart';
-import '../models/city_detail_dto.dart' hide ProsCons;
+import 'package:df_admin_mobile/config/api_config.dart';
+import 'package:df_admin_mobile/core/core.dart';
+import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
+import 'package:df_admin_mobile/features/city/domain/entities/city_detail.dart';
+import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
+import 'package:df_admin_mobile/features/city/infrastructure/models/city_detail_dto.dart'
+    as dto;
+import 'package:df_admin_mobile/services/http_service.dart';
 
 /// 城市仓储实现 (Infrastructure Layer)
 ///
@@ -307,7 +308,7 @@ class CityRepository implements ICityRepository {
 
       final prosConsList = items
           .map((item) =>
-              ProsConsDto.fromJson(item as Map<String, dynamic>).toEntity())
+              dto.ProsConsDto.fromJson(item as Map<String, dynamic>).toEntity())
           .toList();
 
       return Success(prosConsList);
@@ -353,7 +354,7 @@ class CityRepository implements ICityRepository {
         return Failure(ValidationException('添加优缺点失败: 响应格式错误'));
       }
 
-      final prosCons = ProsConsDto.fromJson(itemData).toEntity();
+      final prosCons = dto.ProsConsDto.fromJson(itemData).toEntity();
       return Success(prosCons);
     } on HttpException catch (e) {
       return Failure(_convertHttpException(e));

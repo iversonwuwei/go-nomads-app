@@ -1,4 +1,4 @@
-import '../domain/result.dart';
+import 'package:df_admin_mobile/core/domain/result.dart';
 
 /// UseCase基类
 ///

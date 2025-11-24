@@ -1,6 +1,7 @@
 // Legacy import removed - old weather_model.dart no longer exists
-// import '../../../../models/weather_model.dart' as legacy;
-import '../../domain/entities/weather.dart';
+// import 'package:df_admin_mobile/models/weather_model.dart' as legacy;
+import 'package:df_admin_mobile/features/weather/domain/entities/weather.dart'
+    as entity;
 
 // ============================================================
 // 类型别名 - 用于向后兼容旧代码
@@ -169,8 +170,8 @@ class WeatherDto {
   }
 
   /// 转换为领域实体
-  Weather toDomain() {
-    return Weather(
+  entity.Weather toDomain() {
+    return entity.Weather(
       temperature: temperature,
       feelsLike: feelsLike,
       tempMin: tempMin,
@@ -297,8 +298,8 @@ class WeatherForecastDto {
   }
 
   /// 转换为领域实体
-  WeatherForecast toDomain() {
-    return WeatherForecast(
+  entity.WeatherForecast toDomain() {
+    return entity.WeatherForecast(
       latitude: latitude,
       longitude: longitude,
       timezone: timezone,
@@ -481,8 +482,8 @@ class DailyWeatherDto {
   }
 
   /// 转换为领域实体
-  DailyWeather toDomain() {
-    return DailyWeather(
+  entity.DailyWeather toDomain() {
+    return entity.DailyWeather(
       date: date,
       sunrise: sunrise,
       sunset: sunset,

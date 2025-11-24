@@ -1,19 +1,20 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../config/app_colors.dart';
-import '../config/supabase_config.dart';
-import '../core/domain/result.dart';
-import '../features/city/domain/entities/city_option.dart';
-import '../features/coworking/domain/entities/coworking_space.dart';
-import '../features/coworking/domain/repositories/icoworking_repository.dart';
-import '../features/location/presentation/controllers/location_state_controller.dart';
-import '../generated/app_localizations.dart';
-import '../services/image_upload_service.dart';
-import '../utils/image_upload_helper.dart';
-import '../widgets/app_toast.dart';
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/config/supabase_config.dart';
+import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/city/domain/entities/city_option.dart';
+import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
+import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_repository.dart';
+import 'package:df_admin_mobile/features/location/presentation/controllers/location_state_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/services/image_upload_service.dart';
+import 'package:df_admin_mobile/utils/image_upload_helper.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'maplibre_picker_page.dart';
 
 /// Add Coworking Space Page
@@ -456,7 +457,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
         backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: const Icon(FontAwesomeIcons.arrowLeft, color: AppColors.textPrimary),
           onPressed: () => Get.back(),
         ),
         title: Text(
@@ -482,7 +483,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                   const SizedBox(height: 24),
 
                   // Basic Information
-                  _buildSectionTitle(l10n.basicInformation, Icons.info_outline),
+                  _buildSectionTitle(l10n.basicInformation, FontAwesomeIcons.circleInfo),
                   const SizedBox(height: 16),
                   _buildTextField(
                     controller: _nameController,
@@ -502,7 +503,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                   const SizedBox(height: 32),
 
                   // Location
-                  _buildSectionTitle(l10n.location, Icons.location_on),
+                  _buildSectionTitle(l10n.location, FontAwesomeIcons.locationDot),
                   const SizedBox(height: 16),
                   _buildTextField(
                     controller: _addressController,
@@ -527,7 +528,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
 
                   // Contact Information
                   _buildSectionTitle(
-                      l10n.contactInformation, Icons.contact_phone),
+                      l10n.contactInformation, FontAwesomeIcons.addressBook),
                   const SizedBox(height: 16),
                   _buildTextField(
                     controller: _phoneController,
@@ -553,7 +554,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                   const SizedBox(height: 32),
 
                   // Pricing
-                  _buildSectionTitle(l10n.pricing, Icons.attach_money),
+                  _buildSectionTitle(l10n.pricing, FontAwesomeIcons.dollarSign),
                   const SizedBox(height: 16),
                   _buildCurrencyDropdown(l10n),
                   const SizedBox(height: 16),
@@ -616,7 +617,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                   ],
 
                   const SizedBox(height: 32), // Specifications
-                  _buildSectionTitle(l10n.specifications, Icons.settings),
+                  _buildSectionTitle(l10n.specifications, FontAwesomeIcons.gear),
                   const SizedBox(height: 16),
                   Row(
                     children: [
@@ -693,7 +694,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                   const SizedBox(height: 32),
 
                   // Amenities
-                  _buildSectionTitle(l10n.amenities, Icons.stars),
+                  _buildSectionTitle(l10n.amenities, FontAwesomeIcons.star),
                   const SizedBox(height: 16),
                   _buildSwitchTile(l10n.wifi, _hasWifi,
                       (value) => setState(() => _hasWifi = value)),
@@ -858,14 +859,14 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
         side: BorderSide(color: Colors.grey[300]!),
       ),
       child: ListTile(
-        leading: const Icon(Icons.map, color: Color(0xFFFF4458)),
+        leading: const Icon(FontAwesomeIcons.map, color: Color(0xFFFF4458)),
         title: _latitude != 0 && _longitude != 0
             ? Text(l10n.locationCoordinates(
                 _latitude.toStringAsFixed(6),
                 _longitude.toStringAsFixed(6),
               ))
             : Text(l10n.pickLocationOnMap),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        trailing: const Icon(FontAwesomeIcons.arrowRight, size: 16),
         onTap: () async {
           // 获取当前地址字段的内容作为搜索关键词
           final addressQuery = _addressController.text.trim();
@@ -977,7 +978,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
             child: Image.network(
               imageUrl,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
+              errorBuilder: (_, __, ___) => const Icon(FontAwesomeIcons.image),
             ),
           ),
         ),
@@ -986,7 +987,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
           right: 6,
           child: IconButton(
             onPressed: () => _removeImageAt(index),
-            icon: const Icon(Icons.close, size: 18, color: Colors.white),
+            icon: const Icon(FontAwesomeIcons.xmark, size: 18, color: Colors.white),
             style: IconButton.styleFrom(
               backgroundColor: Colors.black45,
               padding: const EdgeInsets.all(4),
@@ -1011,7 +1012,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.add_photo_alternate, size: 32, color: Colors.grey[500]),
+            Icon(FontAwesomeIcons.photoFilm, size: 32, color: Colors.grey[500]),
             const SizedBox(height: 8),
             Text(
               l10n.tapToChoosePhoto,
@@ -1043,7 +1044,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: const Icon(Icons.photo_library),
+                leading: const Icon(FontAwesomeIcons.images),
                 title: Text('${l10n.photoLibrary} (multi-select)'),
                 onTap: () {
                   Navigator.pop(context);
@@ -1051,7 +1052,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.camera_alt),
+                leading: const Icon(FontAwesomeIcons.camera),
                 title: Text(l10n.camera),
                 onTap: () {
                   Navigator.pop(context);
@@ -1059,7 +1060,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.close),
+                leading: const Icon(FontAwesomeIcons.xmark),
                 title: Text(l10n.cancel),
                 onTap: () => Navigator.pop(context),
               ),
@@ -1202,7 +1203,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                                 AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
-                      : const Icon(Icons.check_circle_outline, size: 20),
+                      : const Icon(FontAwesomeIcons.circleCheck, size: 20),
                   const SizedBox(width: 8),
                   Text(
                     l10n.submitCoworkingSpace,
@@ -1469,7 +1470,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                               child: CircularProgressIndicator(strokeWidth: 2),
                             ),
                           )
-                        : const Icon(Icons.keyboard_arrow_down),
+                        : const Icon(FontAwesomeIcons.chevronDown),
                     errorText: field.errorText,
                   ),
                   isEmpty: displayCountry == null || displayCountry.isEmpty,
@@ -1588,7 +1589,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                               child: CircularProgressIndicator(strokeWidth: 2),
                             ),
                           )
-                        : const Icon(Icons.keyboard_arrow_down),
+                        : const Icon(FontAwesomeIcons.chevronDown),
                     errorText: field.errorText,
                   ),
                   isEmpty: displayCity == null || displayCity.isEmpty,
@@ -1689,7 +1690,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                     ),
                     trailing: isSelected
                         ? const Icon(
-                            Icons.check,
+                            FontAwesomeIcons.check,
                             color: Color(0xFFFF4458),
                           )
                         : null,

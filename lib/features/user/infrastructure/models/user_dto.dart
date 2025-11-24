@@ -1,5 +1,6 @@
-// import '../../../../models/user_model.dart' as legacy; // Legacy model removed
-import '../../domain/entities/user.dart';
+// import 'package:df_admin_mobile/models/user_model.dart' as legacy; // Legacy model removed
+import 'package:df_admin_mobile/features/user/domain/entities/user.dart'
+    as entity;
 
 /// User DTO - 基础设施层数据传输对象
 class UserDto {
@@ -101,8 +102,8 @@ class UserDto {
   }
 
   /// 转换为领域实体
-  User toDomain() {
-    return User(
+  entity.User toDomain() {
+    return entity.User(
       id: id,
       name: name ?? '',
       username: username ?? '', // 添加默认值
@@ -116,7 +117,7 @@ class UserDto {
       socialLinks: socialLinks,
       badges: badges.map((e) => e.toDomain()).toList(),
       stats: stats?.toDomain() ??
-          TravelStats(
+          entity.TravelStats(
             citiesVisited: 0,
             countriesVisited: 0,
             reviewsWritten: 0,
@@ -181,8 +182,13 @@ class UserSkillInfoDto {
     // 优先使用 skillId（技能本身的ID），而不是 id（UserSkill关联记录的ID）
     final id =
         (json['skillId'] ?? json['SkillId'] ?? json['id']) as String? ?? '';
-    final name = (json['name'] ?? json['skillName'] ?? json['SkillName']) as String? ?? '';
-    final level = (json['level'] ?? json['proficiencyLevel'] ?? json['ProficiencyLevel']) as String? ?? '';
+    final name =
+        (json['name'] ?? json['skillName'] ?? json['SkillName']) as String? ??
+            '';
+    final level = (json['level'] ??
+            json['proficiencyLevel'] ??
+            json['ProficiencyLevel']) as String? ??
+        '';
     final icon = (json['icon'] ?? json['Icon']) as String?;
     print('   ✅ 解析结果: id=$id, name=$name, level=$level, icon=$icon');
     return UserSkillInfoDto(
@@ -202,8 +208,8 @@ class UserSkillInfoDto {
     };
   }
 
-  UserSkillInfo toDomain() {
-    return UserSkillInfo(
+  entity.UserSkillInfo toDomain() {
+    return entity.UserSkillInfo(
       id: id,
       name: name,
       level: level,
@@ -229,7 +235,9 @@ class UserInterestInfoDto {
     final id =
         (json['interestId'] ?? json['InterestId'] ?? json['id']) as String? ??
             '';
-    final name = (json['name'] ?? json['interestName'] ?? json['InterestName']) as String? ?? '';
+    final name = (json['name'] ?? json['interestName'] ?? json['InterestName'])
+            as String? ??
+        '';
     final icon = (json['icon'] ?? json['Icon']) as String?;
     print('   ✅ 解析结果: id=$id, name=$name, icon=$icon');
     return UserInterestInfoDto(
@@ -247,8 +255,8 @@ class UserInterestInfoDto {
     };
   }
 
-  UserInterestInfo toDomain() {
-    return UserInterestInfo(
+  entity.UserInterestInfo toDomain() {
+    return entity.UserInterestInfo(
       id: id,
       name: name,
       icon: icon,
@@ -289,8 +297,8 @@ class BadgeDto {
     };
   }
 
-  Badge toDomain() {
-    return Badge(
+  entity.Badge toDomain() {
+    return entity.Badge(
       id: id,
       name: name,
       icon: icon,
@@ -331,8 +339,8 @@ class TravelStatsDto {
     };
   }
 
-  TravelStats toDomain() {
-    return TravelStats(
+  entity.TravelStats toDomain() {
+    return entity.TravelStats(
       citiesVisited: citiesVisited,
       countriesVisited: countriesVisited,
       reviewsWritten: 0, // DTO缺少此字段,使用默认值
@@ -381,8 +389,8 @@ class TravelHistoryDto {
     };
   }
 
-  TravelHistory toDomain() {
-    return TravelHistory(
+  entity.TravelHistory toDomain() {
+    return entity.TravelHistory(
       cityId: '', // DTO缺少cityId,使用空字符串
       cityName: city, // DTO的city字段映射到cityName
       countryName: country, // DTO的country字段映射到countryName

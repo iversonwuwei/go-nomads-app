@@ -1,6 +1,6 @@
 import 'package:df_admin_mobile/core/domain/result.dart';
 
-import '../entities/skill.dart';
+import 'package:df_admin_mobile/features/skill/domain/entities/skill.dart';
 
 /// Skill Repository Interface - 技能仓储接口
 abstract class ISkillRepository {

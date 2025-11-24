@@ -1,6 +1,6 @@
-import '../../../../core/domain/result.dart';
-import '../../domain/entities/city.dart';
-import '../../domain/repositories/i_city_repository.dart';
+import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
+import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
 
 /// 搜索城市用例
 class SearchCitiesUseCase {

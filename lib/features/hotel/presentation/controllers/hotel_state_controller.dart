@@ -1,8 +1,8 @@
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:get/get.dart';
 
-import '../../application/use_cases/hotel_use_cases.dart';
-import '../../domain/entities/hotel.dart';
+import 'package:df_admin_mobile/features/hotel/application/use_cases/hotel_use_cases.dart';
+import 'package:df_admin_mobile/features/hotel/domain/entities/hotel.dart';
 
 /// Hotel State Controller
 /// 使用 GetX 进行响应式状态管理

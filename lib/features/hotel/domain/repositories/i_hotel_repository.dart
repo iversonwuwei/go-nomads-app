@@ -1,5 +1,5 @@
-import '../../../../core/domain/result.dart';
-import '../entities/hotel.dart';
+import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/hotel/domain/entities/hotel.dart';
 
 /// Hotel Repository Interface
 abstract class IHotelRepository {

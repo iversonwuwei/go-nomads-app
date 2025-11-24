@@ -1,7 +1,7 @@
-import '../../../../core/application/use_case.dart';
-import '../../../../core/domain/result.dart';
-import '../../domain/entities/coworking_space.dart';
-import '../../domain/repositories/icoworking_repository.dart';
+import 'package:df_admin_mobile/core/application/use_case.dart';
+import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
+import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_repository.dart';
 
 /// 获取城市 Coworking 空间列表 Use Case
 class GetCoworkingSpacesByCityUseCase

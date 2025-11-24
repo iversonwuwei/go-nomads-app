@@ -1,8 +1,10 @@
+import 'package:df_admin_mobile/features/city/application/state_controllers/pros_cons_state_controller.dart';
+import 'package:df_admin_mobile/services/token_storage_service.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../features/city/application/state_controllers/pros_cons_state_controller.dart';
-import '../services/token_storage_service.dart';
 import 'pros_and_cons_add_page.dart';
 
 /// Pros & Cons 数据管理列表页面
@@ -84,18 +86,13 @@ class _ManageProsConsPageState extends State<ManageProsConsPage>
       final success = await controller.deleteProsCons(widget.cityId, id, true);
 
       if (success) {
-        Get.snackbar(
-          '成功',
-          '优点已删除',
-          backgroundColor: Colors.green[100],
-          duration: const Duration(seconds: 2),
-        );
+        AppToast.success('优点已删除');
         await _loadData();
       } else {
-        Get.snackbar('失败', '删除失败,请重试');
+        AppToast.error('删除失败,请重试');
       }
     } catch (e) {
-      Get.snackbar('错误', '删除失败: $e');
+      AppToast.error('删除失败: $e');
     }
   }
 
@@ -122,22 +119,16 @@ class _ManageProsConsPageState extends State<ManageProsConsPage>
 
     try {
       final controller = Get.find<ProsConsStateController>();
-      final success =
-          await controller.deleteProsCons(widget.cityId, id, false);
+      final success = await controller.deleteProsCons(widget.cityId, id, false);
 
       if (success) {
-        Get.snackbar(
-          '成功',
-          '挑战已删除',
-          backgroundColor: Colors.green[100],
-          duration: const Duration(seconds: 2),
-        );
+        AppToast.success('挑战已删除');
         await _loadData();
       } else {
-        Get.snackbar('失败', '删除失败,请重试');
+        AppToast.error('删除失败,请重试');
       }
     } catch (e) {
-      Get.snackbar('错误', '删除失败: $e');
+      AppToast.error('删除失败: $e');
     }
   }
 
@@ -149,13 +140,13 @@ class _ManageProsConsPageState extends State<ManageProsConsPage>
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
-            Tab(text: '优点', icon: Icon(Icons.check_circle_outline)),
-            Tab(text: '挑战', icon: Icon(Icons.info_outline)),
+            Tab(text: '优点', icon: Icon(FontAwesomeIcons.circleCheck)),
+            Tab(text: '挑战', icon: Icon(FontAwesomeIcons.circleInfo)),
           ],
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add),
+            icon: const Icon(FontAwesomeIcons.plus),
             onPressed: () async {
               await Get.to(() => ProsAndConsAddPage(
                     cityId: widget.cityId,
@@ -191,7 +182,7 @@ class _ManageProsConsPageState extends State<ManageProsConsPage>
           await _loadData();
         },
         tooltip: '添加',
-        child: const Icon(Icons.add),
+        child: const Icon(FontAwesomeIcons.plus),
       ),
     );
   }
@@ -205,7 +196,7 @@ class _ManageProsConsPageState extends State<ManageProsConsPage>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.check_circle_outline,
+              Icon(FontAwesomeIcons.circleCheck,
                   size: 80, color: Colors.grey[300]),
               const SizedBox(height: 16),
               Text(
@@ -228,7 +219,7 @@ class _ManageProsConsPageState extends State<ManageProsConsPage>
             child: ListTile(
               leading: const CircleAvatar(
                 backgroundColor: Colors.green,
-                child: Icon(Icons.check, color: Colors.white),
+                child: Icon(FontAwesomeIcons.check, color: Colors.white),
               ),
               title: Text(
                 item.text,
@@ -240,13 +231,13 @@ class _ManageProsConsPageState extends State<ManageProsConsPage>
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Icon(Icons.arrow_upward,
+                      Icon(FontAwesomeIcons.arrowUp,
                           size: 16, color: Colors.green[700]),
                       const SizedBox(width: 4),
                       Text('${item.upvotes}',
                           style: const TextStyle(fontWeight: FontWeight.bold)),
                       const SizedBox(width: 16),
-                      Icon(Icons.arrow_downward,
+                      Icon(FontAwesomeIcons.arrowDown,
                           size: 16, color: Colors.red[700]),
                       const SizedBox(width: 4),
                       Text('${item.downvotes}',
@@ -262,7 +253,8 @@ class _ManageProsConsPageState extends State<ManageProsConsPage>
               ),
               trailing: canDelete.value
                   ? IconButton(
-                      icon: const Icon(Icons.delete_outline, color: Colors.red),
+                      icon:
+                          const Icon(FontAwesomeIcons.trash, color: Colors.red),
                       onPressed: () => _deletePros(item.id),
                       tooltip: '删除',
                     )
@@ -283,7 +275,8 @@ class _ManageProsConsPageState extends State<ManageProsConsPage>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.info_outline, size: 80, color: Colors.grey[300]),
+              Icon(FontAwesomeIcons.circleInfo,
+                  size: 80, color: Colors.grey[300]),
               const SizedBox(height: 16),
               Text(
                 '暂无挑战数据',
@@ -305,7 +298,7 @@ class _ManageProsConsPageState extends State<ManageProsConsPage>
             child: ListTile(
               leading: const CircleAvatar(
                 backgroundColor: Colors.red,
-                child: Icon(Icons.close, color: Colors.white),
+                child: Icon(FontAwesomeIcons.xmark, color: Colors.white),
               ),
               title: Text(
                 item.text,
@@ -317,13 +310,13 @@ class _ManageProsConsPageState extends State<ManageProsConsPage>
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Icon(Icons.arrow_upward,
+                      Icon(FontAwesomeIcons.arrowUp,
                           size: 16, color: Colors.green[700]),
                       const SizedBox(width: 4),
                       Text('${item.upvotes}',
                           style: const TextStyle(fontWeight: FontWeight.bold)),
                       const SizedBox(width: 16),
-                      Icon(Icons.arrow_downward,
+                      Icon(FontAwesomeIcons.arrowDown,
                           size: 16, color: Colors.red[700]),
                       const SizedBox(width: 4),
                       Text('${item.downvotes}',
@@ -339,7 +332,8 @@ class _ManageProsConsPageState extends State<ManageProsConsPage>
               ),
               trailing: canDelete.value
                   ? IconButton(
-                      icon: const Icon(Icons.delete_outline, color: Colors.red),
+                      icon:
+                          const Icon(FontAwesomeIcons.trash, color: Colors.red),
                       onPressed: () => _deleteCons(item.id),
                       tooltip: '删除',
                     )

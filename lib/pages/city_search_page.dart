@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../config/app_colors.dart';
-import '../generated/app_localizations.dart';
-import '../widgets/app_toast.dart';
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 
 /// 城市搜索和筛选页面
 class CitySearchPage extends StatefulWidget {
@@ -61,7 +62,7 @@ class _CitySearchPageState extends State<CitySearchPage> {
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_outlined,
+          icon: const Icon(FontAwesomeIcons.arrowLeft,
               color: AppColors.backButtonLight),
           onPressed: () => Get.back(),
         ),
@@ -89,13 +90,13 @@ class _CitySearchPageState extends State<CitySearchPage> {
                       color: Colors.white.withValues(alpha: 0.4),
                     ),
                     prefixIcon: Icon(
-                      Icons.search,
+                      FontAwesomeIcons.magnifyingGlass,
                       color: Colors.white.withValues(alpha: 0.6),
                     ),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
                             icon:
-                                const Icon(Icons.clear, color: Colors.white54),
+                                const Icon(FontAwesomeIcons.xmark, color: Colors.white54),
                             onPressed: () {
                               setState(() {
                                 _searchController.clear();

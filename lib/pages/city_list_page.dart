@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../config/app_colors.dart';
-import '../core/core.dart';
-import '../features/city/domain/entities/city.dart';
-import '../features/city/presentation/controllers/city_state_controller.dart';
-import '../generated/app_localizations.dart';
-import '../routes/route_refresh_observer.dart';
-import '../widgets/app_toast.dart';
-import '../widgets/skeletons/skeletons.dart';
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/core/core.dart';
+import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
+import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'city_detail_page.dart';
 import 'global_map_page.dart';
 
@@ -147,7 +147,7 @@ class _CityListPageState extends State<CityListPage>
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: const Icon(FontAwesomeIcons.arrowLeft, color: AppColors.textPrimary),
           onPressed: () => Get.back(),
         ),
         bottom: PreferredSize(
@@ -280,7 +280,7 @@ class _CityListPageState extends State<CityListPage>
           ),
           child: Row(
             children: [
-              const Icon(Icons.search_outlined,
+              const Icon(FontAwesomeIcons.magnifyingGlass,
                   color: AppColors.textSecondary, size: 20),
               const SizedBox(width: 12),
               Expanded(
@@ -333,7 +333,7 @@ class _CityListPageState extends State<CityListPage>
                   child: Padding(
                     padding: const EdgeInsets.all(4),
                     child: Icon(
-                      Icons.clear,
+                      FontAwesomeIcons.xmark,
                       size: 18,
                       color: AppColors.textSecondary,
                     ),
@@ -486,7 +486,7 @@ class _CityListPageState extends State<CityListPage>
                             errorBuilder: (context, error, stackTrace) {
                               return Container(
                                 color: Colors.grey[200],
-                                child: const Icon(Icons.image_not_supported,
+                                child: const Icon(FontAwesomeIcons.imagePortrait,
                                     size: 48),
                               );
                             },
@@ -494,7 +494,7 @@ class _CityListPageState extends State<CityListPage>
                         : Container(
                             color: Colors.grey[200],
                             child:
-                                const Icon(Icons.image_not_supported, size: 48),
+                                const Icon(FontAwesomeIcons.imagePortrait, size: 48),
                           ),
                   ),
                 ),
@@ -531,7 +531,7 @@ class _CityListPageState extends State<CityListPage>
                             const SizedBox(height: 4),
                             Row(
                               children: [
-                                const Icon(Icons.location_on,
+                                const Icon(FontAwesomeIcons.locationDot,
                                     size: 14, color: AppColors.textSecondary),
                                 const SizedBox(width: 4),
                                 Text(
@@ -560,7 +560,7 @@ class _CityListPageState extends State<CityListPage>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             const Icon(
-                              Icons.star,
+                              FontAwesomeIcons.star,
                               size: 16,
                               color: Color(0xFFFF4458),
                             ),
@@ -587,13 +587,13 @@ class _CityListPageState extends State<CityListPage>
                     runSpacing: 8,
                     children: [
                       _buildInfoChip(
-                        Icons.wb_sunny,
+                        FontAwesomeIcons.sun,
                         '${_truncateToOneDecimal(city.temperature ?? 0)}°',
                         Colors.orange,
                       ),
                       // 使用后端返回的真实平均花费数据
                       _buildInfoChip(
-                        Icons.attach_money,
+                        FontAwesomeIcons.dollarSign,
                         '${city.averageCost != null && city.averageCost! > 0 ? city.averageCost!.toInt() : 0}',
                         city.averageCost != null && city.averageCost! > 0
                             ? Colors.green
@@ -601,7 +601,7 @@ class _CityListPageState extends State<CityListPage>
                       ),
                       if (city.airQualityIndex != null)
                         _buildInfoChip(
-                          Icons.air,
+                          FontAwesomeIcons.wind,
                           'AQI ${city.airQualityIndex}',
                           _getAqiColor(city.airQualityIndex!),
                         ),
@@ -669,7 +669,7 @@ class _CityListPageState extends State<CityListPage>
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
-                    Icons.error_outline,
+                    FontAwesomeIcons.circleExclamation,
                     size: 64,
                     color: Color(0xFFFF4458),
                   ),
@@ -699,7 +699,7 @@ class _CityListPageState extends State<CityListPage>
                   onPressed: () {
                     controller.loadInitialCities();
                   },
-                  icon: const Icon(Icons.refresh, size: 18),
+                  icon: const Icon(FontAwesomeIcons.arrowsRotate, size: 18),
                   label: Text(l10n.retry),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFF4458),
@@ -736,7 +736,7 @@ class _CityListPageState extends State<CityListPage>
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
-                    Icons.search_off,
+                    FontAwesomeIcons.magnifyingGlass,
                     size: 64,
                     color: Color(0xFFFF4458),
                   ),
@@ -762,7 +762,7 @@ class _CityListPageState extends State<CityListPage>
                 const SizedBox(height: 24),
                 ElevatedButton.icon(
                   onPressed: _clearFilters,
-                  icon: const Icon(Icons.refresh, size: 18),
+                  icon: const Icon(FontAwesomeIcons.arrowsRotate, size: 18),
                   label: Text(l10n.clearFilters),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFF4458),
@@ -812,7 +812,7 @@ class _CityListPageState extends State<CityListPage>
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              isFollowed ? Icons.favorite : Icons.favorite_border,
+              isFollowed ? FontAwesomeIcons.heart : FontAwesomeIcons.heart,
               size: 16,
               color: isFollowed ? Colors.white : const Color(0xFF8B5CF6),
             ),
@@ -972,7 +972,7 @@ class _CityFilterDrawer extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close),
+                      icon: const Icon(FontAwesomeIcons.xmark),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],

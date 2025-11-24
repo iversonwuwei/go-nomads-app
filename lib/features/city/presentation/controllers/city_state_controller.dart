@@ -1,13 +1,13 @@
-﻿import 'package:get/get.dart';
+import 'package:get/get.dart';
 
-import '../../../../core/core.dart';
-import '../../../../widgets/app_toast.dart';
-import '../../application/use_cases/city_use_cases.dart';
-import '../../domain/entities/city.dart';
+import 'package:df_admin_mobile/core/core.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/features/city/application/use_cases/city_use_cases.dart';
+import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
 
-/// 城市状态控制器 (Presentation Layer)
+/// ??????? (Presentation Layer)
 ///
-/// 负责管理城市相关的 UI 状态,协调 Use Cases 执行
+/// ????????? UI ??,?? Use Cases ??
 class CityStateController extends GetxController {
   // ==================== Dependencies ====================
   final GetCitiesUseCase _getCitiesUseCase;
@@ -41,16 +41,16 @@ class CityStateController extends GetxController {
   final Rx<String?> errorMessage = Rx<String?>(null);
   final RxList<City> cities = <City>[].obs;
 
-  // 分页状态
+  // ????
   int _currentPage = 1;
   final int _pageSize = 20;
   bool _hasMoreData = true;
 
-  // 筛选状态
+  // ????
   final RxString searchQuery = ''.obs;
   final Rx<String?> selectedCountryId = Rx<String?>(null);
 
-  // 高级筛选 (客户端筛选)
+  // ???? (?????)
   final RxList<String> selectedRegions = <String>[].obs;
   final RxList<String> selectedCountries = <String>[].obs;
   final RxList<String> selectedCities = <String>[].obs;
@@ -61,37 +61,37 @@ class CityStateController extends GetxController {
   final RxInt maxAqi = 500.obs;
   final RxList<String> selectedClimates = <String>[].obs;
 
-  // 推荐和热门
+  // ?????
   final RxList<City> recommendedCities = <City>[].obs;
   final RxList<City> popularCities = <City>[].obs;
 
-  // 收藏
+  // ??
   final RxList<City> favoriteCities = <City>[].obs;
 
-  // 总城市数量 (用于显示统计)
+  // ????? (??????)
   int get totalCitiesCount => cities.length;
 
   // ==================== Lifecycle ====================
 
   @override
   void onClose() {
-    // 清空所有响应式变量
+    // ?????????
     cities.clear();
     recommendedCities.clear();
     popularCities.clear();
     favoriteCities.clear();
     
-    // 重置加载状态
+    // ??????
     isLoading.value = false;
     isLoadingMore.value = false;
     hasError.value = false;
     errorMessage.value = null;
     
-    // 重置分页状态
+    // ??????
     _currentPage = 1;
     _hasMoreData = true;
     
-    // 重置筛选状态
+    // ??????
     searchQuery.value = '';
     selectedCountryId.value = null;
     selectedRegions.clear();
@@ -109,7 +109,7 @@ class CityStateController extends GetxController {
 
   // ==================== Public Methods ====================
 
-  /// 初始加载城市列表 (第一页)
+  /// ???????? (???)
   Future<void> loadInitialCities() async {
     isLoading.value = true;
     hasError.value = false;
@@ -118,7 +118,7 @@ class CityStateController extends GetxController {
     _hasMoreData = true;
     cities.clear();
 
-    // print('📡 开始加载初始城市数据...');
+    // print('?? ??????????...');
 
     final result = await _getCitiesUseCase.execute(
       GetCitiesParams(
@@ -131,39 +131,39 @@ class CityStateController extends GetxController {
 
     result.fold(
       onSuccess: (data) {
-        // print('✅ 成功加载 ${data.length} 个城市');
+        // print('? ???? ${data.length} ???');
         cities.value = data;
         _hasMoreData = data.length >= _pageSize;
         isLoading.value = false;
       },
       onFailure: (exception) {
-        // print('❌ 加载城市失败: ${exception.message}');
+        // print('? ??????: ${exception.message}');
         hasError.value = true;
         errorMessage.value = exception.message;
         isLoading.value = false;
         
-        // 如果是未授权错误，静默处理（不显示 Toast）
-        // 因为 AuthStateController 会处理 401 错误并跳转登录页
+        // ????????,????(??? Toast)
+        // ?? AuthStateController ??? 401 ????????
         if (exception is! UnauthorizedException) {
-          AppToast.error(exception.message, title: '加载失败');
+          AppToast.error(exception.message, title: '????');
         } else {
-          print('⚠️ 加载城市失败: Token 无效或过期');
+          print('?? ??????: Token ?????');
         }
       },
     );
   }
 
-  /// 加载更多城市 (下一页)
+  /// ?????? (???)
   Future<void> loadMoreCities() async {
     if (isLoadingMore.value || !_hasMoreData) {
-      // print('⚠️ 已经在加载中或没有更多数据');
+      // print('?? ?????????????');
       return;
     }
 
     isLoadingMore.value = true;
     _currentPage++;
 
-    // print('📡 加载第 $_currentPage 页...');
+    // print('?? ??? $_currentPage ?...');
 
     final result = await _getCitiesUseCase.execute(
       GetCitiesParams(
@@ -176,26 +176,26 @@ class CityStateController extends GetxController {
 
     result.fold(
       onSuccess: (data) {
-        // print('✅ 成功加载 ${data.length} 个城市');
+        // print('? ???? ${data.length} ???');
         cities.addAll(data);
         _hasMoreData = data.length >= _pageSize;
         isLoadingMore.value = false;
       },
       onFailure: (exception) {
-        // print('❌ 加载更多失败: ${exception.message}');
-        _currentPage--; // 回滚页码
+        // print('? ??????: ${exception.message}');
+        _currentPage--; // ????
         isLoadingMore.value = false;
-        AppToast.error(exception.message, title: '加载失败');
+        AppToast.error(exception.message, title: '????');
       },
     );
   }
 
-  /// 搜索城市
+  /// ????
   Future<void> searchCities(String query) async {
     searchQuery.value = query;
 
     if (query.trim().isEmpty) {
-      // 如果搜索为空,重新加载全部
+      // ??????,??????
       return loadInitialCities();
     }
 
@@ -204,7 +204,7 @@ class CityStateController extends GetxController {
     errorMessage.value = null;
     cities.clear();
 
-    // print('🔍 搜索城市: $query');
+    // print('?? ????: $query');
 
     final result = await _searchCitiesUseCase.execute(
       SearchCitiesParams(keyword: query, pageSize: _pageSize),
@@ -212,34 +212,34 @@ class CityStateController extends GetxController {
 
     result.fold(
       onSuccess: (data) {
-        // print('✅ 搜索到 ${data.length} 个城市');
+        // print('? ??? ${data.length} ???');
         cities.value = data;
         isLoading.value = false;
       },
       onFailure: (exception) {
-        // print('❌ 搜索失败: ${exception.message}');
+        // print('? ????: ${exception.message}');
         hasError.value = true;
         errorMessage.value = exception.message;
         isLoading.value = false;
-        AppToast.error(exception.message, title: '搜索失败');
+        AppToast.error(exception.message, title: '????');
       },
     );
   }
 
-  /// 按国家筛选
+  /// ?????
   Future<void> filterByCountry(String? countryId) async {
     selectedCountryId.value = countryId;
     return loadInitialCities();
   }
 
-  /// 清除筛选
+  /// ????
   Future<void> clearFilters() async {
     searchQuery.value = '';
     selectedCountryId.value = null;
     return loadInitialCities();
   }
 
-  /// 重置所有高级筛选 (客户端筛选)
+  /// ???????? (?????)
   void resetFilters() {
     selectedRegions.clear();
     selectedCountries.clear();
@@ -253,11 +253,11 @@ class CityStateController extends GetxController {
     selectedCountryId.value = null;
   }
 
-  /// 获取筛选后的城市列表 (客户端筛选)
+  /// ?????????? (?????)
   List<City> get filteredCities {
     var items = cities.toList();
 
-    // 地区筛选
+    // ????
     if (selectedRegions.isNotEmpty) {
       items = items
           .where((city) =>
@@ -265,7 +265,7 @@ class CityStateController extends GetxController {
           .toList();
     }
 
-    // 国家筛选 (客户端)
+    // ???? (???)
     if (selectedCountries.isNotEmpty) {
       items = items
           .where((city) =>
@@ -273,53 +273,53 @@ class CityStateController extends GetxController {
           .toList();
     }
 
-    // 价格筛选 (使用 costScore * 500 派生实际价格)
+    // ???? (?? costScore * 500 ??????)
     items = items.where((city) {
       if (city.costScore == null) return true;
-      final estimatedCost = city.costScore! * 500; // 0-5 score → $0-2500 range
+      final estimatedCost = city.costScore! * 500; // 0-5 score ? $0-2500 range
       return estimatedCost >= minPrice.value && estimatedCost <= maxPrice.value;
     }).toList();
 
-    // 网速筛选 (使用 internetScore * 20 派生网速)
+    // ???? (?? internetScore * 20 ????)
     items = items.where((city) {
       if (city.internetScore == null) return true;
       final estimatedSpeed =
-          city.internetScore! * 20; // 0-5 score → 0-100 Mbps range
+          city.internetScore! * 20; // 0-5 score ? 0-100 Mbps range
       return estimatedSpeed >= minInternet.value;
     }).toList();
 
-    // 评分筛选
+    // ????
     items = items.where((city) {
       if (city.overallScore == null) return true;
       return city.overallScore! >= minRating.value;
     }).toList();
 
-    // AQI 筛选
+    // AQI ??
     items = items.where((city) {
       if (city.airQualityIndex == null) return true;
       return city.airQualityIndex! <= maxAqi.value;
     }).toList();
 
-    // 气候筛选 (City 实体没有 climate 字段,这里跳过筛选)
-    // 如果需要气候筛选,可以从温度范围推断
+    // ???? (City ???? climate ??,??????)
+    // ????????,?????????
     if (selectedClimates.isNotEmpty) {
-      // 暂时不筛选,因为 City 实体没有 climate 字段
-      // 可以考虑根据温度范围推断气候类型
+      // ?????,?? City ???? climate ??
+      // ????????????????
     }
 
     return items;
   }
 
-  /// 刷新列表
+  /// ????
   @override
   Future<void> refresh() async {
     return loadInitialCities();
   }
 
-  /// 加载推荐城市
+  /// ??????
   Future<void> loadRecommendedCities(
       {String? countryId, int limit = 10}) async {
-    // print('📡 加载推荐城市...');
+    // print('?? ??????...');
 
     final result = await _getRecommendedCitiesUseCase.execute(
       GetRecommendedCitiesParams(countryId: countryId, limit: limit),
@@ -327,19 +327,19 @@ class CityStateController extends GetxController {
 
     result.fold(
       onSuccess: (data) {
-        // print('✅ 成功加载 ${data.length} 个推荐城市');
+        // print('? ???? ${data.length} ?????');
         recommendedCities.value = data;
       },
       onFailure: (exception) {
-        // print('❌ 加载推荐城市失败: ${exception.message}');
-        AppToast.error(exception.message, title: '加载失败');
+        // print('? ????????: ${exception.message}');
+        AppToast.error(exception.message, title: '????');
       },
     );
   }
 
-  /// 加载热门城市
+  /// ??????
   Future<void> loadPopularCities({int limit = 10}) async {
-    // print('📡 加载热门城市...');
+    // print('?? ??????...');
 
     final result = await _getPopularCitiesUseCase.execute(
       GetPopularCitiesParams(limit: limit),
@@ -347,19 +347,19 @@ class CityStateController extends GetxController {
 
     result.fold(
       onSuccess: (data) {
-        // print('✅ 成功加载 ${data.length} 个热门城市');
+        // print('? ???? ${data.length} ?????');
         popularCities.value = data;
       },
       onFailure: (exception) {
-        // print('❌ 加载热门城市失败: ${exception.message}');
-        AppToast.error(exception.message, title: '加载失败');
+        // print('? ????????: ${exception.message}');
+        AppToast.error(exception.message, title: '????');
       },
     );
   }
 
-  /// 切换城市收藏状态
+  /// ????????
   Future<void> toggleFavorite(String cityId) async {
-    // print('💖 切换收藏状态: $cityId');
+    // print('?? ??????: $cityId');
 
     final result = await _toggleCityFavoriteUseCase.execute(
       ToggleCityFavoriteParams(cityId: cityId),
@@ -367,9 +367,9 @@ class CityStateController extends GetxController {
 
     result.fold(
       onSuccess: (isFavorited) {
-        // print('✅ 收藏状态已更新: $isFavorited');
+        // print('? ???????: $isFavorited');
 
-        // 更新本地列表中的收藏状态
+        // ????????????
         final index = cities.indexWhere((city) => city.id == cityId);
         if (index != -1) {
           cities[index] = cities[index].copyWith(isFavorite: isFavorited);
@@ -377,38 +377,38 @@ class CityStateController extends GetxController {
         }
 
         AppToast.success(
-          isFavorited ? '已添加到收藏' : '已取消收藏',
-          title: '成功',
+          isFavorited ? '??????' : '?????',
+          title: '??',
         );
       },
       onFailure: (exception) {
-        // print('❌ 收藏操作失败: ${exception.message}');
-        AppToast.error(exception.message, title: '操作失败');
+        // print('? ??????: ${exception.message}');
+        AppToast.error(exception.message, title: '????');
       },
     );
   }
 
-  /// 加载收藏城市列表
+  /// ????????
   Future<void> loadFavoriteCities() async {
-    // print('📡 加载收藏城市...');
+    // print('?? ??????...');
 
     final result = await _getFavoriteCitiesUseCase.execute(const NoParams());
 
     result.fold(
       onSuccess: (data) {
-        // print('✅ 成功加载 ${data.length} 个收藏城市');
+        // print('? ???? ${data.length} ?????');
         favoriteCities.value = data;
       },
       onFailure: (exception) {
-        // print('❌ 加载收藏城市失败: ${exception.message}');
-        AppToast.error(exception.message, title: '加载失败');
+        // print('? ????????: ${exception.message}');
+        AppToast.error(exception.message, title: '????');
       },
     );
   }
 
-  /// 切换城市收藏状态 (给 city_list_page 使用)
+  /// ???????? (? city_list_page ??)
   Future<Result<void>> toggleCityFavorite(String cityId) async {
-    // print('💖 切换收藏状态: $cityId');
+    // print('?? ??????: $cityId');
 
     final result = await _toggleCityFavoriteUseCase.execute(
       ToggleCityFavoriteParams(cityId: cityId),
@@ -416,9 +416,9 @@ class CityStateController extends GetxController {
 
     return result.fold(
       onSuccess: (isFavorited) {
-        // print('✅ 收藏状态已更新: $isFavorited');
+        // print('? ???????: $isFavorited');
 
-        // 更新本地列表中的收藏状态
+        // ????????????
         final index = cities.indexWhere((city) => city.id == cityId);
         if (index != -1) {
           cities[index] = cities[index].copyWith(isFavorite: isFavorited);
@@ -428,26 +428,26 @@ class CityStateController extends GetxController {
         return const Success(null);
       },
       onFailure: (exception) {
-        // print('❌ 收藏操作失败: ${exception.message}');
+        // print('? ??????: ${exception.message}');
         return Failure(exception);
       },
     );
   }
 
-  /// 加载用户收藏的城市ID列表 (给 city_list_page 使用)
+  /// ?????????ID?? (? city_list_page ??)
   Future<Result<List<String>>> loadUserFavoriteCityIds() async {
-    // print('📡 加载收藏城市ID列表...');
+    // print('?? ??????ID??...');
 
     final result =
         await _getUserFavoriteCityIdsUseCase.execute(const NoParams());
 
     return result.fold(
       onSuccess: (ids) {
-        // print('✅ 成功加载 ${ids.length} 个收藏城市ID');
+        // print('? ???? ${ids.length} ?????ID');
         return Success(ids);
       },
       onFailure: (exception) {
-        // print('❌ 加载收藏城市ID失败: ${exception.message}');
+        // print('? ??????ID??: ${exception.message}');
         return Failure(exception);
       },
     );
@@ -455,19 +455,19 @@ class CityStateController extends GetxController {
 
   // ==================== Computed Properties ====================
 
-  /// 是否有城市数据
+  /// ???????
   bool get hasCities => cities.isNotEmpty;
 
-  /// 是否可以加载更多
+  /// ????????
   bool get canLoadMore => _hasMoreData && !isLoadingMore.value;
 
-  /// 是否还有更多数据 (用于分页)
+  /// ???????? (????)
   bool get hasMoreData => _hasMoreData;
 
-  /// 当前搜索结果数量
+  /// ????????
   int get searchResultCount => cities.length;
 
-  /// 是否有激活的筛选条件
+  /// ??????????
   bool get hasActiveFilters {
     return selectedRegions.isNotEmpty ||
         selectedCountries.isNotEmpty ||
@@ -480,7 +480,7 @@ class CityStateController extends GetxController {
         selectedClimates.isNotEmpty;
   }
 
-  /// 获取所有可用的地区列表
+  /// ???????????
   List<String> get availableRegions {
     return cities
         .where((city) => city.region != null)
@@ -490,7 +490,7 @@ class CityStateController extends GetxController {
       ..sort();
   }
 
-  /// 获取所有可用的国家列表
+  /// ???????????
   List<String> get availableCountries {
     return cities
         .where((city) => city.country != null)
@@ -500,15 +500,15 @@ class CityStateController extends GetxController {
       ..sort();
   }
 
-  /// 获取所有可用的城市名称列表
+  /// ?????????????
   List<String> get availableCities {
     return cities.map((city) => city.name).toSet().toList()..sort();
   }
 
-  /// 获取所有可用的气候类型列表 (如果 City 实体有 climate 字段)
+  /// ????????????? (?? City ??? climate ??)
   List<String> get availableClimates {
-    // 注意: City 实体可能没有 climate 字段
-    // 这里返回空列表,或者可以从温度推断气候类型
+    // ??: City ?????? climate ??
+    // ???????,?????????????
     return <String>[];
   }
 }

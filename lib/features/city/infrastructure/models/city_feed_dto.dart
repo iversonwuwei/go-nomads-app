@@ -1,8 +1,8 @@
-﻿// Legacy model import removed - model no longer exists
-// import '../../../../models/city_feed_model.dart' as legacy;
-import '../../../weather/infrastructure/models/weather_dto.dart';
+// Legacy model import removed - model no longer exists
+// import 'package:df_admin_mobile/models/city_feed_model.dart' as legacy;
+import 'package:df_admin_mobile/features/weather/infrastructure/models/weather_dto.dart';
 
-/// CityFeed DTO - 鍩庡競淇℃伅(鐢ㄤ簬棣栭〉feed)
+/// CityFeed DTO - ??????(?????>feed)
 class CityFeedDto {
   final String id;
   final String name;

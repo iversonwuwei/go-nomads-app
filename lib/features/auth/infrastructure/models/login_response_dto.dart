@@ -1,4 +1,4 @@
-import '../../domain/entities/login_response.dart';
+import 'package:df_admin_mobile/features/auth/domain/entities/login_response.dart';
 
 /// LoginResponse DTO
 class LoginResponseDto {

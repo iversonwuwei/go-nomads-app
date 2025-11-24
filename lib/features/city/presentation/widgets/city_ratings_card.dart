@@ -1,7 +1,7 @@
+import 'package:df_admin_mobile/features/city/presentation/controllers/city_rating_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import '../controllers/city_rating_controller.dart';
 
 /// 城市评分卡片组件 - 极简现代风格
 class CityRatingsCard extends StatefulWidget {
@@ -77,7 +77,7 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
   ) {
     final userRating = stat.userRating ?? 0;
     final averageRating = stat.averageRating;
-    
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -113,27 +113,30 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                
+
                 // 星星评分
                 Row(
                   children: [
                     // 如果正在提交，显示加载指示器
-                    if (controller.submittingCategoryId.value == stat.categoryId)
+                    if (controller.submittingCategoryId.value ==
+                        stat.categoryId)
                       const SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1A1A1A)),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Color(0xFF1A1A1A)),
                         ),
                       )
                     // 如果刚完成提交，显示加权平均分的星星（高亮显示）
-                    else if (controller.completedCategoryId.value == stat.categoryId)
+                    else if (controller.completedCategoryId.value ==
+                        stat.categoryId)
                       ...List.generate(5, (index) {
                         final isFilled = index < averageRating.floor();
-                        final isHalfFilled = index == averageRating.floor() && 
-                                            averageRating % 1 >= 0.5;
-                        
+                        final isHalfFilled = index == averageRating.floor() &&
+                            averageRating % 1 >= 0.5;
+
                         return Padding(
                           padding: EdgeInsets.only(
                             right: index < 4 ? 6 : 0,
@@ -149,9 +152,9 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
                       ...List.generate(5, (index) {
                         final isActive = index < userRating;
                         final isFilled = index < averageRating.floor();
-                        final isHalfFilled = index == averageRating.floor() && 
-                                            averageRating % 1 >= 0.5;
-                        
+                        final isHalfFilled = index == averageRating.floor() &&
+                            averageRating % 1 >= 0.5;
+
                         return GestureDetector(
                           onTap: () {
                             controller.submitRating(stat.categoryId, index + 1);
@@ -174,9 +177,9 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
             ),
           ),
         ),
-        
+
         const SizedBox(width: 16),
-        
+
         // 右侧：加权平均分
         SizedBox(
           width: 48,
@@ -218,23 +221,23 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
     // 确定背景色：根据平均分而非用户评分
     Color backgroundColor;
     if (isFilled || isHalfFilled) {
-      backgroundColor = Colors.grey[200]!;  // 有平均分：浅灰背景
+      backgroundColor = Colors.grey[200]!; // 有平均分：浅灰背景
     } else {
-      backgroundColor = Colors.grey[50]!;   // 无平均分：极浅灰背景
+      backgroundColor = Colors.grey[50]!; // 无平均分：极浅灰背景
     }
-    
+
     // 确定星星颜色
     Color starColor;
     if (isActive) {
-      starColor = const Color(0xFF1A1A1A);  // 用户已评分：黑色星星
+      starColor = const Color(0xFF1A1A1A); // 用户已评分：黑色星星
     } else if (isFilled) {
-      starColor = Colors.grey[600]!;  // 有平均分：深灰星星
+      starColor = Colors.grey[600]!; // 有平均分：深灰星星
     } else if (isHalfFilled) {
-      starColor = Colors.grey[600]!.withOpacity(0.5);  // 半星：半透明深灰
+      starColor = Colors.grey[600]!.withOpacity(0.5); // 半星：半透明深灰
     } else {
-      starColor = Colors.grey[300]!;  // 无评分：浅灰星星
+      starColor = Colors.grey[300]!; // 无评分：浅灰星星
     }
-    
+
     return Container(
       width: 28,
       height: 28,
@@ -243,7 +246,7 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
         borderRadius: BorderRadius.circular(6),
       ),
       child: Icon(
-        Icons.star_rounded,
+        FontAwesomeIcons.star,
         size: 16,
         color: starColor,
       ),
@@ -260,36 +263,34 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
       height: 28,
       decoration: BoxDecoration(
         color: isFilled || isHalfFilled
-            ? const Color(0xFF10B981)  // 更柔和的绿色
+            ? const Color(0xFF10B981) // 更柔和的绿色
             : Colors.grey[100],
         borderRadius: BorderRadius.circular(6),
       ),
       child: Icon(
-        Icons.star_rounded,
+        FontAwesomeIcons.star,
         size: 16,
         color: isFilled
             ? Colors.white
-            : (isHalfFilled
-                ? Colors.white.withOpacity(0.5)
-                : Colors.grey[400]),
+            : (isHalfFilled ? Colors.white.withOpacity(0.5) : Colors.grey[400]),
       ),
     );
   }
 
   IconData _getIconData(String iconName) {
     final iconMap = {
-      'attach_money': Icons.attach_money_rounded,
-      'wb_sunny': Icons.wb_sunny_rounded,
-      'directions_bus': Icons.directions_bus_rounded,
-      'restaurant': Icons.restaurant_rounded,
-      'security': Icons.security_rounded,
-      'wifi': Icons.wifi_rounded,
-      'local_activity': Icons.local_activity_rounded,
-      'local_hospital': Icons.local_hospital_rounded,
-      'people': Icons.people_rounded,
-      'language': Icons.language_rounded,
+      'attach_money': FontAwesomeIcons.dollarSign,
+      'wb_sunny': FontAwesomeIcons.sun,
+      'directions_bus': FontAwesomeIcons.bus,
+      'restaurant': FontAwesomeIcons.utensils,
+      'security': FontAwesomeIcons.shieldHalved,
+      'wifi': FontAwesomeIcons.wifi,
+      'local_activity': FontAwesomeIcons.ticket,
+      'local_hospital': FontAwesomeIcons.hospitalUser,
+      'people': FontAwesomeIcons.users,
+      'language': FontAwesomeIcons.globe,
     };
-    return iconMap[iconName] ?? Icons.star_rounded;
+    return iconMap[iconName] ?? FontAwesomeIcons.star;
   }
 
   /// 骨架屏加载器
@@ -322,14 +323,14 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
             ],
           ),
         ),
-        
+
         // 分割线
         Container(
           height: 1,
           margin: const EdgeInsets.symmetric(vertical: 12),
           color: Colors.grey[200],
         ),
-        
+
         // 评分项骨架（显示5个）
         ListView.separated(
           shrinkWrap: true,
@@ -417,4 +418,3 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
     );
   }
 }
-

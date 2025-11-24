@@ -1,5 +1,5 @@
-import '../../../../core/core.dart';
-import '../entities/user.dart';
+import 'package:df_admin_mobile/core/core.dart';
+import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
 
 /// 用户仓储接口
 ///

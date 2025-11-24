@@ -1,6 +1,6 @@
-import '../../../../core/domain/result.dart';
-import '../entities/city.dart';
-import '../entities/country.dart';
+import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/location/domain/entities/city.dart';
+import 'package:df_admin_mobile/features/location/domain/entities/country.dart';
 
 /// Location Repository 接口
 /// 管理国家和城市数据的仓储接口

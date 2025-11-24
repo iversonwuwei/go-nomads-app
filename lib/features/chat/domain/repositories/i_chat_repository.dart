@@ -1,6 +1,6 @@
 import 'package:df_admin_mobile/core/domain/result.dart';
 
-import '../entities/chat.dart';
+import 'package:df_admin_mobile/features/chat/domain/entities/chat.dart';
 
 /// Chat Repository 接口
 ///

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-import '../core/domain/result.dart';
-import '../features/hotel/domain/entities/hotel.dart';
-import '../features/hotel/infrastructure/repositories/hotel_repository.dart';
-import '../services/http_service.dart';
-import '../widgets/app_toast.dart';
+import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/hotel/domain/entities/hotel.dart';
+import 'package:df_admin_mobile/features/hotel/infrastructure/repositories/hotel_repository.dart';
+import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'room_type_list_page.dart';
 
 /// 酒店列表页面（简化版，用于城市详情页的Hotels标签）
@@ -129,7 +130,7 @@ class _HotelListPageState extends State<HotelListPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.hotel_outlined, size: 48.w, color: Colors.grey),
+                    Icon(FontAwesomeIcons.hotel, size: 48.w, color: Colors.grey),
                     SizedBox(height: 12.h),
                     Text(
                       'No hotels found',
@@ -164,10 +165,10 @@ class _HotelListPageState extends State<HotelListPage> {
         controller: _searchController,
         decoration: InputDecoration(
           hintText: 'Search hotels...',
-          prefixIcon: const Icon(Icons.search),
+          prefixIcon: const Icon(FontAwesomeIcons.magnifyingGlass),
           suffixIcon: Obx(() => _searchQuery.value.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.clear),
+                  icon: const Icon(FontAwesomeIcons.xmark),
                   onPressed: () {
                     _searchController.clear();
                     _searchQuery.value = '';
@@ -220,7 +221,7 @@ class _HotelListPageState extends State<HotelListPage> {
                     return Container(
                       height: 200.h,
                       color: Colors.grey[300],
-                      child: const Icon(Icons.hotel, size: 64),
+                      child: const Icon(FontAwesomeIcons.hotel, size: 64),
                     );
                   },
                 ),
@@ -238,7 +239,7 @@ class _HotelListPageState extends State<HotelListPage> {
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.star, size: 16.w, color: Colors.white),
+                          Icon(FontAwesomeIcons.star, size: 16.w, color: Colors.white),
                           SizedBox(width: 4.w),
                           Text(
                             'Featured',
@@ -297,7 +298,7 @@ class _HotelListPageState extends State<HotelListPage> {
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.star, size: 14.w, color: Colors.white),
+                            Icon(FontAwesomeIcons.star, size: 14.w, color: Colors.white),
                             SizedBox(width: 4.w),
                             Text(
                               hotel.rating.toStringAsFixed(1),

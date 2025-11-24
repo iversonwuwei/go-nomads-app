@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 /// AI Chat 页面占位符
@@ -15,7 +16,7 @@ class AiChatPage extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 1,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(FontAwesomeIcons.arrowLeft),
           onPressed: () => Get.back(),
         ),
       ),
@@ -26,7 +27,7 @@ class AiChatPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Icon(
-                Icons.construction,
+                FontAwesomeIcons.triangleExclamation,
                 size: 80,
                 color: Colors.grey,
               ),
@@ -47,7 +48,7 @@ class AiChatPage extends StatelessWidget {
               const SizedBox(height: 32),
               ElevatedButton.icon(
                 onPressed: () => Get.back(),
-                icon: const Icon(Icons.arrow_back),
+                icon: const Icon(FontAwesomeIcons.arrowLeft),
                 label: const Text('返回'),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(

@@ -1,4 +1,4 @@
-import '../entities/meetup.dart';
+import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
 
 /// Meetup Repository 接口
 /// 定义活动数据访问的抽象契约

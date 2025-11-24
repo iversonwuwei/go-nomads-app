@@ -1,10 +1,11 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/features/skill/domain/entities/skill.dart';
+import 'package:df_admin_mobile/features/skill/presentation/controllers/skill_state_controller.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import '../config/app_colors.dart';
-import '../features/skill/domain/entities/skill.dart';
-import '../features/skill/presentation/controllers/skill_state_controller.dart';
 
 /// 技能选择器组件
 class SkillsSelector extends StatefulWidget {
@@ -78,11 +79,7 @@ class _SkillsSelectorState extends State<SkillsSelector> {
 
     final error = _skillController.errorMessage.value;
     if (error != null && error.isNotEmpty && mounted) {
-      Get.snackbar(
-        '加载失败',
-        error,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      AppToast.error(error);
     }
   }
 
@@ -99,11 +96,7 @@ class _SkillsSelectorState extends State<SkillsSelector> {
       // 检查是否超过最大选择数
       if (widget.maxSelection > 0 &&
           _selectedSkills.length >= widget.maxSelection) {
-        Get.snackbar(
-          '达到上限',
-          '最多只能选择 ${widget.maxSelection} 个技能',
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        AppToast.error('最多只能选择 ${widget.maxSelection} 个技能');
         return;
       }
 
@@ -355,7 +348,7 @@ class _SkillsSelectorState extends State<SkillsSelector> {
           child: TextField(
             decoration: InputDecoration(
               hintText: '搜索技能...',
-              prefixIcon: const Icon(Icons.search),
+              prefixIcon: const Icon(FontAwesomeIcons.magnifyingGlass),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(color: AppColors.border),
@@ -448,7 +441,7 @@ class _SkillsSelectorState extends State<SkillsSelector> {
                             ),
                         ],
                       ),
-                      deleteIcon: const Icon(Icons.close, size: 18),
+                      deleteIcon: const Icon(FontAwesomeIcons.xmark, size: 18),
                       onDeleted: () {
                         setState(() {
                           _selectedSkills.removeWhere(

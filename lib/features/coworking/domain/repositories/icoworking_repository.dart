@@ -1,5 +1,5 @@
-import '../../../../core/domain/result.dart';
-import '../entities/coworking_space.dart';
+import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
 
 /// Coworking Repository 接口
 /// 定义 Coworking 数据访问契约

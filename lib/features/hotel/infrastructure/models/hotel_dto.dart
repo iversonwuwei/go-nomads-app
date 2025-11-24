@@ -1,4 +1,5 @@
-import '../../domain/entities/hotel.dart' as domain;
+import 'package:df_admin_mobile/features/hotel/domain/entities/hotel.dart'
+    as domain;
 
 /// Hotel DTO
 class HotelDto {

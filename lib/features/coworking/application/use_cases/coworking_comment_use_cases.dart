@@ -1,5 +1,5 @@
-import '../../domain/entities/coworking_comment.dart';
-import '../../domain/repositories/icoworking_comment_repository.dart';
+import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_comment.dart';
+import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_comment_repository.dart';
 
 /// Coworking 评论用例
 class CoworkingCommentUseCases {

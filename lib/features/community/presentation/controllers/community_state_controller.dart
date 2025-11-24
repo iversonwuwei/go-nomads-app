@@ -2,6 +2,7 @@ import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/community/domain/entities/trip_report.dart';
 import 'package:df_admin_mobile/features/community/domain/repositories/i_community_repository.dart';
 import 'package:get/get.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 
 /// Community State Controller - 社区功能状态控制器 (DDD 架构)
 /// 管理旅行报告、城市推荐、问答功能
@@ -97,11 +98,7 @@ class CommunityStateController extends GetxController {
       // 检查是否所有请求都成功
       final allSuccess = results.every((result) => result);
       if (!allSuccess) {
-        Get.snackbar(
-          '提示',
-          '部分数据加载失败',
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        AppToast.error('部分数据加载失败');
       }
     } finally {
       isLoading.value = false;
@@ -177,11 +174,7 @@ class CommunityStateController extends GetxController {
       },
       onFailure: (error) {
         print('加载答案失败: ${error.message}');
-        Get.snackbar(
-          '错误',
-          '加载答案失败: ${error.message}',
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        AppToast.error('加载答案失败: ${error.message}');
       },
     );
   }
@@ -233,11 +226,7 @@ class CommunityStateController extends GetxController {
       onFailure: (error) {
         // 失败则回滚
         tripReports[index] = report;
-        Get.snackbar(
-          '错误',
-          '操作失败: ${error.message}',
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        AppToast.error('操作失败: ${error.message}');
       },
     );
   }
@@ -281,11 +270,7 @@ class CommunityStateController extends GetxController {
       onFailure: (error) {
         // 失败则回滚
         questions[index] = question;
-        Get.snackbar(
-          '错误',
-          '操作失败: ${error.message}',
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        AppToast.error('操作失败: ${error.message}');
       },
     );
   }
@@ -332,11 +317,7 @@ class CommunityStateController extends GetxController {
         // 失败则回滚
         answerList[index] = answer;
         answers[questionId] = List.from(answerList);
-        Get.snackbar(
-          '错误',
-          '操作失败: ${error.message}',
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        AppToast.error('操作失败: ${error.message}');
       },
     );
   }

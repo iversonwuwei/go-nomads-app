@@ -1,7 +1,7 @@
 import 'package:df_admin_mobile/core/domain/result.dart';
 
-import '../../domain/entities/interest.dart';
-import '../../domain/repositories/i_interest_repository.dart';
+import 'package:df_admin_mobile/features/interest/domain/entities/interest.dart';
+import 'package:df_admin_mobile/features/interest/domain/repositories/i_interest_repository.dart';
 
 /// GetInterestsUseCase - 获取兴趣列表用例
 class GetInterestsUseCase {

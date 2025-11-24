@@ -1,13 +1,15 @@
+import 'package:df_admin_mobile/features/chat/domain/entities/chat.dart';
+import 'package:df_admin_mobile/features/chat/presentation/controllers/chat_state_controller.dart';
+import 'package:df_admin_mobile/features/user/domain/entities/user.dart'
+    as models;
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../features/chat/domain/entities/chat.dart';
-import '../features/chat/presentation/controllers/chat_state_controller.dart';
-import '../features/user/domain/entities/user.dart' as models;
-import '../generated/app_localizations.dart';
-import '../widgets/app_toast.dart';
-import '../widgets/skeletons/skeletons.dart';
 import 'member_detail_page.dart';
 
 /// 私聊页面 - Snapchat 风格设计
@@ -54,7 +56,7 @@ class _DirectChatPageState extends State<DirectChatPage> {
         elevation: 0,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(FontAwesomeIcons.arrowLeft, color: Colors.black),
           onPressed: () => Get.back(),
         ),
         title: GestureDetector(
@@ -73,7 +75,7 @@ class _DirectChatPageState extends State<DirectChatPage> {
                         : null,
                     child: (widget.user.avatarUrl == null ||
                             widget.user.avatarUrl!.isEmpty)
-                        ? const Icon(Icons.person, size: 24)
+                        ? const Icon(FontAwesomeIcons.user, size: 24)
                         : null,
                   ),
                   // 在线状态指示器
@@ -121,15 +123,18 @@ class _DirectChatPageState extends State<DirectChatPage> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.videocam, color: Colors.black, size: 28),
+            icon: const Icon(FontAwesomeIcons.video,
+                color: Colors.black, size: 28),
             onPressed: () => AppToast.info('视频通话功能即将推出'),
           ),
           IconButton(
-            icon: const Icon(Icons.call, color: Colors.black, size: 24),
+            icon: const Icon(FontAwesomeIcons.phone,
+                color: Colors.black, size: 24),
             onPressed: () => AppToast.info('语音通话功能即将推出'),
           ),
           PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert, color: Colors.black),
+            icon: const Icon(FontAwesomeIcons.ellipsisVertical,
+                color: Colors.black),
             onSelected: (value) {
               switch (value) {
                 case 'profile':
@@ -154,7 +159,7 @@ class _DirectChatPageState extends State<DirectChatPage> {
                   value: 'profile',
                   child: Row(
                     children: [
-                      const Icon(Icons.person_outline, size: 20),
+                      const Icon(FontAwesomeIcons.user, size: 20),
                       const SizedBox(width: 12),
                       Text(l10n.viewProfile),
                     ],
@@ -164,7 +169,7 @@ class _DirectChatPageState extends State<DirectChatPage> {
                   value: 'mute',
                   child: Row(
                     children: [
-                      const Icon(Icons.notifications_off_outlined, size: 20),
+                      const Icon(FontAwesomeIcons.bellSlash, size: 20),
                       const SizedBox(width: 12),
                       Text(l10n.muteNotifications),
                     ],
@@ -174,7 +179,7 @@ class _DirectChatPageState extends State<DirectChatPage> {
                   value: 'block',
                   child: Row(
                     children: [
-                      const Icon(Icons.block_outlined,
+                      const Icon(FontAwesomeIcons.ban,
                           size: 20, color: Colors.red),
                       const SizedBox(width: 12),
                       Text(l10n.blockUser,
@@ -236,7 +241,7 @@ class _DirectChatPageState extends State<DirectChatPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                Icons.chat_bubble_outline_rounded,
+                FontAwesomeIcons.message,
                 size: 64,
                 color: const Color(0xFF6b7280).withValues(alpha: 0.3),
               ),
@@ -284,7 +289,7 @@ class _DirectChatPageState extends State<DirectChatPage> {
                       : null,
                   child: (widget.user.avatarUrl == null ||
                           widget.user.avatarUrl!.isEmpty)
-                      ? const Icon(Icons.person, size: 20)
+                      ? const Icon(FontAwesomeIcons.user, size: 20)
                       : null,
                 ),
               ),
@@ -409,7 +414,7 @@ class _DirectChatPageState extends State<DirectChatPage> {
               const SizedBox(width: 8),
               // 已读/未读状态
               Icon(
-                Icons.check_circle,
+                FontAwesomeIcons.circleCheck,
                 size: 16,
                 color: const Color(0xFF00D856).withValues(alpha: 0.8),
               ),
@@ -471,7 +476,7 @@ class _DirectChatPageState extends State<DirectChatPage> {
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.close, size: 20),
+                icon: const Icon(FontAwesomeIcons.xmark, size: 20),
                 onPressed: () => controller.clearReplyTo(),
               ),
             ],
@@ -515,7 +520,7 @@ class _DirectChatPageState extends State<DirectChatPage> {
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
-                    icon: const Icon(Icons.camera_alt,
+                    icon: const Icon(FontAwesomeIcons.camera,
                         color: Colors.black, size: 24),
                     onPressed: () {
                       AppToast.info('拍摄功能即将推出');
@@ -557,7 +562,7 @@ class _DirectChatPageState extends State<DirectChatPage> {
                         ),
                         // Emoji button
                         IconButton(
-                          icon: const Icon(Icons.emoji_emotions_outlined,
+                          icon: const Icon(FontAwesomeIcons.faceSmile,
                               color: Color(0xFF999999), size: 24),
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
@@ -602,7 +607,9 @@ class _DirectChatPageState extends State<DirectChatPage> {
                       ),
                       child: IconButton(
                         icon: Icon(
-                          hasText ? Icons.send_rounded : Icons.mic,
+                          hasText
+                              ? FontAwesomeIcons.paperPlane
+                              : FontAwesomeIcons.microphone,
                           color: Colors.white,
                           size: 22,
                         ),

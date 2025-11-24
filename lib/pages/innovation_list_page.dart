@@ -1,8 +1,10 @@
+import 'package:df_admin_mobile/features/innovation_project/domain/entities/innovation_project.dart';
+import 'package:df_admin_mobile/features/user/domain/entities/user.dart'
+    as models;
+import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-import '../features/innovation_project/domain/entities/innovation_project.dart';
-import '../features/user/domain/entities/user.dart' as models;
-import '../generated/app_localizations.dart';
 import 'add_innovation_page.dart';
 import 'direct_chat_page.dart';
 import 'innovation_detail_page.dart';
@@ -158,7 +160,8 @@ class _InnovationListPageState extends State<InnovationListPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1a1a1a)),
+          icon:
+              const Icon(FontAwesomeIcons.arrowLeft, color: Color(0xFF1a1a1a)),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -191,7 +194,7 @@ class _InnovationListPageState extends State<InnovationListPage> {
                   await _refreshData();
                 }
               },
-              icon: const Icon(Icons.add_circle_outline, size: 24),
+              icon: const Icon(FontAwesomeIcons.circlePlus, size: 24),
               label: Text(
                 l10n.createMyInnovation,
                 style: const TextStyle(
@@ -216,7 +219,7 @@ class _InnovationListPageState extends State<InnovationListPage> {
           Row(
             children: [
               const Icon(
-                Icons.explore,
+                FontAwesomeIcons.compass,
                 color: Color(0xFF8B5CF6),
                 size: 24,
               ),
@@ -265,7 +268,7 @@ class _InnovationListPageState extends State<InnovationListPage> {
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
                         color: Colors.grey[300],
-                        child: const Icon(Icons.lightbulb, size: 50),
+                        child: const Icon(FontAwesomeIcons.lightbulb, size: 50),
                       );
                     },
                   ),
@@ -346,7 +349,8 @@ class _InnovationListPageState extends State<InnovationListPage> {
                       ),
                     ),
                     const Spacer(),
-                    Icon(Icons.access_time, size: 14, color: Colors.grey[600]),
+                    Icon(FontAwesomeIcons.clock,
+                        size: 14, color: Colors.grey[600]),
                     const SizedBox(width: 4),
                     Text(
                       _formatDate(project.updatedAt!),
@@ -375,7 +379,7 @@ class _InnovationListPageState extends State<InnovationListPage> {
                             ),
                           );
                         },
-                        icon: const Icon(Icons.visibility, size: 18),
+                        icon: const Icon(FontAwesomeIcons.eye, size: 18),
                         label: Text(l10n.viewDetails),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: const Color(0xFF8B5CF6),
@@ -414,7 +418,7 @@ class _InnovationListPageState extends State<InnovationListPage> {
                             ),
                           );
                         },
-                        icon: const Icon(Icons.chat, size: 18),
+                        icon: const Icon(FontAwesomeIcons.comments, size: 18),
                         label: Text(l10n.contactCreator),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF8B5CF6),
@@ -494,7 +498,7 @@ class _InnovationListPageState extends State<InnovationListPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                isFollowed ? Icons.favorite : Icons.favorite_border,
+                isFollowed ? FontAwesomeIcons.heart : FontAwesomeIcons.heart,
                 size: 16,
                 color: isFollowed ? Colors.white : const Color(0xFF8B5CF6),
               ),

@@ -1,6 +1,7 @@
 ﻿// Legacy model import removed - model no longer exists
-// import '../../../../models/city_detail_model.dart' as legacy;
-import '../../domain/entities/city_detail.dart' as entity;
+// import 'package:df_admin_mobile/models/city_detail_model.dart' as legacy;
+import 'package:df_admin_mobile/features/city/domain/entities/city_detail.dart'
+    as entity;
 
 // ============================================================
 // 绫诲瀷鍒悕 - 鐢ㄤ簬鍚戝悗鍏煎鏃т唬鐮?

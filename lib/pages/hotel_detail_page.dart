@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 /// 酒店详情页面（临时占位符）
@@ -20,7 +21,7 @@ class HotelDetailPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.hotel, size: 64),
+            const Icon(FontAwesomeIcons.hotel, size: 64),
             const SizedBox(height: 16),
             Text(
               'Hotel Detail Page',

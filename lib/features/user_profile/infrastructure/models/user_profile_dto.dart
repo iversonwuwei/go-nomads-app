@@ -1,5 +1,6 @@
-// import '../../../../models/user_profile_models.dart' as legacy; // Legacy model removed
-import '../../domain/entities/user_profile.dart';
+// import 'package:df_admin_mobile/models/user_profile_models.dart' as legacy; // Legacy model removed
+import 'package:df_admin_mobile/features/user_profile/domain/entities/user_profile.dart'
+    as domain;
 
 /// UserProfile DTO - 基础设施层数据传输对象
 /// 完整的用户档案数据传输对象,包含所有数据库字段
@@ -74,8 +75,8 @@ class UserProfileDto {
   }
 
   /// 转换为领域实体
-  UserProfile toDomain() {
-    return UserProfile(
+  domain.UserProfile toDomain() {
+    return domain.UserProfile(
       id: id,
       accountId: accountId,
       basicInfo: basicInfo.toDomain(),
@@ -163,15 +164,15 @@ class UserBasicInfoDto {
     );
   }
 
-  BasicInfo toDomain() {
-    return BasicInfo(
+  domain.BasicInfo toDomain() {
+    return domain.BasicInfo(
       name: name,
       bio: bio,
       avatarUrl: avatarUrl,
       currentCity: currentCity,
       currentCountry: currentCountry,
       birthDate: birthDate != null ? DateTime.tryParse(birthDate!) : null,
-      gender: Gender.fromString(gender),
+      gender: domain.Gender.fromString(gender),
       occupation: occupation,
       company: company,
       website: website,
@@ -235,8 +236,8 @@ class NomadStatsDto {
     );
   }
 
-  NomadStatistics toDomain() {
-    return NomadStatistics(
+  domain.NomadStatistics toDomain() {
+    return domain.NomadStatistics(
       countriesVisited: countriesVisited,
       citiesLived: citiesLived,
       daysNomading: daysNomading,
@@ -301,8 +302,8 @@ class UserSkillDto {
     );
   }
 
-  Skill toDomain() {
-    return Skill(
+  domain.Skill toDomain() {
+    return domain.Skill(
       name: skillName,
       createdAt: DateTime.parse(createdAt),
     );
@@ -341,8 +342,8 @@ class UserInterestDto {
     );
   }
 
-  Interest toDomain() {
-    return Interest(
+  domain.Interest toDomain() {
+    return domain.Interest(
       name: interestName,
       createdAt: DateTime.parse(createdAt),
     );
@@ -389,8 +390,8 @@ class SocialLinkDto {
     );
   }
 
-  SocialLink toDomain() {
-    return SocialLink(
+  domain.SocialLink toDomain() {
+    return domain.SocialLink(
       platform: platform,
       url: url,
       createdAt: DateTime.parse(createdAt),
@@ -447,8 +448,8 @@ class UserBadgeDto {
     );
   }
 
-  UserBadge toDomain() {
-    return UserBadge(
+  domain.UserBadge toDomain() {
+    return domain.UserBadge(
       badgeId: badgeId,
       name: badgeName,
       icon: badgeIcon,
@@ -518,13 +519,13 @@ class TravelHistoryEntryDto {
     );
   }
 
-  TravelHistoryEntry toDomain() {
+  domain.TravelHistoryEntry toDomain() {
     // 解析photos JSON字符串为List
     List<String> photoList = [];
     // photos是JSON字符串,保持简单处理,实际应使用json.decode
     // 这里只是为了保持与legacy model的一致性
 
-    return TravelHistoryEntry(
+    return domain.TravelHistoryEntry(
       city: city,
       country: country,
       startDate: DateTime.parse(startDate),

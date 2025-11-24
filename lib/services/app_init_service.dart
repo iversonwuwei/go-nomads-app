@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 
 /// 应用启动初始化服务
 /// 用于在应用启动时恢复用户登录状态

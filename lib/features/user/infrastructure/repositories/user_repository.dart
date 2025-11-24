@@ -1,11 +1,11 @@
 import 'package:dio/dio.dart';
 
-import '../../../../config/api_config.dart';
-import '../../../../core/core.dart';
-import '../../../../services/token_storage_service.dart';
-import '../../domain/entities/user.dart';
-import '../../domain/repositories/iuser_repository.dart';
-import '../models/user_dto.dart';
+import 'package:df_admin_mobile/config/api_config.dart';
+import 'package:df_admin_mobile/core/core.dart';
+import 'package:df_admin_mobile/services/token_storage_service.dart';
+import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
+import 'package:df_admin_mobile/features/user/domain/repositories/iuser_repository.dart';
+import 'package:df_admin_mobile/features/user/infrastructure/models/user_dto.dart';
 
 /// 用户仓储实现
 class UserRepository extends BaseRepository implements IUserRepository {

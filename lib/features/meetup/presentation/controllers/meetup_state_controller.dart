@@ -1,15 +1,14 @@
-import 'package:flutter/material.dart';
+import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:df_admin_mobile/features/meetup/application/use_cases/cancel_meetup_use_case.dart';
+import 'package:df_admin_mobile/features/meetup/application/use_cases/cancel_rsvp_use_case.dart';
+import 'package:df_admin_mobile/features/meetup/application/use_cases/create_meetup_use_case.dart';
+import 'package:df_admin_mobile/features/meetup/application/use_cases/get_meetups_by_city_use_case.dart';
+import 'package:df_admin_mobile/features/meetup/application/use_cases/get_meetups_use_case.dart';
+import 'package:df_admin_mobile/features/meetup/application/use_cases/rsvp_to_meetup_use_case.dart';
+import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:get/get.dart';
-
-import '../../../auth/presentation/controllers/auth_state_controller.dart';
-import '../../../user/presentation/controllers/user_state_controller.dart';
-import '../../application/use_cases/cancel_meetup_use_case.dart';
-import '../../application/use_cases/cancel_rsvp_use_case.dart';
-import '../../application/use_cases/create_meetup_use_case.dart';
-import '../../application/use_cases/get_meetups_by_city_use_case.dart';
-import '../../application/use_cases/get_meetups_use_case.dart';
-import '../../application/use_cases/rsvp_to_meetup_use_case.dart';
-import '../../domain/entities/meetup.dart';
 
 /// Meetup 状态管理 Controller
 /// 从 DataServiceController 迁移活动相关功能
@@ -333,25 +332,13 @@ class MeetupStateController extends GetxController {
       rsvpedMeetupIds.add(newMeetup.id);
 
       print('✅ 活动创建成功: ${newMeetup.id}');
-      Get.snackbar(
-        '成功',
-        '活动创建成功!',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
+      AppToast.success('活动创建成功!');
 
       return newMeetup;
     } catch (e) {
       errorMessage.value = '创建活动失败: $e';
       print('❌ 创建活动失败: $e');
-      Get.snackbar(
-        '错误',
-        '创建活动失败: $e',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      AppToast.error('创建活动失败: $e');
       return null;
     } finally {
       isLoading.value = false;
@@ -401,13 +388,7 @@ class MeetupStateController extends GetxController {
           rsvpedMeetupIds.add(meetupId);
           print('🔄 修正 RSVP 状态: 已将 $meetupId 标记为已参加');
         }
-        Get.snackbar(
-          '提示',
-          '您已经参加了这个活动',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.orange,
-          colorText: Colors.white,
-        );
+        AppToast.error('您已经参加了这个活动');
       } else if (errorMessage.contains('未参加') ||
           errorMessage.contains('not joined')) {
         // 后端说未参加,但前端认为参加了,修正状态
@@ -415,22 +396,10 @@ class MeetupStateController extends GetxController {
           rsvpedMeetupIds.remove(meetupId);
           print('🔄 修正 RSVP 状态: 已将 $meetupId 标记为未参加');
         }
-        Get.snackbar(
-          '提示',
-          '您还未参加这个活动',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.orange,
-          colorText: Colors.white,
-        );
+        AppToast.error('您还未参加这个活动');
       } else {
         // 其他错误,显示错误信息
-        Get.snackbar(
-          '错误',
-          'RSVP 操作失败: $e',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+        AppToast.error('RSVP 操作失败: $e');
       }
     }
   }
@@ -473,26 +442,14 @@ class MeetupStateController extends GetxController {
         }
 
         print('✅ 活动已取消');
-        Get.snackbar(
-          '成功',
-          '活动已取消',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
+        AppToast.success('活动已取消');
         return true;
       }
 
       return false;
     } catch (e) {
       print('❌ 取消活动失败: $e');
-      Get.snackbar(
-        '错误',
-        '取消活动失败: $e',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      AppToast.error('取消活动失败: $e');
       return false;
     }
   }
@@ -547,13 +504,7 @@ class MeetupStateController extends GetxController {
       if (!authController.isAuthenticated.value) {
         final actionText = action ?? '此操作';
         print('⚠️ 需要登录: $actionText');
-        Get.snackbar(
-          '需要登录',
-          '请先登录后再$actionText',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.orange,
-          colorText: Colors.white,
-        );
+        AppToast.error('请先登录后再$actionText');
         return false;
       }
       return true;
@@ -608,18 +559,18 @@ class MeetupStateController extends GetxController {
   @override
   void onClose() {
     print('👋 MeetupStateController 关闭 - 清理所有数据');
-    
+
     // 清空所有响应式变量
     meetups.clear();
     rsvpedMeetupIds.clear();
     isLoading.value = false;
     isLoadingMore.value = false;
     errorMessage.value = '';
-    
+
     // 重置分页状态
     currentPage.value = 1;
     hasMoreData.value = true;
-    
+
     super.onClose();
   }
 }

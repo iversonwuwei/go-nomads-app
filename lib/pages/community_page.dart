@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../features/community/domain/entities/trip_report.dart';
-import '../features/community/presentation/controllers/community_state_controller.dart';
-import '../widgets/skeletons/skeletons.dart';
+import 'package:df_admin_mobile/features/community/domain/entities/trip_report.dart';
+import 'package:df_admin_mobile/features/community/presentation/controllers/community_state_controller.dart';
+import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 
 class CommunityPage extends StatelessWidget {
   const CommunityPage({super.key});
@@ -109,7 +110,7 @@ class CommunityPage extends StatelessWidget {
                       : null,
                   child:
                       (report.userAvatar == null || report.userAvatar!.isEmpty)
-                          ? const Icon(Icons.person, size: 24)
+                          ? const Icon(FontAwesomeIcons.user, size: 24)
                           : null,
                 ),
                 const SizedBox(width: 12),
@@ -145,7 +146,7 @@ class CommunityPage extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.star,
+                      const Icon(FontAwesomeIcons.star,
                           size: 14, color: Color(0xFFF59E0B)),
                       const SizedBox(width: 4),
                       Text(
@@ -245,8 +246,8 @@ class CommunityPage extends StatelessWidget {
                         5,
                         (i) => Icon(
                           i < entry.value.round()
-                              ? Icons.star
-                              : Icons.star_border,
+                              ? FontAwesomeIcons.star
+                              : FontAwesomeIcons.star,
                           size: 12,
                           color: const Color(0xFFF59E0B),
                         ),
@@ -284,7 +285,7 @@ class CommunityPage extends StatelessWidget {
                   child: Row(
                     children: [
                       Icon(
-                        report.isLiked ? Icons.favorite : Icons.favorite_border,
+                        report.isLiked ? FontAwesomeIcons.heart : FontAwesomeIcons.heart,
                         size: 20,
                         color: report.isLiked
                             ? const Color(0xFFFF4458)
@@ -304,7 +305,7 @@ class CommunityPage extends StatelessWidget {
                 const SizedBox(width: 24),
                 Row(
                   children: [
-                    const Icon(Icons.comment_outlined,
+                    const Icon(FontAwesomeIcons.comment,
                         size: 20, color: Color(0xFF6b7280)),
                     const SizedBox(width: 6),
                     Text(
@@ -339,7 +340,7 @@ class CommunityPage extends StatelessWidget {
         Row(
           children: [
             Icon(
-              title == 'Pros' ? Icons.check_circle : Icons.cancel,
+              title == 'Pros' ? FontAwesomeIcons.circleCheck : FontAwesomeIcons.ban,
               size: 16,
               color: color,
             ),
@@ -500,7 +501,7 @@ class CommunityPage extends StatelessWidget {
                     ),
                     Row(
                       children: [
-                        const Icon(Icons.star,
+                        const Icon(FontAwesomeIcons.star,
                             size: 16, color: Color(0xFFF59E0B)),
                         const SizedBox(width: 4),
                         Text(
@@ -553,7 +554,7 @@ class CommunityPage extends StatelessWidget {
                       ),
                       const SizedBox(width: 12),
                     ],
-                    const Icon(Icons.location_on,
+                    const Icon(FontAwesomeIcons.locationDot,
                         size: 14, color: Color(0xFF6b7280)),
                     const SizedBox(width: 4),
                     Expanded(
@@ -650,7 +651,7 @@ class CommunityPage extends StatelessWidget {
                     : null,
                 child: (question.userAvatar == null ||
                         question.userAvatar!.isEmpty)
-                    ? const Icon(Icons.person, size: 18)
+                    ? const Icon(FontAwesomeIcons.user, size: 18)
                     : null,
               ),
               const SizedBox(width: 10),
@@ -686,7 +687,7 @@ class CommunityPage extends StatelessWidget {
                   ),
                   child: const Row(
                     children: [
-                      Icon(Icons.check_circle,
+                      Icon(FontAwesomeIcons.circleCheck,
                           size: 12, color: Color(0xFF10B981)),
                       SizedBox(width: 4),
                       Text(
@@ -766,8 +767,8 @@ class CommunityPage extends StatelessWidget {
                   children: [
                     Icon(
                       question.isUpvoted
-                          ? Icons.arrow_upward
-                          : Icons.arrow_upward_outlined,
+                          ? FontAwesomeIcons.arrowUp
+                          : FontAwesomeIcons.arrowUp,
                       size: 18,
                       color: question.isUpvoted
                           ? const Color(0xFFFF4458)
@@ -786,7 +787,7 @@ class CommunityPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 20),
-              const Icon(Icons.comment_outlined,
+              const Icon(FontAwesomeIcons.comment,
                   size: 16, color: Color(0xFF6b7280)),
               const SizedBox(width: 4),
               Text(

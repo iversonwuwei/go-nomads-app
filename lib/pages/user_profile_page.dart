@@ -1,11 +1,11 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:df_admin_mobile/routes/app_routes.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart' hide Badge;
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import '../config/app_colors.dart';
-import '../features/user/domain/entities/user.dart';
-import '../features/user/presentation/controllers/user_state_controller.dart';
-import '../routes/app_routes.dart';
-import '../widgets/app_toast.dart';
 
 /// 用户个人资料页面
 class UserProfilePage extends StatefulWidget {
@@ -139,7 +139,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline,
+              const Icon(FontAwesomeIcons.circleExclamation,
                   color: Colors.redAccent, size: 56),
               const SizedBox(height: 16),
               Text(
@@ -156,7 +156,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 onPressed: _requestedUserId == null
                     ? null
                     : () => _fetchUserProfile(_requestedUserId!),
-                icon: const Icon(Icons.refresh),
+                icon: const Icon(FontAwesomeIcons.arrowsRotate),
                 label: const Text('重新加载'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.accent,
@@ -187,7 +187,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
       elevation: 0,
       iconTheme: const IconThemeData(color: AppColors.textPrimary),
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new),
+        icon: const Icon(FontAwesomeIcons.arrowLeft),
         onPressed: () => Get.back(),
       ),
       title: Text(
@@ -250,7 +250,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  Icons.calendar_today,
+                  FontAwesomeIcons.calendar,
                   color: AppColors.accent,
                   size: isMobile ? 14 : 16,
                 ),
@@ -279,7 +279,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 ),
                 elevation: 0,
               ),
-              icon: const Icon(Icons.chat_bubble_outline),
+              icon: const Icon(FontAwesomeIcons.message),
               label: Text(
                 'Message',
                 style: TextStyle(
@@ -325,7 +325,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             children: [
               Expanded(
                 child: _buildStatItem(
-                  Icons.favorite,
+                  FontAwesomeIcons.heart,
                   'Favorites',
                   _userInfo['favoritesCount'].toString(),
                   Colors.red,
@@ -335,7 +335,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
               SizedBox(width: isMobile ? 12 : 16),
               Expanded(
                 child: _buildStatItem(
-                  Icons.location_on,
+                  FontAwesomeIcons.locationDot,
                   'Visited',
                   _userInfo['visitedCount'].toString(),
                   Colors.green,
@@ -387,7 +387,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
         children: [
           Row(
             children: [
-              Icon(Icons.emoji_events,
+              Icon(FontAwesomeIcons.trophy,
                   color: AppColors.accent, size: isMobile ? 24 : 28),
               const SizedBox(width: 8),
               Text(
@@ -416,7 +416,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    Icons.emoji_events_outlined,
+                    FontAwesomeIcons.trophy,
                     size: isMobile ? 48 : 64,
                     color: AppColors.accent,
                   ),
@@ -537,7 +537,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             children: [
               Row(
                 children: [
-                  Icon(Icons.travel_explore,
+                  Icon(FontAwesomeIcons.earthAmericas,
                       color: AppColors.accent, size: isMobile ? 24 : 28),
                   const SizedBox(width: 8),
                   Text(
@@ -560,7 +560,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 child: Column(
                   children: [
                     Icon(
-                      Icons.flight_takeoff,
+                      FontAwesomeIcons.plane,
                       size: isMobile ? 48 : 64,
                       color: AppColors.iconSecondary,
                     ),
@@ -664,7 +664,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 Row(
                   children: [
                     Icon(
-                      Icons.calendar_today,
+                      FontAwesomeIcons.calendar,
                       size: isMobile ? 12 : 14,
                       color: AppColors.accent,
                     ),

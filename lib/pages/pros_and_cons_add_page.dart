@@ -1,8 +1,9 @@
+import 'package:df_admin_mobile/features/city/application/state_controllers/pros_cons_state_controller.dart';
+import 'package:df_admin_mobile/services/token_storage_service.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import '../features/city/application/state_controllers/pros_cons_state_controller.dart';
-import '../services/token_storage_service.dart';
 
 /// Pros & Cons 添加页面
 class ProsAndConsAddPage extends StatefulWidget {
@@ -89,15 +90,15 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
 
       if (success) {
         prosTextController.clear();
-        Get.snackbar('成功', '优点已添加', backgroundColor: Colors.green[100]);
+        AppToast.success('优点已添加');
 
         // 重新加载数据
         await _loadData();
       } else {
-        Get.snackbar('失败', '添加优点失败，请重试');
+        AppToast.error('添加优点失败，请重试');
       }
     } catch (e) {
-      Get.snackbar('错误', '添加失败: $e');
+      AppToast.error('添加失败: $e');
     } finally {
       isAddingPros.value = false;
     }
@@ -131,13 +132,13 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
           await _prosConsController.deleteProsCons(widget.cityId, id, true);
 
       if (success) {
-        Get.snackbar('成功', '优点已删除', backgroundColor: Colors.green[100]);
+        AppToast.success('优点已删除');
         await _loadData();
       } else {
-        Get.snackbar('失败', '删除失败，请重试');
+        AppToast.error('删除失败，请重试');
       }
     } catch (e) {
-      Get.snackbar('错误', '删除失败: $e');
+      AppToast.error('删除失败: $e');
     }
   }
 
@@ -169,13 +170,13 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
           await _prosConsController.deleteProsCons(widget.cityId, id, false);
 
       if (success) {
-        Get.snackbar('成功', '挑战已删除', backgroundColor: Colors.green[100]);
+        AppToast.success('挑战已删除');
         await _loadData();
       } else {
-        Get.snackbar('失败', '删除失败，请重试');
+        AppToast.error('删除失败，请重试');
       }
     } catch (e) {
-      Get.snackbar('错误', '删除失败: $e');
+      AppToast.error('删除失败: $e');
     }
   }
 
@@ -189,7 +190,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
       await _loadData(); // 重新加载数据以获取最新的投票状态和投票数
     } else {
       final message = _prosConsController.error.value ?? '操作失败，请稍后再试';
-      Get.snackbar('失败', message);
+      AppToast.error(message);
     }
   }
 
@@ -223,7 +224,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                Icons.thumb_up,
+                FontAwesomeIcons.thumbsUp,
                 size: 18,
                 color: isActive ? activeColor : inactiveColor,
               ),
@@ -261,15 +262,15 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
 
       if (success) {
         consTextController.clear();
-        Get.snackbar('成功', '挑战已添加', backgroundColor: Colors.green[100]);
+        AppToast.success('挑战已添加');
 
         // 重新加载数据
         await _loadData();
       } else {
-        Get.snackbar('失败', '添加挑战失败，请重试');
+        AppToast.error('添加挑战失败，请重试');
       }
     } catch (e) {
-      Get.snackbar('错误', '添加失败: $e');
+      AppToast.error('添加失败: $e');
     } finally {
       isAddingCons.value = false;
     }
@@ -281,7 +282,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
       appBar: AppBar(
         title: Text('${widget.cityName} - 添加乐趣'),
         leading: IconButton(
-          icon: const Icon(Icons.close),
+          icon: const Icon(FontAwesomeIcons.xmark),
           onPressed: () {
             if (Navigator.of(context).canPop()) {
               Navigator.of(context).pop(hasChanges);
@@ -367,7 +368,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                         vertical: 12,
                       ),
                       prefixIcon: Icon(
-                        Icons.lightbulb_outline,
+                        FontAwesomeIcons.lightbulb,
                         color: Colors.grey[400],
                         size: 22,
                       ),
@@ -427,7 +428,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                               ],
                             ),
                             child: const Icon(
-                              Icons.add_rounded,
+                              FontAwesomeIcons.circlePlus,
                               color: Colors.white,
                               size: 24,
                             ),
@@ -447,7 +448,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.check_circle_outline,
+                            Icon(FontAwesomeIcons.circleCheck,
                                 size: 64, color: Colors.grey[300]),
                             const SizedBox(height: 16),
                             Text(
@@ -471,7 +472,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                               child: Row(
                                 children: [
                                   const Icon(
-                                    Icons.check_circle,
+                                    FontAwesomeIcons.circleCheck,
                                     color: Colors.green,
                                     size: 24,
                                   ),
@@ -492,7 +493,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                                   if (canDelete.value) const SizedBox(width: 8),
                                   if (canDelete.value)
                                     IconButton(
-                                      icon: const Icon(Icons.delete_outline,
+                                      icon: const Icon(FontAwesomeIcons.trash,
                                           color: Colors.red, size: 20),
                                       onPressed: () => deletePros(item.id),
                                       padding: EdgeInsets.zero,
@@ -549,7 +550,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                         vertical: 12,
                       ),
                       prefixIcon: Icon(
-                        Icons.info_outline,
+                        FontAwesomeIcons.circleInfo,
                         color: Colors.grey[400],
                         size: 22,
                       ),
@@ -609,7 +610,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                               ],
                             ),
                             child: const Icon(
-                              Icons.add_rounded,
+                              FontAwesomeIcons.circlePlus,
                               color: Colors.white,
                               size: 24,
                             ),
@@ -629,7 +630,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.cancel_outlined,
+                            Icon(FontAwesomeIcons.ban,
                                 size: 64, color: Colors.grey[300]),
                             const SizedBox(height: 16),
                             Text(
@@ -653,7 +654,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                               child: Row(
                                 children: [
                                   const Icon(
-                                    Icons.cancel,
+                                    FontAwesomeIcons.ban,
                                     color: Colors.red,
                                     size: 24,
                                   ),
@@ -674,7 +675,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                                   if (canDelete.value) const SizedBox(width: 8),
                                   if (canDelete.value)
                                     IconButton(
-                                      icon: const Icon(Icons.delete_outline,
+                                      icon: const Icon(FontAwesomeIcons.trash,
                                           color: Colors.red, size: 20),
                                       onPressed: () => deleteCons(item.id),
                                       padding: EdgeInsets.zero,

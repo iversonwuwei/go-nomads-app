@@ -1,10 +1,10 @@
 import 'dart:io';
 
+import 'package:df_admin_mobile/config/supabase_config.dart';
+import 'package:df_admin_mobile/services/image_upload_service.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
-
-import '../config/supabase_config.dart';
-import '../services/image_upload_service.dart';
 
 /// 图片上传工具类
 ///
@@ -137,17 +137,17 @@ class ImageUploadHelper {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.camera_alt),
+              leading: const Icon(FontAwesomeIcons.camera),
               title: const Text('拍照'),
               onTap: () => Navigator.pop(context, ImageSource.camera),
             ),
             ListTile(
-              leading: const Icon(Icons.photo_library),
+              leading: const Icon(FontAwesomeIcons.images),
               title: const Text('从相册选择'),
               onTap: () => Navigator.pop(context, ImageSource.gallery),
             ),
             ListTile(
-              leading: const Icon(Icons.cancel),
+              leading: const Icon(FontAwesomeIcons.ban),
               title: const Text('取消'),
               onTap: () => Navigator.pop(context),
             ),
@@ -194,12 +194,12 @@ class ImageUploadHelper {
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.camera_alt),
+              leading: const Icon(FontAwesomeIcons.camera),
               title: const Text('拍照'),
               onTap: () => Navigator.pop(context, ImageSource.camera),
             ),
             ListTile(
-              leading: const Icon(Icons.photo_library),
+              leading: const Icon(FontAwesomeIcons.images),
               title: const Text('从相册选择'),
               onTap: () => Navigator.pop(context, ImageSource.gallery),
             ),
@@ -325,7 +325,7 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
                   const Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.add_photo_alternate,
+                      Icon(FontAwesomeIcons.photoFilm,
                           size: 48, color: Colors.grey),
                       SizedBox(height: 8),
                       Text('点击上传图片', style: TextStyle(color: Colors.grey)),

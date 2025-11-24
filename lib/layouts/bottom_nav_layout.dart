@@ -1,12 +1,12 @@
 import 'dart:ui';
 
+import 'package:df_admin_mobile/controllers/bottom_nav_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/routes/app_routes.dart';
+import 'package:df_admin_mobile/services/token_storage_service.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import '../controllers/bottom_nav_controller.dart';
-import '../generated/app_localizations.dart';
-import '../routes/app_routes.dart';
-import '../services/token_storage_service.dart';
 
 /// 全局底部导航布局包装器
 /// 包装任意页面内容，在底部显示导航栏
@@ -95,19 +95,19 @@ class _BottomNavLayoutState extends State<BottomNavLayout> {
           },
           items: [
             _NavBarItem(
-              icon: Icons.home,
+              icon: FontAwesomeIcons.house,
               label: l10n.home,
             ),
             _NavBarItem(
-              icon: Icons.person,
+              icon: FontAwesomeIcons.user,
               label: 'Profile',
             ),
             _NavBarItem(
-              icon: Icons.memory,
+              icon: FontAwesomeIcons.microchip,
               label: 'AI助手',
             ),
             _NavBarItem(
-              icon: Icons.settings,
+              icon: FontAwesomeIcons.gear,
               label: '编辑',
             ),
           ],

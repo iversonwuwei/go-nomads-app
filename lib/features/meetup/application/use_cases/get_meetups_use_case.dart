@@ -1,5 +1,5 @@
-import '../../domain/entities/meetup.dart';
-import '../../domain/repositories/i_meetup_repository.dart';
+import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
+import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
 
 /// 获取活动列表 Use Case
 class GetMeetupsUseCase {

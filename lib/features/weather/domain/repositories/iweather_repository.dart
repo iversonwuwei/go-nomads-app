@@ -1,5 +1,5 @@
-import '../../../../core/domain/result.dart';
-import '../entities/weather.dart';
+import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/weather/domain/entities/weather.dart';
 
 /// Weather Repository 接口 (Domain Layer)
 ///

@@ -3,7 +3,9 @@ import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_spa
 import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
 import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 class CoworkingVerificationBadge extends StatelessWidget {
@@ -46,8 +48,7 @@ class CoworkingVerificationBadge extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final currentUser = _userStateController.currentUser.value;
     if (currentUser == null) {
-      Get.snackbar(
-          l10n.coworkingVerifyTitle, l10n.coworkingVerifyLoginRequired);
+      AppToast.error(l10n.coworkingVerifyLoginRequired);
       return;
     }
 
@@ -84,12 +85,12 @@ class CoworkingVerificationBadge extends StatelessWidget {
     switch (result) {
       case Success(:final data):
         onVerified?.call(data);
-        Get.snackbar(l10n.success, l10n.coworkingVerifySuccess);
+        AppToast.success(l10n.coworkingVerifySuccess);
       case Failure(:final exception):
         final message = exception.message.isNotEmpty
             ? exception.message
             : l10n.coworkingVerifyFailed;
-        Get.snackbar(l10n.error, message);
+        AppToast.error(message);
     }
   }
 
@@ -104,8 +105,9 @@ class CoworkingVerificationBadge extends StatelessWidget {
 
       final Color backgroundColor =
           space.isVerified ? Colors.blue : Colors.grey;
-      final IconData iconData =
-          space.isVerified ? Icons.verified : Icons.verified_outlined;
+      final IconData iconData = space.isVerified
+          ? FontAwesomeIcons.solidCircleCheck
+          : FontAwesomeIcons.circleCheck;
       final String label = space.isVerified ? l10n.verified : l10n.unverified;
 
       final badge = Container(

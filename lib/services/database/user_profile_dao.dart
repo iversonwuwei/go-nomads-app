@@ -1,5 +1,5 @@
-import '../../features/user_profile/infrastructure/models/user_profile_dto.dart';
-import '../database_service.dart';
+import 'package:df_admin_mobile/features/user_profile/infrastructure/models/user_profile_dto.dart';
+import 'package:df_admin_mobile/services/database_service.dart';
 
 /// 用户资料模块数据访问对象
 class UserProfileDao {

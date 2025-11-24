@@ -2,9 +2,9 @@ import 'package:df_admin_mobile/config/api_config.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/services/http_service.dart';
 
-import '../../domain/entities/chat.dart';
-import '../../domain/repositories/i_chat_repository.dart';
-import '../models/chat_dto.dart';
+import 'package:df_admin_mobile/features/chat/domain/entities/chat.dart';
+import 'package:df_admin_mobile/features/chat/domain/repositories/i_chat_repository.dart';
+import 'package:df_admin_mobile/features/chat/infrastructure/models/chat_dto.dart';
 
 /// Chat Repository 实现
 ///

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../config/app_colors.dart';
-import '../core/domain/result.dart';
-import '../features/city/domain/repositories/i_city_repository.dart';
-import '../features/city/presentation/controllers/city_detail_state_controller.dart';
-import '../features/user_management/domain/repositories/iuser_management_repository.dart';
-import '../widgets/app_toast.dart';
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
+import 'package:df_admin_mobile/features/city/presentation/controllers/city_detail_state_controller.dart';
+import 'package:df_admin_mobile/features/user_management/domain/repositories/iuser_management_repository.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 
 /// 指定城市版主页面
 class AssignModeratorPage extends StatefulWidget {
@@ -280,8 +281,8 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
                   onPressed: _toggleSelectAll,
                   icon: Icon(
                     _selectedUserIds.length == _filteredUsers.length
-                        ? Icons.check_box
-                        : Icons.check_box_outline_blank,
+                        ? FontAwesomeIcons.squareCheck
+                        : FontAwesomeIcons.square,
                     size: 20,
                   ),
                   label: Text(
@@ -306,10 +307,10 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
                   controller: _searchController,
                   decoration: InputDecoration(
                     hintText: '搜索用户名称或邮箱',
-                    prefixIcon: const Icon(Icons.search),
+                    prefixIcon: const Icon(FontAwesomeIcons.magnifyingGlass),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
-                            icon: const Icon(Icons.clear),
+                            icon: const Icon(FontAwesomeIcons.xmark),
                             onPressed: () {
                               _searchController.clear();
                               _filterUsers('');
@@ -359,7 +360,7 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        Icons.people_outline,
+                        FontAwesomeIcons.users,
                         size: 64,
                         color: Colors.grey[400],
                       ),
@@ -429,7 +430,7 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(
-                                  Icons.check,
+                                  FontAwesomeIcons.check,
                                   size: 12,
                                   color: Colors.white,
                                 ),
@@ -557,7 +558,7 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
                                       Colors.white),
                                 ),
                               )
-                            : const Icon(Icons.check_circle),
+                            : const Icon(FontAwesomeIcons.circleCheck),
                         label: Text(
                           _isSubmitting.value
                               ? '指定中...'

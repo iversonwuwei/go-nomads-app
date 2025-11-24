@@ -1,4 +1,4 @@
-import '../../domain/entities/auth_user.dart';
+import 'package:df_admin_mobile/features/auth/domain/entities/auth_user.dart';
 
 /// 认证用户DTO
 class AuthUserDto {

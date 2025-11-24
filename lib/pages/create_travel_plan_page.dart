@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../config/app_colors.dart';
-import '../generated/app_localizations.dart';
-import '../widgets/app_toast.dart';
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'maplibre_picker_page.dart';
 import 'travel_plan_page.dart';
 
@@ -38,18 +39,18 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
     // 这里可以根据 widget.cityName 返回不同城市的景点
     // 目前提供一个通用的景点列表示例
     return [
-      {'name': '历史古迹', 'icon': Icons.account_balance, 'id': 'historic'},
-      {'name': '博物馆', 'icon': Icons.museum, 'id': 'museum'},
-      {'name': '公园绿地', 'icon': Icons.park, 'id': 'park'},
-      {'name': '美食街区', 'icon': Icons.restaurant_menu, 'id': 'food_district'},
-      {'name': '购物中心', 'icon': Icons.shopping_cart, 'id': 'shopping_mall'},
-      {'name': '艺术画廊', 'icon': Icons.palette, 'id': 'art_gallery'},
-      {'name': '观景台', 'icon': Icons.landscape, 'id': 'viewpoint'},
-      {'name': '海滩', 'icon': Icons.beach_access, 'id': 'beach'},
-      {'name': '寺庙教堂', 'icon': Icons.temple_buddhist, 'id': 'temple'},
-      {'name': '夜市', 'icon': Icons.nightlight, 'id': 'night_market'},
-      {'name': '主题乐园', 'icon': Icons.attractions, 'id': 'theme_park'},
-      {'name': '水族馆', 'icon': Icons.water, 'id': 'aquarium'},
+      {'name': '历史古迹', 'icon': FontAwesomeIcons.landmark, 'id': 'historic'},
+      {'name': '博物馆', 'icon': FontAwesomeIcons.landmark, 'id': 'museum'},
+      {'name': '公园绿地', 'icon': FontAwesomeIcons.tree, 'id': 'park'},
+      {'name': '美食街区', 'icon': FontAwesomeIcons.utensils, 'id': 'food_district'},
+      {'name': '购物中心', 'icon': FontAwesomeIcons.cartShopping, 'id': 'shopping_mall'},
+      {'name': '艺术画廊', 'icon': FontAwesomeIcons.palette, 'id': 'art_gallery'},
+      {'name': '观景台', 'icon': FontAwesomeIcons.mountain, 'id': 'viewpoint'},
+      {'name': '海滩', 'icon': FontAwesomeIcons.umbrellaBeach, 'id': 'beach'},
+      {'name': '寺庙教堂', 'icon': FontAwesomeIcons.placeOfWorship, 'id': 'temple'},
+      {'name': '夜市', 'icon': FontAwesomeIcons.moon, 'id': 'night_market'},
+      {'name': '主题乐园', 'icon': FontAwesomeIcons.cameraRetro, 'id': 'theme_park'},
+      {'name': '水族馆', 'icon': FontAwesomeIcons.water, 'id': 'aquarium'},
     ];
   }
 
@@ -67,7 +68,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
         backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_outlined,
+          icon: const Icon(FontAwesomeIcons.arrowLeft,
               color: AppColors.backButtonDark),
           onPressed: () => Get.back(),
         ),
@@ -83,7 +84,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(
-                    Icons.auto_awesome,
+                    FontAwesomeIcons.wandMagicSparkles,
                     color: Color(0xFFFF4458),
                     size: 20,
                   ),
@@ -146,7 +147,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.auto_awesome,
+                          const Icon(FontAwesomeIcons.wandMagicSparkles,
                               color: Colors.white, size: 24),
                           const SizedBox(width: 8),
                           Text(
@@ -197,7 +198,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                     children: [
                       // Departure Location
                       _buildSectionTitle(
-                          l10n.departureLocation, Icons.location_on_outlined),
+                          l10n.departureLocation, FontAwesomeIcons.locationDot),
                       const SizedBox(height: 12),
                       Row(
                         children: [
@@ -233,7 +234,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                                 ),
                                 suffixIcon: departureLocation.isNotEmpty
                                     ? IconButton(
-                                        icon: const Icon(Icons.clear, size: 20),
+                                        icon: const Icon(FontAwesomeIcons.xmark, size: 20),
                                         onPressed: () {
                                           setState(() {
                                             departureLocation = '';
@@ -266,7 +267,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                             ),
                             child: IconButton(
                               icon: const Icon(
-                                Icons.map_outlined,
+                                FontAwesomeIcons.map,
                                 color: Colors.white,
                               ),
                               onPressed: () async {
@@ -307,7 +308,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
 
                       // Departure Date
                       _buildSectionTitle(
-                          'Departure Date', Icons.event_outlined),
+                          'Departure Date', FontAwesomeIcons.calendarDays),
                       const SizedBox(height: 12),
                       InkWell(
                         onTap: () async {
@@ -350,7 +351,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                           child: Row(
                             children: [
                               Icon(
-                                Icons.calendar_today,
+                                FontAwesomeIcons.calendar,
                                 color: departureDate != null
                                     ? const Color(0xFFFF4458)
                                     : Colors.grey[400],
@@ -372,7 +373,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                               ),
                               if (departureDate != null)
                                 IconButton(
-                                  icon: const Icon(Icons.clear, size: 20),
+                                  icon: const Icon(FontAwesomeIcons.xmark, size: 20),
                                   onPressed: () {
                                     setState(() {
                                       departureDate = null;
@@ -388,7 +389,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
 
                       // Trip Duration
                       _buildSectionTitle(
-                          l10n.tripDuration, Icons.calendar_today_outlined),
+                          l10n.tripDuration, FontAwesomeIcons.calendar),
                       const SizedBox(height: 12),
                       Container(
                         padding: const EdgeInsets.all(16),
@@ -452,7 +453,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
 
                       // Budget Level
                       _buildSectionTitle(
-                          l10n.budget, Icons.attach_money_outlined),
+                          l10n.budget, FontAwesomeIcons.dollarSign),
                       const SizedBox(height: 12),
                       Row(
                         children: [
@@ -515,7 +516,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                                     const EdgeInsets.symmetric(horizontal: 12),
                                 borderRadius: BorderRadius.circular(12),
                                 icon: const Icon(
-                                  Icons.arrow_drop_down,
+                                  FontAwesomeIcons.chevronDown,
                                   color: Color(0xFFFF4458),
                                 ),
                                 items: [
@@ -671,7 +672,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                       const SizedBox(height: 28),
 
                       // Preferred Attractions (新增景点选择模块)
-                      _buildSectionTitle('想去的景点', Icons.location_city_outlined),
+                      _buildSectionTitle('想去的景点', FontAwesomeIcons.city),
                       const SizedBox(height: 8),
                       Text(
                         '选择您在${widget.cityName}想要游览的景点类型',
@@ -697,20 +698,20 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
 
                       // Travel Style
                       _buildSectionTitle(
-                          l10n.travelStyle, Icons.style_outlined),
+                          l10n.travelStyle, FontAwesomeIcons.paintbrush),
                       const SizedBox(height: 12),
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
                         children: [
                           _buildStyleChip(
-                              l10n.culture, 'culture', Icons.museum_outlined),
+                              l10n.culture, 'culture', FontAwesomeIcons.landmark),
                           _buildStyleChip(l10n.adventure, 'adventure',
-                              Icons.landscape_outlined),
+                              FontAwesomeIcons.mountain),
                           _buildStyleChip(l10n.relaxation, 'relaxation',
-                              Icons.spa_outlined),
+                              FontAwesomeIcons.spa),
                           _buildStyleChip(l10n.nightlife, 'nightlife',
-                              Icons.nightlife_outlined),
+                              FontAwesomeIcons.champagneGlasses),
                         ],
                       ),
 
@@ -718,7 +719,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
 
                       // Interests
                       _buildSectionTitle(
-                          l10n.interests, Icons.interests_outlined),
+                          l10n.interests, FontAwesomeIcons.heart),
                       const SizedBox(height: 12),
                       Wrap(
                         spacing: 8,
@@ -772,7 +773,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.auto_awesome, size: 20),
+                    const Icon(FontAwesomeIcons.wandMagicSparkles, size: 20),
                     const SizedBox(width: 8),
                     Text(
                       l10n.generatePlan,

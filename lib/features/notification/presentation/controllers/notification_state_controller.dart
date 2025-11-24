@@ -1,8 +1,8 @@
 import 'package:get/get.dart';
 
-import '../../../../core/domain/result.dart';
-import '../../domain/entities/app_notification.dart';
-import '../../domain/repositories/i_notification_repository.dart';
+import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/notification/domain/entities/app_notification.dart';
+import 'package:df_admin_mobile/features/notification/domain/repositories/i_notification_repository.dart';
 
 /// 通知状态控制器
 class NotificationStateController extends GetxController {

@@ -1,4 +1,5 @@
-import '../../domain/entities/interest.dart' as domain;
+import 'package:df_admin_mobile/features/interest/domain/entities/interest.dart'
+    as domain;
 
 /// Interest DTO
 class InterestDto {

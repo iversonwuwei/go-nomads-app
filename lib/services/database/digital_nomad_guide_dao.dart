@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:sqflite/sqflite.dart';
 
-import '../../features/city/domain/entities/digital_nomad_guide.dart';
+import 'package:df_admin_mobile/features/city/domain/entities/digital_nomad_guide.dart';
 
 /// DigitalNomadGuide 数据访问对象
 /// 负责管理城市指南的本地存储和检索

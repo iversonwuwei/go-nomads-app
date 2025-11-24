@@ -1,6 +1,6 @@
-import '../../../../core/core.dart';
-import '../../domain/entities/user.dart';
-import '../../domain/repositories/iuser_repository.dart';
+import 'package:df_admin_mobile/core/core.dart';
+import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
+import 'package:df_admin_mobile/features/user/domain/repositories/iuser_repository.dart';
 
 /// 批量获取用户信息用例
 class BatchGetUsersUseCase extends UseCase<List<User>, BatchGetUsersParams> {

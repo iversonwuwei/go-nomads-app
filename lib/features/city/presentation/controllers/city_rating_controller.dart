@@ -1,10 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:df_admin_mobile/features/city/domain/entities/city_rating_category.dart';
+import 'package:df_admin_mobile/features/city/domain/entities/city_rating_statistics.dart';
+import 'package:df_admin_mobile/features/city/domain/usecases/city_rating_usecases.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:get/get.dart';
-
-import '../../../../widgets/app_toast.dart';
-import '../../domain/entities/city_rating_category.dart';
-import '../../domain/entities/city_rating_statistics.dart';
-import '../../domain/usecases/city_rating_usecases.dart';
 
 /// 城市评分控制器
 class CityRatingController extends GetxController {
@@ -18,7 +16,7 @@ class CityRatingController extends GetxController {
   final statistics = <CityRatingStatistics>[].obs;
   final overallScore = 0.0.obs;
   final error = Rx<String?>(null);
-  
+
   // 评分提交状态跟踪
   final submittingCategoryId = Rx<String?>(null);
   final completedCategoryId = Rx<String?>(null);
@@ -40,7 +38,7 @@ class CityRatingController extends GetxController {
       categories.clear();
       overallScore.value = 0.0;
     }
-    
+
     // 如果已经加载过相同城市的数据，不重复加载
     if (_currentCityId == cityId && statistics.isNotEmpty) {
       return;
@@ -57,13 +55,7 @@ class CityRatingController extends GetxController {
       overallScore.value = info.overallScore;
     } catch (e) {
       error.value = e.toString();
-      Get.snackbar(
-        '错误',
-        '加载评分信息失败: $e',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.1),
-        colorText: Colors.red,
-      );
+      AppToast.error('加载评分信息失败: $e');
     } finally {
       isLoading.value = false;
     }
@@ -72,18 +64,18 @@ class CityRatingController extends GetxController {
   /// 刷新评分数据（用于添加评分项后）
   Future<void> refreshRatings() async {
     if (_currentCityId == null) return;
-    
+
     // 清空当前数据，强制重新加载
     statistics.clear();
     categories.clear();
-    
+
     await loadCityRatings(_currentCityId!);
   }
 
   /// 提交评分
   Future<void> submitRating(String categoryId, int rating) async {
     if (_currentCityId == null) return;
-    
+
     // 如果正在提交，忽略
     if (submittingCategoryId.value != null) return;
 
@@ -91,23 +83,24 @@ class CityRatingController extends GetxController {
       // 设置提交中状态
       submittingCategoryId.value = categoryId;
       completedCategoryId.value = null;
-      
+
       await _useCases.submitRating(_currentCityId!, categoryId, rating);
-      
+
       // 更新本地统计数据，无需重新加载
       final index = statistics.indexWhere((s) => s.categoryId == categoryId);
       if (index != -1) {
         final oldStat = statistics[index];
         final isNewRating = oldStat.userRating == null;
-        
+
         // 重新计算平均分
         final oldTotal = oldStat.averageRating * oldStat.ratingCount;
-        final newCount = isNewRating ? oldStat.ratingCount + 1 : oldStat.ratingCount;
-        final newTotal = isNewRating 
-            ? oldTotal + rating 
+        final newCount =
+            isNewRating ? oldStat.ratingCount + 1 : oldStat.ratingCount;
+        final newTotal = isNewRating
+            ? oldTotal + rating
             : oldTotal - (oldStat.userRating ?? 0) + rating;
         final newAverage = newCount > 0 ? newTotal / newCount : 0.0;
-        
+
         statistics[index] = CityRatingStatistics(
           categoryId: oldStat.categoryId,
           categoryName: oldStat.categoryName,
@@ -119,14 +112,14 @@ class CityRatingController extends GetxController {
           userRating: rating,
         );
       }
-      
+
       // 设置完成状态
       submittingCategoryId.value = null;
       completedCategoryId.value = categoryId;
-      
+
       // 显示成功提示
       AppToast.success('评分提交成功');
-      
+
       // 500ms 后清除完成状态
       Future.delayed(const Duration(milliseconds: 500), () {
         if (completedCategoryId.value == categoryId) {
@@ -136,7 +129,7 @@ class CityRatingController extends GetxController {
     } catch (e) {
       submittingCategoryId.value = null;
       completedCategoryId.value = null;
-      
+
       // 显示错误提示
       AppToast.error('提交评分失败');
     }
@@ -159,7 +152,7 @@ class CityRatingController extends GetxController {
       );
 
       categories.add(newCategory);
-      
+
       // 添加到统计列表
       statistics.add(CityRatingStatistics(
         categoryId: newCategory.id,
@@ -173,25 +166,12 @@ class CityRatingController extends GetxController {
 
       showAddCategoryDialog.value = false;
 
-      Get.snackbar(
-        '成功',
-        '评分项创建成功',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green.withOpacity(0.1),
-        colorText: Colors.green,
-        duration: const Duration(seconds: 1),
-      );
-      
+      AppToast.success('评分项创建成功');
+
       // 创建成功后刷新数据
       await refreshRatings();
     } catch (e) {
-      Get.snackbar(
-        '错误',
-        '创建评分项失败: $e',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.1),
-        colorText: Colors.red,
-      );
+      AppToast.error('创建评分项失败: $e');
     }
   }
 
@@ -201,29 +181,16 @@ class CityRatingController extends GetxController {
 
     try {
       await _useCases.deleteCategory(_currentCityId!, categoryId);
-      
+
       categories.removeWhere((c) => c.id == categoryId);
       statistics.removeWhere((s) => s.categoryId == categoryId);
 
-      Get.snackbar(
-        '成功',
-        '评分项删除成功',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green.withOpacity(0.1),
-        colorText: Colors.green,
-        duration: const Duration(seconds: 1),
-      );
-      
+      AppToast.success('评分项删除成功');
+
       // 删除成功后刷新数据
       await refreshRatings();
     } catch (e) {
-      Get.snackbar(
-        '错误',
-        '删除评分项失败: $e',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.1),
-        colorText: Colors.red,
-      );
+      AppToast.error('删除评分项失败: $e');
     }
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 /// Toast 类型
@@ -60,7 +61,7 @@ class AppToast {
     final config = _ToastConfig(
       backgroundColor: backgroundColor ?? Colors.black87,
       textColor: textColor ?? Colors.white,
-      icon: icon ?? Icons.info_rounded,
+      icon: icon ?? FontAwesomeIcons.circleInfo,
       indicatorColor:
           (backgroundColor ?? Colors.black87).withValues(alpha: 0.8),
       shadowColor: (backgroundColor ?? Colors.black87).withValues(alpha: 0.3),
@@ -232,7 +233,7 @@ class AppToast {
         return _ToastConfig(
           backgroundColor: const Color(0xFF10B981), // Green
           textColor: Colors.white,
-          icon: Icons.check_circle_rounded,
+          icon: FontAwesomeIcons.circleCheck,
           indicatorColor: const Color(0xFF059669),
           shadowColor: const Color(0xFF10B981).withValues(alpha: 0.3),
         );
@@ -240,7 +241,7 @@ class AppToast {
         return _ToastConfig(
           backgroundColor: const Color(0xFFEF4444), // Red
           textColor: Colors.white,
-          icon: Icons.error_rounded,
+          icon: FontAwesomeIcons.circleExclamation,
           indicatorColor: const Color(0xFFDC2626),
           shadowColor: const Color(0xFFEF4444).withValues(alpha: 0.3),
         );
@@ -248,7 +249,7 @@ class AppToast {
         return _ToastConfig(
           backgroundColor: const Color(0xFFF59E0B), // Orange
           textColor: Colors.white,
-          icon: Icons.warning_rounded,
+          icon: FontAwesomeIcons.triangleExclamation,
           indicatorColor: const Color(0xFFD97706),
           shadowColor: const Color(0xFFF59E0B).withValues(alpha: 0.3),
         );
@@ -256,7 +257,7 @@ class AppToast {
         return _ToastConfig(
           backgroundColor: const Color(0xFF3B82F6), // Blue
           textColor: Colors.white,
-          icon: Icons.info_rounded,
+          icon: FontAwesomeIcons.circleInfo,
           indicatorColor: const Color(0xFF2563EB),
           shadowColor: const Color(0xFF3B82F6).withValues(alpha: 0.3),
         );

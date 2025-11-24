@@ -1,8 +1,8 @@
-import '../../../../core/domain/result.dart';
-import '../../../../services/http_service.dart';
-import '../../domain/entities/simple_user.dart';
-import '../../domain/repositories/iuser_management_repository.dart';
-import '../models/simple_user_dto.dart';
+import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:df_admin_mobile/features/user_management/domain/entities/simple_user.dart';
+import 'package:df_admin_mobile/features/user_management/domain/repositories/iuser_management_repository.dart';
+import 'package:df_admin_mobile/features/user_management/infrastructure/models/simple_user_dto.dart';
 
 /// User Management Repository Implementation
 class UserManagementRepository implements IUserManagementRepository {

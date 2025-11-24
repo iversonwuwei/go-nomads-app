@@ -1,20 +1,20 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
+import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller.dart';
+import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
+import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
+import 'package:df_admin_mobile/features/meetup/infrastructure/repositories/meetup_repository.dart';
+import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/routes/app_routes.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/copyright_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../config/app_colors.dart';
-import '../features/auth/presentation/controllers/auth_state_controller.dart';
-import '../features/city/domain/entities/city.dart';
-import '../features/city/presentation/controllers/city_state_controller.dart';
-import '../features/meetup/domain/entities/meetup.dart';
-import '../features/meetup/domain/repositories/i_meetup_repository.dart';
-import '../features/meetup/infrastructure/repositories/meetup_repository.dart';
-import '../features/meetup/presentation/controllers/meetup_state_controller.dart';
-import '../features/user/presentation/controllers/user_state_controller.dart';
-import '../generated/app_localizations.dart';
-import '../routes/app_routes.dart';
-import '../widgets/app_toast.dart';
-import '../widgets/copyright_widget.dart';
 import 'city_detail_page.dart';
 import 'create_meetup_page.dart';
 
@@ -76,12 +76,12 @@ class _DataServicePageState extends State<DataServicePage>
     WidgetsBinding.instance.removeObserver(this);
     _scrollController.dispose();
     _searchController.dispose();
-    
+
     // 清空搜索条件和结果
     if (_cityControllerCache != null) {
       _cityControllerCache!.searchQuery.value = '';
     }
-    
+
     super.dispose();
   }
 
@@ -241,7 +241,7 @@ class _DataServicePageState extends State<DataServicePage>
         child: Row(
           children: [
             const Icon(
-              Icons.search,
+              FontAwesomeIcons.magnifyingGlass,
               color: Color(0xFFFF4458),
               size: 20,
             ),
@@ -291,7 +291,7 @@ class _DataServicePageState extends State<DataServicePage>
               child: Padding(
                 padding: const EdgeInsets.all(4),
                 child: const Icon(
-                  Icons.close,
+                  FontAwesomeIcons.xmark,
                   color: AppColors.textSecondary,
                   size: 18,
                 ),
@@ -485,7 +485,7 @@ class _DataServicePageState extends State<DataServicePage>
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Icon(
-                          Icons.public,
+                          FontAwesomeIcons.earthAmericas,
                           color: Colors.white,
                           size: 32,
                         ),
@@ -565,7 +565,7 @@ class _DataServicePageState extends State<DataServicePage>
                 Expanded(
                   child: _buildCompactCard(
                     isMobile: true,
-                    icon: Icons.location_city_rounded,
+                    icon: FontAwesomeIcons.city,
                     title: l10n.cities,
                     color: const Color(0xFFFF4458),
                     onTap: () => _checkLoginAndNavigate(
@@ -577,7 +577,7 @@ class _DataServicePageState extends State<DataServicePage>
                 Expanded(
                   child: _buildCompactCard(
                     isMobile: true,
-                    icon: Icons.business_center_rounded,
+                    icon: FontAwesomeIcons.building,
                     title: l10n.coworks,
                     color: const Color(0xFF6366F1),
                     onTap: () => _checkLoginAndNavigate(
@@ -597,7 +597,7 @@ class _DataServicePageState extends State<DataServicePage>
                       final l10n = AppLocalizations.of(context)!;
                       return _buildCompactCard(
                         isMobile: true,
-                        icon: Icons.groups_rounded,
+                        icon: FontAwesomeIcons.userGroup,
                         title: l10n.meetups,
                         color: const Color(0xFF10B981),
                         onTap: () => _checkLoginAndNavigate(
@@ -614,7 +614,7 @@ class _DataServicePageState extends State<DataServicePage>
                       final l10n = AppLocalizations.of(context)!;
                       return _buildCompactCard(
                         isMobile: true,
-                        icon: Icons.lightbulb_outline,
+                        icon: FontAwesomeIcons.lightbulb,
                         title: l10n.innovation,
                         color: const Color(0xFF8B5CF6),
                         onTap: () => _checkLoginAndNavigate(
@@ -640,7 +640,7 @@ class _DataServicePageState extends State<DataServicePage>
             Expanded(
               child: _buildCompactCard(
                 isMobile: false,
-                icon: Icons.location_city_rounded,
+                icon: FontAwesomeIcons.city,
                 title: l10n.cities,
                 color: const Color(0xFFFF4458),
                 onTap: () => _checkLoginAndNavigate(
@@ -654,7 +654,7 @@ class _DataServicePageState extends State<DataServicePage>
             Expanded(
               child: _buildCompactCard(
                 isMobile: false,
-                icon: Icons.business_center_rounded,
+                icon: FontAwesomeIcons.building,
                 title: l10n.coworks,
                 color: const Color(0xFF6366F1),
                 onTap: () => _checkLoginAndNavigate(
@@ -671,7 +671,7 @@ class _DataServicePageState extends State<DataServicePage>
                   final l10n = AppLocalizations.of(context)!;
                   return _buildCompactCard(
                     isMobile: false,
-                    icon: Icons.groups_rounded,
+                    icon: FontAwesomeIcons.userGroup,
                     title: l10n.meetups,
                     color: const Color(0xFF10B981),
                     onTap: () => _checkLoginAndNavigate(
@@ -690,7 +690,7 @@ class _DataServicePageState extends State<DataServicePage>
                   final l10n = AppLocalizations.of(context)!;
                   return _buildCompactCard(
                     isMobile: false,
-                    icon: Icons.lightbulb_outline,
+                    icon: FontAwesomeIcons.lightbulb,
                     title: l10n.innovation,
                     color: const Color(0xFF8B5CF6),
                     onTap: () => _checkLoginAndNavigate(
@@ -883,7 +883,7 @@ class _DataServicePageState extends State<DataServicePage>
       ),
       child: Row(
         children: [
-          const Icon(Icons.search_outlined,
+          const Icon(FontAwesomeIcons.magnifyingGlass,
               color: AppColors.textSecondary, size: 20),
           const SizedBox(width: 12),
           Expanded(
@@ -956,7 +956,7 @@ class _DataServicePageState extends State<DataServicePage>
               child: Container(
                 padding: const EdgeInsets.all(6),
                 child: const Icon(
-                  Icons.clear,
+                  FontAwesomeIcons.xmark,
                   color: AppColors.textSecondary,
                   size: 18,
                 ),
@@ -1049,7 +1049,7 @@ class _DataServicePageState extends State<DataServicePage>
                   onPressed: () => _checkLoginAndNavigate(
                       () => Get.toNamed(AppRoutes.cityList)),
                   icon: const Icon(
-                    Icons.location_city_outlined,
+                    FontAwesomeIcons.city,
                     size: 20,
                     color: Color(0xFFFF4458),
                   ),
@@ -1097,7 +1097,7 @@ class _DataServicePageState extends State<DataServicePage>
                   onPressed: () => _checkLoginAndNavigate(
                       () => Get.toNamed(AppRoutes.cityList)),
                   icon: const Icon(
-                    Icons.location_city_outlined,
+                    FontAwesomeIcons.city,
                     size: 20,
                     color: Color(0xFFFF4458),
                   ),
@@ -1229,7 +1229,7 @@ class _DataServicePageState extends State<DataServicePage>
                                       title: l10n.loginRequired,
                                     );
                                   },
-                            icon: const Icon(Icons.add, size: 18),
+                            icon: const Icon(FontAwesomeIcons.plus, size: 18),
                             label: Text(
                                 isMobile ? l10n.create : l10n.createMeetup),
                             style: ElevatedButton.styleFrom(
@@ -1251,7 +1251,7 @@ class _DataServicePageState extends State<DataServicePage>
                             Get.toNamed(AppRoutes.meetupsList);
                           },
                           icon: const Icon(
-                            Icons.arrow_forward,
+                            FontAwesomeIcons.arrowRight,
                             size: 20,
                             color: Color(0xFFFF4458),
                           ),
@@ -1345,7 +1345,7 @@ class _DataServicePageState extends State<DataServicePage>
                           Get.toNamed(AppRoutes.meetupsList);
                         },
                         icon: const Icon(
-                          Icons.arrow_forward,
+                          FontAwesomeIcons.arrowRight,
                           size: 20,
                           color: Color(0xFFFF4458),
                         ),
@@ -1405,8 +1405,8 @@ class _DataServicePageState extends State<DataServicePage>
             ),
             child: Icon(
               isSearching
-                  ? Icons.search_off_rounded
-                  : Icons.location_city_rounded,
+                  ? FontAwesomeIcons.magnifyingGlass
+                  : FontAwesomeIcons.city,
               size: isMobile ? 50 : 60,
               color: const Color(0xFFFF4458),
             ),
@@ -1448,7 +1448,7 @@ class _DataServicePageState extends State<DataServicePage>
               onPressed: () {
                 _clearSearch();
               },
-              icon: const Icon(Icons.clear),
+              icon: const Icon(FontAwesomeIcons.xmark),
               label: const Text('Clear Search'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFF4458),
@@ -1468,7 +1468,7 @@ class _DataServicePageState extends State<DataServicePage>
               onPressed: () {
                 Get.toNamed(AppRoutes.cityList);
               },
-              icon: const Icon(Icons.add_circle_outline, size: 20),
+              icon: const Icon(FontAwesomeIcons.circlePlus, size: 20),
               label: Text(
                 l10n.browseCities,
                 style: const TextStyle(
@@ -1514,7 +1514,7 @@ class _DataServicePageState extends State<DataServicePage>
               shape: BoxShape.circle,
             ),
             child: Icon(
-              Icons.groups_rounded,
+              FontAwesomeIcons.userGroup,
               size: isMobile ? 50 : 60,
               color: const Color(0xFF10B981),
             ),
@@ -1557,7 +1557,7 @@ class _DataServicePageState extends State<DataServicePage>
                 ),
               );
             },
-            icon: const Icon(Icons.add_circle_outline, size: 20),
+            icon: const Icon(FontAwesomeIcons.circlePlus, size: 20),
             label: const Text(
               'Create Meetup',
               style: TextStyle(
@@ -1686,7 +1686,7 @@ class _DataCardState extends State<_DataCard> {
                       height: double.infinity,
                       color: Colors.grey[300],
                       child: Icon(
-                        Icons.location_city,
+                        FontAwesomeIcons.city,
                         size: 60,
                         color: Colors.grey[400],
                       ),
@@ -1814,7 +1814,7 @@ class _DataCardState extends State<_DataCard> {
                         Row(
                           children: [
                             Icon(
-                              Icons.star_rounded,
+                              FontAwesomeIcons.star,
                               color: const Color(0xFFFBBF24),
                               size: isMobile ? 16 : 18,
                             ),
@@ -1937,7 +1937,7 @@ class _DetailOverlay extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
-                  Icons.favorite_border,
+                  FontAwesomeIcons.heart,
                   color: Colors.white,
                   size: 20,
                 ),
@@ -1957,7 +1957,7 @@ class _DetailOverlay extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
-                    Icons.close,
+                    FontAwesomeIcons.xmark,
                     color: Colors.white,
                     size: 20,
                   ),
@@ -2440,7 +2440,7 @@ class _MeetupCardState extends State<_MeetupCard> {
                         Row(
                           children: [
                             const Icon(
-                              Icons.calendar_today_outlined,
+                              FontAwesomeIcons.calendar,
                               size: 13,
                               color: AppColors.textSecondary,
                             ),
@@ -2463,7 +2463,7 @@ class _MeetupCardState extends State<_MeetupCard> {
                         Row(
                           children: [
                             const Icon(
-                              Icons.location_on_outlined,
+                              FontAwesomeIcons.locationDot,
                               size: 13,
                               color: AppColors.textSecondary,
                             ),
@@ -2497,7 +2497,7 @@ class _MeetupCardState extends State<_MeetupCard> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             const Icon(
-                              Icons.people_outline,
+                              FontAwesomeIcons.users,
                               size: 13,
                               color: AppColors.textSecondary,
                             ),
@@ -2530,7 +2530,7 @@ class _MeetupCardState extends State<_MeetupCard> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               const Icon(
-                                Icons.person_outline,
+                                FontAwesomeIcons.user,
                                 size: 13,
                                 color: AppColors.textSecondary,
                               ),
@@ -2596,7 +2596,7 @@ class _MeetupCardState extends State<_MeetupCard> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.cancel_outlined, size: 14),
+              Icon(FontAwesomeIcons.ban, size: 14),
               SizedBox(width: 4),
               Text(
                 isCancelled ? '已取消' : '取消活动',
@@ -2663,7 +2663,7 @@ class _MeetupCardState extends State<_MeetupCard> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.chat_bubble_outline, size: 14),
+                  Icon(FontAwesomeIcons.message, size: 14),
                   SizedBox(width: 3),
                   Flexible(
                     child: Text(
@@ -2705,7 +2705,9 @@ class _MeetupCardState extends State<_MeetupCard> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    _isJoined ? Icons.check_circle : Icons.add_circle_outline,
+                    _isJoined
+                        ? FontAwesomeIcons.circleCheck
+                        : FontAwesomeIcons.circlePlus,
                     size: 14,
                   ),
                   const SizedBox(width: 3),

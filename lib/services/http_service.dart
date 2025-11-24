@@ -1,14 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:df_admin_mobile/config/api_config.dart';
+import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:df_admin_mobile/routes/app_routes.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart' as getx;
 
-import '../config/api_config.dart';
-import '../features/auth/presentation/controllers/auth_state_controller.dart';
-import '../routes/app_routes.dart';
 import 'token_storage_service.dart';
 
 /// API 响应元数据
@@ -105,14 +105,7 @@ class HttpService {
     Future.delayed(Duration.zero, () {
       try {
         // 显示提示
-        getx.Get.snackbar(
-          'Session Expired',
-          reason ?? 'Your session has expired. Please login again.',
-          snackPosition: getx.SnackPosition.TOP,
-          backgroundColor: const Color(0xFFFF4458),
-          colorText: const Color(0xFFFFFFFF),
-          duration: const Duration(seconds: 3),
-        );
+        AppToast.error(reason ?? 'Your session has expired. Please login again.');
 
         // 跳转到登录页
         getx.Get.offAllNamed(AppRoutes.login);

@@ -1,8 +1,10 @@
+import 'package:df_admin_mobile/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
+import 'package:df_admin_mobile/services/token_storage_service.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
-import '../services/token_storage_service.dart';
 import 'add_review_page.dart';
 
 /// Reviews 数据管理列表页面
@@ -76,18 +78,13 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
       final success = await controller.deleteMyReview(widget.cityId);
 
       if (success) {
-        Get.snackbar(
-          '成功',
-          '评论已删除',
-          backgroundColor: Colors.green[100],
-          duration: const Duration(seconds: 2),
-        );
+        AppToast.success('评论已删除');
         await _loadData();
       } else {
-        Get.snackbar('失败', '删除失败,请重试');
+        AppToast.error('删除失败,请重试');
       }
     } catch (e) {
-      Get.snackbar('错误', '删除失败: $e');
+      AppToast.error('删除失败: $e');
     }
   }
 
@@ -100,7 +97,7 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
         title: Text('${widget.cityName} - 评论管理'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add),
+            icon: const Icon(FontAwesomeIcons.plus),
             onPressed: () async {
               final result = await Get.to(() => AddReviewPage(
                     cityId: widget.cityId,
@@ -124,7 +121,8 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.rate_review, size: 80, color: Colors.grey[300]),
+                Icon(FontAwesomeIcons.commentDots,
+                    size: 80, color: Colors.grey[300]),
                 const SizedBox(height: 16),
                 Text(
                   '暂无评论数据',
@@ -141,7 +139,7 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
                       await _loadData();
                     }
                   },
-                  icon: const Icon(Icons.add),
+                  icon: const Icon(FontAwesomeIcons.plus),
                   label: const Text('添加第一条评论'),
                 ),
               ],
@@ -190,7 +188,8 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        Icon(Icons.star, size: 14, color: Colors.orange[700]),
+                        Icon(FontAwesomeIcons.star,
+                            size: 14, color: Colors.orange[700]),
                         const SizedBox(width: 4),
                         Text(
                           '${review.rating}/5',
@@ -200,7 +199,7 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
                           ),
                         ),
                         const SizedBox(width: 16),
-                        Icon(Icons.calendar_today,
+                        Icon(FontAwesomeIcons.calendar,
                             size: 12, color: Colors.grey[600]),
                         const SizedBox(width: 4),
                         Text(
@@ -215,7 +214,8 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
                 isThreeLine: true,
                 trailing: canDelete.value
                     ? IconButton(
-                        icon: const Icon(Icons.delete_outline, color: Colors.red),
+                        icon: const Icon(FontAwesomeIcons.trash,
+                            color: Colors.red),
                         onPressed: () => _deleteReview(review.id),
                         tooltip: '删除',
                       )

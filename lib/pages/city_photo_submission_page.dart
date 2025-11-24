@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../config/app_colors.dart';
-import '../features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
-import '../utils/image_upload_helper.dart';
-import '../widgets/app_toast.dart';
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
+import 'package:df_admin_mobile/utils/image_upload_helper.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 
 class CityPhotoSubmissionPage extends StatefulWidget {
   final String cityId;
@@ -123,7 +124,7 @@ class _CityPhotoSubmissionPageState extends State<CityPhotoSubmissionPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: const Icon(Icons.photo_library),
+                leading: const Icon(FontAwesomeIcons.images),
                 title: const Text('从相册选择 (可多选)'),
                 onTap: () {
                   Navigator.pop(context);
@@ -131,7 +132,7 @@ class _CityPhotoSubmissionPageState extends State<CityPhotoSubmissionPage> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.camera_alt),
+                leading: const Icon(FontAwesomeIcons.camera),
                 title: const Text('拍照上传'),
                 onTap: () {
                   Navigator.pop(context);
@@ -139,7 +140,7 @@ class _CityPhotoSubmissionPageState extends State<CityPhotoSubmissionPage> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.close),
+                leading: const Icon(FontAwesomeIcons.xmark),
                 title: const Text('取消'),
                 onTap: () => Navigator.pop(context),
               ),
@@ -254,7 +255,7 @@ class _CityPhotoSubmissionPageState extends State<CityPhotoSubmissionPage> {
                   ),
                   TextButton.icon(
                     onPressed: _uploadingImages ? null : _showAddPhotoSheet,
-                    icon: const Icon(Icons.add_photo_alternate),
+                    icon: const Icon(FontAwesomeIcons.photoFilm),
                     label: const Text('添加照片'),
                   ),
                 ],
@@ -283,7 +284,7 @@ class _CityPhotoSubmissionPageState extends State<CityPhotoSubmissionPage> {
                       ),
                       child: const Column(
                         children: [
-                          Icon(Icons.photo_library_outlined,
+                          Icon(FontAwesomeIcons.images,
                               size: 48, color: Colors.grey),
                           SizedBox(height: 12),
                           Text('还没有照片，点击上方“添加照片”按钮上传'),
@@ -322,7 +323,7 @@ class _CityPhotoSubmissionPageState extends State<CityPhotoSubmissionPage> {
                                       ),
                                       padding: const EdgeInsets.all(4),
                                       child: const Icon(
-                                        Icons.close,
+                                        FontAwesomeIcons.xmark,
                                         color: Colors.white,
                                         size: 16,
                                       ),
@@ -348,7 +349,7 @@ class _CityPhotoSubmissionPageState extends State<CityPhotoSubmissionPage> {
                             color: Colors.white,
                           ),
                         )
-                      : const Icon(Icons.cloud_upload),
+                      : const Icon(FontAwesomeIcons.cloudArrowUp),
                   label: Text(_submitting ? '提交中...' : '提交'),
                 ),
               ),

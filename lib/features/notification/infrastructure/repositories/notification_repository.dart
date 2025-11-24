@@ -1,8 +1,8 @@
-import '../../../../config/api_config.dart';
-import '../../../../core/domain/result.dart';
-import '../../../../services/http_service.dart';
-import '../../domain/entities/app_notification.dart';
-import '../../domain/repositories/i_notification_repository.dart';
+import 'package:df_admin_mobile/config/api_config.dart';
+import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:df_admin_mobile/features/notification/domain/entities/app_notification.dart';
+import 'package:df_admin_mobile/features/notification/domain/repositories/i_notification_repository.dart';
 
 /// 通知仓储实现
 class NotificationRepository implements INotificationRepository {

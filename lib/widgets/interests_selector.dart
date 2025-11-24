@@ -1,10 +1,11 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/features/interest/domain/entities/interest.dart';
+import 'package:df_admin_mobile/features/interest/presentation/controllers/interest_state_controller.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import '../config/app_colors.dart';
-import '../features/interest/domain/entities/interest.dart';
-import '../features/interest/presentation/controllers/interest_state_controller.dart';
 
 /// 兴趣爱好选择器组件
 class InterestsSelector extends StatefulWidget {
@@ -79,21 +80,13 @@ class _InterestsSelectorState extends State<InterestsSelector> {
 
       final error = _interestController.errorMessage.value;
       if (error != null && error.isNotEmpty && mounted) {
-        Get.snackbar(
-          '加载失败',
-          error,
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        AppToast.error(error);
       }
     } catch (e) {
       debugPrint('❌ 加载兴趣失败: $e');
       if (!mounted) return;
       setState(() => _isLoading = false);
-      Get.snackbar(
-        '加载失败',
-        '无法加载兴趣列表，请稍后重试',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      AppToast.error('无法加载兴趣列表，请稍后重试');
     }
   }
 
@@ -111,11 +104,7 @@ class _InterestsSelectorState extends State<InterestsSelector> {
       // 检查是否超过最大选择数
       if (widget.maxSelection > 0 &&
           _selectedInterests.length >= widget.maxSelection) {
-        Get.snackbar(
-          '达到上限',
-          '最多只能选择 ${widget.maxSelection} 个兴趣',
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        AppToast.error('最多只能选择 ${widget.maxSelection} 个兴趣');
         return;
       }
 
@@ -337,7 +326,7 @@ class _InterestsSelectorState extends State<InterestsSelector> {
           child: TextField(
             decoration: InputDecoration(
               hintText: '搜索兴趣爱好...',
-              prefixIcon: const Icon(Icons.search),
+              prefixIcon: const Icon(FontAwesomeIcons.magnifyingGlass),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(color: AppColors.border),
@@ -430,7 +419,7 @@ class _InterestsSelectorState extends State<InterestsSelector> {
                             ),
                         ],
                       ),
-                      deleteIcon: const Icon(Icons.close, size: 18),
+                      deleteIcon: const Icon(FontAwesomeIcons.xmark, size: 18),
                       onDeleted: () {
                         setState(() {
                           _selectedInterests.removeWhere(

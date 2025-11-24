@@ -1,4 +1,4 @@
-import '../../domain/entities/city_rating_info.dart';
+import 'package:df_admin_mobile/features/city/domain/entities/city_rating_info.dart';
 import 'city_rating_category_dto.dart';
 import 'city_rating_statistics_dto.dart';
 

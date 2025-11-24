@@ -1,4 +1,4 @@
-import '../entities/coworking_review.dart';
+import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_review.dart';
 
 /// Coworking Review Repository Interface
 abstract class ICoworkingReviewRepository {

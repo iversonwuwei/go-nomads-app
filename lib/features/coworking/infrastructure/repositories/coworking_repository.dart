@@ -1,10 +1,10 @@
+import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart'
+    as entity;
+import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_repository.dart';
+import 'package:df_admin_mobile/features/coworking/infrastructure/models/coworking_space_dto.dart';
+import 'package:df_admin_mobile/services/http_service.dart';
 import 'package:get/get.dart';
-
-import '../../../../core/domain/result.dart';
-import '../../../../services/http_service.dart';
-import '../../domain/entities/coworking_space.dart' as entity;
-import '../../domain/repositories/icoworking_repository.dart';
-import '../models/coworking_space_dto.dart';
 
 /// Coworking Repository 实现
 /// 负责从 API 获取 Coworking 数据并转换为领域实体

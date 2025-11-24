@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-import '../features/user_profile/infrastructure/models/user_profile_dto.dart';
-import '../services/database/user_profile_dao.dart';
-import '../widgets/app_toast.dart';
+import 'package:df_admin_mobile/features/user_profile/infrastructure/models/user_profile_dto.dart';
+import 'package:df_admin_mobile/services/database/user_profile_dao.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 
 /// 社交平台常量
 class SocialPlatforms {
@@ -199,7 +200,7 @@ class _EditSocialLinksPageState extends State<EditSocialLinksPage> {
                 style: TextStyle(color: Colors.grey.shade600),
               ),
         trailing: Icon(
-          hasLink ? Icons.check_circle : Icons.add_circle_outline,
+          hasLink ? FontAwesomeIcons.circleCheck : FontAwesomeIcons.circlePlus,
           color: hasLink ? Colors.green : Colors.grey,
         ),
         onTap: () => _showEditDialog(platform),
@@ -224,7 +225,7 @@ class _EditSocialLinksPageState extends State<EditSocialLinksPage> {
                   color: Colors.blue.shade50,
                   child: Row(
                     children: [
-                      const Icon(Icons.link, color: Colors.blue),
+                      const Icon(FontAwesomeIcons.link, color: Colors.blue),
                       const SizedBox(width: 8),
                       Text(
                         '已添加 ${_socialLinks.length} / ${SocialPlatforms.platforms.length} 个平台',

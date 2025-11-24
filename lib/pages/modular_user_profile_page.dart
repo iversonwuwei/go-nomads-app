@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../features/user_profile/infrastructure/models/user_profile_dto.dart';
-import '../services/database/user_profile_dao.dart';
+import 'package:df_admin_mobile/features/user_profile/infrastructure/models/user_profile_dto.dart';
+import 'package:df_admin_mobile/services/database/user_profile_dao.dart';
 import 'edit_basic_info_page.dart';
 import 'edit_interests_page.dart';
 import 'edit_skills_page.dart';
 import 'edit_social_links_page.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 
 /// 模块化用户资料页面 - 整合所有8个模块
 class ModularUserProfilePage extends StatefulWidget {
@@ -130,7 +132,7 @@ class _ModularUserProfilePageState extends State<ModularUserProfilePage> {
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        trailing: const Icon(FontAwesomeIcons.arrowRight, size: 16),
         onTap: onTap,
       ),
     );
@@ -143,7 +145,7 @@ class _ModularUserProfilePageState extends State<ModularUserProfilePage> {
         title: Text(widget.username ?? '用户资料'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(FontAwesomeIcons.arrowsRotate),
             onPressed: () {
               setState(() {
                 _loading = true;
@@ -170,7 +172,7 @@ class _ModularUserProfilePageState extends State<ModularUserProfilePage> {
                               ? NetworkImage(_basicInfo!.avatarUrl!)
                               : null,
                           child: _basicInfo?.avatarUrl == null
-                              ? const Icon(Icons.person, size: 50)
+                              ? const Icon(FontAwesomeIcons.user, size: 50)
                               : null,
                         ),
                         const SizedBox(height: 12),
@@ -196,7 +198,7 @@ class _ModularUserProfilePageState extends State<ModularUserProfilePage> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.location_on,
+                              Icon(FontAwesomeIcons.locationDot,
                                   size: 16, color: Colors.grey.shade600),
                               const SizedBox(width: 4),
                               Text(
@@ -239,17 +241,17 @@ class _ModularUserProfilePageState extends State<ModularUserProfilePage> {
                       crossAxisSpacing: 8,
                       children: [
                         _buildStatCard('国家', _stats!.countriesVisited,
-                            Icons.flag, Colors.blue),
+                            FontAwesomeIcons.flag, Colors.blue),
                         _buildStatCard('城市', _stats!.citiesLived,
-                            Icons.location_city, Colors.green),
+                            FontAwesomeIcons.city, Colors.green),
                         _buildStatCard('旅行天数', _stats!.daysNomading,
-                            Icons.calendar_today, Colors.orange),
+                            FontAwesomeIcons.calendar, Colors.orange),
                         _buildStatCard('Meetup', _stats!.meetupsAttended,
-                            Icons.group, Colors.purple),
+                            FontAwesomeIcons.userGroup, Colors.purple),
                         _buildStatCard('行程', _stats!.tripsCompleted,
-                            Icons.airplane_ticket, Colors.red),
+                            FontAwesomeIcons.ticketSimple, Colors.red),
                         _buildStatCard('评论', _stats!.reviewsWritten,
-                            Icons.rate_review, Colors.teal),
+                            FontAwesomeIcons.commentDots, Colors.teal),
                       ],
                     ),
                     const SizedBox(height: 24),
@@ -258,7 +260,7 @@ class _ModularUserProfilePageState extends State<ModularUserProfilePage> {
                   // 模块卡片
                   _buildModuleCard(
                     title: '基本信息',
-                    icon: Icons.person,
+                    icon: FontAwesomeIcons.user,
                     content: _basicInfo != null
                         ? '${_basicInfo!.name} · ${_basicInfo!.occupation ?? "未设置职业"}'
                         : '点击编辑基本信息',
@@ -274,7 +276,7 @@ class _ModularUserProfilePageState extends State<ModularUserProfilePage> {
 
                   _buildModuleCard(
                     title: '技能标签',
-                    icon: Icons.star,
+                    icon: FontAwesomeIcons.star,
                     content: _skills.isEmpty
                         ? '点击添加技能标签'
                         : '${_skills.length} 项技能: ${_skills.take(3).map((s) => s.skillName).join(", ")}${_skills.length > 3 ? "..." : ""}',
@@ -288,7 +290,7 @@ class _ModularUserProfilePageState extends State<ModularUserProfilePage> {
 
                   _buildModuleCard(
                     title: '兴趣爱好',
-                    icon: Icons.favorite,
+                    icon: FontAwesomeIcons.heart,
                     content: _interests.isEmpty
                         ? '点击添加兴趣爱好'
                         : '${_interests.length} 项兴趣: ${_interests.take(3).map((i) => i.interestName).join(", ")}${_interests.length > 3 ? "..." : ""}',
@@ -302,7 +304,7 @@ class _ModularUserProfilePageState extends State<ModularUserProfilePage> {
 
                   _buildModuleCard(
                     title: '社交链接',
-                    icon: Icons.link,
+                    icon: FontAwesomeIcons.link,
                     content: _socialLinks.isEmpty
                         ? '点击添加社交平台链接'
                         : '已添加 ${_socialLinks.length} 个平台',
@@ -316,37 +318,37 @@ class _ModularUserProfilePageState extends State<ModularUserProfilePage> {
 
                   _buildModuleCard(
                     title: '旅行计划',
-                    icon: Icons.map,
+                    icon: FontAwesomeIcons.map,
                     content: _travelPlans.isEmpty
                         ? '暂无旅行计划'
                         : '${_travelPlans.length} 个计划',
                     onTap: () {
                       // TODO: 导航到旅行计划页面
-                      Get.snackbar('提示', '旅行计划功能开发中');
+                      AppToast.error('旅行计划功能开发中');
                     },
                     color: Colors.orange,
                   ),
 
                   _buildModuleCard(
                     title: '成就徽章',
-                    icon: Icons.military_tech,
+                    icon: FontAwesomeIcons.medal,
                     content:
                         _badges.isEmpty ? '暂无徽章' : '已获得 ${_badges.length} 个徽章',
                     onTap: () {
                       // TODO: 导航到徽章页面
-                      Get.snackbar('提示', '徽章功能开发中');
+                      AppToast.error('徽章功能开发中');
                     },
                     color: Colors.red,
                   ),
 
                   _buildModuleCard(
                     title: '旅行历史',
-                    icon: Icons.history,
+                    icon: FontAwesomeIcons.clockRotateLeft,
                     content:
                         _history.isEmpty ? '暂无旅行记录' : '${_history.length} 条记录',
                     onTap: () {
                       // TODO: 导航到旅行历史页面
-                      Get.snackbar('提示', '旅行历史功能开发中');
+                      AppToast.error('旅行历史功能开发中');
                     },
                     color: Colors.teal,
                   ),

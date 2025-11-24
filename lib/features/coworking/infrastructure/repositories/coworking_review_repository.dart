@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 
-import '../../../../config/api_config.dart';
-import '../../../../services/http_service.dart';
-import '../../domain/entities/coworking_review.dart';
-import '../../domain/repositories/icoworking_review_repository.dart';
+import 'package:df_admin_mobile/config/api_config.dart';
+import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_review.dart';
+import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_review_repository.dart';
 
 /// Coworking Review Repository Implementation
 class CoworkingReviewRepository implements ICoworkingReviewRepository {

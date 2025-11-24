@@ -1,6 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../config/api_config.dart';
+import 'package:df_admin_mobile/config/api_config.dart';
 
 /// Token 持久化服务
 /// 使用 SharedPreferences 保存与清除认证信息

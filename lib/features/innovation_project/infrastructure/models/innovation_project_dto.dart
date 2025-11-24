@@ -1,4 +1,4 @@
-import '../../domain/entities/innovation_project.dart';
+import 'package:df_admin_mobile/features/innovation_project/domain/entities/innovation_project.dart';
 
 /// 创新项目数据传输对象
 class InnovationProjectDto {

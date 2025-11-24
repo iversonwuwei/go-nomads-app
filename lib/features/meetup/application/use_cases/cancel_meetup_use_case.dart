@@ -1,4 +1,4 @@
-import '../../domain/repositories/i_meetup_repository.dart';
+import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
 
 /// 取消活动 Use Case
 /// 业务逻辑: 组织者取消活动

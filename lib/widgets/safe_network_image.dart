@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 /// 安全的网络图片组件,处理空字符串和无效 URL
 class SafeNetworkImage extends StatelessWidget {
@@ -10,14 +11,14 @@ class SafeNetworkImage extends StatelessWidget {
   final Widget? errorWidget;
 
   const SafeNetworkImage({
-    Key? key,
+    super.key,
     required this.imageUrl,
     this.width,
     this.height,
     this.fit,
     this.placeholder,
     this.errorWidget,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +48,7 @@ class SafeNetworkImage extends StatelessWidget {
       height: height,
       color: Colors.grey[300],
       child: Icon(
-        Icons.image,
+        FontAwesomeIcons.image,
         size: (width != null && height != null) 
             ? (width! < height! ? width! * 0.5 : height! * 0.5)
             : 48,
@@ -65,12 +66,12 @@ class SafeCircleAvatar extends StatelessWidget {
   final Widget? errorWidget;
 
   const SafeCircleAvatar({
-    Key? key,
+    super.key,
     required this.imageUrl,
     this.radius = 20,
     this.placeholder,
     this.errorWidget,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +80,7 @@ class SafeCircleAvatar extends StatelessWidget {
       return CircleAvatar(
         radius: radius,
         backgroundColor: Colors.grey[300],
-        child: errorWidget ?? Icon(Icons.person, size: radius, color: Colors.grey[600]),
+        child: errorWidget ?? Icon(FontAwesomeIcons.user, size: radius, color: Colors.grey[600]),
       );
     }
 

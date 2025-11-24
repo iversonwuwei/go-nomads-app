@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-import '../features/user_profile/infrastructure/models/user_profile_dto.dart';
-import '../services/database/user_profile_dao.dart';
-import '../widgets/app_toast.dart';
+import 'package:df_admin_mobile/features/user_profile/infrastructure/models/user_profile_dto.dart';
+import 'package:df_admin_mobile/services/database/user_profile_dao.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 
 /// 基本信息编辑页面示例
 class EditBasicInfoPage extends StatefulWidget {
@@ -179,7 +180,7 @@ class _EditBasicInfoPageState extends State<EditBasicInfoPage> {
                                 ? NetworkImage(_avatarUrl!)
                                 : null,
                             child: _avatarUrl == null
-                                ? const Icon(Icons.person, size: 60)
+                                ? const Icon(FontAwesomeIcons.user, size: 60)
                                 : null,
                           ),
                           Positioned(
@@ -189,7 +190,7 @@ class _EditBasicInfoPageState extends State<EditBasicInfoPage> {
                               backgroundColor: Theme.of(context).primaryColor,
                               radius: 20,
                               child: IconButton(
-                                icon: const Icon(Icons.camera_alt,
+                                icon: const Icon(FontAwesomeIcons.camera,
                                     size: 20, color: Colors.white),
                                 onPressed: () {
                                   AppToast.info('头像上传功能开发中');
@@ -209,7 +210,7 @@ class _EditBasicInfoPageState extends State<EditBasicInfoPage> {
                       decoration: const InputDecoration(
                         labelText: '姓名 *',
                         border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.person),
+                        prefixIcon: Icon(FontAwesomeIcons.user),
                       ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
@@ -227,7 +228,7 @@ class _EditBasicInfoPageState extends State<EditBasicInfoPage> {
                       decoration: const InputDecoration(
                         labelText: '个人简介',
                         border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.edit_note),
+                        prefixIcon: Icon(FontAwesomeIcons.penToSquare),
                         hintText: '介绍一下你自己...',
                       ),
                       maxLines: 4,
@@ -241,7 +242,7 @@ class _EditBasicInfoPageState extends State<EditBasicInfoPage> {
                       decoration: const InputDecoration(
                         labelText: '性别',
                         border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.wc),
+                        prefixIcon: Icon(FontAwesomeIcons.restroom),
                       ),
                       items: const [
                         DropdownMenuItem(value: 'male', child: Text('男')),
@@ -265,7 +266,7 @@ class _EditBasicInfoPageState extends State<EditBasicInfoPage> {
                       decoration: const InputDecoration(
                         labelText: '当前城市',
                         border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.location_city),
+                        prefixIcon: Icon(FontAwesomeIcons.city),
                         hintText: '例如: Bangkok',
                       ),
                     ),
@@ -278,7 +279,7 @@ class _EditBasicInfoPageState extends State<EditBasicInfoPage> {
                       decoration: const InputDecoration(
                         labelText: '当前国家',
                         border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.flag),
+                        prefixIcon: Icon(FontAwesomeIcons.flag),
                         hintText: '例如: Thailand',
                       ),
                     ),
@@ -291,7 +292,7 @@ class _EditBasicInfoPageState extends State<EditBasicInfoPage> {
                       decoration: const InputDecoration(
                         labelText: '职业',
                         border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.work),
+                        prefixIcon: Icon(FontAwesomeIcons.briefcase),
                         hintText: '例如: Software Engineer',
                       ),
                     ),
@@ -304,7 +305,7 @@ class _EditBasicInfoPageState extends State<EditBasicInfoPage> {
                       decoration: const InputDecoration(
                         labelText: '公司',
                         border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.business),
+                        prefixIcon: Icon(FontAwesomeIcons.building),
                         hintText: '例如: Google',
                       ),
                     ),
@@ -317,7 +318,7 @@ class _EditBasicInfoPageState extends State<EditBasicInfoPage> {
                       decoration: const InputDecoration(
                         labelText: '个人网站',
                         border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.language),
+                        prefixIcon: Icon(FontAwesomeIcons.globe),
                         hintText: 'https://yourwebsite.com',
                       ),
                       keyboardType: TextInputType.url,

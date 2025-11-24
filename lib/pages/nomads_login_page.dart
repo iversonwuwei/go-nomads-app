@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../config/app_colors.dart';
-import '../features/auth/presentation/controllers/auth_state_controller.dart';
-import '../generated/app_localizations.dart';
-import '../routes/app_routes.dart';
-import '../services/http_service.dart';
-import '../widgets/app_toast.dart';
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/routes/app_routes.dart';
+import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 
 class NomadsLoginPage extends StatefulWidget {
   const NomadsLoginPage({super.key});
@@ -150,7 +150,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                     alignment: Alignment.centerLeft,
                     child: IconButton(
                       icon: const Icon(
-                        Icons.arrow_back,
+                        FontAwesomeIcons.arrowLeft,
                         color: NomadsLoginPage.nomadsRed,
                       ),
                       onPressed: () {
@@ -175,7 +175,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
-                            Icons.travel_explore,
+                            FontAwesomeIcons.earthAmericas,
                             size: 40,
                             color: NomadsLoginPage.nomadsRed,
                           ),
@@ -216,7 +216,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                     decoration: InputDecoration(
                       labelText: l10n.email,
                       hintText: l10n.email,
-                      prefixIcon: const Icon(Icons.email_outlined),
+                      prefixIcon: const Icon(FontAwesomeIcons.envelope),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -252,12 +252,12 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                     decoration: InputDecoration(
                       labelText: l10n.password,
                       hintText: l10n.password,
-                      prefixIcon: const Icon(Icons.lock_outline),
+                      prefixIcon: const Icon(FontAwesomeIcons.lock),
                       suffixIcon: IconButton(
                         icon: Icon(
                           _obscurePassword
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined,
+                              ? FontAwesomeIcons.eye
+                              : FontAwesomeIcons.eyeSlash,
                         ),
                         onPressed: () {
                           setState(() {
@@ -585,7 +585,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(
-                  Icons.group,
+                  FontAwesomeIcons.userGroup,
                   color: NomadsLoginPage.nomadsRed,
                   size: 24,
                 ),

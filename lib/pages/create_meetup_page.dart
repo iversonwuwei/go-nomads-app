@@ -2,18 +2,19 @@ import 'dart:io';
 
 import 'package:add_2_calendar/add_2_calendar.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../config/app_colors.dart';
-import '../config/supabase_config.dart';
-import '../features/city/domain/entities/city_option.dart';
-import '../features/location/presentation/controllers/location_state_controller.dart';
-import '../features/meetup/domain/entities/meetup.dart';
-import '../features/meetup/presentation/controllers/meetup_state_controller.dart';
-import '../generated/app_localizations.dart';
-import '../services/image_upload_service.dart';
-import '../widgets/app_toast.dart';
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/config/supabase_config.dart';
+import 'package:df_admin_mobile/features/city/domain/entities/city_option.dart';
+import 'package:df_admin_mobile/features/location/presentation/controllers/location_state_controller.dart';
+import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
+import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/services/image_upload_service.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'venue_map_picker_page.dart';
 
 class CreateMeetupPage extends StatefulWidget {
@@ -266,7 +267,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(
-                    Icons.photo_library_outlined,
+                    FontAwesomeIcons.images,
                     color: Color(0xFFFF4458),
                   ),
                 ),
@@ -299,7 +300,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(
-                    Icons.camera_alt_outlined,
+                    FontAwesomeIcons.camera,
                     color: Color(0xFFFF4458),
                   ),
                 ),
@@ -489,7 +490,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                     ),
                     trailing: isSelected
                         ? const Icon(
-                            Icons.check,
+                            FontAwesomeIcons.check,
                             color: Color(0xFFFF4458),
                           )
                         : null,
@@ -615,7 +616,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
-                  Icons.calendar_today,
+                  FontAwesomeIcons.calendar,
                   color: Color(0xFFFF4458),
                   size: 32,
                 ),
@@ -766,7 +767,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
         backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: const Icon(FontAwesomeIcons.arrowLeft, color: AppColors.textPrimary),
           onPressed: () => Get.back(),
         ),
         title: Text(
@@ -958,7 +959,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                                   ),
                                 ),
                               )
-                            : const Icon(Icons.keyboard_arrow_down),
+                            : const Icon(FontAwesomeIcons.chevronDown),
                         errorText: field.errorText,
                       ),
                       isEmpty: displayCountry == null || displayCountry.isEmpty,
@@ -1109,7 +1110,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                                   ),
                                 ),
                               )
-                            : const Icon(Icons.keyboard_arrow_down),
+                            : const Icon(FontAwesomeIcons.chevronDown),
                         errorText: field.errorText,
                       ),
                       isEmpty: displayCity == null || displayCity.isEmpty,
@@ -1212,7 +1213,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                           ),
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                         ),
-                        child: const Icon(Icons.map_outlined, size: 20),
+                        child: const Icon(FontAwesomeIcons.map, size: 20),
                       ),
                     ),
                   ],
@@ -1263,7 +1264,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.calendar_today,
+                              const Icon(FontAwesomeIcons.calendar,
                                   size: 18, color: Colors.grey),
                               const SizedBox(width: 8),
                               Text(
@@ -1312,7 +1313,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.access_time,
+                              const Icon(FontAwesomeIcons.clock,
                                   size: 18, color: Colors.grey),
                               const SizedBox(width: 8),
                               Text(
@@ -1461,7 +1462,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              Icons.add_photo_alternate_outlined,
+                              FontAwesomeIcons.photoFilm,
                               size: 32,
                               color: _selectedImages.length < 10
                                   ? const Color(0xFFFF4458)
@@ -1507,7 +1508,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(
-                              Icons.close,
+                              FontAwesomeIcons.xmark,
                               size: 16,
                               color: Colors.white,
                             ),
@@ -1605,7 +1606,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        Icons.add_photo_alternate_outlined,
+                        FontAwesomeIcons.photoFilm,
                         size: 48,
                         color: Colors.grey.shade400,
                       ),

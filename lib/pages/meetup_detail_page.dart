@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
-import '../config/app_colors.dart';
-import '../features/meetup/domain/entities/meetup.dart';
-import '../features/meetup/domain/repositories/i_meetup_repository.dart';
-import '../features/meetup/infrastructure/models/meetup_dto.dart';
-import '../features/meetup/presentation/controllers/meetup_state_controller.dart';
-import '../features/user/domain/entities/user.dart';
-import '../generated/app_localizations.dart';
-import '../routes/app_routes.dart';
-import '../services/http_service.dart';
-import '../widgets/app_toast.dart';
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
+import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
+import 'package:df_admin_mobile/features/meetup/infrastructure/models/meetup_dto.dart';
+import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
+import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/routes/app_routes.dart';
+import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'direct_chat_page.dart';
 import 'member_detail_page.dart';
 
@@ -110,7 +111,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                   color: Colors.black.withValues(alpha: 0.3),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.arrow_back, color: Colors.white, size: 20.sp),
+                child: Icon(FontAwesomeIcons.arrowLeft, color: Colors.white, size: 20.sp),
               ),
               onPressed: () => Get.back(),
             ),
@@ -122,7 +123,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                     color: Colors.black.withValues(alpha: 0.3),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.share, color: Colors.white, size: 20.sp),
+                  child: Icon(FontAwesomeIcons.shareNodes, color: Colors.white, size: 20.sp),
                 ),
                 onPressed: _shareMeetup,
               ),
@@ -137,7 +138,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                         return Container(
                           color: AppColors.borderLight,
                           child: Icon(
-                            Icons.image_not_supported,
+                            FontAwesomeIcons.imagePortrait,
                             size: 64.sp,
                             color: AppColors.textTertiary,
                           ),
@@ -147,7 +148,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                   : Container(
                       color: AppColors.borderLight,
                       child: Icon(
-                        Icons.event,
+                        FontAwesomeIcons.calendarDays,
                         size: 64.sp,
                         color: AppColors.textTertiary,
                       ),
@@ -230,7 +231,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.access_time,
+                      Icon(FontAwesomeIcons.clock,
                           size: 12.sp, color: const Color(0xFFFF4458)),
                       SizedBox(width: 4.w),
                       Text(
@@ -258,7 +259,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
           SizedBox(height: 12.h),
           Row(
             children: [
-              Icon(Icons.location_city,
+              Icon(FontAwesomeIcons.city,
                   size: 16.sp, color: AppColors.textSecondary),
               SizedBox(width: 6.w),
               Text(
@@ -283,20 +284,20 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
       child: Column(
         children: [
           _buildInfoRow(
-            Icons.calendar_today,
+            FontAwesomeIcons.calendar,
             l10n.dateAndTime,
             _formatDateTime(_meetup.value.schedule.startTime),
           ),
           SizedBox(height: 20.h),
           _buildInfoRow(
-            Icons.location_on,
+            FontAwesomeIcons.locationDot,
             l10n.venue,
             _meetup.value.venue.name,
             subtitle: _meetup.value.venue.address,
           ),
           SizedBox(height: 20.h),
           _buildInfoRow(
-            Icons.people,
+            FontAwesomeIcons.users,
             l10n.attendees,
             '${_meetup.value.capacity.currentAttendees} / ${_meetup.value.capacity.maxAttendees}',
             subtitle: _meetup.value.capacity.isFull
@@ -514,7 +515,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                                   ? NetworkImage(userAvatar)
                                   : null,
                           child: (userAvatar == null || userAvatar.isEmpty)
-                              ? Icon(Icons.person, size: 20.r)
+                              ? Icon(FontAwesomeIcons.user, size: 20.r)
                               : null,
                         ),
                       ),
@@ -560,7 +561,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                               _meetup.value.isEnded
                           ? null
                           : _cancelMeetup,
-                      icon: Icon(Icons.cancel_outlined, size: 20.sp),
+                      icon: Icon(FontAwesomeIcons.ban, size: 20.sp),
                       label: Text(
                         _meetup.value.status == 'cancelled' ? '已取消' : '取消活动',
                         style: TextStyle(
@@ -590,7 +591,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                   // Chat Button - 只有参与了才能点击
                   OutlinedButton.icon(
                     onPressed: _isJoined ? _openChat : null,
-                    icon: Icon(Icons.chat_bubble_outline, size: 20.sp),
+                    icon: Icon(FontAwesomeIcons.message, size: 20.sp),
                     label: Text(
                       l10n.chat,
                       style: TextStyle(
@@ -664,23 +665,23 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     switch (type.toLowerCase()) {
       case 'coffee':
         color = Colors.brown;
-        icon = Icons.local_cafe;
+        icon = FontAwesomeIcons.mugSaucer;
         break;
       case 'coworking':
         color = Colors.blue;
-        icon = Icons.laptop;
+        icon = FontAwesomeIcons.laptop;
         break;
       case 'activity':
         color = Colors.green;
-        icon = Icons.sports;
+        icon = FontAwesomeIcons.football;
         break;
       case 'language':
         color = Colors.purple;
-        icon = Icons.language;
+        icon = FontAwesomeIcons.globe;
         break;
       default:
         color = AppColors.textSecondary;
-        icon = Icons.event;
+        icon = FontAwesomeIcons.calendarDays;
     }
 
     return Container(
@@ -950,7 +951,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                             ? NetworkImage(userAvatar)
                             : null,
                     child: (userAvatar == null || userAvatar.isEmpty)
-                        ? const Icon(Icons.person)
+                        ? const Icon(FontAwesomeIcons.user)
                         : null,
                   ),
                   title: Text(userName, style: TextStyle(fontSize: 14.sp)),

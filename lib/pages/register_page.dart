@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../config/app_colors.dart';
-import '../features/auth/presentation/controllers/auth_state_controller.dart';
-import '../generated/app_localizations.dart';
-import '../routes/app_routes.dart';
-import '../services/http_service.dart';
-import '../widgets/app_toast.dart';
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/routes/app_routes.dart';
+import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -144,7 +144,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
-                            Icons.travel_explore,
+                            FontAwesomeIcons.earthAmericas,
                             size: 40,
                             color: RegisterPage.nomadsRed,
                           ),
@@ -184,7 +184,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     decoration: InputDecoration(
                       labelText: l10n.username,
                       hintText: l10n.chooseUsername,
-                      prefixIcon: const Icon(Icons.person_outline),
+                      prefixIcon: const Icon(FontAwesomeIcons.user),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -220,7 +220,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     decoration: InputDecoration(
                       labelText: l10n.email,
                       hintText: l10n.email,
-                      prefixIcon: const Icon(Icons.email_outlined),
+                      prefixIcon: const Icon(FontAwesomeIcons.envelope),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -256,12 +256,12 @@ class _RegisterPageState extends State<RegisterPage> {
                     decoration: InputDecoration(
                       labelText: l10n.password,
                       hintText: l10n.createPassword,
-                      prefixIcon: const Icon(Icons.lock_outline),
+                      prefixIcon: const Icon(FontAwesomeIcons.lock),
                       suffixIcon: IconButton(
                         icon: Icon(
                           _obscurePassword
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined,
+                              ? FontAwesomeIcons.eye
+                              : FontAwesomeIcons.eyeSlash,
                         ),
                         onPressed: () {
                           setState(() {
@@ -304,12 +304,12 @@ class _RegisterPageState extends State<RegisterPage> {
                     decoration: InputDecoration(
                       labelText: l10n.confirmPassword,
                       hintText: l10n.reenterPassword,
-                      prefixIcon: const Icon(Icons.lock_outline),
+                      prefixIcon: const Icon(FontAwesomeIcons.lock),
                       suffixIcon: IconButton(
                         icon: Icon(
                           _obscureConfirmPassword
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined,
+                              ? FontAwesomeIcons.eye
+                              : FontAwesomeIcons.eyeSlash,
                         ),
                         onPressed: () {
                           setState(() {

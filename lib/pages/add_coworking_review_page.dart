@@ -1,14 +1,15 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../config/app_colors.dart';
-import '../features/coworking/domain/repositories/icoworking_review_repository.dart';
-import '../generated/app_localizations.dart';
-import '../widgets/app_toast.dart';
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_review_repository.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 
 /// 添加 Coworking Review 页面
 class AddCoworkingReviewPage extends StatefulWidget {
@@ -183,7 +184,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.close, color: AppColors.textPrimary, size: 24.sp),
+          icon: Icon(FontAwesomeIcons.xmark, color: AppColors.textPrimary, size: 24.sp),
           onPressed: () => Get.back(),
         ),
         title: Column(
@@ -264,7 +265,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
         children: [
           Row(
             children: [
-              Icon(Icons.star_border,
+              Icon(FontAwesomeIcons.star,
                   color: const Color(0xFFFF4458), size: 24.sp),
               SizedBox(width: 8.w),
               Text(
@@ -294,10 +295,10 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
                       },
                       child: Icon(
                         fullStar
-                            ? Icons.star
+                            ? FontAwesomeIcons.star
                             : halfStar
-                                ? Icons.star_half
-                                : Icons.star_border,
+                                ? FontAwesomeIcons.starHalfStroke
+                                : FontAwesomeIcons.star,
                         color: const Color(0xFFFF4458),
                         size: 44.sp,
                       ),
@@ -346,7 +347,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
         ),
         child: Row(
           children: [
-            Icon(Icons.calendar_today, color: AppColors.textSecondary, size: 20.sp),
+            Icon(FontAwesomeIcons.calendar, color: AppColors.textSecondary, size: 20.sp),
             SizedBox(width: 12.w),
             Expanded(
               child: Column(
@@ -379,7 +380,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, color: AppColors.textSecondary),
+            Icon(FontAwesomeIcons.chevronRight, color: AppColors.textSecondary),
           ],
         ),
       ),
@@ -395,7 +396,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
       children: [
         Row(
           children: [
-            Icon(Icons.title, color: AppColors.textSecondary, size: 20.sp),
+            Icon(FontAwesomeIcons.heading, color: AppColors.textSecondary, size: 20.sp),
             SizedBox(width: 8.w),
             Text(
               l10n.reviewTitle,
@@ -463,7 +464,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
       children: [
         Row(
           children: [
-            Icon(Icons.edit_note, color: AppColors.textSecondary, size: 20.sp),
+            Icon(FontAwesomeIcons.penToSquare, color: AppColors.textSecondary, size: 20.sp),
             SizedBox(width: 8.w),
             Text(
               l10n.yourExperience,
@@ -532,7 +533,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
       children: [
         Row(
           children: [
-            Icon(Icons.add_photo_alternate,
+            Icon(FontAwesomeIcons.photoFilm,
                 color: AppColors.textSecondary, size: 20.sp),
             SizedBox(width: 8.w),
             Text(
@@ -576,7 +577,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
-                              Icons.close,
+                              FontAwesomeIcons.xmark,
                               size: 16.sp,
                               color: Colors.white,
                             ),
@@ -597,7 +598,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               ListTile(
-                                leading: const Icon(Icons.photo_library),
+                                leading: const Icon(FontAwesomeIcons.images),
                                 title: Text(l10n.chooseFromGallery),
                                 onTap: () {
                                   Get.back();
@@ -605,7 +606,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
                                 },
                               ),
                               ListTile(
-                                leading: const Icon(Icons.camera_alt),
+                                leading: const Icon(FontAwesomeIcons.camera),
                                 title: Text(l10n.takeAPhoto),
                                 onTap: () {
                                   Get.back();
@@ -632,7 +633,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            Icons.add_photo_alternate,
+                            FontAwesomeIcons.photoFilm,
                             size: 32.sp,
                             color: AppColors.textTertiary,
                           ),
@@ -669,7 +670,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
         children: [
           Row(
             children: [
-              Icon(Icons.info_outline, color: Colors.blue[700], size: 20.sp),
+              Icon(FontAwesomeIcons.circleInfo, color: Colors.blue[700], size: 20.sp),
               SizedBox(width: 8.w),
               Text(
                 l10n.reviewGuidelines,

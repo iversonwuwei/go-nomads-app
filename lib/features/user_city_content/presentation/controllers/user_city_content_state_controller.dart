@@ -1,12 +1,11 @@
 import 'package:df_admin_mobile/core/application/use_case.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/user/application/use_cases/user_use_cases.dart'
+    as user_use_cases;
+import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
 import 'package:df_admin_mobile/features/user_city_content/application/use_cases/user_city_content_use_cases.dart';
 import 'package:df_admin_mobile/features/user_city_content/domain/entities/user_city_content.dart';
 import 'package:get/get.dart';
-
-import '../../../user/application/use_cases/user_use_cases.dart'
-    as user_use_cases;
-import '../../../user/domain/entities/user.dart';
 
 /// User City Content State Controller - DDD Presentation Layer
 class UserCityContentStateController extends GetxController {

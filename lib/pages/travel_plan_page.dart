@@ -1,12 +1,12 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/features/ai/presentation/controllers/ai_state_controller.dart';
+import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/async_task_progress_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import '../config/app_colors.dart';
-import '../features/ai/presentation/controllers/ai_state_controller.dart';
-import '../features/travel_plan/domain/entities/travel_plan.dart';
-import '../generated/app_localizations.dart';
-import '../widgets/app_toast.dart';
-import '../widgets/async_task_progress_dialog.dart';
 
 /// 旅行计划详情�?
 class TravelPlanPage extends StatefulWidget {
@@ -140,149 +140,150 @@ class _TravelPlanPageState extends State<TravelPlanPage>
               expandedHeight: 200,
               pinned: true,
               leading: IconButton(
-                icon: const Icon(Icons.arrow_back_outlined,
+                icon: const Icon(FontAwesomeIcons.arrowLeft,
                     color: AppColors.backButtonLight),
                 onPressed: () => Get.back(),
               ),
-            flexibleSpace: FlexibleSpaceBar(
-              background: AnimatedBuilder(
-                animation: _shimmerController,
-                builder: (context, child) {
-                  return Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.grey[300]!,
-                          Colors.grey[100]!,
-                          Colors.grey[300]!,
-                        ],
-                        begin: Alignment(
-                            -1.0 + _shimmerController.value * 2, -1.0),
-                        end: Alignment(1.0 + _shimmerController.value * 2, 1.0),
-                        stops: const [0.0, 0.5, 1.0],
+              flexibleSpace: FlexibleSpaceBar(
+                background: AnimatedBuilder(
+                  animation: _shimmerController,
+                  builder: (context, child) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.grey[300]!,
+                            Colors.grey[100]!,
+                            Colors.grey[300]!,
+                          ],
+                          begin: Alignment(
+                              -1.0 + _shimmerController.value * 2, -1.0),
+                          end: Alignment(
+                              1.0 + _shimmerController.value * 2, 1.0),
+                          stops: const [0.0, 0.5, 1.0],
+                        ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
             ),
-          ),
 
-          // 进度提示
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                children: [
-                  // AI 图标
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
+            // 进度提示
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    // AI 图标
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
                         color: AppColors.containerMedium.withValues(alpha: 0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.auto_awesome,
-                      size: 40,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // 进度文本
-                  Text(
-                    _progressMessage,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textPrimary,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-
-                  // 进度条
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: LinearProgressIndicator(
-                      value: _progressValue / 100,
-                      minHeight: 8,
-                      backgroundColor: Colors.grey[200],
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        AppColors.textPrimary,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        FontAwesomeIcons.wandMagicSparkles,
+                        size: 40,
+                        color: AppColors.textPrimary,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
+                    const SizedBox(height: 24),
 
-                  // 进度百分比
-                  Text(
-                    '$_progressValue%',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
-                      fontWeight: FontWeight.w500,
+                    // 进度文本
+                    Text(
+                      _progressMessage,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textPrimary,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 16),
+
+                    // 进度条
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: LinearProgressIndicator(
+                        value: _progressValue / 100,
+                        minHeight: 8,
+                        backgroundColor: Colors.grey[200],
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // 进度百分比
+                    Text(
+                      '$_progressValue%',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
 
-          // Loading Content
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  // Overview Card Skeleton with details
-                  _buildDetailedSkeletonCard(height: 150),
-                  const SizedBox(height: 16),
-                  // Transportation Card Skeleton
-                  _buildDetailedSkeletonCard(height: 200),
-                  const SizedBox(height: 16),
-                  // Accommodation Card Skeleton
-                  _buildDetailedSkeletonCard(height: 180),
-                  const SizedBox(height: 16),
-                  // Itinerary Card Skeleton
-                  _buildDetailedSkeletonCard(height: 300),
-                  const SizedBox(height: 16),
-                  // Loading indicator
-                  Center(
-                    child: Column(
-                      children: [
-                        const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                                Color(0xFFFF4458)),
+            // Loading Content
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    // Overview Card Skeleton with details
+                    _buildDetailedSkeletonCard(height: 150),
+                    const SizedBox(height: 16),
+                    // Transportation Card Skeleton
+                    _buildDetailedSkeletonCard(height: 200),
+                    const SizedBox(height: 16),
+                    // Accommodation Card Skeleton
+                    _buildDetailedSkeletonCard(height: 180),
+                    const SizedBox(height: 16),
+                    // Itinerary Card Skeleton
+                    _buildDetailedSkeletonCard(height: 300),
+                    const SizedBox(height: 16),
+                    // Loading indicator
+                    Center(
+                      child: Column(
+                        children: [
+                          const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                  Color(0xFFFF4458)),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                        Builder(
-                          builder: (context) {
-                            final l10n = AppLocalizations.of(context)!;
-                            return Text(
-                              l10n.generatingAiPlan,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey[600],
-                                fontWeight: FontWeight.w500,
-                              ),
-                            );
-                          },
-                        ),
-                      ],
+                          const SizedBox(height: 12),
+                          Builder(
+                            builder: (context) {
+                              final l10n = AppLocalizations.of(context)!;
+                              return Text(
+                                l10n.generatingAiPlan,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey[600],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
         ),
       ),
     );
@@ -373,7 +374,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
       appBar: AppBar(
         title: Text(l10n.travelPlan),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_outlined),
+          icon: const Icon(FontAwesomeIcons.arrowLeft),
           onPressed: () => Get.back(),
         ),
       ),
@@ -382,7 +383,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(
-              Icons.error_outline,
+              FontAwesomeIcons.circleExclamation,
               size: 64,
               color: Colors.red,
             ),
@@ -426,7 +427,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
             expandedHeight: 200,
             pinned: true,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back_outlined,
+              icon: const Icon(FontAwesomeIcons.arrowLeft,
                   color: AppColors.backButtonLight),
               onPressed: () => Get.back(),
             ),
@@ -471,7 +472,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
             ),
             actions: [
               IconButton(
-                icon: const Icon(Icons.map_outlined),
+                icon: const Icon(FontAwesomeIcons.map),
                 onPressed: () {
                   final l10n = AppLocalizations.of(context)!;
                   AppToast.info(
@@ -481,7 +482,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                 },
               ),
               IconButton(
-                icon: const Icon(Icons.download_outlined),
+                icon: const Icon(FontAwesomeIcons.download),
                 onPressed: () {
                   final l10n = AppLocalizations.of(context)!;
                   AppToast.success(
@@ -491,7 +492,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                 },
               ),
               IconButton(
-                icon: const Icon(Icons.share_outlined),
+                icon: const Icon(FontAwesomeIcons.shareNodes),
                 onPressed: () {
                   final l10n = AppLocalizations.of(context)!;
                   AppToast.info(
@@ -531,7 +532,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Icon(
-                          Icons.auto_awesome,
+                          FontAwesomeIcons.wandMagicSparkles,
                           color: Color(0xFFFF4458),
                           size: 20,
                         ),
@@ -577,19 +578,18 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                           children: [
                             if (widget.departureLocation != null &&
                                 widget.departureLocation!.isNotEmpty) ...[
-                              _buildInfoChip(Icons.flight_takeoff,
+                              _buildInfoChip(FontAwesomeIcons.plane,
                                   '${l10n.from}: ${widget.departureLocation}'),
                               const SizedBox(width: 12),
                             ],
-                            _buildInfoChip(Icons.calendar_today,
+                            _buildInfoChip(FontAwesomeIcons.calendar,
                                 '${plan.metadata.duration} ${l10n.days}'),
                             const SizedBox(width: 12),
-                            _buildInfoChip(
-                                Icons.attach_money,
+                            _buildInfoChip(FontAwesomeIcons.dollarSign,
                                 plan.metadata.budgetLevel.displayName),
                             const SizedBox(width: 12),
-                            _buildInfoChip(
-                                Icons.style, plan.metadata.style.name),
+                            _buildInfoChip(FontAwesomeIcons.paintbrush,
+                                plan.metadata.style.name),
                           ],
                         ),
                       );
@@ -607,7 +607,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                 final l10n = AppLocalizations.of(context)!;
                 return _buildSection(
                   l10n.budgetBreakdown,
-                  Icons.account_balance_wallet,
+                  FontAwesomeIcons.wallet,
                   _buildBudgetCard(plan),
                 );
               },
@@ -621,7 +621,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                 final l10n = AppLocalizations.of(context)!;
                 return _buildSection(
                   l10n.transportation,
-                  Icons.flight,
+                  FontAwesomeIcons.plane,
                   _buildTransportationCard(plan),
                 );
               },
@@ -635,7 +635,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                 final l10n = AppLocalizations.of(context)!;
                 return _buildSection(
                   l10n.accommodation,
-                  Icons.hotel,
+                  FontAwesomeIcons.hotel,
                   _buildAccommodationCard(plan),
                 );
               },
@@ -649,7 +649,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                 final l10n = AppLocalizations.of(context)!;
                 return _buildSection(
                   l10n.dailyItinerary,
-                  Icons.event_note,
+                  FontAwesomeIcons.noteSticky,
                   Column(
                     children: plan.dailyItineraries
                         .map((day) => _buildDayCard(day))
@@ -667,7 +667,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                 final l10n = AppLocalizations.of(context)!;
                 return _buildSection(
                   l10n.mustVisitAttractions,
-                  Icons.place,
+                  FontAwesomeIcons.locationPin,
                   Column(
                     children: plan.attractions
                         .map((attraction) => _buildAttractionCard(attraction))
@@ -685,7 +685,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                 final l10n = AppLocalizations.of(context)!;
                 return _buildSection(
                   l10n.recommendedRestaurants,
-                  Icons.restaurant,
+                  FontAwesomeIcons.utensils,
                   Column(
                     children: plan.restaurants
                         .map((restaurant) => _buildRestaurantCard(restaurant))
@@ -703,7 +703,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                 final l10n = AppLocalizations.of(context)!;
                 return _buildSection(
                   l10n.travelTips,
-                  Icons.lightbulb_outline,
+                  FontAwesomeIcons.lightbulb,
                   Column(
                     children:
                         plan.tips.map((tip) => _buildTipItem(tip)).toList(),
@@ -782,18 +782,15 @@ class _TravelPlanPageState extends State<TravelPlanPage>
           ),
           child: Column(
             children: [
-              _buildBudgetRow(
-                  l10n.transportation, plan.budget.transportation),
+              _buildBudgetRow(l10n.transportation, plan.budget.transportation),
               const Divider(height: 24),
-              _buildBudgetRow(
-                  l10n.accommodation, plan.budget.accommodation),
+              _buildBudgetRow(l10n.accommodation, plan.budget.accommodation),
               const Divider(height: 24),
               _buildBudgetRow(l10n.foodAndDining, plan.budget.food),
               const Divider(height: 24),
               _buildBudgetRow(l10n.activities, plan.budget.activities),
               const Divider(height: 24),
-              _buildBudgetRow(
-                  l10n.miscellaneous, plan.budget.miscellaneous),
+              _buildBudgetRow(l10n.miscellaneous, plan.budget.miscellaneous),
               const Divider(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -861,7 +858,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
           .where((line) => line.trim().isNotEmpty)
           .toList();
     }
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -874,7 +871,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
         children: [
           Row(
             children: [
-              const Icon(Icons.flight_takeoff,
+              const Icon(FontAwesomeIcons.plane,
                   color: Color(0xFFFF4458), size: 20),
               const SizedBox(width: 8),
               Text(
@@ -918,7 +915,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                   Row(
                     children: [
                       const Icon(
-                        Icons.local_airport,
+                        FontAwesomeIcons.plane,
                         color: Color(0xFFFF4458),
                         size: 18,
                       ),
@@ -1068,7 +1065,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                           // 价格和时长
                           Row(
                             children: [
-                              Icon(Icons.attach_money,
+                              Icon(FontAwesomeIcons.dollarSign,
                                   size: 14, color: Colors.grey[600]),
                               const SizedBox(width: 4),
                               Text(
@@ -1080,7 +1077,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                                 ),
                               ),
                               const SizedBox(width: 16),
-                              Icon(Icons.schedule,
+                              Icon(FontAwesomeIcons.clock,
                                   size: 14, color: Colors.grey[600]),
                               const SizedBox(width: 4),
                               Text(
@@ -1098,7 +1095,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Icon(Icons.info_outline,
+                                Icon(FontAwesomeIcons.circleInfo,
                                     size: 14, color: Colors.blue[400]),
                                 const SizedBox(width: 4),
                                 Expanded(
@@ -1122,7 +1119,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
               ),
             ),
           ],
-          
+
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(12),
@@ -1154,7 +1151,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
           const SizedBox(height: 16),
           Row(
             children: [
-              const Icon(Icons.directions_subway,
+              const Icon(FontAwesomeIcons.trainSubway,
                   color: Color(0xFFFF4458), size: 20),
               const SizedBox(width: 8),
               Text(
@@ -1248,7 +1245,8 @@ class _TravelPlanPageState extends State<TravelPlanPage>
           const SizedBox(height: 8),
           Row(
             children: [
-              const Icon(Icons.location_on, size: 14, color: Colors.grey),
+              const Icon(FontAwesomeIcons.locationDot,
+                  size: 14, color: Colors.grey),
               const SizedBox(width: 4),
               Text(
                 plan.accommodation.recommendedArea,
@@ -1287,7 +1285,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
             ),
             child: Row(
               children: [
-                const Icon(Icons.tips_and_updates,
+                const Icon(FontAwesomeIcons.lightbulb,
                     size: 16, color: Colors.blue),
                 const SizedBox(width: 8),
                 Expanded(
@@ -1364,7 +1362,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.info_outline,
+                      const Icon(FontAwesomeIcons.circleInfo,
                           size: 16, color: Colors.amber),
                       const SizedBox(width: 8),
                       Expanded(
@@ -1429,7 +1427,8 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Icon(Icons.location_on, size: 12, color: Colors.grey[500]),
+                    Icon(FontAwesomeIcons.locationDot,
+                        size: 12, color: Colors.grey[500]),
                     const SizedBox(width: 4),
                     Text(
                       activity.location,
@@ -1439,7 +1438,8 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Icon(Icons.attach_money, size: 12, color: Colors.grey[500]),
+                    Icon(FontAwesomeIcons.dollarSign,
+                        size: 12, color: Colors.grey[500]),
                     Text(
                       '\$${activity.estimatedCost.toStringAsFixed(0)}',
                       style: TextStyle(
@@ -1480,7 +1480,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                   width: 100,
                   height: 100,
                   color: Colors.grey[300],
-                  child: const Icon(Icons.image),
+                  child: const Icon(FontAwesomeIcons.image),
                 );
               },
             ),
@@ -1511,14 +1511,15 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(Icons.star, size: 12, color: Colors.amber),
+                      const Icon(FontAwesomeIcons.star,
+                          size: 12, color: Colors.amber),
                       const SizedBox(width: 4),
                       Text(
                         attraction.rating.toString(),
                         style: const TextStyle(fontSize: 11),
                       ),
                       const SizedBox(width: 12),
-                      const Icon(Icons.attach_money,
+                      const Icon(FontAwesomeIcons.dollarSign,
                           size: 12, color: Color(0xFFFF4458)),
                       Text(
                         '\$${attraction.entryFee.toStringAsFixed(0)}',
@@ -1558,7 +1559,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                   width: 100,
                   height: 100,
                   color: Colors.grey[300],
-                  child: const Icon(Icons.restaurant),
+                  child: const Icon(FontAwesomeIcons.utensils),
                 );
               },
             ),
@@ -1597,7 +1598,8 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(Icons.star, size: 12, color: Colors.amber),
+                      const Icon(FontAwesomeIcons.star,
+                          size: 12, color: Colors.amber),
                       const SizedBox(width: 4),
                       Text(
                         restaurant.rating.toString(),

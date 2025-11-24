@@ -1,13 +1,14 @@
+import 'package:df_admin_mobile/features/interest/domain/entities/interest.dart';
+import 'package:df_admin_mobile/features/interest/presentation/controllers/interest_state_controller.dart';
+import 'package:df_admin_mobile/features/skill/domain/entities/skill.dart';
+import 'package:df_admin_mobile/features/skill/presentation/controllers/skill_state_controller.dart';
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/interests_selector.dart';
+import 'package:df_admin_mobile/widgets/skills_selector.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import '../features/interest/domain/entities/interest.dart';
-import '../features/interest/presentation/controllers/interest_state_controller.dart';
-import '../features/skill/domain/entities/skill.dart';
-import '../features/skill/presentation/controllers/skill_state_controller.dart';
-import '../features/user/presentation/controllers/user_state_controller.dart';
-import '../widgets/interests_selector.dart';
-import '../widgets/skills_selector.dart';
 
 /// 技能和兴趣选择页面
 /// 用于用户注册流程或个人资料编辑
@@ -48,20 +49,12 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage>
     final currentUser = _userStateController.currentUser.value;
 
     if (currentUser == null) {
-      Get.snackbar(
-        '提示',
-        '请先登录以保存您的技能和兴趣',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      AppToast.error('请先登录以保存您的技能和兴趣');
       return;
     }
 
     if (_selectedSkills.isEmpty && _selectedInterests.isEmpty) {
-      Get.snackbar(
-        '提示',
-        '请至少选择一个技能或兴趣',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      AppToast.error('请至少选择一个技能或兴趣');
       return;
     }
 
@@ -111,13 +104,7 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage>
               _selectedInterests.isNotEmpty;
 
       if (!hasSkillFailure && !hasInterestFailure) {
-        Get.snackbar(
-          '保存成功',
-          '已保存 $skillSuccessCount 个技能和 $interestSuccessCount 个兴趣',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
+        AppToast.error('已保存 $skillSuccessCount 个技能和 $interestSuccessCount 个兴趣');
 
         // 返回上一页
         Get.back();
@@ -132,23 +119,11 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage>
               '兴趣保存失败 ${_selectedInterests.length - interestSuccessCount}/${_selectedInterests.length}');
         }
 
-        Get.snackbar(
-          '部分保存失败',
-          failureMessages.join(' · '),
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.orange,
-          colorText: Colors.white,
-        );
+        AppToast.warning(failureMessages.join(' · '));
       }
     } catch (e) {
       print('❌ 保存失败: $e');
-      Get.snackbar(
-        '保存失败',
-        '无法保存您的选择，请稍后重试',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      AppToast.error('无法保存您的选择，请稍后重试');
     } finally {
       setState(() => _isSaving = false);
     }
@@ -162,8 +137,8 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage>
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
-            Tab(text: '技能', icon: Icon(Icons.work_outline)),
-            Tab(text: '兴趣', icon: Icon(Icons.favorite_outline)),
+            Tab(text: '技能', icon: Icon(FontAwesomeIcons.briefcase)),
+            Tab(text: '兴趣', icon: Icon(FontAwesomeIcons.heart)),
           ],
         ),
         actions: [

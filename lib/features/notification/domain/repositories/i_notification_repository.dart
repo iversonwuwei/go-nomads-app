@@ -1,5 +1,5 @@
-import '../../../../core/domain/result.dart';
-import '../entities/app_notification.dart';
+import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/notification/domain/entities/app_notification.dart';
 
 /// 通知仓储接口
 abstract class INotificationRepository {

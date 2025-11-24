@@ -1,11 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../generated/app_localizations.dart';
-import '../widgets/app_toast.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 
 /// Add Innovation Project Page
 /// 添加创意项目页面
@@ -155,7 +156,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
                 child: Row(
                   children: [
                     const Icon(
-                      Icons.info_outline,
+                      FontAwesomeIcons.circleInfo,
                       color: Color(0xFF8B5CF6),
                     ),
                     const SizedBox(width: 12),
@@ -176,7 +177,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
 
               // 1. 基本信息
               _buildSectionTitle(
-                icon: Icons.rocket_launch,
+                icon: FontAwesomeIcons.rocket,
                 title: l10n.basicInformation,
                 color: const Color(0xFF8B5CF6),
               ),
@@ -186,7 +187,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
                 controller: _projectNameController,
                 label: l10n.projectName,
                 hint: l10n.projectNameHint,
-                icon: Icons.title,
+                icon: FontAwesomeIcons.heading,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return l10n.pleaseEnterProjectName;
@@ -201,7 +202,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
                 controller: _elevatorPitchController,
                 label: l10n.elevatorPitch,
                 hint: l10n.elevatorPitchHint,
-                icon: Icons.chat_bubble_outline,
+                icon: FontAwesomeIcons.message,
                 maxLines: 2,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -220,7 +221,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
 
               // 2. 问题与解决方案
               _buildSectionTitle(
-                icon: Icons.lightbulb_outline,
+                icon: FontAwesomeIcons.lightbulb,
                 title: l10n.problemAndSolution,
                 color: const Color(0xFFEF4444),
               ),
@@ -230,7 +231,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
                 controller: _problemController,
                 label: l10n.problem,
                 hint: l10n.problemHint,
-                icon: Icons.error_outline,
+                icon: FontAwesomeIcons.circleExclamation,
                 maxLines: 5,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -246,7 +247,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
                 controller: _solutionController,
                 label: l10n.solution,
                 hint: l10n.solutionHint,
-                icon: Icons.check_circle_outline,
+                icon: FontAwesomeIcons.circleCheck,
                 maxLines: 5,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -260,7 +261,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
 
               // 3. 市场定位
               _buildSectionTitle(
-                icon: Icons.people_outline,
+                icon: FontAwesomeIcons.users,
                 title: l10n.marketPositioning,
                 color: const Color(0xFF3B82F6),
               ),
@@ -270,7 +271,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
                 controller: _targetAudienceController,
                 label: l10n.targetAudience,
                 hint: l10n.targetAudienceHint,
-                icon: Icons.people,
+                icon: FontAwesomeIcons.users,
                 maxLines: 3,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -286,7 +287,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
                 controller: _productTypeController,
                 label: l10n.productType,
                 hint: l10n.productTypeHint,
-                icon: Icons.devices,
+                icon: FontAwesomeIcons.laptop,
               ),
 
               const SizedBox(height: 16),
@@ -295,7 +296,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
                 controller: _keyFeaturesController,
                 label: l10n.keyFeatures,
                 hint: l10n.keyFeaturesHint,
-                icon: Icons.star_outline,
+                icon: FontAwesomeIcons.star,
                 maxLines: 4,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -309,7 +310,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
 
               // 4. 竞争与商业
               _buildSectionTitle(
-                icon: Icons.trending_up,
+                icon: FontAwesomeIcons.chartLine,
                 title: l10n.competitionAndBusiness,
                 color: const Color(0xFF10B981),
               ),
@@ -319,7 +320,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
                 controller: _competitiveAdvantageController,
                 label: l10n.competitiveAdvantage,
                 hint: l10n.competitiveAdvantageHint,
-                icon: Icons.emoji_events,
+                icon: FontAwesomeIcons.trophy,
                 maxLines: 4,
               ),
 
@@ -329,7 +330,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
                 controller: _businessModelController,
                 label: l10n.businessModel,
                 hint: l10n.businessModelHint,
-                icon: Icons.attach_money,
+                icon: FontAwesomeIcons.dollarSign,
                 maxLines: 4,
               ),
 
@@ -339,7 +340,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
                 controller: _marketOpportunityController,
                 label: l10n.marketOpportunity,
                 hint: l10n.marketOpportunityHint,
-                icon: Icons.analytics_outlined,
+                icon: FontAwesomeIcons.chartLine,
                 maxLines: 4,
               ),
 
@@ -347,7 +348,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
 
               // 5. 进展与需求
               _buildSectionTitle(
-                icon: Icons.timeline,
+                icon: FontAwesomeIcons.clockRotateLeft,
                 title: l10n.progressAndNeeds,
                 color: const Color(0xFFF59E0B),
               ),
@@ -357,7 +358,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
                 controller: _currentStatusController,
                 label: l10n.currentStatus,
                 hint: l10n.currentStatusHint,
-                icon: Icons.flag,
+                icon: FontAwesomeIcons.flag,
                 maxLines: 4,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -373,7 +374,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
                 controller: _askController,
                 label: l10n.ask,
                 hint: l10n.askHint,
-                icon: Icons.handshake_outlined,
+                icon: FontAwesomeIcons.handshake,
                 maxLines: 4,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -387,7 +388,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
 
               // 6. 团队信息 (可选)
               _buildSectionTitle(
-                icon: Icons.groups,
+                icon: FontAwesomeIcons.userGroup,
                 title: '${l10n.teamInformation} (${l10n.optional})',
                 color: const Color(0xFF8B5CF6),
               ),
@@ -397,7 +398,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
                 controller: _teamMembersController,
                 label: l10n.teamMembers,
                 hint: l10n.teamMembersHint,
-                icon: Icons.people,
+                icon: FontAwesomeIcons.users,
                 maxLines: 6,
               ),
 
@@ -519,7 +520,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
       children: [
         Row(
           children: [
-            const Icon(Icons.image, size: 20, color: Color(0xFF8B5CF6)),
+            const Icon(FontAwesomeIcons.image, size: 20, color: Color(0xFF8B5CF6)),
             const SizedBox(width: 8),
             Text(
               l10n.projectCover,
@@ -576,7 +577,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
                             backgroundColor: Colors.black.withAlpha(128),
                           ),
                           icon: const Icon(
-                            Icons.close,
+                            FontAwesomeIcons.xmark,
                             color: Colors.white,
                             size: 20,
                           ),
@@ -588,7 +589,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        Icons.add_photo_alternate,
+                        FontAwesomeIcons.photoFilm,
                         size: 48,
                         color: Colors.grey[400],
                       ),

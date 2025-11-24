@@ -1,7 +1,7 @@
+import 'package:df_admin_mobile/features/city/domain/entities/city_rating_item.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../features/city/domain/entities/city_rating_item.dart';
 import 'rating_icon_catalog.dart';
 
 /// Shows a dialog allowing the user to enter/update a rating item label,
@@ -13,7 +13,7 @@ Future<CityRatingItem?> showRatingItemDialog({
 }) {
   final textController = TextEditingController(text: initial?.label ?? '');
   double scoreValue = initial?.score ?? 4.0;
-  IconData selectedIcon = initial?.icon ?? RatingIconCatalog.icons.first;
+  IconData selectedIcon = initial?.getIcon() ?? RatingIconCatalog.icons.first;
   String? errorText;
 
   return Get.dialog<CityRatingItem>(

@@ -1,5 +1,6 @@
-// import '../../../../models/user_city_content_models.dart' as legacy;
-import '../../domain/entities/user_city_content.dart' as domain;
+// import 'package:df_admin_mobile/models/user_city_content_models.dart' as legacy;
+import 'package:df_admin_mobile/features/user_city_content/domain/entities/user_city_content.dart'
+    as domain;
 
 /// UserCityPhoto DTO
 class UserCityPhotoDto {

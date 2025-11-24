@@ -1,6 +1,6 @@
-import '../../../../core/domain/result.dart';
-import '../entities/auth_token.dart';
-import '../entities/auth_user.dart';
+import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/auth/domain/entities/auth_token.dart';
+import 'package:df_admin_mobile/features/auth/domain/entities/auth_user.dart';
 
 /// 认证仓储接口
 abstract class IAuthRepository {

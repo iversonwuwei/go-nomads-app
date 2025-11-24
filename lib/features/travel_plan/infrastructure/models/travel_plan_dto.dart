@@ -1,4 +1,4 @@
-import '../../domain/entities/travel_plan.dart';
+import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan.dart';
 
 /// TravelPlan DTO - 基础设施层数据传输对象
 /// 完整的AI生成旅行计划数据传输对象

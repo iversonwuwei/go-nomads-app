@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
-import '../features/coworking/domain/entities/coworking_review.dart';
-import '../features/coworking/domain/repositories/icoworking_review_repository.dart';
-import '../generated/app_localizations.dart';
-import '../services/token_storage_service.dart';
-import '../widgets/app_toast.dart';
+import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_review.dart';
+import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_review_repository.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/services/token_storage_service.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'add_coworking_review_page.dart';
 
 /// Coworking Review 列表页面 - 无限滚动
@@ -150,7 +151,7 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add_rounded, size: 24),
+            icon: const Icon(FontAwesomeIcons.circlePlus, size: 24),
             onPressed: () async {
               final result = await Get.to<bool>(
                 () => AddCoworkingReviewPage(
@@ -215,7 +216,7 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
               borderRadius: BorderRadius.circular(60),
             ),
             child: const Icon(
-              Icons.rate_review_outlined,
+              FontAwesomeIcons.commentDots,
               size: 56,
               color: Color(0xFFC7C7CC),
             ),
@@ -368,7 +369,7 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
             alignment: Alignment.centerRight,
             padding: const EdgeInsets.only(right: 20),
             child: const Icon(
-              Icons.delete_outline_rounded,
+              FontAwesomeIcons.trash,
               color: Colors.white,
               size: 28,
             ),
@@ -482,7 +483,7 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const Icon(
-                            Icons.star_rounded,
+                            FontAwesomeIcons.star,
                             color: Color(0xFFFFCC00),
                             size: 16,
                           ),
@@ -570,7 +571,7 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
                           mainAxisSize: MainAxisSize.min,
                           children: const [
                             Icon(
-                              Icons.verified_rounded,
+                              FontAwesomeIcons.circleCheck,
                               size: 12,
                               color: Color(0xFF34C759),
                             ),
@@ -601,7 +602,7 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
                           mainAxisSize: MainAxisSize.min,
                           children: const [
                             Icon(
-                              Icons.pending_rounded,
+                              FontAwesomeIcons.clock,
                               size: 12,
                               color: Color(0xFFFF9500),
                             ),

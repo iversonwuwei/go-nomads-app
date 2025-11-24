@@ -1,7 +1,7 @@
 import 'package:df_admin_mobile/core/domain/result.dart';
 
-import '../../domain/entities/innovation_project.dart';
-import '../../domain/repositories/i_innovation_project_repository.dart';
+import 'package:df_admin_mobile/features/innovation_project/domain/entities/innovation_project.dart';
+import 'package:df_admin_mobile/features/innovation_project/domain/repositories/i_innovation_project_repository.dart';
 
 /// 获取所有项目用例
 class GetProjectsUseCase {

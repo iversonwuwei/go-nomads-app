@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 
-import '../domain/result.dart';
+import 'package:df_admin_mobile/core/domain/result.dart';
 
 /// API异常处理工具类
 class ApiExceptionHandler {

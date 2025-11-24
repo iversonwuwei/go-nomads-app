@@ -1,6 +1,6 @@
 import 'package:df_admin_mobile/core/domain/result.dart';
 
-import '../entities/interest.dart';
+import 'package:df_admin_mobile/features/interest/domain/entities/interest.dart';
 
 /// Interest Repository Interface - 兴趣仓储接口
 abstract class IInterestRepository {

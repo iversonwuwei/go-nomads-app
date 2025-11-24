@@ -1,13 +1,13 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/hotel/domain/entities/hotel.dart';
+import 'package:df_admin_mobile/features/hotel/infrastructure/repositories/hotel_repository.dart';
+import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import '../config/app_colors.dart';
-import '../core/domain/result.dart';
-import '../features/hotel/domain/entities/hotel.dart';
-import '../features/hotel/infrastructure/repositories/hotel_repository.dart';
-import '../services/http_service.dart';
-import '../widgets/app_toast.dart';
 
 /// 房型列表页面
 class RoomTypeListPage extends StatefulWidget {
@@ -77,7 +77,7 @@ class _RoomTypeListPageState extends State<RoomTypeListPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.hotel, size: 48.w, color: Colors.grey),
+                Icon(FontAwesomeIcons.hotel, size: 48.w, color: Colors.grey),
                 SizedBox(height: 12.h),
                 Text(
                   '暂无房型',
@@ -131,7 +131,7 @@ class _RoomTypeListPageState extends State<RoomTypeListPage> {
                       return Container(
                         height: 180.h,
                         color: Colors.grey[300],
-                        child: Icon(Icons.image_not_supported,
+                        child: Icon(FontAwesomeIcons.imagePortrait,
                             size: 48.w, color: Colors.grey),
                       );
                     },
@@ -191,20 +191,20 @@ class _RoomTypeListPageState extends State<RoomTypeListPage> {
                 runSpacing: 8.h,
                 children: [
                   _buildInfoChip(
-                    icon: Icons.single_bed,
+                    icon: FontAwesomeIcons.bed,
                     label: roomType.bedType,
                   ),
                   _buildInfoChip(
-                    icon: Icons.people,
+                    icon: FontAwesomeIcons.users,
                     label: '最多${roomType.maxOccupancy}人',
                   ),
                   _buildInfoChip(
-                    icon: Icons.square_foot,
+                    icon: FontAwesomeIcons.rulerCombined,
                     label: '${roomType.size.toStringAsFixed(0)}㎡',
                   ),
                   if (roomType.isAvailable)
                     _buildInfoChip(
-                      icon: Icons.hotel,
+                      icon: FontAwesomeIcons.hotel,
                       label: '${roomType.availableRooms}间可用',
                       color: Colors.green,
                     ),

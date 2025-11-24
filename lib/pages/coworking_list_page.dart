@@ -3,11 +3,12 @@ import 'package:df_admin_mobile/features/coworking/presentation/controllers/cowo
 import 'package:df_admin_mobile/pages/add_coworking_page.dart';
 import 'package:df_admin_mobile/pages/coworking_detail_page.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../generated/app_localizations.dart';
-import '../routes/route_refresh_observer.dart';
-import '../widgets/coworking_verification_badge.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
+import 'package:df_admin_mobile/widgets/coworking_verification_badge.dart';
 
 /// Coworking List Page
 /// 共享办公空间列表页面
@@ -83,7 +84,7 @@ class _CoworkingListPageState extends State<CoworkingListPage>
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(FontAwesomeIcons.arrowLeft, color: Colors.black87),
           onPressed: () => Get.back(),
         ),
         title: Text(
@@ -97,7 +98,7 @@ class _CoworkingListPageState extends State<CoworkingListPage>
         actions: [
           // 排序按钮
           PopupMenuButton<String>(
-            icon: const Icon(Icons.sort, color: Colors.black54, size: 20),
+            icon: const Icon(FontAwesomeIcons.arrowDownShortWide, color: Colors.black54, size: 20),
             onSelected: (value) {
               switch (value) {
                 case 'rating':
@@ -117,7 +118,7 @@ class _CoworkingListPageState extends State<CoworkingListPage>
                   value: 'rating',
                   child: Row(
                     children: [
-                      const Icon(Icons.star, size: 20),
+                      const Icon(FontAwesomeIcons.star, size: 20),
                       const SizedBox(width: 8),
                       Text(l10n.rating),
                     ],
@@ -127,7 +128,7 @@ class _CoworkingListPageState extends State<CoworkingListPage>
                   value: 'price',
                   child: Row(
                     children: [
-                      const Icon(Icons.attach_money, size: 20),
+                      const Icon(FontAwesomeIcons.dollarSign, size: 20),
                       const SizedBox(width: 8),
                       Text(l10n.price),
                     ],
@@ -137,7 +138,7 @@ class _CoworkingListPageState extends State<CoworkingListPage>
                   value: 'distance',
                   child: Row(
                     children: [
-                      const Icon(Icons.location_on, size: 20),
+                      const Icon(FontAwesomeIcons.locationDot, size: 20),
                       const SizedBox(width: 8),
                       Text(l10n.distance),
                     ],
@@ -148,7 +149,7 @@ class _CoworkingListPageState extends State<CoworkingListPage>
           ),
           // 添加按钮
           IconButton(
-            icon: const Icon(Icons.add_circle_outline, color: Colors.black54),
+            icon: const Icon(FontAwesomeIcons.circlePlus, color: Colors.black54),
             onPressed: () async {
               // 跳转到添加页面,预填充当前城市信息
               final result = await Navigator.push(
@@ -193,7 +194,7 @@ class _CoworkingListPageState extends State<CoworkingListPage>
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            Icons.search_off,
+                            FontAwesomeIcons.magnifyingGlass,
                             size: 80,
                             color: Colors.grey[400],
                           ),
@@ -267,7 +268,7 @@ class _CoworkingListPageState extends State<CoworkingListPage>
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
                         color: Colors.grey[300],
-                        child: const Icon(Icons.business, size: 50),
+                        child: const Icon(FontAwesomeIcons.building, size: 50),
                       );
                     },
                   ),
@@ -301,7 +302,7 @@ class _CoworkingListPageState extends State<CoworkingListPage>
                       Row(
                         children: [
                           const Icon(
-                            Icons.star,
+                            FontAwesomeIcons.star,
                             size: 16,
                             color: Colors.amber,
                           ),
@@ -329,7 +330,7 @@ class _CoworkingListPageState extends State<CoworkingListPage>
                   // 地址
                   Row(
                     children: [
-                      Icon(Icons.location_on,
+                      Icon(FontAwesomeIcons.locationDot,
                           size: 16, color: Colors.grey[600]),
                       const SizedBox(width: 4),
                       Expanded(
@@ -352,7 +353,7 @@ class _CoworkingListPageState extends State<CoworkingListPage>
                     const SizedBox(height: 6),
                     Row(
                       children: [
-                        Icon(Icons.person_outline,
+                        Icon(FontAwesomeIcons.user,
                             size: 14, color: Colors.grey[500]),
                         const SizedBox(width: 4),
                         Text(
@@ -372,7 +373,7 @@ class _CoworkingListPageState extends State<CoworkingListPage>
                   Row(
                     children: [
                       _buildInfoChip(
-                        Icons.wifi,
+                        FontAwesomeIcons.wifi,
                         '${space.specs.wifiSpeed?.toStringAsFixed(0) ?? '0'} Mbps',
                         Colors.blue,
                       ),
@@ -382,7 +383,7 @@ class _CoworkingListPageState extends State<CoworkingListPage>
                           builder: (context) {
                             final l10n = AppLocalizations.of(context)!;
                             return _buildInfoChip(
-                              Icons.attach_money,
+                              FontAwesomeIcons.dollarSign,
                               '${space.pricing.monthlyRate!.toStringAsFixed(0)}/${l10n.monthlyRate}',
                               Colors.green,
                             );
@@ -391,7 +392,7 @@ class _CoworkingListPageState extends State<CoworkingListPage>
                       const SizedBox(width: 8),
                       if (space.amenities.has24HourAccess)
                         _buildInfoChip(
-                          Icons.access_time,
+                          FontAwesomeIcons.clock,
                           '24/7',
                           Colors.orange,
                         ),
@@ -436,7 +437,7 @@ class _CoworkingListPageState extends State<CoworkingListPage>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.local_offer,
+                          Icon(FontAwesomeIcons.tag,
                               size: 16, color: Colors.green[700]),
                           const SizedBox(width: 4),
                           Text(

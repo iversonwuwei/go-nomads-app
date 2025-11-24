@@ -1,15 +1,14 @@
-import 'package:flutter/material.dart';
+import 'package:df_admin_mobile/core/application/use_case.dart';
+import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/auth/application/use_cases/auth_database_use_cases.dart';
+import 'package:df_admin_mobile/features/auth/application/use_cases/auth_use_cases.dart';
+import 'package:df_admin_mobile/features/auth/domain/entities/auth_token.dart';
+import 'package:df_admin_mobile/features/auth/domain/entities/auth_user.dart';
+import 'package:df_admin_mobile/features/auth/domain/repositories/iauth_database_repository.dart';
+import 'package:df_admin_mobile/features/auth/domain/repositories/iauth_repository.dart';
+import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:get/get.dart';
-
-import '../../../../core/application/use_case.dart';
-import '../../../../core/domain/result.dart';
-import '../../../../services/http_service.dart';
-import '../../application/use_cases/auth_database_use_cases.dart';
-import '../../application/use_cases/auth_use_cases.dart';
-import '../../domain/entities/auth_token.dart';
-import '../../domain/entities/auth_user.dart';
-import '../../domain/repositories/iauth_database_repository.dart';
-import '../../domain/repositories/iauth_repository.dart';
 
 /// 认证状态控制器
 class AuthStateController extends GetxController {
@@ -207,13 +206,7 @@ class AuthStateController extends GetxController {
         return true;
       },
       onFailure: (error) {
-        Get.snackbar(
-          '登录失败',
-          error.message,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.shade100,
-          colorText: Colors.red.shade900,
-        );
+        AppToast.error(error.message);
         return false;
       },
     );
@@ -269,13 +262,7 @@ class AuthStateController extends GetxController {
         return true;
       },
       onFailure: (error) {
-        Get.snackbar(
-          '注册失败',
-          error.message,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.shade100,
-          colorText: Colors.red.shade900,
-        );
+        AppToast.error(error.message);
         return false;
       },
     );
@@ -306,11 +293,7 @@ class AuthStateController extends GetxController {
         currentUser.value = null;
         currentToken.value = null;
         isAuthenticated.value = false;
-        Get.snackbar(
-          '成功',
-          '已退出登录',
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        AppToast.success('已退出登录');
       },
       onFailure: (error) {
         // 即使失败也清除本地状态
@@ -345,21 +328,11 @@ class AuthStateController extends GetxController {
     return result.fold(
       onSuccess: (user) {
         currentUser.value = user;
-        Get.snackbar(
-          '成功',
-          '用户资料已更新',
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        AppToast.success('用户资料已更新');
         return true;
       },
       onFailure: (error) {
-        Get.snackbar(
-          '更新失败',
-          error.message,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.shade100,
-          colorText: Colors.red.shade900,
-        );
+        AppToast.error(error.message);
         return false;
       },
     );

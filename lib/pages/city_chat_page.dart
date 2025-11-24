@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../features/chat/domain/entities/chat.dart';
-import '../features/chat/presentation/controllers/chat_state_controller.dart';
-import '../generated/app_localizations.dart';
-import '../widgets/app_toast.dart';
-import '../widgets/skeletons/skeletons.dart';
+import 'package:df_admin_mobile/features/chat/domain/entities/chat.dart';
+import 'package:df_admin_mobile/features/chat/presentation/controllers/chat_state_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 
 /// 城市聊天室页面 - WeChat 风格设计
 ///
@@ -54,7 +55,7 @@ class _ChatRoomsListView extends StatelessWidget {
         elevation: 0,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(FontAwesomeIcons.arrowLeft, color: Colors.black),
           onPressed: () => Get.back(),
         ),
         title: Text(
@@ -67,7 +68,7 @@ class _ChatRoomsListView extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add_circle_outline, color: Colors.black),
+            icon: const Icon(FontAwesomeIcons.circlePlus, color: Colors.black),
             onPressed: () => AppToast.info('创建聊天室功能即将推出'),
           ),
         ],
@@ -95,7 +96,7 @@ class _ChatRoomsListView extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Icons.chat_bubble_outline_rounded,
+            FontAwesomeIcons.message,
             size: 80,
             color: Colors.grey[400],
           ),
@@ -154,7 +155,7 @@ class _ChatRoomItem extends StatelessWidget {
             ),
             borderRadius: BorderRadius.circular(6),
           ),
-          child: const Icon(Icons.people, color: Colors.white, size: 28),
+          child: const Icon(FontAwesomeIcons.users, color: Colors.white, size: 28),
         ),
         if (room.stats.onlineUsers > 0)
           Positioned(
@@ -284,7 +285,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
       elevation: 0,
       systemOverlayStyle: SystemUiOverlayStyle.dark,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.black),
+        icon: const Icon(FontAwesomeIcons.arrowLeft, color: Colors.black),
         onPressed: () => widget.controller.leaveRoom(),
       ),
       title: Column(
@@ -306,7 +307,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.more_horiz, color: Colors.black),
+          icon: const Icon(FontAwesomeIcons.ellipsis, color: Colors.black),
           onPressed: () => _showRoomMenu(),
         ),
       ],
@@ -318,7 +319,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.chat_outlined, size: 64, color: Color(0xFFCCCCCC)),
+          Icon(FontAwesomeIcons.comments, size: 64, color: Color(0xFFCCCCCC)),
           SizedBox(height: 16),
           Text(
             '开始聊天吧',
@@ -389,7 +390,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.close, size: 20),
+            icon: const Icon(FontAwesomeIcons.xmark, size: 20),
             onPressed: () => widget.controller.clearReplyTo(),
           ),
         ],
@@ -420,7 +421,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
             Container(
               margin: const EdgeInsets.only(bottom: 6),
               child: IconButton(
-                icon: const Icon(Icons.mic_none_rounded,
+                icon: const Icon(FontAwesomeIcons.microphone,
                     color: Color(0xFF666666), size: 26),
                 onPressed: () => _showMoreOptions(),
               ),
@@ -460,12 +461,12 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                 child: Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.emoji_emotions_outlined,
+                      icon: const Icon(FontAwesomeIcons.faceSmile,
                           color: Color(0xFF666666), size: 26),
                       onPressed: () => AppToast.info('表情功能即将推出'),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.add_circle_outline,
+                      icon: const Icon(FontAwesomeIcons.circlePlus,
                           color: Color(0xFF666666), size: 26),
                       onPressed: () => _showMoreOptions(),
                     ),
@@ -490,7 +491,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
           color: hasText ? const Color(0xFF07C160) : const Color(0xFFE5E5E5),
           borderRadius: BorderRadius.circular(6),
         ),
-        child: const Icon(Icons.send, color: Colors.white, size: 20),
+        child: const Icon(FontAwesomeIcons.paperPlane, color: Colors.white, size: 20),
       ),
     );
   }
@@ -525,7 +526,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                 ),
               ),
               _buildMenuOption(
-                icon: Icons.people_outline,
+                icon: FontAwesomeIcons.users,
                 title: '查看成员',
                 onTap: () {
                   Get.back();
@@ -533,7 +534,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                 },
               ),
               _buildMenuOption(
-                icon: Icons.search,
+                icon: FontAwesomeIcons.magnifyingGlass,
                 title: '搜索聊天记录',
                 onTap: () {
                   Get.back();
@@ -541,7 +542,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                 },
               ),
               _buildMenuOption(
-                icon: Icons.notifications_off_outlined,
+                icon: FontAwesomeIcons.bellSlash,
                 title: '消息免打扰',
                 onTap: () {
                   Get.back();
@@ -549,7 +550,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                 },
               ),
               _buildMenuOption(
-                icon: Icons.volume_off_outlined,
+                icon: FontAwesomeIcons.volumeXmark,
                 title: '静音',
                 onTap: () {
                   Get.back();
@@ -558,7 +559,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
               ),
               const Divider(height: 1, thickness: 8, color: Color(0xFFF5F5F5)),
               _buildMenuOption(
-                icon: Icons.exit_to_app,
+                icon: FontAwesomeIcons.rightFromBracket,
                 title: '退出聊天室',
                 titleColor: Colors.red,
                 iconColor: Colors.red,
@@ -634,7 +635,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                   crossAxisSpacing: 16,
                   children: [
                     _buildMoreOption(
-                      icon: Icons.photo_library,
+                      icon: FontAwesomeIcons.images,
                       label: '相册',
                       onTap: () async {
                         Get.back();
@@ -648,7 +649,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                       },
                     ),
                     _buildMoreOption(
-                      icon: Icons.camera_alt,
+                      icon: FontAwesomeIcons.camera,
                       label: '拍摄',
                       onTap: () async {
                         Get.back();
@@ -662,7 +663,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                       },
                     ),
                     _buildMoreOption(
-                      icon: Icons.location_on,
+                      icon: FontAwesomeIcons.locationDot,
                       label: '位置',
                       onTap: () {
                         Get.back();
@@ -670,7 +671,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                       },
                     ),
                     _buildMoreOption(
-                      icon: Icons.mic,
+                      icon: FontAwesomeIcons.microphone,
                       label: '语音',
                       onTap: () {
                         Get.back();
@@ -678,7 +679,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                       },
                     ),
                     _buildMoreOption(
-                      icon: Icons.videocam,
+                      icon: FontAwesomeIcons.video,
                       label: '视频',
                       onTap: () {
                         Get.back();
@@ -686,7 +687,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                       },
                     ),
                     _buildMoreOption(
-                      icon: Icons.person_add,
+                      icon: FontAwesomeIcons.userPlus,
                       label: '名片',
                       onTap: () {
                         Get.back();
@@ -694,7 +695,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                       },
                     ),
                     _buildMoreOption(
-                      icon: Icons.folder,
+                      icon: FontAwesomeIcons.folder,
                       label: '文件',
                       onTap: () {
                         Get.back();
@@ -702,7 +703,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                       },
                     ),
                     _buildMoreOption(
-                      icon: Icons.favorite,
+                      icon: FontAwesomeIcons.heart,
                       label: '收藏',
                       onTap: () {
                         Get.back();
@@ -791,7 +792,7 @@ class _MessageBubble extends StatelessWidget {
                     : null,
                 child: (message.author.userAvatar == null ||
                         message.author.userAvatar!.isEmpty)
-                    ? const Icon(Icons.person, size: 20)
+                    ? const Icon(FontAwesomeIcons.user, size: 20)
                     : null,
               ),
               const SizedBox(width: 8),
@@ -840,7 +841,7 @@ class _MessageBubble extends StatelessWidget {
                     : null,
                 child: (message.author.userAvatar == null ||
                         message.author.userAvatar!.isEmpty)
-                    ? const Icon(Icons.person, size: 20)
+                    ? const Icon(FontAwesomeIcons.user, size: 20)
                     : null,
               ),
             ],

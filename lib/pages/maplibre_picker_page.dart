@@ -2,13 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:maplibre_gl/maplibre_gl.dart';
 
-import '../config/app_colors.dart';
-import '../generated/app_localizations.dart';
-import '../widgets/app_toast.dart';
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 
 class MapLibrePickerPage extends StatefulWidget {
   final double? initialLatitude;
@@ -263,7 +264,7 @@ class _MapLibrePickerPageState extends State<MapLibrePickerPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_outlined,
+          icon: const Icon(FontAwesomeIcons.arrowLeft,
               color: AppColors.backButtonDark),
           onPressed: () => Get.back(),
         ),
@@ -285,7 +286,7 @@ class _MapLibrePickerPageState extends State<MapLibrePickerPage> {
               textInputAction: TextInputAction.search,
               decoration: InputDecoration(
                 hintText: l10n.searchCityOrCountry,
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: const Icon(FontAwesomeIcons.magnifyingGlass),
                 suffixIcon: _isSearching
                     ? const Padding(
                         padding: EdgeInsets.all(12),
@@ -298,7 +299,7 @@ class _MapLibrePickerPageState extends State<MapLibrePickerPage> {
                     : (_searchController.text.isEmpty
                         ? null
                         : IconButton(
-                            icon: const Icon(Icons.clear),
+                            icon: const Icon(FontAwesomeIcons.xmark),
                             onPressed: () {
                               _searchController.clear();
                               setState(() => _searchResults = const []);
@@ -332,7 +333,7 @@ class _MapLibrePickerPageState extends State<MapLibrePickerPage> {
                 const IgnorePointer(
                   child: Center(
                     child: Icon(
-                      Icons.location_on_rounded,
+                      FontAwesomeIcons.locationDot,
                       size: 50,
                       color: Color(0xFFFF4458),
                     ),

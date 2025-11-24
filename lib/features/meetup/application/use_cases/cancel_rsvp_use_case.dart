@@ -1,4 +1,4 @@
-import '../../domain/repositories/i_meetup_repository.dart';
+import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
 
 /// 取消 RSVP Use Case
 class CancelRsvpUseCase {

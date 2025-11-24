@@ -1,13 +1,14 @@
+import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_review.dart'
+    as review_entity;
+import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
+import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_review_repository.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/widgets/coworking_verification_badge.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../features/coworking/domain/entities/coworking_review.dart'
-    as review_entity;
-import '../features/coworking/domain/entities/coworking_space.dart';
-import '../features/coworking/domain/repositories/icoworking_review_repository.dart';
-import '../generated/app_localizations.dart';
-import '../widgets/coworking_verification_badge.dart';
 import 'add_coworking_review_page.dart';
 import 'coworking_reviews_page.dart';
 import 'osm_navigation_page.dart';
@@ -140,7 +141,8 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                               errorBuilder: (context, error, stackTrace) {
                                 return Container(
                                   color: Colors.grey[300],
-                                  child: const Icon(Icons.business, size: 100),
+                                  child: const Icon(FontAwesomeIcons.building,
+                                      size: 100),
                                 );
                               },
                             );
@@ -152,7 +154,8 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                           errorBuilder: (context, error, stackTrace) {
                             return Container(
                               color: Colors.grey[300],
-                              child: const Icon(Icons.business, size: 100),
+                              child: const Icon(FontAwesomeIcons.building,
+                                  size: 100),
                             );
                           },
                         ),
@@ -257,7 +260,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.star,
+                              const Icon(FontAwesomeIcons.star,
                                   size: 18, color: Colors.amber),
                               const SizedBox(width: 4),
                               Text(
@@ -275,7 +278,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                                 ),
                               ),
                               const SizedBox(width: 4),
-                              Icon(Icons.chevron_right,
+                              Icon(FontAwesomeIcons.chevronRight,
                                   size: 16, color: Colors.grey[600]),
                             ],
                           ),
@@ -309,7 +312,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.update,
+                              const Icon(FontAwesomeIcons.arrowsRotate,
                                   size: 18, color: Colors.grey),
                               const SizedBox(width: 4),
                               Text(
@@ -331,7 +334,8 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
 
                 // Address
                 ListTile(
-                  leading: const Icon(Icons.location_on, color: Colors.red),
+                  leading: const Icon(FontAwesomeIcons.locationDot,
+                      color: Colors.red),
                   title: Text(_space.location.address),
                   subtitle: Text(
                       '${_space.location.city}, ${_space.location.country}'),
@@ -342,7 +346,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                     _space.creatorName!.isNotEmpty)
                   ListTile(
                     leading:
-                        const Icon(Icons.person_outline, color: Colors.blue),
+                        const Icon(FontAwesomeIcons.user, color: Colors.blue),
                     title: Text(l10n.createdBy),
                     subtitle: Text(_space.creatorName!),
                   ),
@@ -430,7 +434,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
           children: [
             Expanded(
               child: OutlinedButton.icon(
-                icon: const Icon(Icons.directions),
+                icon: const Icon(FontAwesomeIcons.diamondTurnRight),
                 label: Text(l10n.directions),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -444,7 +448,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
             const SizedBox(width: 12),
             Expanded(
               child: ElevatedButton.icon(
-                icon: const Icon(Icons.language),
+                icon: const Icon(FontAwesomeIcons.globe),
                 label: Text(l10n.visitWebsite),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -484,7 +488,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                     l10n.hourly,
                     _space.pricing.hourlyRate!,
                     _space.pricing.currency,
-                    Icons.access_time,
+                    FontAwesomeIcons.clock,
                   ),
                 ),
               if (_space.pricing.dailyRate != null) ...[
@@ -494,7 +498,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                     l10n.daily,
                     _space.pricing.dailyRate!,
                     _space.pricing.currency,
-                    Icons.today,
+                    FontAwesomeIcons.calendarDay,
                   ),
                 ),
               ],
@@ -509,7 +513,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                     l10n.weekly,
                     _space.pricing.weeklyRate!,
                     _space.pricing.currency,
-                    Icons.date_range,
+                    FontAwesomeIcons.calendarDays,
                   ),
                 ),
               if (_space.pricing.monthlyRate != null) ...[
@@ -519,7 +523,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                     l10n.monthly,
                     _space.pricing.monthlyRate!,
                     _space.pricing.currency,
-                    Icons.calendar_month,
+                    FontAwesomeIcons.calendarDays,
                   ),
                 ),
               ],
@@ -537,7 +541,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.local_offer, color: Colors.green[700]),
+                  Icon(FontAwesomeIcons.tag, color: Colors.green[700]),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -612,7 +616,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                 child: _buildSpecCard(
                   l10n.wifiSpeed,
                   '${_space.specs.wifiSpeed?.toStringAsFixed(0) ?? 'N/A'} Mbps',
-                  Icons.wifi,
+                  FontAwesomeIcons.wifi,
                   Colors.blue,
                 ),
               ),
@@ -621,7 +625,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                 child: _buildSpecCard(
                   l10n.capacity,
                   '${_space.specs.capacity ?? 'N/A'} ${l10n.people}',
-                  Icons.people,
+                  FontAwesomeIcons.users,
                   Colors.green,
                 ),
               ),
@@ -635,7 +639,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                   child: _buildSpecCard(
                     l10n.desks,
                     '${_space.specs.numberOfDesks}',
-                    Icons.desk,
+                    FontAwesomeIcons.chair,
                     Colors.orange,
                   ),
                 ),
@@ -646,7 +650,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                   child: _buildSpecCard(
                     l10n.meetingRooms,
                     '${_space.specs.numberOfMeetingRooms}',
-                    Icons.meeting_room,
+                    FontAwesomeIcons.doorOpen,
                     Colors.purple,
                   ),
                 ),
@@ -658,7 +662,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
             _buildSpecCard(
               l10n.noiseLevel,
               _getNoiseDisplayText(_space.specs.noiseLevel!, l10n),
-              Icons.volume_down,
+              FontAwesomeIcons.volumeLow,
               Colors.red,
             ),
           ],
@@ -668,7 +672,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
             _buildSpecCard(
               'Space Type',
               _getSpaceTypeDisplayText(_space.specs.spaceType!, l10n),
-              Icons.dashboard,
+              FontAwesomeIcons.gaugeHigh,
               Colors.indigo,
             ),
           ],
@@ -678,7 +682,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
             _buildSpecCard(
               'Natural Light',
               'Available',
-              Icons.wb_sunny,
+              FontAwesomeIcons.sun,
               Colors.amber,
             ),
           ],
@@ -772,54 +776,54 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
             spacing: 8,
             runSpacing: 8,
             children: amenities.map((amenity) {
-              IconData icon = Icons.check_circle;
+              IconData icon = FontAwesomeIcons.circleCheck;
               Color color = Colors.green;
 
               // 为不同设施设置不同图标
               if (amenity.contains('WiFi')) {
-                icon = Icons.wifi;
+                icon = FontAwesomeIcons.wifi;
                 color = Colors.blue;
               } else if (amenity.contains('Coffee')) {
-                icon = Icons.coffee;
+                icon = FontAwesomeIcons.mugSaucer;
                 color = Colors.brown;
               } else if (amenity.contains('Printer')) {
-                icon = Icons.print;
+                icon = FontAwesomeIcons.print;
                 color = Colors.grey;
               } else if (amenity.contains('Meeting')) {
-                icon = Icons.meeting_room;
+                icon = FontAwesomeIcons.doorOpen;
                 color = Colors.purple;
               } else if (amenity.contains('Phone')) {
-                icon = Icons.phone;
+                icon = FontAwesomeIcons.phone;
                 color = Colors.orange;
               } else if (amenity.contains('Kitchen')) {
-                icon = Icons.kitchen;
+                icon = FontAwesomeIcons.kitchenSet;
                 color = Colors.red;
               } else if (amenity.contains('Parking')) {
-                icon = Icons.local_parking;
+                icon = FontAwesomeIcons.squareParking;
                 color = Colors.indigo;
               } else if (amenity.contains('24/7')) {
-                icon = Icons.access_time;
+                icon = FontAwesomeIcons.clock;
                 color = Colors.deepOrange;
               } else if (amenity.contains('A/C') || amenity.contains('Air')) {
-                icon = Icons.ac_unit;
+                icon = FontAwesomeIcons.snowflake;
                 color = Colors.cyan;
               } else if (amenity.contains('Shower')) {
-                icon = Icons.shower;
+                icon = FontAwesomeIcons.shower;
                 color = Colors.lightBlue;
               } else if (amenity.contains('Standing Desk')) {
-                icon = Icons.desk;
+                icon = FontAwesomeIcons.chair;
                 color = Colors.teal;
               } else if (amenity.contains('Locker')) {
-                icon = Icons.lock;
+                icon = FontAwesomeIcons.lock;
                 color = Colors.blueGrey;
               } else if (amenity.contains('Bike')) {
-                icon = Icons.directions_bike;
+                icon = FontAwesomeIcons.personBiking;
                 color = Colors.lightGreen;
               } else if (amenity.contains('Event')) {
-                icon = Icons.event;
+                icon = FontAwesomeIcons.calendarDays;
                 color = Colors.deepPurple;
               } else if (amenity.contains('Pet')) {
-                icon = Icons.pets;
+                icon = FontAwesomeIcons.paw;
                 color = Colors.pink;
               }
 
@@ -856,7 +860,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Row(
                   children: [
-                    const Icon(Icons.access_time, size: 20),
+                    const Icon(FontAwesomeIcons.clock, size: 20),
                     const SizedBox(width: 12),
                     Text(
                       hours,
@@ -906,7 +910,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(
-                        Icons.phone,
+                        FontAwesomeIcons.phone,
                         color: Colors.white,
                         size: 24,
                       ),
@@ -948,7 +952,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const Icon(
-                            Icons.call,
+                            FontAwesomeIcons.phone,
                             color: Colors.white,
                             size: 16,
                           ),
@@ -991,7 +995,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(
-                        Icons.email,
+                        FontAwesomeIcons.envelope,
                         color: Colors.white,
                         size: 24,
                       ),
@@ -1022,7 +1026,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                       ),
                     ),
                     const Icon(
-                      Icons.arrow_forward_ios,
+                      FontAwesomeIcons.arrowRight,
                       size: 16,
                       color: Colors.red,
                     ),
@@ -1054,7 +1058,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(
-                        Icons.language,
+                        FontAwesomeIcons.globe,
                         color: Colors.white,
                         size: 24,
                       ),
@@ -1085,7 +1089,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                       ),
                     ),
                     const Icon(
-                      Icons.arrow_forward_ios,
+                      FontAwesomeIcons.arrowRight,
                       size: 16,
                       color: Colors.green,
                     ),
@@ -1117,7 +1121,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
               ),
               TextButton.icon(
                 onPressed: _navigateToAddComment,
-                icon: const Icon(Icons.add_comment, size: 20),
+                icon: const Icon(FontAwesomeIcons.commentMedical, size: 20),
                 label: const Text('发表评论'),
               ),
             ],
@@ -1136,7 +1140,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
               alignment: Alignment.center,
               child: Column(
                 children: [
-                  Icon(Icons.comment_outlined,
+                  Icon(FontAwesomeIcons.comment,
                       size: 48, color: Colors.grey[400]),
                   const SizedBox(height: 16),
                   Text(
@@ -1221,8 +1225,8 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                               children: List.generate(5, (index) {
                                 return Icon(
                                   index < comment.rating.toInt()
-                                      ? Icons.star
-                                      : Icons.star_border,
+                                      ? FontAwesomeIcons.star
+                                      : FontAwesomeIcons.star,
                                   color: Colors.amber,
                                   size: 18,
                                 );
@@ -1267,7 +1271,8 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                                         width: 100,
                                         height: 100,
                                         color: Colors.grey[300],
-                                        child: const Icon(Icons.image),
+                                        child:
+                                            const Icon(FontAwesomeIcons.image),
                                       );
                                     },
                                   ),

@@ -1,8 +1,8 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/features/notification/presentation/controllers/notification_state_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import '../config/app_colors.dart';
-import '../features/notification/presentation/controllers/notification_state_controller.dart';
 
 /// 通知入口按钮（顶部栏使用）
 class NotificationButton extends StatelessWidget {
@@ -25,8 +25,8 @@ class NotificationButton extends StatelessWidget {
           IconButton(
             icon: Icon(
               unreadCount > 0
-                  ? Icons.notifications_active
-                  : Icons.notifications_outlined,
+                  ? FontAwesomeIcons.solidBell
+                  : FontAwesomeIcons.bell,
               color: AppColors.icon,
             ),
             tooltip: '通知',
@@ -34,7 +34,7 @@ class NotificationButton extends StatelessWidget {
               Get.toNamed('/notifications');
             },
           ),
-          
+
           // 未读数量徽章
           if (unreadCount > 0)
             Positioned(

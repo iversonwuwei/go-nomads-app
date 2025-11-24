@@ -1,6 +1,6 @@
-import '../entities/city_rating_category.dart';
-import '../entities/city_rating_info.dart';
-import '../repositories/icity_rating_repository.dart';
+import 'package:df_admin_mobile/features/city/domain/entities/city_rating_category.dart';
+import 'package:df_admin_mobile/features/city/domain/entities/city_rating_info.dart';
+import 'package:df_admin_mobile/features/city/domain/repositories/icity_rating_repository.dart';
 
 /// 城市评分用例
 class CityRatingUseCases {

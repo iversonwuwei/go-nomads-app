@@ -1,5 +1,5 @@
-import '../../../../core/domain/result.dart';
-import '../entities/simple_user.dart';
+import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/user_management/domain/entities/simple_user.dart';
 
 /// User Management Repository Interface
 abstract class IUserManagementRepository {

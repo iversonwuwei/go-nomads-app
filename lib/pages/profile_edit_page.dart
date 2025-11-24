@@ -1,22 +1,22 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/config/supabase_config.dart';
+import 'package:df_admin_mobile/controllers/locale_controller.dart';
+import 'package:df_admin_mobile/features/interest/domain/entities/interest.dart';
+import 'package:df_admin_mobile/features/interest/presentation/controllers/interest_state_controller.dart';
+import 'package:df_admin_mobile/features/skill/domain/entities/skill.dart';
+import 'package:df_admin_mobile/features/skill/presentation/controllers/skill_state_controller.dart';
+import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:df_admin_mobile/features/user_management/domain/repositories/iuser_management_repository.dart';
+import 'package:df_admin_mobile/features/user_management/presentation/controllers/user_management_state_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
+import 'package:df_admin_mobile/services/token_storage_service.dart';
+import 'package:df_admin_mobile/utils/image_upload_helper.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import '../config/app_colors.dart';
-import '../config/supabase_config.dart';
-import '../controllers/locale_controller.dart';
-import '../features/interest/domain/entities/interest.dart';
-import '../features/interest/presentation/controllers/interest_state_controller.dart';
-import '../features/skill/domain/entities/skill.dart';
-import '../features/skill/presentation/controllers/skill_state_controller.dart';
-import '../features/user/domain/entities/user.dart';
-import '../features/user/presentation/controllers/user_state_controller.dart';
-import '../features/user_management/domain/repositories/iuser_management_repository.dart';
-import '../features/user_management/presentation/controllers/user_management_state_controller.dart';
-import '../generated/app_localizations.dart';
-import '../routes/route_refresh_observer.dart';
-import '../services/token_storage_service.dart';
-import '../utils/image_upload_helper.dart';
-import '../widgets/app_toast.dart';
 
 /// 用户资料编辑页面 - 浅色性冷淡风格
 class ProfileEditPage extends StatefulWidget {
@@ -382,8 +382,8 @@ class _ProfileEditPageState extends State<ProfileEditPage>
                       ),
                       child: Icon(
                         _uploadingAvatar
-                            ? Icons.hourglass_empty
-                            : Icons.camera_alt,
+                            ? FontAwesomeIcons.hourglass
+                            : FontAwesomeIcons.camera,
                         color: Colors.white,
                         size: 20,
                       ),
@@ -439,7 +439,7 @@ class _ProfileEditPageState extends State<ProfileEditPage>
                   borderSide: BorderSide(color: AppColors.borderLight),
                 ),
                 suffixIcon: Icon(
-                  Icons.lock_outline,
+                  FontAwesomeIcons.lock,
                   color: AppColors.iconSecondary,
                 ),
               ),
@@ -538,7 +538,8 @@ class _ProfileEditPageState extends State<ProfileEditPage>
                   ],
                 ),
                 TextButton.icon(
-                  icon: Icon(Icons.edit, color: AppColors.accent, size: 20),
+                  icon: Icon(FontAwesomeIcons.pen,
+                      color: AppColors.accent, size: 20),
                   label: Text(
                     '编辑',
                     style: TextStyle(color: AppColors.accent),
@@ -583,7 +584,7 @@ class _ProfileEditPageState extends State<ProfileEditPage>
                           )
                         : null,
                     label: Text(skill.name),
-                    deleteIcon: const Icon(Icons.close, size: 18),
+                    deleteIcon: const Icon(FontAwesomeIcons.xmark, size: 18),
                     onDeleted: isLoading
                         ? null
                         : () => profileController.removeSkill(skill.id),
@@ -662,7 +663,7 @@ class _ProfileEditPageState extends State<ProfileEditPage>
                   ],
                 ),
                 TextButton.icon(
-                  icon: const Icon(Icons.edit,
+                  icon: const Icon(FontAwesomeIcons.pen,
                       color: Color(0xFFBA68C8), size: 20),
                   label: const Text(
                     '编辑',
@@ -708,7 +709,7 @@ class _ProfileEditPageState extends State<ProfileEditPage>
                           )
                         : null,
                     label: Text(interest.name),
-                    deleteIcon: const Icon(Icons.close, size: 18),
+                    deleteIcon: const Icon(FontAwesomeIcons.xmark, size: 18),
                     onDeleted: isLoading
                         ? null
                         : () => profileController.removeInterest(interest.id),
@@ -820,7 +821,7 @@ class _ProfileEditPageState extends State<ProfileEditPage>
             dropdownColor: Colors.white,
             underline: const SizedBox(),
             icon: Icon(
-              Icons.arrow_drop_down,
+              FontAwesomeIcons.chevronDown,
               color: AppColors.iconSecondary,
             ),
             items: [
@@ -892,7 +893,7 @@ class _ProfileEditPageState extends State<ProfileEditPage>
         dropdownColor: Colors.white,
         underline: const SizedBox(),
         icon: Icon(
-          Icons.arrow_drop_down,
+          FontAwesomeIcons.chevronDown,
           color: AppColors.iconSecondary,
         ),
         items: options.map((option) {
@@ -929,19 +930,19 @@ class _ProfileEditPageState extends State<ProfileEditPage>
           ),
           SizedBox(height: isMobile ? 12 : 16),
           _buildActionTile(
-            icon: Icons.lock_outline,
+            icon: FontAwesomeIcons.lock,
             title: l10n.changePassword,
             onTap: () => AppToast.info(l10n.changePasswordComingSoon),
           ),
           Divider(color: AppColors.divider),
           _buildActionTile(
-            icon: Icons.privacy_tip_outlined,
+            icon: FontAwesomeIcons.userSecret,
             title: l10n.privacySettings,
             onTap: () => AppToast.info(l10n.privacySettingsComingSoon),
           ),
           Divider(color: AppColors.divider),
           _buildActionTile(
-            icon: Icons.delete_outline,
+            icon: FontAwesomeIcons.trash,
             title: l10n.deleteAccount,
             titleColor: Colors.red,
             onTap: () {
@@ -991,7 +992,7 @@ class _ProfileEditPageState extends State<ProfileEditPage>
         ),
       ),
       trailing: Icon(
-        Icons.chevron_right,
+        FontAwesomeIcons.chevronRight,
         color: AppColors.iconLight,
       ),
       onTap: onTap,
@@ -1173,7 +1174,7 @@ class _ProfileEditPageState extends State<ProfileEditPage>
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.warning_amber_rounded,
+                    Icon(FontAwesomeIcons.triangleExclamation,
                         color: Colors.orange, size: 20),
                     const SizedBox(width: 8),
                     Expanded(
@@ -1198,7 +1199,7 @@ class _ProfileEditPageState extends State<ProfileEditPage>
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () => _batchSetAdmin(),
-                  icon: const Icon(Icons.admin_panel_settings, size: 18),
+                  icon: const Icon(FontAwesomeIcons.userShield, size: 18),
                   label: const Text('设为管理员'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.accent,
@@ -1211,7 +1212,7 @@ class _ProfileEditPageState extends State<ProfileEditPage>
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () => _batchSetUser(),
-                  icon: const Icon(Icons.person, size: 18),
+                  icon: const Icon(FontAwesomeIcons.user, size: 18),
                   label: const Text('设为普通用户'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.textPrimary,
@@ -1229,7 +1230,7 @@ class _ProfileEditPageState extends State<ProfileEditPage>
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () => _userManagementController!.toggleSelectAll(),
-                  icon: const Icon(Icons.check_box, size: 18),
+                  icon: const Icon(FontAwesomeIcons.squareCheck, size: 18),
                   label: const Text('全选/取消全选'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.textSecondary,
@@ -1243,7 +1244,7 @@ class _ProfileEditPageState extends State<ProfileEditPage>
                 child: OutlinedButton.icon(
                   onPressed: () =>
                       _userManagementController!.loadUsers(refresh: true),
-                  icon: const Icon(Icons.refresh, size: 18),
+                  icon: const Icon(FontAwesomeIcons.arrowsRotate, size: 18),
                   label: const Text('刷新'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.textSecondary,
@@ -1532,23 +1533,14 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
         if (!mounted) return;
         final error = widget.skillController.errorMessage.value;
         if (error != null && error.isNotEmpty) {
-          Get.snackbar(
-            '加载失败',
-            error,
-            snackPosition: SnackPosition.BOTTOM,
-          );
+          AppToast.error(error);
         }
       });
     } catch (e) {
       print('❌ 加载技能失败: $e');
       if (!mounted) return;
       setState(() => _isLoading = false);
-      Get.snackbar(
-        '加载失败',
-        '无法加载技能列表: $e',
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 5),
-      );
+      AppToast.error('无法加载技能列表: $e');
     }
   }
 
@@ -1700,7 +1692,7 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
                           ),
                         const SizedBox(width: 8),
                         IconButton(
-                          icon: const Icon(Icons.close),
+                          icon: const Icon(FontAwesomeIcons.xmark),
                           onPressed: () => Navigator.pop(context),
                         ),
                       ],
@@ -1715,7 +1707,7 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
                 child: TextField(
                   decoration: InputDecoration(
                     hintText: '搜索技能...',
-                    prefixIcon: const Icon(Icons.search),
+                    prefixIcon: const Icon(FontAwesomeIcons.magnifyingGlass),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -1942,23 +1934,14 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
         if (!mounted) return;
         final error = widget.interestController.errorMessage.value;
         if (error != null && error.isNotEmpty) {
-          Get.snackbar(
-            '加载失败',
-            error,
-            snackPosition: SnackPosition.BOTTOM,
-          );
+          AppToast.error(error);
         }
       });
     } catch (e) {
       print('❌ 加载兴趣失败: $e');
       if (!mounted) return;
       setState(() => _isLoading = false);
-      Get.snackbar(
-        '加载失败',
-        '无法加载兴趣列表: $e',
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 5),
-      );
+      AppToast.error('无法加载兴趣列表: $e');
     }
   }
 
@@ -2110,7 +2093,7 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
                           ),
                         const SizedBox(width: 8),
                         IconButton(
-                          icon: const Icon(Icons.close),
+                          icon: const Icon(FontAwesomeIcons.xmark),
                           onPressed: () => Navigator.pop(context),
                         ),
                       ],
@@ -2125,7 +2108,7 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
                 child: TextField(
                   decoration: InputDecoration(
                     hintText: '搜索兴趣...',
-                    prefixIcon: const Icon(Icons.search),
+                    prefixIcon: const Icon(FontAwesomeIcons.magnifyingGlass),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),

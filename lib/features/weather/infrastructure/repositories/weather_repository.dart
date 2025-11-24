@@ -1,8 +1,8 @@
-import '../../../../core/domain/result.dart';
-import '../../../city/domain/repositories/i_city_repository.dart';
-import '../../domain/entities/weather.dart';
-import '../../domain/repositories/iweather_repository.dart';
-import '../models/weather_dto.dart';
+import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
+import 'package:df_admin_mobile/features/weather/domain/entities/weather.dart';
+import 'package:df_admin_mobile/features/weather/domain/repositories/iweather_repository.dart';
+import 'package:df_admin_mobile/features/weather/infrastructure/models/weather_dto.dart';
 
 /// Weather Repository 实现 (Infrastructure Layer)
 ///

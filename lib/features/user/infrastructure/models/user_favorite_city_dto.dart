@@ -1,4 +1,5 @@
-import '../../domain/entities/user_favorite_city.dart' as domain;
+import 'package:df_admin_mobile/features/user/domain/entities/user_favorite_city.dart'
+    as domain;
 
 // Type alias for backward compatibility
 typedef UserFavoriteCity = UserFavoriteCityDto;

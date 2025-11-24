@@ -7,8 +7,8 @@ import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../features/city/presentation/controllers/city_state_controller.dart';
-import '../generated/app_localizations.dart';
+import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'city_detail_page.dart';
 
 /// 全球城市地图页面 - 显示所有城市位置和会员数量

@@ -1,9 +1,9 @@
 import 'package:get/get.dart';
 
-import '../../../../services/http_service.dart';
-import '../../domain/entities/meetup.dart';
-import '../../domain/repositories/i_meetup_repository.dart';
-import '../models/meetup_dto.dart';
+import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
+import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
+import 'package:df_admin_mobile/features/meetup/infrastructure/models/meetup_dto.dart';
 
 /// Meetup Repository 实现
 /// 使用 HttpService 进行数据访问

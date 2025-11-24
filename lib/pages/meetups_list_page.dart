@@ -1,18 +1,19 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/controllers/location_controller.dart';
+import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
+import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
+import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/routes/app_routes.dart';
+import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
-import '../config/app_colors.dart';
-import '../controllers/location_controller.dart';
-import '../features/auth/presentation/controllers/auth_state_controller.dart';
-import '../features/meetup/domain/entities/meetup.dart';
-import '../features/meetup/domain/repositories/i_meetup_repository.dart';
-import '../features/meetup/presentation/controllers/meetup_state_controller.dart';
-import '../generated/app_localizations.dart';
-import '../routes/app_routes.dart';
-import '../routes/route_refresh_observer.dart';
-import '../widgets/app_toast.dart';
 import 'create_meetup_page.dart';
 import 'meetup_detail_page.dart';
 
@@ -244,8 +245,8 @@ class _MeetupsListPageState extends State<MeetupsListPage>
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon:
-              Icon(Icons.arrow_back, color: AppColors.textPrimary, size: 24.sp),
+          icon: Icon(FontAwesomeIcons.arrowLeft,
+              color: AppColors.textPrimary, size: 24.sp),
           onPressed: () => Get.back(),
         ),
         title: Text(
@@ -261,7 +262,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
                 children: [
                   IconButton(
                     icon: Icon(
-                      Icons.tune_outlined,
+                      FontAwesomeIcons.sliders,
                       color: _hasActiveFilters
                           ? const Color(0xFFFF4458)
                           : AppColors.textSecondary,
@@ -285,7 +286,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
                 ],
               )),
           IconButton(
-            icon: Icon(Icons.add_circle_outline,
+            icon: Icon(FontAwesomeIcons.circlePlus,
                 color: const Color(0xFFFF4458), size: 24.sp),
             onPressed: () async {
               // 跳转到创建页面，等待返回结果
@@ -374,7 +375,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
                         // View toggle (could add list/grid view later)
                         IconButton(
                           icon: Icon(
-                            Icons.grid_view_outlined,
+                            FontAwesomeIcons.grip,
                             color: AppColors.textSecondary,
                             size: 20.sp,
                           ),
@@ -385,7 +386,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
                         // Sort
                         PopupMenuButton<String>(
                           icon: Icon(
-                            Icons.sort_outlined,
+                            FontAwesomeIcons.arrowDownWideShort,
                             color: AppColors.textSecondary,
                             size: 20.sp,
                           ),
@@ -433,7 +434,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Icons.event_busy,
+            FontAwesomeIcons.calendarXmark,
             size: 80.sp,
             color: AppColors.textTertiary,
           ),
@@ -794,7 +795,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
 
                   // 时间
                   _buildInfoRow(
-                    Icons.schedule,
+                    FontAwesomeIcons.clock,
                     _formatDateTime(widget.meetup.schedule.startTime),
                     widget.meetup.isStartingSoon
                         ? const Color(0xFFFF4458)
@@ -804,14 +805,14 @@ class _MeetupListCardState extends State<_MeetupListCard> {
                   SizedBox(height: 8.h),
 
                   // 地点
-                  _buildInfoRow(
-                      Icons.location_on, widget.meetup.venue.name, null),
+                  _buildInfoRow(FontAwesomeIcons.locationDot,
+                      widget.meetup.venue.name, null),
 
                   SizedBox(height: 8.h),
 
                   // 参与人数和剩余名额 - 使用本地状态
                   _buildInfoRow(
-                    Icons.people,
+                    FontAwesomeIcons.users,
                     '$_currentAttendees/$_maxAttendees attendees · $_remainingSlots spots left',
                     _isFull
                         ? Colors.orange
@@ -832,7 +833,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
                             : null,
                         child: (widget.meetup.organizer.avatarUrl == null ||
                                 widget.meetup.organizer.avatarUrl!.isEmpty)
-                            ? Icon(Icons.person, size: 16.r)
+                            ? Icon(FontAwesomeIcons.user, size: 16.r)
                             : null,
                       ),
                       SizedBox(width: 8.w),
@@ -869,7 +870,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
       ),
       child: Center(
         child: Icon(
-          Icons.event,
+          FontAwesomeIcons.calendarDays,
           size: 64.sp,
           color: const Color(0xFFBDBDBD),
         ),
@@ -1056,7 +1057,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
           shape: BoxShape.circle,
         ),
         child: Icon(
-          Icons.chat_bubble_outline,
+          FontAwesomeIcons.message,
           size: 18.sp,
           color: Colors.blue,
         ),
@@ -1149,7 +1150,7 @@ class _MeetupFilterDrawer extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      icon: Icon(Icons.close, size: 24.sp),
+                      icon: Icon(FontAwesomeIcons.xmark, size: 24.sp),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],

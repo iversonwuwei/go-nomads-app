@@ -42,7 +42,10 @@ class CityRatingItem {
     );
   }
 
-  IconData get icon => IconData(
+  /// Returns the IconData for this rating item.
+  /// Note: This is a method (not a getter) to avoid tree-shaking issues
+  /// when building release APK.
+  IconData getIcon() => IconData(
         iconCodePoint,
         fontFamily: fontFamily,
         fontPackage: fontPackage,

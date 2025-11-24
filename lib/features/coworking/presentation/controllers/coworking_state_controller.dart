@@ -1,8 +1,8 @@
 import 'package:get/get.dart';
 
-import '../../../../core/domain/result.dart';
-import '../../application/use_cases/coworking_use_cases.dart';
-import '../../domain/entities/coworking_space.dart';
+import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/coworking/application/use_cases/coworking_use_cases.dart';
+import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
 
 /// Coworking State Controller
 /// 管理 Coworking 相关的 UI 状态

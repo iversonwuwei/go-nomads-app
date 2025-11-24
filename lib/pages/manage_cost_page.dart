@@ -1,9 +1,11 @@
+import 'package:df_admin_mobile/features/user_city_content/domain/entities/user_city_content.dart';
+import 'package:df_admin_mobile/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
+import 'package:df_admin_mobile/services/token_storage_service.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../features/user_city_content/domain/entities/user_city_content.dart';
-import '../features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
-import '../services/token_storage_service.dart';
 import 'add_cost_page.dart';
 
 /// Cost 数据管理列表页面
@@ -73,22 +75,16 @@ class _ManageCostPageState extends State<ManageCostPage> {
 
     try {
       final controller = Get.find<UserCityContentStateController>();
-      final success =
-          await controller.deleteExpense(widget.cityId, expenseId);
+      final success = await controller.deleteExpense(widget.cityId, expenseId);
 
       if (success) {
-        Get.snackbar(
-          '成功',
-          '费用记录已删除',
-          backgroundColor: Colors.green[100],
-          duration: const Duration(seconds: 2),
-        );
+        AppToast.success('费用记录已删除');
         await _loadData();
       } else {
-        Get.snackbar('失败', '删除失败,请重试');
+        AppToast.error('删除失败,请重试');
       }
     } catch (e) {
-      Get.snackbar('错误', '删除失败: $e');
+      AppToast.error('删除失败: $e');
     }
   }
 
@@ -112,17 +108,17 @@ class _ManageCostPageState extends State<ManageCostPage> {
   IconData _getCategoryIcon(ExpenseCategory category) {
     switch (category) {
       case ExpenseCategory.food:
-        return Icons.restaurant;
+        return FontAwesomeIcons.utensils;
       case ExpenseCategory.transport:
-        return Icons.directions_bus;
+        return FontAwesomeIcons.bus;
       case ExpenseCategory.accommodation:
-        return Icons.hotel;
+        return FontAwesomeIcons.hotel;
       case ExpenseCategory.activity:
-        return Icons.local_activity;
+        return FontAwesomeIcons.ticket;
       case ExpenseCategory.shopping:
-        return Icons.shopping_bag;
+        return FontAwesomeIcons.bagShopping;
       case ExpenseCategory.other:
-        return Icons.more_horiz;
+        return FontAwesomeIcons.ellipsis;
     }
   }
 
@@ -152,7 +148,7 @@ class _ManageCostPageState extends State<ManageCostPage> {
         title: Text('${widget.cityName} - 费用管理'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add),
+            icon: const Icon(FontAwesomeIcons.plus),
             onPressed: () async {
               final result = await Get.to(() => AddCostPage(
                     cityId: widget.cityId,
@@ -176,7 +172,8 @@ class _ManageCostPageState extends State<ManageCostPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.attach_money, size: 80, color: Colors.grey[300]),
+                Icon(FontAwesomeIcons.dollarSign,
+                    size: 80, color: Colors.grey[300]),
                 const SizedBox(height: 16),
                 Text(
                   '暂无费用数据',
@@ -193,7 +190,7 @@ class _ManageCostPageState extends State<ManageCostPage> {
                       await _loadData();
                     }
                   },
-                  icon: const Icon(Icons.add),
+                  icon: const Icon(FontAwesomeIcons.plus),
                   label: const Text('添加第一条费用'),
                 ),
               ],
@@ -240,7 +237,7 @@ class _ManageCostPageState extends State<ManageCostPage> {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(Icons.calendar_today,
+                        Icon(FontAwesomeIcons.calendar,
                             size: 12, color: Colors.grey[600]),
                         const SizedBox(width: 4),
                         Text(
@@ -279,7 +276,8 @@ class _ManageCostPageState extends State<ManageCostPage> {
                     if (canDelete.value) ...[
                       const SizedBox(width: 8),
                       IconButton(
-                        icon: const Icon(Icons.delete_outline, color: Colors.red),
+                        icon: const Icon(FontAwesomeIcons.trash,
+                            color: Colors.red),
                         onPressed: () => _deleteExpense(expense.id),
                         tooltip: '删除',
                       ),
@@ -302,7 +300,7 @@ class _ManageCostPageState extends State<ManageCostPage> {
           }
         },
         tooltip: '添加费用',
-        child: const Icon(Icons.add),
+        child: const Icon(FontAwesomeIcons.plus),
       ),
     );
   }

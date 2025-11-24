@@ -1,5 +1,6 @@
-// import '../../../../models/coworking_space_model.dart' as legacy;
-import '../../domain/entities/coworking_space.dart' as entity;
+// import 'package:df_admin_mobile/models/coworking_space_model.dart' as legacy;
+import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart'
+    as entity;
 
 // Type aliases for backward compatibility
 typedef CoworkingSpace = CoworkingSpaceDto;

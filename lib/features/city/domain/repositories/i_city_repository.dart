@@ -1,6 +1,6 @@
-import '../../../../core/core.dart';
-import '../entities/city.dart';
-import '../entities/city_detail.dart';
+import 'package:df_admin_mobile/core/core.dart';
+import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
+import 'package:df_admin_mobile/features/city/domain/entities/city_detail.dart';
 
 /// 城市仓储接口 (Domain Layer)
 /// 定义城市数据访问的抽象契约,不依赖具体实现

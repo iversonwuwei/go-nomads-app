@@ -1,15 +1,15 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/routes/app_routes.dart';
+import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart' hide Badge;
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import '../config/app_colors.dart';
-import '../features/auth/presentation/controllers/auth_state_controller.dart';
-import '../features/user/domain/entities/user.dart';
-import '../features/user/presentation/controllers/user_state_controller.dart';
-import '../generated/app_localizations.dart';
-import '../routes/app_routes.dart';
-import '../routes/route_refresh_observer.dart';
-import '../widgets/app_toast.dart';
-import '../widgets/skeletons/skeletons.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -338,7 +338,7 @@ class _ProfilePageState extends State<ProfilePage>
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
-                    Icons.check,
+                    FontAwesomeIcons.check,
                     color: Colors.white,
                     size: 16,
                   ),
@@ -367,7 +367,7 @@ class _ProfilePageState extends State<ProfilePage>
                   const SizedBox(width: 8),
                   if (user.isVerified)
                     const Icon(
-                      Icons.verified,
+                      FontAwesomeIcons.circleCheck,
                       color: Color(0xFFFF4458),
                       size: 20,
                     ),
@@ -387,7 +387,7 @@ class _ProfilePageState extends State<ProfilePage>
                 Row(
                   children: [
                     const Icon(
-                      Icons.location_on,
+                      FontAwesomeIcons.locationDot,
                       size: 18,
                       color: Color(0xFFFF4458),
                     ),
@@ -609,7 +609,7 @@ class _ProfilePageState extends State<ProfilePage>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        Icons.lightbulb_outline,
+                        FontAwesomeIcons.lightbulb,
                         size: isMobile ? 48 : 64,
                         color: Colors.grey.withValues(alpha: 0.4),
                       ),
@@ -689,7 +689,7 @@ class _ProfilePageState extends State<ProfilePage>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        Icons.favorite_outline,
+                        FontAwesomeIcons.heart,
                         size: isMobile ? 48 : 64,
                         color: Colors.grey.withValues(alpha: 0.4),
                       ),
@@ -776,7 +776,7 @@ class _ProfilePageState extends State<ProfilePage>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        Icons.explore_outlined,
+                        FontAwesomeIcons.compass,
                         size: isMobile ? 48 : 64,
                         color: Colors.grey.withValues(alpha: 0.4),
                       ),
@@ -888,23 +888,23 @@ class _ProfilePageState extends State<ProfilePage>
 
     switch (platform.toLowerCase()) {
       case 'twitter':
-        icon = Icons.flutter_dash;
+        icon = FontAwesomeIcons.rocket;
         color = const Color(0xFF1DA1F2);
         break;
       case 'github':
-        icon = Icons.code;
+        icon = FontAwesomeIcons.code;
         color = const Color(0xFF171515);
         break;
       case 'linkedin':
-        icon = Icons.business;
+        icon = FontAwesomeIcons.building;
         color = const Color(0xFF0A66C2);
         break;
       case 'website':
-        icon = Icons.language;
+        icon = FontAwesomeIcons.globe;
         color = const Color(0xFF6B7280);
         break;
       default:
-        icon = Icons.link;
+        icon = FontAwesomeIcons.link;
         color = const Color(0xFF6B7280);
     }
 
@@ -947,7 +947,8 @@ class _ProfilePageState extends State<ProfilePage>
           ),
           child: Row(
             children: [
-              const Icon(Icons.logout, color: Color(0xFF6B7280), size: 20),
+              const Icon(FontAwesomeIcons.rightFromBracket,
+                  color: Color(0xFF6B7280), size: 20),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -985,7 +986,7 @@ class _ProfilePageState extends State<ProfilePage>
         Row(
           children: [
             const Icon(
-              Icons.auto_awesome,
+              FontAwesomeIcons.wandMagicSparkles,
               color: Color(0xFFFF4458),
               size: 20,
             ),
@@ -1006,7 +1007,7 @@ class _ProfilePageState extends State<ProfilePage>
                     title: 'Info',
                   );
                 },
-                icon: const Icon(Icons.add, size: 18),
+                icon: const Icon(FontAwesomeIcons.plus, size: 18),
                 label: Text(l10n.createNew),
                 style: TextButton.styleFrom(
                   foregroundColor: const Color(0xFFFF4458),
@@ -1033,7 +1034,7 @@ class _ProfilePageState extends State<ProfilePage>
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
-                    Icons.travel_explore,
+                    FontAwesomeIcons.earthAmericas,
                     size: 48,
                     color: Color(0xFFFF4458),
                   ),
@@ -1060,7 +1061,7 @@ class _ProfilePageState extends State<ProfilePage>
                   onPressed: () {
                     Get.toNamed(AppRoutes.cityList);
                   },
-                  icon: const Icon(Icons.explore, size: 18),
+                  icon: const Icon(FontAwesomeIcons.compass, size: 18),
                   label: Text(l10n.exploreCities),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFF4458),
@@ -1147,7 +1148,7 @@ class _ProfilePageState extends State<ProfilePage>
       child: Row(
         children: [
           const Icon(
-            Icons.info_outline,
+            FontAwesomeIcons.circleInfo,
             color: Color(0xFFFF8C00),
             size: 24,
           ),

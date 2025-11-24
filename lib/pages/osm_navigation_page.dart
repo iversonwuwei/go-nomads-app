@@ -1,14 +1,13 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-import '../config/app_colors.dart';
-import '../features/coworking/domain/entities/coworking_space.dart';
-import '../generated/app_localizations.dart';
-import '../widgets/app_toast.dart';
 
 // 地图瓦片源配置已简化,使用与 GlobalMapPage 相同的配置
 
@@ -97,39 +96,39 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
         name: '地铁站',
         type: POIType.transit,
         position: LatLng(center.latitude + 0.002, center.longitude + 0.002),
-        icon: Icons.subway,
+        icon: FontAwesomeIcons.trainSubway,
       ),
       POI(
         name: '公交站',
         type: POIType.transit,
         position: LatLng(center.latitude - 0.001, center.longitude + 0.001),
-        icon: Icons.directions_bus,
+        icon: FontAwesomeIcons.bus,
       ),
       // 住宿设施（示例）
       POI(
         name: '附近酒店',
         type: POIType.accommodation,
         position: LatLng(center.latitude + 0.003, center.longitude - 0.002),
-        icon: Icons.hotel,
+        icon: FontAwesomeIcons.hotel,
       ),
       POI(
         name: '青年旅舍',
         type: POIType.accommodation,
         position: LatLng(center.latitude - 0.002, center.longitude - 0.003),
-        icon: Icons.bed,
+        icon: FontAwesomeIcons.bed,
       ),
       // 餐饮设施（示例）
       POI(
         name: '咖啡厅',
         type: POIType.restaurant,
         position: LatLng(center.latitude + 0.001, center.longitude - 0.001),
-        icon: Icons.local_cafe,
+        icon: FontAwesomeIcons.mugSaucer,
       ),
       POI(
         name: '餐厅',
         type: POIType.restaurant,
         position: LatLng(center.latitude - 0.002, center.longitude + 0.002),
-        icon: Icons.restaurant,
+        icon: FontAwesomeIcons.utensils,
       ),
     ];
   }
@@ -334,7 +333,7 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
                             ],
                           ),
                           child: const Icon(
-                            Icons.work,
+                            FontAwesomeIcons.briefcase,
                             color: Colors.white,
                             size: 24,
                           ),
@@ -408,7 +407,7 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         child: const Icon(
-                          Icons.arrow_back,
+                          FontAwesomeIcons.arrowLeft,
                           color: AppColors.textPrimary,
                         ),
                       ),
@@ -468,14 +467,14 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
               children: [
                 // 地图源切换按钮
                 _buildFilterButton(
-                  icon: Icons.layers,
+                  icon: FontAwesomeIcons.layerGroup,
                   label: _tileSources[_selectedTileSource]!['name']!,
                   isActive: false,
                   onTap: _changeTileSource,
                 ),
                 const SizedBox(height: 12),
                 _buildFilterButton(
-                  icon: Icons.directions_transit,
+                  icon: FontAwesomeIcons.trainSubway,
                   label: l10n.transit,
                   isActive: _showTransit,
                   onTap: () {
@@ -486,7 +485,7 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
                 ),
                 const SizedBox(height: 8),
                 _buildFilterButton(
-                  icon: Icons.hotel,
+                  icon: FontAwesomeIcons.hotel,
                   label: l10n.accommodation,
                   isActive: _showAccommodation,
                   onTap: () {
@@ -497,7 +496,7 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
                 ),
                 const SizedBox(height: 8),
                 _buildFilterButton(
-                  icon: Icons.restaurant,
+                  icon: FontAwesomeIcons.utensils,
                   label: l10n.restaurant,
                   isActive: _showRestaurant,
                   onTap: () {
@@ -621,7 +620,7 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
                       onPressed: () {
                         _mapController.move(center, 15.0);
                       },
-                      icon: const Icon(Icons.my_location),
+                      icon: const Icon(FontAwesomeIcons.locationCrosshairs),
                       label: Text(l10n.recenter),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -639,7 +638,7 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
                     flex: 2,
                     child: ElevatedButton.icon(
                       onPressed: _openSystemMap,
-                      icon: const Icon(Icons.navigation),
+                      icon: const Icon(FontAwesomeIcons.compassDrafting),
                       label: Text(l10n.startNavigation),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -893,7 +892,7 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Icon(
-                              Icons.near_me,
+                              FontAwesomeIcons.paperPlane,
                               color: _getPOIColor(poi.type),
                               size: 24,
                             ),
@@ -942,7 +941,7 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
                       child: Column(
                         children: [
                           _buildInfoRow(
-                            icon: Icons.location_on_outlined,
+                            icon: FontAwesomeIcons.locationDot,
                             label: l10n.longitude,
                             value: poi.position.longitude.toStringAsFixed(6),
                             color: _getPOIColor(poi.type),
@@ -951,7 +950,7 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
                           Divider(height: 1, color: Colors.grey[300]),
                           const SizedBox(height: 12),
                           _buildInfoRow(
-                            icon: Icons.location_on_outlined,
+                            icon: FontAwesomeIcons.locationDot,
                             label: l10n.latitude,
                             value: poi.position.latitude.toStringAsFixed(6),
                             color: _getPOIColor(poi.type),
@@ -972,7 +971,7 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
                       child: Row(
                         children: [
                           Icon(
-                            Icons.info_outline,
+                            FontAwesomeIcons.circleInfo,
                             color: Colors.blue[700],
                             size: 18,
                           ),
@@ -1031,7 +1030,8 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
                           // 可以添加导航到这个POI的功能
                           _focusOnLocation(poi.position);
                         },
-                        icon: const Icon(Icons.my_location, size: 20),
+                        icon: const Icon(FontAwesomeIcons.locationCrosshairs,
+                            size: 20),
                         label: Text(
                           l10n.viewOnMap,
                           style: const TextStyle(

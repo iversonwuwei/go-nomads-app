@@ -1,9 +1,9 @@
 import 'package:get/get.dart';
 
-import '../../../../core/core.dart';
-import '../../../../widgets/app_toast.dart';
-import '../../application/use_cases/get_city_weather_use_case.dart';
-import '../../domain/entities/weather.dart';
+import 'package:df_admin_mobile/core/core.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/features/weather/application/use_cases/get_city_weather_use_case.dart';
+import 'package:df_admin_mobile/features/weather/domain/entities/weather.dart';
 
 /// Weather State Controller (Presentation Layer)
 ///

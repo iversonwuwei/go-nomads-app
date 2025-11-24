@@ -1,10 +1,11 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/features/skill/domain/entities/skill.dart';
+import 'package:df_admin_mobile/features/skill/presentation/controllers/skill_state_controller.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import '../config/app_colors.dart';
-import '../features/skill/domain/entities/skill.dart';
-import '../features/skill/presentation/controllers/skill_state_controller.dart';
 
 /// 底部抽屉：技能选择器
 class SkillsBottomSheet extends StatefulWidget {
@@ -75,21 +76,13 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
 
       final error = _skillController.errorMessage.value;
       if (error != null && error.isNotEmpty && mounted) {
-        Get.snackbar(
-          '加载失败',
-          error,
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        AppToast.error(error);
       }
     } catch (e) {
       debugPrint('❌ 加载技能失败: $e');
       if (!mounted) return;
       setState(() => _isLoading = false);
-      Get.snackbar(
-        '加载失败',
-        '无法加载技能列表，请稍后重试',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      AppToast.error('无法加载技能列表，请稍后重试');
     }
   }
 
@@ -305,7 +298,8 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
                     child: TextField(
                       decoration: InputDecoration(
                         hintText: '搜索技能...',
-                        prefixIcon: const Icon(Icons.search),
+                        prefixIcon:
+                            const Icon(FontAwesomeIcons.magnifyingGlass),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(color: AppColors.border),

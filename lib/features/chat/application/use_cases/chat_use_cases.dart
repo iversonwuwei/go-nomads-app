@@ -1,8 +1,8 @@
 import 'package:df_admin_mobile/core/application/use_case.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
 
-import '../../domain/entities/chat.dart';
-import '../../domain/repositories/i_chat_repository.dart';
+import 'package:df_admin_mobile/features/chat/domain/entities/chat.dart';
+import 'package:df_admin_mobile/features/chat/domain/repositories/i_chat_repository.dart';
 
 // ==================== 聊天室管理 Use Cases ====================
 
