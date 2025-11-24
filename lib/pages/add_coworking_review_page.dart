@@ -1,15 +1,14 @@
 import 'dart:io';
 
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
-
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_review_repository.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 
 /// 添加 Coworking Review 页面
 class AddCoworkingReviewPage extends StatefulWidget {
@@ -244,92 +243,187 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
     );
   }
 
-  /// 评分区域
+  /// 评分区域 - 创意表情滑动条设计
   Widget _buildRatingSection() {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Container(
-      padding: EdgeInsets.all(24.w),
+      padding: EdgeInsets.all(28.w),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white,
+            _getRatingColor(_rating.value).withValues(alpha: 0.05),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10.r,
-            offset: Offset(0, 2.h),
+            color: _getRatingColor(_rating.value).withValues(alpha: 0.15),
+            blurRadius: 20.r,
+            offset: Offset(0, 4.h),
           ),
         ],
       ),
       child: Column(
         children: [
+          // 标题
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(FontAwesomeIcons.star,
-                  color: const Color(0xFFFF4458), size: 24.sp),
-              SizedBox(width: 8.w),
+              Icon(
+                FontAwesomeIcons.faceSmile,
+                color: _getRatingColor(_rating.value),
+                size: 24.sp,
+              ),
+              SizedBox(width: 12.w),
               Text(
                 l10n.overallRating,
                 style: TextStyle(
-                  fontSize: 16.sp,
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
                 ),
               ),
             ],
           ),
-          SizedBox(height: 20.h),
-          Obx(() => Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(5, (index) {
-                  final fullStar = index < _rating.value.floor();
-                  final halfStar = index < _rating.value &&
-                      index >= _rating.value.floor() &&
-                      _rating.value % 1 != 0;
+          SizedBox(height: 32.h),
 
-                  return Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 6.w),
-                    child: GestureDetector(
-                      onTap: () {
-                        _rating.value = (index + 1).toDouble();
-                      },
-                      child: Icon(
-                        fullStar
-                            ? FontAwesomeIcons.star
-                            : halfStar
-                                ? FontAwesomeIcons.starHalfStroke
-                                : FontAwesomeIcons.star,
-                        color: const Color(0xFFFF4458),
-                        size: 44.sp,
-                      ),
+          // 大表情符号显示
+          Obx(() => AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                transitionBuilder: (child, animation) {
+                  return ScaleTransition(
+                    scale: animation,
+                    child: FadeTransition(
+                      opacity: animation,
+                      child: child,
                     ),
                   );
-                }),
-              )),
-          SizedBox(height: 16.h),
-          Obx(() => Text(
-                _rating.value == 0
-                    ? l10n.tapStarsToRate
-                    : '${_rating.value.toStringAsFixed(1)} / 5.0',
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
-                  color: _rating.value == 0
-                      ? AppColors.textTertiary
-                      : const Color(0xFFFF4458),
+                },
+                child: Text(
+                  _getRatingEmoji(_rating.value),
+                  key: ValueKey<double>(_rating.value),
+                  style: TextStyle(
+                    fontSize: 80.sp,
+                    height: 1.0,
+                  ),
                 ),
               )),
-          if (_rating.value > 0)
-            Obx(() => Text(
-                  _getRatingLabel(_rating.value),
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    color: AppColors.textSecondary,
+          SizedBox(height: 24.h),
+
+          // 评分文字
+          Obx(() => Column(
+                children: [
+                  Text(
+                    _rating.value == 0 ? l10n.tapStarsToRate : _getRatingLabel(_rating.value),
+                    style: TextStyle(
+                      fontSize: 24.sp,
+                      fontWeight: FontWeight.bold,
+                      color: _getRatingColor(_rating.value),
+                    ),
                   ),
-                )),
+                  if (_rating.value > 0) ...[
+                    SizedBox(height: 4.h),
+                    Text(
+                      '${_rating.value.toStringAsFixed(1)} / 5.0',
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ],
+              )),
+          SizedBox(height: 32.h),
+
+          // 滑动条
+          Obx(() => Column(
+                children: [
+                  SliderTheme(
+                    data: SliderThemeData(
+                      trackHeight: 8.h,
+                      activeTrackColor: _getRatingColor(_rating.value),
+                      inactiveTrackColor: Colors.grey.shade200,
+                      thumbColor: Colors.white,
+                      overlayColor: _getRatingColor(_rating.value).withValues(alpha: 0.2),
+                      thumbShape: RoundSliderThumbShape(
+                        enabledThumbRadius: 16.r,
+                        elevation: 4,
+                      ),
+                      overlayShape: RoundSliderOverlayShape(
+                        overlayRadius: 28.r,
+                      ),
+                      trackShape: const RoundedRectSliderTrackShape(),
+                    ),
+                    child: Slider(
+                      value: _rating.value,
+                      min: 0,
+                      max: 5,
+                      divisions: 10,
+                      onChanged: (value) {
+                        _rating.value = value;
+                      },
+                    ),
+                  ),
+                  SizedBox(height: 12.h),
+                  // 表情符号刻度
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8.w),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: List.generate(6, (index) {
+                        final value = index.toDouble();
+                        final isSelected = (_rating.value - value).abs() < 0.3;
+                        return GestureDetector(
+                          onTap: () => _rating.value = value,
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: EdgeInsets.all(isSelected ? 8.w : 4.w),
+                            decoration: BoxDecoration(
+                              color: isSelected ? _getRatingColor(value).withValues(alpha: 0.15) : Colors.transparent,
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                            child: Text(
+                              _getRatingEmoji(value),
+                              style: TextStyle(
+                                fontSize: isSelected ? 28.sp : 20.sp,
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                  ),
+                ],
+              )),
         ],
       ),
     );
+  }
+
+  /// 获取评分对应的表情符号
+  String _getRatingEmoji(double rating) {
+    if (rating == 0) return '🤔';
+    if (rating <= 1.0) return '😢';
+    if (rating <= 2.0) return '😕';
+    if (rating <= 3.0) return '😐';
+    if (rating <= 4.0) return '🙂';
+    if (rating <= 4.5) return '😊';
+    return '🤩';
+  }
+
+  /// 获取评分对应的颜色
+  Color _getRatingColor(double rating) {
+    if (rating == 0) return Colors.grey;
+    if (rating <= 1.5) return const Color(0xFFE74C3C); // 红色
+    if (rating <= 2.5) return const Color(0xFFE67E22); // 橙色
+    if (rating <= 3.5) return const Color(0xFFF39C12); // 黄色
+    if (rating <= 4.5) return const Color(0xFF2ECC71); // 绿色
+    return const Color(0xFF9B59B6); // 紫色（完美）
   }
 
   /// 访问日期区域

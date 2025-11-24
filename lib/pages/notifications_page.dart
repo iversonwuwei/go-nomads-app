@@ -41,60 +41,78 @@ class _NotificationsPageState extends State<NotificationsPage>
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('通知'),
-        backgroundColor: Colors.white,
-        foregroundColor: AppColors.textPrimary,
-        elevation: 0,
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: AppColors.accent,
-          unselectedLabelColor: AppColors.textSecondary,
-          indicatorColor: AppColors.accent,
-          tabs: const [
-            Tab(text: '全部'),
-            Tab(text: '未读'),
-            Tab(text: '已读'),
-          ],
-          onTap: (index) {
-            switch (index) {
-              case 0:
-                controller.loadNotifications();
-                break;
-              case 1:
-                controller.loadNotifications(isRead: false);
-                break;
-              case 2:
-                controller.loadNotifications(isRead: true);
-                break;
-            }
-          },
-        ),
-        actions: [
-          // 全部标记为已读
-          Obx(() {
-            final hasUnread = controller.unreadCount.value > 0;
-            return hasUnread
-                ? IconButton(
-                    icon: const Icon(FontAwesomeIcons.checkDouble),
-                    tooltip: '全部标记为已读',
-                    onPressed: () async {
-                      final success = await controller.markAllAsRead();
-                      if (success) {
-                        AppToast.success('已全部标记为已读');
-                      }
-                    },
-                  )
-                : const SizedBox.shrink();
-          }),
-        ],
-      ),
-      body: TabBarView(
-        controller: _tabController,
+      body: Column(
         children: [
-          _buildNotificationList(controller, isMobile, null),
-          _buildNotificationList(controller, isMobile, false),
-          _buildNotificationList(controller, isMobile, true),
+          // TabBar 区域
+          Container(
+            color: Colors.white,
+            child: SafeArea(
+              bottom: false,
+              child: Column(
+                children: [
+                  // TabBar 和操作按钮
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TabBar(
+                          controller: _tabController,
+                          labelColor: AppColors.accent,
+                          unselectedLabelColor: AppColors.textSecondary,
+                          indicatorColor: AppColors.accent,
+                          tabs: const [
+                            Tab(text: '全部'),
+                            Tab(text: '未读'),
+                            Tab(text: '已读'),
+                          ],
+                          onTap: (index) {
+                            switch (index) {
+                              case 0:
+                                controller.loadNotifications();
+                                break;
+                              case 1:
+                                controller.loadNotifications(isRead: false);
+                                break;
+                              case 2:
+                                controller.loadNotifications(isRead: true);
+                                break;
+                            }
+                          },
+                        ),
+                      ),
+                      // 全部标记为已读按钮
+                      Obx(() {
+                        final hasUnread = controller.unreadCount.value > 0;
+                        return hasUnread
+                            ? IconButton(
+                                icon: const Icon(FontAwesomeIcons.checkDouble),
+                                tooltip: '全部标记为已读',
+                                onPressed: () async {
+                                  final success =
+                                      await controller.markAllAsRead();
+                                  if (success) {
+                                    AppToast.success('已全部标记为已读');
+                                  }
+                                },
+                              )
+                            : const SizedBox(width: 48);
+                      }),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // TabBarView
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildNotificationList(controller, isMobile, null),
+                _buildNotificationList(controller, isMobile, false),
+                _buildNotificationList(controller, isMobile, true),
+              ],
+            ),
+          ),
         ],
       ),
     );

@@ -1,6 +1,5 @@
-import 'package:get/get.dart';
-
 import 'package:df_admin_mobile/routes/app_routes.dart';
+import 'package:get/get.dart';
 
 /// 底部导航控制器
 /// 管理底部导航栏的状态和页面切换
@@ -10,6 +9,9 @@ class BottomNavController extends GetxController {
 
   // 导航栏可见性
   final RxBool isBottomNavVisible = true.obs;
+
+  // 未读消息数量
+  final RxInt unreadCount = 5.obs; // 测试数据：5条未读消息
 
   /// 切换标签页
   void changeTab(int index) {

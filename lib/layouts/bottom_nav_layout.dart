@@ -83,9 +83,9 @@ class _BottomNavLayoutState extends State<BottomNavLayout> {
                 print('   → Profile 页面');
                 Get.toNamed(AppRoutes.profile);
                 break;
-              case 2: // AI助手
-                print('   → AI 页面');
-                Get.toNamed(AppRoutes.aiChat);
+              case 2: // 用户消息列表（系统消息、通知等）
+                print('   → 用户消息列表页面');
+                Get.toNamed(AppRoutes.notifications);
                 break;
               case 3: // 编辑资料
                 print('   → 编辑资料页面');
@@ -103,12 +103,13 @@ class _BottomNavLayoutState extends State<BottomNavLayout> {
               label: 'Profile',
             ),
             _NavBarItem(
-              icon: FontAwesomeIcons.microchip,
-              label: 'AI助手',
+              icon: FontAwesomeIcons.solidBell,
+              label: '消息',
+              badge: controller.unreadCount.value,
             ),
             _NavBarItem(
               icon: FontAwesomeIcons.gear,
-              label: '编辑',
+              label: '设置',
             ),
           ],
         );
@@ -121,10 +122,12 @@ class _BottomNavLayoutState extends State<BottomNavLayout> {
 class _NavBarItem {
   final IconData icon;
   final String label;
+  final int badge;
 
   _NavBarItem({
     required this.icon,
     required this.label,
+    this.badge = 0,
   });
 }
 
@@ -228,12 +231,46 @@ class _ModernBottomNavBar extends StatelessWidget {
                                     BorderRadius.circular(18 * scaleFactor),
                                 // 去掉阴影
                               ),
-                              child: Icon(
-                                item.icon,
-                                size: iconSize,
-                                color: isSelected
-                                    ? const Color(0xFF2196F3) // 选中：蓝色
-                                    : const Color(0xFF8E8E93), // 未选中：灰色
+                              child: Stack(
+                                clipBehavior: Clip.none,
+                                children: [
+                                  Icon(
+                                    item.icon,
+                                    size: iconSize,
+                                    color: isSelected
+                                        ? const Color(0xFF2196F3) // 选中：蓝色
+                                        : const Color(0xFF8E8E93), // 未选中：灰色
+                                  ),
+                                  if (item.badge > 0)
+                                    Positioned(
+                                      right: -6,
+                                      top: -6,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFFF4458),
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Colors.white,
+                                            width: 1.5,
+                                          ),
+                                        ),
+                                        constraints: const BoxConstraints(
+                                          minWidth: 18,
+                                          minHeight: 18,
+                                        ),
+                                        child: Text(
+                                          item.badge > 99 ? '99+' : '${item.badge}',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               ),
                             ),
                           ),

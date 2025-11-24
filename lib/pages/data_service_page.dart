@@ -65,8 +65,12 @@ class _DataServicePageState extends State<DataServicePage>
     // 首页不验证 token，直接加载数据
     // 如果有 token 会自动带上，没有就匿名访问
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      print('🏠 首页初始化，加载数据（不验证 token）');
-      _refreshData();
+      print('🏠 首页初始化，只加载城市数据（不加载活动）');
+      // 只加载城市数据，活动数据按需加载
+      _cityController.loadInitialCities(refresh: true).catchError((e) {
+        print('⚠️ 城市数据加载失败，使用缓存数据: $e');
+        return null;
+      });
     });
   }
 
@@ -89,11 +93,14 @@ class _DataServicePageState extends State<DataServicePage>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
 
-    // 当应用回到前台时，仅在数据为空时刷新
+    // 当应用回到前台时，仅在城市数据为空时刷新
     if (state == AppLifecycleState.resumed) {
-      if (_cityController.cities.isEmpty && _meetupController.meetups.isEmpty) {
-        print('📱 应用回到前台，数据为空，刷新首页数据');
-        _refreshData();
+      if (_cityController.cities.isEmpty) {
+        print('📱 应用回到前台，城市数据为空，刷新数据');
+        _cityController.loadInitialCities(refresh: true).catchError((e) {
+          print('⚠️ 城市数据加载失败: $e');
+          return null;
+        });
       } else {
         print('📱 应用回到前台，已有缓存数据，不刷新');
       }
@@ -112,28 +119,12 @@ class _DataServicePageState extends State<DataServicePage>
       // 延迟执行，避免在build过程中调用
       WidgetsBinding.instance.addPostFrameCallback((_) {
         // 检查是否已有数据，使用缓存模式避免重复刷新
-        if (_cityController.cities.isNotEmpty ||
-            _meetupController.meetups.isNotEmpty) {
+        if (_cityController.cities.isNotEmpty) {
           print('🔄 页面回到前台，使用缓存数据，不刷新');
           // 不刷新，避免并发请求
         }
       });
     }
-  }
-
-  /// 刷新数据（首页不验证 token，直接请求）
-  Future<void> _refreshData() async {
-    // 分别处理错误，避免一个失败影响另一个
-    await Future.wait([
-      _cityController.loadInitialCities(refresh: true).catchError((e) {
-        print('⚠️ 城市数据加载失败，使用缓存数据: $e');
-        return null;
-      }),
-      _meetupController.loadMeetups(forceRefresh: true).catchError((e) {
-        print('⚠️ 活动数据加载失败，使用缓存数据: $e');
-        return null;
-      }),
-    ]);
   }
 
   /// 严格检查登录状态和 Token 有效性

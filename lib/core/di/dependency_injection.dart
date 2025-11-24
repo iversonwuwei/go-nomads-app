@@ -79,6 +79,10 @@ import 'package:df_admin_mobile/features/meetup/application/use_cases/rsvp_to_me
 import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
 import 'package:df_admin_mobile/features/meetup/infrastructure/repositories/meetup_repository.dart';
 import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
+// Notification Domain
+import 'package:df_admin_mobile/features/notification/domain/repositories/i_notification_repository.dart';
+import 'package:df_admin_mobile/features/notification/infrastructure/repositories/notification_repository.dart';
+import 'package:df_admin_mobile/features/notification/presentation/controllers/notification_state_controller.dart';
 // Skill Domain
 import 'package:df_admin_mobile/features/skill/application/use_cases/skill_use_cases.dart';
 import 'package:df_admin_mobile/features/skill/domain/repositories/i_skill_repository.dart';
@@ -153,6 +157,9 @@ class DependencyInjection {
 
     // Chat 领域
     _registerChatDomain();
+
+    // Notification 领域
+    _registerNotificationDomain();
 
     // Interest 领域
     _registerInterestDomain();
@@ -706,6 +713,21 @@ class DependencyInjection {
         Get.find<GetOnlineUsersUseCase>(),
         Get.find<GetRoomMembersUseCase>(),
       ),
+    );
+  }
+
+  /// 注册Notification领域依赖
+  static void _registerNotificationDomain() {
+    // Repository - 使用 put 立即创建实例
+    Get.put<INotificationRepository>(
+      NotificationRepository(Get.find<HttpService>()),
+      permanent: true,
+    );
+
+    // Controller
+    Get.lazyPut(
+      () => NotificationStateController(Get.find<INotificationRepository>()),
+      fenix: true,
     );
   }
 

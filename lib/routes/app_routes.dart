@@ -1,5 +1,3 @@
-import 'package:get/get.dart';
-
 import 'package:df_admin_mobile/layouts/bottom_nav_layout.dart';
 import 'package:df_admin_mobile/middlewares/auth_middleware.dart';
 import 'package:df_admin_mobile/pages/add_cost_page.dart';
@@ -34,6 +32,7 @@ import 'package:df_admin_mobile/pages/meetup_detail_page.dart';
 import 'package:df_admin_mobile/pages/meetups_list_page.dart';
 import 'package:df_admin_mobile/pages/member_detail_page.dart';
 import 'package:df_admin_mobile/pages/nomads_login_page.dart';
+import 'package:df_admin_mobile/pages/notifications_page.dart';
 import 'package:df_admin_mobile/pages/profile_edit_page.dart';
 import 'package:df_admin_mobile/pages/profile_page.dart';
 import 'package:df_admin_mobile/pages/pros_and_cons_add_page.dart';
@@ -41,6 +40,7 @@ import 'package:df_admin_mobile/pages/register_page.dart';
 import 'package:df_admin_mobile/pages/skills_interests_page.dart';
 import 'package:df_admin_mobile/pages/travel_plan_page.dart';
 import 'package:df_admin_mobile/pages/user_profile_page.dart';
+import 'package:get/get.dart';
 
 class AppRoutes {
   // ============================================================================
@@ -116,6 +116,7 @@ class AppRoutes {
   // ============================================================================
   static const String aiChat = '/ai-chat';
   static const String directChat = '/direct-chat';
+  static const String notifications = '/notifications';
 
   // ============================================================================
   // 社区相关路由
@@ -418,6 +419,11 @@ class AppRoutes {
     GetPage(
       name: directChat,
       page: () => DirectChatPage(user: Get.arguments),
+      middlewares: [AuthMiddleware()],
+    ),
+    GetPage(
+      name: notifications,
+      page: () => const BottomNavLayout(child: NotificationsPage()),
       middlewares: [AuthMiddleware()],
     ),
 
