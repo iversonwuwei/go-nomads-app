@@ -68,7 +68,7 @@ class InviteToMeetupPage extends StatelessWidget {
     );
   }
 
-  // 空状�?
+  // 空状态
   Widget _buildEmptyMeetupState() {
     return Builder(
       builder: (context) {
@@ -377,7 +377,7 @@ class InviteToMeetupPage extends StatelessWidget {
                           '${user.name} ${l10n.sendInvitation}',
                           title: l10n.success,
                         );
-                        // 返回上一�?
+                        // 返回上一页
                         Navigator.pop(Get.context!);
                       },
                       icon: const Icon(FontAwesomeIcons.paperPlane, size: 18),

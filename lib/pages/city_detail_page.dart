@@ -29,6 +29,7 @@ import 'package:df_admin_mobile/services/token_storage_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/coworking_verification_badge.dart';
 import 'package:df_admin_mobile/widgets/rating_item_dialog.dart';
+import 'package:df_admin_mobile/widgets/share_bottom_sheet.dart';
 import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -50,7 +51,7 @@ import 'manage_pros_cons_page.dart';
 import 'manage_reviews_page.dart';
 import 'pros_and_cons_add_page.dart';
 
-/// 城市详情�?- 完整�?Nomads.com 风格标签页系�?
+/// 城市详情页 - 完整的 Nomads.com 风格标签页系统
 class CityDetailPage extends StatefulWidget {
   final String cityId;
   final String cityName;
@@ -1182,8 +1183,8 @@ class _CityDetailPageState extends State<CityDetailPage>
   }
 
   List<String> _getCityImages() {
-    // 基于城市主图片生成多张展示图�?
-    // 使用不同的Unsplash参数来获取该城市的不同视角图�?
+    // 基于城市主图片生成多张展示图片
+    // 使用不同的Unsplash参数来获取该城市的不同视角图片
     final baseImage = cityImage;
 
     // 检查图片 URL 是否有效
@@ -1196,7 +1197,7 @@ class _CityDetailPageState extends State<CityDetailPage>
       ];
     }
 
-    // 如果主图片是Unsplash链接，生成系列图�?
+    // 如果主图片是Unsplash链接，生成系列图片
     if (baseImage.contains('unsplash.com')) {
       // 提取图片ID
       final uri = Uri.parse(baseImage);
@@ -1208,7 +1209,7 @@ class _CityDetailPageState extends State<CityDetailPage>
           .replaceAll('photo-', '');
 
       return [
-        baseImage, // 主图�?
+        baseImage, // 主图片
         'https://images.unsplash.com/$photoId?w=800&h=600&fit=crop&crop=entropy&q=80',
         'https://images.unsplash.com/$photoId?w=800&h=600&fit=crop&crop=edges&q=80',
         'https://images.unsplash.com/$photoId?w=800&h=600&fit=crop&crop=faces&q=80',
@@ -1585,7 +1586,8 @@ class _CityDetailPageState extends State<CityDetailPage>
                             size: 20,
                           ),
                           onPressed: () {
-                            // TODO: 实现分享功能
+                            // 分享城市信息
+                            _shareCityInfo();
                           },
                         ),
                       ),
@@ -1889,18 +1891,6 @@ class _CityDetailPageState extends State<CityDetailPage>
                                     ),
                             );
                           }),
-                          const SizedBox(width: 8),
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: IconButton(
-                              icon: Icon(FontAwesomeIcons.shareNodes,
-                                  color: Colors.grey[700], size: 22),
-                              onPressed: () {},
-                            ),
-                          ),
                         ],
                       ),
                     ),
@@ -1978,7 +1968,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                 borderRadius: BorderRadius.circular(28),
                 child: InkWell(
                   onTap: () {
-                    // 跳转到创建旅行计划页�?
+                    // 跳转到创建旅行计划页面
                     Get.to(
                       () => CreateTravelPlanPage(
                         cityId: cityId,
@@ -3993,7 +3983,7 @@ class _CityDetailPageState extends State<CityDetailPage>
     });
   }
 
-  /// Coworking 标签�?
+  /// Coworking 标签页
   Widget _buildCoworkingTab(CoworkingStateController controller) {
     return Obx(() {
       // 显示加载状态
@@ -4228,7 +4218,7 @@ class _CityDetailPageState extends State<CityDetailPage>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 名称和评�?
+                  // 名称和评分
                   Row(
                     children: [
                       Expanded(
@@ -4377,7 +4367,7 @@ class _CityDetailPageState extends State<CityDetailPage>
     );
   }
 
-  // ========== 分享对话框方�?==========
+  // ========== 分享对话框方法 ==========
 
   /// 添加 Pros & Cons
   /// [initialTab] 初始显示的 tab (0=优点, 1=挑战)
@@ -4723,6 +4713,27 @@ class _CityDetailPageState extends State<CityDetailPage>
   }
 
   /// 分享社区信息
+  void _shareCityInfo() {
+    final cityDetailController = Get.find<CityDetailStateController>();
+    final city = cityDetailController.currentCity.value;
+    if (city == null) return;
+
+    // 构建分享内容
+    final String title = '${city.name} - 数字游民城市指南';
+    final String description = '探索${city.name}的最佳Coworking空间、生活成本、气候信息和数字游民社区。';
+
+    // 构建分享链接（可以根据实际情况调整）
+    final String shareUrl = 'https://nomadcities.app/cities/${city.id}';
+
+    // 显示分享底部抽屉
+    ShareBottomSheet.show(
+      context,
+      title: title,
+      description: description,
+      imageUrl: city.imageUrl,
+      shareUrl: shareUrl,
+    );
+  }
 }
 
 class _PhotoGroup {

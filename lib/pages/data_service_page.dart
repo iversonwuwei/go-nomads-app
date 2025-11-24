@@ -123,9 +123,16 @@ class _DataServicePageState extends State<DataServicePage>
 
   /// 刷新数据（首页不验证 token，直接请求）
   Future<void> _refreshData() async {
+    // 分别处理错误，避免一个失败影响另一个
     await Future.wait([
-      _cityController.loadInitialCities(refresh: true), // 强制刷新
-      _meetupController.loadMeetups(forceRefresh: true),
+      _cityController.loadInitialCities(refresh: true).catchError((e) {
+        print('⚠️ 城市数据加载失败，使用缓存数据: $e');
+        return null;
+      }),
+      _meetupController.loadMeetups(forceRefresh: true).catchError((e) {
+        print('⚠️ 活动数据加载失败，使用缓存数据: $e');
+        return null;
+      }),
     ]);
   }
 
@@ -311,7 +318,7 @@ class _DataServicePageState extends State<DataServicePage>
     if (_hasScrolled) return;
     _hasScrolled = true;
 
-    // 等待布局完成后滚�?
+    // 等待布局完成后滚动
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(milliseconds: 500), () {
         if (!mounted) return;
@@ -427,7 +434,7 @@ class _DataServicePageState extends State<DataServicePage>
 
             const SliverToBoxAdapter(child: SizedBox(height: 60)),
 
-            // 特性列�?
+            // 特性列表
             SliverToBoxAdapter(
               child: Container(
                 padding: EdgeInsets.symmetric(
@@ -478,7 +485,7 @@ class _DataServicePageState extends State<DataServicePage>
               ),
               child: Column(
                 children: [
-                  // Logo和标题区�?
+                  // Logo和标题区域
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -509,7 +516,7 @@ class _DataServicePageState extends State<DataServicePage>
 
                   SizedBox(height: isMobile ? 24 : 32),
 
-                  // 副标�?
+                  // 副标题
                   Text(
                     l10n.joinGlobalCommunity,
                     textAlign: TextAlign.center,
@@ -545,15 +552,15 @@ class _DataServicePageState extends State<DataServicePage>
     );
   }
 
-  // 紧凑型服务卡�?- 响应式网格布局
+  // 紧凑型服务卡片 - 响应式网格布局
   Widget _buildServiceCards(bool isMobile, AppLocalizations l10n) {
     final screenWidth = MediaQuery.of(context).size.width;
 
     // 根据屏幕宽度决定布局
-    // 超小�?<400px): 2�?�?
-    // 小屏(400-768px): 2�?�?
-    // 中屏(768-1024px): 4�?�?
-    // 大屏(>1024px): 4�?�?
+    // 超小屏(<400px): 2列布局
+    // 小屏(400-768px): 2列布局
+    // 中屏(768-1024px): 4列布局
+    // 大屏(>1024px): 4列布局
     final isVerySmall = screenWidth < 400;
     final useGridLayout = screenWidth < 768;
 
@@ -563,7 +570,7 @@ class _DataServicePageState extends State<DataServicePage>
         constraints: const BoxConstraints(maxWidth: 600),
         child: Column(
           children: [
-            // 第一�? Cities + Coworkings
+            // 第一行: Cities + Coworkings
             Row(
               children: [
                 Expanded(
@@ -592,7 +599,7 @@ class _DataServicePageState extends State<DataServicePage>
               ],
             ),
             const SizedBox(height: 12),
-            // 第二�? Meetups + Innovation
+            // 第二行: Meetups + Innovation
             Row(
               children: [
                 Expanded(
@@ -634,7 +641,7 @@ class _DataServicePageState extends State<DataServicePage>
         ),
       );
     } else {
-      // 1x4 横向布局(桌面�?
+      // 1x4 横向布局(桌面端)
       return Container(
         constraints: const BoxConstraints(maxWidth: 900),
         child: Row(
@@ -709,7 +716,7 @@ class _DataServicePageState extends State<DataServicePage>
     }
   }
 
-  // 紧凑型卡片组�?
+  // 紧凑型卡片组件
   Widget _buildCompactCard({
     required bool isMobile,
     required IconData icon,
@@ -777,7 +784,7 @@ class _DataServicePageState extends State<DataServicePage>
     );
   }
 
-  // 底部特性亮点列�?
+  // 底部特性亮点列表
   Widget _buildFeatureHighlights(bool isMobile) {
     final l10n = AppLocalizations.of(context)!;
     final features = [
@@ -1014,20 +1021,20 @@ class _DataServicePageState extends State<DataServicePage>
         );
       }
 
-      // 如果城市列表为空，显示空状�?
+      // 如果城市列表为空，显示空状态
       if (items.isEmpty) {
         return SliverToBoxAdapter(
           child: _buildEmptyCitiesState(isMobile, l10n),
         );
       }
 
-      // 限制最多显�?个城�?(暂时改成6,方便测试)
+      // 限制最多显示8个城市(暂时改成6,方便测试)
       final displayItems = items.length > 6 ? items.sublist(0, 6) : items;
       final hasMore = items.length > 6;
 
       // 调试信息
       debugPrint(
-          '城市总数: ${items.length}, 显示�? ${displayItems.length}, 显示按钮: $hasMore');
+          '城市总数: ${items.length}, 显示: ${displayItems.length}, 显示按钮: $hasMore');
 
       if (isGrid) {
         return SliverList(
@@ -1178,7 +1185,7 @@ class _DataServicePageState extends State<DataServicePage>
         );
       }
 
-      // 如果活动列表为空，显示空状�?
+      // 如果活动列表为空，显示空状态
       if (upcomingMeetups.isEmpty) {
         return _buildEmptyMeetupsState(isMobile);
       }
@@ -1386,7 +1393,7 @@ class _DataServicePageState extends State<DataServicePage>
     });
   }
 
-  // 空城市列表状�?
+  // 空城市列表状态
   Widget _buildEmptyCitiesState(bool isMobile, AppLocalizations l10n) {
     // 检查是否正在搜索
     final isSearching = _searchController.text.trim().isNotEmpty;
@@ -1499,7 +1506,7 @@ class _DataServicePageState extends State<DataServicePage>
     );
   }
 
-  // 空活动列表状�?
+  // 空活动列表状态
   Widget _buildEmptyMeetupsState(bool isMobile) {
     return Container(
       padding: EdgeInsets.symmetric(
@@ -1700,7 +1707,7 @@ class _DataCardState extends State<_DataCard> {
             // 内容 - 完全复刻 Nomads.com 设计
             Stack(
               children: [
-                // 顶部：排名、徽章和网�?- 防止溢出
+                // 顶部：排名、徽章和网络 - 防止溢出
                 Positioned(
                   top: 8,
                   left: 8,
@@ -1708,7 +1715,7 @@ class _DataCardState extends State<_DataCard> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // 左侧：排�?+ 徽章 - 使用 Flexible 防止溢出
+                      // 左侧：排名 + 徽章 - 使用 Flexible 防止溢出
                       Flexible(
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -1734,7 +1741,7 @@ class _DataCardState extends State<_DataCard> {
                         ),
                       ),
                       SizedBox(width: isMobile ? 3 : 8),
-                      // 右侧：网�?- 移动端简化显�?
+                      // 右侧：网络 - 移动端简化显示
                       Container(
                         padding: EdgeInsets.symmetric(
                             horizontal: isMobile ? 3 : 6,
@@ -1791,7 +1798,7 @@ class _DataCardState extends State<_DataCard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // 城市�?
+                        // 城市名
                         Text(
                           widget.data.name,
                           style: TextStyle(
@@ -1844,7 +1851,7 @@ class _DataCardState extends State<_DataCard> {
                           ],
                         ),
                         SizedBox(height: isMobile ? 4 : 8),
-                        // 天气和价�?
+                        // 天气和价格
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -1909,7 +1916,7 @@ class _DataCardState extends State<_DataCard> {
   }
 }
 
-// 详情悬浮�?- 透明蒙层风格
+// 详情悬浮卡 - 透明蒙层风格
 class _DetailOverlay extends StatelessWidget {
   final City data;
   final VoidCallback onClose;
@@ -1969,7 +1976,7 @@ class _DetailOverlay extends StatelessWidget {
               ),
             ),
 
-            // 底部 - 评分�?
+            // 底部 - 评分条
             Positioned(
               left: 16,
               right: 16,
@@ -1977,7 +1984,7 @@ class _DetailOverlay extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildMetricBar('�?Overall', data.overallScore ?? 0.0,
+                  _buildMetricBar('⭐ Overall', data.overallScore ?? 0.0,
                       const Color(0xFFFBBF24)),
                   const SizedBox(height: 6),
                   _buildMetricBar('💰 Cost', data.costScore ?? 0.0,
@@ -1989,7 +1996,7 @@ class _DetailOverlay extends StatelessWidget {
                   _buildMetricBar(
                       '👍 乐趣', data.likedScore ?? 0.0, const Color(0xFF4ADE80)),
                   const SizedBox(height: 6),
-                  _buildMetricBar('🛡�?Safety', data.safetyScore ?? 0.0,
+                  _buildMetricBar('🛡️ Safety', data.safetyScore ?? 0.0,
                       const Color(0xFF4ADE80)),
                 ],
               ),
@@ -2024,7 +2031,7 @@ class _DetailOverlay extends StatelessWidget {
         Expanded(
           child: Stack(
             children: [
-              // 背景�?- 深色半透明
+              // 背景条 - 深色半透明
               Container(
                 height: 18,
                 decoration: BoxDecoration(
@@ -2032,10 +2039,10 @@ class _DetailOverlay extends StatelessWidget {
                   borderRadius: BorderRadius.circular(9),
                 ),
               ),
-              // 进度�?
+              // 进度条
               FractionallySizedBox(
                 alignment: Alignment.centerLeft,
-                widthFactor: value / 5.0, // �?0-5 分转换为 0-1 比例
+                widthFactor: value / 5.0, // 将 0-5 分转换为 0-1 比例
                 child: Container(
                   height: 18,
                   decoration: BoxDecoration(
@@ -2052,7 +2059,7 @@ class _DetailOverlay extends StatelessWidget {
   }
 }
 
-// 列表项（列表视图�?
+// 列表项（列表视图用）
 class _DataListItem extends StatelessWidget {
   final City data;
 
@@ -2094,7 +2101,7 @@ class _DataListItem extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // 缩略�?
+            // 缩略图
             ClipRRect(
               borderRadius: BorderRadius.circular(6),
               child: Image.network(
@@ -2232,7 +2239,7 @@ class _MeetupCardState extends State<_MeetupCard> {
     final l10n = AppLocalizations.of(context)!;
     final authController = Get.find<AuthStateController>();
 
-    // 检查登录状�?
+    // 检查登录状态
     if (!authController.isAuthenticated.value) {
       AppToast.warning(
         l10n.pleaseLoginToCreateMeetup,
@@ -2436,11 +2443,11 @@ class _MeetupCardState extends State<_MeetupCard> {
 
                     const SizedBox(height: 6),
 
-                    // 日期、地点、组织�?- 合并为紧凑显�?
+                    // 日期、地点、组织者 - 合并为紧凑显示
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // 日期和时�?
+                        // 日期和时间
                         Row(
                           children: [
                             const Icon(
@@ -2493,7 +2500,7 @@ class _MeetupCardState extends State<_MeetupCard> {
 
                     const SizedBox(height: 8),
 
-                    // 参加人数和组织�?- 合并为一�?
+                    // 参加人数和组织者 - 合并为一行
                     Row(
                       children: [
                         // 参加人数
@@ -2528,7 +2535,7 @@ class _MeetupCardState extends State<_MeetupCard> {
                             ),
                           ),
                         const Spacer(),
-                        // 组织�?
+                        // 组织者
                         Flexible(
                           child: Row(
                             mainAxisSize: MainAxisSize.min,

@@ -107,7 +107,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
     });
   }
 
-  // 重置筛选条�?
+  // 重置筛选条件
   void _resetFilters() {
     _selectedCountries.clear();
     _selectedCities.clear();
@@ -117,7 +117,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
     _autoSelectCurrentCountry();
   }
 
-  // 是否有活动筛选条�?
+  // 是否有活动筛选条件
   bool get _hasActiveFilters {
     return _selectedCountries.isNotEmpty ||
         _selectedCities.isNotEmpty ||
@@ -351,7 +351,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
           onRefresh: _loadMeetups,
           child: Column(
             children: [
-              // 工具�?
+              // 工具栏
               Container(
                 color: Colors.white,
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
@@ -458,7 +458,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
   }
 
   Widget _buildMeetupCard(Meetup meetup) {
-    // 使用自管理生命周期的 StatefulWidget，参�?data_service_page 的设�?
+    // 使用自管理生命周期的 StatefulWidget，参考 data_service_page 的设计
     return _MeetupListCard(
       meetup: meetup,
       onUpdated: (updatedMeetup) {
@@ -493,7 +493,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
   }
 }
 
-// 自管理生命周期的 Meetup Card - 参�?data_service_page 的设�?
+// 自管理生命周期的 Meetup Card - 参考 data_service_page 的设计
 class _MeetupListCard extends StatefulWidget {
   final Meetup meetup;
   final Function(Meetup) onUpdated;
@@ -670,7 +670,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
       return;
     }
 
-    // 跳转到群聊页�?
+    // 跳转到群聊页面
     Get.toNamed(
       AppRoutes.cityChat,
       arguments: {
@@ -880,7 +880,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
 
   Widget _buildTypeChip(String type) {
     Color color;
-    // 根据后端返回�?category 类型设置颜色
+    // 根据后端返回的 category 类型设置颜色
     switch (type.toLowerCase()) {
       case 'coffee':
         color = Colors.brown;
@@ -1080,7 +1080,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
   }
 }
 
-// Meetup 筛选抽屉组�?
+// Meetup 筛选抽屉组件
 class _MeetupFilterDrawer extends StatelessWidget {
   final RxList<String> selectedCountries;
   final RxList<String> selectedCities;
@@ -1117,7 +1117,7 @@ class _MeetupFilterDrawer extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // 顶部�?
+          // 顶部栏
           Container(
             padding: EdgeInsets.all(20.w),
             decoration: const BoxDecoration(
@@ -1159,14 +1159,14 @@ class _MeetupFilterDrawer extends StatelessWidget {
             ),
           ),
 
-          // 筛选选项（可滚动�?
+          // 筛选选项（可滚动）
           Expanded(
             child: SingleChildScrollView(
               padding: EdgeInsets.all(20.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 国家筛�?
+                  // 国家筛选
                   _buildSectionTitle(l10n.country),
                   SizedBox(height: 12.h),
                   Text(
@@ -1217,7 +1217,7 @@ class _MeetupFilterDrawer extends StatelessWidget {
 
                   SizedBox(height: 24.h),
 
-                  // 城市筛�?
+                  // 城市筛选
                   _buildSectionTitle(l10n.city),
                   SizedBox(height: 12.h),
                   Obx(() => Wrap(
@@ -1258,7 +1258,7 @@ class _MeetupFilterDrawer extends StatelessWidget {
 
                   SizedBox(height: 24.h),
 
-                  // 类型筛�?
+                  // 类型筛选
                   _buildSectionTitle(l10n.meetupType),
                   SizedBox(height: 12.h),
                   Obx(() => Wrap(
@@ -1299,7 +1299,7 @@ class _MeetupFilterDrawer extends StatelessWidget {
 
                   SizedBox(height: 24.h),
 
-                  // 时间筛�?
+                  // 时间筛选
                   _buildSectionTitle(l10n.timeRange),
                   SizedBox(height: 12.h),
                   Obx(() => Wrap(
@@ -1315,7 +1315,7 @@ class _MeetupFilterDrawer extends StatelessWidget {
 
                   SizedBox(height: 24.h),
 
-                  // 最大人数筛�?
+                  // 最大人数筛选
                   _buildSectionTitle(l10n.maximumAttendees),
                   SizedBox(height: 12.h),
                   Obx(() => Column(

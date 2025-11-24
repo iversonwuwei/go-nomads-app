@@ -18,20 +18,41 @@ class CityRatingsCard extends StatefulWidget {
 
 class _CityRatingsCardState extends State<CityRatingsCard> {
   bool _hasLoaded = false;
+  String? _lastCityId;
 
   @override
   void initState() {
     super.initState();
-    // 只在组件初始化时加载一次
-    _loadData();
+    // 在第一帧渲染后加载数据
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadData();
+    });
+  }
+
+  @override
+  void didUpdateWidget(CityRatingsCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 如果 cityId 变化，重新加载数据
+    if (oldWidget.cityId != widget.cityId) {
+      print('🔄 [CityRatingsCard] cityId 变化: ${oldWidget.cityId} -> ${widget.cityId}');
+      _hasLoaded = false;
+      _lastCityId = null;
+      _loadData();
+    }
   }
 
   void _loadData() {
-    if (!_hasLoaded) {
-      final controller = Get.find<CityRatingController>();
-      controller.loadCityRatings(widget.cityId);
-      _hasLoaded = true;
+    // 如果已经加载过相同城市，跳过
+    if (_hasLoaded && _lastCityId == widget.cityId) {
+      print('⏭️ [CityRatingsCard] 已加载过相同城市，跳过');
+      return;
     }
+
+    print('📥 [CityRatingsCard] 开始加载数据: cityId=${widget.cityId}');
+    final controller = Get.find<CityRatingController>();
+    controller.loadCityRatings(widget.cityId);
+    _hasLoaded = true;
+    _lastCityId = widget.cityId;
   }
 
   @override
@@ -39,33 +60,60 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
     final controller = Get.find<CityRatingController>();
 
     return Obx(() {
+      print('🎨 [CityRatingsCard] 重新构建 UI:');
+      print('  - isLoading: ${controller.isLoading.value}');
+      print('  - statistics.length: ${controller.statistics.length}');
+      print('  - categories.length: ${controller.categories.length}');
+      
       // 加载中状态 - 显示骨架屏
       if (controller.isLoading.value) {
+        print('  ➡️ 显示骨架屏');
         return _buildSkeletonLoader();
       }
 
       // 无数据状态
       if (controller.statistics.isEmpty) {
+        print('  ➡️ 无数据，返回空白');
         return const SizedBox.shrink();
       }
+      
+      print('  ➡️ 显示评分列表 (${controller.statistics.length} 项)');
 
       // 正常显示数据
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 评分项列表
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: controller.statistics.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 24),
-            itemBuilder: (context, index) {
-              final stat = controller.statistics[index];
-              return _buildRatingItem(context, controller, stat);
-            },
-          ),
-        ],
+      return Container(
+        color: Colors.white, // 确保背景色
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 调试信息 - 显示数据确实存在
+            Container(
+              padding: const EdgeInsets.all(16),
+              color: Colors.blue.withOpacity(0.1),
+              child: Text(
+                '📊 评分数据已加载: ${controller.statistics.length} 项',
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.blue,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            // 评分项列表
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              itemCount: controller.statistics.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 24),
+              itemBuilder: (context, index) {
+                final stat = controller.statistics[index];
+                print('🎯 [CityRatingsCard] 渲染第 ${index + 1} 项: ${stat.categoryName}');
+                return _buildRatingItem(context, controller, stat);
+              },
+            ),
+          ],
+        ),
       );
     });
   }
@@ -228,21 +276,16 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
       backgroundColor = Colors.grey[50]!; // 无平均分:极浅灰背景
     }
 
-    // 确定星星颜色和图标
+    // 确定星星颜色 - 统一使用实心星星
     Color starColor;
-    IconData starIcon;
     if (isActive) {
-      starColor = const Color(0xFFFF4458); // 用户已评分：红色空心星星
-      starIcon = Icons.star_border; // 空心红色星星
+      starColor = const Color(0xFFFF4458); // 用户已评分：红色实心星星
     } else if (isFilled) {
-      starColor = Colors.grey[600]!; // 有平均分：深灰星星
-      starIcon = Icons.star_border;
+      starColor = Colors.grey[600]!; // 有平均分：深灰实心星星
     } else if (isHalfFilled) {
       starColor = Colors.grey[600]!.withOpacity(0.5); // 半星：半透明深灰
-      starIcon = Icons.star_border;
     } else {
-      starColor = Colors.grey[300]!; // 无评分：浅灰星星
-      starIcon = Icons.star_border;
+      starColor = Colors.grey[300]!; // 无评分：浅灰实心星星
     }
 
     return Container(
@@ -253,7 +296,7 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
         borderRadius: BorderRadius.circular(6),
       ),
       child: Icon(
-        starIcon,
+        FontAwesomeIcons.star,
         size: 16,
         color: starColor,
       ),

@@ -220,31 +220,20 @@ class _ModernBottomNavBar extends StatelessWidget {
                               duration: const Duration(milliseconds: 200),
                               curve: Curves.easeInOut,
                               width: indicatorSize,
-                              height: navBarHeight * 0.9, // 保证垂直居中
+                              height: navBarHeight * 0.9,
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
-                                color: isSelected
-                                    ? const Color(0xFF2196F3).withOpacity(0.13)
-                                    : Colors.transparent,
+                                color: Colors.transparent, // 去掉背景色
                                 borderRadius:
                                     BorderRadius.circular(18 * scaleFactor),
-                                boxShadow: isSelected
-                                    ? [
-                                        BoxShadow(
-                                          color: const Color(0xFF2196F3)
-                                              .withOpacity(0.10),
-                                          blurRadius: 16,
-                                          offset: const Offset(0, 4),
-                                        ),
-                                      ]
-                                    : [],
+                                // 去掉阴影
                               ),
                               child: Icon(
                                 item.icon,
                                 size: iconSize,
                                 color: isSelected
-                                    ? const Color(0xFF2196F3)
-                                    : const Color(0xFF8E8E93),
+                                    ? const Color(0xFF2196F3) // 选中：蓝色
+                                    : const Color(0xFF8E8E93), // 未选中：灰色
                               ),
                             ),
                           ),

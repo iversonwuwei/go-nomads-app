@@ -32,8 +32,11 @@ class CityRatingController extends GetxController {
 
   /// 加载城市评分信息
   Future<void> loadCityRatings(String cityId) async {
+    print('🔍 [CityRatingController] 开始加载评分数据: cityId=$cityId');
+    
     // 如果切换到不同城市，先清空旧数据
     if (_currentCityId != null && _currentCityId != cityId) {
+      print('🔄 [CityRatingController] 城市切换: $_currentCityId -> $cityId, 清空旧数据');
       statistics.clear();
       categories.clear();
       overallScore.value = 0.0;
@@ -41,6 +44,7 @@ class CityRatingController extends GetxController {
 
     // 如果已经加载过相同城市的数据，不重复加载
     if (_currentCityId == cityId && statistics.isNotEmpty) {
+      print('✅ [CityRatingController] 数据已缓存，跳过加载');
       return;
     }
 
@@ -49,11 +53,28 @@ class CityRatingController extends GetxController {
     error.value = null;
 
     try {
+      print('📡 [CityRatingController] 调用 API 获取评分信息...');
       final info = await _useCases.getCityRatings(cityId);
+      
+      print('📊 [CityRatingController] API 返回数据:');
+      print('  - categories: ${info.categories.length} 项');
+      print('  - statistics: ${info.statistics.length} 项');
+      print('  - overallScore: ${info.overallScore}');
+
+      if (info.categories.isNotEmpty) {
+        print('  - 评分项列表:');
+        for (var cat in info.categories) {
+          print('    * ${cat.name} (${cat.nameEn}) - ${cat.icon}');
+        }
+      }
+      
       categories.value = info.categories;
       statistics.value = info.statistics;
       overallScore.value = info.overallScore;
+      
+      print('✅ [CityRatingController] 评分数据加载完成');
     } catch (e) {
+      print('❌ [CityRatingController] 加载评分信息失败: $e');
       error.value = e.toString();
       AppToast.error('加载评分信息失败: $e');
     } finally {

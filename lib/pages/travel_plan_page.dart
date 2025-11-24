@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-/// 旅行计划详情�?
+/// 旅行计划详情页
 class TravelPlanPage extends StatefulWidget {
   final TravelPlan? plan;
   final String? cityId;

@@ -1,13 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
-
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/services/http_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 
 class NomadsLoginPage extends StatefulWidget {
   const NomadsLoginPage({super.key});
@@ -36,7 +35,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
 
   void _login() async {
     if (_formKey.currentState!.validate()) {
-      // 显示加载指示�?
+      // 显示加载指示器
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -48,7 +47,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
       );
 
       try {
-        print('🔐 开始登录验�?..');
+        print('🔐 开始登录验证..');
         print('   邮箱: ${_emailController.text.trim()}');
 
         // 调用 AuthStateController 登录
@@ -95,7 +94,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
           await Future.delayed(const Duration(milliseconds: 300));
 
           // 登录成功后跳转到主页
-          print('🚀 准备跳转到主�?..');
+          print('🚀 准备跳转到主页..');
           Get.offAllNamed('/');
         } else {
           // 登录失败
@@ -106,23 +105,23 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
           );
         }
       } on HttpException catch (e) {
-        // 关闭加载指示�?
+        // 关闭加载指示器
         if (mounted) {
           Navigator.pop(context);
         }
 
-        print('�?HTTP 错误: ${e.message}');
+        print('❌ HTTP 错误: ${e.message}');
         AppToast.error(
           e.message,
           title: 'Network Error',
         );
       } catch (e) {
-        // 关闭加载指示�?
+        // 关闭加载指示器
         if (mounted) {
           Navigator.pop(context);
         }
 
-        print('�?登录错误: $e');
+        print('❌ 登录错误: $e');
         AppToast.error(
           'An error occurred. Please try again.',
           title: 'Error',
@@ -161,7 +160,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                   ),
                   const SizedBox(height: 20),
 
-                  // Logo 和标�?
+                  // Logo 和标题
                   Center(
                     child: Column(
                       children: [
@@ -193,7 +192,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                         ),
                         const SizedBox(height: 12),
 
-                        // 副标�?
+                        // 副标题
                         Text(
                           l10n.login,
                           textAlign: TextAlign.center,
@@ -290,7 +289,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
 
                   const SizedBox(height: 16),
 
-                  // 记住�?& 忘记密码
+                  // 记住我 & 忘记密码
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -358,7 +357,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
 
                   const SizedBox(height: 24),
 
-                  // 分隔�?
+                  // 分隔线
                   Row(
                     children: [
                       Expanded(child: Divider(color: Colors.grey.shade300)),

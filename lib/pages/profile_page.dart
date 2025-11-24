@@ -59,11 +59,11 @@ class _ProfilePageState extends State<ProfilePage>
     }
   }
 
-  /// 处理退出登�?
+  /// 处理退出登录
   void _handleLogout(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    // 显示确认对话�?
+    // 显示确认对话框
     Get.dialog(
       AlertDialog(
         title: Text(l10n.logoutConfirmTitle),
@@ -75,7 +75,7 @@ class _ProfilePageState extends State<ProfilePage>
           ),
           TextButton(
             onPressed: () {
-              Get.back(); // 关闭对话�?
+              Get.back(); // 关闭对话框
               _performLogout();
             },
             style: TextButton.styleFrom(
@@ -88,27 +88,27 @@ class _ProfilePageState extends State<ProfilePage>
     );
   }
 
-  /// 执行退出登录操�?
+  /// 执行退出登录操作
   void _performLogout() {
     try {
-      print('🚪 开始执行退出登�?..');
+      print('🚪 开始执行退出登录..');
 
       // 获取用户状态控制器
       final userStateController = Get.find<UserStateController>();
 
-      print('   当前登录状�? ${userStateController.isLoggedIn}');
+      print('   当前登录状态: ${userStateController.isLoggedIn}');
       print(
           '   当前用户: ${userStateController.currentUser.value?.name ?? "Unknown"}');
       print('   当前账户ID: ${userStateController.currentUser.value?.id ?? "0"}');
 
-      // 清除用户状�?
+      // 清除用户状态
       // userStateController.logout() - not available;
 
-      print('�?用户状态已清除');
-      print('   登录状�? ${userStateController.isLoggedIn}');
+      print('✅ 用户状态已清除');
+      print('   登录状态: ${userStateController.isLoggedIn}');
       print('   账户ID: ${userStateController.currentUser.value?.id ?? "0"}');
 
-      // 显示退出成功提�?
+      // 显示退出成功提示
       AppToast.success(
         'You have been logged out successfully',
         title: 'Logout Success',
@@ -120,7 +120,7 @@ class _ProfilePageState extends State<ProfilePage>
         Get.offAllNamed(AppRoutes.login);
       });
     } catch (e) {
-      print('�?退出登录失�? $e');
+      print('❌ 退出登录失败: $e');
       AppToast.error(
         'An error occurred during logout',
         title: 'Error',
@@ -176,14 +176,14 @@ class _ProfilePageState extends State<ProfilePage>
             },
             child: CustomScrollView(
               slivers: [
-                // 移除�?AppBar - 不需�?header
+                // 移除旧 AppBar - 不需要 header
 
                 // Content
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: EdgeInsets.symmetric(
                       horizontal: isMobile ? 16 : 32,
-                      vertical: isMobile ? 24 : 32, // 减少顶部留白，SafeArea 已处�?
+                      vertical: isMobile ? 24 : 32, // 减少顶部留白，SafeArea 已处理
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -238,7 +238,7 @@ class _ProfilePageState extends State<ProfilePage>
     );
   }
 
-  // 构建头像内容 - 如果没有头像URL则显示用户名首字�?
+  // 构建头像内容 - 如果没有头像URL则显示用户名首字母
   Widget _buildAvatarContent(User user, bool isMobile) {
     final hasAvatar = user.avatarUrl != null &&
         user.avatarUrl!.isNotEmpty &&
@@ -259,7 +259,7 @@ class _ProfilePageState extends State<ProfilePage>
     }
   }
 
-  // 构建首字母头�?
+  // 构建首字母头像
   Widget _buildInitialsAvatar(User user, bool isMobile) {
     // 获取用户名首字母
     String initials = '';
@@ -270,7 +270,7 @@ class _ProfilePageState extends State<ProfilePage>
         initials =
             nameParts[0][0].toUpperCase() + nameParts[1][0].toUpperCase();
       } else {
-        // 如果只有一个单词，取前两个字母（如果有�?
+        // 如果只有一个单词，取前两个字母（如果有的话）
         initials =
             user.name.substring(0, user.name.length >= 2 ? 2 : 1).toUpperCase();
       }
@@ -309,7 +309,7 @@ class _ProfilePageState extends State<ProfilePage>
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Avatar (只读，移除编辑功�?
+        // Avatar (只读，移除编辑功能)
         Stack(
           children: [
             Container(
@@ -937,7 +937,7 @@ class _ProfilePageState extends State<ProfilePage>
     final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
-        // 退出登�?
+        // 退出登录
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -976,8 +976,8 @@ class _ProfilePageState extends State<ProfilePage>
   /// 我的旅行计划部分
   Widget _buildTravelPlansSection(BuildContext context, bool isMobile) {
     final l10n = AppLocalizations.of(context)!;
-    // 这里应该从用户数据中获取保存的计�?
-    // 暂时使用空列表演�?
+    // 这里应该从用户数据中获取保存的计划
+    // 暂时使用空列表演示
     final savedPlans = <String>[]; // TODO: 从UserProfileController获取
 
     return Column(
@@ -1079,7 +1079,7 @@ class _ProfilePageState extends State<ProfilePage>
             ),
           )
         else
-          // TODO: 显示保存的旅行计划列�?
+          // TODO: 显示保存的旅行计划列表
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),

@@ -1,13 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
-
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/services/http_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -91,17 +90,17 @@ class _RegisterPageState extends State<RegisterPage> {
           );
         }
       } on HttpException catch (e) {
-        // HTTP 异常 - 显示后端返回的错误信�?
-        print('�?注册失败 (HttpException): ${e.message}');
+        // HTTP 异常 - 显示后端返回的错误信息
+        print('❌ 注册失败 (HttpException): ${e.message}');
         AppToast.error(
           e.message,
           title: '注册失败',
         );
       } catch (e) {
         // 其他错误
-        print('�?注册错误: $e');
+        print('❌ 注册错误: $e');
         AppToast.error(
-          '注册过程中发生错误，请稍后重�?',
+          '注册过程中发生错误，请稍后重试',
           title: '错误',
         );
       } finally {
@@ -130,7 +129,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 children: [
                   const SizedBox(height: 40),
 
-                  // Logo 和标�?
+                  // Logo 和标题
                   Center(
                     child: Column(
                       children: [
@@ -162,7 +161,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         const SizedBox(height: 12),
 
-                        // 副标�?
+                        // 副标题
                         Text(
                           l10n.joinGlobalCommunity,
                           textAlign: TextAlign.center,
@@ -178,7 +177,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                   const SizedBox(height: 48),
 
-                  // 用户名输�?
+                  // 用户名输入
                   TextFormField(
                     controller: _usernameController,
                     decoration: InputDecoration(
@@ -435,7 +434,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                   const SizedBox(height: 24),
 
-                  // 分隔�?
+                  // 分隔线
                   Row(
                     children: [
                       Expanded(child: Divider(color: Colors.grey.shade300)),

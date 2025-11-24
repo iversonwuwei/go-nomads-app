@@ -1,11 +1,10 @@
-import 'package:get/get.dart';
-
-import 'package:df_admin_mobile/services/http_service.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city_rating_category.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city_rating_info.dart';
 import 'package:df_admin_mobile/features/city/domain/repositories/icity_rating_repository.dart';
 import 'package:df_admin_mobile/features/city/infrastructure/models/city_rating_category_dto.dart';
 import 'package:df_admin_mobile/features/city/infrastructure/models/city_rating_info_dto.dart';
+import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:get/get.dart';
 
 /// 城市评分仓储实现
 class CityRatingRepository implements ICityRatingRepository {
@@ -14,14 +13,24 @@ class CityRatingRepository implements ICityRatingRepository {
   @override
   Future<CityRatingInfo> getCityRatings(String cityId) async {
     try {
+      print('📡 [CityRatingRepository] 发送请求: GET /cities/$cityId/ratings');
       final response = await _httpService.get(
         '/cities/$cityId/ratings',
       );
 
+      print('📦 [CityRatingRepository] 收到响应: ${response.statusCode}');
       final data = response.data as Map<String, dynamic>;
+      print('📄 [CityRatingRepository] 响应数据: ${data.keys.toList()}');
+      
       final dto = CityRatingInfoDto.fromJson(data);
+      print('✅ [CityRatingRepository] 解析成功:');
+      print('  - categories: ${dto.categories.length}');
+      print('  - statistics: ${dto.statistics.length}');
+      print('  - overallScore: ${dto.overallScore}');
+      
       return dto.toEntity();
     } catch (e) {
+      print('❌ [CityRatingRepository] 请求失败: $e');
       throw Exception('获取城市评分信息失败: ${e.toString()}');
     }
   }

@@ -1,9 +1,3 @@
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
-import 'package:intl/intl.dart';
-
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
 import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
@@ -14,6 +8,13 @@ import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/services/http_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/share_bottom_sheet.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
+import 'package:intl/intl.dart';
+
 import 'direct_chat_page.dart';
 import 'member_detail_page.dart';
 
@@ -159,7 +160,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
           // 内容区域
           SliverToBoxAdapter(
             child: Obx(() {
-              // 显示加载指示�?
+              // 显示加载指示器
               if (_isLoading.value) {
                 return Container(
                   padding: EdgeInsets.all(40.w),
@@ -189,12 +190,12 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
 
                   SizedBox(height: 16.h),
 
-                  // 组织者信�?
+                  // 组织者信息
                   _buildOrganizerInfo(),
 
                   SizedBox(height: 16.h),
 
-                  // 参与者列�?
+                  // 参与者列表
                   _buildAttendeesList(),
 
                   SizedBox(height: 100.h),
@@ -489,7 +490,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                   final participant = _participants[index];
                   final userId = participant['userId']?.toString() ?? '';
 
-                  // 从嵌套的 user 对象中获取头�?
+                  // 从嵌套的 user 对象中获取头像
                   final userInfo = participant['user'] as Map<String, dynamic>?;
                   final userAvatar = userInfo?['avatar'] as String?;
                   final userName = userInfo?['name'] as String? ?? 'User';
@@ -498,7 +499,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                     padding: EdgeInsets.only(right: 12.w),
                     child: GestureDetector(
                       onTap: () {
-                        // 跳转到参与者的个人详情�?
+                        // 跳转到参与者的个人详情页
                         final participantUser = _createBasicUserModel(
                           userId,
                           userName,
@@ -859,7 +860,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
       return;
     }
 
-    // 跳转到群聊页�?
+    // 跳转到群聊页面
     Get.toNamed(
       AppRoutes.cityChat,
       arguments: {
@@ -872,8 +873,29 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
   }
 
   void _shareMeetup() {
-    final l10n = AppLocalizations.of(context)!;
-    AppToast.info(l10n.shareMeetupComingSoon, title: l10n.share);
+    final meetup = _meetup.value;
+
+    // 格式化时间
+    final dateFormat = DateFormat('yyyy年MM月dd日 HH:mm');
+    final timeStr = dateFormat.format(meetup.schedule.startTime);
+
+    // 构建分享内容
+    final String title = '${meetup.title} - 数字游民聚会';
+    final String description = '📅 时间: $timeStr\n'
+        '📍 地点: ${meetup.venue.name}\n'
+        '👥 组织者: ${meetup.organizer.name}\n\n'
+        '${meetup.description}';
+
+    // 构建分享链接
+    final String shareUrl = 'https://nomadcities.app/meetups/${meetup.id}';
+
+    // 显示分享底部抽屉
+    ShareBottomSheet.show(
+      context,
+      title: title,
+      description: description,
+      shareUrl: shareUrl,
+    );
   }
 
   void _contactOrganizer() {
@@ -927,7 +949,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                 final participant = _participants[index];
                 final userId = participant['userId']?.toString() ?? '';
 
-                // 🔧 从嵌套的 user 对象中获取用户信�?
+                // 🔧 从嵌套的 user 对象中获取用户信息
                 final userInfo = participant['user'] as Map<String, dynamic>?;
                 final userName =
                     userInfo?['name'] as String? ?? '${l10n.user} ${index + 1}';
@@ -936,13 +958,13 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
 
                 return ListTile(
                   onTap: () {
-                    // 跳转到参与者的个人详情�?
+                    // 跳转到参与者的个人详情页
                     final participantUser = _createBasicUserModel(
                       userId,
                       userName,
                       userAvatar ?? '',
                     );
-                    Get.back(); // 关闭对话�?
+                    Get.back(); // 关闭对话框
                     Get.to(() => MemberDetailPage(user: participantUser));
                   },
                   leading: CircleAvatar(
