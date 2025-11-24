@@ -38,8 +38,10 @@ class _CoworkingListPageState extends State<CoworkingListPage>
     controller = Get.find<CoworkingStateController>();
     _scrollController.addListener(_onScroll);
 
-    // 刷新数据，重置分页
-    controller.loadCoworkingsByCity(widget.cityId, refresh: true);
+    // 异步刷新数据,不阻塞页面显示
+    Future.microtask(() {
+      controller.loadCoworkingsByCity(widget.cityId, refresh: true);
+    });
   }
 
   /// 监听滚动，实现无限滚动加载
@@ -343,6 +345,26 @@ class _CoworkingListPageState extends State<CoworkingListPage>
                       ),
                     ],
                   ),
+
+                  // 创建者信息
+                  if (space.creatorName != null &&
+                      space.creatorName!.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Icon(Icons.person_outline,
+                            size: 14, color: Colors.grey[500]),
+                        const SizedBox(width: 4),
+                        Text(
+                          space.creatorName!,
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
 
                   const SizedBox(height: 12),
 

@@ -230,7 +230,9 @@ class _CityDetailPageState extends State<CityDetailPage>
         children: [
           CircleAvatar(
             radius: 20,
-            backgroundImage: _safeNetworkImage(moderator.avatar),
+            backgroundImage: _safeNetworkImage(moderator.avatar)
+                ? NetworkImage(moderator.avatar!)
+                : null,
             child: _safeNetworkImage(moderator.avatar) == null
                 ? const Icon(Icons.person, color: Colors.white)
                 : null,
@@ -283,8 +285,10 @@ class _CityDetailPageState extends State<CityDetailPage>
         children: [
           CircleAvatar(
             radius: 20,
-            backgroundImage: _safeNetworkImage(moderator.avatar),
-            child: _safeNetworkImage(moderator.avatar) == null
+            backgroundImage: moderator.avatar != null
+                ? NetworkImage(moderator.avatar!)
+                : null,
+            child: moderator.avatar == null
                 ? const Icon(Icons.person, color: Colors.white)
                 : null,
           ),

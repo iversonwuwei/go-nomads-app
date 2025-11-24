@@ -37,7 +37,8 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
   void initState() {
     super.initState();
     _space = widget.space;
-    _loadComments();
+    // 异步加载评论,不阻塞页面显示
+    Future.microtask(() => _loadComments());
   }
 
   Future<void> _loadComments() async {
@@ -335,6 +336,16 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                   subtitle: Text(
                       '${_space.location.city}, ${_space.location.country}'),
                 ),
+
+                // Creator Info
+                if (_space.creatorName != null &&
+                    _space.creatorName!.isNotEmpty)
+                  ListTile(
+                    leading:
+                        const Icon(Icons.person_outline, color: Colors.blue),
+                    title: Text(l10n.createdBy),
+                    subtitle: Text(_space.creatorName!),
+                  ),
 
                 const Divider(),
 
@@ -1160,10 +1171,12 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                           children: [
                             CircleAvatar(
                               backgroundColor: Colors.blue[100],
-                              backgroundImage: comment.userAvatar != null
+                              backgroundImage: (comment.userAvatar != null &&
+                                      comment.userAvatar!.isNotEmpty)
                                   ? NetworkImage(comment.userAvatar!)
                                   : null,
-                              child: comment.userAvatar == null
+                              child: (comment.userAvatar == null ||
+                                      comment.userAvatar!.isEmpty)
                                   ? Text(
                                       comment.username
                                           .substring(0, 1)

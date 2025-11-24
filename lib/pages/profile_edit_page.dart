@@ -328,9 +328,13 @@ class _ProfileEditPageState extends State<ProfileEditPage>
       final user = profileController.currentUser.value;
 
       // 使用新上传的头像或原头像
-      final avatarUrl = _newAvatarUrl ??
-          user?.avatarUrl ??
-          'https://ui-avatars.com/api/?name=${Uri.encodeComponent(user?.name ?? 'User')}&background=FF9800&color=fff&size=200';
+      String avatarUrl = _newAvatarUrl ?? user?.avatarUrl ?? '';
+
+      // 处理空字符串的情况
+      if (avatarUrl.isEmpty) {
+        avatarUrl =
+            'https://ui-avatars.com/api/?name=${Uri.encodeComponent(user?.name ?? 'User')}&background=FF9800&color=fff&size=200';
+      }
 
       return Container(
         padding: EdgeInsets.all(isMobile ? 20 : 32),

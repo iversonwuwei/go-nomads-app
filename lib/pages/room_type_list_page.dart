@@ -33,7 +33,8 @@ class _RoomTypeListPageState extends State<RoomTypeListPage> {
   @override
   void initState() {
     super.initState();
-    _loadRoomTypes();
+    // 异步加载数据,不阻塞页面显示
+    Future.microtask(() => _loadRoomTypes());
   }
 
   // 加载房型数据

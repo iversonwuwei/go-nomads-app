@@ -13,6 +13,7 @@ class CoworkingSpace {
   final bool isVerified;
   final DateTime? lastUpdated;
   final String? createdBy;
+  final String? creatorName;
   final int verificationVotes;
   final bool isOwner;
 
@@ -29,6 +30,7 @@ class CoworkingSpace {
     this.isVerified = false,
     this.lastUpdated,
     this.createdBy,
+    this.creatorName,
     this.verificationVotes = 0,
     this.isOwner = false,
   });

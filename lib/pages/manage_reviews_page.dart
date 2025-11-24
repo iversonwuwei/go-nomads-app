@@ -27,8 +27,8 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
   @override
   void initState() {
     super.initState();
-    // 延迟到 build 完成后再更新状态，避免在 build 期间触发 setState
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    // 异步加载数据,不阻塞页面显示
+    Future.microtask(() {
       _checkPermissions();
       _loadData();
     });

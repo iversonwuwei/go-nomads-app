@@ -390,6 +390,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get about => 'About';
 
   @override
+  String get createdBy => 'Created by';
+
+  @override
   String get version => 'Version';
 
   @override
@@ -2738,6 +2741,66 @@ class AppLocalizationsEn extends AppLocalizations {
   String failedToPickImages(String error) {
     return 'Failed to pick images: $error';
   }
+
+  @override
+  String get invalidCityId => 'Invalid city ID, cannot submit review';
+
+  @override
+  String get cannotSubmitReview => 'Cannot Submit Review';
+
+  @override
+  String get maxPhotosWarning => 'You can only select up to 5 photos';
+
+  @override
+  String get coworkingReviewSubmitSuccess => 'Review submitted successfully!';
+
+  @override
+  String submitFailed(String error) {
+    return 'Submit failed: $error';
+  }
+
+  @override
+  String get visitDate => 'Visit Date';
+
+  @override
+  String get visitDateOptional => 'Visit Date (Optional)';
+
+  @override
+  String get whenDidYouVisit => 'When did you visit?';
+
+  @override
+  String get sumUpExperience => 'Sum up your experience in a few words';
+
+  @override
+  String get coworkingExperienceHint =>
+      'Share your experience about WiFi, workspace, atmosphere...';
+
+  @override
+  String get reviewMinLength => 'Review must be at least 20 characters';
+
+  @override
+  String get photosOptional => 'Photos (Optional)';
+
+  @override
+  String get addFromGallery => 'Add from Gallery';
+
+  @override
+  String get takeAPhoto => 'Take a photo';
+
+  @override
+  String get coworkingReviewGuidelines => 'Review Guidelines';
+
+  @override
+  String get coworkingGuidelineHonest => '• Be honest and specific';
+
+  @override
+  String get coworkingGuidelineFocus => '• Focus on workspace features';
+
+  @override
+  String get coworkingGuidelineMention => '• Mention WiFi, noise, facilities';
+
+  @override
+  String get coworkingGuidelineRespectful => '• Be respectful and constructive';
 
   @override
   String get loginToContinue => 'Login to your account to continue';

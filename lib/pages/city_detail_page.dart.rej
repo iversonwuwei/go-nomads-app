@@ -1,0 +1,17 @@
+@@ -1176,6 +1176,16 @@
+     // 使用不同的Unsplash参数来获取该城市的不同视角图片
+     final baseImage = cityImage;
+ 
++    // 检查图片 URL 是否有效
++    if (baseImage.isEmpty) {
++      // 返回默认通用城市图片
++      return [
++        'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800',
++        'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800',
++        'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=800',
++      ];
++    }
++
+     // 如果主图片是Unsplash链接，生成系列图片
+     if (baseImage.contains('unsplash.com')) {
+       // 提取图片ID

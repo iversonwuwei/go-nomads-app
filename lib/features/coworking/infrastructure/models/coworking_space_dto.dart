@@ -33,6 +33,7 @@ class CoworkingSpaceDto {
   final bool isVerified;
   final String? lastUpdated;
   final String? createdBy;
+  final String? creatorName;
   final int verificationVotes;
   final bool isOwner;
 
@@ -60,6 +61,7 @@ class CoworkingSpaceDto {
     this.isVerified = false,
     this.lastUpdated,
     this.createdBy,
+    this.creatorName,
     this.verificationVotes = 0,
     this.isOwner = false,
   });
@@ -172,6 +174,7 @@ class CoworkingSpaceDto {
       isVerified: _parseVerificationStatus(json),
       lastUpdated: json['updatedAt'] ?? json['lastUpdated'],
       createdBy: json['createdBy']?.toString(),
+      creatorName: json['creatorName']?.toString(),
       verificationVotes: _parseVerificationVotes(json),
       isOwner: json['isOwner'] == true,
     );
@@ -208,6 +211,7 @@ class CoworkingSpaceDto {
       isVerified: isVerified,
       lastUpdated: lastUpdated != null ? DateTime.tryParse(lastUpdated!) : null,
       createdBy: createdBy,
+      creatorName: creatorName,
       verificationVotes: verificationVotes,
       isOwner: isOwner,
     );

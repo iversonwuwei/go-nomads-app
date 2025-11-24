@@ -81,8 +81,11 @@ class _MeetupsListPageState extends State<MeetupsListPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
-    _loadMeetups();
-    _autoSelectCurrentCountry();
+    // 异步加载数据,不阻塞页面显示
+    Future.microtask(() {
+      _loadMeetups();
+      _autoSelectCurrentCountry();
+    });
   }
 
   @override

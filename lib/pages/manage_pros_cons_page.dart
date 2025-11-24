@@ -30,8 +30,11 @@ class _ManageProsConsPageState extends State<ManageProsConsPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _checkPermissions();
-    _loadData();
+    // 异步加载数据,不阻塞页面显示
+    Future.microtask(() {
+      _checkPermissions();
+      _loadData();
+    });
   }
 
   @override

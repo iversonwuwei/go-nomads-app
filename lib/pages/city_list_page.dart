@@ -35,7 +35,9 @@ class _CityListPageState extends State<CityListPage>
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    _loadFollowedCities(); // 加载已关注的城市
+
+    // 异步加载数据,不阻塞页面显示
+    Future.microtask(() => _loadFollowedCities());
 
     // 监听筛选器变化
     ever(controller.selectedRegions, (_) => setState(() {}));

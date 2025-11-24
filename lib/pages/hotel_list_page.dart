@@ -37,7 +37,8 @@ class _HotelListPageState extends State<HotelListPage> {
   @override
   void initState() {
     super.initState();
-    _loadHotels();
+    // 异步加载数据,不阻塞页面显示
+    Future.microtask(() => _loadHotels());
   }
 
   @override

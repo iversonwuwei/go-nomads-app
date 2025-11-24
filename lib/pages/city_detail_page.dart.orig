@@ -29,6 +29,7 @@ import '../features/user_city_content/presentation/controllers/user_city_content
 import '../features/weather/presentation/controllers/weather_state_controller.dart';
 import '../generated/app_localizations.dart';
 import '../routes/app_routes.dart';
+import '../widgets/safe_network_image.dart';
 import '../routes/route_refresh_observer.dart';
 import '../services/token_storage_service.dart';
 import '../widgets/app_toast.dart';
@@ -230,8 +231,10 @@ class _CityDetailPageState extends State<CityDetailPage>
         children: [
           CircleAvatar(
             radius: 20,
-            backgroundImage: _safeNetworkImage(moderator.avatar),
-            child: _safeNetworkImage(moderator.avatar) == null
+            backgroundImage: moderator.avatar != null
+                ? NetworkImage(moderator.avatar!)
+                : null,
+            child: moderator.avatar == null
                 ? const Icon(Icons.person, color: Colors.white)
                 : null,
           ),
@@ -283,8 +286,10 @@ class _CityDetailPageState extends State<CityDetailPage>
         children: [
           CircleAvatar(
             radius: 20,
-            backgroundImage: _safeNetworkImage(moderator.avatar),
-            child: _safeNetworkImage(moderator.avatar) == null
+            backgroundImage: moderator.avatar != null
+                ? NetworkImage(moderator.avatar!)
+                : null,
+            child: moderator.avatar == null
                 ? const Icon(Icons.person, color: Colors.white)
                 : null,
           ),
@@ -1167,30 +1172,10 @@ class _CityDetailPageState extends State<CityDetailPage>
   }
 
   // 获取城市展示图片列表
-
-  // 安全的创建 NetworkImage,处理空字符串和 null
-  ImageProvider? _safeNetworkImage(String? url) {
-    if (url == null || url.trim().isEmpty) {
-      return null;
-    }
-    return NetworkImage(url);
-  }
-
   List<String> _getCityImages() {
     // 基于城市主图片生成多张展示图�?
     // 使用不同的Unsplash参数来获取该城市的不同视角图�?
     final baseImage = cityImage;
-
-    // 检查图片 URL 是否有效
-    if (baseImage.isEmpty) {
-      // 返回默认通用城市图片
-      return [
-        'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800',
-        'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800',
-        'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=800',
-      ];
-    }
-
 
     // 如果主图片是Unsplash链接，生成系列图�?
     if (baseImage.contains('unsplash.com')) {

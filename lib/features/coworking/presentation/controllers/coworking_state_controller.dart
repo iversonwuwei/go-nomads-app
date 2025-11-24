@@ -102,6 +102,11 @@ class CoworkingStateController extends GetxController {
       result.fold(
         onSuccess: (spaces) {
           print('✅ 成功加载 ${spaces.length} 个 Coworking 空间');
+          // 调试：检查 creatorName 字段
+          for (var space in spaces) {
+            print(
+                '   空间: ${space.name}, CreatorName: ${space.creatorName ?? "NULL"}');
+          }
 
           // 判断是否还有更多数据
           if (spaces.length < pageSize) {

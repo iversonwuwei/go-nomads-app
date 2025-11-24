@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../config/app_colors.dart';
 import '../features/coworking/domain/repositories/icoworking_review_repository.dart';
+import '../generated/app_localizations.dart';
 import '../widgets/app_toast.dart';
 
 /// 添加 Coworking Review 页面
@@ -42,12 +43,13 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
 
   /// 选择图片
   Future<void> _pickImages() async {
+    final l10n = AppLocalizations.of(context)!;
     final ImagePicker picker = ImagePicker();
     final List<XFile> images = await picker.pickMultiImage();
 
     if (images.isNotEmpty) {
       if (_selectedImages.length + images.length > 5) {
-        AppToast.warning('最多只能选择5张图片');
+        AppToast.warning(l10n.maxPhotosWarning);
         return;
       }
       _selectedImages.addAll(images);
@@ -56,8 +58,9 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
 
   /// 拍照
   Future<void> _takePhoto() async {
+    final l10n = AppLocalizations.of(context)!;
     if (_selectedImages.length >= 5) {
-      AppToast.warning('最多只能选择5张图片');
+      AppToast.warning(l10n.maxPhotosWarning);
       return;
     }
 
@@ -92,12 +95,14 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
 
   /// 提交评论
   Future<void> _submit() async {
+    final l10n = AppLocalizations.of(context)!;
+    
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
     if (_rating.value == 0) {
-      AppToast.warning('请选择评分');
+      AppToast.warning(l10n.pleaseSelectRating);
       return;
     }
 
@@ -131,7 +136,8 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
 
       // 显示成功提示
       if (mounted) {
-        AppToast.success('评论提交成功！');
+        final l10n = AppLocalizations.of(context)!;
+        AppToast.success(l10n.coworkingReviewSubmitSuccess);
       }
 
       print('🔙 等待 Toast 显示后跳转...');
@@ -150,23 +156,27 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
       return;
       
     } catch (e) {
+      final l10n = AppLocalizations.of(context)!;
       print('❌ 提交评论失败: $e');
-      AppToast.error('提交失败: $e');
+      AppToast.error(l10n.submitFailed('$e'));
       _isSubmitting.value = false;
     }
   }
 
   /// 获取评分标签
   String _getRatingLabel(double rating) {
-    if (rating >= 4.5) return 'Excellent!';
-    if (rating >= 3.5) return 'Good';
-    if (rating >= 2.5) return 'Average';
-    if (rating >= 1.5) return 'Below Average';
-    return 'Poor';
+    final l10n = AppLocalizations.of(context)!;
+    if (rating >= 4.5) return l10n.excellent;
+    if (rating >= 3.5) return l10n.good;
+    if (rating >= 2.5) return l10n.fair;
+    if (rating >= 1.5) return l10n.poor;
+    return l10n.veryPoor;
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -180,7 +190,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Write a Review',
+              l10n.writeAReview,
               style: TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 18.sp,
@@ -235,6 +245,8 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
 
   /// 评分区域
   Widget _buildRatingSection() {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Container(
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
@@ -256,7 +268,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
                   color: const Color(0xFFFF4458), size: 24.sp),
               SizedBox(width: 8.w),
               Text(
-                'Overall Rating',
+                l10n.overallRating,
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.bold,
@@ -296,7 +308,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
           SizedBox(height: 16.h),
           Obx(() => Text(
                 _rating.value == 0
-                    ? 'Tap stars to rate'
+                    ? l10n.tapStarsToRate
                     : '${_rating.value.toStringAsFixed(1)} / 5.0',
                 style: TextStyle(
                   fontSize: 18.sp,
@@ -321,6 +333,8 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
 
   /// 访问日期区域
   Widget _buildVisitDateSection() {
+    final l10n = AppLocalizations.of(context)!;
+    
     return InkWell(
       onTap: _selectVisitDate,
       child: Container(
@@ -339,7 +353,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Visit Date (Optional)',
+                    l10n.visitDateOptional,
                     style: TextStyle(
                       fontSize: 14.sp,
                       color: AppColors.textSecondary,
@@ -356,7 +370,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
                     )
                   else
                     Text(
-                      'When did you visit?',
+                      l10n.whenDidYouVisit,
                       style: TextStyle(
                         fontSize: 16.sp,
                         color: AppColors.textTertiary,
@@ -374,6 +388,8 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
 
   /// 标题输入
   Widget _buildTitleInput() {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -382,7 +398,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
             Icon(Icons.title, color: AppColors.textSecondary, size: 20.sp),
             SizedBox(width: 8.w),
             Text(
-              'Review Title',
+              l10n.reviewTitle,
               style: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.bold,
@@ -391,7 +407,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
             ),
             SizedBox(width: 4.w),
             Text(
-              '*',
+              l10n.required,
               style: TextStyle(
                 color: const Color(0xFFFF4458),
                 fontSize: 16.sp,
@@ -404,7 +420,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
           controller: _titleController,
           maxLength: 100,
           decoration: InputDecoration(
-            hintText: 'Sum up your experience in a few words',
+            hintText: l10n.sumUpExperience,
             filled: true,
             fillColor: Colors.white,
             border: OutlineInputBorder(
@@ -424,11 +440,12 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
             ),
           ),
           validator: (value) {
+            final l10n = AppLocalizations.of(context)!;
             if (value == null || value.trim().isEmpty) {
-              return 'Please enter a title';
+              return l10n.pleaseEnterTitle;
             }
             if (value.trim().length < 5) {
-              return 'Title must be at least 5 characters';
+              return l10n.titleMinLength;
             }
             return null;
           },
@@ -439,6 +456,8 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
 
   /// 内容输入
   Widget _buildContentInput() {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -447,7 +466,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
             Icon(Icons.edit_note, color: AppColors.textSecondary, size: 20.sp),
             SizedBox(width: 8.w),
             Text(
-              'Your Experience',
+              l10n.yourExperience,
               style: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.bold,
@@ -456,7 +475,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
             ),
             SizedBox(width: 4.w),
             Text(
-              '*',
+              l10n.required,
               style: TextStyle(
                 color: const Color(0xFFFF4458),
                 fontSize: 16.sp,
@@ -470,7 +489,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
           maxLength: 1000,
           maxLines: 8,
           decoration: InputDecoration(
-            hintText: 'Share your experience about WiFi, workspace, atmosphere...',
+            hintText: l10n.coworkingExperienceHint,
             filled: true,
             fillColor: Colors.white,
             border: OutlineInputBorder(
@@ -490,11 +509,12 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
             ),
           ),
           validator: (value) {
+            final l10n = AppLocalizations.of(context)!;
             if (value == null || value.trim().isEmpty) {
-              return 'Please share your experience';
+              return l10n.pleaseShareExperience;
             }
             if (value.trim().length < 20) {
-              return 'Review must be at least 20 characters';
+              return l10n.reviewMinLength;
             }
             return null;
           },
@@ -505,6 +525,8 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
 
   /// 照片区域
   Widget _buildPhotosSection() {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -514,7 +536,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
                 color: AppColors.textSecondary, size: 20.sp),
             SizedBox(width: 8.w),
             Text(
-              'Photos (Optional)',
+              l10n.photosOptional,
               style: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.bold,
@@ -567,6 +589,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
                 if (_selectedImages.length < 5)
                   InkWell(
                     onTap: () {
+                      final l10n = AppLocalizations.of(context)!;
                       showModalBottomSheet(
                         context: context,
                         builder: (context) => SafeArea(
@@ -575,7 +598,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
                             children: [
                               ListTile(
                                 leading: const Icon(Icons.photo_library),
-                                title: const Text('Choose from gallery'),
+                                title: Text(l10n.chooseFromGallery),
                                 onTap: () {
                                   Get.back();
                                   _pickImages();
@@ -583,7 +606,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
                               ),
                               ListTile(
                                 leading: const Icon(Icons.camera_alt),
-                                title: const Text('Take a photo'),
+                                title: Text(l10n.takeAPhoto),
                                 onTap: () {
                                   Get.back();
                                   _takePhoto();
@@ -615,7 +638,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
                           ),
                           SizedBox(height: 4.h),
                           Text(
-                            'Add Photo',
+                            l10n.addPhoto,
                             style: TextStyle(
                               fontSize: 12.sp,
                               color: AppColors.textTertiary,
@@ -633,6 +656,8 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
 
   /// 指南
   Widget _buildGuidelines() {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -647,7 +672,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
               Icon(Icons.info_outline, color: Colors.blue[700], size: 20.sp),
               SizedBox(width: 8.w),
               Text(
-                'Review Guidelines',
+                l10n.reviewGuidelines,
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
@@ -658,10 +683,10 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
           ),
           SizedBox(height: 8.h),
           Text(
-            '• Be honest and specific\n'
-            '• Focus on workspace features\n'
-            '• Mention WiFi, noise, facilities\n'
-            '• Be respectful and constructive',
+            '${l10n.coworkingGuidelineHonest}\n'
+            '${l10n.coworkingGuidelineFocus}\n'
+            '${l10n.coworkingGuidelineMention}\n'
+            '${l10n.coworkingGuidelineRespectful}',
             style: TextStyle(
               fontSize: 13.sp,
               color: Colors.blue[900],
@@ -675,6 +700,8 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
 
   /// 底部提交栏
   Widget _buildBottomBar() {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -709,7 +736,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
                       ),
                     )
                   : Text(
-                      'Submit Review',
+                      l10n.submitReview,
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.bold,

@@ -390,6 +390,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get about => '关于';
 
   @override
+  String get createdBy => '创建者';
+
+  @override
   String get version => '版本';
 
   @override
@@ -2721,6 +2724,65 @@ class AppLocalizationsZh extends AppLocalizations {
   String failedToPickImages(String error) {
     return '选择图片失败：$error';
   }
+
+  @override
+  String get invalidCityId => '城市ID无效,无法提交评论';
+
+  @override
+  String get cannotSubmitReview => '无法提交评论';
+
+  @override
+  String get maxPhotosWarning => '最多只能选择5张图片';
+
+  @override
+  String get coworkingReviewSubmitSuccess => '评论提交成功！';
+
+  @override
+  String submitFailed(String error) {
+    return '提交失败: $error';
+  }
+
+  @override
+  String get visitDate => '访问日期';
+
+  @override
+  String get visitDateOptional => '访问日期(可选)';
+
+  @override
+  String get whenDidYouVisit => '您什么时候去的?';
+
+  @override
+  String get sumUpExperience => '用几句话总结您的体验';
+
+  @override
+  String get coworkingExperienceHint => '分享您关于WiFi、工作空间、氛围的体验...';
+
+  @override
+  String get reviewMinLength => '评论至少需要20个字符';
+
+  @override
+  String get photosOptional => '照片(可选)';
+
+  @override
+  String get addFromGallery => '从相册添加';
+
+  @override
+  String get takeAPhoto => '拍一张照片';
+
+  @override
+  String get coworkingReviewGuidelines => '评论指南';
+
+  @override
+  String get coworkingGuidelineHonest => '• 诚实具体';
+
+  @override
+  String get coworkingGuidelineFocus => '• 关注工作空间功能';
+
+  @override
+  String get coworkingGuidelineMention => '• 提及WiFi、噪音、设施';
+
+  @override
+  String get coworkingGuidelineRespectful => '• 尊重他人，建设性反馈';
 
   @override
   String get loginToContinue => '登录您的账号以继续使用';

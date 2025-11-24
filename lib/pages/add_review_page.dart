@@ -44,9 +44,10 @@ class _AddReviewPageState extends State<AddReviewPage> {
   void _validateCityId() {
     if (widget.cityId.isEmpty || !_isValidUuid(widget.cityId)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        final l10n = AppLocalizations.of(context)!;
         AppToast.error(
-          '城市ID无效,无法提交评论',
-          title: '错误',
+          l10n.invalidCityId,
+          title: l10n.error,
         );
         Get.back();
       });

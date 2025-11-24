@@ -56,7 +56,8 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
   void initState() {
     super.initState();
     _meetup = widget.meetup.obs;
-    _loadEventDetails();
+    // 异步加载详情,不阻塞页面显示
+    Future.microtask(() => _loadEventDetails());
   }
 
   /// 从后端加载活动详情

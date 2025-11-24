@@ -860,6 +860,12 @@ abstract class AppLocalizations {
   /// **'关于'**
   String get about;
 
+  /// No description provided for @createdBy.
+  ///
+  /// In zh, this message translates to:
+  /// **'创建者'**
+  String get createdBy;
+
   /// No description provided for @version.
   ///
   /// In zh, this message translates to:
@@ -5443,6 +5449,120 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'选择图片失败：{error}'**
   String failedToPickImages(String error);
+
+  /// No description provided for @invalidCityId.
+  ///
+  /// In zh, this message translates to:
+  /// **'城市ID无效,无法提交评论'**
+  String get invalidCityId;
+
+  /// No description provided for @cannotSubmitReview.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法提交评论'**
+  String get cannotSubmitReview;
+
+  /// No description provided for @maxPhotosWarning.
+  ///
+  /// In zh, this message translates to:
+  /// **'最多只能选择5张图片'**
+  String get maxPhotosWarning;
+
+  /// No description provided for @coworkingReviewSubmitSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'评论提交成功！'**
+  String get coworkingReviewSubmitSuccess;
+
+  /// No description provided for @submitFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'提交失败: {error}'**
+  String submitFailed(String error);
+
+  /// No description provided for @visitDate.
+  ///
+  /// In zh, this message translates to:
+  /// **'访问日期'**
+  String get visitDate;
+
+  /// No description provided for @visitDateOptional.
+  ///
+  /// In zh, this message translates to:
+  /// **'访问日期(可选)'**
+  String get visitDateOptional;
+
+  /// No description provided for @whenDidYouVisit.
+  ///
+  /// In zh, this message translates to:
+  /// **'您什么时候去的?'**
+  String get whenDidYouVisit;
+
+  /// No description provided for @sumUpExperience.
+  ///
+  /// In zh, this message translates to:
+  /// **'用几句话总结您的体验'**
+  String get sumUpExperience;
+
+  /// No description provided for @coworkingExperienceHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'分享您关于WiFi、工作空间、氛围的体验...'**
+  String get coworkingExperienceHint;
+
+  /// No description provided for @reviewMinLength.
+  ///
+  /// In zh, this message translates to:
+  /// **'评论至少需要20个字符'**
+  String get reviewMinLength;
+
+  /// No description provided for @photosOptional.
+  ///
+  /// In zh, this message translates to:
+  /// **'照片(可选)'**
+  String get photosOptional;
+
+  /// No description provided for @addFromGallery.
+  ///
+  /// In zh, this message translates to:
+  /// **'从相册添加'**
+  String get addFromGallery;
+
+  /// No description provided for @takeAPhoto.
+  ///
+  /// In zh, this message translates to:
+  /// **'拍一张照片'**
+  String get takeAPhoto;
+
+  /// No description provided for @coworkingReviewGuidelines.
+  ///
+  /// In zh, this message translates to:
+  /// **'评论指南'**
+  String get coworkingReviewGuidelines;
+
+  /// No description provided for @coworkingGuidelineHonest.
+  ///
+  /// In zh, this message translates to:
+  /// **'• 诚实具体'**
+  String get coworkingGuidelineHonest;
+
+  /// No description provided for @coworkingGuidelineFocus.
+  ///
+  /// In zh, this message translates to:
+  /// **'• 关注工作空间功能'**
+  String get coworkingGuidelineFocus;
+
+  /// No description provided for @coworkingGuidelineMention.
+  ///
+  /// In zh, this message translates to:
+  /// **'• 提及WiFi、噪音、设施'**
+  String get coworkingGuidelineMention;
+
+  /// No description provided for @coworkingGuidelineRespectful.
+  ///
+  /// In zh, this message translates to:
+  /// **'• 尊重他人，建设性反馈'**
+  String get coworkingGuidelineRespectful;
 
   /// No description provided for @loginToContinue.
   ///
