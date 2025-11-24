@@ -31,7 +31,7 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
   final List<XFile> _selectedImages = [];
   final _imagePicker = ImagePicker();
   bool _isSubmitting = false;
-  int _rating = 0; // 评分 (0-5 星)
+  double _rating = 0.0; // 评分 (0-5 星，支持0.5步长)
   DateTime? _visitDate;
 
   @override
@@ -320,7 +320,7 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
         children: [
           const Row(
             children: [
-              Icon(FontAwesomeIcons.star, color: Colors.amber, size: 20),
+              Icon(FontAwesomeIcons.solidStar, color: Colors.amber, size: 20),
               SizedBox(width: 8),
               Text(
                 '您的评分',
@@ -333,36 +333,91 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
           ),
           const SizedBox(height: 12),
           Row(
+            mainAxisSize: MainAxisSize.min,
             children: List.generate(5, (index) {
               return GestureDetector(
-                onTap: _isSubmitting
+                onTapDown: _isSubmitting
                     ? null
-                    : () {
-                        setState(() {
-                          _rating = index + 1;
-                        });
+                    : (details) {
+                        // 通过点击位置判断是半星还是整星
+                        final RenderBox box =
+                            context.findRenderObject() as RenderBox;
+                        final starSize = 40.0;
+                        final padding = 4.0;
+                        final totalWidth = starSize + padding * 2;
+
+                        // 计算相对于整个Row的x坐标
+                        final localX =
+                            box.globalToLocal(details.globalPosition).dx;
+
+                        // 计算点击的是哪颗星
+                        final clickedIndex = (localX / totalWidth).floor();
+
+                        if (clickedIndex >= 0 && clickedIndex < 5) {
+                          // 计算在该星星内的相对位置
+                          final offsetInStar = (localX % totalWidth) - padding;
+                          final relativePos = offsetInStar / starSize;
+
+                          setState(() {
+                            // 点击左半部分给半星，右半部分给整星
+                            if (relativePos < 0.5) {
+                              _rating = clickedIndex + 0.5;
+                            } else {
+                              _rating = clickedIndex + 1.0;
+                            }
+                          });
+                        }
                       },
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Icon(
-                    index < _rating
-                        ? FontAwesomeIcons.star
-                        : FontAwesomeIcons.star,
-                    color: Colors.amber,
-                    size: 40,
-                  ),
+                  child: _buildStarIcon(index),
                 ),
               );
             }),
           ),
           if (_rating > 0)
             Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Row(
+                children: [
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.amber[100],
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      _rating.toStringAsFixed(1),
+                      style: const TextStyle(
+                        color: Colors.amber,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      _getRatingText(_rating),
+                      style: TextStyle(
+                        color: Colors.grey[700],
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          if (_rating == 0)
+            Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Text(
-                _getRatingText(_rating),
+                '点击星星选择评分（点击左侧半星，右侧整星）',
                 style: TextStyle(
-                  color: Colors.grey[700],
-                  fontSize: 14,
+                  color: Colors.grey[500],
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic,
                 ),
               ),
             ),
@@ -371,21 +426,49 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
     );
   }
 
+  /// 构建星星图标
+  Widget _buildStarIcon(int index) {
+    final fullStars = _rating.floor();
+    final hasHalfStar = (_rating - fullStars) >= 0.5;
+
+    IconData iconData;
+    Color color;
+
+    if (index < fullStars) {
+      // 完整的星星 - 实心黄色星
+      iconData = FontAwesomeIcons.solidStar;
+      color = const Color(0xFFFFA000); // 深黄色/橙黄色
+    } else if (index == fullStars && hasHalfStar) {
+      // 半星 - 黄色
+      iconData = FontAwesomeIcons.starHalfAlt;
+      color = const Color(0xFFFFA000); // 深黄色/橙黄色
+    } else {
+      // 空星 - 浅灰色边框
+      iconData = FontAwesomeIcons.star; // regular空心星
+      color = const Color(0xFFE0E0E0); // 浅灰色
+    }
+
+    return Icon(
+      iconData,
+      color: color,
+      size: 40,
+    );
+  }
+
   /// 获取评分文本
-  String _getRatingText(int rating) {
-    switch (rating) {
-      case 1:
-        return '很差，不推荐';
-      case 2:
-        return '一般，有待改进';
-      case 3:
-        return '还可以，基本满意';
-      case 4:
-        return '很好，值得推荐';
-      case 5:
-        return '非常棒，强烈推荐';
-      default:
-        return '';
+  String _getRatingText(double rating) {
+    if (rating >= 4.5) {
+      return '非常棒，强烈推荐';
+    } else if (rating >= 3.5) {
+      return '很好，值得推荐';
+    } else if (rating >= 2.5) {
+      return '还可以，基本满意';
+    } else if (rating >= 1.5) {
+      return '一般，有待改进';
+    } else if (rating >= 0.5) {
+      return '很差，不推荐';
+    } else {
+      return '';
     }
   }
 
