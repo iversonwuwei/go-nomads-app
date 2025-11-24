@@ -1,3 +1,4 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_review.dart'
     as review_entity;
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
@@ -101,6 +102,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
     final allImages = _allImages;
     final hasMultipleImages = allImages.length > 1;
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: CustomScrollView(
         slivers: [
           // App Bar with Image

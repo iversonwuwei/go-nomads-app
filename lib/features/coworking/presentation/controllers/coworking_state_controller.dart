@@ -1,8 +1,7 @@
-import 'package:get/get.dart';
-
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/coworking/application/use_cases/coworking_use_cases.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
+import 'package:get/get.dart';
 
 /// Coworking State Controller
 /// 管理 Coworking 相关的 UI 状态
@@ -69,8 +68,20 @@ class CoworkingStateController extends GetxController {
   }) async {
     // 防止重复加载
     if (isLoadingSpaces.value) {
+      print('⏸️ Coworking加载中,跳过重复请求');
       return;
     }
+
+    // 如果不是刷新模式,且已有该城市的数据,直接返回缓存
+    if (!refresh &&
+        currentCityId.value == cityId &&
+        coworkingSpaces.isNotEmpty) {
+      print('✅ 使用Coworking缓存数据,跳过请求');
+      return;
+    }
+
+    // 立即设置加载中状态，防止并发请求
+    isLoadingSpaces.value = true;
 
     // 如果是刷新，重置分页状态
     if (refresh) {
@@ -87,7 +98,6 @@ class CoworkingStateController extends GetxController {
     print('   页码: ${currentPage.value}');
     print('   页大小: $pageSize');
 
-    isLoadingSpaces.value = true;
     errorMessage.value = '';
 
     try {

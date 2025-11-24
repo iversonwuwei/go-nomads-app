@@ -1,7 +1,3 @@
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
-
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/core/core.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
@@ -10,6 +6,10 @@ import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
+
 import 'city_detail_page.dart';
 import 'global_map_page.dart';
 
@@ -88,39 +88,6 @@ class _CityListPageState extends State<CityListPage>
     controller.clearFilters();
   }
 
-  // 构建工具栏
-  Widget _buildToolbar(bool isMobile) {
-    final l10n = AppLocalizations.of(context)!;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          l10n.popular,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        Row(
-          children: [
-            // 全球地图按钮
-            IconButton(
-              icon: const FaIcon(
-                FontAwesomeIcons.mapLocationDot,
-                color: AppColors.textSecondary,
-                size: 20,
-              ),
-              onPressed: () {
-                Get.to(() => const GlobalMapPage());
-              },
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
   @override
   Future<void> onRouteResume() async {
     await controller.loadInitialCities();
@@ -150,6 +117,19 @@ class _CityListPageState extends State<CityListPage>
           icon: const Icon(FontAwesomeIcons.arrowLeft, color: AppColors.textPrimary),
           onPressed: () => Get.back(),
         ),
+        actions: [
+          // 全球地图按钮
+          IconButton(
+            icon: const FaIcon(
+              FontAwesomeIcons.mapLocationDot,
+              color: AppColors.textPrimary,
+              size: 20,
+            ),
+            onPressed: () {
+              Get.to(() => const GlobalMapPage());
+            },
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
           child: Container(
@@ -175,16 +155,6 @@ class _CityListPageState extends State<CityListPage>
             children: [
               // 筛选栏
               _buildFilterBar(isMobile),
-
-              // 工具栏 (筛选/视图/排序)
-              Container(
-                color: Colors.white,
-                padding: EdgeInsets.symmetric(
-                  horizontal: isMobile ? 16 : 20,
-                  vertical: 12,
-                ),
-                child: _buildToolbar(isMobile),
-              ),
 
               // 城市列表
               Expanded(
@@ -213,22 +183,10 @@ class _CityListPageState extends State<CityListPage>
               _buildSearchField(),
               const SizedBox(height: 12),
 
-              // 结果数量
+              // 筛选状态
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  // 结果计数
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
-                    child: Text(
-                      '${controller.cities.length} / ${controller.totalCitiesCount} ${l10n.citiesFound}',
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
                   Obx(() {
                     final hasFilters =
                         controller.hasActiveFilters || _searchQuery.isNotEmpty;

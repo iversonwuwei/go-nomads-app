@@ -1,3 +1,4 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/city/application/state_controllers/pros_cons_state_controller.dart';
 import 'package:df_admin_mobile/services/token_storage_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
@@ -72,7 +73,7 @@ class _ManageProsConsPageState extends State<ManageProsConsPage>
           ),
           TextButton(
             onPressed: () => Get.back(result: true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: AppColors.cityPrimary),
             child: const Text('删除'),
           ),
         ],
@@ -108,7 +109,7 @@ class _ManageProsConsPageState extends State<ManageProsConsPage>
           ),
           TextButton(
             onPressed: () => Get.back(result: true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: AppColors.cityPrimary),
             child: const Text('删除'),
           ),
         ],
@@ -136,9 +137,14 @@ class _ManageProsConsPageState extends State<ManageProsConsPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: AppColors.cityPrimary,
+        foregroundColor: Colors.white,
         title: Text('${widget.cityName} - 优缺点管理'),
         bottom: TabBar(
           controller: _tabController,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
+          indicatorColor: Colors.white,
           tabs: const [
             Tab(text: '优点', icon: Icon(FontAwesomeIcons.circleCheck)),
             Tab(text: '挑战', icon: Icon(FontAwesomeIcons.circleInfo)),
@@ -172,18 +178,6 @@ class _ManageProsConsPageState extends State<ManageProsConsPage>
           ],
         );
       }),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await Get.to(() => ProsAndConsAddPage(
-                cityId: widget.cityId,
-                cityName: widget.cityName,
-                initialTab: _tabController.index,
-              ));
-          await _loadData();
-        },
-        tooltip: '添加',
-        child: const Icon(FontAwesomeIcons.plus),
-      ),
     );
   }
 

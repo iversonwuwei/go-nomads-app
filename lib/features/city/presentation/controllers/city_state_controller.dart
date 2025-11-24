@@ -1,9 +1,8 @@
-import 'package:get/get.dart';
-
 import 'package:df_admin_mobile/core/core.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/features/city/application/use_cases/city_use_cases.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:get/get.dart';
 
 /// ??????? (Presentation Layer)
 ///
@@ -110,7 +109,19 @@ class CityStateController extends GetxController {
   // ==================== Public Methods ====================
 
   /// ???????? (???)
-  Future<void> loadInitialCities() async {
+  Future<void> loadInitialCities({bool refresh = true}) async {
+    // 如果不是强制刷新，且已有数据，跳过加载
+    if (!refresh && cities.isNotEmpty) {
+      print('🔄 CityController: 已有缓存数据，跳过加载');
+      return;
+    }
+
+    // 防止重复请求
+    if (isLoading.value) {
+      print('⚠️ CityController: 正在加载中，跳过重复请求');
+      return;
+    }
+
     isLoading.value = true;
     hasError.value = false;
     errorMessage.value = null;

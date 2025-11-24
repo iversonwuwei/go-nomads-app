@@ -74,6 +74,22 @@ class AppColors {
   /// 中灰强调色 - 选中/激活状态
   static const Color accentGrey = Color(0xFF757575);
 
+  // ============ City 主题色 - 红色系 ============
+  /// City 主色调 - 热情的红色
+  static const Color cityPrimary = Color(0xFFFF4458);
+
+  /// City 深色 - 用于按下状态
+  static const Color cityPrimaryDark = Color(0xFFE63946);
+
+  /// City 浅色 - 用于背景和次要元素
+  static const Color cityPrimaryLight = Color(0xFFFFE5E8);
+
+  /// City 渐变起始色
+  static const Color cityGradientStart = Color(0xFFFF4458);
+
+  /// City 渐变结束色
+  static const Color cityGradientEnd = Color(0xFFFF6B7A);
+
   // ============ 图标颜色 ============
   /// 主图标颜色
   static const Color icon = Color(0xFF757575);

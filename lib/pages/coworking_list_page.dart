@@ -1,14 +1,14 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
 import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/pages/add_coworking_page.dart';
 import 'package:df_admin_mobile/pages/coworking_detail_page.dart';
+import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
+import 'package:df_admin_mobile/widgets/coworking_verification_badge.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
-import 'package:df_admin_mobile/widgets/coworking_verification_badge.dart';
 
 /// Coworking List Page
 /// 共享办公空间列表页面
@@ -39,9 +39,20 @@ class _CoworkingListPageState extends State<CoworkingListPage>
     controller = Get.find<CoworkingStateController>();
     _scrollController.addListener(_onScroll);
 
-    // 异步刷新数据,不阻塞页面显示
-    Future.microtask(() {
-      controller.loadCoworkingsByCity(widget.cityId, refresh: true);
+    // 延迟加载，防止快速导航时的并发请求
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (!mounted) return;
+      
+      // 检查是否需要加载数据
+      final needsLoad = controller.currentCityId.value != widget.cityId || 
+                        controller.coworkingSpaces.isEmpty;
+      
+      if (needsLoad) {
+        print('🔄 CoworkingList: 首次加载或cityId变化,开始加载数据');
+        controller.loadCoworkingsByCity(widget.cityId, refresh: true);
+      } else {
+        print('✅ CoworkingList: 使用缓存数据,跳过加载');
+      }
     });
   }
 
@@ -64,7 +75,9 @@ class _CoworkingListPageState extends State<CoworkingListPage>
 
   @override
   Future<void> onRouteResume() async {
-    await _refreshData();
+    // 页面恢复时不刷新，避免并发请求
+    // 数据已通过 initState 或上次加载获取
+    print('🔙 CoworkingList: 页面恢复,使用缓存数据');
   }
 
   @override
@@ -79,7 +92,7 @@ class _CoworkingListPageState extends State<CoworkingListPage>
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -236,10 +249,21 @@ class _CoworkingListPageState extends State<CoworkingListPage>
 
   /// 共享办公空间卡片
   Widget _buildCoworkingCard(BuildContext context, CoworkingSpace space) {
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: InkWell(
+        borderRadius: BorderRadius.circular(12),
         onTap: () async {
           // 等待详情页返回,如果返回 true 则刷新数据
           final result = await Navigator.push(
@@ -258,27 +282,31 @@ class _CoworkingListPageState extends State<CoworkingListPage>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 图片
-            Stack(
-              children: [
-                AspectRatio(
-                  aspectRatio: 16 / 9,
-                  child: Image.network(
-                    space.spaceInfo.imageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.grey[300],
-                        child: const Icon(FontAwesomeIcons.building, size: 50),
-                      );
-                    },
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              child: Stack(
+                children: [
+                  AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: Image.network(
+                      space.spaceInfo.imageUrl,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.grey[300],
+                          child: const Icon(FontAwesomeIcons.building, size: 50),
+                        );
+                      },
+                    ),
                   ),
-                ),
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: CoworkingVerificationBadge(space: space),
-                ),
-              ],
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: CoworkingVerificationBadge(space: space),
+                  ),
+                ],
+              ),
             ),
 
             // 信息

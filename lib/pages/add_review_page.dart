@@ -1,16 +1,15 @@
 import 'dart:io';
 
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
-
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 
 /// 添加 Review 页面 - 独立页面形式
 class AddReviewPage extends StatefulWidget {
@@ -78,10 +77,10 @@ class _AddReviewPageState extends State<AddReviewPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.cityPrimary,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(FontAwesomeIcons.xmark, color: AppColors.textPrimary, size: 24.sp),
+          icon: Icon(FontAwesomeIcons.xmark, color: Colors.white, size: 24.sp),
           onPressed: () => Get.back(),
         ),
         title: Column(
@@ -90,7 +89,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
             Text(
               l10n.writeAReview,
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: Colors.white,
                 fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
               ),
@@ -98,7 +97,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
             Text(
               widget.cityName,
               style: TextStyle(
-                color: AppColors.textSecondary,
+                color: Colors.white70,
                 fontSize: 14.sp,
                 fontWeight: FontWeight.normal,
               ),
@@ -624,7 +623,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
         child: Obx(() => ElevatedButton(
               onPressed: _isSubmitting.value ? null : _submitReview,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF4458),
+                backgroundColor: AppColors.cityPrimary,
                 foregroundColor: Colors.white,
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 shape: RoundedRectangleBorder(
@@ -632,7 +631,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
                 ),
                 elevation: 0,
                 disabledBackgroundColor:
-                    const Color(0xFFFF4458).withValues(alpha: 0.5),
+                    AppColors.cityPrimary.withValues(alpha: 0.5),
               ),
               child: _isSubmitting.value
                   ? SizedBox(

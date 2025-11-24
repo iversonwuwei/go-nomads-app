@@ -1,3 +1,4 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
 import 'package:df_admin_mobile/services/token_storage_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
@@ -63,7 +64,7 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
           ),
           TextButton(
             onPressed: () => Get.back(result: true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: AppColors.cityPrimary),
             child: const Text('删除'),
           ),
         ],
@@ -94,6 +95,8 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: AppColors.cityPrimary,
+        foregroundColor: Colors.white,
         title: Text('${widget.cityName} - 评论管理'),
         actions: [
           IconButton(

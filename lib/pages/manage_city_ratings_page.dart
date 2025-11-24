@@ -1,3 +1,4 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city_rating_item.dart';
 import 'package:df_admin_mobile/widgets/rating_item_dialog.dart';
 import 'package:flutter/material.dart';
@@ -62,7 +63,7 @@ class _ManageCityRatingsPageState extends State<ManageCityRatingsPage> {
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
         title: const Text('删除评分项'),
-        content: Text('确定要删除"${item.label}"吗？'),
+        content: Text('确定要删除“${item.label}”吗？'),
         actions: [
           TextButton(
             onPressed: () => Get.back(result: false),
@@ -70,7 +71,7 @@ class _ManageCityRatingsPageState extends State<ManageCityRatingsPage> {
           ),
           TextButton(
             onPressed: () => Get.back(result: true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: AppColors.cityPrimary),
             child: const Text('删除'),
           ),
         ],
@@ -98,6 +99,8 @@ class _ManageCityRatingsPageState extends State<ManageCityRatingsPage> {
       },
       child: Scaffold(
         appBar: AppBar(
+          backgroundColor: AppColors.cityPrimary,
+          foregroundColor: Colors.white,
           title: Text('${widget.cityName} - 评分数据'),
           leading: IconButton(
             icon: const Icon(FontAwesomeIcons.arrowLeft),
@@ -176,6 +179,10 @@ class _ManageCityRatingsPageState extends State<ManageCityRatingsPage> {
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.cityPrimary,
+                foregroundColor: Colors.white,
+              ),
               onPressed: _addRating,
               icon: const Icon(FontAwesomeIcons.plus),
               label: const Text('添加评分项'),

@@ -1,14 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:flutter/services.dart';
-import 'package:get/get.dart';
-
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/user_city_content/domain/entities/user_city_content.dart';
 import 'package:df_admin_mobile/features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 
 class AddCostPage extends StatefulWidget {
   final String cityId;
@@ -294,10 +293,10 @@ class _AddCostPageState extends State<AddCostPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.cityPrimary,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(FontAwesomeIcons.xmark, color: Colors.black),
+          icon: const Icon(FontAwesomeIcons.xmark, color: Colors.white),
           onPressed: () => Get.back(),
         ),
         title: Column(
@@ -305,16 +304,16 @@ class _AddCostPageState extends State<AddCostPage> {
           children: [
             Text(
               l10n.monthlyCost,
-              style: TextStyle(
-                color: Colors.black,
+              style: const TextStyle(
+                color: Colors.white,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
             Text(
               widget.cityName,
-              style: TextStyle(
-                color: Colors.grey[600],
+              style: const TextStyle(
+                color: Colors.white70,
                 fontSize: 14,
                 fontWeight: FontWeight.normal,
               ),
@@ -671,7 +670,7 @@ class _AddCostPageState extends State<AddCostPage> {
                 child: ElevatedButton(
                   onPressed: _isSubmitting.value ? null : _submitCost,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFF4458),
+                    backgroundColor: AppColors.cityPrimary,
                     disabledBackgroundColor: Colors.grey[300],
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

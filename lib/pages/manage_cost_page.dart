@@ -1,3 +1,4 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/user_city_content/domain/entities/user_city_content.dart';
 import 'package:df_admin_mobile/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
 import 'package:df_admin_mobile/services/token_storage_service.dart';
@@ -64,7 +65,7 @@ class _ManageCostPageState extends State<ManageCostPage> {
           ),
           TextButton(
             onPressed: () => Get.back(result: true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: AppColors.cityPrimary),
             child: const Text('删除'),
           ),
         ],
@@ -145,6 +146,8 @@ class _ManageCostPageState extends State<ManageCostPage> {
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: AppColors.cityPrimary,
+        foregroundColor: Colors.white,
         title: Text('${widget.cityName} - 费用管理'),
         actions: [
           IconButton(
@@ -181,6 +184,10 @@ class _ManageCostPageState extends State<ManageCostPage> {
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.cityPrimary,
+                    foregroundColor: Colors.white,
+                  ),
                   onPressed: () async {
                     final result = await Get.to(() => AddCostPage(
                           cityId: widget.cityId,
@@ -290,6 +297,8 @@ class _ManageCostPageState extends State<ManageCostPage> {
         );
       }),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColors.cityPrimary,
+        foregroundColor: Colors.white,
         onPressed: () async {
           final result = await Get.to(() => AddCostPage(
                 cityId: widget.cityId,

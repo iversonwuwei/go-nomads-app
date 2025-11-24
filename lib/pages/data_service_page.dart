@@ -89,10 +89,14 @@ class _DataServicePageState extends State<DataServicePage>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
 
-    // 当应用回到前台时刷新数据
+    // 当应用回到前台时，仅在数据为空时刷新
     if (state == AppLifecycleState.resumed) {
-      print('📱 应用回到前台,刷新首页数据');
-      _refreshData();
+      if (_cityController.cities.isEmpty && _meetupController.meetups.isEmpty) {
+        print('📱 应用回到前台，数据为空，刷新首页数据');
+        _refreshData();
+      } else {
+        print('📱 应用回到前台，已有缓存数据，不刷新');
+      }
     }
   }
 
@@ -107,11 +111,11 @@ class _DataServicePageState extends State<DataServicePage>
     if (route != null && route.isCurrent) {
       // 延迟执行，避免在build过程中调用
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        // 检查是否已有数据，避免重复刷新
+        // 检查是否已有数据，使用缓存模式避免重复刷新
         if (_cityController.cities.isNotEmpty ||
             _meetupController.meetups.isNotEmpty) {
-          print('🔄 页面回到前台,刷新数据');
-          _refreshData();
+          print('🔄 页面回到前台，使用缓存数据，不刷新');
+          // 不刷新，避免并发请求
         }
       });
     }
@@ -120,7 +124,7 @@ class _DataServicePageState extends State<DataServicePage>
   /// 刷新数据（首页不验证 token，直接请求）
   Future<void> _refreshData() async {
     await Future.wait([
-      _cityController.loadInitialCities(),
+      _cityController.loadInitialCities(refresh: true), // 强制刷新
       _meetupController.loadMeetups(forceRefresh: true),
     ]);
   }

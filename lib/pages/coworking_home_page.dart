@@ -24,6 +24,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage>
     with RouteAwareRefreshMixin<CoworkingHomePage> {
   List<Map<String, dynamic>> _cities = [];
   bool _isLoading = true;
+  bool _isLoadingRequest = false; // 防止并发请求
 
   @override
   void initState() {
@@ -107,13 +108,29 @@ class _CoworkingHomePageState extends State<CoworkingHomePage>
 
   @override
   Future<void> onRouteResume() async {
-    await _refreshData();
+    // 页面恢复时不自动刷新，避免并发请求
+    // 只在数据为空时才加载
+    if (_cities.isEmpty) {
+      print('🔄 CoworkingHome: 数据为空，重新加载');
+      await _refreshData();
+    } else {
+      print('✅ CoworkingHome: 使用缓存数据，跳过刷新');
+    }
   }
 
   /// 加载城市及其coworking空间数量
   /// 使用 City 域的 UseCase
   Future<void> _loadCitiesWithCoworkingCount() async {
+    // 防止并发请求
+    if (_isLoadingRequest) {
+      print('⏸️ CoworkingHome: 正在加载中，跳过重复请求');
+      return;
+    }
+
     try {
+      if (!mounted) return;
+
+      _isLoadingRequest = true; // 立即设置加载标志
       setState(() => _isLoading = true);
 
       print('🏙️ 开始获取城市列表(含Coworking数量)...');
@@ -146,9 +163,11 @@ class _CoworkingHomePageState extends State<CoworkingHomePage>
           print('✅ 获取到 ${cities.length} 个城市');
 
           if (cities.isEmpty) {
+            if (!mounted) return;
             setState(() {
               _cities = [];
               _isLoading = false;
+              _isLoadingRequest = false;
             });
             return;
           }
@@ -189,20 +208,30 @@ class _CoworkingHomePageState extends State<CoworkingHomePage>
 
           print('✅ 找到 ${citiesWithCount.length} 个有 Coworking 空间的城市');
 
+          if (!mounted) return;
           setState(() {
             _cities = citiesWithCount;
             _isLoading = false;
+            _isLoadingRequest = false;
           });
 
         case Failure(:final exception):
           print('❌ 加载城市数据失败: ${exception.message}');
-          setState(() => _isLoading = false);
+          if (!mounted) return;
+          setState(() {
+            _isLoading = false;
+            _isLoadingRequest = false;
+          });
           AppToast.error('加载失败: ${exception.message}');
       }
     } catch (e) {
       print('❌ 加载城市数据异常: $e');
-      setState(() => _isLoading = false);
-      AppToast.error('加载失败,请稍后重试');
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _isLoadingRequest = false;
+      });
+      AppToast.error('加载失败，请重试');
     }
   }
 
@@ -211,9 +240,11 @@ class _CoworkingHomePageState extends State<CoworkingHomePage>
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(l10n.coworkingSpaces),
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
+        elevation: 0,
         leading: IconButton(
           icon: const Icon(FontAwesomeIcons.arrowLeft),
           onPressed: () => Navigator.pop(context),
@@ -222,7 +253,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage>
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(8),
               children: [
                 // Create Space Button
                 SizedBox(
@@ -267,7 +298,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage>
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 12),
 
                 // Section Title
                 Row(
@@ -289,7 +320,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage>
                   ],
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
 
                 // City Grid
                 _cities.isEmpty
@@ -311,9 +342,9 @@ class _CoworkingHomePageState extends State<CoworkingHomePage>
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                          childAspectRatio: 0.85,
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 8,
+                          childAspectRatio: 0.78,
                         ),
                         itemCount: _cities.length,
                         itemBuilder: (context, index) {
@@ -328,13 +359,21 @@ class _CoworkingHomePageState extends State<CoworkingHomePage>
 
   Widget _buildCityCard(BuildContext context, Map<String, dynamic> city) {
     final l10n = AppLocalizations.of(context)!;
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: InkWell(
+        borderRadius: BorderRadius.circular(12),
         onTap: () async {
           // 添加调试日志
           print('🏙️ 点击城市卡片:');
@@ -365,17 +404,21 @@ class _CoworkingHomePageState extends State<CoworkingHomePage>
             // Image
             Stack(
               children: [
-                AspectRatio(
-                  aspectRatio: 1.5,
-                  child: Image.network(
-                    city['image'],
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.grey[300],
-                        child: const Icon(FontAwesomeIcons.city, size: 50),
-                      );
-                    },
+                ClipRRect(
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(12)),
+                  child: AspectRatio(
+                    aspectRatio: 1.5,
+                    child: Image.network(
+                      city['image'],
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.grey[300],
+                          child: const Icon(FontAwesomeIcons.city, size: 50),
+                        );
+                      },
+                    ),
                   ),
                 ),
                 Positioned(
@@ -405,7 +448,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage>
 
             // Info
             Padding(
-              padding: const EdgeInsets.all(4),
+              padding: const EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

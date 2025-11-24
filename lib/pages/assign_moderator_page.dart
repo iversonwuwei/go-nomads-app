@@ -1,13 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
-
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
 import 'package:df_admin_mobile/features/city/presentation/controllers/city_detail_state_controller.dart';
 import 'package:df_admin_mobile/features/user_management/domain/repositories/iuser_management_repository.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 
 /// 指定城市版主页面
 class AssignModeratorPage extends StatefulWidget {
@@ -198,7 +197,7 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
           ElevatedButton(
             onPressed: () => Get.back(result: true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.accent,
+              backgroundColor: AppColors.cityPrimary,
               foregroundColor: Colors.white,
             ),
             child: const Text('确认'),
@@ -271,14 +270,17 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.cityName} - 指定版主'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
+        backgroundColor: AppColors.cityPrimary,
+        foregroundColor: Colors.white,
         elevation: 0,
         actions: [
           // 全选/取消全选按钮
           Obx(() => _filteredUsers.isNotEmpty
               ? TextButton.icon(
                   onPressed: _toggleSelectAll,
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.white,
+                  ),
                   icon: Icon(
                     _selectedUserIds.length == _filteredUsers.length
                         ? FontAwesomeIcons.squareCheck
@@ -540,7 +542,7 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
                                 ? null
                                 : _submitAssignModerator,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.accent,
+                          backgroundColor: AppColors.cityPrimary,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(

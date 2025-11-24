@@ -1147,7 +1147,7 @@ class _CityDetailPageState extends State<CityDetailPage>
               ],
             ),
             actions: [
-              // 取消按钮 - 只在生成中时显示
+              // 后端运行按钮 - 只在生成中时显示
               if (controller.isGeneratingGuide)
                 TextButton(
                   onPressed: () {
@@ -1155,7 +1155,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                     statusWorker?.dispose();
                     Navigator.of(dialogContext).pop();
                   },
-                  child: const Text('取消'),
+                  child: const Text('后端运行'),
                 ),
             ],
           );

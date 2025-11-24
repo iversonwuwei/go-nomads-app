@@ -1,3 +1,4 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/city/application/state_controllers/pros_cons_state_controller.dart';
 import 'package:df_admin_mobile/services/token_storage_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
@@ -118,7 +119,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
           ),
           TextButton(
             onPressed: () => Get.back(result: true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: AppColors.cityPrimary),
             child: const Text('删除'),
           ),
         ],
@@ -156,7 +157,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
           ),
           TextButton(
             onPressed: () => Get.back(result: true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: AppColors.cityPrimary),
             child: const Text('删除'),
           ),
         ],
@@ -280,6 +281,8 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: AppColors.cityPrimary,
+        foregroundColor: Colors.white,
         title: Text('${widget.cityName} - 添加乐趣'),
         leading: IconButton(
           icon: const Icon(FontAwesomeIcons.xmark),
@@ -293,8 +296,8 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
         ),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: const Color(0xFFFF4458),
-          unselectedLabelColor: Colors.grey[600],
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
           labelStyle: const TextStyle(
             fontWeight: FontWeight.w600,
             fontSize: 15,
@@ -304,11 +307,12 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
             fontSize: 15,
           ),
           indicatorSize: TabBarIndicatorSize.label,
+          indicatorColor: Colors.white,
           indicator: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
             border: const Border(
               bottom: BorderSide(
-                color: Color(0xFFFF4458),
+                color: Colors.white,
                 width: 3,
               ),
             ),

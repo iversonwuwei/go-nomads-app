@@ -1,6 +1,3 @@
-import 'package:dio/dio.dart';
-import 'package:get/get.dart';
-
 // AI Domain
 import 'package:df_admin_mobile/features/ai/application/use_cases/ai_use_cases.dart';
 import 'package:df_admin_mobile/features/ai/domain/repositories/iai_repository.dart';
@@ -112,6 +109,8 @@ import 'package:df_admin_mobile/features/weather/presentation/controllers/weathe
 import 'package:df_admin_mobile/services/database_service.dart';
 import 'package:df_admin_mobile/services/http_service.dart';
 import 'package:df_admin_mobile/services/token_storage_service.dart';
+import 'package:dio/dio.dart';
+import 'package:get/get.dart';
 
 /// DDD依赖注入配置
 ///
@@ -505,6 +504,7 @@ class DependencyInjection {
         submitCoworkingVerificationUseCase:
             Get.find<SubmitCoworkingVerificationUseCase>(),
       ),
+      fenix: true, // 允许在删除后重新创建,防止路由切换导致的状态丢失
     );
   }
 

@@ -1,11 +1,10 @@
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
-
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
 import 'package:df_admin_mobile/utils/image_upload_helper.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 
 class CityPhotoSubmissionPage extends StatefulWidget {
   final String cityId;
@@ -200,6 +199,8 @@ class _CityPhotoSubmissionPageState extends State<CityPhotoSubmissionPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: AppColors.cityPrimary,
+        foregroundColor: Colors.white,
         title: Text('上传照片 · ${widget.cityName}'),
       ),
       body: Form(
@@ -254,6 +255,9 @@ class _CityPhotoSubmissionPageState extends State<CityPhotoSubmissionPage> {
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   TextButton.icon(
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.cityPrimary,
+                    ),
                     onPressed: _uploadingImages ? null : _showAddPhotoSheet,
                     icon: const Icon(FontAwesomeIcons.photoFilm),
                     label: const Text('添加照片'),
@@ -339,6 +343,16 @@ class _CityPhotoSubmissionPageState extends State<CityPhotoSubmissionPage> {
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.cityPrimary,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor:
+                        AppColors.cityPrimary.withValues(alpha: 0.5),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                   onPressed: _uploadingImages || _submitting ? null : _submit,
                   icon: _submitting
                       ? const SizedBox(

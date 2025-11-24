@@ -218,24 +218,31 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
     required bool isFilled,
     required bool isHalfFilled,
   }) {
-    // 确定背景色：根据平均分而非用户评分
+    // 确定背景色
     Color backgroundColor;
-    if (isFilled || isHalfFilled) {
-      backgroundColor = Colors.grey[200]!; // 有平均分：浅灰背景
+    if (isActive) {
+      backgroundColor = const Color(0xFFFFE5E8); // 用户已评分:浅粉色背景
+    } else if (isFilled || isHalfFilled) {
+      backgroundColor = Colors.grey[200]!; // 有平均分:浅灰背景
     } else {
-      backgroundColor = Colors.grey[50]!; // 无平均分：极浅灰背景
+      backgroundColor = Colors.grey[50]!; // 无平均分:极浅灰背景
     }
 
-    // 确定星星颜色
+    // 确定星星颜色和图标
     Color starColor;
+    IconData starIcon;
     if (isActive) {
-      starColor = const Color(0xFF1A1A1A); // 用户已评分：黑色星星
+      starColor = const Color(0xFFFF4458); // 用户已评分：红色空心星星
+      starIcon = Icons.star_border; // 空心红色星星
     } else if (isFilled) {
       starColor = Colors.grey[600]!; // 有平均分：深灰星星
+      starIcon = Icons.star_border;
     } else if (isHalfFilled) {
       starColor = Colors.grey[600]!.withOpacity(0.5); // 半星：半透明深灰
+      starIcon = Icons.star_border;
     } else {
       starColor = Colors.grey[300]!; // 无评分：浅灰星星
+      starIcon = Icons.star_border;
     }
 
     return Container(
@@ -246,7 +253,7 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
         borderRadius: BorderRadius.circular(6),
       ),
       child: Icon(
-        FontAwesomeIcons.star,
+        starIcon,
         size: 16,
         color: starColor,
       ),
