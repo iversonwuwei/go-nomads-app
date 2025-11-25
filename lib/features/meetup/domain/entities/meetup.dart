@@ -1,9 +1,12 @@
+import 'event_type.dart';
+
 /// Meetup 领域实体
 /// 代表数字游民聚会活动的核心领域对象
 class Meetup {
   final String id;
   final String title;
-  final MeetupType type;
+  final MeetupType type; // 保留兼容
+  final EventType? eventType; // 新增：完整的事件类型对象
   final String description;
   final Location location;
   final Venue venue;
@@ -21,6 +24,7 @@ class Meetup {
     required this.id,
     required this.title,
     required this.type,
+    this.eventType, // 可选
     required this.description,
     required this.location,
     required this.venue,

@@ -1,10 +1,12 @@
 import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
+import 'package:df_admin_mobile/features/meetup/infrastructure/models/event_type_dto.dart';
 
 /// Meetup DTO - 基础设施层数据传输对象
 class MeetupDto {
   final String id;
   final String title;
-  final String type;
+  final String type; // 兼容字段
+  final EventTypeDto? eventType; // 完整的 EventType 对象
   final String description;
   final String city;
   final String cityId;
@@ -31,6 +33,7 @@ class MeetupDto {
     required this.id,
     required this.title,
     required this.type,
+    this.eventType, // 可选
     required this.description,
     required this.city,
     required this.cityId,
@@ -63,13 +66,10 @@ class MeetupDto {
       final organizer = json['organizer'] as Map<String, dynamic>;
       organizerName = organizer['name'] as String?;
       organizerId = organizer['id'] as String?;
-      organizerAvatar =
-          organizer['avatar'] as String? ?? organizer['avatarUrl'] as String?;
+      organizerAvatar = organizer['avatar'] as String? ?? organizer['avatarUrl'] as String?;
     }
-    organizerName ??=
-        json['organizerName'] as String? ?? json['creatorName'] as String?;
-    organizerId ??=
-        json['organizerId'] as String? ?? json['creatorId'] as String?;
+    organizerName ??= json['organizerName'] as String? ?? json['creatorName'] as String?;
+    organizerId ??= json['organizerId'] as String? ?? json['creatorId'] as String?;
     organizerAvatar ??= json['organizerAvatar'] as String?;
 
     // 处理 city 对象
@@ -86,51 +86,46 @@ class MeetupDto {
     cityId ??= json['cityId'] as String?;
     country ??= json['country'] as String?;
 
+    // 🔍 解析 EventType 对象
+    EventTypeDto? eventTypeDto;
+    if (json['eventType'] != null && json['eventType'] is Map) {
+      try {
+        eventTypeDto = EventTypeDto.fromJson(json['eventType'] as Map<String, dynamic>);
+      } catch (e) {
+        print('⚠️ 解析 eventType 失败: $e');
+      }
+    }
+
     return MeetupDto(
       id: json['id'] as String? ?? '',
       title: json['title'] as String? ?? '',
       type: json['type'] as String? ?? json['category'] as String? ?? '',
+      eventType: eventTypeDto, // 传入解析的 eventType
       description: json['description'] as String? ?? '',
       city: cityName ?? '',
       cityId: cityId ?? '',
       cityName: cityName,
       country: country ?? '',
       venue: json['location'] as String? ?? json['venue'] as String? ?? '',
-      venueAddress:
-          json['address'] as String? ?? json['venueAddress'] as String? ?? '',
+      venueAddress: json['address'] as String? ?? json['venueAddress'] as String? ?? '',
       dateTime: json['dateTime'] != null
           ? DateTime.parse(json['dateTime'] as String)
           : json['startTime'] != null
               ? DateTime.parse(json['startTime'] as String)
               : DateTime.now(),
-      endTime: json['endTime'] != null
-          ? DateTime.parse(json['endTime'] as String)
-          : null,
-      maxAttendees: (json['maxAttendees'] as num?)?.toInt() ??
-          (json['maxParticipants'] as num?)?.toInt() ??
-          0,
-      currentAttendees: (json['currentAttendees'] as num?)?.toInt() ??
-          (json['participantCount'] as num?)?.toInt() ??
-          0,
+      endTime: json['endTime'] != null ? DateTime.parse(json['endTime'] as String) : null,
+      maxAttendees: (json['maxAttendees'] as num?)?.toInt() ?? (json['maxParticipants'] as num?)?.toInt() ?? 0,
+      currentAttendees: (json['currentAttendees'] as num?)?.toInt() ?? (json['participantCount'] as num?)?.toInt() ?? 0,
       organizerId: organizerId ?? '',
       organizerName: organizerName ?? '',
       organizerAvatar: organizerAvatar,
       imageUrl: json['imageUrl'] as String?,
-      images: (json['images'] as List<dynamic>?)
-              ?.map((e) => e.toString())
-              .toList() ??
-          [],
-      attendeeIds: (json['attendeeIds'] as List<dynamic>?)
-              ?.map((e) => e.toString())
-              .toList() ??
-          [],
-      isJoined:
-          json['isJoined'] as bool? ?? json['isParticipant'] as bool? ?? false,
+      images: (json['images'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+      attendeeIds: (json['attendeeIds'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+      isJoined: json['isJoined'] as bool? ?? json['isParticipant'] as bool? ?? false,
       isOrganizer: json['isOrganizer'] as bool? ?? false,
       status: json['status'] as String? ?? 'upcoming',
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'] as String)
-          : DateTime.now(),
+      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'] as String) : DateTime.now(),
     )..printDebugInfo();
   }
 
@@ -168,6 +163,7 @@ class MeetupDto {
       id: id,
       title: title,
       type: MeetupType.fromString(type),
+      eventType: eventType?.toDomain(), // 转换 EventType
       description: description,
       location: Location(
         city: city,

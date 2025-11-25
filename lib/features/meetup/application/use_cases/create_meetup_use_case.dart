@@ -15,6 +15,7 @@ class CreateMeetupUseCase {
     required String venue,
     required String venueAddress,
     required MeetupType type,
+    String? eventTypeId, // 新增
     required DateTime startTime,
     DateTime? endTime,
     required int maxAttendees,
@@ -46,6 +47,7 @@ class CreateMeetupUseCase {
         venue: venue,
         venueAddress: venueAddress,
         type: type,
+        eventTypeId: eventTypeId,
         startTime: startTime,
         endTime: endTime,
         maxAttendees: maxAttendees,

@@ -36,8 +36,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
   final IMeetupRepository _meetupRepository = Get.find();
   final _meetupController = Get.find<MeetupStateController>();
   final RxBool _isLoading = true.obs;
-  final RxList<Map<String, dynamic>> _participants =
-      <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> _participants = <Map<String, dynamic>>[].obs;
 
   // 检查当前用户是否已加入活动 - 使用 controller 的 isRsvped 方法
   bool get _isJoined => _meetupController.isRsvped(_meetup.value.id);
@@ -75,8 +74,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
       // 提取 participants 列表
       if (data['participants'] != null) {
         final participantsList = data['participants'] as List<dynamic>;
-        _participants.value =
-            participantsList.map((p) => p as Map<String, dynamic>).toList();
+        _participants.value = participantsList.map((p) => p as Map<String, dynamic>).toList();
         print('✅ 成功加载 ${_participants.length} 位参与者');
       }
 
@@ -219,12 +217,17 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
         children: [
           Row(
             children: [
-              _buildTypeChip(_meetup.value.type.value),
+              _buildTypeChip(
+                // 优先使用 eventType 的国际化名称
+                _meetup.value.eventType?.getDisplayName(
+                      Localizations.localeOf(context).languageCode,
+                    ) ??
+                    _meetup.value.type.value,
+              ),
               SizedBox(width: 12.w),
               if (_meetup.value.isStartingSoon)
                 Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFF4458).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12.r),
@@ -232,8 +235,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(FontAwesomeIcons.clock,
-                          size: 12.sp, color: const Color(0xFFFF4458)),
+                      Icon(FontAwesomeIcons.clock, size: 12.sp, color: const Color(0xFFFF4458)),
                       SizedBox(width: 4.w),
                       Text(
                         l10n.startingSoon,
@@ -260,8 +262,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
           SizedBox(height: 12.h),
           Row(
             children: [
-              Icon(FontAwesomeIcons.city,
-                  size: 16.sp, color: AppColors.textSecondary),
+              Icon(FontAwesomeIcons.city, size: 16.sp, color: AppColors.textSecondary),
               SizedBox(width: 6.w),
               Text(
                 '${_meetup.value.location.city}, ${_meetup.value.location.country}',
@@ -373,10 +374,9 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                 child: CircleAvatar(
                   radius: 30.r,
                   backgroundImage:
-                      (_meetup.value.organizer.avatarUrl != null &&
-                          _meetup.value.organizer.avatarUrl!.isNotEmpty)
-                      ? NetworkImage(_meetup.value.organizer.avatarUrl!)
-                      : null,
+                      (_meetup.value.organizer.avatarUrl != null && _meetup.value.organizer.avatarUrl!.isNotEmpty)
+                          ? NetworkImage(_meetup.value.organizer.avatarUrl!)
+                          : null,
                 ),
               ),
               SizedBox(width: 16.w),
@@ -407,13 +407,11 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                 onPressed: _contactOrganizer,
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFFFF4458),
-                  side:
-                      BorderSide(color: const Color(0xFFFF4458), width: 1.5.w),
+                  side: BorderSide(color: const Color(0xFFFF4458), width: 1.5.w),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20.r),
                   ),
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                 ),
                 child: Text(
                   l10n.message,
@@ -442,8 +440,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                l10n.attendeesCount(
-                    '${_meetup.value.capacity.currentAttendees}'),
+                l10n.attendeesCount('${_meetup.value.capacity.currentAttendees}'),
                 style: TextStyle(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
@@ -512,9 +509,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                         child: CircleAvatar(
                           radius: 20.r,
                           backgroundImage:
-                              (userAvatar != null && userAvatar.isNotEmpty)
-                                  ? NetworkImage(userAvatar)
-                                  : null,
+                              (userAvatar != null && userAvatar.isNotEmpty) ? NetworkImage(userAvatar) : null,
                           child: (userAvatar == null || userAvatar.isEmpty)
                               ? Icon(FontAwesomeIcons.user, size: 20.r)
                               : null,
@@ -558,10 +553,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                 if (_isOrganizer) ...[
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: _meetup.value.status == 'cancelled' ||
-                              _meetup.value.isEnded
-                          ? null
-                          : _cancelMeetup,
+                      onPressed: _meetup.value.status == 'cancelled' || _meetup.value.isEnded ? null : _cancelMeetup,
                       icon: Icon(FontAwesomeIcons.ban, size: 20.sp),
                       label: Text(
                         _meetup.value.status == 'cancelled' ? '已取消' : '取消活动',
@@ -571,12 +563,8 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _meetup.value.status == 'cancelled'
-                            ? AppColors.borderLight
-                            : Colors.red,
-                        foregroundColor: _meetup.value.status == 'cancelled'
-                            ? AppColors.textSecondary
-                            : Colors.white,
+                        backgroundColor: _meetup.value.status == 'cancelled' ? AppColors.borderLight : Colors.red,
+                        foregroundColor: _meetup.value.status == 'cancelled' ? AppColors.textSecondary : Colors.white,
                         padding: EdgeInsets.symmetric(vertical: 14.h),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12.r),
@@ -609,8 +597,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.r),
                       ),
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 20.w, vertical: 14.h),
+                      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
                       backgroundColor: _isJoined ? null : Colors.grey.shade50,
                     ),
                   ),
@@ -618,17 +605,13 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                   // Join Button
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: _meetup.value.isEnded ||
-                              _meetup.value.capacity.isFull ||
-                              _meetup.value.status == 'cancelled'
-                          ? null
-                          : _toggleJoin,
+                      onPressed:
+                          _meetup.value.isEnded || _meetup.value.capacity.isFull || _meetup.value.status == 'cancelled'
+                              ? null
+                              : _toggleJoin,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _isJoined
-                            ? AppColors.borderLight
-                            : const Color(0xFFFF4458),
-                        foregroundColor:
-                            _isJoined ? AppColors.textSecondary : Colors.white,
+                        backgroundColor: _isJoined ? AppColors.borderLight : const Color(0xFFFF4458),
+                        foregroundColor: _isJoined ? AppColors.textSecondary : Colors.white,
                         padding: EdgeInsets.symmetric(vertical: 14.h),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12.r),
@@ -663,26 +646,41 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
   Widget _buildTypeChip(String type) {
     Color color;
     IconData icon;
-    switch (type.toLowerCase()) {
-      case 'coffee':
-        color = Colors.brown;
-        icon = FontAwesomeIcons.mugSaucer;
-        break;
-      case 'coworking':
-        color = Colors.blue;
-        icon = FontAwesomeIcons.laptop;
-        break;
-      case 'activity':
-        color = Colors.green;
-        icon = FontAwesomeIcons.football;
-        break;
-      case 'language':
-        color = Colors.purple;
-        icon = FontAwesomeIcons.globe;
-        break;
-      default:
-        color = AppColors.textSecondary;
-        icon = FontAwesomeIcons.calendarDays;
+    // 根据类型名称设置颜色和图标（支持中英文）
+    final typeLower = type.toLowerCase();
+    if (typeLower.contains('coffee') || typeLower.contains('咖啡')) {
+      color = Colors.brown;
+      icon = FontAwesomeIcons.mugSaucer;
+    } else if (typeLower.contains('coworking') || typeLower.contains('共享办公')) {
+      color = Colors.blue;
+      icon = FontAwesomeIcons.laptop;
+    } else if (typeLower.contains('activity') ||
+        typeLower.contains('运动') ||
+        typeLower.contains('sports') ||
+        typeLower.contains('健身')) {
+      color = Colors.green;
+      icon = FontAwesomeIcons.football;
+    } else if (typeLower.contains('language') || typeLower.contains('语言')) {
+      color = Colors.purple;
+      icon = FontAwesomeIcons.globe;
+    } else if (typeLower.contains('social') ||
+        typeLower.contains('社交') ||
+        typeLower.contains('networking') ||
+        typeLower.contains('网络')) {
+      color = Colors.orange;
+      icon = FontAwesomeIcons.userGroup;
+    } else if (typeLower.contains('tech') ||
+        typeLower.contains('workshop') ||
+        typeLower.contains('技术') ||
+        typeLower.contains('工作坊')) {
+      color = Colors.indigo;
+      icon = FontAwesomeIcons.code;
+    } else if (typeLower.contains('food') || typeLower.contains('美食')) {
+      color = Colors.red;
+      icon = FontAwesomeIcons.utensils;
+    } else {
+      color = AppColors.textSecondary;
+      icon = FontAwesomeIcons.calendarDays;
     }
 
     return Container(
@@ -709,8 +707,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String title, String value,
-      {String? subtitle}) {
+  Widget _buildInfoRow(IconData icon, String title, String value, {String? subtitle}) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -951,8 +948,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
 
                 // 🔧 从嵌套的 user 对象中获取用户信息
                 final userInfo = participant['user'] as Map<String, dynamic>?;
-                final userName =
-                    userInfo?['name'] as String? ?? '${l10n.user} ${index + 1}';
+                final userName = userInfo?['name'] as String? ?? '${l10n.user} ${index + 1}';
                 final userEmail = userInfo?['email'] as String?;
                 final userAvatar = userInfo?['avatar'] as String?;
 
@@ -968,13 +964,8 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                     Get.to(() => MemberDetailPage(user: participantUser));
                   },
                   leading: CircleAvatar(
-                    backgroundImage:
-                        (userAvatar != null && userAvatar.isNotEmpty)
-                            ? NetworkImage(userAvatar)
-                            : null,
-                    child: (userAvatar == null || userAvatar.isEmpty)
-                        ? const Icon(FontAwesomeIcons.user)
-                        : null,
+                    backgroundImage: (userAvatar != null && userAvatar.isNotEmpty) ? NetworkImage(userAvatar) : null,
+                    child: (userAvatar == null || userAvatar.isEmpty) ? const Icon(FontAwesomeIcons.user) : null,
                   ),
                   title: Text(userName, style: TextStyle(fontSize: 14.sp)),
                   subtitle: Text(

@@ -5,7 +5,9 @@ import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/config/supabase_config.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city_option.dart';
 import 'package:df_admin_mobile/features/location/presentation/controllers/location_state_controller.dart';
+import 'package:df_admin_mobile/features/meetup/domain/entities/event_type.dart';
 import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
+import 'package:df_admin_mobile/features/meetup/presentation/controllers/event_type_controller.dart';
 import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/services/image_upload_service.dart';
@@ -43,10 +45,11 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
   final GlobalKey<FormFieldState<String>> _countryFieldKey = GlobalKey<FormFieldState<String>>();
 
   // 类型相关
-  List<String> _meetupTypes = [];
+  List<EventType> _meetupTypes = [];
   bool _isLoadingTypes = false;
   bool _showCustomTypeInput = false;
-  String? _selectedType;
+  String? _selectedType; // 显示用的名称
+  String? _selectedTypeId; // 后端需要的 type ID
 
   // 图片相关
   final List<XFile> _selectedImages = [];
@@ -58,6 +61,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
 
   final LocationStateController _locationController = Get.find<LocationStateController>();
   final MeetupStateController meetupController = Get.find<MeetupStateController>();
+  final EventTypeController _eventTypeController = Get.put(EventTypeController());
 
   @override
   void initState() {
@@ -72,40 +76,20 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
     });
 
     try {
-      // TODO: 从后端API加载聚会类型列表
-      // 暂时使用硬编码的默认类型
-      await Future.delayed(const Duration(milliseconds: 500)); // 模拟网络请求
+      // 从 EventTypeController 加载类型列表（自动使用缓存）
+      await _eventTypeController.loadEventTypes();
 
-      _meetupTypes = [
-        'Networking',
-        'Workshop',
-        'Social Gathering',
-        'Sports & Fitness',
-        'Food & Drinks',
-        'Coworking Session',
-        'Language Exchange',
-        'Cultural Event',
-        'Tech Meetup',
-        'Travel Planning',
-        'Book Club',
-        'Gaming Night',
-        'Photography Walk',
-        'Hiking & Outdoor',
-        'Music & Arts',
-        'Business Lunch',
-        'Career Development',
-        'Volunteer Activity',
-        'Movie Night',
-        'Yoga & Meditation',
-      ];
+      setState(() {
+        _meetupTypes = _eventTypeController.eventTypes;
+      });
+
+      print('✅ 成功加载 ${_meetupTypes.length} 个事件类型');
     } catch (e) {
-      print('加载聚会类型失败: $e');
-      // 失败时使用最小集合
-      _meetupTypes = [
-        'Networking',
-        'Social Gathering',
-        'Workshop',
-      ];
+      print('❌ 加载聚会类型失败: $e');
+      // EventTypeController 已有后备方案，直接使用
+      setState(() {
+        _meetupTypes = _eventTypeController.eventTypes;
+      });
     } finally {
       setState(() {
         _isLoadingTypes = false;
@@ -586,8 +570,27 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
         _selectedTime!.minute,
       );
 
-      final meetupType =
-          MeetupType.fromString(_typeController.text.isEmpty ? 'social' : _typeController.text.toLowerCase());
+      // 获取选中的 EventType（用于传递给后端）
+      MeetupType meetupType;
+      String? eventTypeId; // EventType 的 UUID
+      if (_showCustomTypeInput || _selectedTypeId == null) {
+        // 自定义类型或未选择类型时，使用输入的文本
+        meetupType =
+            MeetupType.fromString(_typeController.text.isEmpty ? 'social' : _typeController.text.toLowerCase());
+      } else {
+        // 从 EventTypeController 获取选中的 EventType
+        final selectedEventType = _eventTypeController.getEventTypeById(_selectedTypeId!);
+        if (selectedEventType != null) {
+          // 使用 EventType 的 ID 和 enName
+          eventTypeId = selectedEventType.id;
+          meetupType = MeetupType.fromString(selectedEventType.enName.toLowerCase());
+          print('✅ 使用事件类型: ${selectedEventType.name} (ID: $eventTypeId)');
+        } else {
+          // 如果找不到（不应该发生），回退到文本
+          meetupType =
+              MeetupType.fromString(_typeController.text.isEmpty ? 'social' : _typeController.text.toLowerCase());
+        }
+      }
 
       List<String> uploadedImageUrls = [];
       if (_selectedImages.isNotEmpty) {
@@ -597,6 +600,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
       final createdMeetup = await meetupController.createMeetup(
         title: _titleController.text,
         type: meetupType,
+        eventTypeId: eventTypeId, // 传递 UUID
         description: _descriptionController.text,
         cityId: _selectedCityId ?? '',
         venue: _venueController.text,
@@ -895,7 +899,12 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
 
                       FocusScope.of(context).unfocus();
 
-                      final optionsWithCustom = [..._meetupTypes, '+ 自定义类型'];
+                      // 获取当前语言环境
+                      final localeCode = Localizations.localeOf(context).languageCode.toLowerCase();
+
+                      // 构建显示选项（本地化名称）
+                      final displayOptions = _meetupTypes.map((type) => type.getDisplayName(localeCode)).toList();
+                      final optionsWithCustom = [...displayOptions, '+ 自定义类型'];
 
                       _showOptionPicker(
                         options: optionsWithCustom,
@@ -906,15 +915,25 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                             setState(() {
                               _showCustomTypeInput = true;
                               _selectedType = null;
+                              _selectedTypeId = null;
                               _typeController.clear();
                             });
                             field.didChange(null);
                           } else {
-                            setState(() {
-                              _selectedType = value;
-                              _typeController.text = value;
-                            });
-                            field.didChange(value);
+                            // 根据显示名称找到对应的 EventType
+                            final selectedEventType = _meetupTypes.firstWhereOrNull(
+                              (type) => type.getDisplayName(localeCode) == value,
+                            );
+
+                            if (selectedEventType != null) {
+                              setState(() {
+                                _selectedType = value;
+                                _selectedTypeId = selectedEventType.id;
+                                _typeController.text = value;
+                              });
+                              field.didChange(value);
+                              print('✅ 选择类型: ${selectedEventType.name} (ID: ${selectedEventType.id})');
+                            }
                           }
                         },
                       );

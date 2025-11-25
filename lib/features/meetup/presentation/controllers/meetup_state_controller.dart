@@ -94,8 +94,7 @@ class MeetupStateController extends GetxController {
       hasMoreData.value = true; // 重置是否有更多数据
 
       print('🔄 加载活动列表...');
-      print(
-          '   cityId: $cityId, status: $status, page: 1, pageSize: $pageSize');
+      print('   cityId: $cityId, status: $status, page: 1, pageSize: $pageSize');
 
       final loadedMeetups = await _getMeetupsUseCase.execute(
         status: status ?? 'upcoming',
@@ -126,8 +125,7 @@ class MeetupStateController extends GetxController {
         // 检查是否应该标记为已加入:
         // 1. 后端返回 isJoined=true
         // 2. 用户是活动的组织者(后端可能没有正确返回 isJoined)
-        final shouldBeJoined = meetup.isJoined ||
-            (currentUserId != null && meetup.organizer.id == currentUserId);
+        final shouldBeJoined = meetup.isJoined || (currentUserId != null && meetup.organizer.id == currentUserId);
 
         if (shouldBeJoined) {
           if (!rsvpedMeetupIds.contains(meetup.id)) {
@@ -170,8 +168,7 @@ class MeetupStateController extends GetxController {
   }) async {
     // 如果已经在加载或没有更多数据，直接返回
     if (isLoadingMore.value || !hasMoreData.value) {
-      print(
-          '⏸️ 跳过加载更多: isLoadingMore=${isLoadingMore.value}, hasMoreData=${hasMoreData.value}');
+      print('⏸️ 跳过加载更多: isLoadingMore=${isLoadingMore.value}, hasMoreData=${hasMoreData.value}');
       return;
     }
 
@@ -180,8 +177,7 @@ class MeetupStateController extends GetxController {
       final nextPage = currentPage.value + 1;
 
       print('🔄 加载更多活动...');
-      print(
-          '   cityId: $cityId, status: $status, page: $nextPage, pageSize: $pageSize');
+      print('   cityId: $cityId, status: $status, page: $nextPage, pageSize: $pageSize');
 
       final moreMeetups = await _getMeetupsUseCase.execute(
         status: status ?? 'upcoming',
@@ -208,8 +204,7 @@ class MeetupStateController extends GetxController {
           // 检查是否应该标记为已加入:
           // 1. 后端返回 isJoined=true
           // 2. 用户是活动的组织者(后端可能没有正确返回 isJoined)
-          final shouldBeJoined = meetup.isJoined ||
-              (currentUserId != null && meetup.organizer.id == currentUserId);
+          final shouldBeJoined = meetup.isJoined || (currentUserId != null && meetup.organizer.id == currentUserId);
 
           if (shouldBeJoined) {
             if (!rsvpedMeetupIds.contains(meetup.id)) {
@@ -217,14 +212,12 @@ class MeetupStateController extends GetxController {
               print(
                   '   ✅ 添加到 rsvpedMeetupIds: ${meetup.title} (${meetup.id})${meetup.organizer.id == currentUserId ? ' [组织者]' : ''}');
             } else {
-              print(
-                  '   ℹ️ 已存在于 rsvpedMeetupIds: ${meetup.title} (${meetup.id})');
+              print('   ℹ️ 已存在于 rsvpedMeetupIds: ${meetup.title} (${meetup.id})');
             }
           } else {
             if (rsvpedMeetupIds.contains(meetup.id)) {
               rsvpedMeetupIds.remove(meetup.id);
-              print(
-                  '   🔄 从 rsvpedMeetupIds 移除: ${meetup.title} (${meetup.id})');
+              print('   🔄 从 rsvpedMeetupIds 移除: ${meetup.title} (${meetup.id})');
             }
           }
         }
@@ -292,6 +285,7 @@ class MeetupStateController extends GetxController {
     required String venue,
     required String venueAddress,
     required MeetupType type,
+    String? eventTypeId, // 新增：EventType UUID
     required DateTime startTime,
     DateTime? endTime,
     required int maxAttendees,
@@ -317,6 +311,7 @@ class MeetupStateController extends GetxController {
         venue: venue,
         venueAddress: venueAddress,
         type: type,
+        eventTypeId: eventTypeId,
         startTime: startTime,
         endTime: endTime,
         maxAttendees: maxAttendees,
@@ -355,8 +350,7 @@ class MeetupStateController extends GetxController {
 
       final isCurrentlyRsvped = rsvpedMeetupIds.contains(meetupId);
 
-      print(
-          '🔄 切换 RSVP: $meetupId (当前: ${isCurrentlyRsvped ? "已RSVP" : "未RSVP"})');
+      print('🔄 切换 RSVP: $meetupId (当前: ${isCurrentlyRsvped ? "已RSVP" : "未RSVP"})');
 
       bool success;
       if (isCurrentlyRsvped) {
@@ -381,16 +375,14 @@ class MeetupStateController extends GetxController {
 
       // 特殊处理:如果后端返回"已经参加"错误,说明状态不同步,需要修正
       final errorMessage = e.toString();
-      if (errorMessage.contains('已经参加') ||
-          errorMessage.contains('already joined')) {
+      if (errorMessage.contains('已经参加') || errorMessage.contains('already joined')) {
         // 后端说已经参加了,但前端认为没参加,修正状态
         if (!rsvpedMeetupIds.contains(meetupId)) {
           rsvpedMeetupIds.add(meetupId);
           print('🔄 修正 RSVP 状态: 已将 $meetupId 标记为已参加');
         }
         AppToast.error('您已经参加了这个活动');
-      } else if (errorMessage.contains('未参加') ||
-          errorMessage.contains('not joined')) {
+      } else if (errorMessage.contains('未参加') || errorMessage.contains('not joined')) {
         // 后端说未参加,但前端认为参加了,修正状态
         if (rsvpedMeetupIds.contains(meetupId)) {
           rsvpedMeetupIds.remove(meetupId);

@@ -29,6 +29,7 @@ abstract class IMeetupRepository {
     required String venue,
     required String venueAddress,
     required MeetupType type,
+    String? eventTypeId, // EventType UUID
     required DateTime startTime,
     DateTime? endTime,
     required int maxAttendees,
@@ -53,6 +54,26 @@ abstract class IMeetupRepository {
   ///
   /// [userId] 用户ID
   Future<List<Meetup>> getUserMeetups(String userId);
+
+  /// 获取用户已加入的活动列表(分页)
+  ///
+  /// [page] 页码
+  /// [pageSize] 每页数量
+  Future<List<Meetup>> getJoinedMeetups({
+    int page = 1,
+    int pageSize = 20,
+  });
+
+  /// 获取当前用户取消的活动列表(分页)
+  ///
+  /// [userId] 用户ID
+  /// [page] 页码
+  /// [pageSize] 每页数量
+  Future<List<Meetup>> getCancelledMeetupsByUser(
+    String userId, {
+    int page = 1,
+    int pageSize = 20,
+  });
 
   /// 更新活动信息
   ///
