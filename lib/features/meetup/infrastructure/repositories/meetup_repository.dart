@@ -35,16 +35,9 @@ class MeetupRepository implements IMeetupRepository {
         queryParameters: queryParams,
       );
 
-      // 提取活动列表
+      // 提取活动列表 (HttpService 已自动解包 data 字段)
       final data = response.data as Map<String, dynamic>;
-
-      if (data['data'] == null) {
-        print('⚠️ getMeetups: data["data"] is null');
-        return [];
-      }
-
-      final paginatedData = data['data'] as Map<String, dynamic>;
-      final items = (paginatedData['items'] as List?) ?? [];
+      final items = (data['items'] as List?) ?? [];
       print('✅ 获取到 ${items.length} 个活动');
 
       // 转换为领域实体
@@ -233,16 +226,9 @@ class MeetupRepository implements IMeetupRepository {
         queryParameters: queryParams,
       );
 
-      // 提取活动列表
+      // 提取活动列表 (HttpService 已自动解包 data 字段)
       final data = response.data as Map<String, dynamic>;
-
-      if (data['data'] == null) {
-        print('⚠️ getJoinedMeetups: data["data"] is null');
-        return [];
-      }
-
-      final paginatedData = data['data'] as Map<String, dynamic>;
-      final eventsJson = (paginatedData['items'] as List?) ?? [];
+      final eventsJson = (data['items'] as List?) ?? [];
 
       // 将 JSON 转换为 DTO 再转换为领域实体
       final meetups = eventsJson
@@ -287,16 +273,9 @@ class MeetupRepository implements IMeetupRepository {
         queryParameters: queryParams,
       );
 
-      // 提取活动列表
+      // 提取活动列表 (HttpService 已自动解包 data 字段)
       final data = response.data as Map<String, dynamic>;
-
-      if (data['data'] == null) {
-        print('⚠️ getCancelledMeetupsByUser: data["data"] is null');
-        return [];
-      }
-
-      final paginatedData = data['data'] as Map<String, dynamic>;
-      final eventsJson = (paginatedData['items'] as List?) ?? [];
+      final eventsJson = (data['items'] as List?) ?? [];
 
       // 将 JSON 转换为 DTO 再转换为领域实体
       final meetups = eventsJson
