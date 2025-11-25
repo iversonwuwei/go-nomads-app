@@ -52,7 +52,7 @@ class ApiConfig {
   /// 是否使用真机测试地址(手动切换)
   /// ⚠️ 雷电模拟器用户请设置为 true
   /// ⚠️ Android 官方模拟器用户请设置为 false
-  static const bool usePhysicalDevice = false;
+  static const bool usePhysicalDevice = true;
 
   // ============================================================
   // URL 组装
@@ -76,8 +76,7 @@ class ApiConfig {
   static String get developmentUrl => 'http://$developmentHost:$gatewayPort';
 
   /// 真机测试基础 URL
-  static String get physicalDeviceUrl =>
-      'http://$physicalDeviceHost:$gatewayPort';
+  static String get physicalDeviceUrl => 'http://$physicalDeviceHost:$gatewayPort';
 
   /// 基础 URL - 智能选择
   static String get baseUrl {
@@ -148,8 +147,7 @@ class ApiConfig {
   static const String cityRecommendedEndpoint = '/cities/recommended';
   static const String citySearchEndpoint = '/cities/search';
   static const String cityByCountryEndpoint = '/cities/by-country/{id}';
-  static const String cityGroupedByCountryEndpoint =
-      '/cities/grouped-by-country';
+  static const String cityGroupedByCountryEndpoint = '/cities/grouped-by-country';
   static const String cityCountriesEndpoint = '/cities/countries';
   static const String cityStatisticsEndpoint = '/cities/{id}/statistics';
   static const String cityCreateEndpoint = '/cities';
@@ -161,30 +159,22 @@ class ApiConfig {
   // ============================================================
 
   // 照片相关
-  static const String cityPhotosEndpoint =
-      '/cities/{cityId}/user-content/photos';
-  static const String cityPhotoBatchEndpoint =
-      '/cities/{cityId}/user-content/photos/batch';
-  static const String cityPhotoDetailEndpoint =
-      '/cities/{cityId}/user-content/photos/{photoId}';
+  static const String cityPhotosEndpoint = '/cities/{cityId}/user-content/photos';
+  static const String cityPhotoBatchEndpoint = '/cities/{cityId}/user-content/photos/batch';
+  static const String cityPhotoDetailEndpoint = '/cities/{cityId}/user-content/photos/{photoId}';
   static const String myPhotosEndpoint = '/user/city-content/photos';
 
   // 费用相关
-  static const String cityExpensesEndpoint =
-      '/cities/{cityId}/user-content/expenses';
-  static const String cityExpenseDetailEndpoint =
-      '/cities/{cityId}/user-content/expenses/{expenseId}';
+  static const String cityExpensesEndpoint = '/cities/{cityId}/user-content/expenses';
+  static const String cityExpenseDetailEndpoint = '/cities/{cityId}/user-content/expenses/{expenseId}';
   static const String myExpensesEndpoint = '/user/city-content/expenses';
 
   // 评论相关
-  static const String cityReviewsEndpoint =
-      '/cities/{cityId}/user-content/reviews';
-  static const String myCityReviewEndpoint =
-      '/cities/{cityId}/user-content/reviews/mine';
+  static const String cityReviewsEndpoint = '/cities/{cityId}/user-content/reviews';
+  static const String myCityReviewEndpoint = '/cities/{cityId}/user-content/reviews/mine';
 
   // 统计相关
-  static const String cityUserContentStatsEndpoint =
-      '/cities/{cityId}/user-content/stats';
+  static const String cityUserContentStatsEndpoint = '/cities/{cityId}/user-content/stats';
 
   // ============================================================
   // Cache Service Endpoints - /api/v1/cache (通过 Gateway 访问)
@@ -194,14 +184,10 @@ class ApiConfig {
   // 评分缓存
   static const String cityScoreEndpoint = '/cache/scores/city/{cityId}';
   static const String cityScoreBatchEndpoint = '/cache/scores/city/batch';
-  static const String coworkingScoreEndpoint =
-      '/cache/scores/coworking/{coworkingId}';
-  static const String coworkingScoreBatchEndpoint =
-      '/cache/scores/coworking/batch';
-  static const String invalidateCityScoreEndpoint =
-      '/cache/scores/city/{cityId}';
-  static const String invalidateCoworkingScoreEndpoint =
-      '/cache/scores/coworking/{coworkingId}';
+  static const String coworkingScoreEndpoint = '/cache/scores/coworking/{coworkingId}';
+  static const String coworkingScoreBatchEndpoint = '/cache/scores/coworking/batch';
+  static const String invalidateCityScoreEndpoint = '/cache/scores/city/{cityId}';
+  static const String invalidateCoworkingScoreEndpoint = '/cache/scores/coworking/{coworkingId}';
 
   // 费用缓存
   static const String cityCostEndpoint = '/cache/costs/city/{cityId}';
@@ -316,8 +302,7 @@ class ApiConfig {
   /// );
   /// // 结果: http://10.0.2.2:5000/api/v1/cities?page=1&pageSize=10
   /// ```
-  static String buildUrlWithQuery(
-      String endpoint, Map<String, String> queryParams) {
+  static String buildUrlWithQuery(String endpoint, Map<String, String> queryParams) {
     final uri = Uri.parse('$currentApiBaseUrl$endpoint');
     final newUri = uri.replace(queryParameters: queryParams);
     return newUri.toString();

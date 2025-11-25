@@ -64,7 +64,7 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
       print('  - isLoading: ${controller.isLoading.value}');
       print('  - statistics.length: ${controller.statistics.length}');
       print('  - categories.length: ${controller.categories.length}');
-      
+
       // 加载中状态 - 显示骨架屏
       if (controller.isLoading.value) {
         print('  ➡️ 显示骨架屏');
@@ -76,7 +76,7 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
         print('  ➡️ 无数据，返回空白');
         return const SizedBox.shrink();
       }
-      
+
       print('  ➡️ 显示评分列表 (${controller.statistics.length} 项)');
 
       // 正常显示数据
@@ -111,6 +111,11 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
   ) {
     final userRating = stat.userRating ?? 0;
     final averageRating = stat.averageRating;
+
+    print('🎯 [评分项] ${stat.categoryName}:');
+    print('   - userRating: $userRating');
+    print('   - averageRating: $averageRating');
+    print('   - ratingCount: ${stat.ratingCount}');
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -152,24 +157,20 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
                 Row(
                   children: [
                     // 如果正在提交，显示加载指示器
-                    if (controller.submittingCategoryId.value ==
-                        stat.categoryId)
+                    if (controller.submittingCategoryId.value == stat.categoryId)
                       const SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Color(0xFF1A1A1A)),
+                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1A1A1A)),
                         ),
                       )
                     // 如果刚完成提交，显示加权平均分的星星（高亮显示）
-                    else if (controller.completedCategoryId.value ==
-                        stat.categoryId)
+                    else if (controller.completedCategoryId.value == stat.categoryId)
                       ...List.generate(5, (index) {
                         final isFilled = index < averageRating.floor();
-                        final isHalfFilled = index == averageRating.floor() &&
-                            averageRating % 1 >= 0.5;
+                        final isHalfFilled = index == averageRating.floor() && averageRating % 1 >= 0.5;
 
                         return Padding(
                           padding: EdgeInsets.only(
@@ -186,8 +187,7 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
                       ...List.generate(5, (index) {
                         final isActive = index < userRating;
                         final isFilled = index < averageRating.floor();
-                        final isHalfFilled = index == averageRating.floor() &&
-                            averageRating % 1 >= 0.5;
+                        final isHalfFilled = index == averageRating.floor() && averageRating % 1 >= 0.5;
 
                         return GestureDetector(
                           onTap: () {
@@ -215,33 +215,33 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
 
           // 右侧：加权平均分
           SizedBox(
-          width: 48,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                averageRating.toStringAsFixed(1),
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF1A1A1A),
-                  height: 1.2,
-                  letterSpacing: -0.5,
+            width: 48,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  averageRating.toStringAsFixed(1),
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1A1A1A),
+                    height: 1.2,
+                    letterSpacing: -0.5,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                '${stat.ratingCount}',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w400,
-                  color: Colors.grey[500],
-                  height: 1.0,
+                const SizedBox(height: 2),
+                Text(
+                  '${stat.ratingCount}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.grey[500],
+                    height: 1.0,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
         ],
       ),
     );
@@ -252,26 +252,27 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
     required bool isFilled,
     required bool isHalfFilled,
   }) {
-    // 确定背景色
+    // 确定背景色 - 统一使用相同背景色
     Color backgroundColor;
-    if (isActive) {
-      backgroundColor = const Color(0xFFFFE5E8); // 用户已评分:浅粉色背景
-    } else if (isFilled || isHalfFilled) {
-      backgroundColor = Colors.grey[200]!; // 有平均分:浅灰背景
+    if (isFilled || isHalfFilled || isActive) {
+      backgroundColor = const Color(0xFFFFE5E8); // 有评分:浅粉色背景
     } else {
-      backgroundColor = Colors.grey[50]!; // 无平均分:极浅灰背景
+      backgroundColor = Colors.grey[50]!; // 无评分:极浅灰背景
     }
 
-    // 确定星星颜色 - 统一使用实心星星
+    // 确定星星图标和颜色 - 统一使用相同颜色
+    IconData starIcon;
     Color starColor;
-    if (isActive) {
-      starColor = const Color(0xFFFF4458); // 用户已评分：红色实心星星
-    } else if (isFilled) {
-      starColor = Colors.grey[600]!; // 有平均分：深灰实心星星
+
+    if (isFilled || isActive) {
+      starIcon = FontAwesomeIcons.solidStar; // 实心星
+      starColor = const Color(0xFFFF4458); // 红色
     } else if (isHalfFilled) {
-      starColor = Colors.grey[600]!.withOpacity(0.5); // 半星：半透明深灰
+      starIcon = FontAwesomeIcons.starHalfAlt; // 半星
+      starColor = const Color(0xFFFF4458); // 红色
     } else {
-      starColor = Colors.grey[300]!; // 无评分：浅灰实心星星
+      starIcon = FontAwesomeIcons.star; // 无评分：空心星
+      starColor = Colors.grey[300]!; // 浅灰色
     }
 
     return Container(
@@ -282,7 +283,7 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
         borderRadius: BorderRadius.circular(6),
       ),
       child: Icon(
-        FontAwesomeIcons.star,
+        starIcon,
         size: 16,
         color: starColor,
       ),
@@ -294,6 +295,16 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
     required bool isFilled,
     required bool isHalfFilled,
   }) {
+    // 确定星星图标
+    IconData starIcon;
+    if (isFilled) {
+      starIcon = FontAwesomeIcons.solidStar; // 实心星
+    } else if (isHalfFilled) {
+      starIcon = FontAwesomeIcons.starHalfAlt; // 半星
+    } else {
+      starIcon = FontAwesomeIcons.star; // 空心星
+    }
+
     return Container(
       width: 28,
       height: 28,
@@ -304,11 +315,9 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
         borderRadius: BorderRadius.circular(6),
       ),
       child: Icon(
-        FontAwesomeIcons.star,
+        starIcon,
         size: 16,
-        color: isFilled
-            ? Colors.white
-            : (isHalfFilled ? Colors.white.withOpacity(0.5) : Colors.grey[400]),
+        color: isFilled || isHalfFilled ? Colors.white : Colors.grey[400],
       ),
     );
   }
