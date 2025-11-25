@@ -340,88 +340,65 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
 
   /// 骨架屏加载器
   Widget _buildSkeletonLoader() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // 总得分骨架
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
-          child: Row(
-            children: [
-              Container(
-                width: 60,
-                height: 16,
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-              const Spacer(),
-              Container(
-                width: 50,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(6),
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        // 分割线
-        Container(
-          height: 1,
-          margin: const EdgeInsets.symmetric(vertical: 12),
-          color: Colors.grey[200],
-        ),
-
-        // 评分项骨架（显示5个）
-        ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          itemCount: 5,
-          separatorBuilder: (context, index) => const SizedBox(height: 24),
-          itemBuilder: (context, index) => _buildSkeletonItem(),
-        ),
-      ],
+    return Container(
+      color: Colors.white,
+      child: ListView.separated(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        itemCount: 6,
+        separatorBuilder: (context, index) => const SizedBox(height: 24),
+        itemBuilder: (context, index) => _buildSkeletonItem(),
+      ),
     );
   }
 
   /// 单个评分项骨架
   Widget _buildSkeletonItem() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 名称骨架
-                Container(
-                  width: 100,
-                  height: 16,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(4),
-                  ),
+                // 名称骨架 - 带图标
+                Row(
+                  children: [
+                    Container(
+                      width: 18,
+                      height: 18,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Container(
+                      width: 80,
+                      height: 15,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 12),
-                // 星星骨架
+                // 星星骨架 - 使用实际尺寸 28x28
                 Row(
                   children: List.generate(5, (index) {
                     return Padding(
                       padding: EdgeInsets.only(
-                        right: index < 4 ? 8 : 0,
+                        right: index < 4 ? 6 : 0,
                       ),
                       child: Container(
-                        width: 32,
-                        height: 32,
+                        width: 28,
+                        height: 28,
                         decoration: BoxDecoration(
-                          color: Colors.grey[200],
+                          color: Colors.grey[100],
                           borderRadius: BorderRadius.circular(6),
                         ),
                       ),
@@ -431,35 +408,35 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
               ],
             ),
           ),
-        ),
-        const SizedBox(width: 16),
-        // 分数骨架
-        SizedBox(
-          width: 48,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Container(
-                width: 40,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(4),
+          const SizedBox(width: 16),
+          // 分数骨架
+          SizedBox(
+            width: 48,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Container(
+                  width: 36,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(4),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Container(
-                width: 20,
-                height: 12,
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(4),
+                const SizedBox(height: 2),
+                Container(
+                  width: 16,
+                  height: 11,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(4),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

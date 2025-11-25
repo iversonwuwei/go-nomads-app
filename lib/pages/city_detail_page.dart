@@ -5,16 +5,14 @@ import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/ai/presentation/controllers/ai_state_controller.dart';
 import 'package:df_admin_mobile/features/city/application/state_controllers/pros_cons_state_controller.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
-import 'package:df_admin_mobile/features/city/domain/entities/city_detail.dart'
-    hide BestArea;
+import 'package:df_admin_mobile/features/city/domain/entities/city_detail.dart' hide BestArea;
 import 'package:df_admin_mobile/features/city/domain/entities/city_rating_item.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/digital_nomad_guide.dart';
 import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
 import 'package:df_admin_mobile/features/city/presentation/controllers/city_detail_state_controller.dart';
 import 'package:df_admin_mobile/features/city/presentation/controllers/city_rating_controller.dart';
 import 'package:df_admin_mobile/features/city/presentation/widgets/city_ratings_card.dart';
-import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart'
-    as coworking;
+import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart' as coworking;
 import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
 import 'package:df_admin_mobile/features/notification/domain/entities/app_notification.dart';
 import 'package:df_admin_mobile/features/notification/presentation/controllers/notification_state_controller.dart';
@@ -73,9 +71,7 @@ class CityDetailPage extends StatefulWidget {
 }
 
 class _CityDetailPageState extends State<CityDetailPage>
-    with
-        SingleTickerProviderStateMixin,
-        RouteAwareRefreshMixin<CityDetailPage> {
+    with SingleTickerProviderStateMixin, RouteAwareRefreshMixin<CityDetailPage> {
   late PageController _pageController;
   late TabController _tabController;
   int _currentPage = 0;
@@ -115,9 +111,7 @@ class _CityDetailPageState extends State<CityDetailPage>
       case '09': // shower rain
         return FontAwesomeIcons.cloudShowersHeavy;
       case '10': // rain
-        return isNight
-            ? FontAwesomeIcons.cloudMoonRain
-            : FontAwesomeIcons.cloudSunRain;
+        return isNight ? FontAwesomeIcons.cloudMoonRain : FontAwesomeIcons.cloudSunRain;
       case '11': // thunderstorm
         return FontAwesomeIcons.cloudBolt;
       case '13': // snow
@@ -165,8 +159,7 @@ class _CityDetailPageState extends State<CityDetailPage>
   }
 
   /// 构建版主管理蒙层
-  Widget _buildModeratorManagementOverlay(
-      CityDetailStateController controller) {
+  Widget _buildModeratorManagementOverlay(CityDetailStateController controller) {
     return Obx(() {
       final city = controller.currentCity.value;
       if (city == null) return const SizedBox.shrink();
@@ -408,8 +401,7 @@ class _CityDetailPageState extends State<CityDetailPage>
       ),
       child: Row(
         children: [
-          const Icon(FontAwesomeIcons.handHoldingHeart,
-              color: Colors.white, size: 24),
+          const Icon(FontAwesomeIcons.handHoldingHeart, color: Colors.white, size: 24),
           const SizedBox(width: 12),
           const Expanded(
             child: Text(
@@ -460,8 +452,7 @@ class _CityDetailPageState extends State<CityDetailPage>
       ),
       child: Row(
         children: [
-          const Icon(FontAwesomeIcons.userShield,
-              color: Colors.white, size: 24),
+          const Icon(FontAwesomeIcons.userShield, color: Colors.white, size: 24),
           const SizedBox(width: 12),
           const Expanded(
             child: Text(
@@ -500,8 +491,7 @@ class _CityDetailPageState extends State<CityDetailPage>
         ),
         title: const Row(
           children: [
-            Icon(FontAwesomeIcons.handHoldingHeart,
-                color: Color(0xFFFF4458), size: 28),
+            Icon(FontAwesomeIcons.handHoldingHeart, color: Color(0xFFFF4458), size: 28),
             SizedBox(width: 12),
             Text('申请成为版主'),
           ],
@@ -578,8 +568,7 @@ class _CityDetailPageState extends State<CityDetailPage>
       padding: const EdgeInsets.only(bottom: 4),
       child: Row(
         children: [
-          const Icon(FontAwesomeIcons.circleCheck,
-              color: Colors.green, size: 16),
+          const Icon(FontAwesomeIcons.circleCheck, color: Colors.green, size: 16),
           const SizedBox(width: 8),
           Expanded(
             child: Text(text, style: const TextStyle(fontSize: 14)),
@@ -610,8 +599,7 @@ class _CityDetailPageState extends State<CityDetailPage>
 
           // 发送通知给所有管理员
           if (Get.isRegistered<NotificationStateController>()) {
-            final notificationController =
-                Get.find<NotificationStateController>();
+            final notificationController = Get.find<NotificationStateController>();
             final city = controller.currentCity.value;
 
             await notificationController.sendToAdmins(
@@ -1007,8 +995,7 @@ class _CityDetailPageState extends State<CityDetailPage>
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFF4458),
                 foregroundColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -1028,8 +1015,7 @@ class _CityDetailPageState extends State<CityDetailPage>
     }
 
     print('🎬 [ProgressDialog] 准备显示对话框');
-    print(
-        '   当前状态: isGenerating=${controller.isGeneratingGuide}, progress=${controller.guideGenerationProgress}%');
+    print('   当前状态: isGenerating=${controller.isGeneratingGuide}, progress=${controller.guideGenerationProgress}%');
 
     // 在显示对话框之前设置监听器
     Worker? statusWorker;
@@ -1127,9 +1113,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                   children: [
                     Expanded(
                       child: Text(
-                        controller.guideGenerationMessage.isEmpty
-                            ? '准备开始生成...'
-                            : controller.guideGenerationMessage,
+                        controller.guideGenerationMessage.isEmpty ? '准备开始生成...' : controller.guideGenerationMessage,
                         style: TextStyle(
                           color: Colors.grey[600],
                           fontSize: 14,
@@ -1378,9 +1362,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                       child: IconButton(
                         icon: Icon(
                           FontAwesomeIcons.arrowLeft,
-                          color: _appBarOpacity > 0.5
-                              ? Colors.black87
-                              : Colors.white,
+                          color: _appBarOpacity > 0.5 ? Colors.black87 : Colors.white,
                           size: 20,
                         ),
                         onPressed: () => Get.back(),
@@ -1411,8 +1393,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                                 // Pros & Cons
                                 icon = FontAwesomeIcons.penToSquare;
                                 onPressed = () async {
-                                  final isAdminOrMod =
-                                      await _isAdminOrModerator();
+                                  final isAdminOrMod = await _isAdminOrModerator();
                                   if (isAdminOrMod) {
                                     // Admin/Moderator: 跳转到管理列表页面
                                     await Get.to(() => ManageProsConsPage(
@@ -1433,52 +1414,44 @@ class _CityDetailPageState extends State<CityDetailPage>
                                 // Reviews
                                 icon = FontAwesomeIcons.penToSquare;
                                 onPressed = () async {
-                                  final isAdminOrMod =
-                                      await _isAdminOrModerator();
+                                  final isAdminOrMod = await _isAdminOrModerator();
                                   if (isAdminOrMod) {
                                     // Admin/Moderator: 跳转到管理列表页面
                                     await Get.to(() => ManageReviewsPage(
                                           cityId: cityId,
                                           cityName: cityName,
                                         ));
-                                    userContentController
-                                        .loadCityReviews(cityId);
+                                    userContentController.loadCityReviews(cityId);
                                   } else {
                                     // 普通用户: 直接跳转到添加页面
                                     await Get.to(() => AddReviewPage(
                                           cityId: cityId,
                                           cityName: cityName,
                                         ));
-                                    userContentController
-                                        .loadCityReviews(cityId);
+                                    userContentController.loadCityReviews(cityId);
                                   }
                                 };
                               } else if (currentTab == 4) {
                                 // Cost
                                 icon = FontAwesomeIcons.penToSquare;
                                 onPressed = () async {
-                                  final isAdminOrMod =
-                                      await _isAdminOrModerator();
+                                  final isAdminOrMod = await _isAdminOrModerator();
                                   if (isAdminOrMod) {
                                     // Admin/Moderator: 跳转到管理列表页面
                                     await Get.to(() => ManageCostPage(
                                           cityId: cityId,
                                           cityName: cityName,
                                         ));
-                                    userContentController
-                                        .loadCityExpenses(cityId);
-                                    userContentController
-                                        .loadCityCostSummary(cityId);
+                                    userContentController.loadCityExpenses(cityId);
+                                    userContentController.loadCityCostSummary(cityId);
                                   } else {
                                     // 普通用户: 直接跳转到添加页面
                                     await Get.to(() => AddCostPage(
                                           cityId: cityId,
                                           cityName: cityName,
                                         ));
-                                    userContentController
-                                        .loadCityExpenses(cityId);
-                                    userContentController
-                                        .loadCityCostSummary(cityId);
+                                    userContentController.loadCityExpenses(cityId);
+                                    userContentController.loadCityCostSummary(cityId);
                                   }
                                 };
                               } else if (currentTab == 5) {
@@ -1491,11 +1464,8 @@ class _CityDetailPageState extends State<CityDetailPage>
                                       cityName: cityName,
                                     ),
                                   );
-                                  if (result != null &&
-                                      result is Map &&
-                                      result['uploaded'] == true) {
-                                    userContentController
-                                        .loadCityPhotos(cityId);
+                                  if (result != null && result is Map && result['uploaded'] == true) {
+                                    userContentController.loadCityPhotos(cityId);
                                   }
                                 };
                               } else if (currentTab == 9) {
@@ -1503,21 +1473,16 @@ class _CityDetailPageState extends State<CityDetailPage>
                                 icon = FontAwesomeIcons.briefcase;
                                 onPressed = () async {
                                   // 所有用户都直接跳转到添加页面
-                                  final cityDetailController =
-                                      Get.find<CityDetailStateController>();
-                                  final city =
-                                      cityDetailController.currentCity.value;
+                                  final cityDetailController = Get.find<CityDetailStateController>();
+                                  final city = cityDetailController.currentCity.value;
 
-                                  final result =
-                                      await Get.to(() => AddCoworkingPage(
-                                            cityId: cityId,
-                                            cityName: cityName,
-                                            countryName: city?.country,
-                                          ));
-                                  if (result != null &&
-                                      result['success'] == true) {
-                                    coworkingController
-                                        .loadCoworkingSpacesByCity(cityId);
+                                  final result = await Get.to(() => AddCoworkingPage(
+                                        cityId: cityId,
+                                        cityName: cityName,
+                                        countryName: city?.country,
+                                      ));
+                                  if (result != null && result['success'] == true) {
+                                    coworkingController.loadCoworkingSpacesByCity(cityId);
                                   }
                                 };
                               } else {
@@ -1528,24 +1493,19 @@ class _CityDetailPageState extends State<CityDetailPage>
                                 margin: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(
-                                    colors: [
-                                      Color(0xFFFF4458),
-                                      Color(0xFFFF6B7A)
-                                    ],
+                                    colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
                                   ),
                                   borderRadius: BorderRadius.circular(12),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: const Color(0xFFFF4458)
-                                          .withValues(alpha: 0.3),
+                                      color: const Color(0xFFFF4458).withValues(alpha: 0.3),
                                       blurRadius: 8,
                                       offset: const Offset(0, 2),
                                     ),
                                   ],
                                 ),
                                 child: IconButton(
-                                  icon:
-                                      Icon(icon, color: Colors.white, size: 20),
+                                  icon: Icon(icon, color: Colors.white, size: 20),
                                   onPressed: onPressed,
                                   tooltip: 'Add content',
                                 ),
@@ -1573,9 +1533,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                         child: IconButton(
                           icon: Icon(
                             FontAwesomeIcons.shareNodes,
-                            color: _appBarOpacity > 0.5
-                                ? Colors.black87
-                                : Colors.white,
+                            color: _appBarOpacity > 0.5 ? Colors.black87 : Colors.white,
                             size: 20,
                           ),
                           onPressed: () {
@@ -1589,8 +1547,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                       centerTitle: true,
                       titlePadding: const EdgeInsets.only(bottom: 16),
                       title: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           gradient: _appBarOpacity > 0.5
                               ? null
@@ -1600,8 +1557,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                                     Colors.black.withValues(alpha: 0.3),
                                   ],
                                 ),
-                          color:
-                              _appBarOpacity > 0.5 ? Colors.transparent : null,
+                          color: _appBarOpacity > 0.5 ? Colors.transparent : null,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -1609,9 +1565,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 24,
-                            color: _appBarOpacity > 0.5
-                                ? const Color(0xFFFF4458)
-                                : Colors.white,
+                            color: _appBarOpacity > 0.5 ? const Color(0xFFFF4458) : Colors.white,
                             shadows: _appBarOpacity > 0.5
                                 ? []
                                 : const [
@@ -1656,20 +1610,15 @@ class _CityDetailPageState extends State<CityDetailPage>
                                         ),
                                       );
                                     },
-                                    loadingBuilder:
-                                        (context, child, loadingProgress) {
+                                    loadingBuilder: (context, child, loadingProgress) {
                                       if (loadingProgress == null) return child;
                                       return Container(
                                         color: Colors.grey[200],
                                         child: Center(
                                           child: CircularProgressIndicator(
-                                            value: loadingProgress
-                                                        .expectedTotalBytes !=
-                                                    null
-                                                ? loadingProgress
-                                                        .cumulativeBytesLoaded /
-                                                    loadingProgress
-                                                        .expectedTotalBytes!
+                                            value: loadingProgress.expectedTotalBytes != null
+                                                ? loadingProgress.cumulativeBytesLoaded /
+                                                    loadingProgress.expectedTotalBytes!
                                                 : null,
                                             color: const Color(0xFFFF4458),
                                           ),
@@ -1707,19 +1656,15 @@ class _CityDetailPageState extends State<CityDetailPage>
                                 _getCityImages().length,
                                 (index) => AnimatedContainer(
                                   duration: const Duration(milliseconds: 300),
-                                  margin:
-                                      const EdgeInsets.symmetric(horizontal: 4),
+                                  margin: const EdgeInsets.symmetric(horizontal: 4),
                                   width: _currentPage == index ? 24 : 8,
                                   height: 8,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(4),
-                                    color: _currentPage == index
-                                        ? Colors.white
-                                        : Colors.white.withValues(alpha: 0.5),
+                                    color: _currentPage == index ? Colors.white : Colors.white.withValues(alpha: 0.5),
                                     boxShadow: [
                                       BoxShadow(
-                                        color:
-                                            Colors.black.withValues(alpha: 0.3),
+                                        color: Colors.black.withValues(alpha: 0.3),
                                         blurRadius: 4,
                                         offset: const Offset(0, 2),
                                       ),
@@ -1735,8 +1680,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                             bottom: 70,
                             left: 16,
                             right: 16,
-                            child: _buildModeratorManagementOverlay(
-                                cityDetailController),
+                            child: _buildModeratorManagementOverlay(cityDetailController),
                           ),
                         ],
                       ),
@@ -1763,8 +1707,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                         children: [
                           // 评分徽章 - 从 CityRatingController 动态获取
                           Obx(() {
-                            final ratingController =
-                                Get.find<CityRatingController>();
+                            final ratingController = Get.find<CityRatingController>();
                             final score = ratingController.overallScore.value;
 
                             return Container(
@@ -1774,16 +1717,12 @@ class _CityDetailPageState extends State<CityDetailPage>
                               ),
                               decoration: BoxDecoration(
                                 gradient: const LinearGradient(
-                                  colors: [
-                                    Color(0xFFFF4458),
-                                    Color(0xFFFF6B7A)
-                                  ],
+                                  colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
                                 ),
                                 borderRadius: BorderRadius.circular(16),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFFFF4458)
-                                        .withValues(alpha: 0.3),
+                                    color: const Color(0xFFFF4458).withValues(alpha: 0.3),
                                     blurRadius: 8,
                                     offset: const Offset(0, 4),
                                   ),
@@ -1835,19 +1774,13 @@ class _CityDetailPageState extends State<CityDetailPage>
                           ),
                           // 收藏按钮 - 动态状态
                           Obx(() {
-                            final cityController =
-                                Get.find<CityDetailStateController>();
-                            final isFavorited =
-                                cityController.isFavorited.value;
-                            final isToggling =
-                                cityController.isTogglingFavorite.value;
+                            final cityController = Get.find<CityDetailStateController>();
+                            final isFavorited = cityController.isFavorited.value;
+                            final isToggling = cityController.isTogglingFavorite.value;
 
                             return Container(
                               decoration: BoxDecoration(
-                                color: isFavorited
-                                    ? const Color(0xFFFF4458)
-                                        .withValues(alpha: 0.1)
-                                    : Colors.grey[100],
+                                color: isFavorited ? const Color(0xFFFF4458).withValues(alpha: 0.1) : Colors.grey[100],
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: isToggling
@@ -1860,8 +1793,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                                           height: 20,
                                           child: CircularProgressIndicator(
                                             strokeWidth: 2,
-                                            valueColor:
-                                                AlwaysStoppedAnimation<Color>(
+                                            valueColor: AlwaysStoppedAnimation<Color>(
                                               Color(0xFFFF4458),
                                             ),
                                           ),
@@ -1870,12 +1802,8 @@ class _CityDetailPageState extends State<CityDetailPage>
                                     )
                                   : IconButton(
                                       icon: Icon(
-                                        isFavorited
-                                            ? FontAwesomeIcons.heart
-                                            : FontAwesomeIcons.heart,
-                                        color: isFavorited
-                                            ? const Color(0xFFFF4458)
-                                            : Colors.grey[700],
+                                        isFavorited ? FontAwesomeIcons.heart : FontAwesomeIcons.heart,
+                                        color: isFavorited ? const Color(0xFFFF4458) : Colors.grey[700],
                                         size: 22,
                                       ),
                                       onPressed: () {
@@ -1971,8 +1899,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                   },
                   borderRadius: BorderRadius.circular(28),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
@@ -2032,8 +1959,7 @@ class _CityDetailPageState extends State<CityDetailPage>
   }
 
   // Scores 标签 (简化版 - 只显示5个基本评分)
-  Widget _buildScoresTab(
-      BuildContext context, CityDetailStateController controller) {
+  Widget _buildScoresTab(BuildContext context, CityDetailStateController controller) {
     final l10n = AppLocalizations.of(context)!;
 
     return Obx(() {
@@ -2063,8 +1989,7 @@ class _CityDetailPageState extends State<CityDetailPage>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final currentGuide = controller.currentGuide;
 
-      final shouldReload =
-          currentGuide == null || currentGuide.cityId != cityId;
+      final shouldReload = currentGuide == null || currentGuide.cityId != cityId;
 
       if (shouldReload) {
         // 如果是不同城市,先清空旧数据
@@ -2104,9 +2029,7 @@ class _CityDetailPageState extends State<CityDetailPage>
               const CircularProgressIndicator(),
               const SizedBox(height: 16),
               Text(
-                controller.isGeneratingGuide
-                    ? '🤖 AI 正在生成旅游指南...'
-                    : '📖 正在加载旅游指南...',
+                controller.isGeneratingGuide ? '🤖 AI 正在生成旅游指南...' : '📖 正在加载旅游指南...',
                 style: const TextStyle(fontSize: 16, color: Colors.grey),
               ),
               if (controller.isGeneratingGuide) ...[
@@ -2192,8 +2115,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                       foregroundColor: Colors.white,
                       disabledBackgroundColor: Colors.grey[300], // 禁用时的背景色
                       disabledForegroundColor: Colors.grey[500], // 禁用时的文字色
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
                       ),
@@ -2209,8 +2131,7 @@ class _CityDetailPageState extends State<CityDetailPage>
     });
   }
 
-  Widget _buildGuideContent(
-      BuildContext context, guide, AiStateController controller) {
+  Widget _buildGuideContent(BuildContext context, guide, AiStateController controller) {
     final l10n = AppLocalizations.of(context)!;
     return ListView(
       padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
@@ -2242,8 +2163,7 @@ class _CityDetailPageState extends State<CityDetailPage>
               Row(
                 children: [
                   TextButton.icon(
-                    onPressed: controller.isGeneratingGuide ||
-                            controller.isLoadingGuide
+                    onPressed: controller.isGeneratingGuide || controller.isLoadingGuide
                         ? null
                         : () {
                             // 重新从后端加载指南
@@ -2257,14 +2177,12 @@ class _CityDetailPageState extends State<CityDetailPage>
                     style: TextButton.styleFrom(
                       foregroundColor: const Color(0xFFFF4458),
                       disabledForegroundColor: Colors.grey[400],
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     ),
                   ),
                   const SizedBox(width: 4),
                   TextButton.icon(
-                    onPressed: controller.isGeneratingGuide ||
-                            controller.isLoadingGuide
+                    onPressed: controller.isGeneratingGuide || controller.isLoadingGuide
                         ? null
                         : () async {
                             if (!await _checkGeneratePermission()) {
@@ -2272,8 +2190,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                             }
                             _showAIGenerateProgressDialog(controller);
                           },
-                    icon: const Icon(FontAwesomeIcons.wandMagicSparkles,
-                        size: 18),
+                    icon: const Icon(FontAwesomeIcons.wandMagicSparkles, size: 18),
                     label: const Text('AI 生成'),
                     style: TextButton.styleFrom(
                       foregroundColor: const Color(0xFFFF4458),
@@ -2330,8 +2247,7 @@ class _CityDetailPageState extends State<CityDetailPage>
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('💡',
-                      style: TextStyle(fontSize: 18, color: Color(0xFFFF4458))),
+                  const Text('💡', style: TextStyle(fontSize: 18, color: Color(0xFFFF4458))),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -2350,8 +2266,7 @@ class _CityDetailPageState extends State<CityDetailPage>
   Widget _buildProsConsTab(ProsConsStateController controller) {
     return Obx(() {
       // 显示加载状态
-      final isLoading =
-          controller.isLoadingPros.value || controller.isLoadingCons.value;
+      final isLoading = controller.isLoadingPros.value || controller.isLoadingCons.value;
 
       if (isLoading) {
         return const Center(child: CircularProgressIndicator());
@@ -2360,8 +2275,7 @@ class _CityDetailPageState extends State<CityDetailPage>
       return Stack(
         children: [
           ListView(
-            padding:
-                const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
+            padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
             children: [
               const Text(
                 '优点',
@@ -2405,9 +2319,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                           _buildProsConsVoteBadge(
                             hasVoted: hasVoted,
                             count: item.upvotes,
-                            onTap: hasVoted
-                                ? null
-                                : () => _handleProsConsVote(item),
+                            onTap: hasVoted ? null : () => _handleProsConsVote(item),
                           ),
                         ],
                       ),
@@ -2457,9 +2369,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                           _buildProsConsVoteBadge(
                             hasVoted: hasVoted,
                             count: item.upvotes,
-                            onTap: hasVoted
-                                ? null
-                                : () => _handleProsConsVote(item),
+                            onTap: hasVoted ? null : () => _handleProsConsVote(item),
                           ),
                         ],
                       ),
@@ -2572,9 +2482,7 @@ class _CityDetailPageState extends State<CityDetailPage>
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: hasVoted
-                ? Colors.grey.withOpacity(0.12)
-                : const Color(0xFFFFEEF2),
+            color: hasVoted ? Colors.grey.withOpacity(0.12) : const Color(0xFFFFEEF2),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: color.withOpacity(0.35)),
           ),
@@ -2622,15 +2530,13 @@ class _CityDetailPageState extends State<CityDetailPage>
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
               physics: const AlwaysScrollableScrollPhysics(),
               child: ConstrainedBox(
-                constraints:
-                    BoxConstraints(minHeight: constraints.maxHeight - 96),
+                constraints: BoxConstraints(minHeight: constraints.maxHeight - 96),
                 child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(FontAwesomeIcons.commentDots,
-                          size: 64, color: Colors.grey[300]),
+                      Icon(FontAwesomeIcons.commentDots, size: 64, color: Colors.grey[300]),
                       const SizedBox(height: 16),
                       Text(
                         'No reviews yet',
@@ -2651,8 +2557,7 @@ class _CityDetailPageState extends State<CityDetailPage>
       }
 
       return RefreshIndicator(
-        onRefresh: () =>
-            controller.loadCityReviews(cityId), // ✅ 使用loadCityReviews方法
+        onRefresh: () => controller.loadCityReviews(cityId), // ✅ 使用loadCityReviews方法
         child: ListView.builder(
           padding: const EdgeInsets.all(16),
           itemCount: realUserReviews.length, // ✅ 只显示真实评论
@@ -2670,18 +2575,12 @@ class _CityDetailPageState extends State<CityDetailPage>
                         // ✅ 有头像显示头像,没有头像显示用户名首字母
                         CircleAvatar(
                           backgroundColor: const Color(0xFFFF4458),
-                          backgroundImage: review.userAvatar != null &&
-                                  review.userAvatar!.isNotEmpty
+                          backgroundImage: review.userAvatar != null && review.userAvatar!.isNotEmpty
                               ? NetworkImage(review.userAvatar!)
                               : null,
-                          child: review.userAvatar == null ||
-                                  review.userAvatar!.isEmpty
+                          child: review.userAvatar == null || review.userAvatar!.isEmpty
                               ? Text(
-                                  review.username.isNotEmpty
-                                      ? review.username
-                                          .substring(0, 1)
-                                          .toUpperCase()
-                                      : '?',
+                                  review.username.isNotEmpty ? review.username.substring(0, 1).toUpperCase() : '?',
                                   style: const TextStyle(color: Colors.white),
                                 )
                               : null,
@@ -2693,22 +2592,19 @@ class _CityDetailPageState extends State<CityDetailPage>
                             children: [
                               Text(
                                 review.username, // ✅ 使用真实用户名
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold),
+                                style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
                               if (review.visitDate != null)
                                 Text(
                                   '${l10n.visited} ${_formatDate(review.visitDate!, l10n)}',
-                                  style: TextStyle(
-                                      fontSize: 12, color: Colors.grey[600]),
+                                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                                 ),
                             ],
                           ),
                         ),
                         Row(
                           children: [
-                            const Icon(FontAwesomeIcons.star,
-                                color: Colors.amber, size: 16),
+                            const Icon(FontAwesomeIcons.star, color: Colors.amber, size: 16),
                             Text(' ${review.rating}'),
                           ],
                         ),
@@ -2742,8 +2638,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(8),
                                     image: DecorationImage(
-                                      image: NetworkImage(
-                                          review.photoUrls[photoIndex]),
+                                      image: NetworkImage(review.photoUrls[photoIndex]),
                                       fit: BoxFit.cover,
                                     ),
                                   ),
@@ -2809,8 +2704,7 @@ class _CityDetailPageState extends State<CityDetailPage>
       return Stack(
         children: [
           ListView(
-            padding:
-                const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
+            padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
             children: [
               // ✅ 社区综合费用统计 - 标题左侧,贡献者右侧
               Row(
@@ -2824,8 +2718,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                     ),
                   ),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.green.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
@@ -2872,8 +2765,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      l10n.basedOnRealExpenses(
-                          totalExpenseCount, totalExpenseCount != 1 ? 's' : ''),
+                      l10n.basedOnRealExpenses(totalExpenseCount, totalExpenseCount != 1 ? 's' : ''),
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.8),
                         fontSize: 12,
@@ -2981,17 +2873,18 @@ class _CityDetailPageState extends State<CityDetailPage>
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(FontAwesomeIcons.images, size: 64, color: Colors.grey[300]),
-              const SizedBox(height: 16),
+              Icon(FontAwesomeIcons.images, size: 56, color: Colors.grey[300]),
+              const SizedBox(height: 12),
               Text(
                 'No photos yet',
-                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                style: TextStyle(fontSize: 15, color: Colors.grey[600]),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               Text(
                 'Be the first to share a photo!',
-                style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                style: TextStyle(fontSize: 13, color: Colors.grey[500]),
               ),
             ],
           ),
@@ -3015,8 +2908,7 @@ class _CityDetailPageState extends State<CityDetailPage>
         }
       }
 
-      final groupedList = groupedMap.values.toList()
-        ..sort((a, b) => b.latestUpload.compareTo(a.latestUpload));
+      final groupedList = groupedMap.values.toList()..sort((a, b) => b.latestUpload.compareTo(a.latestUpload));
 
       final slivers = <Widget>[
         SliverToBoxAdapter(
@@ -3069,13 +2961,11 @@ class _CityDetailPageState extends State<CityDetailPage>
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
                   final photo = group.photos[index];
-                  final globalIndex = realUserPhotos
-                      .indexWhere((element) => element.id == photo.id);
+                  final globalIndex = realUserPhotos.indexWhere((element) => element.id == photo.id);
                   final initialIndex = globalIndex >= 0 ? globalIndex : 0;
 
                   return GestureDetector(
-                    onTap: () =>
-                        _showPhotoGallery(realUserPhotos, initialIndex),
+                    onTap: () => _showPhotoGallery(realUserPhotos, initialIndex),
                     child: Hero(
                       tag: 'city-photo-${photo.id}',
                       child: ClipRRect(
@@ -3160,19 +3050,16 @@ class _CityDetailPageState extends State<CityDetailPage>
       StatefulBuilder(
         builder: (context, setState) {
           return Dialog(
-            insetPadding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
+            insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
             backgroundColor: Colors.black,
             child: Column(
               children: [
                 Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   child: Row(
                     children: [
                       IconButton(
-                        icon: const Icon(FontAwesomeIcons.xmark,
-                            color: Colors.white),
+                        icon: const Icon(FontAwesomeIcons.xmark, color: Colors.white),
                         onPressed: Get.back,
                       ),
                       const Spacer(),
@@ -3210,14 +3097,12 @@ class _CityDetailPageState extends State<CityDetailPage>
                   ),
                 ),
                 Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        (photos[currentIndex].caption?.trim().isNotEmpty ??
-                                false)
+                        (photos[currentIndex].caption?.trim().isNotEmpty ?? false)
                             ? photos[currentIndex].caption!.trim()
                             : l10n.photo,
                         style: const TextStyle(
@@ -3227,18 +3112,15 @@ class _CityDetailPageState extends State<CityDetailPage>
                         ),
                       ),
                       const SizedBox(height: 6),
-                      if ((photos[currentIndex].location?.isNotEmpty ??
-                              false) ||
+                      if ((photos[currentIndex].location?.isNotEmpty ?? false) ||
                           photos[currentIndex].placeName?.isNotEmpty == true)
                         Row(
                           children: [
-                            const Icon(FontAwesomeIcons.locationDot,
-                                size: 16, color: Colors.white54),
+                            const Icon(FontAwesomeIcons.locationDot, size: 16, color: Colors.white54),
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
-                                photos[currentIndex].placeName?.isNotEmpty ==
-                                        true
+                                photos[currentIndex].placeName?.isNotEmpty == true
                                     ? photos[currentIndex].placeName!
                                     : (photos[currentIndex].location ?? ''),
                                 style: const TextStyle(
@@ -3297,12 +3179,10 @@ class _CityDetailPageState extends State<CityDetailPage>
       }
 
       final rawDescription = weather.weatherDescription.trim();
-      final description = rawDescription.isEmpty
-          ? weather.weather
-          : rawDescription[0].toUpperCase() + rawDescription.substring(1);
+      final description =
+          rawDescription.isEmpty ? weather.weather : rawDescription[0].toUpperCase() + rawDescription.substring(1);
       final timezone = _formatTimezone(weather.timezoneOffset);
-      final sunrise =
-          _formatWeatherTime(weather.sunrise, weather.timezoneOffset);
+      final sunrise = _formatWeatherTime(weather.sunrise, weather.timezoneOffset);
       final sunset = _formatWeatherTime(weather.sunset, weather.timezoneOffset);
       final updatedAt = _formatWeatherTime(
         weather.updatedAt,
@@ -3372,8 +3252,7 @@ class _CityDetailPageState extends State<CityDetailPage>
       }
 
       return ListView(
-        padding:
-            const EdgeInsets.only(left: 16, right: 16, top: 24, bottom: 96),
+        padding: const EdgeInsets.only(left: 16, right: 16, top: 24, bottom: 96),
         children: [
           // 🌡️ 现代化主天气卡片
           Container(
@@ -3526,8 +3405,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                     _buildWeatherMiniInfo(
                       icon: FontAwesomeIcons.wind,
                       label: l10n.wind,
-                      value:
-                          '${(weather.windSpeed * 3.6).toStringAsFixed(0)} km/h',
+                      value: '${(weather.windSpeed * 3.6).toStringAsFixed(0)} km/h',
                     ),
                   ],
                 ),
@@ -3600,8 +3478,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    const Icon(FontAwesomeIcons.solidSun,
-                        color: Colors.orange, size: 20),
+                    const Icon(FontAwesomeIcons.solidSun, color: Colors.orange, size: 20),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
@@ -3624,8 +3501,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    const Icon(FontAwesomeIcons.solidMoon,
-                        color: Color(0xFF5B6FD8), size: 20),
+                    const Icon(FontAwesomeIcons.solidMoon, color: Color(0xFF5B6FD8), size: 20),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
@@ -3688,15 +3564,11 @@ class _CityDetailPageState extends State<CityDetailPage>
                 itemBuilder: (context, index) {
                   final day = weather.forecast!.daily[index];
                   final isToday = index == 0;
-                  final dayName =
-                      isToday ? l10n.today : _formatDayName(day.date, l10n);
+                  final dayName = isToday ? l10n.today : _formatDayName(day.date, l10n);
 
                   return Container(
                     width: 140,
-                    margin: EdgeInsets.only(
-                        right: index < weather.forecast!.daily.length - 1
-                            ? 16
-                            : 0),
+                    margin: EdgeInsets.only(right: index < weather.forecast!.daily.length - 1 ? 16 : 0),
                     decoration: BoxDecoration(
                       gradient: isToday
                           ? const LinearGradient(
@@ -3744,8 +3616,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                             decoration: BoxDecoration(
                               color: isToday
                                   ? Colors.white.withValues(alpha: 0.25)
-                                  : const Color(0xFFFF4458)
-                                      .withValues(alpha: 0.1),
+                                  : const Color(0xFFFF4458).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -3753,9 +3624,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
-                                color: isToday
-                                    ? Colors.white
-                                    : const Color(0xFFFF4458),
+                                color: isToday ? Colors.white : const Color(0xFFFF4458),
                                 letterSpacing: 0.5,
                               ),
                             ),
@@ -3766,8 +3635,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                               day.weatherIcon,
                               isNight: false,
                             ),
-                            color:
-                                isToday ? Colors.white : Colors.orange.shade600,
+                            color: isToday ? Colors.white : Colors.orange.shade600,
                             size: 48,
                           ),
                           // 温度显示
@@ -3782,9 +3650,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                                     style: TextStyle(
                                       fontSize: 28,
                                       fontWeight: FontWeight.bold,
-                                      color: isToday
-                                          ? Colors.white
-                                          : Colors.grey.shade900,
+                                      color: isToday ? Colors.white : Colors.grey.shade900,
                                       height: 1.0,
                                     ),
                                   ),
@@ -3793,9 +3659,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w600,
-                                      color: isToday
-                                          ? Colors.white.withValues(alpha: 0.9)
-                                          : Colors.grey.shade700,
+                                      color: isToday ? Colors.white.withValues(alpha: 0.9) : Colors.grey.shade700,
                                       height: 1.2,
                                     ),
                                   ),
@@ -3809,9 +3673,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                                   Icon(
                                     FontAwesomeIcons.arrowDown,
                                     size: 12,
-                                    color: isToday
-                                        ? Colors.white.withValues(alpha: 0.7)
-                                        : Colors.grey.shade500,
+                                    color: isToday ? Colors.white.withValues(alpha: 0.7) : Colors.grey.shade500,
                                   ),
                                   const SizedBox(width: 2),
                                   Text(
@@ -3819,18 +3681,14 @@ class _CityDetailPageState extends State<CityDetailPage>
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
-                                      color: isToday
-                                          ? Colors.white.withValues(alpha: 0.8)
-                                          : Colors.grey.shade600,
+                                      color: isToday ? Colors.white.withValues(alpha: 0.8) : Colors.grey.shade600,
                                     ),
                                   ),
                                   Text(
                                     '°',
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: isToday
-                                          ? Colors.white.withValues(alpha: 0.7)
-                                          : Colors.grey.shade500,
+                                      color: isToday ? Colors.white.withValues(alpha: 0.7) : Colors.grey.shade500,
                                     ),
                                   ),
                                 ],
@@ -3909,8 +3767,7 @@ class _CityDetailPageState extends State<CityDetailPage>
       }
 
       return ListView.builder(
-        padding:
-            const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
+        padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
         itemCount: neighborhoods.length,
         itemBuilder: (context, index) {
           final neighborhood = neighborhoods[index];
@@ -3920,8 +3777,7 @@ class _CityDetailPageState extends State<CityDetailPage>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ClipRRect(
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(12)),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                   child: Image.network(
                     neighborhood.imageUrl,
                     height: 150,
@@ -3952,17 +3808,13 @@ class _CityDetailPageState extends State<CityDetailPage>
                       const SizedBox(height: 12),
                       Row(
                         children: [
-                          const Icon(FontAwesomeIcons.shieldHalved,
-                              size: 16, color: Color(0xFFFF4458)),
+                          const Icon(FontAwesomeIcons.shieldHalved, size: 16, color: Color(0xFFFF4458)),
                           const SizedBox(width: 4),
-                          Text(
-                              '${AppLocalizations.of(context)!.safety}: ${neighborhood.safetyScore}'),
+                          Text('${AppLocalizations.of(context)!.safety}: ${neighborhood.safetyScore}'),
                           const SizedBox(width: 16),
-                          const Icon(FontAwesomeIcons.dollarSign,
-                              size: 16, color: Color(0xFFFF4458)),
+                          const Icon(FontAwesomeIcons.dollarSign, size: 16, color: Color(0xFFFF4458)),
                           const SizedBox(width: 4),
-                          Text(
-                              '\$${neighborhood.rentPrice.toStringAsFixed(0)}/mo'),
+                          Text('\$${neighborhood.rentPrice.toStringAsFixed(0)}/mo'),
                         ],
                       ),
                     ],
@@ -4018,8 +3870,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                           width: 60,
                           height: 60,
                           decoration: BoxDecoration(
-                            color:
-                                const Color(0xFFFF4458).withValues(alpha: 0.1),
+                            color: const Color(0xFFFF4458).withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -4031,8 +3882,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                           width: 40,
                           height: 40,
                           decoration: BoxDecoration(
-                            color:
-                                const Color(0xFFFF4458).withValues(alpha: 0.15),
+                            color: const Color(0xFFFF4458).withValues(alpha: 0.15),
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -4117,8 +3967,7 @@ class _CityDetailPageState extends State<CityDetailPage>
       return Stack(
         children: [
           ListView.builder(
-            padding:
-                const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
+            padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
             itemCount: controller.coworkingSpaces.length,
             itemBuilder: (context, index) {
               final space = controller.coworkingSpaces[index];
@@ -4173,8 +4022,7 @@ class _CityDetailPageState extends State<CityDetailPage>
             Stack(
               children: [
                 ClipRRect(
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(12)),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                   child: AspectRatio(
                     aspectRatio: 16 / 9,
                     child: Image.network(
@@ -4183,8 +4031,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
                           color: Colors.grey[200],
-                          child:
-                              const Icon(FontAwesomeIcons.building, size: 48),
+                          child: const Icon(FontAwesomeIcons.building, size: 48),
                         );
                       },
                     ),
@@ -4265,8 +4112,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                   // 地址
                   Row(
                     children: [
-                      const Icon(FontAwesomeIcons.locationDot,
-                          size: 14, color: AppColors.textSecondary),
+                      const Icon(FontAwesomeIcons.locationDot, size: 14, color: AppColors.textSecondary),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
@@ -4326,8 +4172,7 @@ class _CityDetailPageState extends State<CityDetailPage>
   // Hotels Tab - 显示城市的酒店列表
   Widget _buildHotelsTab(CityDetailStateController controller) {
     final parsedCityId = int.tryParse(cityId);
-    print(
-        '🏨 Hotels Tab - cityId: $cityId, parsed: $parsedCityId, cityName: $cityName');
+    print('🏨 Hotels Tab - cityId: $cityId, parsed: $parsedCityId, cityName: $cityName');
 
     return HotelListPage(
       cityId: parsedCityId,
@@ -4416,8 +4261,7 @@ class _CityDetailPageState extends State<CityDetailPage>
         final apiService = Get.find<IUserCityContentRepository>();
         final result = await apiService.addCityPhoto(
           cityId: cityId,
-          imageUrl:
-              'https://via.placeholder.com/800x600.png?text=${Uri.encodeComponent(image.name)}',
+          imageUrl: 'https://via.placeholder.com/800x600.png?text=${Uri.encodeComponent(image.name)}',
           caption: null,
           location: null,
           takenAt: null,
@@ -4426,8 +4270,7 @@ class _CityDetailPageState extends State<CityDetailPage>
         switch (result) {
           case Success():
             // 刷新照片列表
-            final userContentController =
-                Get.find<UserCityContentStateController>();
+            final userContentController = Get.find<UserCityContentStateController>();
             await userContentController.loadCityPhotos(cityId);
 
             AppToast.success(
@@ -4753,8 +4596,7 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => tabBar.preferredSize.height;
 
   @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
       color: Colors.white,
       child: tabBar,

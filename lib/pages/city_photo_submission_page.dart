@@ -1,5 +1,6 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
+import 'package:df_admin_mobile/pages/maplibre_picker_page.dart';
 import 'package:df_admin_mobile/utils/image_upload_helper.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
@@ -17,8 +18,7 @@ class CityPhotoSubmissionPage extends StatefulWidget {
   });
 
   @override
-  State<CityPhotoSubmissionPage> createState() =>
-      _CityPhotoSubmissionPageState();
+  State<CityPhotoSubmissionPage> createState() => _CityPhotoSubmissionPageState();
 }
 
 class _CityPhotoSubmissionPageState extends State<CityPhotoSubmissionPage> {
@@ -35,8 +35,11 @@ class _CityPhotoSubmissionPageState extends State<CityPhotoSubmissionPage> {
   bool _submitting = false;
   String? _uploadStatus;
 
-  UserCityContentStateController get _controller =>
-      Get.find<UserCityContentStateController>();
+  // 地图选择的经纬度
+  double? _selectedLat;
+  double? _selectedLng;
+
+  UserCityContentStateController get _controller => Get.find<UserCityContentStateController>();
 
   int get _remainingSlots => maxPhotoCount - _photoUrls.length;
 
@@ -156,6 +159,36 @@ class _CityPhotoSubmissionPageState extends State<CityPhotoSubmissionPage> {
     });
   }
 
+  Future<void> _openMapPicker() async {
+    final address = _locationNoteController.text.trim();
+
+    final result = await Get.to<Map<String, dynamic>>(
+      () => MapLibrePickerPage(
+        initialLatitude: _selectedLat,
+        initialLongitude: _selectedLng,
+        searchQuery: address,
+      ),
+    );
+
+    if (result != null && mounted) {
+      setState(() {
+        _selectedLat = result['latitude'] as double?;
+        _selectedLng = result['longitude'] as double?;
+
+        // 更新地址信息
+        final addressText = result['address'] as String? ?? '';
+        final nameText = result['name'] as String? ?? '';
+
+        // 优先使用 name，如果为空则使用 address
+        final displayText = nameText.isNotEmpty ? nameText : addressText;
+
+        if (displayText.isNotEmpty) {
+          _locationNoteController.text = displayText;
+        }
+      });
+    }
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -174,12 +207,8 @@ class _CityPhotoSubmissionPageState extends State<CityPhotoSubmissionPage> {
       cityId: widget.cityId,
       title: _titleController.text.trim(),
       imageUrls: _photoUrls,
-      description: _descriptionController.text.trim().isEmpty
-          ? null
-          : _descriptionController.text.trim(),
-      locationNote: _locationNoteController.text.trim().isEmpty
-          ? null
-          : _locationNoteController.text.trim(),
+      description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
+      locationNote: _locationNoteController.text.trim().isEmpty ? null : _locationNoteController.text.trim(),
       reloadAfterSubmit: true,
     );
 
@@ -231,11 +260,23 @@ class _CityPhotoSubmissionPageState extends State<CityPhotoSubmissionPage> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _locationNoteController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: '位置信息 (可选)',
                   hintText: '街道、地标或更多定位线索',
+                  suffixIcon: IconButton(
+                    icon: const Icon(
+                      FontAwesomeIcons.locationDot,
+                      color: Color(0xFFFF4458),
+                      size: 20,
+                    ),
+                    onPressed: _openMapPicker,
+                    tooltip: '在地图上定位',
+                  ),
                 ),
                 maxLines: 2,
+                onChanged: (value) {
+                  setState(() {}); // 更新UI
+                },
               ),
               const SizedBox(height: 12),
               TextFormField(
@@ -288,8 +329,7 @@ class _CityPhotoSubmissionPageState extends State<CityPhotoSubmissionPage> {
                       ),
                       child: const Column(
                         children: [
-                          Icon(FontAwesomeIcons.images,
-                              size: 48, color: Colors.grey),
+                          Icon(FontAwesomeIcons.images, size: 48, color: Colors.grey),
                           SizedBox(height: 12),
                           Text('还没有照片，点击上方“添加照片”按钮上传'),
                         ],
@@ -346,8 +386,7 @@ class _CityPhotoSubmissionPageState extends State<CityPhotoSubmissionPage> {
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.cityPrimary,
                     foregroundColor: Colors.white,
-                    disabledBackgroundColor:
-                        AppColors.cityPrimary.withValues(alpha: 0.5),
+                    disabledBackgroundColor: AppColors.cityPrimary.withValues(alpha: 0.5),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -370,10 +409,7 @@ class _CityPhotoSubmissionPageState extends State<CityPhotoSubmissionPage> {
               const SizedBox(height: 8),
               Text(
                 '提交后后端会通过高德地图自动补齐坐标，成功后你将回到城市详情页，照片会在刷新后展示。',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: AppColors.textSecondary),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
               ),
             ],
           ),

@@ -1595,7 +1595,7 @@
   "enterMeetupTitle": "输入聚会标题",
   "pleaseEnterTitle": "请输入标题",
   "meetupType": "类型",
-  "meetupTypeHint": "例如：休闲聚会、商务社交、文化交流",
+  "meetupTypeHint": "选择聚会类型",
   "pleaseEnterType": "请输入类型",
   "selectCity": "选择城市",
   "country": "国家",

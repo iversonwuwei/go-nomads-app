@@ -1,6 +1,5 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_review.dart'
-    as review_entity;
+import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_review.dart' as review_entity;
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
 import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_review_repository.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
@@ -109,6 +108,12 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
           SliverAppBar(
             expandedHeight: 300,
             pinned: true,
+            backgroundColor: Colors.white,
+            iconTheme: const IconThemeData(color: Colors.black87),
+            leading: IconButton(
+              icon: const Icon(FontAwesomeIcons.arrowLeft),
+              onPressed: () => Get.back(),
+            ),
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
                 _space.name,
@@ -143,8 +148,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                               errorBuilder: (context, error, stackTrace) {
                                 return Container(
                                   color: Colors.grey[300],
-                                  child: const Icon(FontAwesomeIcons.building,
-                                      size: 100),
+                                  child: const Icon(FontAwesomeIcons.building, size: 100),
                                 );
                               },
                             );
@@ -156,8 +160,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                           errorBuilder: (context, error, stackTrace) {
                             return Container(
                               color: Colors.grey[300],
-                              child: const Icon(FontAwesomeIcons.building,
-                                  size: 100),
+                              child: const Icon(FontAwesomeIcons.building, size: 100),
                             );
                           },
                         ),
@@ -192,9 +195,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                             height: 8,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: _currentImageIndex == index
-                                  ? Colors.white
-                                  : Colors.white.withAlpha(128),
+                              color: _currentImageIndex == index ? Colors.white : Colors.white.withAlpha(128),
                             ),
                           ),
                         ),
@@ -262,8 +263,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(FontAwesomeIcons.star,
-                                  size: 18, color: Colors.amber),
+                              const Icon(FontAwesomeIcons.star, size: 18, color: Colors.amber),
                               const SizedBox(width: 4),
                               Text(
                                 _space.spaceInfo.rating.toStringAsFixed(1),
@@ -280,8 +280,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                                 ),
                               ),
                               const SizedBox(width: 4),
-                              Icon(FontAwesomeIcons.chevronRight,
-                                  size: 16, color: Colors.grey[600]),
+                              Icon(FontAwesomeIcons.chevronRight, size: 16, color: Colors.grey[600]),
                             ],
                           ),
                         ),
@@ -314,8 +313,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(FontAwesomeIcons.arrowsRotate,
-                                  size: 18, color: Colors.grey),
+                              const Icon(FontAwesomeIcons.arrowsRotate, size: 18, color: Colors.grey),
                               const SizedBox(width: 4),
                               Text(
                                 'Updated ${_formatDate(_space.lastUpdated!)}',
@@ -336,19 +334,15 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
 
                 // Address
                 ListTile(
-                  leading: const Icon(FontAwesomeIcons.locationDot,
-                      color: Colors.red),
+                  leading: const Icon(FontAwesomeIcons.locationDot, color: Colors.red),
                   title: Text(_space.location.address),
-                  subtitle: Text(
-                      '${_space.location.city}, ${_space.location.country}'),
+                  subtitle: Text('${_space.location.city}, ${_space.location.country}'),
                 ),
 
                 // Creator Info
-                if (_space.creatorName != null &&
-                    _space.creatorName!.isNotEmpty)
+                if (_space.creatorName != null && _space.creatorName!.isNotEmpty)
                   ListTile(
-                    leading:
-                        const Icon(FontAwesomeIcons.user, color: Colors.blue),
+                    leading: const Icon(FontAwesomeIcons.user, color: Colors.blue),
                     title: Text(l10n.createdBy),
                     subtitle: Text(_space.creatorName!),
                   ),
@@ -399,8 +393,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                 const Divider(),
 
                 // Opening Hours
-                if (_space.operationHours.hasHours)
-                  _buildOpeningHoursSection(context),
+                if (_space.operationHours.hasHours) _buildOpeningHoursSection(context),
 
                 if (_space.operationHours.hasHours) const Divider(),
 
@@ -455,9 +448,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                onPressed: _space.contactInfo.hasWebsite
-                    ? () => _launchURL(_space.contactInfo.website)
-                    : null,
+                onPressed: _space.contactInfo.hasWebsite ? () => _launchURL(_space.contactInfo.website) : null,
               ),
             ),
           ],
@@ -563,8 +554,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
     );
   }
 
-  Widget _buildPriceCard(
-      String label, double price, String currency, IconData icon) {
+  Widget _buildPriceCard(String label, double price, String currency, IconData icon) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -646,8 +636,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                   ),
                 ),
               if (_space.specs.numberOfMeetingRooms != null) ...[
-                if (_space.specs.numberOfDesks != null)
-                  const SizedBox(width: 8),
+                if (_space.specs.numberOfDesks != null) const SizedBox(width: 8),
                 Expanded(
                   child: _buildSpecCard(
                     l10n.meetingRooms,
@@ -717,8 +706,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
     }
   }
 
-  Widget _buildSpecCard(
-      String label, String value, IconData icon, Color color) {
+  Widget _buildSpecCard(String label, String value, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -974,9 +962,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                 ),
               ),
             ),
-          if (_space.contactInfo.phone.isNotEmpty &&
-              _space.contactInfo.email.isNotEmpty)
-            const SizedBox(height: 12),
+          if (_space.contactInfo.phone.isNotEmpty && _space.contactInfo.email.isNotEmpty) const SizedBox(height: 12),
           if (_space.contactInfo.email.isNotEmpty)
             InkWell(
               onTap: () => _launchURL('mailto:${_space.contactInfo.email}'),
@@ -1036,8 +1022,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                 ),
               ),
             ),
-          if ((_space.contactInfo.phone.isNotEmpty ||
-                  _space.contactInfo.email.isNotEmpty) &&
+          if ((_space.contactInfo.phone.isNotEmpty || _space.contactInfo.email.isNotEmpty) &&
               _space.contactInfo.hasWebsite)
             const SizedBox(height: 12),
           if (_space.contactInfo.hasWebsite)
@@ -1142,8 +1127,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
               alignment: Alignment.center,
               child: Column(
                 children: [
-                  Icon(FontAwesomeIcons.comment,
-                      size: 48, color: Colors.grey[400]),
+                  Icon(FontAwesomeIcons.comment, size: 48, color: Colors.grey[400]),
                   const SizedBox(height: 16),
                   Text(
                     '暂无评论',
@@ -1177,16 +1161,12 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                           children: [
                             CircleAvatar(
                               backgroundColor: Colors.blue[100],
-                              backgroundImage: (comment.userAvatar != null &&
-                                      comment.userAvatar!.isNotEmpty)
+                              backgroundImage: (comment.userAvatar != null && comment.userAvatar!.isNotEmpty)
                                   ? NetworkImage(comment.userAvatar!)
                                   : null,
-                              child: (comment.userAvatar == null ||
-                                      comment.userAvatar!.isEmpty)
+                              child: (comment.userAvatar == null || comment.userAvatar!.isEmpty)
                                   ? Text(
-                                      comment.username
-                                          .substring(0, 1)
-                                          .toUpperCase(),
+                                      comment.username.substring(0, 1).toUpperCase(),
                                       style: TextStyle(
                                         color: Colors.blue[700],
                                         fontWeight: FontWeight.bold,
@@ -1226,9 +1206,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                             child: Row(
                               children: List.generate(5, (index) {
                                 return Icon(
-                                  index < comment.rating.toInt()
-                                      ? FontAwesomeIcons.star
-                                      : FontAwesomeIcons.star,
+                                  index < comment.rating.toInt() ? FontAwesomeIcons.star : FontAwesomeIcons.star,
                                   color: Colors.amber,
                                   size: 18,
                                 );
@@ -1259,8 +1237,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                             child: Wrap(
                               spacing: 8,
                               runSpacing: 8,
-                              children:
-                                  comment.photoUrls.take(3).map((imageUrl) {
+                              children: comment.photoUrls.take(3).map((imageUrl) {
                                 return ClipRRect(
                                   borderRadius: BorderRadius.circular(8),
                                   child: Image.network(
@@ -1273,8 +1250,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                                         width: 100,
                                         height: 100,
                                         color: Colors.grey[300],
-                                        child:
-                                            const Icon(FontAwesomeIcons.image),
+                                        child: const Icon(FontAwesomeIcons.image),
                                       );
                                     },
                                   ),

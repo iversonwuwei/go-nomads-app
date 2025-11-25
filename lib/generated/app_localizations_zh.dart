@@ -3313,7 +3313,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get enterMeetupTitle => '输入聚会标题';
 
   @override
-  String get meetupTypeHint => '例如：休闲聚会、商务社交、文化交流';
+  String get meetupTypeHint => '选择聚会类型';
 
   @override
   String get pleaseEnterType => '请输入类型';

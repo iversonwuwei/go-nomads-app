@@ -61,8 +61,7 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
 
   /// 滚动监听
   void _onScroll() {
-    if (_scrollController.position.pixels >=
-            _scrollController.position.maxScrollExtent - 200 &&
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 &&
         !_isLoading.value &&
         _hasMore.value) {
       _loadMore();
@@ -128,7 +127,10 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
+        leading: IconButton(
+          icon: const Icon(FontAwesomeIcons.arrowLeft, color: Colors.black87),
+          onPressed: () => Get.back(),
+        ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -417,23 +419,17 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
                       decoration: BoxDecoration(
                         color: const Color(0xFFF2F2F7),
                         shape: BoxShape.circle,
-                        image: review.userAvatar != null &&
-                                review.userAvatar!.isNotEmpty
+                        image: review.userAvatar != null && review.userAvatar!.isNotEmpty
                             ? DecorationImage(
                                 image: NetworkImage(review.userAvatar!),
                                 fit: BoxFit.cover,
                               )
                             : null,
                       ),
-                      child: review.userAvatar == null ||
-                              review.userAvatar!.isEmpty
+                      child: review.userAvatar == null || review.userAvatar!.isEmpty
                           ? Center(
                               child: Text(
-                                review.username.isNotEmpty
-                                    ? review.username
-                                        .substring(0, 1)
-                                        .toUpperCase()
-                                    : '?',
+                                review.username.isNotEmpty ? review.username.substring(0, 1).toUpperCase() : '?',
                                 style: const TextStyle(
                                   color: Color(0xFF8E8E93),
                                   fontSize: 16,

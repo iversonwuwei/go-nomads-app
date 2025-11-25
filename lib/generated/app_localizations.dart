@@ -6575,7 +6575,7 @@ abstract class AppLocalizations {
   /// No description provided for @meetupTypeHint.
   ///
   /// In zh, this message translates to:
-  /// **'例如：休闲聚会、商务社交、文化交流'**
+  /// **'选择聚会类型'**
   String get meetupTypeHint;
 
   /// No description provided for @pleaseEnterType.

@@ -3345,8 +3345,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enterMeetupTitle => 'Enter meetup title';
 
   @override
-  String get meetupTypeHint =>
-      'e.g., Casual Meetup, Business Networking, Cultural Exchange';
+  String get meetupTypeHint => 'Select meetup type';
 
   @override
   String get pleaseEnterType => 'Please enter a type';

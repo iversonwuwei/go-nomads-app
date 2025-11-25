@@ -1,11 +1,6 @@
 import 'dart:io';
 
 import 'package:add_2_calendar/add_2_calendar.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
-
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/config/supabase_config.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city_option.dart';
@@ -15,6 +10,11 @@ import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/services/image_upload_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+
 import 'venue_map_picker_page.dart';
 
 class CreateMeetupPage extends StatefulWidget {
@@ -39,10 +39,14 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   double _maxAttendees = 10;
-  final GlobalKey<FormFieldState<String>> _cityFieldKey =
-      GlobalKey<FormFieldState<String>>();
-  final GlobalKey<FormFieldState<String>> _countryFieldKey =
-      GlobalKey<FormFieldState<String>>();
+  final GlobalKey<FormFieldState<String>> _cityFieldKey = GlobalKey<FormFieldState<String>>();
+  final GlobalKey<FormFieldState<String>> _countryFieldKey = GlobalKey<FormFieldState<String>>();
+
+  // 类型相关
+  List<String> _meetupTypes = [];
+  bool _isLoadingTypes = false;
+  bool _showCustomTypeInput = false;
+  String? _selectedType;
 
   // 图片相关
   final List<XFile> _selectedImages = [];
@@ -52,15 +56,61 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
   double _uploadProgress = 0.0;
   bool _isSubmitting = false;
 
-  final LocationStateController _locationController =
-      Get.find<LocationStateController>();
-  final MeetupStateController meetupController =
-      Get.find<MeetupStateController>();
+  final LocationStateController _locationController = Get.find<LocationStateController>();
+  final MeetupStateController meetupController = Get.find<MeetupStateController>();
 
   @override
   void initState() {
     super.initState();
     _locationController.loadCountries();
+    _loadMeetupTypes();
+  }
+
+  Future<void> _loadMeetupTypes() async {
+    setState(() {
+      _isLoadingTypes = true;
+    });
+
+    try {
+      // TODO: 从后端API加载聚会类型列表
+      // 暂时使用硬编码的默认类型
+      await Future.delayed(const Duration(milliseconds: 500)); // 模拟网络请求
+
+      _meetupTypes = [
+        'Networking',
+        'Workshop',
+        'Social Gathering',
+        'Sports & Fitness',
+        'Food & Drinks',
+        'Coworking Session',
+        'Language Exchange',
+        'Cultural Event',
+        'Tech Meetup',
+        'Travel Planning',
+        'Book Club',
+        'Gaming Night',
+        'Photography Walk',
+        'Hiking & Outdoor',
+        'Music & Arts',
+        'Business Lunch',
+        'Career Development',
+        'Volunteer Activity',
+        'Movie Night',
+        'Yoga & Meditation',
+      ];
+    } catch (e) {
+      print('加载聚会类型失败: $e');
+      // 失败时使用最小集合
+      _meetupTypes = [
+        'Networking',
+        'Social Gathering',
+        'Workshop',
+      ];
+    } finally {
+      setState(() {
+        _isLoadingTypes = false;
+      });
+    }
   }
 
   @override
@@ -279,8 +329,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                   ),
                 ),
                 subtitle: Text(
-                  AppLocalizations.of(context)!
-                      .selectMultiplePhotos(_selectedImages.length),
+                  AppLocalizations.of(context)!.selectMultiplePhotos(_selectedImages.length),
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.grey.shade600,
@@ -355,12 +404,10 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
     }
 
     final l10n = AppLocalizations.of(context)!;
-    final imageFiles =
-        _selectedImages.map((image) => File(image.path)).toList();
-    final sanitizedFolderSegment = (_selectedCityId?.isNotEmpty == true
-            ? _selectedCityId!
-            : (_selectedCity ?? 'general'))
-        .replaceAll(RegExp(r'[^a-zA-Z0-9-_]'), '_');
+    final imageFiles = _selectedImages.map((image) => File(image.path)).toList();
+    final sanitizedFolderSegment =
+        (_selectedCityId?.isNotEmpty == true ? _selectedCityId! : (_selectedCity ?? 'general'))
+            .replaceAll(RegExp(r'[^a-zA-Z0-9-_]'), '_');
     final folderPath = 'meetups/$sanitizedFolderSegment/venues';
 
     AppToast.info(
@@ -481,11 +528,8 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                     title: Text(
                       option,
                       style: TextStyle(
-                        color: isSelected
-                            ? const Color(0xFFFF4458)
-                            : Colors.black87,
-                        fontWeight:
-                            isSelected ? FontWeight.w600 : FontWeight.normal,
+                        color: isSelected ? const Color(0xFFFF4458) : Colors.black87,
+                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                       ),
                     ),
                     trailing: isSelected
@@ -518,9 +562,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
       return;
     }
 
-    if (_selectedCity == null ||
-        _selectedDate == null ||
-        _selectedTime == null) {
+    if (_selectedCity == null || _selectedDate == null || _selectedTime == null) {
       final l10n = AppLocalizations.of(context)!;
       AppToast.error(
         l10n.pleaseFillAllFields,
@@ -544,9 +586,8 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
         _selectedTime!.minute,
       );
 
-      final meetupType = MeetupType.fromString(_typeController.text.isEmpty
-          ? 'social'
-          : _typeController.text.toLowerCase());
+      final meetupType =
+          MeetupType.fromString(_typeController.text.isEmpty ? 'social' : _typeController.text.toLowerCase());
 
       List<String> uploadedImageUrls = [];
       if (_selectedImages.isNotEmpty) {
@@ -716,9 +757,8 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
     // 创建日历事件 (默认持续2小时)
     final Event event = Event(
       title: _titleController.text,
-      description: _descriptionController.text.isNotEmpty
-          ? _descriptionController.text
-          : 'Meetup organized via Nomads.com',
+      description:
+          _descriptionController.text.isNotEmpty ? _descriptionController.text : 'Meetup organized via Nomads.com',
       location: _venueController.text,
       startDate: eventDateTime,
       endDate: eventDateTime.add(const Duration(hours: 2)),
@@ -827,26 +867,137 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
               ),
             ),
             const SizedBox(height: 8),
-            TextFormField(
-              controller: _typeController,
-              decoration: InputDecoration(
-                hintText: AppLocalizations.of(context)!.meetupTypeHint,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: AppColors.borderLight),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
+            if (!_showCustomTypeInput)
+              FormField<String>(
+                initialValue: _selectedType,
+                validator: (value) {
+                  if ((value == null || value.isEmpty) && _typeController.text.isEmpty) {
+                    return AppLocalizations.of(context)!.pleaseEnterType;
+                  }
+                  return null;
+                },
+                builder: (field) {
+                  final displayType = field.value ?? _selectedType;
+                  return GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      final l10n = AppLocalizations.of(context)!;
+
+                      if (_isLoadingTypes) {
+                        AppToast.info(l10n.loading, title: l10n.notice);
+                        return;
+                      }
+
+                      if (_meetupTypes.isEmpty) {
+                        AppToast.info(l10n.noData, title: l10n.notice);
+                        return;
+                      }
+
+                      FocusScope.of(context).unfocus();
+
+                      final optionsWithCustom = [..._meetupTypes, '+ 自定义类型'];
+
+                      _showOptionPicker(
+                        options: optionsWithCustom,
+                        title: l10n.meetupType,
+                        initialValue: _selectedType,
+                        onSelected: (value) {
+                          if (value == '+ 自定义类型') {
+                            setState(() {
+                              _showCustomTypeInput = true;
+                              _selectedType = null;
+                              _typeController.clear();
+                            });
+                            field.didChange(null);
+                          } else {
+                            setState(() {
+                              _selectedType = value;
+                              _typeController.text = value;
+                            });
+                            field.didChange(value);
+                          }
+                        },
+                      );
+                    },
+                    child: InputDecorator(
+                      decoration: InputDecoration(
+                        hintText: AppLocalizations.of(context)!.meetupTypeHint,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: AppColors.borderLight),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        suffixIcon: _isLoadingTypes
+                            ? const Padding(
+                                padding: EdgeInsets.all(8),
+                                child: SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              )
+                            : const Icon(FontAwesomeIcons.chevronDown),
+                        errorText: field.errorText,
+                      ),
+                      isEmpty: displayType == null || displayType.isEmpty,
+                      child: Text(
+                        displayType ?? '',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: displayType == null || displayType.isEmpty
+                                  ? Theme.of(context).hintColor
+                                  : Theme.of(context).textTheme.bodyMedium?.color,
+                            ),
+                      ),
+                    ),
+                  );
+                },
+              )
+            else
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _typeController,
+                      autofocus: true,
+                      decoration: InputDecoration(
+                        hintText: '输入自定义类型',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: AppColors.borderLight),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return AppLocalizations.of(context)!.pleaseEnterType;
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(FontAwesomeIcons.xmark, color: Colors.grey),
+                    onPressed: () {
+                      setState(() {
+                        _showCustomTypeInput = false;
+                        _typeController.clear();
+                      });
+                    },
+                    tooltip: '返回选择列表',
+                  ),
+                ],
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return AppLocalizations.of(context)!.pleaseEnterType;
-                }
-                return null;
-              },
-            ),
 
             const SizedBox(height: 20),
 
@@ -863,10 +1014,8 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
             Obx(() {
               final countryList = _locationController.countries;
               final _ = countryList.length;
-              final isLoadingCountries =
-                  _locationController.isLoadingCountries.value;
-              final localeCode =
-                  Localizations.localeOf(context).languageCode.toLowerCase();
+              final isLoadingCountries = _locationController.isLoadingCountries.value;
+              final localeCode = Localizations.localeOf(context).languageCode.toLowerCase();
 
               final countryEntries = countryList
                   .where((country) => country.isActive)
@@ -878,8 +1027,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                   .toList()
                 ..sort((a, b) => a.value.compareTo(b.value));
 
-              final countries =
-                  countryEntries.map((entry) => entry.value).toList();
+              final countries = countryEntries.map((entry) => entry.value).toList();
 
               return FormField<String>(
                 key: _countryFieldKey,
@@ -914,8 +1062,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                         title: l10n.selectCountry,
                         initialValue: _selectedCountry,
                         onSelected: (value) {
-                          final selectedEntry = countryEntries.firstWhereOrNull(
-                              (entry) => entry.value == value);
+                          final selectedEntry = countryEntries.firstWhereOrNull((entry) => entry.value == value);
                           if (selectedEntry == null) {
                             return;
                           }
@@ -931,8 +1078,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                           final cityFieldState = _cityFieldKey.currentState;
                           cityFieldState?.didChange(null);
 
-                          _locationController
-                              .loadCitiesByCountry(selectedEntry.key.id);
+                          _locationController.loadCitiesByCountry(selectedEntry.key.id);
                         },
                       );
                     },
@@ -941,8 +1087,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                         hintText: AppLocalizations.of(context)!.selectCountry,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide:
-                              const BorderSide(color: AppColors.borderLight),
+                          borderSide: const BorderSide(color: AppColors.borderLight),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16,
@@ -968,13 +1113,9 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: displayCountry == null ||
-                                      displayCountry.isEmpty
+                              color: displayCountry == null || displayCountry.isEmpty
                                   ? Theme.of(context).hintColor
-                                  : Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
-                                      ?.color,
+                                  : Theme.of(context).textTheme.bodyMedium?.color,
                             ),
                       ),
                     ),
@@ -1003,12 +1144,8 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                   ? const <CityOption>[]
                   : (cityMap[selectedCountryId] ?? const <CityOption>[]);
 
-              final cachedCityNames = cachedCities
-                  .map((city) => city.name)
-                  .where((name) => name.isNotEmpty)
-                  .toSet()
-                  .toList()
-                ..sort();
+              final cachedCityNames =
+                  cachedCities.map((city) => city.name).where((name) => name.isNotEmpty).toSet().toList()..sort();
 
               return FormField<String>(
                 key: _cityFieldKey,
@@ -1044,8 +1181,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                         );
                         List<CityOption> selectionSource = cachedCities;
 
-                        final fetchedCities = await _locationController
-                            .loadCitiesByCountry(_selectedCountryId!);
+                        final fetchedCities = await _locationController.loadCitiesByCountry(_selectedCountryId!);
                         final fetchedCityNames = fetchedCities
                             .map((city) => city.name)
                             .where((name) => name.isNotEmpty)
@@ -1069,8 +1205,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                           title: l10n.selectCity,
                           initialValue: _selectedCity,
                           onSelected: (value) {
-                            final selectedCity = selectionSource
-                                .firstWhereOrNull((city) => city.name == value);
+                            final selectedCity = selectionSource.firstWhereOrNull((city) => city.name == value);
 
                             setState(() {
                               _selectedCity = value;
@@ -1092,8 +1227,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                         hintText: AppLocalizations.of(context)!.selectCity,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide:
-                              const BorderSide(color: AppColors.borderLight),
+                          borderSide: const BorderSide(color: AppColors.borderLight),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16,
@@ -1121,10 +1255,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: displayCity == null || displayCity.isEmpty
                                   ? Theme.of(context).hintColor
-                                  : Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
-                                      ?.color,
+                                  : Theme.of(context).textTheme.bodyMedium?.color,
                             ),
                       ),
                     ),
@@ -1158,14 +1289,12 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                           hintText: AppLocalizations.of(context)!.enterVenue,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide:
-                                const BorderSide(color: AppColors.borderLight),
+                            borderSide: const BorderSide(color: AppColors.borderLight),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                             borderSide: BorderSide(
-                              color: _venueErrorText != null &&
-                                      _venueErrorText!.isNotEmpty
+                              color: _venueErrorText != null && _venueErrorText!.isNotEmpty
                                   ? Theme.of(context).colorScheme.error
                                   : AppColors.borderLight,
                             ),
@@ -1173,8 +1302,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                             borderSide: BorderSide(
-                              color: _venueErrorText != null &&
-                                      _venueErrorText!.isNotEmpty
+                              color: _venueErrorText != null && _venueErrorText!.isNotEmpty
                                   ? Theme.of(context).colorScheme.error
                                   : const Color(0xFFFF4458),
                             ),
@@ -1264,8 +1392,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                           ),
                           child: Row(
                             children: [
-                              const Icon(FontAwesomeIcons.calendar,
-                                  size: 18, color: Colors.grey),
+                              const Icon(FontAwesomeIcons.calendar, size: 18, color: Colors.grey),
                               const SizedBox(width: 8),
                               Text(
                                 _selectedDate == null
@@ -1273,9 +1400,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                                     : '${_selectedDate!.year}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.day.toString().padLeft(2, '0')}',
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: _selectedDate == null
-                                      ? Colors.grey
-                                      : Colors.black87,
+                                  color: _selectedDate == null ? Colors.grey : Colors.black87,
                                 ),
                               ),
                             ],
@@ -1313,8 +1438,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                           ),
                           child: Row(
                             children: [
-                              const Icon(FontAwesomeIcons.clock,
-                                  size: 18, color: Colors.grey),
+                              const Icon(FontAwesomeIcons.clock, size: 18, color: Colors.grey),
                               const SizedBox(width: 8),
                               Text(
                                 _selectedTime == null
@@ -1322,9 +1446,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                                     : '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}',
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: _selectedTime == null
-                                      ? Colors.grey
-                                      : Colors.black87,
+                                  color: _selectedTime == null ? Colors.grey : Colors.black87,
                                 ),
                               ),
                             ],
@@ -1416,8 +1538,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              AppLocalizations.of(context)!
-                  .addVenuePhotosCount(_selectedImages.length),
+              AppLocalizations.of(context)!.addVenuePhotosCount(_selectedImages.length),
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.grey.shade600,
@@ -1441,15 +1562,11 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                   if (index == _selectedImages.length) {
                     // 添加更多图片按钮
                     return InkWell(
-                      onTap: _selectedImages.length < 10
-                          ? _showImagePickerOptions
-                          : null,
+                      onTap: _selectedImages.length < 10 ? _showImagePickerOptions : null,
                       child: Container(
                         decoration: BoxDecoration(
                           border: Border.all(
-                            color: _selectedImages.length < 10
-                                ? const Color(0xFFFF4458)
-                                : Colors.grey.shade300,
+                            color: _selectedImages.length < 10 ? const Color(0xFFFF4458) : Colors.grey.shade300,
                             width: 2,
                             style: BorderStyle.solid,
                           ),
@@ -1464,18 +1581,14 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                             Icon(
                               FontAwesomeIcons.photoFilm,
                               size: 32,
-                              color: _selectedImages.length < 10
-                                  ? const Color(0xFFFF4458)
-                                  : Colors.grey.shade400,
+                              color: _selectedImages.length < 10 ? const Color(0xFFFF4458) : Colors.grey.shade400,
                             ),
                             const SizedBox(height: 4),
                             Text(
                               AppLocalizations.of(context)!.addPhoto,
                               style: TextStyle(
                                 fontSize: 11,
-                                color: _selectedImages.length < 10
-                                    ? const Color(0xFFFF4458)
-                                    : Colors.grey.shade400,
+                                color: _selectedImages.length < 10 ? const Color(0xFFFF4458) : Colors.grey.shade400,
                               ),
                             ),
                           ],
@@ -1580,8 +1693,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                       value: _uploadProgress > 0 ? _uploadProgress : null,
                       minHeight: 4,
                       backgroundColor: Colors.grey.shade200,
-                      valueColor:
-                          const AlwaysStoppedAnimation(Color(0xFFFF4458)),
+                      valueColor: const AlwaysStoppedAnimation(Color(0xFFFF4458)),
                     ),
                   ],
                 ),
@@ -1637,8 +1749,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
             // Create Button
             Obx(() {
               final isControllerLoading = meetupController.isLoading.value;
-              final isProcessing =
-                  isControllerLoading || _isUploadingImages || _isSubmitting;
+              final isProcessing = isControllerLoading || _isUploadingImages || _isSubmitting;
               final buttonLabel = AppLocalizations.of(context)!.createMeetup;
 
               return SizedBox(

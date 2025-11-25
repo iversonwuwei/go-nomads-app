@@ -1611,7 +1611,7 @@
   "enterMeetupTitle": "Enter meetup title",
   "pleaseEnterTitle": "Please enter a title",
   "meetupType": "Type",
-  "meetupTypeHint": "e.g., Casual Meetup, Business Networking, Cultural Exchange",
+  "meetupTypeHint": "Select meetup type",
   "pleaseEnterType": "Please enter a type",
   "selectCity": "Select city",
   "country": "Country",
