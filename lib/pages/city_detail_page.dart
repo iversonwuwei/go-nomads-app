@@ -556,15 +556,13 @@ class _CityDetailPageState extends State<CityDetailPage>
           cityName: cityName,
         ));
 
-    // 如果指定成功或页面返回,重新加载城市详情
+    // 如果指定成功,只需要刷新城市基本信息(更新ModeratorId字段)
     if (result == true) {
-      print('✅ [CityDetail] 版主指定成功，重新加载数据');
-      await reloadCityData();
-    } else if (result == null) {
-      // 用户点击返回按钮，也重新加载以防有更改
-      print('🔄 [CityDetail] 从指定版主页面返回，重新加载数据');
-      await reloadCityData();
+      print('✅ [CityDetail] 版主指定成功，强制刷新城市基本信息');
+      final cityDetailController = Get.find<CityDetailStateController>();
+      await cityDetailController.loadCityDetail(cityId, forceRefresh: true);
     }
+    // 用户点击返回按钮,不需要刷新(没有任何更改)
   }
 
   Widget _buildPermissionItem(String text) {
@@ -825,7 +823,7 @@ class _CityDetailPageState extends State<CityDetailPage>
     });
 
     // ✅ 异步初始化城市数据,不阻塞页面显示
-    Future.microtask(() {
+    Future.microtask(() async {
       final cityDetailController = Get.find<CityDetailStateController>();
       final userContentController = Get.find<UserCityContentStateController>();
       final prosConsController = Get.find<ProsConsStateController>();
@@ -833,14 +831,22 @@ class _CityDetailPageState extends State<CityDetailPage>
       // 加载城市详情
       cityDetailController.loadCityDetail(cityId);
 
-      // 加载用户生成内容
-      userContentController.loadCityPhotos(cityId);
-      userContentController.loadCityExpenses(cityId);
-      userContentController.loadCityReviews(cityId);
-      userContentController.loadCityCostSummary(cityId); // ✅ 加载cost summary
+      // 检查登录状态
+      final tokenService = TokenStorageService();
+      final token = await tokenService.getAccessToken();
+      final isLoggedIn = token != null && token.isNotEmpty;
 
-      // 加载优缺点
-      prosConsController.loadCityProsCons(cityId);
+      if (isLoggedIn) {
+        // 登录用户:加载所有用户生成内容
+        userContentController.loadCityPhotos(cityId);
+        userContentController.loadCityExpenses(cityId);
+        userContentController.loadCityReviews(cityId);
+        userContentController.loadCityCostSummary(cityId);
+        prosConsController.loadCityProsCons(cityId);
+      } else {
+        // 未登录用户:仅加载基本信息,跳过需要认证的内容
+        print('⚠️ [CityDetail] 用户未登录,跳过加载用户生成内容');
+      }
     });
   }
 
@@ -855,14 +861,21 @@ class _CityDetailPageState extends State<CityDetailPage>
     // 重新加载城市详情（强制刷新）
     await cityDetailController.loadCityDetail(cityId);
 
-    // 重新加载用户生成内容
-    userContentController.loadCityPhotos(cityId);
-    userContentController.loadCityExpenses(cityId);
-    userContentController.loadCityReviews(cityId);
-    userContentController.loadCityCostSummary(cityId);
+    // 检查登录状态
+    final tokenService = TokenStorageService();
+    final token = await tokenService.getAccessToken();
+    final isLoggedIn = token != null && token.isNotEmpty;
 
-    // 重新加载优缺点
-    prosConsController.loadCityProsCons(cityId);
+    if (isLoggedIn) {
+      // 登录用户:加载所有用户生成内容
+      userContentController.loadCityPhotos(cityId);
+      userContentController.loadCityExpenses(cityId);
+      userContentController.loadCityReviews(cityId);
+      userContentController.loadCityCostSummary(cityId);
+      prosConsController.loadCityProsCons(cityId);
+    } else {
+      print('⚠️ [CityDetail] 用户未登录,跳过加载用户生成内容');
+    }
   }
 
   @override

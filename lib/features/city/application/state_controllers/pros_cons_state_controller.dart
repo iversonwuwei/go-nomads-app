@@ -1,8 +1,8 @@
-import 'package:get/get.dart';
-
 import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city_detail.dart';
 import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
+import 'package:get/get.dart';
 
 /// ProsCons State Controller - 城市优缺点状态管理
 ///
@@ -32,8 +32,24 @@ class ProsConsStateController extends GetxController {
 
   bool hasUserVoted(String id) => votedItemIds.contains(id);
 
+  /// 检查用户是否已登录
+  bool _isUserLoggedIn() {
+    try {
+      final authController = Get.find<AuthStateController>();
+      return authController.isAuthenticated.value;
+    } catch (e) {
+      return false;
+    }
+  }
+
   /// 加载城市的所有优缺点
   Future<void> loadCityProsCons(String cityId) async {
+    // 如果用户未登录,跳过加载
+    if (!_isUserLoggedIn()) {
+      print('⚠️ 用户未登录,跳过加载优缺点');
+      return;
+    }
+
     await Future.wait([
       loadPros(cityId),
       loadCons(cityId),
@@ -42,6 +58,12 @@ class ProsConsStateController extends GetxController {
 
   /// 加载优点
   Future<void> loadPros(String cityId) async {
+    // 如果用户未登录,跳过加载
+    if (!_isUserLoggedIn()) {
+      print('⚠️ 用户未登录,跳过加载优点');
+      return;
+    }
+
     isLoadingPros.value = true;
     error.value = null;
     prosList.clear(); // 先清空旧数据
@@ -74,6 +96,12 @@ class ProsConsStateController extends GetxController {
 
   /// 加载缺点
   Future<void> loadCons(String cityId) async {
+    // 如果用户未登录,跳过加载
+    if (!_isUserLoggedIn()) {
+      print('⚠️ 用户未登录,跳过加载缺点');
+      return;
+    }
+
     isLoadingCons.value = true;
     error.value = null;
     consList.clear(); // 先清空旧数据

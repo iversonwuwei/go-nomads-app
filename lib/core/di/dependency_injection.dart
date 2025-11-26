@@ -3,10 +3,8 @@ import 'package:df_admin_mobile/features/ai/application/use_cases/ai_use_cases.d
 import 'package:df_admin_mobile/features/ai/domain/repositories/iai_repository.dart';
 import 'package:df_admin_mobile/features/ai/infrastructure/repositories/ai_repository.dart';
 import 'package:df_admin_mobile/features/ai/presentation/controllers/ai_state_controller.dart';
-import 'package:df_admin_mobile/features/auth/application/use_cases/auth_database_use_cases.dart'
-    as auth_db_use_cases;
-import 'package:df_admin_mobile/features/auth/application/use_cases/auth_use_cases.dart'
-    as auth_use_cases;
+import 'package:df_admin_mobile/features/auth/application/use_cases/auth_database_use_cases.dart' as auth_db_use_cases;
+import 'package:df_admin_mobile/features/auth/application/use_cases/auth_use_cases.dart' as auth_use_cases;
 import 'package:df_admin_mobile/features/auth/domain/repositories/iauth_database_repository.dart';
 // Auth Domain
 import 'package:df_admin_mobile/features/auth/domain/repositories/iauth_repository.dart';
@@ -93,8 +91,7 @@ import 'package:df_admin_mobile/features/skill/domain/repositories/i_skill_repos
 import 'package:df_admin_mobile/features/skill/infrastructure/repositories/skill_repository.dart';
 import 'package:df_admin_mobile/features/skill/presentation/controllers/skill_state_controller.dart';
 import 'package:df_admin_mobile/features/user/application/use_cases/favorite_city_use_cases.dart';
-import 'package:df_admin_mobile/features/user/application/use_cases/user_use_cases.dart'
-    as user_use_cases;
+import 'package:df_admin_mobile/features/user/application/use_cases/user_use_cases.dart' as user_use_cases;
 // User Domain
 import 'package:df_admin_mobile/features/user/domain/repositories/iuser_repository.dart';
 import 'package:df_admin_mobile/features/user/infrastructure/repositories/user_repository.dart';
@@ -204,7 +201,7 @@ class DependencyInjection {
     Get.find<InterestStateController>();
     Get.find<ChatStateController>();
     Get.find<LocationStateController>(); // 添加 LocationStateController 初始化
-    
+
     print('🚀 开始强制初始化 NotificationStateController');
     try {
       final notificationController = Get.find<NotificationStateController>();
@@ -256,12 +253,10 @@ class DependencyInjection {
     // Use Cases - 基础用户操作
     Get.lazyPut<user_use_cases.BatchGetUsersUseCase>(
         () => user_use_cases.BatchGetUsersUseCase(Get.find<IUserRepository>()));
-    Get.lazyPut<user_use_cases.GetUserUseCase>(
-        () => user_use_cases.GetUserUseCase(Get.find<IUserRepository>()));
-    Get.lazyPut<user_use_cases.GetUserProfileUseCase>(() =>
-        user_use_cases.GetUserProfileUseCase(Get.find<IUserRepository>()));
-    Get.lazyPut<user_use_cases.UpdateUserUseCase>(
-        () => user_use_cases.UpdateUserUseCase(Get.find<IUserRepository>()));
+    Get.lazyPut<user_use_cases.GetUserUseCase>(() => user_use_cases.GetUserUseCase(Get.find<IUserRepository>()));
+    Get.lazyPut<user_use_cases.GetUserProfileUseCase>(
+        () => user_use_cases.GetUserProfileUseCase(Get.find<IUserRepository>()));
+    Get.lazyPut<user_use_cases.UpdateUserUseCase>(() => user_use_cases.UpdateUserUseCase(Get.find<IUserRepository>()));
     Get.lazyPut<user_use_cases.SearchUsersUseCase>(
         () => user_use_cases.SearchUsersUseCase(Get.find<IUserRepository>()));
 
@@ -319,16 +314,11 @@ class DependencyInjection {
 
     // Use Cases - 基础认证
     Get.lazyPut(() => auth_use_cases.LoginUseCase(Get.find<IAuthRepository>()));
-    Get.lazyPut(
-        () => auth_use_cases.RegisterUseCase(Get.find<IAuthRepository>()));
-    Get.lazyPut(
-        () => auth_use_cases.LogoutUseCase(Get.find<IAuthRepository>()));
-    Get.lazyPut(() =>
-        auth_use_cases.GetCurrentUserUseCase(Get.find<IAuthRepository>()));
-    Get.lazyPut(() =>
-        auth_use_cases.UpdateUserProfileUseCase(Get.find<IAuthRepository>()));
-    Get.lazyPut(() =>
-        auth_use_cases.AutoRefreshTokenUseCase(Get.find<IAuthRepository>()));
+    Get.lazyPut(() => auth_use_cases.RegisterUseCase(Get.find<IAuthRepository>()));
+    Get.lazyPut(() => auth_use_cases.LogoutUseCase(Get.find<IAuthRepository>()));
+    Get.lazyPut(() => auth_use_cases.GetCurrentUserUseCase(Get.find<IAuthRepository>()));
+    Get.lazyPut(() => auth_use_cases.UpdateUserProfileUseCase(Get.find<IAuthRepository>()));
+    Get.lazyPut(() => auth_use_cases.AutoRefreshTokenUseCase(Get.find<IAuthRepository>()));
 
     // Use Cases - 数据库认证
     Get.lazyPut(() => auth_db_use_cases.SaveTokenToDatabaseUseCase(
@@ -346,14 +336,10 @@ class DependencyInjection {
         registerUseCase: Get.find<auth_use_cases.RegisterUseCase>(),
         logoutUseCase: Get.find<auth_use_cases.LogoutUseCase>(),
         getCurrentUserUseCase: Get.find<auth_use_cases.GetCurrentUserUseCase>(),
-        updateUserProfileUseCase:
-            Get.find<auth_use_cases.UpdateUserProfileUseCase>(),
-        autoRefreshTokenUseCase:
-            Get.find<auth_use_cases.AutoRefreshTokenUseCase>(),
-        saveTokenToDatabaseUseCase:
-            Get.find<auth_db_use_cases.SaveTokenToDatabaseUseCase>(),
-        checkLoginStatusWithDatabaseUseCase:
-            Get.find<auth_db_use_cases.CheckLoginStatusWithDatabaseUseCase>(),
+        updateUserProfileUseCase: Get.find<auth_use_cases.UpdateUserProfileUseCase>(),
+        autoRefreshTokenUseCase: Get.find<auth_use_cases.AutoRefreshTokenUseCase>(),
+        saveTokenToDatabaseUseCase: Get.find<auth_db_use_cases.SaveTokenToDatabaseUseCase>(),
+        checkLoginStatusWithDatabaseUseCase: Get.find<auth_db_use_cases.CheckLoginStatusWithDatabaseUseCase>(),
       ),
     );
   }
@@ -367,12 +353,9 @@ class DependencyInjection {
 
     // Use Cases
     Get.lazyPut(() => GetCountriesUseCase(Get.find<ILocationRepository>()));
-    Get.lazyPut(
-        () => GetCitiesByCountryUseCase(Get.find<ILocationRepository>()));
-    Get.lazyPut(() =>
-        location_use_cases.GetCityByIdUseCase(Get.find<ILocationRepository>()));
-    Get.lazyPut(() => location_search_use_cases.SearchCitiesUseCase(
-        Get.find<ILocationRepository>()));
+    Get.lazyPut(() => GetCitiesByCountryUseCase(Get.find<ILocationRepository>()));
+    Get.lazyPut(() => location_use_cases.GetCityByIdUseCase(Get.find<ILocationRepository>()));
+    Get.lazyPut(() => location_search_use_cases.SearchCitiesUseCase(Get.find<ILocationRepository>()));
 
     // Controller
     Get.lazyPut(
@@ -380,8 +363,7 @@ class DependencyInjection {
         getCountriesUseCase: Get.find<GetCountriesUseCase>(),
         getCitiesByCountryUseCase: Get.find<GetCitiesByCountryUseCase>(),
         getCityByIdUseCase: Get.find<location_use_cases.GetCityByIdUseCase>(),
-        searchCitiesUseCase:
-            Get.find<location_search_use_cases.SearchCitiesUseCase>(),
+        searchCitiesUseCase: Get.find<location_search_use_cases.SearchCitiesUseCase>(),
       ),
     );
   }
@@ -398,8 +380,7 @@ class DependencyInjection {
 
     // Use Cases
     Get.lazyPut(() => GetCitiesUseCase(Get.find<ICityRepository>()));
-    Get.lazyPut(() => GetCityByIdUseCase(Get.find<ICityRepository>()),
-        tag: 'city_domain'); // 添加tag区分City domain
+    Get.lazyPut(() => GetCityByIdUseCase(Get.find<ICityRepository>()), tag: 'city_domain'); // 添加tag区分City domain
     Get.lazyPut(() => SearchCityListUseCase(Get.find<ICityRepository>()));
     Get.lazyPut(() => GetRecommendedCitiesUseCase(Get.find<ICityRepository>()));
     Get.lazyPut(() => GetPopularCitiesUseCase(Get.find<ICityRepository>()));
@@ -407,11 +388,9 @@ class DependencyInjection {
     Get.lazyPut(() => UnfavoriteCityUseCase(Get.find<ICityRepository>()));
     Get.lazyPut(() => ToggleCityFavoriteUseCase(Get.find<ICityRepository>()));
     Get.lazyPut(() => GetFavoriteCitiesUseCase(Get.find<ICityRepository>()));
-    Get.lazyPut(
-        () => GetUserFavoriteCityIdsUseCase(Get.find<ICityRepository>()));
+    Get.lazyPut(() => GetUserFavoriteCityIdsUseCase(Get.find<ICityRepository>()));
     Get.lazyPut(() => GetCityProsConsUseCase(Get.find<ICityRepository>()));
-    Get.lazyPut(
-        () => GetCitiesWithCoworkingCountUseCase(Get.find<ICityRepository>()));
+    Get.lazyPut(() => GetCitiesWithCoworkingCountUseCase(Get.find<ICityRepository>()));
     Get.lazyPut(() => CityRatingUseCases(Get.find<ICityRatingRepository>()));
 
     // Controller（permanent: true 防止路由切换时被销毁）
@@ -423,8 +402,7 @@ class DependencyInjection {
         getPopularCitiesUseCase: Get.find<GetPopularCitiesUseCase>(),
         toggleCityFavoriteUseCase: Get.find<ToggleCityFavoriteUseCase>(),
         getFavoriteCitiesUseCase: Get.find<GetFavoriteCitiesUseCase>(),
-        getUserFavoriteCityIdsUseCase:
-            Get.find<GetUserFavoriteCityIdsUseCase>(),
+        getUserFavoriteCityIdsUseCase: Get.find<GetUserFavoriteCityIdsUseCase>(),
       ),
       fenix: true, // 允许在删除后重新创建
     );
@@ -432,8 +410,7 @@ class DependencyInjection {
     // Detail Controller
     Get.lazyPut(
       () => CityDetailStateController(
-        getCityByIdUseCase: Get.find<GetCityByIdUseCase>(
-            tag: 'city_domain'), // 使用tag获取City domain的UseCase
+        getCityByIdUseCase: Get.find<GetCityByIdUseCase>(tag: 'city_domain'), // 使用tag获取City domain的UseCase
         toggleCityFavoriteUseCase: Get.find<ToggleCityFavoriteUseCase>(),
       ),
     );
@@ -520,12 +497,10 @@ class DependencyInjection {
     // Controller
     Get.lazyPut(
       () => CoworkingStateController(
-        getCoworkingSpacesByCityUseCase:
-            Get.find<GetCoworkingSpacesByCityUseCase>(),
+        getCoworkingSpacesByCityUseCase: Get.find<GetCoworkingSpacesByCityUseCase>(),
         getCoworkingByIdUseCase: Get.find<GetCoworkingByIdUseCase>(),
         getCityCoworkingCountUseCase: Get.find<GetCityCoworkingCountUseCase>(),
-        submitCoworkingVerificationUseCase:
-            Get.find<SubmitCoworkingVerificationUseCase>(),
+        submitCoworkingVerificationUseCase: Get.find<SubmitCoworkingVerificationUseCase>(),
       ),
       fenix: true, // 允许在删除后重新创建,防止路由切换导致的状态丢失
     );
@@ -752,7 +727,7 @@ class DependencyInjection {
       },
       fenix: true,
     );
-    
+
     print('✅ Notification 领域依赖注册完成');
   }
 
@@ -765,26 +740,21 @@ class DependencyInjection {
 
     // Use Cases
     Get.lazyPut(() => GetInterestsUseCase(Get.find<IInterestRepository>()));
-    Get.lazyPut(
-        () => GetInterestsByCategoryUseCase(Get.find<IInterestRepository>()));
+    Get.lazyPut(() => GetInterestsByCategoryUseCase(Get.find<IInterestRepository>()));
     Get.lazyPut(() => GetUserInterestsUseCase(Get.find<IInterestRepository>()));
     Get.lazyPut(() => AddUserInterestUseCase(Get.find<IInterestRepository>()));
-    Get.lazyPut(() =>
-        UpdateUserInterestIntensityUseCase(Get.find<IInterestRepository>()));
-    Get.lazyPut(
-        () => RemoveUserInterestUseCase(Get.find<IInterestRepository>()));
+    Get.lazyPut(() => UpdateUserInterestIntensityUseCase(Get.find<IInterestRepository>()));
+    Get.lazyPut(() => RemoveUserInterestUseCase(Get.find<IInterestRepository>()));
     Get.lazyPut(() => SearchInterestsUseCase(Get.find<IInterestRepository>()));
 
     // Controller
     Get.lazyPut(
       () => InterestStateController(
         getInterestsUseCase: Get.find<GetInterestsUseCase>(),
-        getInterestsByCategoryUseCase:
-            Get.find<GetInterestsByCategoryUseCase>(),
+        getInterestsByCategoryUseCase: Get.find<GetInterestsByCategoryUseCase>(),
         getUserInterestsUseCase: Get.find<GetUserInterestsUseCase>(),
         addUserInterestUseCase: Get.find<AddUserInterestUseCase>(),
-        updateUserInterestIntensityUseCase:
-            Get.find<UpdateUserInterestIntensityUseCase>(),
+        updateUserInterestIntensityUseCase: Get.find<UpdateUserInterestIntensityUseCase>(),
         removeUserInterestUseCase: Get.find<RemoveUserInterestUseCase>(),
         searchInterestsUseCase: Get.find<SearchInterestsUseCase>(),
       ),
@@ -803,8 +773,7 @@ class DependencyInjection {
     Get.lazyPut(() => GetSkillsByCategoryUseCase(Get.find<ISkillRepository>()));
     Get.lazyPut(() => GetUserSkillsUseCase(Get.find<ISkillRepository>()));
     Get.lazyPut(() => AddUserSkillUseCase(Get.find<ISkillRepository>()));
-    Get.lazyPut(
-        () => UpdateUserSkillProficiencyUseCase(Get.find<ISkillRepository>()));
+    Get.lazyPut(() => UpdateUserSkillProficiencyUseCase(Get.find<ISkillRepository>()));
     Get.lazyPut(() => RemoveUserSkillUseCase(Get.find<ISkillRepository>()));
     Get.lazyPut(() => SearchSkillsUseCase(Get.find<ISkillRepository>()));
 
@@ -815,8 +784,7 @@ class DependencyInjection {
         getSkillsByCategoryUseCase: Get.find<GetSkillsByCategoryUseCase>(),
         getUserSkillsUseCase: Get.find<GetUserSkillsUseCase>(),
         addUserSkillUseCase: Get.find<AddUserSkillUseCase>(),
-        updateUserSkillProficiencyUseCase:
-            Get.find<UpdateUserSkillProficiencyUseCase>(),
+        updateUserSkillProficiencyUseCase: Get.find<UpdateUserSkillProficiencyUseCase>(),
         removeUserSkillUseCase: Get.find<RemoveUserSkillUseCase>(),
         searchSkillsUseCase: Get.find<SearchSkillsUseCase>(),
       ),
@@ -831,30 +799,18 @@ class DependencyInjection {
     );
 
     // Use Cases
-    Get.lazyPut(
-        () => GetProjectsUseCase(Get.find<IInnovationProjectRepository>()));
-    Get.lazyPut(
-        () => GetProjectByIdUseCase(Get.find<IInnovationProjectRepository>()));
-    Get.lazyPut(
-        () => CreateProjectUseCase(Get.find<IInnovationProjectRepository>()));
-    Get.lazyPut(
-        () => UpdateProjectUseCase(Get.find<IInnovationProjectRepository>()));
-    Get.lazyPut(
-        () => DeleteProjectUseCase(Get.find<IInnovationProjectRepository>()));
-    Get.lazyPut(() =>
-        GetProjectsByUserUseCase(Get.find<IInnovationProjectRepository>()));
-    Get.lazyPut(
-        () => SearchProjectsUseCase(Get.find<IInnovationProjectRepository>()));
-    Get.lazyPut(
-        () => GetTeamMembersUseCase(Get.find<IInnovationProjectRepository>()));
-    Get.lazyPut(
-        () => AddTeamMemberUseCase(Get.find<IInnovationProjectRepository>()));
-    Get.lazyPut(() =>
-        RemoveTeamMemberUseCase(Get.find<IInnovationProjectRepository>()));
-    Get.lazyPut(
-        () => ToggleLikeUseCase(Get.find<IInnovationProjectRepository>()));
-    Get.lazyPut(() =>
-        GetPopularProjectsUseCase(Get.find<IInnovationProjectRepository>()));
+    Get.lazyPut(() => GetProjectsUseCase(Get.find<IInnovationProjectRepository>()));
+    Get.lazyPut(() => GetProjectByIdUseCase(Get.find<IInnovationProjectRepository>()));
+    Get.lazyPut(() => CreateProjectUseCase(Get.find<IInnovationProjectRepository>()));
+    Get.lazyPut(() => UpdateProjectUseCase(Get.find<IInnovationProjectRepository>()));
+    Get.lazyPut(() => DeleteProjectUseCase(Get.find<IInnovationProjectRepository>()));
+    Get.lazyPut(() => GetProjectsByUserUseCase(Get.find<IInnovationProjectRepository>()));
+    Get.lazyPut(() => SearchProjectsUseCase(Get.find<IInnovationProjectRepository>()));
+    Get.lazyPut(() => GetTeamMembersUseCase(Get.find<IInnovationProjectRepository>()));
+    Get.lazyPut(() => AddTeamMemberUseCase(Get.find<IInnovationProjectRepository>()));
+    Get.lazyPut(() => RemoveTeamMemberUseCase(Get.find<IInnovationProjectRepository>()));
+    Get.lazyPut(() => ToggleLikeUseCase(Get.find<IInnovationProjectRepository>()));
+    Get.lazyPut(() => GetPopularProjectsUseCase(Get.find<IInnovationProjectRepository>()));
 
     // Controller
     Get.lazyPut(
@@ -918,15 +874,15 @@ class DependencyInjection {
 
   /// 注册用户管理领域依赖
   static void _registerUserManagementDomain() {
-    // Repository
-    Get.lazyPut<IUserManagementRepository>(
-      () => UserManagementRepository(Get.find<HttpService>()),
+    // Repository - 使用 put 立即初始化,避免在页面中找不到
+    Get.put<IUserManagementRepository>(
+      UserManagementRepository(Get.find<HttpService>()),
+      permanent: true,
     );
 
     // Controller
     Get.lazyPut(
-      () =>
-          UserManagementStateController(Get.find<IUserManagementRepository>()),
+      () => UserManagementStateController(Get.find<IUserManagementRepository>()),
     );
   }
 

@@ -1,7 +1,7 @@
 import 'package:df_admin_mobile/core/application/use_case.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/user/application/use_cases/user_use_cases.dart'
-    as user_use_cases;
+import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:df_admin_mobile/features/user/application/use_cases/user_use_cases.dart' as user_use_cases;
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
 import 'package:df_admin_mobile/features/user_city_content/application/use_cases/user_city_content_use_cases.dart';
 import 'package:df_admin_mobile/features/user_city_content/domain/entities/user_city_content.dart';
@@ -9,6 +9,16 @@ import 'package:get/get.dart';
 
 /// User City Content State Controller - DDD Presentation Layer
 class UserCityContentStateController extends GetxController {
+  /// 检查用户是否已登录
+  bool _isUserLoggedIn() {
+    try {
+      final authController = Get.find<AuthStateController>();
+      return authController.isAuthenticated.value;
+    } catch (e) {
+      return false;
+    }
+  }
+
   // Use Cases
   final AddCityPhotoUseCase _addCityPhotoUseCase;
   final SubmitCityPhotosUseCase _submitCityPhotosUseCase;
@@ -205,12 +215,8 @@ class UserCityContentStateController extends GetxController {
     isLoadingPhotos.value = false;
   }
 
-  Future<void> _hydrateUploaderNamesFromPhotos(
-      Iterable<UserCityPhoto> source) async {
-    final userIds = source
-        .map((photo) => photo.userId.trim())
-        .where((id) => id.isNotEmpty)
-        .toSet();
+  Future<void> _hydrateUploaderNamesFromPhotos(Iterable<UserCityPhoto> source) async {
+    final userIds = source.map((photo) => photo.userId.trim()).where((id) => id.isNotEmpty).toSet();
 
     final missing = userIds
         .where((id) => !photoUploaderNames.containsKey(id))
@@ -350,6 +356,12 @@ class UserCityContentStateController extends GetxController {
   // ==================== Review Methods ====================
 
   Future<void> loadCityReviews(String cityId) async {
+    // 如果用户未登录,跳过加载
+    if (!_isUserLoggedIn()) {
+      print('⚠️ 用户未登录,跳过加载城市评论');
+      return;
+    }
+
     isLoadingReviews.value = true;
 
     final result = await _getCityReviewsUseCase.execute(
@@ -474,6 +486,12 @@ class UserCityContentStateController extends GetxController {
   }
 
   Future<void> loadCityCostSummary(String cityId) async {
+    // 如果用户未登录,跳过加载
+    if (!_isUserLoggedIn()) {
+      print('⚠️ 用户未登录,跳过加载城市费用汇总');
+      return;
+    }
+
     isLoadingCostSummary.value = true;
 
     final result = await _getCityCostSummaryUseCase.execute(

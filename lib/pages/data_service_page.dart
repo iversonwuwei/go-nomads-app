@@ -2543,24 +2543,126 @@ class _MeetupCardState extends State<_MeetupCard> {
     );
   }
 
-  // 构建操作按钮 - 与 meetups_list_page 逻辑保持一致
+  // 构建操作按钮 - 根据 status 和 isOrganizer 判断
   Widget _buildActionButton(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final status = widget.meetup.status; // status 已经是字符串类型,值为 'upcoming', 'ongoing', 'completed', 'cancelled'
 
-    // 如果是组织者，显示"取消活动"按钮
+    // 如果是组织者
     if (_isOrganizer) {
-      final isCancelled = widget.meetup.status == 'cancelled';
-      final isEnded = widget.meetup.isEnded;
-      final isDisabled = isCancelled || isEnded;
+      // 已取消的活动
+      if (status == 'cancelled') {
+        return SizedBox(
+          width: double.infinity,
+          height: 32,
+          child: ElevatedButton(
+            onPressed: null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.borderLight,
+              foregroundColor: AppColors.textSecondary,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
+              disabledBackgroundColor: AppColors.borderLight,
+              disabledForegroundColor: AppColors.textSecondary,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(FontAwesomeIcons.ban, size: 14),
+                SizedBox(width: 4),
+                Text(
+                  '已取消',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
 
+      // 已完成的活动
+      if (status == 'completed' || widget.meetup.isEnded) {
+        return SizedBox(
+          width: double.infinity,
+          height: 32,
+          child: ElevatedButton(
+            onPressed: null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.borderLight,
+              foregroundColor: AppColors.textSecondary,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
+              disabledBackgroundColor: AppColors.borderLight,
+              disabledForegroundColor: AppColors.textSecondary,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(FontAwesomeIcons.circleCheck, size: 14),
+                SizedBox(width: 4),
+                Text(
+                  '已结束',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+
+      // 进行中或即将开始的活动 - 显示取消按钮
       return SizedBox(
         width: double.infinity,
         height: 32,
         child: ElevatedButton(
-          onPressed: isDisabled ? null : () => _handleCancelMeetup(context),
+          onPressed: () => _handleCancelMeetup(context),
           style: ElevatedButton.styleFrom(
-            backgroundColor: isCancelled ? AppColors.borderLight : Colors.red,
-            foregroundColor: isCancelled ? AppColors.textSecondary : Colors.white,
+            backgroundColor: Colors.red,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(6),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(FontAwesomeIcons.ban, size: 14),
+              SizedBox(width: 4),
+              Text(
+                '取消活动',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // 不是组织者的情况
+    // 已取消的活动
+    if (status == 'cancelled') {
+      return SizedBox(
+        width: double.infinity,
+        height: 32,
+        child: ElevatedButton(
+          onPressed: null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.borderLight,
+            foregroundColor: AppColors.textSecondary,
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(6),
@@ -2574,7 +2676,7 @@ class _MeetupCardState extends State<_MeetupCard> {
               Icon(FontAwesomeIcons.ban, size: 14),
               SizedBox(width: 4),
               Text(
-                isCancelled ? '已取消' : '取消活动',
+                '活动已取消',
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -2586,11 +2688,42 @@ class _MeetupCardState extends State<_MeetupCard> {
       );
     }
 
-    // 不是组织者，显示 Chat + Join/Leave 按钮
-    final isCancelled = widget.meetup.status == 'cancelled';
-    final isEnded = widget.meetup.isEnded;
-    final isDisabled = isCancelled || isEnded || (_isFull && !_isJoined);
+    // 已完成的活动
+    if (status == 'completed' || widget.meetup.isEnded) {
+      return SizedBox(
+        width: double.infinity,
+        height: 32,
+        child: ElevatedButton(
+          onPressed: null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.borderLight,
+            foregroundColor: AppColors.textSecondary,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(6),
+            ),
+            disabledBackgroundColor: AppColors.borderLight,
+            disabledForegroundColor: AppColors.textSecondary,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(FontAwesomeIcons.circleCheck, size: 14),
+              SizedBox(width: 4),
+              Text(
+                '活动已结束',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
+    // upcoming 或 ongoing - 显示 Chat + Join/Leave 按钮
     return Row(
       children: [
         // Chat 按钮 - 只有加入了才能点击
@@ -2661,7 +2794,7 @@ class _MeetupCardState extends State<_MeetupCard> {
           child: SizedBox(
             height: 32,
             child: ElevatedButton(
-              onPressed: isDisabled ? null : () => _handleToggleJoin(context),
+              onPressed: (_isFull && !_isJoined) ? null : () => _handleToggleJoin(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: _isJoined ? AppColors.borderLight : const Color(0xFFFF4458),
                 foregroundColor: _isJoined ? AppColors.textSecondary : Colors.white,
@@ -2684,15 +2817,11 @@ class _MeetupCardState extends State<_MeetupCard> {
                   const SizedBox(width: 3),
                   Flexible(
                     child: Text(
-                      isCancelled
-                          ? '已取消'
-                          : isEnded
-                              ? l10n.ended
-                              : _isFull && !_isJoined
-                                  ? l10n.full
-                                  : _isJoined
-                                      ? 'Leave'
-                                      : 'Join',
+                      _isFull && !_isJoined
+                          ? l10n.full
+                          : _isJoined
+                              ? 'Leave'
+                              : 'Join',
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,

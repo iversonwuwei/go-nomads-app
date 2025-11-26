@@ -3,8 +3,7 @@ import 'package:df_admin_mobile/core/core.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city_detail.dart';
 import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
-import 'package:df_admin_mobile/features/city/infrastructure/models/city_detail_dto.dart'
-    as dto;
+import 'package:df_admin_mobile/features/city/infrastructure/models/city_detail_dto.dart' as dto;
 import 'package:df_admin_mobile/services/http_service.dart';
 
 /// 城市仓储实现 (Infrastructure Layer)
@@ -70,9 +69,7 @@ class CityRepository implements ICityRepository {
       final data = response.data as Map<String, dynamic>;
       final items = data['items'] as List<dynamic>? ?? [];
 
-      final cities = items
-          .map((json) => City.fromJson(json as Map<String, dynamic>))
-          .toList();
+      final cities = items.map((json) => City.fromJson(json as Map<String, dynamic>)).toList();
 
       return Success(cities);
     } on HttpException catch (e) {
@@ -86,8 +83,12 @@ class CityRepository implements ICityRepository {
   Future<Result<City>> getCityById(String cityId) async {
     try {
       final response = await _httpService.get('$_baseUrl/$cityId');
-      final data = response.data as Map<String, dynamic>;
-      final city = City.fromJson(data);
+      final responseData = response.data as Map<String, dynamic>;
+
+      // 后端返回 ApiResponse<CityDto> 格式: { success, message, data }
+      final cityData = responseData['data'] as Map<String, dynamic>;
+      final city = City.fromJson(cityData);
+
       return Success(city);
     } on HttpException catch (e) {
       return Failure(_convertHttpException(e));
@@ -116,18 +117,14 @@ class CityRepository implements ICityRepository {
       List<dynamic> items;
       if (response.data is Map<String, dynamic>) {
         final dataMap = response.data as Map<String, dynamic>;
-        items = (dataMap['data'] as List<dynamic>?) ??
-            (dataMap['items'] as List<dynamic>?) ??
-            [];
+        items = (dataMap['data'] as List<dynamic>?) ?? (dataMap['items'] as List<dynamic>?) ?? [];
       } else if (response.data is List) {
         items = response.data as List<dynamic>;
       } else {
         items = [];
       }
 
-      final cities = items
-          .map((json) => City.fromJson(json as Map<String, dynamic>))
-          .toList();
+      final cities = items.map((json) => City.fromJson(json as Map<String, dynamic>)).toList();
 
       return Success(cities);
     } on HttpException catch (e) {
@@ -146,9 +143,7 @@ class CityRepository implements ICityRepository {
       );
 
       final items = response.data as List<dynamic>;
-      final cities = items
-          .map((json) => City.fromJson(json as Map<String, dynamic>))
-          .toList();
+      final cities = items.map((json) => City.fromJson(json as Map<String, dynamic>)).toList();
 
       return Success(cities);
     } on HttpException catch (e) {
@@ -176,9 +171,7 @@ class CityRepository implements ICityRepository {
       );
 
       final items = response.data as List<dynamic>;
-      final cities = items
-          .map((json) => City.fromJson(json as Map<String, dynamic>))
-          .toList();
+      final cities = items.map((json) => City.fromJson(json as Map<String, dynamic>)).toList();
 
       return Success(cities);
     } on HttpException catch (e) {
@@ -206,8 +199,7 @@ class CityRepository implements ICityRepository {
   @override
   Future<Result<void>> unfavoriteCity(String cityId) async {
     try {
-      await _httpService
-          .delete('${ApiConfig.apiBaseUrl}/user-favorite-cities/$cityId');
+      await _httpService.delete('${ApiConfig.apiBaseUrl}/user-favorite-cities/$cityId');
       return const Success(null);
     } on HttpException catch (e) {
       return Failure(_convertHttpException(e));
@@ -219,8 +211,7 @@ class CityRepository implements ICityRepository {
   @override
   Future<Result<bool>> isCityFavorited(String cityId) async {
     try {
-      final response = await _httpService
-          .get('${ApiConfig.apiBaseUrl}/user-favorite-cities/check/$cityId');
+      final response = await _httpService.get('${ApiConfig.apiBaseUrl}/user-favorite-cities/check/$cityId');
       final data = response.data as Map<String, dynamic>;
       final isFavorited = data['isFavorited'] as bool? ?? false;
       return Success(isFavorited);
@@ -242,9 +233,7 @@ class CityRepository implements ICityRepository {
       final data = response.data as Map<String, dynamic>;
       final items = data['items'] as List<dynamic>? ?? [];
 
-      final cities = items
-          .map((json) => City.fromJson(json as Map<String, dynamic>))
-          .toList();
+      final cities = items.map((json) => City.fromJson(json as Map<String, dynamic>)).toList();
 
       return Success(cities);
     } on HttpException catch (e) {
@@ -258,13 +247,9 @@ class CityRepository implements ICityRepository {
   Future<Result<List<String>>> getUserFavoriteCityIds() async {
     try {
       // 使用正确的 user-favorite-cities API 路径
-      final response = await _httpService
-          .get('${ApiConfig.apiBaseUrl}/user-favorite-cities/ids');
+      final response = await _httpService.get('${ApiConfig.apiBaseUrl}/user-favorite-cities/ids');
 
-      final ids = (response.data as List<dynamic>?)
-              ?.map((id) => id.toString())
-              .toList() ??
-          [];
+      final ids = (response.data as List<dynamic>?)?.map((id) => id.toString()).toList() ?? [];
 
       return Success(ids);
     } on HttpException catch (e) {
@@ -306,10 +291,8 @@ class CityRepository implements ICityRepository {
         items = [];
       }
 
-      final prosConsList = items
-          .map((item) =>
-              dto.ProsConsDto.fromJson(item as Map<String, dynamic>).toEntity())
-          .toList();
+      final prosConsList =
+          items.map((item) => dto.ProsConsDto.fromJson(item as Map<String, dynamic>).toEntity()).toList();
 
       return Success(prosConsList);
     } on HttpException catch (e) {
@@ -406,9 +389,7 @@ class CityRepository implements ICityRepository {
   Future<Result<List<Map<String, dynamic>>>> getCountries() async {
     try {
       final response = await _httpService.get('$_baseUrl/countries');
-      final countries = (response.data as List)
-          .map((item) => item as Map<String, dynamic>)
-          .toList();
+      final countries = (response.data as List).map((item) => item as Map<String, dynamic>).toList();
       return Success(countries);
     } on HttpException catch (e) {
       return Failure(_convertHttpException(e));
@@ -449,8 +430,7 @@ class CityRepository implements ICityRepository {
     } on HttpException catch (e) {
       return Failure(_convertHttpException(e));
     } catch (e) {
-      return Failure(
-          UnknownException('获取城市列表(含Coworking数量)失败: ${e.toString()}'));
+      return Failure(UnknownException('获取城市列表(含Coworking数量)失败: ${e.toString()}'));
     }
   }
 
@@ -503,19 +483,27 @@ class CityRepository implements ICityRepository {
   }
 
   @override
+  @override
   Future<Result<bool>> assignModerator(String cityId, String userId) async {
     try {
-      await _httpService.post(
+      print('🔄 [CityRepository] 调用指定版主 API: cityId=$cityId, userId=$userId');
+
+      final response = await _httpService.post(
         '$_baseUrl/moderator/assign',
         data: {
           'cityId': cityId,
           'userId': userId,
         },
       );
+
+      print('✅ [CityRepository] 指定版主成功: response=$response');
       return const Success(true);
     } on HttpException catch (e) {
+      print('❌ [CityRepository] HTTP异常: statusCode=${e.statusCode}, message=${e.message}');
       return Failure(_convertHttpException(e));
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('💥 [CityRepository] 未知异常: $e');
+      print('📚 [CityRepository] StackTrace: $stackTrace');
       return Failure(UnknownException('指定版主失败: ${e.toString()}'));
     }
   }

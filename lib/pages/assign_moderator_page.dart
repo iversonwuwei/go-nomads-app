@@ -1,7 +1,6 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
-import 'package:df_admin_mobile/features/city/presentation/controllers/city_detail_state_controller.dart';
 import 'package:df_admin_mobile/features/user_management/domain/repositories/iuser_management_repository.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
@@ -28,8 +27,7 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
   final _notesController = TextEditingController();
 
   final RxList<Map<String, dynamic>> _allUsers = <Map<String, dynamic>>[].obs;
-  final RxList<Map<String, dynamic>> _filteredUsers =
-      <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> _filteredUsers = <Map<String, dynamic>>[].obs;
   final RxSet<String> _selectedUserIds = <String>{}.obs;
 
   final RxBool _isLoading = false.obs;
@@ -45,8 +43,7 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
   @override
   void initState() {
     super.initState();
-    print(
-        '🎬 [AssignModerator] initState - cityId: ${widget.cityId}, cityName: ${widget.cityName}');
+    print('🎬 [AssignModerator] initState - cityId: ${widget.cityId}, cityName: ${widget.cityName}');
     _loadUsers();
 
     // 监听搜索框变化，实时过滤
@@ -68,8 +65,7 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
     _isLoading.value = true;
     try {
       final userManagementRepo = Get.find<IUserManagementRepository>();
-      print(
-          '📡 [AssignModerator] 调用 userManagementRepo.getUsers(page: 1, pageSize: 100)');
+      print('📡 [AssignModerator] 调用 userManagementRepo.getUsers(page: 1, pageSize: 100)');
 
       final result = await userManagementRepo.getUsers(
         page: 1,
@@ -87,8 +83,7 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
         } else {
           print('📋 [AssignModerator] 前3个用户:');
           for (var i = 0; i < users.length && i < 3; i++) {
-            print(
-                '   [$i] id=${users[i].id}, name=${users[i].name}, email=${users[i].email}');
+            print('   [$i] id=${users[i].id}, name=${users[i].name}, email=${users[i].email}');
           }
         }
 
@@ -103,8 +98,7 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
 
         print('📋 [AssignModerator] _allUsers 已更新: ${_allUsers.length} 个');
         _filteredUsers.value = _allUsers;
-        print(
-            '📋 [AssignModerator] _filteredUsers 已更新: ${_filteredUsers.length} 个');
+        print('📋 [AssignModerator] _filteredUsers 已更新: ${_filteredUsers.length} 个');
       } else {
         final errorMsg = result.exceptionOrNull?.message ?? "未知错误";
         print('❌ [AssignModerator] 加载失败: $errorMsg');
@@ -128,8 +122,7 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
 
   /// 过滤用户列表
   void _filterUsers(String query) {
-    print(
-        '🔍 [AssignModerator] 过滤用户: query="$query", _allUsers.length=${_allUsers.length}');
+    print('🔍 [AssignModerator] 过滤用户: query="$query", _allUsers.length=${_allUsers.length}');
 
     if (query.trim().isEmpty) {
       _filteredUsers.value = _allUsers;
@@ -151,12 +144,10 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
   void _toggleUserSelection(String userId) {
     if (_selectedUserIds.contains(userId)) {
       _selectedUserIds.remove(userId);
-      print(
-          '✅ [AssignModerator] 取消选择用户: $userId, 当前选中: ${_selectedUserIds.length}');
+      print('✅ [AssignModerator] 取消选择用户: $userId, 当前选中: ${_selectedUserIds.length}');
     } else {
       _selectedUserIds.add(userId);
-      print(
-          '✅ [AssignModerator] 选择用户: $userId, 当前选中: ${_selectedUserIds.length}');
+      print('✅ [AssignModerator] 选择用户: $userId, 当前选中: ${_selectedUserIds.length}');
     }
   }
 
@@ -174,12 +165,15 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
 
   /// 提交指定版主（批量）
   Future<void> _submitAssignModerator() async {
+    print('🚀 [AssignModerator] 开始提交指定版主');
+
     if (_selectedUserIds.isEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        AppToast.error('请至少选择一个用户');
-      });
+      print('❌ [AssignModerator] 没有选择任何用户');
+      AppToast.error('请至少选择一个用户');
       return;
     }
+
+    print('📋 [AssignModerator] 选中的用户: ${_selectedUserIds.join(", ")}');
 
     // 确认对话框
     final confirmed = await Get.dialog<bool>(
@@ -206,62 +200,68 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
       ),
     );
 
-    if (confirmed != true) return;
+    if (confirmed != true) {
+      print('🚫 [AssignModerator] 用户取消了操作');
+      return;
+    }
 
+    print('✅ [AssignModerator] 用户确认，开始指定版主');
     _isSubmitting.value = true;
+
     try {
       final cityRepository = Get.find<ICityRepository>();
 
       int successCount = 0;
       int failCount = 0;
+      final List<String> errorMessages = [];
 
       // 逐个调用后端 API 添加版主
       for (var userId in _selectedUserIds) {
         try {
+          print('🔄 [AssignModerator] 正在指定版主: userId=$userId, cityId=${widget.cityId}');
+
           final result = await cityRepository.assignModerator(
             widget.cityId,
             userId,
           );
 
           if (result.isSuccess) {
+            print('✅ [AssignModerator] 指定成功: userId=$userId');
             successCount++;
           } else {
+            final errorMsg = result.exceptionOrNull?.message ?? '未知错误';
+            print('❌ [AssignModerator] 指定失败: userId=$userId, error=$errorMsg');
             failCount++;
+            errorMessages.add('用户 $userId: $errorMsg');
           }
-        } catch (e) {
+        } catch (e, stackTrace) {
+          print('💥 [AssignModerator] 指定异常: userId=$userId, error=$e');
+          print('📚 [AssignModerator] StackTrace: $stackTrace');
           failCount++;
+          errorMessages.add('用户 $userId: $e');
         }
       }
+
+      print('📊 [AssignModerator] 完成统计: 成功=$successCount, 失败=$failCount');
 
       if (successCount > 0) {
-        // 刷新城市详情以更新版主状态
-        try {
-          final cityController = Get.find<CityDetailStateController>();
-          await cityController.loadCityDetail(widget.cityId);
-          print('✅ [AssignModerator] 已刷新城市详情');
-        } catch (e) {
-          print('⚠️ [AssignModerator] 刷新城市详情失败: $e');
-          // 刷新失败不影响主流程,只记录日志
+        AppToast.success('成功指定 $successCount 个版主！');
+        if (failCount > 0) {
+          print('⚠️ [AssignModerator] 部分失败详情: ${errorMessages.join("; ")}');
+          AppToast.warning('$failCount 个用户指定失败，请查看日志');
         }
-
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          AppToast.success('成功指定 $successCount 个版主！');
-          if (failCount > 0) {
-            AppToast.warning('$failCount 个用户指定失败');
-          }
-        });
-        Get.back(result: true); // 返回刷新
+        Get.back(result: true); // 返回,通知调用方刷新
       } else {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          AppToast.error('所有用户指定失败，请重试');
-        });
+        print('❌ [AssignModerator] 所有用户指定失败: ${errorMessages.join("; ")}');
+        AppToast.error('所有用户指定失败: ${errorMessages.isNotEmpty ? errorMessages.first : "请重试"}');
       }
-    } catch (e) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        AppToast.error('指定失败: $e');
-      });
+    } catch (e, stackTrace) {
+      print('💥 [AssignModerator] 外层捕获异常: $e');
+      print('📚 [AssignModerator] StackTrace: $stackTrace');
+      AppToast.error('指定失败: $e');
     } finally {
       _isSubmitting.value = false;
+      print('🏁 [AssignModerator] 提交流程结束');
     }
   }
 
@@ -288,9 +288,7 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
                     size: 20,
                   ),
                   label: Text(
-                    _selectedUserIds.length == _filteredUsers.length
-                        ? '取消全选'
-                        : '全选',
+                    _selectedUserIds.length == _filteredUsers.length ? '取消全选' : '全选',
                   ),
                 )
               : const SizedBox.shrink()),
@@ -379,8 +377,7 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
                 );
               }
 
-              print(
-                  '📋 [AssignModerator] 开始渲染 ListView: ${_filteredUsers.length} 个用户');
+              print('📋 [AssignModerator] 开始渲染 ListView: ${_filteredUsers.length} 个用户');
               return ListView.separated(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 itemCount: _filteredUsers.length,
@@ -394,8 +391,7 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
                   final userId = user['id'];
 
                   if (index == 0) {
-                    print(
-                        '📋 [AssignModerator] 渲染第一个用户: id=$userId, name=${user['name']}, email=${user['email']}');
+                    print('📋 [AssignModerator] 渲染第一个用户: id=$userId, name=${user['name']}, email=${user['email']}');
                   }
 
                   return Obx(() {
@@ -405,18 +401,11 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
                       leading: Stack(
                         children: [
                           CircleAvatar(
-                            backgroundColor: isSelected
-                                ? AppColors.accent
-                                : Colors.grey[300],
+                            backgroundColor: isSelected ? AppColors.accent : Colors.grey[300],
                             child: Text(
-                              user['name']
-                                  .toString()
-                                  .substring(0, 1)
-                                  .toUpperCase(),
+                              user['name'].toString().substring(0, 1).toUpperCase(),
                               style: TextStyle(
-                                color: isSelected
-                                    ? Colors.white
-                                    : Colors.grey[700],
+                                color: isSelected ? Colors.white : Colors.grey[700],
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -443,8 +432,7 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
                       title: Text(
                         user['name'],
                         style: TextStyle(
-                          fontWeight:
-                              isSelected ? FontWeight.w600 : FontWeight.normal,
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                         ),
                       ),
                       subtitle: Text(user['email']),
@@ -457,8 +445,7 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: _getRoleColor(user['role'])
-                                  .withValues(alpha: 0.1),
+                              color: _getRoleColor(user['role']).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
@@ -480,8 +467,7 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
                       ),
                       onTap: () => _toggleUserSelection(userId),
                       selected: isSelected,
-                      selectedTileColor:
-                          AppColors.accent.withValues(alpha: 0.05),
+                      selectedTileColor: AppColors.accent.withValues(alpha: 0.05),
                     );
                   });
                 },
@@ -523,8 +509,7 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
                   ),
                   children: [
                     _buildCompactPermissionSwitch('管理城市信息', _canEditCity),
-                    _buildCompactPermissionSwitch(
-                        '管理共享办公空间', _canManageCoworks),
+                    _buildCompactPermissionSwitch('管理共享办公空间', _canManageCoworks),
                     _buildCompactPermissionSwitch('管理生活成本', _canManageCosts),
                     _buildCompactPermissionSwitch('管理签证信息', _canManageVisas),
                     _buildCompactPermissionSwitch('管理聊天室', _canModerateChats),
@@ -537,10 +522,7 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
                 SizedBox(
                   width: double.infinity,
                   child: Obx(() => ElevatedButton.icon(
-                        onPressed:
-                            _selectedUserIds.isEmpty || _isSubmitting.value
-                                ? null
-                                : _submitAssignModerator,
+                        onPressed: _selectedUserIds.isEmpty || _isSubmitting.value ? null : _submitAssignModerator,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.cityPrimary,
                           foregroundColor: Colors.white,
@@ -556,15 +538,12 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
                                 width: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white),
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                                 ),
                               )
                             : const Icon(FontAwesomeIcons.circleCheck),
                         label: Text(
-                          _isSubmitting.value
-                              ? '指定中...'
-                              : '确认指定 ${_selectedUserIds.length} 个版主',
+                          _isSubmitting.value ? '指定中...' : '确认指定 ${_selectedUserIds.length} 个版主',
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,

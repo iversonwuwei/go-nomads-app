@@ -1,9 +1,8 @@
-import 'package:get/get.dart';
-
 import 'package:df_admin_mobile/core/core.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/features/city/application/use_cases/city_use_cases.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:get/get.dart';
 
 /// ?????????? (Presentation Layer)
 ///
@@ -46,25 +45,27 @@ class CityDetailStateController extends GetxController {
 
   /// ??????? (? cityId ?????)
   Future<void> initCity(String cityId, String cityName) async {
-    // ????ID??,?????
-    if (cityId == _lastLoadedCityId && currentCity.value != null) {
-      // print('?? ??ID???,??????: $cityId');
-      return;
-    }
-
     // print('??? ?????: $cityName ($cityId)');
-    _lastLoadedCityId = cityId;
 
     // ??????
     await loadCityDetail(cityId);
   }
 
   /// ??????
-  Future<void> loadCityDetail(String cityId) async {
+  Future<void> loadCityDetail(String cityId, {bool forceRefresh = false}) async {
     if (cityId.isEmpty) {
       // print('?? ??ID??');
       return;
     }
+
+    // 如果不是强制刷新且是相同城市且已有数据，跳过加载
+    if (!forceRefresh && cityId == _lastLoadedCityId && currentCity.value != null) {
+      // print('?? 使用缓存数据: $cityId');
+      return;
+    }
+
+    // print('?? 从服务器加载城市详情: $cityId');
+    _lastLoadedCityId = cityId;
 
     isLoading.value = true;
     hasError.value = false;
@@ -179,7 +180,7 @@ class CityDetailStateController extends GetxController {
   @override
   void onClose() {
     // print('??? CityDetailStateController ??? - ??????');
-    
+
     // ?????????
     currentCity.value = null;
     isLoading.value = false;
@@ -188,10 +189,10 @@ class CityDetailStateController extends GetxController {
     isFavorited.value = false;
     isTogglingFavorite.value = false;
     currentTabIndex.value = 0;
-    
+
     // ??????
     _lastLoadedCityId = '';
-    
+
     super.onClose();
   }
 }
