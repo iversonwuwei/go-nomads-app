@@ -5,6 +5,7 @@ import 'package:df_admin_mobile/pages/add_coworking_page.dart';
 import 'package:df_admin_mobile/pages/add_innovation_page.dart';
 import 'package:df_admin_mobile/pages/add_review_page.dart';
 import 'package:df_admin_mobile/pages/ai_chat_page.dart';
+import 'package:df_admin_mobile/pages/amap_global_page.dart';
 import 'package:df_admin_mobile/pages/city_chat_page.dart';
 import 'package:df_admin_mobile/pages/city_detail_page.dart';
 import 'package:df_admin_mobile/pages/city_list_page.dart';
@@ -59,6 +60,7 @@ class AppRoutes {
   static const String cityChat = '/city-chat';
   static const String favorites = '/favorites';
   static const String globalMap = '/global-map';
+  static const String amapGlobal = '/amap-global';
   static const String addReview = '/add-review';
   static const String addCost = '/add-cost';
   static const String prosConsAdd = '/pros-cons-add';
@@ -195,6 +197,11 @@ class AppRoutes {
     GetPage(
       name: globalMap,
       page: () => const GlobalMapPage(),
+      middlewares: [AuthMiddleware()],
+    ),
+    GetPage(
+      name: amapGlobal,
+      page: () => const AmapGlobalPage(),
       middlewares: [AuthMiddleware()],
     ),
     GetPage(

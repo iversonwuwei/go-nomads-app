@@ -22,6 +22,9 @@
         android:icon="@mipmap/go_nomads"
         android:networkSecurityConfig="@xml/network_security_config">
 
+<!-- 高德地图 API Key -->
+<meta-data android:name="com.amap.api.v2.apikey" android:value="6b053c71911726f46271e4b54124d35f" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

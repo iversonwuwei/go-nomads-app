@@ -79,6 +79,10 @@ class City {
   // 社区数据
   final double? averageCost; // 平均花费（社区统计）
 
+  // 地理坐标
+  final double? latitude; // 纬度
+  final double? longitude; // 经度
+
   // 用户交互
   final bool isFavorite; // 是否收藏
 
@@ -114,6 +118,8 @@ class City {
     this.reviewCount,
     this.coworkingCount,
     this.averageCost,
+    this.latitude,
+    this.longitude,
     this.isFavorite = false,
     this.moderatorId,
     this.moderator,
@@ -208,6 +214,8 @@ class City {
       reviewCount: json['reviewCount']?.toInt(),
       coworkingCount: json['coworkingCount']?.toInt(),
       averageCost: json['averageCost']?.toDouble(),
+      latitude: json['latitude']?.toDouble(),
+      longitude: json['longitude']?.toDouble(),
       isFavorite: json['isFavorite'] as bool? ?? false,
       moderatorId: json['moderatorId'] as String?,
       moderator:
@@ -250,6 +258,8 @@ class City {
       if (reviewCount != null) 'reviewCount': reviewCount,
       if (coworkingCount != null) 'coworkingCount': coworkingCount,
       if (averageCost != null) 'averageCost': averageCost,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
       'isFavorite': isFavorite,
       if (moderatorId != null) 'moderatorId': moderatorId,
       if (moderator != null) 'moderator': moderator!.toJson(),
@@ -283,6 +293,8 @@ class City {
     int? reviewCount,
     int? coworkingCount,
     double? averageCost,
+    double? latitude,
+    double? longitude,
     bool? isFavorite,
     String? moderatorId,
     Moderator? moderator,
@@ -313,6 +325,8 @@ class City {
       reviewCount: reviewCount ?? this.reviewCount,
       coworkingCount: coworkingCount ?? this.coworkingCount,
       averageCost: averageCost ?? this.averageCost,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
       isFavorite: isFavorite ?? this.isFavorite,
       moderatorId: moderatorId ?? this.moderatorId,
       moderator: moderator ?? this.moderator,
