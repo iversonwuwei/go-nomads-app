@@ -844,7 +844,7 @@ class _DataServicePageState extends State<DataServicePage> with WidgetsBindingOb
             size: 20,
           ),
           onPressed: () {
-            Get.toNamed(AppRoutes.globalMap);
+            Get.toNamed(AppRoutes.amapGlobal);
           },
         ),
       ],
