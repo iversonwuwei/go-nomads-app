@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../config/app_colors.dart';
-import '../generated/app_localizations.dart';
-import '../routes/app_routes.dart';
-import '../widgets/app_toast.dart';
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/routes/app_routes.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'city_detail_page.dart';
 
 /// 收藏夹页面 - 管理收藏的城市
@@ -112,14 +113,14 @@ class _FavoritesPageState extends State<FavoritesPage> {
           ],
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_outlined,
+          icon: const Icon(FontAwesomeIcons.arrowLeft,
               color: AppColors.backButtonLight),
           onPressed: () => Get.back(),
         ),
         actions: [
           // 排序按钮
           PopupMenuButton<String>(
-            icon: const Icon(Icons.sort, color: Colors.white),
+            icon: const Icon(FontAwesomeIcons.arrowDownShortWide, color: Colors.white),
             color: const Color(0xFF1a1a1a),
             onSelected: (value) {
               setState(() {
@@ -130,10 +131,10 @@ class _FavoritesPageState extends State<FavoritesPage> {
             itemBuilder: (context) {
               final l10n = AppLocalizations.of(context)!;
               return [
-                _buildPopupMenuItem('date', l10n.date, Icons.calendar_today),
-                _buildPopupMenuItem('price', l10n.price, Icons.attach_money),
-                _buildPopupMenuItem('rank', l10n.ranking, Icons.star),
-                _buildPopupMenuItem('name', l10n.name, Icons.sort_by_alpha),
+                _buildPopupMenuItem('date', l10n.date, FontAwesomeIcons.calendar),
+                _buildPopupMenuItem('price', l10n.price, FontAwesomeIcons.dollarSign),
+                _buildPopupMenuItem('rank', l10n.ranking, FontAwesomeIcons.star),
+                _buildPopupMenuItem('name', l10n.name, FontAwesomeIcons.arrowDownAZ),
               ];
             },
           ),
@@ -174,7 +175,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
           ),
           if (isSelected) ...[
             const Spacer(),
-            const Icon(Icons.check, color: Colors.orange, size: 20),
+            const Icon(FontAwesomeIcons.check, color: Colors.orange, size: 20),
           ],
         ],
       ),
@@ -192,7 +193,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  Icons.favorite_border,
+                  FontAwesomeIcons.heart,
                   size: isMobile ? 80 : 120,
                   color: Colors.white.withValues(alpha: 0.3),
                 ),
@@ -289,7 +290,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                       height: isMobile ? 80 : 120,
                       color: Colors.white.withValues(alpha: 0.1),
                       child: const Icon(
-                        Icons.location_city,
+                        FontAwesomeIcons.city,
                         color: Colors.white54,
                         size: 40,
                       ),
@@ -361,19 +362,19 @@ class _FavoritesPageState extends State<FavoritesPage> {
                       runSpacing: 8,
                       children: [
                         _buildInfoChip(
-                          Icons.attach_money,
+                          FontAwesomeIcons.dollarSign,
                           '\$${city['price']}/mo',
                           Colors.green,
                           isMobile,
                         ),
                         _buildInfoChip(
-                          Icons.wifi,
+                          FontAwesomeIcons.wifi,
                           '${city['internet']} Mbps',
                           Colors.blue,
                           isMobile,
                         ),
                         _buildInfoChip(
-                          Icons.thermostat,
+                          FontAwesomeIcons.temperatureHalf,
                           '${city['temperature']}°C',
                           Colors.orange,
                           isMobile,
@@ -390,7 +391,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
               Column(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.favorite, color: Colors.red),
+                    icon: const Icon(FontAwesomeIcons.heart, color: Colors.red),
                     onPressed: () {
                       final l10n = AppLocalizations.of(context)!;
                       setState(() {
@@ -405,7 +406,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                   const SizedBox(height: 8),
                   IconButton(
                     icon: const Icon(
-                      Icons.arrow_forward,
+                      FontAwesomeIcons.arrowRight,
                       color: Colors.white70,
                     ),
                     onPressed: () {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../layouts/bottom_nav_layout.dart';
+import 'package:df_admin_mobile/layouts/bottom_nav_layout.dart';
 
 /// 底部导航中间件
 /// 自动为所有页面包装底部导航栏（除了特定的排除页面）

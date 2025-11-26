@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 
-import '../services/database_service.dart';
-import '../services/notification_service.dart';
+import 'package:df_admin_mobile/services/database_service.dart';
+import 'package:df_admin_mobile/services/notification_service.dart';
 
 /// 后台任务状态
 enum TaskStatus {

@@ -1,18 +1,20 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/features/skill/domain/entities/skill.dart';
+import 'package:df_admin_mobile/features/skill/presentation/controllers/skill_state_controller.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import '../config/app_colors.dart';
-import '../models/skill_model.dart';
-import '../services/skills_api_service.dart';
 
 /// 底部抽屉：技能选择器
 class SkillsBottomSheet extends StatefulWidget {
   /// 已选择的技能ID列表
   final List<String> selectedSkillIds;
-  
+
   /// 选择变化回调
   final Function(List<UserSkill>) onChanged;
-  
+
   /// 是否显示熟练度选择
   final bool showProficiency;
 
@@ -28,10 +30,12 @@ class SkillsBottomSheet extends StatefulWidget {
 }
 
 class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
-  final SkillsApiService _skillsService = SkillsApiService();
-  
+  late final SkillStateController _skillController;
+
   List<SkillsByCategory> _skillsByCategory = [];
   final List<UserSkill> _selectedSkills = [];
+  List<Skill> _allSkills = [];
+  bool _didRestoreInitialSelection = false;
   bool _isLoading = true;
   String _searchQuery = '';
   String? _selectedCategory;
@@ -39,35 +43,52 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
   @override
   void initState() {
     super.initState();
+    _skillController = Get.find<SkillStateController>();
     _loadSkills();
+  }
+
+  @override
+  void didUpdateWidget(covariant SkillsBottomSheet oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (!setEquals(
+        widget.selectedSkillIds.toSet(), oldWidget.selectedSkillIds.toSet())) {
+      _restoreSelectionFromWidget(force: true);
+    }
   }
 
   Future<void> _loadSkills() async {
     setState(() => _isLoading = true);
-    
+
     try {
-      final skillsByCategory = await _skillsService.getSkillsByCategory();
+      await _skillController.getSkills();
+
+      final skills = List<Skill>.from(_skillController.skills);
+      if (!mounted) return;
+
       setState(() {
-        _skillsByCategory = skillsByCategory;
+        _allSkills = skills;
+        _skillsByCategory = _groupSkillsByCategory(skills);
         _isLoading = false;
       });
-    } catch (e) {
-      print('❌ 加载技能失败: $e');
-      setState(() => _isLoading = false);
-      
-      if (mounted) {
-        Get.snackbar(
-          '加载失败',
-          '无法加载技能列表，请稍后重试',
-          snackPosition: SnackPosition.BOTTOM,
-        );
+
+      _restoreSelectionFromWidget();
+
+      final error = _skillController.errorMessage.value;
+      if (error != null && error.isNotEmpty && mounted) {
+        AppToast.error(error);
       }
+    } catch (e) {
+      debugPrint('❌ 加载技能失败: $e');
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      AppToast.error('无法加载技能列表，请稍后重试');
     }
   }
 
   void _toggleSkill(Skill skill) {
     final isSelected = _selectedSkills.any((s) => s.skillId == skill.id);
-    
+
     if (isSelected) {
       // 取消选择
       setState(() {
@@ -91,29 +112,102 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
       yearsOfExperience: yearsOfExperience,
       createdAt: DateTime.now(),
     );
-    
+
     setState(() {
       _selectedSkills.add(userSkill);
     });
   }
 
+  void _restoreSelectionFromWidget({bool force = false}) {
+    if (_allSkills.isEmpty || widget.selectedSkillIds.isEmpty) {
+      return;
+    }
+
+    if (!force && _didRestoreInitialSelection) {
+      return;
+    }
+
+    final restored = _buildUserSkillsFromIds(widget.selectedSkillIds);
+    if (restored.isEmpty) {
+      _didRestoreInitialSelection = true;
+      return;
+    }
+
+    setState(() {
+      _selectedSkills
+        ..clear()
+        ..addAll(restored);
+    });
+
+    _didRestoreInitialSelection = true;
+  }
+
+  List<UserSkill> _buildUserSkillsFromIds(List<String> skillIds) {
+    final now = DateTime.now();
+    final results = <UserSkill>[];
+    for (final id in skillIds) {
+      final skill = _findSkillById(id);
+      if (skill == null) continue;
+      results.add(
+        UserSkill(
+          id: 'selected-$id-${now.millisecondsSinceEpoch}',
+          userId: '',
+          skillId: skill.id,
+          skillName: skill.name,
+          category: skill.category,
+          icon: skill.icon,
+          proficiencyLevel: null,
+          yearsOfExperience: null,
+          createdAt: now,
+        ),
+      );
+    }
+    return results;
+  }
+
+  Skill? _findSkillById(String id) {
+    for (final skill in _allSkills) {
+      if (skill.id == id) {
+        return skill;
+      }
+    }
+    return null;
+  }
+
+  List<SkillsByCategory> _groupSkillsByCategory(List<Skill> skills) {
+    final Map<String, List<Skill>> grouped = {};
+    for (final skill in skills) {
+      grouped.putIfAbsent(skill.category, () => []).add(skill);
+    }
+
+    final categories = grouped.entries
+        .map((entry) => SkillsByCategory(
+              category: entry.key,
+              skills: entry.value,
+            ))
+        .toList()
+      ..sort((a, b) => a.category.compareTo(b.category));
+
+    return categories;
+  }
+
   List<Skill> _getFilteredSkills() {
     List<Skill> allSkills = [];
-    
+
     for (var category in _skillsByCategory) {
       if (_selectedCategory != null && category.category != _selectedCategory) {
         continue;
       }
       allSkills.addAll(category.skills);
     }
-    
+
     if (_searchQuery.isNotEmpty) {
       allSkills = allSkills.where((skill) {
         return skill.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-               skill.category.toLowerCase().contains(_searchQuery.toLowerCase());
+            skill.category.toLowerCase().contains(_searchQuery.toLowerCase());
       }).toList();
     }
-    
+
     return allSkills;
   }
 
@@ -204,14 +298,16 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
                     child: TextField(
                       decoration: InputDecoration(
                         hintText: '搜索技能...',
-                        prefixIcon: const Icon(Icons.search),
+                        prefixIcon:
+                            const Icon(FontAwesomeIcons.magnifyingGlass),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(color: AppColors.border),
                         ),
                         filled: true,
                         fillColor: AppColors.background,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
                       ),
                       onChanged: (value) {
                         setState(() => _searchQuery = value);
@@ -230,7 +326,8 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
                           _CategoryChip(
                             label: '全部',
                             isSelected: _selectedCategory == null,
-                            onTap: () => setState(() => _selectedCategory = null),
+                            onTap: () =>
+                                setState(() => _selectedCategory = null),
                           ),
                           const SizedBox(width: 8),
                           ..._skillsByCategory.map((category) {
@@ -238,8 +335,10 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
                               padding: const EdgeInsets.only(right: 8),
                               child: _CategoryChip(
                                 label: _getCategoryText(category.category),
-                                isSelected: _selectedCategory == category.category,
-                                onTap: () => setState(() => _selectedCategory = category.category),
+                                isSelected:
+                                    _selectedCategory == category.category,
+                                onTap: () => setState(() =>
+                                    _selectedCategory = category.category),
                               ),
                             );
                           }),
@@ -265,17 +364,21 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
                                 spacing: 8,
                                 runSpacing: 8,
                                 children: filteredSkills.map((skill) {
-                                  final isSelected = _selectedSkills.any((s) => s.skillId == skill.id);
+                                  final isSelected = _selectedSkills
+                                      .any((s) => s.skillId == skill.id);
                                   return FilterChip(
                                     avatar: Text(skill.icon ?? '💼'),
                                     label: Text(skill.name),
                                     selected: isSelected,
                                     onSelected: (_) => _toggleSkill(skill),
-                                    selectedColor: AppColors.accent.withOpacity(0.2),
+                                    selectedColor:
+                                        AppColors.accent.withValues(alpha: 0.2),
                                     checkmarkColor: AppColors.accent,
                                     backgroundColor: AppColors.white,
                                     side: BorderSide(
-                                      color: isSelected ? AppColors.accent : AppColors.border,
+                                      color: isSelected
+                                          ? AppColors.accent
+                                          : AppColors.border,
                                     ),
                                   );
                                 }).toList(),

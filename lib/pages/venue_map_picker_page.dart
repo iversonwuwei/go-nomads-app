@@ -1,18 +1,12 @@
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:maplibre_gl/maplibre_gl.dart';
 
-import '../config/app_colors.dart';
-import '../generated/app_localizations.dart';
-import '../widgets/app_toast.dart';
-
-/// Venue地图选择器页�?
-///
-/// 显示地图并展示餐厅、Coworking和酒店的锚点
-/// 用户可以点击选择一个地点作为Meet Up的Venue
+/// Flutter-only MapLibre implementation of the venue picker.
 class VenueMapPickerPage extends StatefulWidget {
   final String? cityName;
 
@@ -26,163 +20,212 @@ class VenueMapPickerPage extends StatefulWidget {
 }
 
 class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
-  String _selectedFilter = 'All'; // All, Restaurants, Coworking, Hotels
-  String? _selectedVenue;
-  int _mapViewId = 0;
+  static const _mapStyleUrl = 'https://demotiles.maplibre.org/style.json';
 
-  // 模拟POI数据(实际应该从后端获�?
-  final List<Map<String, dynamic>> _venues = [
-    // 餐厅
+  final List<Map<String, dynamic>> _allVenues = [
     {
-      'name': 'Thip Samai',
-      'type': 'Restaurant',
-      'address': '313 Maha Chai Rd, Samran Rat',
-      'rating': 4.5,
-      'latitude': 13.7563,
-      'longitude': 100.5018,
-      'priceRange': '\$\$',
-    },
-    {
-      'name': 'Jay Fai',
-      'type': 'Restaurant',
-      'address': '327 Maha Chai Rd, Samran Rat',
-      'rating': 4.7,
-      'latitude': 13.7573,
-      'longitude': 100.5028,
-      'priceRange': '\$\$\$',
-    },
-    {
-      'name': 'Som Tam Nua',
-      'type': 'Restaurant',
-      'address': '392/14 Siam Square Soi 5',
-      'rating': 4.3,
-      'latitude': 13.7453,
-      'longitude': 100.5318,
-      'priceRange': '\$',
-    },
-
-    // Coworking Spaces
-    {
-      'name': 'Hubba Coworking',
+      'name': 'The Commons Thonglor',
+      'address': '335 Thong Lo Rd, Bangkok',
       'type': 'Coworking',
-      'address': '8 Sukhumvit 33 Alley, Khlong Tan',
+      'latitude': 13.7345,
+      'longitude': 100.5802,
+      'rating': 4.7,
+      'priceRange': '฿฿',
+    },
+    {
+      'name': 'Rocket Coffee Bar',
+      'address': '149 Sathorn Soi 12, Bangkok',
+      'type': 'Restaurants',
+      'latitude': 13.7213,
+      'longitude': 100.5324,
+      'rating': 4.5,
+      'priceRange': '฿฿',
+    },
+    {
+      'name': 'True Digital Park',
+      'address': '101 Sukhumvit Rd, Bangkok',
+      'type': 'Coworking',
+      'latitude': 13.6891,
+      'longitude': 100.6090,
       'rating': 4.6,
-      'latitude': 13.7297,
-      'longitude': 100.5650,
-      'priceRange': '\$150/month',
+      'priceRange': 'Day pass',
     },
     {
-      'name': 'AIS D.C.',
-      'type': 'Coworking',
-      'address': '23 Phaya Thai Rd, Pathum Wan',
-      'rating': 4.4,
-      'latitude': 13.7465,
-      'longitude': 100.5329,
-      'priceRange': '\$100/month',
-    },
-    {
-      'name': 'The Hive',
-      'type': 'Coworking',
-      'address': 'Thonglor, Sukhumvit 55',
-      'rating': 4.5,
-      'latitude': 13.7308,
-      'longitude': 100.5850,
-      'priceRange': '\$200/month',
-    },
-
-    // 酒店
-    {
-      'name': 'Mandarin Oriental',
-      'type': 'Hotel',
-      'address': '48 Oriental Avenue, Bang Rak',
+      'name': 'The Standard Bangkok',
+      'address': '88 Witthayu Rd, Bangkok',
+      'type': 'Hotels',
+      'latitude': 13.7432,
+      'longitude': 100.5497,
       'rating': 4.8,
-      'latitude': 13.7243,
-      'longitude': 100.5157,
-      'priceRange': '\$\$\$\$',
+      'priceRange': '฿฿฿',
     },
     {
-      'name': 'The Peninsula',
-      'type': 'Hotel',
-      'address': '333 Charoennakorn Rd, Khlong San',
-      'rating': 4.7,
-      'latitude': 13.7210,
-      'longitude': 100.5089,
-      'priceRange': '\$\$\$\$',
+      'name': 'Grows Coworking',
+      'address': '53 Ratchaprarop Rd, Bangkok',
+      'type': 'Coworking',
+      'latitude': 13.7511,
+      'longitude': 100.5408,
+      'rating': 4.4,
+      'priceRange': '฿฿',
     },
     {
-      'name': 'Lub d Bangkok',
-      'type': 'Hotel',
-      'address': '4 Decho Rd, Si Lom, Bang Rak',
-      'rating': 4.2,
-      'latitude': 13.7238,
-      'longitude': 100.5265,
-      'priceRange': '\$\$',
+      'name': 'The Yard Hostel Café',
+      'address': '51 Soi Ari 4, Bangkok',
+      'type': 'Restaurants',
+      'latitude': 13.7802,
+      'longitude': 100.5468,
+      'rating': 4.3,
+      'priceRange': '฿฿',
+    },
+    {
+      'name': 'Capella Bangkok',
+      'address': '300 Charoenkrung Rd, Bangkok',
+      'type': 'Hotels',
+      'latitude': 13.7056,
+      'longitude': 100.5148,
+      'rating': 4.9,
+      'priceRange': '฿฿฿',
     },
   ];
 
-  List<Map<String, dynamic>> get _filteredVenues {
-    if (_selectedFilter == 'All') return _venues;
-    return _venues
-        .where((v) => v['type'] == _selectedFilter.replaceAll('s', ''))
-        .toList();
-  }
+  final Map<String, Symbol> _symbols = {};
+  MapLibreMapController? _mapController;
+  late final CameraPosition _initialCameraPosition;
 
-  Color _getMarkerColor(String type) {
-    switch (type) {
-      case 'Restaurant':
-        return const Color(0xFFFF4458);
-      case 'Coworking':
-        return const Color(0xFF4A90E2);
-      case 'Hotel':
-        return const Color(0xFF50C878);
-      default:
-        return Colors.grey;
-    }
-  }
-
-  IconData _getMarkerIcon(String type) {
-    switch (type) {
-      case 'Restaurant':
-        return Icons.restaurant;
-      case 'Coworking':
-        return Icons.work;
-      case 'Hotel':
-        return Icons.hotel;
-      default:
-        return Icons.place;
-    }
-  }
+  String _selectedFilter = 'All';
+  String? _selectedVenueName;
 
   @override
   void initState() {
     super.initState();
-    _mapViewId = DateTime.now().millisecondsSinceEpoch;
-    print('🗺️ VenueMapPicker: 初始化地图, viewId: $_mapViewId');
+    final firstVenue = _allVenues.first;
+    _initialCameraPosition = CameraPosition(
+      target: _venueLatLng(firstVenue),
+      zoom: 12,
+    );
   }
 
   @override
   void dispose() {
-    print('🗑️ VenueMapPicker: 销毁地图');
+    _mapController?.onSymbolTapped.remove(_onSymbolTapped);
     super.dispose();
   }
 
-  void _selectVenue(Map<String, dynamic> venue) {
+  List<Map<String, dynamic>> get _filteredVenues {
+    if (_selectedFilter == 'All') {
+      return _allVenues;
+    }
+    return _allVenues
+        .where((venue) => venue['type'] == _selectedFilter)
+        .toList();
+  }
+
+  void _onFilterChanged(String filter) {
+    if (_selectedFilter == filter) return;
     setState(() {
-      _selectedVenue = venue['name'];
+      _selectedFilter = filter;
+      _selectedVenueName = null;
     });
+    _refreshSymbols();
+  }
+
+  Future<void> _onMapCreated(MapLibreMapController controller) async {
+    _mapController = controller;
+    controller.onSymbolTapped.add(_onSymbolTapped);
+    await _refreshSymbols();
+  }
+
+  Future<void> _refreshSymbols() async {
+    final controller = _mapController;
+    if (controller == null) return;
+
+    if (_symbols.isNotEmpty) {
+      for (final symbol in _symbols.values) {
+        await controller.removeSymbol(symbol);
+      }
+      _symbols.clear();
+    }
+
+    for (final venue in _filteredVenues) {
+      final symbol = await controller.addSymbol(
+        SymbolOptions(
+          geometry: _venueLatLng(venue),
+          iconImage: 'marker-15',
+          iconSize: 1.1,
+          iconColor: _colorToHex(_getMarkerColor(venue['type'])),
+          textField: venue['name'],
+          textOffset: const Offset(0, 1.8),
+          textColor: '#333333',
+          textSize: 11,
+        ),
+        {'name': venue['name']},
+      );
+      _symbols[venue['name']] = symbol;
+    }
+
+    if (_selectedVenueName != null) {
+      await _highlightSelection();
+    }
+  }
+
+  Future<void> _highlightSelection() async {
+    final controller = _mapController;
+    if (controller == null) return;
+    for (final entry in _symbols.entries) {
+      final isSelected = entry.key == _selectedVenueName;
+      await controller.updateSymbol(
+        entry.value,
+        SymbolOptions(
+          iconSize: isSelected ? 1.4 : 1.1,
+          textColor: isSelected ? '#111111' : '#333333',
+        ),
+      );
+    }
+  }
+
+  void _onSymbolTapped(Symbol symbol) {
+    final name = symbol.data?['name'] as String?;
+    if (name == null) return;
+    Map<String, dynamic>? venue;
+    for (final candidate in _allVenues) {
+      if (candidate['name'] == name) {
+        venue = candidate;
+        break;
+      }
+    }
+    if (venue == null) return;
+    _selectVenue(venue, focusCamera: false);
+  }
+
+  Future<void> _selectVenue(Map<String, dynamic> venue,
+      {bool focusCamera = true}) async {
+    setState(() {
+      _selectedVenueName = venue['name'];
+    });
+    await _highlightSelection();
+    if (focusCamera) {
+      _focusVenue(venue);
+    }
+  }
+
+  Future<void> _focusVenue(Map<String, dynamic> venue) async {
+    final controller = _mapController;
+    if (controller == null) return;
+    await controller.animateCamera(
+      CameraUpdate.newLatLngZoom(_venueLatLng(venue), 15),
+    );
   }
 
   void _confirmSelection() {
     final l10n = AppLocalizations.of(context)!;
-    if (_selectedVenue == null) {
-      AppToast.warning(
-        l10n.pleaseSelectVenue,
-        title: l10n.noSelection,
-      );
+    final venueName = _selectedVenueName;
+
+    if (venueName == null) {
+      AppToast.warning(l10n.pleaseSelectVenue, title: l10n.noSelection);
       return;
     }
 
-    final venue = _venues.firstWhere((v) => v['name'] == _selectedVenue);
+    final venue = _allVenues.firstWhere((v) => v['name'] == venueName);
     Get.back(result: {
       'name': venue['name'],
       'address': venue['address'],
@@ -201,7 +244,7 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
         backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_outlined,
+          icon: const Icon(FontAwesomeIcons.arrowLeft,
               color: AppColors.backButtonDark),
           onPressed: () => Get.back(),
         ),
@@ -227,24 +270,19 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 过滤�?
-            _buildFilterChips(),
-
-            // 地图视图 - 固定高度
-            SizedBox(
-              height: MediaQuery.of(context).size.height * 0.4,
-              child: _buildMapPlaceholder(),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildFilterChips(),
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.4,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: _buildMap(),
             ),
-
-            // Venue列表 - 不使用Expanded,让它根据内容自适应高度
-            _buildVenueList(),
-          ],
-        ),
+          ),
+          Expanded(child: _buildVenueList()),
+        ],
       ),
     );
   }
@@ -280,11 +318,7 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
               child: FilterChip(
                 label: Text(filter['label']!),
                 selected: isSelected,
-                onSelected: (selected) {
-                  setState(() {
-                    _selectedFilter = filter['key']!;
-                  });
-                },
+                onSelected: (_) => _onFilterChanged(filter['key']!),
                 backgroundColor: Colors.white,
                 selectedColor: const Color(0xFFFF4458).withValues(alpha: 0.1),
                 labelStyle: TextStyle(
@@ -303,54 +337,18 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
     );
   }
 
-  Widget _buildMapPlaceholder() {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      clipBehavior: Clip.antiAlias,
+  Widget _buildMap() {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
       child: Stack(
         children: [
-          // 真实的高德地�?- 让原生组件自己处理所有手�?
-          PlatformViewLink(
-            viewType: 'amap_city_view',
-            surfaceFactory: (context, controller) {
-              return AndroidViewSurface(
-                controller: controller as AndroidViewController,
-                gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
-                  // ScaleGestureRecognizer 包含了平移和缩放功能
-                  Factory<ScaleGestureRecognizer>(
-                    () => ScaleGestureRecognizer(),
-                  ),
-                  Factory<TapGestureRecognizer>(
-                    () => TapGestureRecognizer(),
-                  ),
-                },
-                hitTestBehavior: PlatformViewHitTestBehavior.opaque,
-              );
-            },
-            onCreatePlatformView: (params) {
-              return PlatformViewsService.initSurfaceAndroidView(
-                id: params.id,
-                viewType: 'amap_city_view',
-                layoutDirection: TextDirection.ltr,
-                creationParams: {
-                  'cityName': widget.cityName ?? 'Bangkok',
-                  'viewId': _mapViewId,
-                },
-                creationParamsCodec: const StandardMessageCodec(),
-                onFocus: () {
-                  params.onFocusChanged(true);
-                },
-              )
-                ..addOnPlatformViewCreatedListener(params.onPlatformViewCreated)
-                ..create();
-            },
+          MapLibreMap(
+            styleString: _mapStyleUrl,
+            initialCameraPosition: _initialCameraPosition,
+            myLocationEnabled: false,
+            compassEnabled: true,
+            onMapCreated: _onMapCreated,
           ),
-
-          // 顶部遮罩显示城市信息
           Positioned(
             top: 12,
             left: 12,
@@ -371,7 +369,7 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    Icons.location_city,
+                    FontAwesomeIcons.city,
                     size: 16,
                     color: Colors.grey[700],
                   ),
@@ -388,8 +386,6 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
               ),
             ),
           ),
-
-          // 地图类型指示�?
           Positioned(
             bottom: 12,
             right: 12,
@@ -409,7 +405,7 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    Icons.layers_outlined,
+                    FontAwesomeIcons.layerGroup,
                     size: 14,
                     color: Colors.grey[600],
                   ),
@@ -432,6 +428,8 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
   }
 
   Widget _buildVenueList() {
+    final venues = _filteredVenues;
+    final selectedName = _selectedVenueName;
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -446,9 +444,7 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
         children: [
-          // 拖拽指示�?
           Center(
             child: Container(
               margin: const EdgeInsets.symmetric(vertical: 12),
@@ -460,12 +456,10 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
               ),
             ),
           ),
-
-          // 标题
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
-              '${_filteredVenues.length} Venues',
+              '${venues.length} Venues',
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -473,26 +467,17 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
               ),
             ),
           ),
-
           const SizedBox(height: 12),
-
-          // Venue列表 - 使用 ListView.builder 配合 shrinkWrap �?NeverScrollableScrollPhysics
-          ListView.builder(
-            shrinkWrap: true, // �?ListView 根据内容自适应高度
-            physics:
-                const NeverScrollableScrollPhysics(), // 禁用 ListView 自己的滚�?使用外层 SingleChildScrollView
-            padding: const EdgeInsets.only(
-              left: 16,
-              right: 16,
-              bottom: 16,
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              itemCount: venues.length,
+              itemBuilder: (context, index) {
+                final venue = venues[index];
+                final isSelected = selectedName == venue['name'];
+                return _buildVenueCard(venue, isSelected);
+              },
             ),
-            itemCount: _filteredVenues.length,
-            itemBuilder: (context, index) {
-              final venue = _filteredVenues[index];
-              final isSelected = _selectedVenue == venue['name'];
-
-              return _buildVenueCard(venue, isSelected);
-            },
           ),
         ],
       ),
@@ -517,7 +502,6 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
         ),
         child: Row(
           children: [
-            // 图标
             Container(
               width: 48,
               height: 48,
@@ -531,10 +515,7 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
                 size: 24,
               ),
             ),
-
             const SizedBox(width: 12),
-
-            // 信息
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -560,7 +541,8 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Icon(Icons.star, size: 14, color: Colors.amber[700]),
+                      Icon(FontAwesomeIcons.star,
+                          size: 14, color: Colors.amber[700]),
                       const SizedBox(width: 4),
                       Text(
                         venue['rating'].toString(),
@@ -583,8 +565,6 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
                 ],
               ),
             ),
-
-            // 类型标签
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
@@ -604,5 +584,45 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
         ),
       ),
     );
+  }
+
+  LatLng _venueLatLng(Map<String, dynamic> venue) {
+    return LatLng(venue['latitude'] as double, venue['longitude'] as double);
+  }
+
+  IconData _getMarkerIcon(String type) {
+    switch (type) {
+      case 'Restaurants':
+        return FontAwesomeIcons.utensils;
+      case 'Coworking':
+        return FontAwesomeIcons.building;
+      case 'Hotels':
+        return FontAwesomeIcons.hotel;
+      default:
+        return FontAwesomeIcons.locationPin;
+    }
+  }
+
+  Color _getMarkerColor(String type) {
+    switch (type) {
+      case 'Restaurants':
+        return const Color(0xFFFF6B6B);
+      case 'Coworking':
+        return const Color(0xFF3A86FF);
+      case 'Hotels':
+        return const Color(0xFF8338EC);
+      default:
+        return const Color(0xFFFF4458);
+    }
+  }
+
+  String _colorToHex(Color color) {
+    int asChannel(double component) =>
+        (component * 255.0).round().clamp(0, 255).toInt();
+
+    final r = asChannel(color.r).toRadixString(16).padLeft(2, '0');
+    final g = asChannel(color.g).toRadixString(16).padLeft(2, '0');
+    final b = asChannel(color.b).toRadixString(16).padLeft(2, '0');
+    return '#$r$g$b';
   }
 }

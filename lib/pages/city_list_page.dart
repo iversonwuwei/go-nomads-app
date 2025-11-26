@@ -1,13 +1,15 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/core/core.dart';
+import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
+import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../config/app_colors.dart';
-import '../controllers/city_list_controller.dart';
-import '../generated/app_localizations.dart';
-import '../services/user_favorite_city_api_service.dart';
-import '../widgets/app_toast.dart';
-import '../widgets/skeletons/skeletons.dart';
 import 'city_detail_page.dart';
 import 'global_map_page.dart';
 
@@ -19,25 +21,23 @@ class CityListPage extends StatefulWidget {
   State<CityListPage> createState() => _CityListPageState();
 }
 
-class _CityListPageState extends State<CityListPage> {
-  final CityListController controller = Get.put(CityListController());
+class _CityListPageState extends State<CityListPage>
+    with RouteAwareRefreshMixin<CityListPage> {
+  final CityStateController controller = Get.find<CityStateController>();
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  final UserFavoriteCityApiService _favoriteApiService =
-      UserFavoriteCityApiService();
   final Map<String, bool> _followedCities = {}; // 城市关注状态
   bool _isLoadingFollowedCities = false;
 
   String _searchQuery = '';
 
-  // 排序状态
-  String _sortBy = 'popular'; // popular, cost, internet, safety
-
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    _loadFollowedCities(); // 加载已关注的城市
+
+    // 异步加载数据,不阻塞页面显示
+    Future.microtask(() => _loadFollowedCities());
 
     // 监听筛选器变化
     ever(controller.selectedRegions, (_) => setState(() {}));
@@ -46,12 +46,17 @@ class _CityListPageState extends State<CityListPage> {
     ever(controller.maxPrice, (_) => setState(() {}));
     ever(controller.minInternet, (_) => setState(() {}));
     ever(controller.minRating, (_) => setState(() {}));
+    ever(controller.cities, (_) => _syncFollowedStatusFromController());
   }
 
   @override
   void dispose() {
     _searchController.dispose();
     _scrollController.dispose();
+
+    // 清空搜索条件和结果
+    controller.searchQuery.value = '';
+
     super.dispose();
   }
 
@@ -70,7 +75,7 @@ class _CityListPageState extends State<CityListPage> {
 
   // 获取筛选后的城市列表
   // 注意: 搜索功能现在由后端 API 处理,不再在前端筛选
-  List<Map<String, dynamic>> get _filteredCities {
+  List<City> get _filteredCities {
     return controller.filteredCities;
   }
 
@@ -78,120 +83,15 @@ class _CityListPageState extends State<CityListPage> {
     setState(() {
       _searchQuery = '';
       _searchController.clear();
-      controller.resetFilters();
     });
-    controller.loadInitialCities(); // 清除筛选后重新加载所有城市
+    // 清除所有筛选器并重新加载默认数据
+    controller.clearFilters();
   }
 
-  // 构建工具栏
-  Widget _buildToolbar(bool isMobile) {
-    final l10n = AppLocalizations.of(context)!;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          _sortBy == 'popular'
-              ? l10n.popular
-              : _sortBy == 'cost'
-                  ? l10n.cost
-                  : _sortBy == 'internet'
-                      ? l10n.internet
-                      : l10n.safety,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        Row(
-          children: [
-            // 筛选按钮
-            Container(
-              margin: const EdgeInsets.only(right: 8),
-              decoration: BoxDecoration(
-                color: controller.hasActiveFilters
-                    ? const Color(0xFFFF4458).withValues(alpha: 0.1)
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: controller.hasActiveFilters
-                      ? const Color(0xFFFF4458)
-                      : AppColors.borderLight,
-                  width: 1.5,
-                ),
-              ),
-              child: Stack(
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      Icons.tune_outlined,
-                      color: controller.hasActiveFilters
-                          ? const Color(0xFFFF4458)
-                          : AppColors.textSecondary,
-                      size: 20,
-                    ),
-                    onPressed: () => _showFilterDrawer(),
-                  ),
-                  if (controller.hasActiveFilters)
-                    Positioned(
-                      right: 8,
-                      top: 8,
-                      child: Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFFF4458),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            // 全球地图按钮
-            IconButton(
-              icon: const FaIcon(
-                FontAwesomeIcons.mapLocationDot,
-                color: AppColors.textSecondary,
-                size: 20,
-              ),
-              onPressed: () {
-                Get.to(() => const GlobalMapPage());
-              },
-            ),
-            // 排序
-            PopupMenuButton<String>(
-              icon: const Icon(Icons.sort_outlined,
-                  color: AppColors.textSecondary, size: 20),
-              onSelected: (value) {
-                setState(() {
-                  _sortBy = value;
-                });
-              },
-              itemBuilder: (context) {
-                final l10n = AppLocalizations.of(context)!;
-                return [
-                  PopupMenuItem(value: 'popular', child: Text(l10n.popular)),
-                  PopupMenuItem(value: 'cost', child: Text(l10n.cost)),
-                  PopupMenuItem(value: 'internet', child: Text(l10n.internet)),
-                  PopupMenuItem(value: 'safety', child: Text(l10n.safety)),
-                ];
-              },
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  // 显示筛选抽屉
-  void _showFilterDrawer() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _CityFilterDrawer(controller: controller),
-    );
+  @override
+  Future<void> onRouteResume() async {
+    await controller.loadInitialCities();
+    _syncFollowedStatusFromController();
   }
 
   @override
@@ -214,9 +114,22 @@ class _CityListPageState extends State<CityListPage> {
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: const Icon(FontAwesomeIcons.arrowLeft, color: AppColors.textPrimary),
           onPressed: () => Get.back(),
         ),
+        actions: [
+          // 全球地图按钮
+          IconButton(
+            icon: const FaIcon(
+              FontAwesomeIcons.mapLocationDot,
+              color: AppColors.textPrimary,
+              size: 20,
+            ),
+            onPressed: () {
+              Get.to(() => const GlobalMapPage());
+            },
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
           child: Container(
@@ -242,16 +155,6 @@ class _CityListPageState extends State<CityListPage> {
             children: [
               // 筛选栏
               _buildFilterBar(isMobile),
-
-              // 工具栏 (筛选/视图/排序)
-              Container(
-                color: Colors.white,
-                padding: EdgeInsets.symmetric(
-                  horizontal: isMobile ? 16 : 20,
-                  vertical: 12,
-                ),
-                child: _buildToolbar(isMobile),
-              ),
 
               // 城市列表
               Expanded(
@@ -280,22 +183,10 @@ class _CityListPageState extends State<CityListPage> {
               _buildSearchField(),
               const SizedBox(height: 12),
 
-              // 结果数量
+              // 筛选状态
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  // 结果计数
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
-                    child: Text(
-                      '${controller.cities.length} / ${controller.totalCitiesCount} ${l10n.citiesFound}',
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
                   Obx(() {
                     final hasFilters =
                         controller.hasActiveFilters || _searchQuery.isNotEmpty;
@@ -347,7 +238,7 @@ class _CityListPageState extends State<CityListPage> {
           ),
           child: Row(
             children: [
-              const Icon(Icons.search_outlined,
+              const Icon(FontAwesomeIcons.magnifyingGlass,
                   color: AppColors.textSecondary, size: 20),
               const SizedBox(width: 12),
               Expanded(
@@ -378,7 +269,8 @@ class _CityListPageState extends State<CityListPage> {
                     if (value.trim().isNotEmpty) {
                       controller.searchCities(value.trim());
                     } else {
-                      controller.loadInitialCities();
+                      // 搜索框为空时，清除所有筛选器
+                      controller.clearFilters();
                     }
                   },
                 ),
@@ -392,13 +284,14 @@ class _CityListPageState extends State<CityListPage> {
                       _searchQuery = '';
                       _searchController.clear();
                     });
-                    controller.loadInitialCities(); // 清除搜索,重新加载所有城市
+                    // 清除搜索和所有筛选器，重新加载默认数据
+                    controller.clearFilters();
                   },
                   borderRadius: BorderRadius.circular(4),
                   child: Padding(
                     padding: const EdgeInsets.all(4),
                     child: Icon(
-                      Icons.clear,
+                      FontAwesomeIcons.xmark,
                       size: 18,
                       color: AppColors.textSecondary,
                     ),
@@ -411,7 +304,8 @@ class _CityListPageState extends State<CityListPage> {
                   if (searchText.isNotEmpty) {
                     controller.searchCities(searchText);
                   } else {
-                    controller.loadInitialCities();
+                    // 搜索框为空时，清除所有筛选器
+                    controller.clearFilters();
                   }
                 },
                 borderRadius: BorderRadius.circular(6),
@@ -497,7 +391,11 @@ class _CityListPageState extends State<CityListPage> {
   }
 
   // 城市卡片
-  Widget _buildCityCard(Map<String, dynamic> city, bool isMobile) {
+  Widget _buildCityCard(City city, bool isMobile) {
+    // 调试日志
+    print(
+        '🏙️ City: ${city.name}, ReviewCount: ${city.reviewCount}, AverageCost: ${city.averageCost}, OverallScore: ${city.overallScore}');
+    
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -517,11 +415,12 @@ class _CityListPageState extends State<CityListPage> {
             context,
             MaterialPageRoute(
               builder: (context) => CityDetailPage(
-                cityId: city['id']?.toString() ?? city['city'],
-                cityName: city['city'],
-                cityImage: city['image'],
-                overallScore: (city['overall'] as num?)?.toDouble() ?? 0.0,
-                reviewCount: city['reviews'] ?? 0,
+                cityId: city.id,
+                cityName: city.name,
+                cityImage: city.imageUrl ??
+                    'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=400',
+                overallScore: city.overallScore ?? 0.0,
+                reviewCount: city.reviewCount ?? 0,
               ),
             ),
           );
@@ -538,25 +437,30 @@ class _CityListPageState extends State<CityListPage> {
                       const BorderRadius.vertical(top: Radius.circular(12)),
                   child: AspectRatio(
                     aspectRatio: 16 / 9,
-                    child: Image.network(
-                      city['image'],
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey[200],
-                          child:
-                              const Icon(Icons.image_not_supported, size: 48),
-                        );
-                      },
-                    ),
+                    child: city.imageUrl != null && city.imageUrl!.isNotEmpty
+                        ? Image.network(
+                            city.imageUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: Colors.grey[200],
+                                child: const Icon(FontAwesomeIcons.imagePortrait,
+                                    size: 48),
+                              );
+                            },
+                          )
+                        : Container(
+                            color: Colors.grey[200],
+                            child:
+                                const Icon(FontAwesomeIcons.imagePortrait, size: 48),
+                          ),
                   ),
                 ),
                 // 关注按钮
                 Positioned(
                   top: 12,
                   right: 12,
-                  child: _buildFollowButton(
-                      city['id']?.toString() ?? city['city']),
+                  child: _buildFollowButton(city),
                 ),
               ],
             ),
@@ -575,7 +479,7 @@ class _CityListPageState extends State<CityListPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              city['city'],
+                              city.name,
                               style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
@@ -585,11 +489,11 @@ class _CityListPageState extends State<CityListPage> {
                             const SizedBox(height: 4),
                             Row(
                               children: [
-                                const Icon(Icons.location_on,
+                                const Icon(FontAwesomeIcons.locationDot,
                                     size: 14, color: AppColors.textSecondary),
                                 const SizedBox(width: 4),
                                 Text(
-                                  city['country'],
+                                  city.country ?? '',
                                   style: const TextStyle(
                                     fontSize: 14,
                                     color: AppColors.textSecondary,
@@ -614,14 +518,13 @@ class _CityListPageState extends State<CityListPage> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             const Icon(
-                              Icons.star,
+                              FontAwesomeIcons.star,
                               size: 16,
                               color: Color(0xFFFF4458),
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              (city['overall'] as num?)?.toStringAsFixed(1) ??
-                                  '0.0',
+                              (city.overallScore ?? 0.0).toStringAsFixed(1),
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
@@ -642,25 +545,23 @@ class _CityListPageState extends State<CityListPage> {
                     runSpacing: 8,
                     children: [
                       _buildInfoChip(
-                        Icons.wb_sunny,
-                        '${_truncateToOneDecimal(city['temperature'] ?? 0)}°',
+                        FontAwesomeIcons.sun,
+                        '${_truncateToOneDecimal(city.temperature ?? 0)}°',
                         Colors.orange,
                       ),
+                      // 使用后端返回的真实平均花费数据
                       _buildInfoChip(
-                        Icons.wifi,
-                        '${city['internet'] ?? 0} Mbps',
-                        Colors.blue,
+                        FontAwesomeIcons.dollarSign,
+                        '${city.averageCost != null && city.averageCost! > 0 ? city.averageCost!.toInt() : 0}',
+                        city.averageCost != null && city.averageCost! > 0
+                            ? Colors.green
+                            : Colors.grey,
                       ),
-                      _buildInfoChip(
-                        Icons.attach_money,
-                        '\$${city['cost'] ?? 0}',
-                        Colors.green,
-                      ),
-                      if (city['aqi'] != null)
+                      if (city.airQualityIndex != null)
                         _buildInfoChip(
-                          Icons.air,
-                          'AQI ${city['aqi']}',
-                          _getAqiColor(city['aqi']),
+                          FontAwesomeIcons.wind,
+                          'AQI ${city.airQualityIndex}',
+                          _getAqiColor(city.airQualityIndex!),
                         ),
                     ],
                   ),
@@ -726,7 +627,7 @@ class _CityListPageState extends State<CityListPage> {
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
-                    Icons.error_outline,
+                    FontAwesomeIcons.circleExclamation,
                     size: 64,
                     color: Color(0xFFFF4458),
                   ),
@@ -742,8 +643,8 @@ class _CityListPageState extends State<CityListPage> {
                 ),
                 const SizedBox(height: 12),
                 Obx(() => Text(
-                      controller.errorMessage.value.isNotEmpty
-                          ? controller.errorMessage.value
+                      controller.errorMessage.value?.isNotEmpty == true
+                          ? controller.errorMessage.value!
                           : l10n.networkError,
                       style: const TextStyle(
                         fontSize: 14,
@@ -756,7 +657,7 @@ class _CityListPageState extends State<CityListPage> {
                   onPressed: () {
                     controller.loadInitialCities();
                   },
-                  icon: const Icon(Icons.refresh, size: 18),
+                  icon: const Icon(FontAwesomeIcons.arrowsRotate, size: 18),
                   label: Text(l10n.retry),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFF4458),
@@ -793,7 +694,7 @@ class _CityListPageState extends State<CityListPage> {
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
-                    Icons.search_off,
+                    FontAwesomeIcons.magnifyingGlass,
                     size: 64,
                     color: Color(0xFFFF4458),
                   ),
@@ -819,7 +720,7 @@ class _CityListPageState extends State<CityListPage> {
                 const SizedBox(height: 24),
                 ElevatedButton.icon(
                   onPressed: _clearFilters,
-                  icon: const Icon(Icons.refresh, size: 18),
+                  icon: const Icon(FontAwesomeIcons.arrowsRotate, size: 18),
                   label: Text(l10n.clearFilters),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFF4458),
@@ -845,11 +746,11 @@ class _CityListPageState extends State<CityListPage> {
   }
 
   // 构建关注按钮
-  Widget _buildFollowButton(String cityId) {
-    final isFollowed = _followedCities[cityId] ?? false;
+  Widget _buildFollowButton(City city) {
+    final isFollowed = _isCityFollowed(city);
 
     return GestureDetector(
-      onTap: () => _toggleFollow(cityId),
+      onTap: () => _toggleFollow(city),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
@@ -869,7 +770,7 @@ class _CityListPageState extends State<CityListPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              isFollowed ? Icons.favorite : Icons.favorite_border,
+              isFollowed ? FontAwesomeIcons.heart : FontAwesomeIcons.heart,
               size: 16,
               color: isFollowed ? Colors.white : const Color(0xFF8B5CF6),
             ),
@@ -888,8 +789,13 @@ class _CityListPageState extends State<CityListPage> {
     );
   }
 
+  bool _isCityFollowed(City city) {
+    return _followedCities[city.id] ?? city.isFavorite;
+  }
+
   // 切换关注状态
-  void _toggleFollow(String cityId) async {
+  void _toggleFollow(City city) async {
+    final cityId = city.id;
     if (_isLoadingFollowedCities) {
       return; // 正在加载时不允许操作
     }
@@ -902,19 +808,24 @@ class _CityListPageState extends State<CityListPage> {
     });
 
     try {
-      final success = await _favoriteApiService.toggleFavorite(cityId);
+      // 使用 CityStateController 的 toggleCityFavorite 方法
+      final result = await controller.toggleCityFavorite(cityId);
 
-      if (success) {
-        final isNowFollowed = _followedCities[cityId] ?? false;
-        AppToast.success(isNowFollowed ? '已关注该城市' : '已取消关注');
-        print('✅ 城市关注状态切换成功: cityId=$cityId, followed=$isNowFollowed');
-      } else {
-        // 操作失败,恢复之前的状态
-        setState(() {
-          _followedCities[cityId] = previousState;
-        });
-        AppToast.error('操作失败，请重试');
-      }
+      result.fold(
+        onSuccess: (_) {
+          final isNowFollowed = _followedCities[cityId] ?? false;
+          AppToast.success(isNowFollowed ? '已关注该城市' : '已取消关注');
+          print('✅ 城市关注状态切换成功: cityId=$cityId, followed=$isNowFollowed');
+        },
+        onFailure: (error) {
+          // 操作失败,恢复之前的状态
+          setState(() {
+            _followedCities[cityId] = previousState;
+          });
+          AppToast.error('操作失败，请重试');
+          print('❌ 切换关注状态失败: $error');
+        },
+      );
     } catch (e) {
       print('❌ 切换关注状态失败: $e');
       // 发生错误,恢复之前的状态
@@ -925,20 +836,38 @@ class _CityListPageState extends State<CityListPage> {
     }
   }
 
+  void _syncFollowedStatusFromController() {
+    if (!mounted) return;
+    setState(() {
+      for (final city in controller.cities) {
+        _followedCities[city.id] = city.isFavorite;
+      }
+    });
+  }
+
   /// 加载用户已关注的城市列表
   Future<void> _loadFollowedCities() async {
     if (_isLoadingFollowedCities) return;
 
     _isLoadingFollowedCities = true;
     try {
-      final cityIds = await _favoriteApiService.getUserFavoriteCityIds();
-      setState(() {
-        _followedCities.clear();
-        for (var cityId in cityIds) {
-          _followedCities[cityId] = true;
-        }
-      });
-      print('✅ 已加载 ${cityIds.length} 个关注的城市');
+      // 使用 CityStateController 的 loadUserFavoriteCityIds 方法
+      final result = await controller.loadUserFavoriteCityIds();
+
+      result.fold(
+        onSuccess: (cityIds) {
+          setState(() {
+            _followedCities.clear();
+            for (var cityId in cityIds) {
+              _followedCities[cityId] = true;
+            }
+          });
+          print('✅ 已加载 ${cityIds.length} 个关注的城市');
+        },
+        onFailure: (error) {
+          print('❌ 加载关注城市列表失败: $error');
+        },
+      );
     } catch (e) {
       print('❌ 加载关注城市列表失败: $e');
     } finally {
@@ -948,8 +877,9 @@ class _CityListPageState extends State<CityListPage> {
 }
 
 // 城市筛选抽屉
+// ignore: unused_element
 class _CityFilterDrawer extends StatelessWidget {
-  final CityListController controller;
+  final CityStateController controller;
 
   const _CityFilterDrawer({required this.controller});
 
@@ -1000,7 +930,7 @@ class _CityFilterDrawer extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close),
+                      icon: const Icon(FontAwesomeIcons.xmark),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],

@@ -1,12 +1,12 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/routes/app_routes.dart';
+import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import '../config/app_colors.dart';
-import '../generated/app_localizations.dart';
-import '../routes/app_routes.dart';
-import '../services/auth_service.dart';
-import '../services/http_service.dart';
-import '../widgets/app_toast.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -24,7 +24,6 @@ class _RegisterPageState extends State<RegisterPage> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _usernameController = TextEditingController();
-  final _authService = AuthService();
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -58,41 +57,50 @@ class _RegisterPageState extends State<RegisterPage> {
       try {
         final l10n = AppLocalizations.of(context)!;
 
-        // 调用后端注册 API
-        // 注意：后�?RegisterDto 不需�?confirmPassword 字段
-        final response = await _authService.register(
-          username: _usernameController.text.trim(),
+        // 调用 AuthStateController 注册
+        final authController = Get.find<AuthStateController>();
+        final success = await authController.register(
+          name: _usernameController.text.trim(),
           email: _emailController.text.trim(),
           password: _passwordController.text,
           confirmPassword: _confirmPasswordController.text,
         );
 
-        // 注册成功 - response 包含 {accessToken, refreshToken, user}
-        print('�?注册成功: ${response['user']}');
+        if (success) {
+          // 注册成功
+          final user = authController.currentUser.value;
+          print('✅ 注册成功: ${user?.name}');
 
-        AppToast.success(
-          l10n.welcomeToCommunity,
-          title: l10n.success,
-        );
+          AppToast.success(
+            l10n.welcomeToCommunity,
+            title: l10n.success,
+          );
 
-        // 延迟一下让用户看到成功提示
-        await Future.delayed(const Duration(milliseconds: 500));
+          // 延迟一下让用户看到成功提示
+          await Future.delayed(const Duration(milliseconds: 500));
 
-        // 注册成功后跳转到登录页面
-        Get.offAllNamed('/login');
-        
+          // 注册成功后跳转到主页 (已自动登录)
+          Get.offAllNamed('/');
+        } else {
+          // 注册失败
+          print('❌ 注册失败');
+          AppToast.error(
+            '注册失败,请检查输入信息',
+            title: '注册失败',
+          );
+        }
       } on HttpException catch (e) {
-        // HTTP 异常 - 显示后端返回的错误信�?
-        print('�?注册失败 (HttpException): ${e.message}');
+        // HTTP 异常 - 显示后端返回的错误信息
+        print('❌ 注册失败 (HttpException): ${e.message}');
         AppToast.error(
           e.message,
           title: '注册失败',
         );
       } catch (e) {
         // 其他错误
-        print('�?注册错误: $e');
+        print('❌ 注册错误: $e');
         AppToast.error(
-          '注册过程中发生错误，请稍后重�?',
+          '注册过程中发生错误，请稍后重试',
           title: '错误',
         );
       } finally {
@@ -121,7 +129,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 children: [
                   const SizedBox(height: 40),
 
-                  // Logo 和标�?
+                  // Logo 和标题
                   Center(
                     child: Column(
                       children: [
@@ -135,7 +143,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
-                            Icons.travel_explore,
+                            FontAwesomeIcons.earthAmericas,
                             size: 40,
                             color: RegisterPage.nomadsRed,
                           ),
@@ -153,7 +161,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         const SizedBox(height: 12),
 
-                        // 副标�?
+                        // 副标题
                         Text(
                           l10n.joinGlobalCommunity,
                           textAlign: TextAlign.center,
@@ -169,13 +177,13 @@ class _RegisterPageState extends State<RegisterPage> {
 
                   const SizedBox(height: 48),
 
-                  // 用户名输�?
+                  // 用户名输入
                   TextFormField(
                     controller: _usernameController,
                     decoration: InputDecoration(
                       labelText: l10n.username,
                       hintText: l10n.chooseUsername,
-                      prefixIcon: const Icon(Icons.person_outline),
+                      prefixIcon: const Icon(FontAwesomeIcons.user),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -211,7 +219,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     decoration: InputDecoration(
                       labelText: l10n.email,
                       hintText: l10n.email,
-                      prefixIcon: const Icon(Icons.email_outlined),
+                      prefixIcon: const Icon(FontAwesomeIcons.envelope),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -247,12 +255,12 @@ class _RegisterPageState extends State<RegisterPage> {
                     decoration: InputDecoration(
                       labelText: l10n.password,
                       hintText: l10n.createPassword,
-                      prefixIcon: const Icon(Icons.lock_outline),
+                      prefixIcon: const Icon(FontAwesomeIcons.lock),
                       suffixIcon: IconButton(
                         icon: Icon(
                           _obscurePassword
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined,
+                              ? FontAwesomeIcons.eye
+                              : FontAwesomeIcons.eyeSlash,
                         ),
                         onPressed: () {
                           setState(() {
@@ -295,12 +303,12 @@ class _RegisterPageState extends State<RegisterPage> {
                     decoration: InputDecoration(
                       labelText: l10n.confirmPassword,
                       hintText: l10n.reenterPassword,
-                      prefixIcon: const Icon(Icons.lock_outline),
+                      prefixIcon: const Icon(FontAwesomeIcons.lock),
                       suffixIcon: IconButton(
                         icon: Icon(
                           _obscureConfirmPassword
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined,
+                              ? FontAwesomeIcons.eye
+                              : FontAwesomeIcons.eyeSlash,
                         ),
                         onPressed: () {
                           setState(() {
@@ -426,7 +434,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                   const SizedBox(height: 24),
 
-                  // 分隔�?
+                  // 分隔线
                   Row(
                     children: [
                       Expanded(child: Divider(color: Colors.grey.shade300)),
@@ -446,50 +454,100 @@ class _RegisterPageState extends State<RegisterPage> {
 
                   const SizedBox(height: 24),
 
-                  // 社交登录按钮
+                  // 社交登录按钮 - 第一行
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      // Google 登录
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            AppToast.info(
-                              l10n.googleAuthComingSoon,
-                              title: l10n.googleSignIn,
-                            );
-                          },
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            side: BorderSide(color: Colors.grey.shade300),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          icon: const Icon(Icons.g_mobiledata, size: 24),
-                          label: const Text('Google'),
-                        ),
+                      _buildSocialLoginButton(
+                        onPressed: () {
+                          AppToast.info(
+                            l10n.googleAuthComingSoon,
+                            title: l10n.googleSignIn,
+                          );
+                        },
+                        icon: FontAwesomeIcons.google,
+                        color: const Color(0xFFDB4437), // Google Red
+                        label: 'Google',
                       ),
-                      const SizedBox(width: 12),
-                      // Apple 登录
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            AppToast.info(
-                              l10n.appleAuthComingSoon,
-                              title: l10n.appleSignIn,
-                            );
-                          },
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            side: BorderSide(color: Colors.grey.shade300),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          icon: const Icon(Icons.apple, size: 24),
-                          label: const Text('Apple'),
-                        ),
+                      _buildSocialLoginButton(
+                        onPressed: () {
+                          AppToast.info(
+                            l10n.appleAuthComingSoon,
+                            title: l10n.appleSignIn,
+                          );
+                        },
+                        icon: FontAwesomeIcons.apple,
+                        color: Colors.black,
+                        label: 'Apple',
                       ),
+                      _buildSocialLoginButton(
+                        onPressed: () {
+                          AppToast.info('WeChat Sign In', title: 'WeChat');
+                        },
+                        icon: FontAwesomeIcons.weixin, // WeChat icon
+                        color: const Color(0xFF09BB07), // WeChat Green
+                        label: 'WeChat',
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // 社交登录按钮 - 第二行
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildSocialLoginButton(
+                        onPressed: () {
+                          AppToast.info('Twitter Sign In', title: 'Twitter');
+                        },
+                        icon: FontAwesomeIcons.xTwitter, // X/Twitter icon
+                        color: Colors.black,
+                        label: 'Twitter',
+                      ),
+                      _buildSocialLoginButton(
+                        onPressed: () {
+                          AppToast.info('Alipay Sign In', title: 'Alipay');
+                        },
+                        icon: FontAwesomeIcons.alipay,
+                        color: const Color(0xFF1677FF), // Alipay Blue
+                        label: 'Alipay',
+                      ),
+                      _buildSocialLoginButton(
+                        onPressed: () {
+                          AppToast.info('QQ Sign In', title: 'QQ');
+                        },
+                        icon: FontAwesomeIcons.qq,
+                        color: const Color(0xFF12B7F5), // QQ Blue
+                        label: 'QQ',
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // 社交登录按钮 - 第三行
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildSocialLoginButton(
+                        onPressed: () {
+                          AppToast.info('TikTok Sign In', title: 'TikTok');
+                        },
+                        icon: FontAwesomeIcons.tiktok,
+                        color: Colors.black,
+                        label: 'TikTok',
+                      ),
+                      _buildSocialLoginButton(
+                        onPressed: () {
+                          AppToast.info('Phone Sign In', title: 'Phone');
+                        },
+                        icon: FontAwesomeIcons.mobile,
+                        color: const Color(0xFF4CAF50), // Green for phone
+                        label: 'Phone',
+                      ),
+                      // 占位,保持对齐
+                      const SizedBox(width: 100),
                     ],
                   ),
 
@@ -629,5 +687,44 @@ class _RegisterPageState extends State<RegisterPage> {
       ],
     );
   }
-}
 
+  Widget _buildSocialLoginButton({
+    required VoidCallback onPressed,
+    required IconData icon,
+    required Color color,
+    required String label,
+  }) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: 100,
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FaIcon(
+              icon,
+              size: 28,
+              color: color,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade700,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

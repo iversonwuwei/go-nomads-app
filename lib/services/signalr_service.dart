@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:signalr_netcore/signalr_client.dart';
 
-import '../models/async_task_models.dart';
+import 'package:df_admin_mobile/features/async_task/domain/entities/async_task.dart';
+import 'package:df_admin_mobile/features/async_task/infrastructure/models/async_task_dto.dart';
+import 'token_storage_service.dart';
 
 /// SignalR 实时通知服务
 /// 管理与后端 SignalR Hub 的连接,接收任务进度和完成通知
@@ -14,14 +16,14 @@ class SignalRService {
   bool _isConnected = false;
 
   // 事件流控制器
-  final _taskProgressController = StreamController<TaskStatus>.broadcast();
-  final _taskCompletedController = StreamController<TaskStatus>.broadcast();
-  final _taskFailedController = StreamController<TaskStatus>.broadcast();
+  final _taskProgressController = StreamController<AsyncTask>.broadcast();
+  final _taskCompletedController = StreamController<AsyncTask>.broadcast();
+  final _taskFailedController = StreamController<AsyncTask>.broadcast();
 
   // 事件流
-  Stream<TaskStatus> get taskProgressStream => _taskProgressController.stream;
-  Stream<TaskStatus> get taskCompletedStream => _taskCompletedController.stream;
-  Stream<TaskStatus> get taskFailedStream => _taskFailedController.stream;
+  Stream<AsyncTask> get taskProgressStream => _taskProgressController.stream;
+  Stream<AsyncTask> get taskCompletedStream => _taskCompletedController.stream;
+  Stream<AsyncTask> get taskFailedStream => _taskFailedController.stream;
 
   SignalRService._internal();
 
@@ -35,17 +37,22 @@ class SignalRService {
     }
 
     try {
-      // 构建 Hub URL
-      final hubUrl = '$baseUrl/hubs/notifications';
+      // 获取认证 token
+      final tokenService = TokenStorageService();
+      final token = await tokenService.getAccessToken();
+
+      // 构建 Hub URL - 使用 ai-progress hub
+      final hubUrl = '$baseUrl/hubs/ai-progress';
       print('🔌 正在连接 SignalR Hub: $hubUrl');
 
-      // 创建连接
+      // 创建连接（带认证）
       _hubConnection = HubConnectionBuilder()
           .withUrl(
             hubUrl,
             options: HttpConnectionOptions(
               skipNegotiation: false,
               transport: HttpTransportType.WebSockets,
+              accessTokenFactory: () async => token ?? '', // 添加认证 token
             ),
           )
           .withAutomaticReconnect()
@@ -84,51 +91,103 @@ class SignalRService {
 
   /// 注册 SignalR 事件处理器
   void _registerEventHandlers() {
+    print('🔧 注册 SignalR 事件处理器...');
+
     // TaskProgress: 任务进度更新
     _hubConnection?.on('TaskProgress', (arguments) {
-      if (arguments == null || arguments.isEmpty) return;
+      print('🎯 收到 TaskProgress 事件！');
+      print('   参数数量: ${arguments?.length ?? 0}');
+
+      if (arguments == null || arguments.isEmpty) {
+        print('❌ TaskProgress 参数为空');
+        return;
+      }
 
       try {
         final data = arguments[0] as Map<String, dynamic>;
-        final taskStatus = TaskStatus.fromJson(data);
+        print('📊 原始 TaskProgress JSON数据:');
+        print('   完整JSON: $data');
+        print('   progress: ${data['progress'] ?? data['Progress']}');
+        print('   completed (小写): ${data['completed']}');
+        print('   Completed (大写): ${data['Completed']}');
 
-        print('📊 收到任务进度: ${taskStatus.taskId} - ${taskStatus.progress}%');
-        _taskProgressController.add(taskStatus);
+        final taskDto = AsyncTaskDto.fromJson(data);
+        final task = taskDto.toDomain();
+
+        print('📊 收到任务进度: ${task.taskId} - ${task.progress.percentage}%');
+        print('   消息: ${task.progress.message}');
+        print('   ✅ completed字段: ${task.progress.completed}');
+        _taskProgressController.add(task);
       } catch (e) {
         print('❌ 解析 TaskProgress 失败: $e');
+        print('   原始数据: ${arguments[0]}');
       }
     });
 
     // TaskCompleted: 任务完成
     _hubConnection?.on('TaskCompleted', (arguments) {
-      if (arguments == null || arguments.isEmpty) return;
+      print('🎯 收到 TaskCompleted 事件！');
+      print('   参数数量: ${arguments?.length ?? 0}');
+
+      if (arguments == null || arguments.isEmpty) {
+        print('❌ TaskCompleted 参数为空');
+        return;
+      }
 
       try {
-        final data = arguments[0] as Map<String, dynamic>;
-        final taskStatus = TaskStatus.fromJson(data);
+        print('📦 收到 TaskCompleted 事件，原始数据:');
+        print('   arguments 长度: ${arguments.length}');
+        if (arguments.isNotEmpty) {
+          final data = arguments[0] as Map<String, dynamic>;
+          print('   原始 JSON keys: ${data.keys.toList()}');
+          print(
+              '   完整数据: ${data.toString().substring(0, data.toString().length > 500 ? 500 : data.toString().length)}...');
 
-        print(
-            '✅ 收到任务完成通知: ${taskStatus.taskId} - PlanId: ${taskStatus.planId}');
-        _taskCompletedController.add(taskStatus);
-      } catch (e) {
+          final taskDto = AsyncTaskDto.fromJson(data);
+          final task = taskDto.toDomain();
+
+          print('✅ 收到任务完成通知: ${task.taskId}');
+          print('   - planId: ${task.result?.planId}');
+          print('   - guideId: ${task.result?.guideId}');
+          print('   - hasRawData: ${task.result?.hasRawData}');
+          if (task.result?.rawData != null) {
+            print('   - rawData keys: ${task.result!.rawData!.keys.toList()}');
+          }
+
+          _taskCompletedController.add(task);
+        }
+      } catch (e, stackTrace) {
         print('❌ 解析 TaskCompleted 失败: $e');
+        print('   StackTrace: $stackTrace');
+        print('   原始数据: ${arguments[0]}');
       }
     });
 
     // TaskFailed: 任务失败
     _hubConnection?.on('TaskFailed', (arguments) {
-      if (arguments == null || arguments.isEmpty) return;
+      print('🎯 收到 TaskFailed 事件！');
+      print('   参数数量: ${arguments?.length ?? 0}');
+
+      if (arguments == null || arguments.isEmpty) {
+        print('❌ TaskFailed 参数为空');
+        return;
+      }
 
       try {
+        print('❌ 原始 TaskFailed 数据: ${arguments[0]}');
         final data = arguments[0] as Map<String, dynamic>;
-        final taskStatus = TaskStatus.fromJson(data);
+        final taskDto = AsyncTaskDto.fromJson(data);
+        final task = taskDto.toDomain();
 
-        print('❌ 收到任务失败通知: ${taskStatus.taskId} - ${taskStatus.error}');
-        _taskFailedController.add(taskStatus);
+        print('❌ 收到任务失败通知: ${task.taskId} - ${task.error}');
+        _taskFailedController.add(task);
       } catch (e) {
         print('❌ 解析 TaskFailed 失败: $e');
+        print('   原始数据: ${arguments[0]}');
       }
     });
+
+    print('✅ SignalR 事件处理器注册完成');
   }
 
   /// 订阅任务通知

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-import '../models/user_profile_models.dart';
-import '../services/database/user_profile_dao.dart';
-import '../widgets/app_toast.dart';
+import 'package:df_admin_mobile/features/user_profile/infrastructure/models/user_profile_dto.dart';
+import 'package:df_admin_mobile/services/database/user_profile_dao.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 
 /// 兴趣编辑页面
 class EditInterestsPage extends StatefulWidget {
@@ -150,10 +151,10 @@ class _EditInterestsPageState extends State<EditInterestsPage> {
         AppToast.success('已移除兴趣');
       } else {
         // 添加兴趣
-        final interest = UserInterest(
+        final interest = UserInterestDto(
           accountId: widget.accountId,
           interestName: interestName,
-          createdAt: DateTime.now().millisecondsSinceEpoch.toString(),
+          createdAt: DateTime.now().toIso8601String(),
         );
         await _userProfileDao.addInterest(interest);
         setState(() {
@@ -180,10 +181,10 @@ class _EditInterestsPageState extends State<EditInterestsPage> {
     }
 
     try {
-      final interest = UserInterest(
+      final interest = UserInterestDto(
         accountId: widget.accountId,
         interestName: interestName,
-        createdAt: DateTime.now().millisecondsSinceEpoch.toString(),
+        createdAt: DateTime.now().toIso8601String(),
       );
       await _userProfileDao.addInterest(interest);
       setState(() {
@@ -227,7 +228,7 @@ class _EditInterestsPageState extends State<EditInterestsPage> {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.favorite, color: Colors.green),
+                            const Icon(FontAwesomeIcons.heart, color: Colors.green),
                             const SizedBox(width: 8),
                             Text(
                               '已选择 ${_selectedInterests.length} 项兴趣',
@@ -245,7 +246,7 @@ class _EditInterestsPageState extends State<EditInterestsPage> {
                           children: _selectedInterests.map((interest) {
                             return Chip(
                               label: Text(interest),
-                              deleteIcon: const Icon(Icons.close, size: 18),
+                              deleteIcon: const Icon(FontAwesomeIcons.xmark, size: 18),
                               onDeleted: () => _toggleInterest(interest),
                               backgroundColor: Colors.green.shade100,
                             );
@@ -266,7 +267,7 @@ class _EditInterestsPageState extends State<EditInterestsPage> {
                           decoration: const InputDecoration(
                             labelText: '添加自定义兴趣',
                             border: OutlineInputBorder(),
-                            prefixIcon: Icon(Icons.add_circle_outline),
+                            prefixIcon: Icon(FontAwesomeIcons.circlePlus),
                             hintText: '输入兴趣名称',
                           ),
                           onSubmitted: (_) => _addCustomInterest(),

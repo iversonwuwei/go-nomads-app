@@ -1,7 +1,7 @@
+import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import '../generated/app_localizations.dart';
 
 /// 在任意页面中使用国际化的示例辅助类
 class L10nHelper {
@@ -91,7 +91,7 @@ class L10nExampleWidget extends StatelessWidget {
         title: Text(l10n.appTitle),
         actions: [
           IconButton(
-            icon: const Icon(Icons.language),
+            icon: const Icon(FontAwesomeIcons.globe),
             onPressed: () {
               Get.toNamed('/language-settings');
             },

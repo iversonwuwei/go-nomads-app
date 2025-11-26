@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-import '../models/hotel_model.dart';
-import '../services/database/hotel_dao.dart';
-import '../widgets/app_toast.dart';
+import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/hotel/domain/entities/hotel.dart';
+import 'package:df_admin_mobile/features/hotel/infrastructure/repositories/hotel_repository.dart';
+import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'room_type_list_page.dart';
 
 /// 酒店列表页面（简化版，用于城市详情页的Hotels标签）
@@ -24,18 +27,19 @@ class HotelListPage extends StatefulWidget {
 
 class _HotelListPageState extends State<HotelListPage> {
   final RxBool _isLoading = false.obs;
-  final RxList<HotelModel> _hotels = <HotelModel>[].obs;
+  final RxList<Hotel> _hotels = <Hotel>[].obs;
 
   // 搜索条件
   final RxString _searchQuery = ''.obs;
 
-  final HotelDao _hotelDao = HotelDao();
+  final HotelRepository _hotelRepository = HotelRepository(HttpService());
   final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _loadHotels();
+    // 异步加载数据,不阻塞页面显示
+    Future.microtask(() => _loadHotels());
   }
 
   @override
@@ -50,55 +54,50 @@ class _HotelListPageState extends State<HotelListPage> {
     try {
       print(
           '🏨 HotelListPage - cityId: ${widget.cityId}, cityName: ${widget.cityName}');
-      List<Map<String, dynamic>> hotelsData;
 
-      // 优先使用城市名称查询（更可靠）
-      if (widget.cityName != null && widget.cityName!.isNotEmpty) {
-        print('🏨 正在加载城市 "${widget.cityName}" 的酒店...');
-        hotelsData = await _hotelDao.getHotelsByCityName(widget.cityName!);
-        print('🏨 找到 ${hotelsData.length} 个酒店');
+      List<Hotel> hotels = [];
 
-        // 如果有搜索查询，在城市酒店中过滤
-        if (_searchQuery.value.isNotEmpty) {
-          final query = _searchQuery.value.toLowerCase();
-          hotelsData = hotelsData.where((hotel) {
-            final name = (hotel['name'] as String).toLowerCase();
-            final description =
-                (hotel['description'] as String? ?? '').toLowerCase();
-            return name.contains(query) || description.contains(query);
-          }).toList();
-        }
-      } else if (widget.cityId != null) {
-        // 备用方案：使用城市ID查询
+      // 如果有城市ID，加载该城市的酒店
+      if (widget.cityId != null) {
         print('🏨 正在加载城市 ID ${widget.cityId} 的酒店...');
-        hotelsData = await _hotelDao.getHotelsByCity(widget.cityId!);
-        print('🏨 找到 ${hotelsData.length} 个酒店');
+        final result =
+            await _hotelRepository.getHotelsByCity(widget.cityId.toString());
 
-        // 如果有搜索查询，在城市酒店中过滤
-        if (_searchQuery.value.isNotEmpty) {
-          final query = _searchQuery.value.toLowerCase();
-          hotelsData = hotelsData.where((hotel) {
-            final name = (hotel['name'] as String).toLowerCase();
-            final description =
-                (hotel['description'] as String? ?? '').toLowerCase();
-            return name.contains(query) || description.contains(query);
-          }).toList();
-        }
-      } else if (_searchQuery.value.isNotEmpty) {
-        // 全局搜索（独立页面使用）
-        print('🏨 全局搜索酒店: ${_searchQuery.value}');
-        hotelsData = await _hotelDao.searchHotels(_searchQuery.value);
+        result.fold(
+          onSuccess: (data) {
+            hotels = data;
+            print('🏨 找到 ${hotels.length} 个酒店');
+          },
+          onFailure: (exception) {
+            print('❌ 加载酒店失败: ${exception.message}');
+            AppToast.error('加载酒店失败');
+          },
+        );
       } else {
-        // 加载所有（独立页面使用）
-        print('🏨 加载所有酒店（cityId 和 cityName 都为 null）');
-        hotelsData = await _hotelDao.getAllHotels();
-        print('🏨 总共找到 ${hotelsData.length} 个酒店');
+        // 加载所有酒店
+        final result = await _hotelRepository.getHotels();
+
+        result.fold(
+          onSuccess: (data) {
+            hotels = data;
+            print('🏨 找到 ${hotels.length} 个酒店');
+          },
+          onFailure: (exception) {
+            print('❌ 加载酒店失败: ${exception.message}');
+            AppToast.error('加载酒店失败');
+          },
+        );
       }
 
-      // 转换为模型 - 使用 fromMap 方法正确处理类型转换
-      var hotels = hotelsData.map((data) {
-        return HotelModel.fromMap(data);
-      }).toList();
+      // 如果有搜索查询，过滤结果
+      if (_searchQuery.value.isNotEmpty) {
+        final query = _searchQuery.value.toLowerCase();
+        hotels = hotels.where((hotel) {
+          final name = hotel.name.toLowerCase();
+          final description = hotel.description.toLowerCase();
+          return name.contains(query) || description.contains(query);
+        }).toList();
+      }
 
       // 按评分排序
       hotels.sort((a, b) => b.rating.compareTo(a.rating));
@@ -131,7 +130,7 @@ class _HotelListPageState extends State<HotelListPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.hotel_outlined, size: 48.w, color: Colors.grey),
+                    Icon(FontAwesomeIcons.hotel, size: 48.w, color: Colors.grey),
                     SizedBox(height: 12.h),
                     Text(
                       'No hotels found',
@@ -166,10 +165,10 @@ class _HotelListPageState extends State<HotelListPage> {
         controller: _searchController,
         decoration: InputDecoration(
           hintText: 'Search hotels...',
-          prefixIcon: const Icon(Icons.search),
+          prefixIcon: const Icon(FontAwesomeIcons.magnifyingGlass),
           suffixIcon: Obx(() => _searchQuery.value.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.clear),
+                  icon: const Icon(FontAwesomeIcons.xmark),
                   onPressed: () {
                     _searchController.clear();
                     _searchQuery.value = '';
@@ -192,7 +191,7 @@ class _HotelListPageState extends State<HotelListPage> {
   }
 
   // 酒店卡片
-  Widget _buildHotelCard(HotelModel hotel) {
+  Widget _buildHotelCard(Hotel hotel) {
     return GestureDetector(
       onTap: () {
         // 跳转到房型列表页面
@@ -222,7 +221,7 @@ class _HotelListPageState extends State<HotelListPage> {
                     return Container(
                       height: 200.h,
                       color: Colors.grey[300],
-                      child: const Icon(Icons.hotel, size: 64),
+                      child: const Icon(FontAwesomeIcons.hotel, size: 64),
                     );
                   },
                 ),
@@ -240,7 +239,7 @@ class _HotelListPageState extends State<HotelListPage> {
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.star, size: 16.w, color: Colors.white),
+                          Icon(FontAwesomeIcons.star, size: 16.w, color: Colors.white),
                           SizedBox(width: 4.w),
                           Text(
                             'Featured',
@@ -299,7 +298,7 @@ class _HotelListPageState extends State<HotelListPage> {
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.star, size: 14.w, color: Colors.white),
+                            Icon(FontAwesomeIcons.star, size: 14.w, color: Colors.white),
                             SizedBox(width: 4.w),
                             Text(
                               hotel.rating.toStringAsFixed(1),

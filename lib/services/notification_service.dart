@@ -12,12 +12,12 @@ class NotificationService extends GetxService {
   static const String _channelName = 'Guide Generation';
   static const String _channelDescription =
       'Notifications for guide generation progress';
+  static const String _androidIcon = '@mipmap/go_nomads';
 
   /// 初始化通知服务
   Future<NotificationService> init() async {
     // Android 初始化配置
-    const androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(_androidIcon);
 
     // iOS 初始化配置
     const iosSettings = DarwinInitializationSettings(
@@ -72,6 +72,7 @@ class NotificationService extends GetxService {
       channelDescription: _channelDescription,
       importance: Importance.low,
       priority: Priority.low,
+      icon: 'go_nomads',
       ongoing: true, // 持续显示,不可滑动删除
       showProgress: true,
       maxProgress: 100,
@@ -109,6 +110,7 @@ class NotificationService extends GetxService {
       channelDescription: _channelDescription,
       importance: Importance.high,
       priority: Priority.high,
+      icon: 'go_nomads',
       playSound: true,
       enableVibration: true,
     );
@@ -145,6 +147,7 @@ class NotificationService extends GetxService {
       channelDescription: _channelDescription,
       importance: Importance.high,
       priority: Priority.high,
+      icon: 'go_nomads',
       playSound: true,
       enableVibration: true,
     );

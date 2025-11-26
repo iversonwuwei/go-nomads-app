@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../generated/app_localizations.dart';
-import '../models/innovation_project_model.dart';
-import '../models/user_model.dart';
+import 'package:df_admin_mobile/features/innovation_project/domain/entities/innovation_project.dart';
+import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'direct_chat_page.dart';
 
 /// Innovation Project Detail Page
@@ -60,7 +61,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
             pinned: true,
             backgroundColor: const Color(0xFF8B5CF6),
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              icon: const Icon(FontAwesomeIcons.arrowLeft, color: Colors.white),
               onPressed: () => Navigator.pop(context),
             ),
             flexibleSpace: FlexibleSpaceBar(
@@ -78,18 +79,18 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                   ],
                 ),
               ),
-              background: widget.project.imageUrl != null
+              background: widget.project.userAvatar != null
                   ? Stack(
                       fit: StackFit.expand,
                       children: [
                         Image.network(
-                          widget.project.imageUrl!,
+                          widget.project.userAvatar!,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
                             return Container(
                               color: const Color(0xFF8B5CF6),
                               child: const Icon(
-                                Icons.lightbulb,
+                                FontAwesomeIcons.lightbulb,
                                 size: 80,
                                 color: Colors.white,
                               ),
@@ -113,7 +114,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                   : Container(
                       color: const Color(0xFF8B5CF6),
                       child: const Icon(
-                        Icons.lightbulb,
+                        FontAwesomeIcons.lightbulb,
                         size: 80,
                         color: Colors.white,
                       ),
@@ -128,7 +129,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
               delegate: SliverChildListDelegate([
                 // 1. 一句话定位
                 _buildSection(
-                  icon: Icons.rocket_launch,
+                  icon: FontAwesomeIcons.rocket,
                   title: l10n.elevatorPitch,
                   content: widget.project.elevatorPitch,
                   color: const Color(0xFF8B5CF6),
@@ -138,7 +139,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
 
                 // 2. 要解决的问题
                 _buildSection(
-                  icon: Icons.error_outline,
+                  icon: FontAwesomeIcons.circleExclamation,
                   title: l10n.problem,
                   content: widget.project.problem,
                   color: const Color(0xFFEF4444),
@@ -148,7 +149,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
 
                 // 3. 解决方案
                 _buildSection(
-                  icon: Icons.lightbulb_outline,
+                  icon: FontAwesomeIcons.lightbulb,
                   title: l10n.solution,
                   content: widget.project.solution,
                   color: const Color(0xFF10B981),
@@ -158,7 +159,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
 
                 // 4. 目标用户
                 _buildSection(
-                  icon: Icons.people_outline,
+                  icon: FontAwesomeIcons.users,
                   title: l10n.targetAudience,
                   content: widget.project.targetAudience,
                   color: const Color(0xFF3B82F6),
@@ -168,7 +169,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
 
                 // 5. 产品形态
                 _buildSection(
-                  icon: Icons.devices,
+                  icon: FontAwesomeIcons.laptop,
                   title: l10n.productType,
                   content: widget.project.productType,
                   color: const Color(0xFFF59E0B),
@@ -178,9 +179,12 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
 
                 // 6. 核心功能
                 _buildListSection(
-                  icon: Icons.star_outline,
+                  icon: FontAwesomeIcons.star,
                   title: l10n.keyFeatures,
-                  items: widget.project.keyFeatures,
+                  items: widget.project.keyFeatures
+                      .split('\n')
+                      .where((s) => s.isNotEmpty)
+                      .toList(),
                   color: const Color(0xFF8B5CF6),
                 ),
 
@@ -188,7 +192,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
 
                 // 7. 竞争优势
                 _buildSection(
-                  icon: Icons.trending_up,
+                  icon: FontAwesomeIcons.chartLine,
                   title: l10n.competitiveAdvantage,
                   content: widget.project.competitiveAdvantage,
                   color: const Color(0xFF6366F1),
@@ -198,7 +202,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
 
                 // 8. 商业模式
                 _buildSection(
-                  icon: Icons.attach_money,
+                  icon: FontAwesomeIcons.dollarSign,
                   title: l10n.businessModel,
                   content: widget.project.businessModel,
                   color: const Color(0xFF10B981),
@@ -208,7 +212,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
 
                 // 9. 市场潜力
                 _buildSection(
-                  icon: Icons.analytics_outlined,
+                  icon: FontAwesomeIcons.chartLine,
                   title: l10n.marketOpportunity,
                   content: widget.project.marketOpportunity,
                   color: const Color(0xFF3B82F6),
@@ -218,7 +222,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
 
                 // 10. 当前进展
                 _buildSection(
-                  icon: Icons.timeline,
+                  icon: FontAwesomeIcons.clockRotateLeft,
                   title: l10n.currentStatus,
                   content: widget.project.currentStatus,
                   color: const Color(0xFFF59E0B),
@@ -228,7 +232,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
 
                 // 11. 团队介绍
                 _buildTeamSection(
-                  icon: Icons.groups,
+                  icon: FontAwesomeIcons.userGroup,
                   title: l10n.team,
                   team: widget.project.team,
                   color: const Color(0xFF8B5CF6),
@@ -238,7 +242,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
 
                 // 12. 所需支持
                 _buildSection(
-                  icon: Icons.handshake_outlined,
+                  icon: FontAwesomeIcons.handshake,
                   title: l10n.ask,
                   content: widget.project.ask,
                   color: const Color(0xFFEF4444),
@@ -259,7 +263,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                         radius: 24,
                         backgroundColor: const Color(0xFF8B5CF6),
                         child: Text(
-                          widget.project.creatorName.substring(0, 1),
+                          (widget.project.userName ?? '?').substring(0, 1),
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 20,
@@ -273,7 +277,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              widget.project.creatorName,
+                              widget.project.userName ?? 'Unknown',
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -333,7 +337,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
               child: OutlinedButton.icon(
                 onPressed: _toggleFollow,
                 icon: Icon(
-                  _isFollowed ? Icons.favorite : Icons.favorite_border,
+                  _isFollowed ? FontAwesomeIcons.heart : FontAwesomeIcons.heart,
                   size: 20,
                 ),
                 label: Text(
@@ -365,7 +369,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
               flex: 2,
               child: ElevatedButton.icon(
                 onPressed: () => _contactCreator(context),
-                icon: const Icon(Icons.chat_bubble_outline, size: 20),
+                icon: const Icon(FontAwesomeIcons.message, size: 20),
                 label: Text(
                   l10n.message,
                   style: const TextStyle(
@@ -392,18 +396,20 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
 
   /// 联系创建者
   void _contactCreator(BuildContext context) {
-    // 创建发布者的 UserModel 对象
-    final creatorUser = UserModel(
-      id: widget.project.creatorId,
-      name: widget.project.creatorName,
-      username: widget.project.creatorName.toLowerCase().replaceAll(' ', '_'),
-      avatarUrl: null, // 可以从项目中获取,如果有的话
+    // 创建发布者的 User 对象
+    final creatorUser = User(
+      id: widget.project.userId.toString(),
+      name: widget.project.userName ?? 'Unknown',
+      username: (widget.project.userName ?? 'unknown')
+          .toLowerCase()
+          .replaceAll(' ', '_'),
+      avatarUrl: widget.project.userAvatar,
       stats: TravelStats(
+        citiesVisited: 0,
         countriesVisited: 0,
-        citiesLived: 0,
-        daysNomading: 0,
-        meetupsAttended: 0,
-        tripsCompleted: 0,
+        reviewsWritten: 0,
+        photosShared: 0,
+        totalDistanceTraveled: 0,
       ),
       joinedDate: DateTime.now(),
     );
@@ -594,7 +600,9 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                     radius: 24,
                     backgroundColor: color,
                     child: Text(
-                      member.name.substring(0, 1),
+                      member.name.isNotEmpty
+                          ? member.name.substring(0, 1)
+                          : '?',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,

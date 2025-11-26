@@ -8,6 +8,5 @@ export 'city_list_skeleton.dart';
 export 'community_skeleton.dart';
 export 'data_service_list_skeleton.dart';
 export 'grid_skeleton.dart';
-export 'home_skeleton.dart';
 export 'messages_skeleton.dart';
 export 'profile_skeleton.dart';

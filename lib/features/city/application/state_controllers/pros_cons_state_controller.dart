@@ -1,0 +1,334 @@
+import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:df_admin_mobile/features/city/domain/entities/city_detail.dart';
+import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
+import 'package:get/get.dart';
+
+/// ProsCons State Controller - 城市优缺点状态管理
+///
+/// 负责管理城市优缺点的加载、添加和投票功能
+class ProsConsStateController extends GetxController {
+  final ICityRepository _repository;
+
+  ProsConsStateController(this._repository);
+
+  // 优点列表
+  final RxList<ProsCons> prosList = <ProsCons>[].obs;
+
+  // 缺点列表
+  final RxList<ProsCons> consList = <ProsCons>[].obs;
+
+  // 加载状态
+  final RxBool isLoadingPros = false.obs;
+  final RxBool isLoadingCons = false.obs;
+  final RxBool isAdding = false.obs;
+  final RxBool isVoting = false.obs;
+
+  // 错误信息
+  final RxnString error = RxnString();
+
+  // 记录当前会话用户已投票的条目,避免重复触发
+  final RxSet<String> votedItemIds = <String>{}.obs;
+
+  bool hasUserVoted(String id) => votedItemIds.contains(id);
+
+  /// 检查用户是否已登录
+  bool _isUserLoggedIn() {
+    try {
+      final authController = Get.find<AuthStateController>();
+      return authController.isAuthenticated.value;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// 加载城市的所有优缺点
+  Future<void> loadCityProsCons(String cityId) async {
+    // 如果用户未登录,跳过加载
+    if (!_isUserLoggedIn()) {
+      print('⚠️ 用户未登录,跳过加载优缺点');
+      return;
+    }
+
+    await Future.wait([
+      loadPros(cityId),
+      loadCons(cityId),
+    ]);
+  }
+
+  /// 加载优点
+  Future<void> loadPros(String cityId) async {
+    // 如果用户未登录,跳过加载
+    if (!_isUserLoggedIn()) {
+      print('⚠️ 用户未登录,跳过加载优点');
+      return;
+    }
+
+    isLoadingPros.value = true;
+    error.value = null;
+    prosList.clear(); // 先清空旧数据
+
+    try {
+      print('📡 加载城市优点: $cityId');
+
+      final result = await _repository.getCityProsCons(
+        cityId: cityId,
+        isPro: true,
+      );
+
+      result.fold(
+        onSuccess: (pros) {
+          prosList.value = pros;
+          print('✅ 优点加载成功: ${pros.length} 条');
+        },
+        onFailure: (err) {
+          error.value = err.message;
+          print('❌ 优点加载失败: ${err.message}');
+        },
+      );
+    } catch (e) {
+      error.value = '加载优点失败: $e';
+      print('❌ 异常: $e');
+    } finally {
+      isLoadingPros.value = false;
+    }
+  }
+
+  /// 加载缺点
+  Future<void> loadCons(String cityId) async {
+    // 如果用户未登录,跳过加载
+    if (!_isUserLoggedIn()) {
+      print('⚠️ 用户未登录,跳过加载缺点');
+      return;
+    }
+
+    isLoadingCons.value = true;
+    error.value = null;
+    consList.clear(); // 先清空旧数据
+
+    try {
+      print('📡 加载城市缺点: $cityId');
+
+      final result = await _repository.getCityProsCons(
+        cityId: cityId,
+        isPro: false,
+      );
+
+      result.fold(
+        onSuccess: (cons) {
+          consList.value = cons;
+          print('✅ 缺点加载成功: ${cons.length} 条');
+        },
+        onFailure: (err) {
+          error.value = err.message;
+          print('❌ 缺点加载失败: ${err.message}');
+        },
+      );
+    } catch (e) {
+      error.value = '加载缺点失败: $e';
+      print('❌ 异常: $e');
+    } finally {
+      isLoadingCons.value = false;
+    }
+  }
+
+  /// 添加优点
+  Future<bool> addPros({
+    required String cityId,
+    required String text,
+  }) async {
+    return await _addProsCons(
+      cityId: cityId,
+      text: text,
+      isPro: true,
+    );
+  }
+
+  /// 添加缺点
+  Future<bool> addCons({
+    required String cityId,
+    required String text,
+  }) async {
+    return await _addProsCons(
+      cityId: cityId,
+      text: text,
+      isPro: false,
+    );
+  }
+
+  /// 内部方法: 添加优缺点
+  Future<bool> _addProsCons({
+    required String cityId,
+    required String text,
+    required bool isPro,
+  }) async {
+    if (text.trim().isEmpty) {
+      error.value = '内容不能为空';
+      return false;
+    }
+
+    isAdding.value = true;
+    error.value = null;
+
+    try {
+      print('📡 添加${isPro ? '优点' : '缺点'}: $text');
+
+      final result = await _repository.addProsCons(
+        cityId: cityId,
+        text: text,
+        isPro: isPro,
+      );
+
+      return result.fold(
+        onSuccess: (newItem) {
+          // 添加到对应列表
+          if (isPro) {
+            prosList.insert(0, newItem);
+          } else {
+            consList.insert(0, newItem);
+          }
+          print('✅ 添加成功');
+          return true;
+        },
+        onFailure: (err) {
+          error.value = err.message;
+          print('❌ 添加失败: ${err.message}');
+          return false;
+        },
+      );
+    } catch (e) {
+      error.value = '添加失败: $e';
+      print('❌ 异常: $e');
+      return false;
+    } finally {
+      isAdding.value = false;
+    }
+  }
+
+  /// 点赞
+  Future<bool> upvote(String id, bool isPro) async {
+    return await _vote(id: id, isUpvote: true, isPro: isPro);
+  }
+
+  /// 点踩
+  Future<bool> downvote(String id, bool isPro) async {
+    return await _vote(id: id, isUpvote: false, isPro: isPro);
+  }
+
+  /// 内部方法: 投票
+  Future<bool> _vote({
+    required String id,
+    required bool isUpvote,
+    required bool isPro,
+  }) async {
+    isVoting.value = true;
+    error.value = null;
+
+    try {
+      print('📡 ${isUpvote ? '点赞' : '点踩'}: $id');
+
+      final result = await _repository.voteProsCons(
+        id: id,
+        isUpvote: isUpvote,
+      );
+
+      return result.fold(
+        onSuccess: (_) {
+          // 投票成功，不在本地更新数据
+          // 因为后端投票逻辑是切换：有投票则删除，无投票则新增
+          // 前端无法判断是新增还是删除，所以由调用方重新加载数据
+          print('✅ 投票成功');
+          return true;
+        },
+        onFailure: (err) {
+          error.value = err.message;
+          print('❌ 投票失败: ${err.message}');
+          return false;
+        },
+      );
+    } catch (e) {
+      error.value = '投票失败: $e';
+      print('❌ 异常: $e');
+      return false;
+    } finally {
+      isVoting.value = false;
+    }
+  }
+
+  /// 获取热门优点 (按投票数排序)
+  List<ProsCons> get popularPros {
+    final sorted = List<ProsCons>.from(prosList);
+    sorted.sort((a, b) => b.netVotes.compareTo(a.netVotes));
+    return sorted;
+  }
+
+  /// 获取热门缺点 (按投票数排序)
+  List<ProsCons> get popularCons {
+    final sorted = List<ProsCons>.from(consList);
+    sorted.sort((a, b) => b.netVotes.compareTo(a.netVotes));
+    return sorted;
+  }
+
+  /// 删除优缺点(逻辑删除)
+  Future<bool> deleteProsCons(String cityId, String id, bool isPro) async {
+    isAdding.value = true;
+    error.value = null;
+
+    try {
+      print('📡 删除${isPro ? '优点' : '缺点'}: $id');
+
+      final result = await _repository.deleteProsCons(cityId, id);
+
+      return result.fold(
+        onSuccess: (_) {
+          // 从本地列表移除
+          if (isPro) {
+            prosList.removeWhere((item) => item.id == id);
+          } else {
+            consList.removeWhere((item) => item.id == id);
+          }
+          print('✅ 删除成功');
+          return true;
+        },
+        onFailure: (err) {
+          error.value = err.message;
+          print('❌ 删除失败: ${err.message}');
+          return false;
+        },
+      );
+    } catch (e) {
+      error.value = '删除失败: $e';
+      print('❌ 异常: $e');
+      return false;
+    } finally {
+      isAdding.value = false;
+    }
+  }
+
+  /// 清空数据
+  void clearData() {
+    prosList.clear();
+    consList.clear();
+    error.value = null;
+    votedItemIds.clear();
+  }
+
+  @override
+  void onClose() {
+    // 清空所有响应式变量
+    prosList.clear();
+    consList.clear();
+
+    // 重置加载状态
+    isLoadingPros.value = false;
+    isLoadingCons.value = false;
+    isAdding.value = false;
+    isVoting.value = false;
+
+    // 清空错误信息
+    error.value = null;
+    votedItemIds.clear();
+
+    super.onClose();
+  }
+}

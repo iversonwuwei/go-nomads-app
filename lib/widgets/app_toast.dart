@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 /// Toast 类型
@@ -60,32 +61,17 @@ class AppToast {
     final config = _ToastConfig(
       backgroundColor: backgroundColor ?? Colors.black87,
       textColor: textColor ?? Colors.white,
-      icon: icon ?? Icons.info_rounded,
+      icon: icon ?? FontAwesomeIcons.circleInfo,
       indicatorColor:
           (backgroundColor ?? Colors.black87).withValues(alpha: 0.8),
       shadowColor: (backgroundColor ?? Colors.black87).withValues(alpha: 0.3),
     );
 
-    Get.rawSnackbar(
-      backgroundColor: config.backgroundColor,
-      messageText: _buildToastContent(title, message, config),
-      margin: const EdgeInsets.all(16),
-      borderRadius: 12,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      snackPosition: SnackPosition.TOP,
-      duration: duration ?? const Duration(seconds: 3),
-      isDismissible: true,
-      dismissDirection: DismissDirection.horizontal,
-      forwardAnimationCurve: Curves.easeOutBack,
-      reverseAnimationCurve: Curves.easeInBack,
-      animationDuration: const Duration(milliseconds: 500),
-      boxShadows: [
-        BoxShadow(
-          color: config.shadowColor,
-          blurRadius: 12,
-          offset: const Offset(0, 4),
-        ),
-      ],
+    _showToastContent(
+      title: title,
+      message: message,
+      config: config,
+      duration: duration,
     );
   }
 
@@ -97,27 +83,108 @@ class AppToast {
     Duration? duration,
   }) {
     final config = _getToastConfig(type);
+    _showToastContent(
+      title: title,
+      message: message,
+      config: config,
+      duration: duration,
+    );
+  }
 
-    Get.rawSnackbar(
-      backgroundColor: config.backgroundColor,
-      messageText: _buildToastContent(title, message, config),
-      margin: const EdgeInsets.all(16),
-      borderRadius: 12,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      snackPosition: SnackPosition.TOP,
-      duration: duration ?? const Duration(seconds: 3),
-      isDismissible: true,
-      dismissDirection: DismissDirection.horizontal,
-      forwardAnimationCurve: Curves.easeOutBack,
-      reverseAnimationCurve: Curves.easeInBack,
-      animationDuration: const Duration(milliseconds: 500),
-      boxShadows: [
-        BoxShadow(
-          color: config.shadowColor,
-          blurRadius: 12,
-          offset: const Offset(0, 4),
+  static void _showToastContent({
+    required String title,
+    required String message,
+    required _ToastConfig config,
+    Duration? duration,
+  }) {
+    final effectiveDuration = duration ?? const Duration(seconds: 3);
+    final content = _buildToastContent(title, message, config);
+
+    if (_tryShowRawSnackbar(content, config, effectiveDuration)) {
+      return;
+    }
+
+    _showFallbackSnackBar(content, config, effectiveDuration);
+  }
+
+  static bool _tryShowRawSnackbar(
+    Widget content,
+    _ToastConfig config,
+    Duration duration,
+  ) {
+    final overlayContext =
+        Get.overlayContext ?? Get.key.currentContext ?? Get.context;
+    if (overlayContext == null) {
+      return false;
+    }
+
+    final overlay = Overlay.maybeOf(overlayContext, rootOverlay: true);
+    if (overlay == null) {
+      return false;
+    }
+
+    try {
+      Get.rawSnackbar(
+        backgroundColor: config.backgroundColor,
+        messageText: content,
+        margin: const EdgeInsets.all(16),
+        borderRadius: 12,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        snackPosition: SnackPosition.TOP,
+        duration: duration,
+        isDismissible: true,
+        dismissDirection: DismissDirection.horizontal,
+        forwardAnimationCurve: Curves.easeOutBack,
+        reverseAnimationCurve: Curves.easeInBack,
+        animationDuration: const Duration(milliseconds: 500),
+        boxShadows: [
+          BoxShadow(
+            color: config.shadowColor,
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      );
+      return true;
+    } catch (error) {
+      debugPrint('AppToast: Get.rawSnackbar failed – $error');
+      return false;
+    }
+  }
+
+  static void _showFallbackSnackBar(
+    Widget content,
+    _ToastConfig config,
+    Duration duration,
+  ) {
+    final context = Get.context ?? Get.key.currentContext;
+    if (context == null) {
+      debugPrint('AppToast: No context available for fallback toast.');
+      return;
+    }
+
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (messenger == null) {
+      debugPrint(
+          'AppToast: No ScaffoldMessenger available for fallback toast.');
+      return;
+    }
+
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        backgroundColor: config.backgroundColor,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
         ),
-      ],
+        duration: duration,
+        content: DefaultTextStyle.merge(
+          style: TextStyle(color: config.textColor),
+          child: content,
+        ),
+      ),
     );
   }
 
@@ -166,7 +233,7 @@ class AppToast {
         return _ToastConfig(
           backgroundColor: const Color(0xFF10B981), // Green
           textColor: Colors.white,
-          icon: Icons.check_circle_rounded,
+          icon: FontAwesomeIcons.circleCheck,
           indicatorColor: const Color(0xFF059669),
           shadowColor: const Color(0xFF10B981).withValues(alpha: 0.3),
         );
@@ -174,7 +241,7 @@ class AppToast {
         return _ToastConfig(
           backgroundColor: const Color(0xFFEF4444), // Red
           textColor: Colors.white,
-          icon: Icons.error_rounded,
+          icon: FontAwesomeIcons.circleExclamation,
           indicatorColor: const Color(0xFFDC2626),
           shadowColor: const Color(0xFFEF4444).withValues(alpha: 0.3),
         );
@@ -182,7 +249,7 @@ class AppToast {
         return _ToastConfig(
           backgroundColor: const Color(0xFFF59E0B), // Orange
           textColor: Colors.white,
-          icon: Icons.warning_rounded,
+          icon: FontAwesomeIcons.triangleExclamation,
           indicatorColor: const Color(0xFFD97706),
           shadowColor: const Color(0xFFF59E0B).withValues(alpha: 0.3),
         );
@@ -190,7 +257,7 @@ class AppToast {
         return _ToastConfig(
           backgroundColor: const Color(0xFF3B82F6), // Blue
           textColor: Colors.white,
-          icon: Icons.info_rounded,
+          icon: FontAwesomeIcons.circleInfo,
           indicatorColor: const Color(0xFF2563EB),
           shadowColor: const Color(0xFF3B82F6).withValues(alpha: 0.3),
         );
