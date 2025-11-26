@@ -323,10 +323,8 @@ class MeetupStateController extends GetxController {
       // 添加到列表
       meetups.insert(0, newMeetup);
 
-      // 创建者自动 RSVP
-      rsvpedMeetupIds.add(newMeetup.id);
-
       print('✅ 活动创建成功: ${newMeetup.id}');
+      print('🔍 isOrganizer: ${newMeetup.isOrganizer}');
       AppToast.success('活动创建成功!');
 
       return newMeetup;

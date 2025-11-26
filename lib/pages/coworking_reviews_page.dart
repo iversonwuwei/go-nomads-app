@@ -32,6 +32,7 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
   final RxBool _isLoading = false.obs;
   final RxBool _hasMore = true.obs;
   final RxBool _isAdmin = false.obs;
+  final RxBool _isRefreshing = false.obs; // 下拉刷新状态标志
   int _currentPage = 1;
   final int _pageSize = 10;
 
@@ -105,12 +106,14 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
 
   /// 刷新
   Future<void> _refresh() async {
+    _isRefreshing.value = true;
     setState(() {
       _reviews.clear();
       _currentPage = 1;
       _hasMore.value = true;
     });
     await _loadReviews();
+    _isRefreshing.value = false;
   }
 
   /// 格式化日期
@@ -171,7 +174,8 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
         ],
       ),
       body: Obx(() {
-        if (_isLoading.value && _reviews.isEmpty) {
+        // 首次加载时显示中间加载指示器
+        if (_isLoading.value && _reviews.isEmpty && !_isRefreshing.value) {
           return const Center(
             child: CircularProgressIndicator(
               strokeWidth: 2,
@@ -181,7 +185,21 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
         }
 
         if (_reviews.isEmpty) {
-          return _buildEmptyState(l10n);
+          return RefreshIndicator(
+            onRefresh: _refresh,
+            color: const Color(0xFF007AFF),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    child: _buildEmptyState(l10n),
+                  ),
+                );
+              },
+            ),
+          );
         }
 
         return RefreshIndicator(

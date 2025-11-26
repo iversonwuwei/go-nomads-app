@@ -15,11 +15,11 @@ class NotificationsPage extends StatefulWidget {
   State<NotificationsPage> createState() => _NotificationsPageState();
 }
 
-class _NotificationsPageState extends State<NotificationsPage>
-    with SingleTickerProviderStateMixin {
+class _NotificationsPageState extends State<NotificationsPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late NotificationStateController _controller;
   bool _isInitialized = false;
+  final RxBool _isRefreshing = false.obs; // 下拉刷新状态标志
 
   @override
   void initState() {
@@ -49,10 +49,16 @@ class _NotificationsPageState extends State<NotificationsPage>
     super.dispose();
   }
 
+  Future<void> _handleRefresh() async {
+    _isRefreshing.value = true;
+    await _controller.refresh();
+    _isRefreshing.value = false;
+  }
+
   @override
   Widget build(BuildContext context) {
     print('📱 NotificationsPage.build() 开始');
-    
+
     final isMobile = MediaQuery.of(context).size.width < 768;
 
     return Scaffold(
@@ -103,8 +109,7 @@ class _NotificationsPageState extends State<NotificationsPage>
                                 icon: const Icon(FontAwesomeIcons.checkDouble),
                                 tooltip: '全部标记为已读',
                                 onPressed: () async {
-                                  final success =
-                                      await _controller.markAllAsRead();
+                                  final success = await _controller.markAllAsRead();
                                   if (success) {
                                     AppToast.success('已全部标记为已读');
                                   }
@@ -140,7 +145,8 @@ class _NotificationsPageState extends State<NotificationsPage>
     bool? isRead,
   ) {
     return Obx(() {
-      if (_controller.isLoading.value && _controller.notifications.isEmpty) {
+      // 首次加载时显示中间加载指示器
+      if (_controller.isLoading.value && _controller.notifications.isEmpty && !_isRefreshing.value) {
         return const Center(child: CircularProgressIndicator());
       }
 
@@ -149,8 +155,7 @@ class _NotificationsPageState extends State<NotificationsPage>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(FontAwesomeIcons.circleExclamation,
-                  size: 64, color: AppColors.iconSecondary),
+              Icon(FontAwesomeIcons.circleExclamation, size: 64, color: AppColors.iconSecondary),
               const SizedBox(height: 16),
               Text(
                 _controller.errorMessage.value,
@@ -166,27 +171,37 @@ class _NotificationsPageState extends State<NotificationsPage>
         );
       }
 
-      final notifications = _controller.notifications
-          .where((n) => isRead == null || n.isRead == isRead)
-          .toList();
+      final notifications = _controller.notifications.where((n) => isRead == null || n.isRead == isRead).toList();
 
       if (notifications.isEmpty) {
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(FontAwesomeIcons.bell,
-                  size: 64, color: AppColors.iconSecondary),
-              const SizedBox(height: 16),
-              Text(
-                isRead == null
-                    ? '暂无通知'
-                    : isRead
-                        ? '暂无已读通知'
-                        : '暂无未读通知',
-                style: TextStyle(color: AppColors.textSecondary),
-              ),
-            ],
+        return RefreshIndicator(
+          onRefresh: _handleRefresh,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(FontAwesomeIcons.bell, size: 64, color: AppColors.iconSecondary),
+                        const SizedBox(height: 16),
+                        Text(
+                          isRead == null
+                              ? '暂无通知'
+                              : isRead
+                                  ? '暂无已读通知'
+                                  : '暂无未读通知',
+                          style: TextStyle(color: AppColors.textSecondary),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
         );
       }
@@ -212,8 +227,7 @@ class _NotificationsPageState extends State<NotificationsPage>
     bool isMobile,
   ) {
     final color = Color(
-      int.parse(notification.type.colorHex.substring(1), radix: 16) +
-          0xFF000000,
+      int.parse(notification.type.colorHex.substring(1), radix: 16) + 0xFF000000,
     );
 
     return Dismissible(
@@ -244,14 +258,10 @@ class _NotificationsPageState extends State<NotificationsPage>
         child: Container(
           padding: EdgeInsets.all(isMobile ? 12 : 16),
           decoration: BoxDecoration(
-            color: notification.isRead
-                ? Colors.white
-                : AppColors.accent.withValues(alpha: 0.05),
+            color: notification.isRead ? Colors.white : AppColors.accent.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: notification.isRead
-                  ? AppColors.border
-                  : AppColors.accent.withValues(alpha: 0.2),
+              color: notification.isRead ? AppColors.border : AppColors.accent.withValues(alpha: 0.2),
             ),
           ),
           child: Row(
@@ -288,9 +298,7 @@ class _NotificationsPageState extends State<NotificationsPage>
                             notification.title,
                             style: TextStyle(
                               fontSize: isMobile ? 15 : 16,
-                              fontWeight: notification.isRead
-                                  ? FontWeight.w500
-                                  : FontWeight.bold,
+                              fontWeight: notification.isRead ? FontWeight.w500 : FontWeight.bold,
                               color: AppColors.textPrimary,
                             ),
                           ),

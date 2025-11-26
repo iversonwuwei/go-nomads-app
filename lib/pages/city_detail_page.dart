@@ -80,6 +80,10 @@ class _CityDetailPageState extends State<CityDetailPage>
   final ScrollController _scrollController = ScrollController();
   double _appBarOpacity = 0.0;
 
+  // 下拉刷新状态标志
+  bool _isRefreshingReviews = false;
+  bool _isRefreshingPhotos = false;
+
   // 从 Get.arguments 或构造函数获取参数
   late final String cityId;
   late final String cityName;
@@ -1208,6 +1212,19 @@ class _CityDetailPageState extends State<CityDetailPage>
     ];
   }
 
+  // 刷新包装方法
+  Future<void> _handleRefreshReviews(UserCityContentStateController controller) async {
+    _isRefreshingReviews = true;
+    await controller.loadCityReviews(cityId);
+    _isRefreshingReviews = false;
+  }
+
+  Future<void> _handleRefreshPhotos(UserCityContentStateController controller) async {
+    _isRefreshingPhotos = true;
+    await controller.loadCityPhotos(cityId);
+    _isRefreshingPhotos = false;
+  }
+
   @override
   void dispose() {
     _scrollController.dispose();
@@ -1973,12 +1990,15 @@ class _CityDetailPageState extends State<CityDetailPage>
         return Center(child: Text(l10n.noData));
       }
 
-      return ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          // 用户评分系统（极简风格）
-          CityRatingsCard(cityId: city.id),
-        ],
+      return RefreshIndicator(
+        onRefresh: () => controller.loadCityDetail(cityId),
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            // 用户评分系统（极简风格）
+            CityRatingsCard(cityId: city.id),
+          ],
+        ),
       );
     });
   }
@@ -2272,130 +2292,133 @@ class _CityDetailPageState extends State<CityDetailPage>
         return const Center(child: CircularProgressIndicator());
       }
 
-      return Stack(
-        children: [
-          ListView(
-            padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
-            children: [
-              const Text(
-                '优点',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+      return RefreshIndicator(
+        onRefresh: () => controller.loadCityProsCons(cityId),
+        child: Stack(
+          children: [
+            ListView(
+              padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
+              children: [
+                const Text(
+                  '优点',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              // 优点列表或空状态
-              if (controller.prosList.isEmpty)
-                _buildEmptyProsConsState(
-                  icon: FontAwesomeIcons.circleCheck,
-                  iconColor: Colors.green,
-                  title: '还没有优点',
-                  subtitle: '分享你在这座城市的美好体验',
-                  buttonText: '添加优点',
-                  onTap: () => _showAddProsConsPage(initialTab: 0),
-                )
-              else
-                ...controller.prosList.map((item) {
-                  final hasVoted = controller.hasUserVoted(item.id);
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            FontAwesomeIcons.circleCheck,
-                            color: Colors.green,
-                            size: 24,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              item.text,
-                              style: const TextStyle(fontSize: 15),
+                const SizedBox(height: 12),
+                // 优点列表或空状态
+                if (controller.prosList.isEmpty)
+                  _buildEmptyProsConsState(
+                    icon: FontAwesomeIcons.circleCheck,
+                    iconColor: Colors.green,
+                    title: '还没有优点',
+                    subtitle: '分享你在这座城市的美好体验',
+                    buttonText: '添加优点',
+                    onTap: () => _showAddProsConsPage(initialTab: 0),
+                  )
+                else
+                  ...controller.prosList.map((item) {
+                    final hasVoted = controller.hasUserVoted(item.id);
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              FontAwesomeIcons.circleCheck,
+                              color: Colors.green,
+                              size: 24,
                             ),
-                          ),
-                          _buildProsConsVoteBadge(
-                            hasVoted: hasVoted,
-                            count: item.upvotes,
-                            onTap: hasVoted ? null : () => _handleProsConsVote(item),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }),
-              const SizedBox(height: 24),
-              const Text(
-                '挑战',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 12),
-              // 挑战列表或空状态
-              if (controller.consList.isEmpty)
-                _buildEmptyProsConsState(
-                  icon: FontAwesomeIcons.ban,
-                  iconColor: Colors.red,
-                  title: '还没有挑战',
-                  subtitle: '分享你遇到的困难和需要改进的地方',
-                  buttonText: '添加挑战',
-                  onTap: () => _showAddProsConsPage(initialTab: 1),
-                )
-              else
-                ...controller.consList.map((item) {
-                  final hasVoted = controller.hasUserVoted(item.id);
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            FontAwesomeIcons.ban,
-                            color: Colors.red,
-                            size: 24,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              item.text,
-                              style: const TextStyle(fontSize: 15),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                item.text,
+                                style: const TextStyle(fontSize: 15),
+                              ),
                             ),
-                          ),
-                          _buildProsConsVoteBadge(
-                            hasVoted: hasVoted,
-                            count: item.upvotes,
-                            onTap: hasVoted ? null : () => _handleProsConsVote(item),
-                          ),
-                        ],
+                            _buildProsConsVoteBadge(
+                              hasVoted: hasVoted,
+                              count: item.upvotes,
+                              onTap: hasVoted ? null : () => _handleProsConsVote(item),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                }),
-            ],
-          ),
-          // 添加按钮（仅 admin/moderator 可见）
-          FutureBuilder<bool>(
-            future: _canUserManageContent(),
-            builder: (context, snapshot) {
-              if (snapshot.data != true) return const SizedBox.shrink();
-              return Positioned(
-                right: 16,
-                bottom: 16,
-                child: FloatingActionButton(
-                  heroTag: 'add_pros_cons',
-                  onPressed: () => _showAddProsConsPage(),
-                  backgroundColor: const Color(0xFFFF4458),
-                  child: const Icon(FontAwesomeIcons.plus, color: Colors.white),
+                    );
+                  }),
+                const SizedBox(height: 24),
+                const Text(
+                  '挑战',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              );
-            },
-          ),
-        ],
+                const SizedBox(height: 12),
+                // 挑战列表或空状态
+                if (controller.consList.isEmpty)
+                  _buildEmptyProsConsState(
+                    icon: FontAwesomeIcons.ban,
+                    iconColor: Colors.red,
+                    title: '还没有挑战',
+                    subtitle: '分享你遇到的困难和需要改进的地方',
+                    buttonText: '添加挑战',
+                    onTap: () => _showAddProsConsPage(initialTab: 1),
+                  )
+                else
+                  ...controller.consList.map((item) {
+                    final hasVoted = controller.hasUserVoted(item.id);
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              FontAwesomeIcons.ban,
+                              color: Colors.red,
+                              size: 24,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                item.text,
+                                style: const TextStyle(fontSize: 15),
+                              ),
+                            ),
+                            _buildProsConsVoteBadge(
+                              hasVoted: hasVoted,
+                              count: item.upvotes,
+                              onTap: hasVoted ? null : () => _handleProsConsVote(item),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }),
+              ],
+            ),
+            // 添加按钮（仅 admin/moderator 可见）
+            FutureBuilder<bool>(
+              future: _canUserManageContent(),
+              builder: (context, snapshot) {
+                if (snapshot.data != true) return const SizedBox.shrink();
+                return Positioned(
+                  right: 16,
+                  bottom: 16,
+                  child: FloatingActionButton(
+                    heroTag: 'add_pros_cons',
+                    onPressed: () => _showAddProsConsPage(),
+                    backgroundColor: const Color(0xFFFF4458),
+                    child: const Icon(FontAwesomeIcons.plus, color: Colors.white),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       );
     });
   }
@@ -2517,47 +2540,48 @@ class _CityDetailPageState extends State<CityDetailPage>
     return Obx(() {
       final realUserReviews = controller.reviews; // ✅ 使用reviews属性
 
-      // 如果正在加载
-      if (controller.isLoadingReviews.value && realUserReviews.isEmpty) {
+      // 首次加载时显示中间加载指示器
+      if (controller.isLoadingReviews.value && realUserReviews.isEmpty && !_isRefreshingReviews) {
         return const Center(child: CircularProgressIndicator());
       }
 
       // 如果为空
       if (realUserReviews.isEmpty) {
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight - 96),
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(FontAwesomeIcons.commentDots, size: 64, color: Colors.grey[300]),
-                      const SizedBox(height: 16),
-                      Text(
-                        'No reviews yet',
-                        style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Be the first to write a review!',
-                        style: TextStyle(fontSize: 14, color: Colors.grey[500]),
-                      ),
-                    ],
+        return RefreshIndicator(
+          onRefresh: () => _handleRefreshReviews(controller),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(FontAwesomeIcons.commentDots, size: 64, color: Colors.grey[300]),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No reviews yet',
+                          style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Be the first to write a review!',
+                          style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         );
       }
 
       return RefreshIndicator(
-        onRefresh: () => controller.loadCityReviews(cityId), // ✅ 使用loadCityReviews方法
+        onRefresh: () => _handleRefreshReviews(controller), // ✅ 使用loadCityReviews方法
         child: ListView.builder(
           padding: const EdgeInsets.all(16),
           itemCount: realUserReviews.length, // ✅ 只显示真实评论
@@ -2701,121 +2725,124 @@ class _CityDetailPageState extends State<CityDetailPage>
       final shopping = communityCost?.shopping ?? 0.0;
       final other = communityCost?.other ?? 0.0;
 
-      return Stack(
-        children: [
-          ListView(
-            padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
-            children: [
-              // ✅ 社区综合费用统计 - 标题左侧,贡献者右侧
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    l10n.communityCostSummary,
-                    style: const TextStyle(
-                      fontSize: 18, // 缩小字号以适应小屏幕
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '$contributorCount ${contributorCount != 1 ? l10n.contributors : l10n.contributor}',
-                      style: TextStyle(
-                        fontSize: 11, // 缩小字号
-                        color: Colors.green[700],
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF6B73FF), Color(0xFF000DFF)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
+      return RefreshIndicator(
+        onRefresh: () => controller.loadCityCostSummary(cityId),
+        child: Stack(
+          children: [
+            ListView(
+              padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
+              children: [
+                // ✅ 社区综合费用统计 - 标题左侧,贡献者右侧
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      l10n.averageCommunityCost,
+                      l10n.communityCostSummary,
                       style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '\$${total.toStringAsFixed(0)}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 36,
+                        fontSize: 18, // 缩小字号以适应小屏幕
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      l10n.basedOnRealExpenses(totalExpenseCount, totalExpenseCount != 1 ? 's' : ''),
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.8),
-                        fontSize: 12,
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '$contributorCount ${contributorCount != 1 ? l10n.contributors : l10n.contributor}',
+                        style: TextStyle(
+                          fontSize: 11, // 缩小字号
+                          color: Colors.green[700],
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 24),
-              // 费用分类明细 - 始终显示所有分类（即使为 0）
-              _buildCostCategoryCard(
-                category: l10n.accommodation,
-                amount: accommodation,
-                icon: FontAwesomeIcons.hotel,
-                color: Colors.purple,
-              ),
-              _buildCostCategoryCard(
-                category: l10n.food,
-                amount: food,
-                icon: FontAwesomeIcons.utensils,
-                color: Colors.orange,
-              ),
-              _buildCostCategoryCard(
-                category: l10n.transportation,
-                amount: transportation,
-                icon: FontAwesomeIcons.car,
-                color: Colors.blue,
-              ),
-              _buildCostCategoryCard(
-                category: l10n.activity,
-                amount: activity,
-                icon: FontAwesomeIcons.ticket,
-                color: Colors.green,
-              ),
-              _buildCostCategoryCard(
-                category: l10n.shopping,
-                amount: shopping,
-                icon: FontAwesomeIcons.bagShopping,
-                color: Colors.pink,
-              ),
-              _buildCostCategoryCard(
-                category: 'Other',
-                amount: other,
-                icon: FontAwesomeIcons.ellipsis,
-                color: Colors.grey,
-              ),
-              const SizedBox(height: 32),
-            ], // children 数组闭合
-          ), // ListView 闭合
-        ],
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF6B73FF), Color(0xFF000DFF)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        l10n.averageCommunityCost,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '\$${total.toStringAsFixed(0)}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 36,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        l10n.basedOnRealExpenses(totalExpenseCount, totalExpenseCount != 1 ? 's' : ''),
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.8),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                // 费用分类明细 - 始终显示所有分类（即使为 0）
+                _buildCostCategoryCard(
+                  category: l10n.accommodation,
+                  amount: accommodation,
+                  icon: FontAwesomeIcons.hotel,
+                  color: Colors.purple,
+                ),
+                _buildCostCategoryCard(
+                  category: l10n.food,
+                  amount: food,
+                  icon: FontAwesomeIcons.utensils,
+                  color: Colors.orange,
+                ),
+                _buildCostCategoryCard(
+                  category: l10n.transportation,
+                  amount: transportation,
+                  icon: FontAwesomeIcons.car,
+                  color: Colors.blue,
+                ),
+                _buildCostCategoryCard(
+                  category: l10n.activity,
+                  amount: activity,
+                  icon: FontAwesomeIcons.ticket,
+                  color: Colors.green,
+                ),
+                _buildCostCategoryCard(
+                  category: l10n.shopping,
+                  amount: shopping,
+                  icon: FontAwesomeIcons.bagShopping,
+                  color: Colors.pink,
+                ),
+                _buildCostCategoryCard(
+                  category: 'Other',
+                  amount: other,
+                  icon: FontAwesomeIcons.ellipsis,
+                  color: Colors.grey,
+                ),
+                const SizedBox(height: 32),
+              ], // children 数组闭合
+            ), // ListView 闭合
+          ],
+        ),
       );
     }); // Obx 闭合
   }
@@ -2863,30 +2890,42 @@ class _CityDetailPageState extends State<CityDetailPage>
       final realUserPhotos = controller.photos; // ✅ 使用photos属性
       final l10n = AppLocalizations.of(context)!;
 
-      // 如果正在加载
-      if (controller.isLoadingPhotos.value && realUserPhotos.isEmpty) {
+      // 首次加载时显示中间加载指示器
+      if (controller.isLoadingPhotos.value && realUserPhotos.isEmpty && !_isRefreshingPhotos) {
         return const Center(child: CircularProgressIndicator());
       }
 
       // 如果为空
       if (realUserPhotos.isEmpty) {
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(FontAwesomeIcons.images, size: 56, color: Colors.grey[300]),
-              const SizedBox(height: 12),
-              Text(
-                'No photos yet',
-                style: TextStyle(fontSize: 15, color: Colors.grey[600]),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Be the first to share a photo!',
-                style: TextStyle(fontSize: 13, color: Colors.grey[500]),
-              ),
-            ],
+        return RefreshIndicator(
+          onRefresh: () => _handleRefreshPhotos(controller),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(FontAwesomeIcons.images, size: 56, color: Colors.grey[300]),
+                        const SizedBox(height: 12),
+                        Text(
+                          'No photos yet',
+                          style: TextStyle(fontSize: 15, color: Colors.grey[600]),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Be the first to share a photo!',
+                          style: TextStyle(fontSize: 13, color: Colors.grey[500]),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
         );
       }
@@ -3029,7 +3068,7 @@ class _CityDetailPageState extends State<CityDetailPage>
       }
 
       return RefreshIndicator(
-        onRefresh: () => controller.loadCityPhotos(cityId),
+        onRefresh: () => _handleRefreshPhotos(controller),
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: slivers,
@@ -3163,17 +3202,30 @@ class _CityDetailPageState extends State<CityDetailPage>
 
       final weather = controller.weather.value;
       if (weather == null) {
-        return Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Text(
-              l10n.noData,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 16,
-                color: AppColors.textSecondary,
-              ),
-            ),
+        return RefreshIndicator(
+          onRefresh: () => controller.loadCityWeather(cityId, forceRefresh: true),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Text(
+                        l10n.noData,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
         );
       }
@@ -3251,503 +3303,506 @@ class _CityDetailPageState extends State<CityDetailPage>
         );
       }
 
-      return ListView(
-        padding: const EdgeInsets.only(left: 16, right: 16, top: 24, bottom: 96),
-        children: [
-          // 🌡️ 现代化主天气卡片
-          Container(
-            padding: const EdgeInsets.all(28),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(28),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFFF4458).withValues(alpha: 0.4),
-                  blurRadius: 24,
-                  offset: const Offset(0, 12),
-                  spreadRadius: 4,
+      return RefreshIndicator(
+        onRefresh: () => controller.loadCityWeather(cityId, forceRefresh: true),
+        child: ListView(
+          padding: const EdgeInsets.only(left: 16, right: 16, top: 24, bottom: 96),
+          children: [
+            // 🌡️ 现代化主天气卡片
+            Container(
+              padding: const EdgeInsets.all(28),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // 温度显示
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                weather.temperature.toStringAsFixed(0),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 72,
-                                  fontWeight: FontWeight.bold,
-                                  height: 0.95,
-                                  letterSpacing: -2,
-                                ),
-                              ),
-                              const Padding(
-                                padding: EdgeInsets.only(top: 8),
-                                child: Text(
-                                  '°C',
-                                  style: TextStyle(
+                borderRadius: BorderRadius.circular(28),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFF4458).withValues(alpha: 0.4),
+                    blurRadius: 24,
+                    offset: const Offset(0, 12),
+                    spreadRadius: 4,
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // 温度显示
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  weather.temperature.toStringAsFixed(0),
+                                  style: const TextStyle(
                                     color: Colors.white,
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.w600,
+                                    fontSize: 72,
+                                    fontWeight: FontWeight.bold,
+                                    height: 0.95,
+                                    letterSpacing: -2,
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          // 天气描述
-                          Text(
-                            description,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 0.3,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          // 城市名称
-                          if (cityName.isNotEmpty)
-                            Row(
-                              children: [
-                                Icon(
-                                  FontAwesomeIcons.locationDot,
-                                  color: Colors.white.withValues(alpha: 0.8),
-                                  size: 16,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  cityName,
-                                  style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.85),
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w500,
+                                const Padding(
+                                  padding: EdgeInsets.only(top: 8),
+                                  child: Text(
+                                    '°C',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
+                            const SizedBox(height: 12),
+                            // 天气描述
+                            Text(
+                              description,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            // 城市名称
+                            if (cityName.isNotEmpty)
+                              Row(
+                                children: [
+                                  Icon(
+                                    FontAwesomeIcons.locationDot,
+                                    color: Colors.white.withValues(alpha: 0.8),
+                                    size: 16,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    cityName,
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(alpha: 0.85),
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                          ],
+                        ),
+                      ),
+                      // 天气图标
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: FaIcon(
+                          _getWeatherIcon(
+                            weather.weatherIcon,
+                            isNight: weather.weatherIcon.endsWith('n'),
+                          ),
+                          color: Colors.white,
+                          size: 64,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  // 分隔线
+                  Container(
+                    height: 1,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.white.withValues(alpha: 0.0),
+                          Colors.white.withValues(alpha: 0.3),
+                          Colors.white.withValues(alpha: 0.0),
                         ],
                       ),
                     ),
-                    // 天气图标
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: FaIcon(
-                        _getWeatherIcon(
-                          weather.weatherIcon,
-                          isNight: weather.weatherIcon.endsWith('n'),
-                        ),
-                        color: Colors.white,
-                        size: 64,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                // 分隔线
-                Container(
-                  height: 1,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.white.withValues(alpha: 0.0),
-                        Colors.white.withValues(alpha: 0.3),
-                        Colors.white.withValues(alpha: 0.0),
-                      ],
-                    ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                // 附加信息行
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildWeatherMiniInfo(
-                      icon: FontAwesomeIcons.temperatureHalf,
-                      label: l10n.feelsLike,
-                      value: '${weather.feelsLike.toStringAsFixed(0)}°',
-                    ),
-                    Container(
-                      width: 1,
-                      height: 40,
-                      color: Colors.white.withValues(alpha: 0.3),
-                    ),
-                    _buildWeatherMiniInfo(
-                      icon: FontAwesomeIcons.droplet,
-                      label: l10n.humidity,
-                      value: '${weather.humidity}%',
-                    ),
-                    Container(
-                      width: 1,
-                      height: 40,
-                      color: Colors.white.withValues(alpha: 0.3),
-                    ),
-                    _buildWeatherMiniInfo(
-                      icon: FontAwesomeIcons.wind,
-                      label: l10n.wind,
-                      value: '${(weather.windSpeed * 3.6).toStringAsFixed(0)} km/h',
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                // 更新时间
-                Text(
-                  '$timezone • ${l10n.updated} $updatedAt',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+                  const SizedBox(height: 20),
+                  // 附加信息行
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildWeatherMiniInfo(
+                        icon: FontAwesomeIcons.temperatureHalf,
+                        label: l10n.feelsLike,
+                        value: '${weather.feelsLike.toStringAsFixed(0)}°',
+                      ),
+                      Container(
+                        width: 1,
+                        height: 40,
+                        color: Colors.white.withValues(alpha: 0.3),
+                      ),
+                      _buildWeatherMiniInfo(
+                        icon: FontAwesomeIcons.droplet,
+                        label: l10n.humidity,
+                        value: '${weather.humidity}%',
+                      ),
+                      Container(
+                        width: 1,
+                        height: 40,
+                        color: Colors.white.withValues(alpha: 0.3),
+                      ),
+                      _buildWeatherMiniInfo(
+                        icon: FontAwesomeIcons.wind,
+                        label: l10n.wind,
+                        value: '${(weather.windSpeed * 3.6).toStringAsFixed(0)} km/h',
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              // 计算每行可以放置的卡片数量
-              final screenWidth = constraints.maxWidth;
-              final spacing = 16.0;
-
-              // 计算可以放置的卡片数量(2或3列)
-              int crossAxisCount = 2;
-              if (screenWidth > 600) {
-                crossAxisCount = 3;
-              }
-
-              // 计算每个卡片的宽度
-              final totalSpacing = spacing * (crossAxisCount - 1);
-              final cardWidth = (screenWidth - totalSpacing) / crossAxisCount;
-
-              return Wrap(
-                spacing: spacing,
-                runSpacing: spacing,
-                children: metrics.map((metric) {
-                  return SizedBox(
-                    width: cardWidth,
-                    child: metric,
-                  );
-                }).toList(),
-              );
-            },
-          ),
-          const SizedBox(height: 24),
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.sunriseSunset,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    const Icon(FontAwesomeIcons.solidSun, color: Colors.orange, size: 20),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        l10n.sunrise,
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      sunrise,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    const Icon(FontAwesomeIcons.solidMoon, color: Color(0xFF5B6FD8), size: 20),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        l10n.sunset,
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      sunset,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          // 🌤️ 现代化5天预报卡片
-          if (weather.forecast?.daily.isNotEmpty == true) ...[
-            const SizedBox(height: 32),
-            Padding(
-              padding: const EdgeInsets.only(left: 4, bottom: 8),
-              child: Row(
-                children: [
-                  Container(
-                    width: 4,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
-                      ),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
+                  const SizedBox(height: 16),
+                  // 更新时间
                   Text(
-                    l10n.fiveDayForecast,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: -0.5,
+                    '$timezone • ${l10n.updated} $updatedAt',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 200,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                itemCount: weather.forecast!.daily.length,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemBuilder: (context, index) {
-                  final day = weather.forecast!.daily[index];
-                  final isToday = index == 0;
-                  final dayName = isToday ? l10n.today : _formatDayName(day.date, l10n);
+            const SizedBox(height: 24),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                // 计算每行可以放置的卡片数量
+                final screenWidth = constraints.maxWidth;
+                final spacing = 16.0;
 
-                  return Container(
-                    width: 140,
-                    margin: EdgeInsets.only(right: index < weather.forecast!.daily.length - 1 ? 16 : 0),
-                    decoration: BoxDecoration(
-                      gradient: isToday
-                          ? const LinearGradient(
-                              colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            )
-                          : LinearGradient(
-                              colors: [Colors.white, Colors.grey.shade50],
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                            ),
-                      borderRadius: BorderRadius.circular(24),
-                      border: isToday
-                          ? null
-                          : Border.all(
-                              color: Colors.grey.shade200,
-                              width: 1.5,
-                            ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: isToday
-                              ? const Color(0xFFFF4458).withValues(alpha: 0.35)
-                              : Colors.black.withValues(alpha: 0.06),
-                          blurRadius: isToday ? 20 : 12,
-                          offset: Offset(0, isToday ? 8 : 4),
-                          spreadRadius: isToday ? 2 : 0,
-                        ),
-                      ],
+                // 计算可以放置的卡片数量(2或3列)
+                int crossAxisCount = 2;
+                if (screenWidth > 600) {
+                  crossAxisCount = 3;
+                }
+
+                // 计算每个卡片的宽度
+                final totalSpacing = spacing * (crossAxisCount - 1);
+                final cardWidth = (screenWidth - totalSpacing) / crossAxisCount;
+
+                return Wrap(
+                  spacing: spacing,
+                  runSpacing: spacing,
+                  children: metrics.map((metric) {
+                    return SizedBox(
+                      width: cardWidth,
+                      child: metric,
+                    );
+                  }).toList(),
+                );
+              },
+            ),
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.sunriseSunset,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 20,
-                        horizontal: 16,
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      const Icon(FontAwesomeIcons.solidSun, color: Colors.orange, size: 20),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          l10n.sunrise,
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 14,
+                          ),
+                        ),
                       ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          // 日期标签
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isToday
-                                  ? Colors.white.withValues(alpha: 0.25)
-                                  : const Color(0xFFFF4458).withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              dayName,
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: isToday ? Colors.white : const Color(0xFFFF4458),
-                                letterSpacing: 0.5,
-                              ),
-                            ),
+                      Text(
+                        sunrise,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      const Icon(FontAwesomeIcons.solidMoon, color: Color(0xFF5B6FD8), size: 20),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          l10n.sunset,
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 14,
                           ),
-                          // 天气图标
-                          FaIcon(
-                            _getWeatherIcon(
-                              day.weatherIcon,
-                              isNight: false,
-                            ),
-                            color: isToday ? Colors.white : Colors.orange.shade600,
-                            size: 48,
-                          ),
-                          // 温度显示
-                          Column(
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    day.tempMax.toStringAsFixed(0),
-                                    style: TextStyle(
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.bold,
-                                      color: isToday ? Colors.white : Colors.grey.shade900,
-                                      height: 1.0,
-                                    ),
-                                  ),
-                                  Text(
-                                    '°',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
-                                      color: isToday ? Colors.white.withValues(alpha: 0.9) : Colors.grey.shade700,
-                                      height: 1.2,
-                                    ),
-                                  ),
-                                ],
+                        ),
+                      ),
+                      Text(
+                        sunset,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            // 🌤️ 现代化5天预报卡片
+            if (weather.forecast?.daily.isNotEmpty == true) ...[
+              const SizedBox(height: 32),
+              Padding(
+                padding: const EdgeInsets.only(left: 4, bottom: 8),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 4,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
+                        ),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      l10n.fiveDayForecast,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 200,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: weather.forecast!.daily.length,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemBuilder: (context, index) {
+                    final day = weather.forecast!.daily[index];
+                    final isToday = index == 0;
+                    final dayName = isToday ? l10n.today : _formatDayName(day.date, l10n);
+
+                    return Container(
+                      width: 140,
+                      margin: EdgeInsets.only(right: index < weather.forecast!.daily.length - 1 ? 16 : 0),
+                      decoration: BoxDecoration(
+                        gradient: isToday
+                            ? const LinearGradient(
+                                colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              )
+                            : LinearGradient(
+                                colors: [Colors.white, Colors.grey.shade50],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
                               ),
-                              const SizedBox(height: 4),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Icon(
-                                    FontAwesomeIcons.arrowDown,
-                                    size: 12,
-                                    color: isToday ? Colors.white.withValues(alpha: 0.7) : Colors.grey.shade500,
-                                  ),
-                                  const SizedBox(width: 2),
-                                  Text(
-                                    day.tempMin.toStringAsFixed(0),
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: isToday ? Colors.white.withValues(alpha: 0.8) : Colors.grey.shade600,
-                                    ),
-                                  ),
-                                  Text(
-                                    '°',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: isToday ? Colors.white.withValues(alpha: 0.7) : Colors.grey.shade500,
-                                    ),
-                                  ),
-                                ],
+                        borderRadius: BorderRadius.circular(24),
+                        border: isToday
+                            ? null
+                            : Border.all(
+                                color: Colors.grey.shade200,
+                                width: 1.5,
                               ),
-                            ],
+                        boxShadow: [
+                          BoxShadow(
+                            color: isToday
+                                ? const Color(0xFFFF4458).withValues(alpha: 0.35)
+                                : Colors.black.withValues(alpha: 0.06),
+                            blurRadius: isToday ? 20 : 12,
+                            offset: Offset(0, isToday ? 8 : 4),
+                            spreadRadius: isToday ? 2 : 0,
                           ),
                         ],
                       ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 20,
+                          horizontal: 16,
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // 日期标签
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isToday
+                                    ? Colors.white.withValues(alpha: 0.25)
+                                    : const Color(0xFFFF4458).withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                dayName,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: isToday ? Colors.white : const Color(0xFFFF4458),
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                            // 天气图标
+                            FaIcon(
+                              _getWeatherIcon(
+                                day.weatherIcon,
+                                isNight: false,
+                              ),
+                              color: isToday ? Colors.white : Colors.orange.shade600,
+                              size: 48,
+                            ),
+                            // 温度显示
+                            Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      day.tempMax.toStringAsFixed(0),
+                                      style: TextStyle(
+                                        fontSize: 28,
+                                        fontWeight: FontWeight.bold,
+                                        color: isToday ? Colors.white : Colors.grey.shade900,
+                                        height: 1.0,
+                                      ),
+                                    ),
+                                    Text(
+                                      '°',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                        color: isToday ? Colors.white.withValues(alpha: 0.9) : Colors.grey.shade700,
+                                        height: 1.2,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Icon(
+                                      FontAwesomeIcons.arrowDown,
+                                      size: 12,
+                                      color: isToday ? Colors.white.withValues(alpha: 0.7) : Colors.grey.shade500,
+                                    ),
+                                    const SizedBox(width: 2),
+                                    Text(
+                                      day.tempMin.toStringAsFixed(0),
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: isToday ? Colors.white.withValues(alpha: 0.8) : Colors.grey.shade600,
+                                      ),
+                                    ),
+                                    Text(
+                                      '°',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: isToday ? Colors.white.withValues(alpha: 0.7) : Colors.grey.shade500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.dataSource,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
                     ),
-                  );
-                },
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    weather.dataSource ?? 'OpenWeatherMap',
+                    style: TextStyle(
+                      color: Colors.grey[700],
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${l10n.timezone}: $timezone',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.dataSource,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  weather.dataSource ?? 'OpenWeatherMap',
-                  style: TextStyle(
-                    color: Colors.grey[700],
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${l10n.timezone}: $timezone',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+        ),
       );
     });
   }
@@ -3838,160 +3893,172 @@ class _CityDetailPageState extends State<CityDetailPage>
 
       // 显示空状态
       if (controller.coworkingSpaces.isEmpty) {
-        return Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 60),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Elegant illustration
-                Container(
-                  width: 200,
-                  height: 200,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        const Color(0xFFFF4458).withValues(alpha: 0.08),
-                        const Color(0xFFFF4458).withValues(alpha: 0.02),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(100),
-                  ),
-                  child: Stack(
-                    alignment: Alignment.center,
+        return RefreshIndicator(
+          onRefresh: () => controller.loadCoworkingSpacesByCity(cityName),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 60),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight - 120),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Background circles
-                      Positioned(
-                        top: 40,
-                        right: 40,
-                        child: Container(
-                          width: 60,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-                            shape: BoxShape.circle,
+                      // Elegant illustration
+                      Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              const Color(0xFFFF4458).withValues(alpha: 0.08),
+                              const Color(0xFFFF4458).withValues(alpha: 0.02),
+                            ],
                           ),
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            // Background circles
+                            Positioned(
+                              top: 40,
+                              right: 40,
+                              child: Container(
+                                width: 60,
+                                height: 60,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFF4458).withValues(alpha: 0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              bottom: 50,
+                              left: 30,
+                              child: Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFF4458).withValues(alpha: 0.15),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ),
+                            // Main icon
+                            Icon(
+                              FontAwesomeIcons.building,
+                              size: 80,
+                              color: Colors.grey[300],
+                            ),
+                          ],
                         ),
                       ),
-                      Positioned(
-                        bottom: 50,
-                        left: 30,
+                      const SizedBox(height: 40),
+                      Text(
+                        'No coworking spaces yet',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w300,
+                          color: Colors.grey[800],
+                          letterSpacing: 0.5,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Help build the community',
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Colors.grey[500],
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: 0.2,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 40),
+                      // Minimalist add button
+                      InkWell(
+                        onTap: _showAddCoworkingPage,
+                        borderRadius: BorderRadius.circular(30),
                         child: Container(
-                          width: 40,
-                          height: 40,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 32,
+                            vertical: 16,
+                          ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFF4458).withValues(alpha: 0.15),
-                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: const Color(0xFFFF4458).withValues(alpha: 0.3),
+                              width: 1.5,
+                            ),
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                FontAwesomeIcons.plus,
+                                size: 20,
+                                color: Colors.grey[700],
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Add First Space',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: Colors.grey[700],
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: 0.3,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                      // Main icon
-                      Icon(
-                        FontAwesomeIcons.building,
-                        size: 80,
-                        color: Colors.grey[300],
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 40),
-                Text(
-                  'No coworking spaces yet',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w300,
-                    color: Colors.grey[800],
-                    letterSpacing: 0.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Help build the community',
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.grey[500],
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: 0.2,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 40),
-                // Minimalist add button
-                InkWell(
-                  onTap: _showAddCoworkingPage,
-                  borderRadius: BorderRadius.circular(30),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 32,
-                      vertical: 16,
-                    ),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: const Color(0xFFFF4458).withValues(alpha: 0.3),
-                        width: 1.5,
-                      ),
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          FontAwesomeIcons.plus,
-                          size: 20,
-                          color: Colors.grey[700],
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Add First Space',
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.grey[700],
-                            fontWeight: FontWeight.w500,
-                            letterSpacing: 0.3,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              );
+            },
           ),
         );
       }
 
       // 显示共享办公空间列表
-      return Stack(
-        children: [
-          ListView.builder(
-            padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
-            itemCount: controller.coworkingSpaces.length,
-            itemBuilder: (context, index) {
-              final space = controller.coworkingSpaces[index];
-              return _buildCoworkingSpaceCard(space);
-            },
-          ),
-          // 添加按钮（仅 admin/moderator 可见）
-          FutureBuilder<bool>(
-            future: _canUserManageContent(),
-            builder: (context, snapshot) {
-              if (snapshot.data != true) return const SizedBox.shrink();
-              return Positioned(
-                right: 16,
-                bottom: 16,
-                child: FloatingActionButton(
-                  heroTag: 'add_coworking',
-                  onPressed: _showAddCoworkingPage,
-                  backgroundColor: const Color(0xFFFF4458),
-                  child: const Icon(FontAwesomeIcons.plus, color: Colors.white),
-                ),
-              );
-            },
-          ),
-        ],
+      return RefreshIndicator(
+        onRefresh: () => controller.loadCoworkingSpacesByCity(cityName),
+        child: Stack(
+          children: [
+            ListView.builder(
+              padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
+              itemCount: controller.coworkingSpaces.length,
+              itemBuilder: (context, index) {
+                final space = controller.coworkingSpaces[index];
+                return _buildCoworkingSpaceCard(space);
+              },
+            ),
+            // 添加按钮（仅 admin/moderator 可见）
+            FutureBuilder<bool>(
+              future: _canUserManageContent(),
+              builder: (context, snapshot) {
+                if (snapshot.data != true) return const SizedBox.shrink();
+                return Positioned(
+                  right: 16,
+                  bottom: 16,
+                  child: FloatingActionButton(
+                    heroTag: 'add_coworking',
+                    onPressed: _showAddCoworkingPage,
+                    backgroundColor: const Color(0xFFFF4458),
+                    child: const Icon(FontAwesomeIcons.plus, color: Colors.white),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       );
     });
   }

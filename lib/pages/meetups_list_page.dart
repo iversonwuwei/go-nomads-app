@@ -58,6 +58,9 @@ class _MeetupsListPageState extends State<MeetupsListPage>
     3: true,
   };
 
+  // 下拉刷新状态标志
+  bool _isRefreshing = false;
+
   final Map<int, ScrollController> _tabScrollControllers = {};
 
   // 筛选条件
@@ -252,7 +255,9 @@ class _MeetupsListPageState extends State<MeetupsListPage>
 
   /// 刷新当前 tab 数据
   Future<void> _refreshCurrentTab() async {
+    _isRefreshing = true;
     await _loadTabData(_tabController.index, refresh: true);
+    _isRefreshing = false;
   }
 
   @override
@@ -354,8 +359,8 @@ class _MeetupsListPageState extends State<MeetupsListPage>
         final isLoading = _tabLoading[currentTabIndex]!.value;
         final meetups = _tabMeetups[currentTabIndex]!;
 
-        if (isLoading && meetups.isEmpty) {
-          // 首次加载中
+        // 首次加载时显示中间加载指示器
+        if (isLoading && meetups.isEmpty && !_isRefreshing) {
           return Center(
             child: CircularProgressIndicator(
               color: const Color(0xFFFF4458),
@@ -365,7 +370,21 @@ class _MeetupsListPageState extends State<MeetupsListPage>
         }
 
         if (meetups.isEmpty) {
-          return _buildEmptyState();
+          return RefreshIndicator(
+            color: const Color(0xFFFF4458),
+            onRefresh: _refreshCurrentTab,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    child: _buildEmptyState(),
+                  ),
+                );
+              },
+            ),
+          );
         }
 
         return RefreshIndicator(
@@ -459,7 +478,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
 
   Widget _buildEmptyState() {
     final l10n = AppLocalizations.of(context)!;
-    
+
     String emptyMessage;
     String emptyHint;
     IconData emptyIcon;
@@ -671,6 +690,45 @@ class _MeetupListCardState extends State<_MeetupListCard> {
       }
     } catch (e) {
       print('❌ 加入/退出活动失败: $e');
+
+      // 特殊处理:如果是"已经参加"的错误,说明状态不同步,需要纠正前端状态
+      final errorMessage = e.toString();
+      if (errorMessage.contains('已经参加') || errorMessage.contains('already joined')) {
+        print('⚠️ 检测到状态不同步:用户实际已加入,但前端状态为未加入,正在纠正...');
+        setState(() {
+          _isJoined = true; // 纠正为已加入状态
+        });
+        // 更新 Controller
+        if (!meetupController.rsvpedMeetupIds.contains(widget.meetup.id)) {
+          meetupController.rsvpedMeetupIds.add(widget.meetup.id);
+        }
+        // 刷新数据以获取最新状态
+        if (widget.onRefresh != null) {
+          await widget.onRefresh!();
+        }
+        AppToast.info('您已经加入了这个活动');
+        return;
+      }
+
+      // 特殊处理:如果是"未参加"的错误,说明状态不同步,需要纠正前端状态
+      if (errorMessage.contains('未参加') ||
+          errorMessage.contains('not joined') ||
+          errorMessage.contains('not a participant')) {
+        print('⚠️ 检测到状态不同步:用户实际未加入,但前端状态为已加入,正在纠正...');
+        setState(() {
+          _isJoined = false; // 纠正为未加入状态
+        });
+        // 更新 Controller
+        meetupController.rsvpedMeetupIds.remove(widget.meetup.id);
+        // 刷新数据以获取最新状态
+        if (widget.onRefresh != null) {
+          await widget.onRefresh!();
+        }
+        AppToast.info('您尚未加入这个活动');
+        return;
+      }
+
+      // 其他错误正常提示
       AppToast.error(
         _isJoined ? '退出活动失败' : '加入活动失败',
       );

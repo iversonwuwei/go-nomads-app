@@ -27,8 +27,7 @@ class DataServicePage extends StatefulWidget {
   State<DataServicePage> createState() => _DataServicePageState();
 }
 
-class _DataServicePageState extends State<DataServicePage>
-    with WidgetsBindingObserver {
+class _DataServicePageState extends State<DataServicePage> with WidgetsBindingObserver {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
   final GlobalKey _citiesListKey = GlobalKey();
@@ -185,8 +184,7 @@ class _DataServicePageState extends State<DataServicePage>
     // ✅ 所有检查通过，执行操作
     print('✅ Token 验证通过，允许操作');
     print('   ExpiresAt: ${token.expiresAt}');
-    print(
-        '   Remaining: ${token.expiresAt!.difference(DateTime.now()).inMinutes} minutes');
+    print('   Remaining: ${token.expiresAt!.difference(DateTime.now()).inMinutes} minutes');
 
     onLoggedIn();
     return true;
@@ -276,8 +274,7 @@ class _DataServicePageState extends State<DataServicePage>
                       ),
                     ),
                     TextSpan(
-                      text:
-                          '$cityCount ${cityCount == 1 ? "city" : "cities"} found',
+                      text: '$cityCount ${cityCount == 1 ? "city" : "cities"} found',
                       style: const TextStyle(
                         fontWeight: FontWeight.w600,
                       ),
@@ -314,13 +311,10 @@ class _DataServicePageState extends State<DataServicePage>
       Future.delayed(const Duration(milliseconds: 500), () {
         if (!mounted) return;
 
-        final RenderBox? renderBox =
-            _citiesListKey.currentContext?.findRenderObject() as RenderBox?;
+        final RenderBox? renderBox = _citiesListKey.currentContext?.findRenderObject() as RenderBox?;
         if (renderBox != null && _scrollController.hasClients) {
           final position = renderBox.localToGlobal(Offset.zero).dy;
-          final scrollPosition = _scrollController.position.pixels +
-              position -
-              100; // 100px offset for better UX
+          final scrollPosition = _scrollController.position.pixels + position - 100; // 100px offset for better UX
 
           _scrollController.animateTo(
             scrollPosition,
@@ -335,8 +329,7 @@ class _DataServicePageState extends State<DataServicePage>
   @override
   Widget build(BuildContext context) {
     // 使用领域层的 StateController
-    final MeetupStateController meetupController =
-        Get.find<MeetupStateController>();
+    final MeetupStateController meetupController = Get.find<MeetupStateController>();
     final l10n = AppLocalizations.of(context)!;
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
@@ -391,8 +384,7 @@ class _DataServicePageState extends State<DataServicePage>
                 ),
               ),
 
-            if (_searchController.text.trim().isNotEmpty)
-              const SliverToBoxAdapter(child: SizedBox(height: 8)),
+            if (_searchController.text.trim().isNotEmpty) const SliverToBoxAdapter(child: SizedBox(height: 8)),
 
             // 城市列表锚点 (用于滚动定位)
             SliverToBoxAdapter(
@@ -570,8 +562,7 @@ class _DataServicePageState extends State<DataServicePage>
                     icon: FontAwesomeIcons.city,
                     title: l10n.cities,
                     color: const Color(0xFFFF4458),
-                    onTap: () => _checkLoginAndNavigate(
-                        () => Get.toNamed(AppRoutes.cityList)),
+                    onTap: () => _checkLoginAndNavigate(() => Get.toNamed(AppRoutes.cityList)),
                     isCompact: isVerySmall,
                   ),
                 ),
@@ -582,8 +573,7 @@ class _DataServicePageState extends State<DataServicePage>
                     icon: FontAwesomeIcons.building,
                     title: l10n.coworks,
                     color: const Color(0xFF6366F1),
-                    onTap: () => _checkLoginAndNavigate(
-                        () => Get.toNamed(AppRoutes.coworking)),
+                    onTap: () => _checkLoginAndNavigate(() => Get.toNamed(AppRoutes.coworking)),
                     isCompact: isVerySmall,
                   ),
                 ),
@@ -602,8 +592,7 @@ class _DataServicePageState extends State<DataServicePage>
                         icon: FontAwesomeIcons.userGroup,
                         title: l10n.meetups,
                         color: const Color(0xFF10B981),
-                        onTap: () => _checkLoginAndNavigate(
-                            () => Get.toNamed(AppRoutes.meetupsList)),
+                        onTap: () => _checkLoginAndNavigate(() => Get.toNamed(AppRoutes.meetupsList)),
                         isCompact: isVerySmall,
                       );
                     },
@@ -619,8 +608,7 @@ class _DataServicePageState extends State<DataServicePage>
                         icon: FontAwesomeIcons.lightbulb,
                         title: l10n.innovation,
                         color: const Color(0xFF8B5CF6),
-                        onTap: () => _checkLoginAndNavigate(
-                            () => Get.toNamed(AppRoutes.innovation)),
+                        onTap: () => _checkLoginAndNavigate(() => Get.toNamed(AppRoutes.innovation)),
                         isCompact: isVerySmall,
                       );
                     },
@@ -645,8 +633,7 @@ class _DataServicePageState extends State<DataServicePage>
                 icon: FontAwesomeIcons.city,
                 title: l10n.cities,
                 color: const Color(0xFFFF4458),
-                onTap: () => _checkLoginAndNavigate(
-                    () => Get.toNamed(AppRoutes.cityList)),
+                onTap: () => _checkLoginAndNavigate(() => Get.toNamed(AppRoutes.cityList)),
               ),
             ),
 
@@ -659,8 +646,7 @@ class _DataServicePageState extends State<DataServicePage>
                 icon: FontAwesomeIcons.building,
                 title: l10n.coworks,
                 color: const Color(0xFF6366F1),
-                onTap: () => _checkLoginAndNavigate(
-                    () => Get.toNamed(AppRoutes.coworking)),
+                onTap: () => _checkLoginAndNavigate(() => Get.toNamed(AppRoutes.coworking)),
               ),
             ),
 
@@ -676,8 +662,7 @@ class _DataServicePageState extends State<DataServicePage>
                     icon: FontAwesomeIcons.userGroup,
                     title: l10n.meetups,
                     color: const Color(0xFF10B981),
-                    onTap: () => _checkLoginAndNavigate(
-                        () => Get.toNamed(AppRoutes.meetupsList)),
+                    onTap: () => _checkLoginAndNavigate(() => Get.toNamed(AppRoutes.meetupsList)),
                   );
                 },
               ),
@@ -695,8 +680,7 @@ class _DataServicePageState extends State<DataServicePage>
                     icon: FontAwesomeIcons.lightbulb,
                     title: l10n.innovation,
                     color: const Color(0xFF8B5CF6),
-                    onTap: () => _checkLoginAndNavigate(
-                        () => Get.toNamed(AppRoutes.innovation)),
+                    onTap: () => _checkLoginAndNavigate(() => Get.toNamed(AppRoutes.innovation)),
                   );
                 },
               ),
@@ -885,8 +869,7 @@ class _DataServicePageState extends State<DataServicePage>
       ),
       child: Row(
         children: [
-          const Icon(FontAwesomeIcons.magnifyingGlass,
-              color: AppColors.textSecondary, size: 20),
+          const Icon(FontAwesomeIcons.magnifyingGlass, color: AppColors.textSecondary, size: 20),
           const SizedBox(width: 12),
           Expanded(
             child: TextField(
@@ -993,8 +976,7 @@ class _DataServicePageState extends State<DataServicePage>
                     height: 40,
                     child: CircularProgressIndicator(
                       strokeWidth: 3,
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
+                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -1024,8 +1006,7 @@ class _DataServicePageState extends State<DataServicePage>
       final hasMore = items.length > 6;
 
       // 调试信息
-      debugPrint(
-          '城市总数: ${items.length}, 显示: ${displayItems.length}, 显示按钮: $hasMore');
+      debugPrint('城市总数: ${items.length}, 显示: ${displayItems.length}, 显示按钮: $hasMore');
 
       if (isGrid) {
         return SliverList(
@@ -1048,8 +1029,7 @@ class _DataServicePageState extends State<DataServicePage>
               const SizedBox(height: 24),
               Center(
                 child: OutlinedButton.icon(
-                  onPressed: () => _checkLoginAndNavigate(
-                      () => Get.toNamed(AppRoutes.cityList)),
+                  onPressed: () => _checkLoginAndNavigate(() => Get.toNamed(AppRoutes.cityList)),
                   icon: const Icon(
                     FontAwesomeIcons.city,
                     size: 20,
@@ -1096,8 +1076,7 @@ class _DataServicePageState extends State<DataServicePage>
               const SizedBox(height: 24),
               Center(
                 child: OutlinedButton.icon(
-                  onPressed: () => _checkLoginAndNavigate(
-                      () => Get.toNamed(AppRoutes.cityList)),
+                  onPressed: () => _checkLoginAndNavigate(() => Get.toNamed(AppRoutes.cityList)),
                   icon: const Icon(
                     FontAwesomeIcons.city,
                     size: 20,
@@ -1134,8 +1113,7 @@ class _DataServicePageState extends State<DataServicePage>
   }
 
   // Meetups 部分 - Nomads.com 风格
-  Widget _buildMeetupsSection(
-      MeetupStateController meetupController, bool isMobile) {
+  Widget _buildMeetupsSection(MeetupStateController meetupController, bool isMobile) {
     return Obx(() {
       final upcomingMeetups = meetupController.upcomingMeetups;
       final isLoadingMeetups = _meetupController.isLoading.value;
@@ -1153,8 +1131,7 @@ class _DataServicePageState extends State<DataServicePage>
                   height: 40,
                   child: CircularProgressIndicator(
                     strokeWidth: 3,
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -1221,8 +1198,7 @@ class _DataServicePageState extends State<DataServicePage>
                                 ? () => Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) =>
-                                            const CreateMeetupPage(),
+                                        builder: (context) => const CreateMeetupPage(),
                                       ),
                                     )
                                 : () {
@@ -1232,8 +1208,7 @@ class _DataServicePageState extends State<DataServicePage>
                                     );
                                   },
                             icon: const Icon(FontAwesomeIcons.plus, size: 18),
-                            label: Text(
-                                isMobile ? l10n.create : l10n.createMeetup),
+                            label: Text(isMobile ? l10n.create : l10n.createMeetup),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFFF4458),
                               foregroundColor: Colors.white,
@@ -1292,8 +1267,7 @@ class _DataServicePageState extends State<DataServicePage>
                 child: NotificationListener<ScrollNotification>(
                   onNotification: (ScrollNotification scrollInfo) {
                     // 当滚动到接近末尾时，加载更多数据
-                    if (scrollInfo.metrics.pixels >=
-                            scrollInfo.metrics.maxScrollExtent * 0.8 &&
+                    if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent * 0.8 &&
                         !_meetupController.isLoadingMore.value &&
                         _meetupController.hasMoreData.value) {
                       print('📜 接近滚动末尾，触发加载更多活动');
@@ -1303,8 +1277,7 @@ class _DataServicePageState extends State<DataServicePage>
                   },
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
-                    itemCount: upcomingMeetups.length +
-                        (_meetupController.hasMoreData.value ? 1 : 0),
+                    itemCount: upcomingMeetups.length + (_meetupController.hasMoreData.value ? 1 : 0),
                     itemBuilder: (context, index) {
                       // 如果是最后一项且还有更多数据，显示加载指示器
                       if (index == upcomingMeetups.length) {
@@ -1312,15 +1285,12 @@ class _DataServicePageState extends State<DataServicePage>
                           width: 60,
                           margin: const EdgeInsets.only(left: 12),
                           child: Center(
-                            child:
-                                Obx(() => _meetupController.isLoadingMore.value
-                                    ? const CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                                Color(0xFFFF4458)),
-                                      )
-                                    : const SizedBox.shrink()),
+                            child: Obx(() => _meetupController.isLoadingMore.value
+                                ? const CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
+                                  )
+                                : const SizedBox.shrink()),
                           ),
                         );
                       }
@@ -1406,9 +1376,7 @@ class _DataServicePageState extends State<DataServicePage>
               shape: BoxShape.circle,
             ),
             child: Icon(
-              isSearching
-                  ? FontAwesomeIcons.magnifyingGlass
-                  : FontAwesomeIcons.city,
+              isSearching ? FontAwesomeIcons.magnifyingGlass : FontAwesomeIcons.city,
               size: isMobile ? 50 : 60,
               color: const Color(0xFFFF4458),
             ),
@@ -1628,8 +1596,7 @@ class _DataCardState extends State<_DataCard> {
               cityId: widget.data.id,
               cityName: widget.data.name,
               cityImage: widget.data.imageUrl?.toString() ?? '',
-              overallScore:
-                  (widget.data.overallScore as num?)?.toDouble() ?? 0.0,
+              overallScore: (widget.data.overallScore as num?)?.toDouble() ?? 0.0,
               reviewCount: (widget.data.reviewCount as num?)?.toInt() ?? 0,
             ),
           ),
@@ -1640,9 +1607,7 @@ class _DataCardState extends State<_DataCard> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: showDetails
-                ? AppColors.accent.withValues(alpha: 0.5)
-                : AppColors.borderLight,
+            color: showDetails ? AppColors.accent.withValues(alpha: 0.5) : AppColors.borderLight,
             width: 1,
           ),
           boxShadow: [
@@ -1658,8 +1623,7 @@ class _DataCardState extends State<_DataCard> {
             // 背景图片
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: widget.data.imageUrl != null &&
-                      widget.data.imageUrl!.isNotEmpty
+              child: widget.data.imageUrl != null && widget.data.imageUrl!.isNotEmpty
                   ? Container(
                       width: double.infinity,
                       height: double.infinity,
@@ -1712,9 +1676,7 @@ class _DataCardState extends State<_DataCard> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: isMobile ? 4 : 6,
-                                  vertical: isMobile ? 2 : 3),
+                              padding: EdgeInsets.symmetric(horizontal: isMobile ? 4 : 6, vertical: isMobile ? 2 : 3),
                               decoration: BoxDecoration(
                                 color: Colors.black.withValues(alpha: 0.6),
                                 borderRadius: BorderRadius.circular(4),
@@ -1734,9 +1696,7 @@ class _DataCardState extends State<_DataCard> {
                       SizedBox(width: isMobile ? 3 : 8),
                       // 右侧：网络 - 移动端简化显示
                       Container(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: isMobile ? 3 : 6,
-                            vertical: isMobile ? 2 : 3),
+                        padding: EdgeInsets.symmetric(horizontal: isMobile ? 3 : 6, vertical: isMobile ? 2 : 3),
                         decoration: BoxDecoration(
                           color: Colors.black.withValues(alpha: 0.6),
                           borderRadius: BorderRadius.circular(4),
@@ -1822,9 +1782,7 @@ class _DataCardState extends State<_DataCard> {
                             ),
                             SizedBox(width: isMobile ? 3 : 4),
                             Text(
-                              (widget.data.overallScore as num?)
-                                      ?.toStringAsFixed(1) ??
-                                  '0.0',
+                              (widget.data.overallScore as num?)?.toStringAsFixed(1) ?? '0.0',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: isMobile ? 14 : 16,
@@ -1851,8 +1809,7 @@ class _DataCardState extends State<_DataCard> {
                               children: [
                                 Text(
                                   _getWeatherIcon(widget.data.weather),
-                                  style:
-                                      TextStyle(fontSize: isMobile ? 16 : 18),
+                                  style: TextStyle(fontSize: isMobile ? 16 : 18),
                                 ),
                                 SizedBox(width: isMobile ? 3 : 6),
                                 Text(
@@ -1975,20 +1932,15 @@ class _DetailOverlay extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildMetricBar('⭐ Overall', data.overallScore ?? 0.0,
-                      const Color(0xFFFBBF24)),
+                  _buildMetricBar('⭐ Overall', data.overallScore ?? 0.0, const Color(0xFFFBBF24)),
                   const SizedBox(height: 6),
-                  _buildMetricBar('💰 Cost', data.costScore ?? 0.0,
-                      const Color(0xFF4ADE80)),
+                  _buildMetricBar('💰 Cost', data.costScore ?? 0.0, const Color(0xFF4ADE80)),
                   const SizedBox(height: 6),
-                  _buildMetricBar('📡 Internet', data.internetScore ?? 0.0,
-                      const Color(0xFFFBBF24)),
+                  _buildMetricBar('📡 Internet', data.internetScore ?? 0.0, const Color(0xFFFBBF24)),
                   const SizedBox(height: 6),
-                  _buildMetricBar(
-                      '👍 乐趣', data.likedScore ?? 0.0, const Color(0xFF4ADE80)),
+                  _buildMetricBar('👍 乐趣', data.likedScore ?? 0.0, const Color(0xFF4ADE80)),
                   const SizedBox(height: 6),
-                  _buildMetricBar('🛡️ Safety', data.safetyScore ?? 0.0,
-                      const Color(0xFF4ADE80)),
+                  _buildMetricBar('🛡️ Safety', data.safetyScore ?? 0.0, const Color(0xFF4ADE80)),
                 ],
               ),
             ),
@@ -2173,8 +2125,7 @@ class _MeetupCard extends StatefulWidget {
 
 class _MeetupCardState extends State<_MeetupCard> {
   // 获取 MeetupStateController
-  MeetupStateController get _meetupController =>
-      Get.find<MeetupStateController>();
+  MeetupStateController get _meetupController => Get.find<MeetupStateController>();
 
   // 卡片自己的状态 - 符合 DDD 原则
   late bool _isJoined;
@@ -2212,8 +2163,7 @@ class _MeetupCardState extends State<_MeetupCard> {
       // 同一个 meetup，使用后端返回的 isJoined 字段更新状态
       final newIsJoined = widget.meetup.isJoined;
       final newCurrentAttendees = widget.meetup.capacity.currentAttendees;
-      if (_isJoined != newIsJoined ||
-          _currentAttendees != newCurrentAttendees) {
+      if (_isJoined != newIsJoined || _currentAttendees != newCurrentAttendees) {
         print('🔄 Meetup ${widget.meetup.title} 数据更新:');
         print('   isJoined: $_isJoined -> $newIsJoined');
         print('   Attendees: $_currentAttendees -> $newCurrentAttendees');
@@ -2286,8 +2236,42 @@ class _MeetupCardState extends State<_MeetupCard> {
           title: l10n.leftMeetup,
         );
       }
+
+      // 刷新聚会列表
+      _meetupController.refreshMeetups();
     } catch (e) {
       print('❌ API 调用失败: $e');
+
+      // 特殊处理:如果是"已经参加"的错误,说明状态不同步,需要纠正前端状态
+      final errorMessage = e.toString();
+      if (errorMessage.contains('已经参加') || errorMessage.contains('already joined')) {
+        print('⚠️ 检测到状态不同步:用户实际已加入,但前端状态为未加入,正在纠正...');
+        setState(() {
+          _isJoined = true; // 纠正为已加入状态
+        });
+        // 更新 Controller
+        if (!_meetupController.rsvpedMeetupIds.contains(widget.meetup.id)) {
+          _meetupController.rsvpedMeetupIds.add(widget.meetup.id);
+        }
+        AppToast.info('您已经加入了这个活动');
+        return;
+      }
+
+      // 特殊处理:如果是"未参加"的错误,说明状态不同步,需要纠正前端状态
+      if (errorMessage.contains('未参加') ||
+          errorMessage.contains('not joined') ||
+          errorMessage.contains('not a participant')) {
+        print('⚠️ 检测到状态不同步:用户实际未加入,但前端状态为已加入,正在纠正...');
+        setState(() {
+          _isJoined = false; // 纠正为未加入状态
+        });
+        // 更新 Controller
+        _meetupController.rsvpedMeetupIds.remove(widget.meetup.id);
+        AppToast.info('您尚未加入这个活动');
+        return;
+      }
+
+      // 其他错误正常提示
       AppToast.error(
         _isJoined ? '退出活动失败' : '加入活动失败',
         title: '操作失败',
@@ -2332,14 +2316,8 @@ class _MeetupCardState extends State<_MeetupCard> {
         title: '成功',
       );
 
-      // 刷新列表数据 - 使用 Repository 直接获取，与 meetup_list_page 保持一致
-      try {
-        final meetups = await meetupRepository.getMeetups(pageSize: 20);
-        _meetupController.meetups.value = meetups;
-        print('✅ 刷新了 ${meetups.length} 个活动');
-      } catch (e) {
-        print('❌ 刷新活动列表失败: $e');
-      }
+      // 刷新聚会列表
+      _meetupController.refreshMeetups();
     } catch (e) {
       print('❌ 取消活动失败: $e');
       AppToast.error('取消活动失败');
@@ -2368,13 +2346,11 @@ class _MeetupCardState extends State<_MeetupCard> {
               onTap: () {
                 Get.toNamed(AppRoutes.meetupDetail, arguments: widget.meetup);
               },
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(12)),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
               child: Stack(
                 children: [
                   ClipRRect(
-                    borderRadius:
-                        const BorderRadius.vertical(top: Radius.circular(12)),
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                     child: Image.network(
                       widget.meetup.images.isNotEmpty
                           ? widget.meetup.images.first
@@ -2388,14 +2364,13 @@ class _MeetupCardState extends State<_MeetupCard> {
                     top: 12,
                     left: 12,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
-                        color: _getTypeColor(widget.meetup.type.value),
+                        color: _getTypeColor(widget.meetup.eventType?.enName ?? widget.meetup.type.value),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        widget.meetup.type.value,
+                        widget.meetup.eventType?.name ?? widget.meetup.type.value,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,
@@ -2414,8 +2389,7 @@ class _MeetupCardState extends State<_MeetupCard> {
                 Get.toNamed(AppRoutes.meetupDetail, arguments: widget.meetup);
               },
               child: Padding(
-                padding:
-                    const EdgeInsets.fromLTRB(10, 10, 10, 6), // 按钮到卡片底部只留少量空间
+                padding: const EdgeInsets.fromLTRB(10, 10, 10, 6), // 按钮到卡片底部只留少量空间
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -2586,8 +2560,7 @@ class _MeetupCardState extends State<_MeetupCard> {
           onPressed: isDisabled ? null : () => _handleCancelMeetup(context),
           style: ElevatedButton.styleFrom(
             backgroundColor: isCancelled ? AppColors.borderLight : Colors.red,
-            foregroundColor:
-                isCancelled ? AppColors.textSecondary : Colors.white,
+            foregroundColor: isCancelled ? AppColors.textSecondary : Colors.white,
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(6),
@@ -2690,10 +2663,8 @@ class _MeetupCardState extends State<_MeetupCard> {
             child: ElevatedButton(
               onPressed: isDisabled ? null : () => _handleToggleJoin(context),
               style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    _isJoined ? AppColors.borderLight : const Color(0xFFFF4458),
-                foregroundColor:
-                    _isJoined ? AppColors.textSecondary : Colors.white,
+                backgroundColor: _isJoined ? AppColors.borderLight : const Color(0xFFFF4458),
+                foregroundColor: _isJoined ? AppColors.textSecondary : Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(6),
@@ -2707,9 +2678,7 @@ class _MeetupCardState extends State<_MeetupCard> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    _isJoined
-                        ? FontAwesomeIcons.circleCheck
-                        : FontAwesomeIcons.circlePlus,
+                    _isJoined ? FontAwesomeIcons.circleCheck : FontAwesomeIcons.circlePlus,
                     size: 14,
                   ),
                   const SizedBox(width: 3),
@@ -2741,39 +2710,60 @@ class _MeetupCardState extends State<_MeetupCard> {
   }
 
   Color _getTypeColor(String type) {
-    switch (type) {
-      case 'Drinks':
-        return const Color(0xFFFF4458);
-      case 'Coworking':
-        return const Color(0xFF6366F1);
-      case 'Dinner':
-        return const Color(0xFFEC4899);
-      case 'Activity':
-        return const Color(0xFF10B981);
-      case 'Workshop':
-        return const Color(0xFFF59E0B);
-      case 'Networking':
-        return const Color(0xFF8B5CF6);
-      default:
-        return const Color(0xFF6B7280);
+    // 根据类型名称设置颜色（支持中英文）- 与 meetups_list_page 保持一致
+    final typeLower = type.toLowerCase();
+    if (typeLower.contains('coffee') || typeLower.contains('咖啡')) {
+      return Colors.brown;
+    } else if (typeLower.contains('coworking') ||
+        typeLower.contains('business') ||
+        typeLower.contains('共享办公') ||
+        typeLower.contains('商务')) {
+      return Colors.blue;
+    } else if (typeLower.contains('activity') ||
+        typeLower.contains('outdoor') ||
+        typeLower.contains('户外') ||
+        typeLower.contains('徒步')) {
+      return Colors.green;
+    } else if (typeLower.contains('language') || typeLower.contains('语言')) {
+      return Colors.purple;
+    } else if (typeLower.contains('social') ||
+        typeLower.contains('社交') ||
+        typeLower.contains('networking') ||
+        typeLower.contains('网络')) {
+      return Colors.orange;
+    } else if (typeLower.contains('tech') ||
+        typeLower.contains('workshop') ||
+        typeLower.contains('技术') ||
+        typeLower.contains('工作坊')) {
+      return Colors.indigo;
+    } else if (typeLower.contains('food') ||
+        typeLower.contains('dinner') ||
+        typeLower.contains('美食') ||
+        typeLower.contains('饮品')) {
+      return Colors.red;
+    } else if (typeLower.contains('sports') ||
+        typeLower.contains('fitness') ||
+        typeLower.contains('运动') ||
+        typeLower.contains('健身')) {
+      return Colors.teal;
+    } else if (typeLower.contains('culture') ||
+        typeLower.contains('art') ||
+        typeLower.contains('文化') ||
+        typeLower.contains('艺术')) {
+      return Colors.pink;
+    } else if (typeLower.contains('yoga') ||
+        typeLower.contains('meditation') ||
+        typeLower.contains('瑜伽') ||
+        typeLower.contains('冥想')) {
+      return const Color(0xFF4CAF50);
+    } else {
+      // 默认颜色
+      return const Color(0xFF9C27B0);
     }
   }
 
   String _formatDate(DateTime date) {
-    final months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec'
-    ];
+    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return '${months[date.month - 1]} ${date.day}';
   }
 }
