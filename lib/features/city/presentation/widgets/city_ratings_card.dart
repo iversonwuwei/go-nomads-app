@@ -156,18 +156,8 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
                 // 星星评分
                 Row(
                   children: [
-                    // 如果正在提交，显示加载指示器
-                    if (controller.submittingCategoryId.value == stat.categoryId)
-                      const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1A1A1A)),
-                        ),
-                      )
                     // 如果刚完成提交，显示加权平均分的星星（高亮显示）
-                    else if (controller.completedCategoryId.value == stat.categoryId)
+                    if (controller.completedCategoryId.value == stat.categoryId)
                       ...List.generate(5, (index) {
                         final isFilled = index < averageRating.floor();
                         final isHalfFilled = index == averageRating.floor() && averageRating % 1 >= 0.5;

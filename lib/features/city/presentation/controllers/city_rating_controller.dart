@@ -126,57 +126,73 @@ class CityRatingController extends GetxController {
     if (submittingCategoryId.value != null) return;
 
     try {
-      // 设置提交中状态
+      // 找到当前评分项
+      final index = statistics.indexWhere((s) => s.categoryId == categoryId);
+      if (index == -1) return;
+
+      // 保存原始数据用于回滚
+      final originalStat = statistics[index];
+      final isNewRating = originalStat.userRating == null;
+
+      // 立即更新本地UI，不等待服务器响应
+      final oldTotal = originalStat.averageRating * originalStat.ratingCount;
+      final newCount =
+          isNewRating ? originalStat.ratingCount + 1 : originalStat.ratingCount;
+      final newTotal = isNewRating ? oldTotal + rating : oldTotal - (originalStat.userRating ?? 0) + rating;
+      final newAverage = newCount > 0 ? newTotal / newCount : 0.0;
+
+      // 立即更新UI
+      statistics[index] = CityRatingStatistics(
+        categoryId: originalStat.categoryId,
+        categoryName: originalStat.categoryName,
+        categoryNameEn: originalStat.categoryNameEn,
+        icon: originalStat.icon,
+        displayOrder: originalStat.displayOrder,
+        ratingCount: newCount,
+        averageRating: double.parse(newAverage.toStringAsFixed(1)),
+        userRating: rating,
+      );
+
+      // 设置提交中状态（短暂显示）
       submittingCategoryId.value = categoryId;
       completedCategoryId.value = null;
 
-      await _useCases.submitRating(_currentCityId!, categoryId, rating);
+      // 异步提交到服务器（不阻塞UI）
+      _useCases.submitRating(_currentCityId!, categoryId, rating).then((_) {
+        // 提交成功，显示完成状态
+        submittingCategoryId.value = null;
+        completedCategoryId.value = categoryId;
 
-      // 更新本地统计数据，无需重新加载
-      final index = statistics.indexWhere((s) => s.categoryId == categoryId);
-      if (index != -1) {
-        final oldStat = statistics[index];
-        final isNewRating = oldStat.userRating == null;
+        // 500ms 后清除完成状态
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (completedCategoryId.value == categoryId) {
+            completedCategoryId.value = null;
+          }
+        });
+      }).catchError((e) {
+        // 提交失败，回滚本地状态
+        submittingCategoryId.value = null;
+        completedCategoryId.value = null;
 
-        // 重新计算平均分
-        final oldTotal = oldStat.averageRating * oldStat.ratingCount;
-        final newCount =
-            isNewRating ? oldStat.ratingCount + 1 : oldStat.ratingCount;
-        final newTotal = isNewRating
-            ? oldTotal + rating
-            : oldTotal - (oldStat.userRating ?? 0) + rating;
-        final newAverage = newCount > 0 ? newTotal / newCount : 0.0;
+        // 恢复之前的评分
+        final currentIndex = statistics.indexWhere((s) => s.categoryId == categoryId);
+        if (currentIndex != -1) {
+          statistics[currentIndex] = originalStat;
+        }
 
-        statistics[index] = CityRatingStatistics(
-          categoryId: oldStat.categoryId,
-          categoryName: oldStat.categoryName,
-          categoryNameEn: oldStat.categoryNameEn,
-          icon: oldStat.icon,
-          displayOrder: oldStat.displayOrder,
-          ratingCount: newCount,
-          averageRating: double.parse(newAverage.toStringAsFixed(1)),
-          userRating: rating,
-        );
-      }
+        AppToast.error('提交评分失败');
+      });
 
-      // 设置完成状态
-      submittingCategoryId.value = null;
-      completedCategoryId.value = categoryId;
-
-      // 显示成功提示
-      AppToast.success('评分提交成功');
-
-      // 500ms 后清除完成状态
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (completedCategoryId.value == categoryId) {
-          completedCategoryId.value = null;
+      // 100ms 后清除提交中状态（让用户看到反馈）
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (submittingCategoryId.value == categoryId) {
+          submittingCategoryId.value = null;
         }
       });
+      
     } catch (e) {
       submittingCategoryId.value = null;
       completedCategoryId.value = null;
-
-      // 显示错误提示
       AppToast.error('提交评分失败');
     }
   }
