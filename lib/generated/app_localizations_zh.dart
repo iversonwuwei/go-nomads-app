@@ -390,6 +390,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get about => '关于';
 
   @override
+  String get createdBy => '创建者';
+
+  @override
   String get version => '版本';
 
   @override
@@ -744,6 +747,23 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get visitWebsite => '访问网站';
+
+  @override
+  String get coworkingVerifyTitle => '空间认证';
+
+  @override
+  String get coworkingVerifyLoginRequired => '请先登录再进行空间认证。';
+
+  @override
+  String coworkingVerifyMessage(String spaceName) {
+    return '确定要为 $spaceName 提交认证吗？';
+  }
+
+  @override
+  String get coworkingVerifySuccess => '认证已提交，感谢你的贡献！';
+
+  @override
+  String get coworkingVerifyFailed => '认证提交失败，请稍后再试。';
 
   @override
   String get shareLocation => '分享位置';
@@ -2706,6 +2726,65 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get invalidCityId => '城市ID无效,无法提交评论';
+
+  @override
+  String get cannotSubmitReview => '无法提交评论';
+
+  @override
+  String get maxPhotosWarning => '最多只能选择5张图片';
+
+  @override
+  String get coworkingReviewSubmitSuccess => '评论提交成功！';
+
+  @override
+  String submitFailed(String error) {
+    return '提交失败: $error';
+  }
+
+  @override
+  String get visitDate => '访问日期';
+
+  @override
+  String get visitDateOptional => '访问日期(可选)';
+
+  @override
+  String get whenDidYouVisit => '您什么时候去的?';
+
+  @override
+  String get sumUpExperience => '用几句话总结您的体验';
+
+  @override
+  String get coworkingExperienceHint => '分享您关于WiFi、工作空间、氛围的体验...';
+
+  @override
+  String get reviewMinLength => '评论至少需要20个字符';
+
+  @override
+  String get photosOptional => '照片(可选)';
+
+  @override
+  String get addFromGallery => '从相册添加';
+
+  @override
+  String get takeAPhoto => '拍一张照片';
+
+  @override
+  String get coworkingReviewGuidelines => '评论指南';
+
+  @override
+  String get coworkingGuidelineHonest => '• 诚实具体';
+
+  @override
+  String get coworkingGuidelineFocus => '• 关注工作空间功能';
+
+  @override
+  String get coworkingGuidelineMention => '• 提及WiFi、噪音、设施';
+
+  @override
+  String get coworkingGuidelineRespectful => '• 尊重他人，建设性反馈';
+
+  @override
   String get loginToContinue => '登录您的账号以继续使用';
 
   @override
@@ -3234,7 +3313,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get enterMeetupTitle => '输入聚会标题';
 
   @override
-  String get meetupTypeHint => '例如：休闲聚会、商务社交、文化交流';
+  String get meetupTypeHint => '选择聚会类型';
 
   @override
   String get pleaseEnterType => '请输入类型';

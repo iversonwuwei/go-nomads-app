@@ -1,15 +1,14 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/features/ai/presentation/controllers/ai_state_controller.dart';
+import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/async_task_progress_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../config/app_colors.dart';
-import '../controllers/city_detail_controller.dart';
-import '../generated/app_localizations.dart';
-import '../models/travel_plan_model.dart';
-import '../services/ai_api_service.dart';
-import '../widgets/app_toast.dart';
-import '../widgets/async_task_progress_dialog.dart';
-
-/// 旅行计划详情�?
+/// 旅行计划详情页
 class TravelPlanPage extends StatefulWidget {
   final TravelPlan? plan;
   final String? cityId;
@@ -45,8 +44,8 @@ class _TravelPlanPageState extends State<TravelPlanPage>
   late AnimationController _shimmerController;
 
   // 流式进度状态
-  String _progressMessage = '正在准备...';
-  int _progressValue = 0;
+  final String _progressMessage = '正在准备...';
+  final int _progressValue = 0;
 
   @override
   void initState() {
@@ -76,214 +75,44 @@ class _TravelPlanPageState extends State<TravelPlanPage>
     super.dispose();
   }
 
-  /// 使用异步任务队列生成旅行计划 (推荐)
+  /// 使用AI State Controller生成旅行计划
   Future<void> _generatePlanAsync() async {
-    final controller = Get.find<CityDetailController>();
-    bool dialogShown = false;
+    final aiController = Get.find<AiStateController>();
 
     try {
-      // 显示前先确保没有残留的进度对话框
-      print('[LOG] 尝试关闭残留进度对话框...');
-      AsyncTaskProgressDialog.dismiss();
-      await Future.delayed(const Duration(milliseconds: 100));
+      setState(() => _isLoading = true);
 
-      print('[LOG] 显示进度对话框');
-      AsyncTaskProgressDialog.show(
-        title: 'Generating Travel Plan',
-        progress: controller.taskProgress,
-        message: controller.taskProgressMessage,
-      );
-      dialogShown = true;
-
-      // 调用异步任务生成
-      final planId = await controller.generateTravelPlanAsync(
-        duration: widget.duration ?? 7,
-        budget: widget.budget ?? 'medium', // "low", "medium", "high"
-        travelStyle: widget.travelStyle ??
-            'culture', // "adventure", "relaxation", "culture", "nightlife"
-        interests: widget.interests ?? [],
-        departureLocation: widget.departureLocation,
-        departureDate: widget.departureDate,
-        onProgress: (progress, message) {
-          // 进度已通过 controller.taskProgress 和 taskProgressMessage 响应式更新
-          print('📊 进度: $progress% - $message');
-        },
-      );
-
-      if (planId != null) {
-        print('✅ 旅行计划生成成功! planId: $planId');
-
-        // 从后端 API 获取完整的旅行计划数据
-        try {
-          print('📥 开始获取旅行计划详情...');
-
-          final aiService = AiApiService();
-          final plan = await aiService.getTravelPlanById(planId);
-
-          print('✅ 成功获取旅行计划数据');
-          print('   城市: ${plan.cityName}');
-          print('   天数: ${plan.duration}');
-          print('   景点数: ${plan.attractions.length}');
-
-          // 立即关闭对话框
-          print('[LOG] 成功获取数据，立即关闭对话框');
-          AsyncTaskProgressDialog.dismiss();
-          dialogShown = false; // 标记已关闭
-
-          if (mounted) {
-            setState(() {
-              _plan = plan;
-              _isLoading = false;
-            });
-
-            AppToast.success('Travel plan loaded successfully!');
-          }
-        } catch (e) {
-          print('❌ 获取旅行计划详情失败: $e');
-
-          // 立即关闭对话框
-          print('[LOG] 获取详情失败，立即关闭对话框');
-          AsyncTaskProgressDialog.dismiss();
-          dialogShown = false; // 标记已关闭
-
-          // 如果获取失败,降级使用模拟数据
-          if (mounted) {
-            setState(() {
-              _plan = controller.generateMockTravelPlan(
-                duration: widget.duration ?? 7,
-                budget: widget.budget ?? 'medium',
-                travelStyle: widget.travelStyle ?? 'culture',
-                interests: widget.interests ?? [],
-              );
-              _isLoading = false;
-            });
-
-            AppToast.warning(
-                'Failed to load plan data, using mock data: ${e.toString()}');
-          }
-        }
-      } else {
-        print('⚠️ planId 为 null，生成失败');
-
-        // 立即关闭对话框
-        print('[LOG] planId 为 null，立即关闭对话框');
-        AsyncTaskProgressDialog.dismiss();
-        dialogShown = false; // 标记已关闭
-
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-          AppToast.error('Failed to generate travel plan');
-          // 返回到上一页
-          Get.back();
-        }
-      }
-    } catch (e, stackTrace) {
-      print('❌ 异步生成旅行计划失败: $e');
-      print('堆栈跟踪: $stackTrace');
-
-      // 立即关闭对话框
-      print('[LOG] 异常捕获，立即关闭对话框');
-      AsyncTaskProgressDialog.dismiss();
-      dialogShown = false; // 标记已关闭
-
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-        AppToast.error('生成失败: ${e.toString()}');
-        // 返回到上一页
-        Get.back();
-      }
-    } finally {
-      // 确保对话框一定会被关闭
-      print('[LOG] finally 块：确保关闭进度对话框 (dialogShown=$dialogShown)');
-      
-      // 重置进度值
-      controller.taskProgress.value = 0;
-      controller.taskProgressMessage.value = '';
-      
-      if (dialogShown) {
-        // 延迟后关闭对话框，确保所有异步操作都完成
-        Future.delayed(const Duration(milliseconds: 500), () {
-          print('[LOG] 延迟后关闭对话框');
-          AsyncTaskProgressDialog.dismiss();
-        });
-      }
-    }
-  }
-
-  /// 使用流式 API 生成旅行计划 (备用方案)
-  Future<void> _generatePlanStream() async {
-    final controller = Get.find<CityDetailController>();
-
-    try {
-      await controller.generateTravelPlanStream(
+      // 调用AI Controller生成旅行计划
+      final plan = await aiController.generateTravelPlan(
+        cityId: widget.cityId ?? '',
+        cityName: widget.cityName ?? '',
+        cityImage: '',
         duration: widget.duration ?? 7,
         budget: widget.budget ?? 'medium',
         travelStyle: widget.travelStyle ?? 'culture',
         interests: widget.interests ?? [],
         departureLocation: widget.departureLocation,
-        onProgress: (String message, int progress) {
-          // 实时更新进度
-          if (mounted) {
-            setState(() {
-              _progressMessage = message;
-              _progressValue = progress;
-            });
-          }
-        },
-        onData: (TravelPlan plan) {
-          // 接收到完整数据
-          if (mounted) {
-            setState(() {
-              _plan = plan;
-              _isLoading = false;
-            });
-          }
-        },
-        onError: (String error) {
-          // 处理错误
-          if (mounted) {
-            setState(() {
-              _isLoading = false;
-            });
-
-            AppToast.error(error);
-            Get.back();
-          }
-        },
       );
-    } catch (e) {
-      print('❌ 生成旅行计划异常: $e');
-      if (mounted) {
+
+      if (plan != null && mounted) {
         setState(() {
+          _plan = plan;
           _isLoading = false;
         });
-
-        AppToast.error('生成失败,请稍后重试');
-        Get.back();
+        AppToast.success('Travel plan generated successfully!');
+      } else if (mounted) {
+        // 生成失败
+        setState(() => _isLoading = false);
+        AppToast.error('Failed to generate travel plan');
+        Navigator.of(context).pop();
       }
-    }
-  }
-
-  /// 旧的同步生成方法 (保留作为备用)
-  Future<void> _generatePlan() async {
-    final controller = Get.find<CityDetailController>();
-    final plan = await controller.generateTravelPlan(
-      duration: widget.duration ?? 7,
-      budget: widget.budget ?? 'medium',
-      travelStyle: widget.travelStyle ?? 'culture',
-      interests: widget.interests ?? [],
-      departureLocation: widget.departureLocation,
-    );
-
-    if (mounted) {
-      setState(() {
-        _plan = plan;
-        _isLoading = false;
-      });
+    } catch (e) {
+      print('❌ 生成旅行计划失败: $e');
+      if (mounted) {
+        setState(() => _isLoading = false);
+        AppToast.error('Error: $e');
+        Navigator.of(context).pop();
+      }
     }
   }
 
@@ -311,149 +140,150 @@ class _TravelPlanPageState extends State<TravelPlanPage>
               expandedHeight: 200,
               pinned: true,
               leading: IconButton(
-                icon: const Icon(Icons.arrow_back_outlined,
+                icon: const Icon(FontAwesomeIcons.arrowLeft,
                     color: AppColors.backButtonLight),
                 onPressed: () => Get.back(),
               ),
-            flexibleSpace: FlexibleSpaceBar(
-              background: AnimatedBuilder(
-                animation: _shimmerController,
-                builder: (context, child) {
-                  return Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.grey[300]!,
-                          Colors.grey[100]!,
-                          Colors.grey[300]!,
-                        ],
-                        begin: Alignment(
-                            -1.0 + _shimmerController.value * 2, -1.0),
-                        end: Alignment(1.0 + _shimmerController.value * 2, 1.0),
-                        stops: const [0.0, 0.5, 1.0],
+              flexibleSpace: FlexibleSpaceBar(
+                background: AnimatedBuilder(
+                  animation: _shimmerController,
+                  builder: (context, child) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.grey[300]!,
+                            Colors.grey[100]!,
+                            Colors.grey[300]!,
+                          ],
+                          begin: Alignment(
+                              -1.0 + _shimmerController.value * 2, -1.0),
+                          end: Alignment(
+                              1.0 + _shimmerController.value * 2, 1.0),
+                          stops: const [0.0, 0.5, 1.0],
+                        ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
             ),
-          ),
 
-          // 进度提示
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                children: [
-                  // AI 图标
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: AppColors.containerMedium.withOpacity(0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.auto_awesome,
-                      size: 40,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // 进度文本
-                  Text(
-                    _progressMessage,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textPrimary,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-
-                  // 进度条
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: LinearProgressIndicator(
-                      value: _progressValue / 100,
-                      minHeight: 8,
-                      backgroundColor: Colors.grey[200],
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        AppColors.textPrimary,
+            // 进度提示
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    // AI 图标
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: AppColors.containerMedium.withValues(alpha: 0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        FontAwesomeIcons.wandMagicSparkles,
+                        size: 40,
+                        color: AppColors.textPrimary,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
+                    const SizedBox(height: 24),
 
-                  // 进度百分比
-                  Text(
-                    '$_progressValue%',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
-                      fontWeight: FontWeight.w500,
+                    // 进度文本
+                    Text(
+                      _progressMessage,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textPrimary,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 16),
+
+                    // 进度条
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: LinearProgressIndicator(
+                        value: _progressValue / 100,
+                        minHeight: 8,
+                        backgroundColor: Colors.grey[200],
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // 进度百分比
+                    Text(
+                      '$_progressValue%',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
 
-          // Loading Content
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  // Overview Card Skeleton with details
-                  _buildDetailedSkeletonCard(height: 150),
-                  const SizedBox(height: 16),
-                  // Transportation Card Skeleton
-                  _buildDetailedSkeletonCard(height: 200),
-                  const SizedBox(height: 16),
-                  // Accommodation Card Skeleton
-                  _buildDetailedSkeletonCard(height: 180),
-                  const SizedBox(height: 16),
-                  // Itinerary Card Skeleton
-                  _buildDetailedSkeletonCard(height: 300),
-                  const SizedBox(height: 16),
-                  // Loading indicator
-                  Center(
-                    child: Column(
-                      children: [
-                        const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                                Color(0xFFFF4458)),
+            // Loading Content
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    // Overview Card Skeleton with details
+                    _buildDetailedSkeletonCard(height: 150),
+                    const SizedBox(height: 16),
+                    // Transportation Card Skeleton
+                    _buildDetailedSkeletonCard(height: 200),
+                    const SizedBox(height: 16),
+                    // Accommodation Card Skeleton
+                    _buildDetailedSkeletonCard(height: 180),
+                    const SizedBox(height: 16),
+                    // Itinerary Card Skeleton
+                    _buildDetailedSkeletonCard(height: 300),
+                    const SizedBox(height: 16),
+                    // Loading indicator
+                    Center(
+                      child: Column(
+                        children: [
+                          const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                  Color(0xFFFF4458)),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                        Builder(
-                          builder: (context) {
-                            final l10n = AppLocalizations.of(context)!;
-                            return Text(
-                              l10n.generatingAiPlan,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey[600],
-                                fontWeight: FontWeight.w500,
-                              ),
-                            );
-                          },
-                        ),
-                      ],
+                          const SizedBox(height: 12),
+                          Builder(
+                            builder: (context) {
+                              final l10n = AppLocalizations.of(context)!;
+                              return Text(
+                                l10n.generatingAiPlan,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey[600],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
         ),
       ),
     );
@@ -544,7 +374,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
       appBar: AppBar(
         title: Text(l10n.travelPlan),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_outlined),
+          icon: const Icon(FontAwesomeIcons.arrowLeft),
           onPressed: () => Get.back(),
         ),
       ),
@@ -553,7 +383,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(
-              Icons.error_outline,
+              FontAwesomeIcons.circleExclamation,
               size: 64,
               color: Colors.red,
             ),
@@ -597,13 +427,13 @@ class _TravelPlanPageState extends State<TravelPlanPage>
             expandedHeight: 200,
             pinned: true,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back_outlined,
+              icon: const Icon(FontAwesomeIcons.arrowLeft,
                   color: AppColors.backButtonLight),
               onPressed: () => Get.back(),
             ),
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
-                plan.cityName,
+                plan.destination.cityName,
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   shadows: [
@@ -619,7 +449,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                 fit: StackFit.expand,
                 children: [
                   Image.network(
-                    plan.cityImage,
+                    plan.destination.cityImage ?? '',
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(color: Colors.grey[300]);
@@ -642,7 +472,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
             ),
             actions: [
               IconButton(
-                icon: const Icon(Icons.map_outlined),
+                icon: const Icon(FontAwesomeIcons.map),
                 onPressed: () {
                   final l10n = AppLocalizations.of(context)!;
                   AppToast.info(
@@ -652,7 +482,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                 },
               ),
               IconButton(
-                icon: const Icon(Icons.download_outlined),
+                icon: const Icon(FontAwesomeIcons.download),
                 onPressed: () {
                   final l10n = AppLocalizations.of(context)!;
                   AppToast.success(
@@ -662,7 +492,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                 },
               ),
               IconButton(
-                icon: const Icon(Icons.share_outlined),
+                icon: const Icon(FontAwesomeIcons.shareNodes),
                 onPressed: () {
                   final l10n = AppLocalizations.of(context)!;
                   AppToast.info(
@@ -702,7 +532,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Icon(
-                          Icons.auto_awesome,
+                          FontAwesomeIcons.wandMagicSparkles,
                           color: Color(0xFFFF4458),
                           size: 20,
                         ),
@@ -748,17 +578,18 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                           children: [
                             if (widget.departureLocation != null &&
                                 widget.departureLocation!.isNotEmpty) ...[
-                              _buildInfoChip(Icons.flight_takeoff,
+                              _buildInfoChip(FontAwesomeIcons.plane,
                                   '${l10n.from}: ${widget.departureLocation}'),
                               const SizedBox(width: 12),
                             ],
-                            _buildInfoChip(Icons.calendar_today,
-                                '${plan.duration} ${l10n.days}'),
+                            _buildInfoChip(FontAwesomeIcons.calendar,
+                                '${plan.metadata.duration} ${l10n.days}'),
                             const SizedBox(width: 12),
-                            _buildInfoChip(
-                                Icons.attach_money, plan.budget.toUpperCase()),
+                            _buildInfoChip(FontAwesomeIcons.dollarSign,
+                                plan.metadata.budgetLevel.displayName),
                             const SizedBox(width: 12),
-                            _buildInfoChip(Icons.style, plan.travelStyle),
+                            _buildInfoChip(FontAwesomeIcons.paintbrush,
+                                plan.metadata.style.name),
                           ],
                         ),
                       );
@@ -776,7 +607,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                 final l10n = AppLocalizations.of(context)!;
                 return _buildSection(
                   l10n.budgetBreakdown,
-                  Icons.account_balance_wallet,
+                  FontAwesomeIcons.wallet,
                   _buildBudgetCard(plan),
                 );
               },
@@ -790,7 +621,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                 final l10n = AppLocalizations.of(context)!;
                 return _buildSection(
                   l10n.transportation,
-                  Icons.flight,
+                  FontAwesomeIcons.plane,
                   _buildTransportationCard(plan),
                 );
               },
@@ -804,7 +635,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                 final l10n = AppLocalizations.of(context)!;
                 return _buildSection(
                   l10n.accommodation,
-                  Icons.hotel,
+                  FontAwesomeIcons.hotel,
                   _buildAccommodationCard(plan),
                 );
               },
@@ -818,7 +649,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                 final l10n = AppLocalizations.of(context)!;
                 return _buildSection(
                   l10n.dailyItinerary,
-                  Icons.event_note,
+                  FontAwesomeIcons.noteSticky,
                   Column(
                     children: plan.dailyItineraries
                         .map((day) => _buildDayCard(day))
@@ -836,7 +667,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                 final l10n = AppLocalizations.of(context)!;
                 return _buildSection(
                   l10n.mustVisitAttractions,
-                  Icons.place,
+                  FontAwesomeIcons.locationPin,
                   Column(
                     children: plan.attractions
                         .map((attraction) => _buildAttractionCard(attraction))
@@ -854,7 +685,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                 final l10n = AppLocalizations.of(context)!;
                 return _buildSection(
                   l10n.recommendedRestaurants,
-                  Icons.restaurant,
+                  FontAwesomeIcons.utensils,
                   Column(
                     children: plan.restaurants
                         .map((restaurant) => _buildRestaurantCard(restaurant))
@@ -872,7 +703,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                 final l10n = AppLocalizations.of(context)!;
                 return _buildSection(
                   l10n.travelTips,
-                  Icons.lightbulb_outline,
+                  FontAwesomeIcons.lightbulb,
                   Column(
                     children:
                         plan.tips.map((tip) => _buildTipItem(tip)).toList(),
@@ -951,18 +782,15 @@ class _TravelPlanPageState extends State<TravelPlanPage>
           ),
           child: Column(
             children: [
-              _buildBudgetRow(
-                  l10n.transportation, plan.budgetBreakdown.transportation),
+              _buildBudgetRow(l10n.transportation, plan.budget.transportation),
               const Divider(height: 24),
-              _buildBudgetRow(
-                  l10n.accommodation, plan.budgetBreakdown.accommodation),
+              _buildBudgetRow(l10n.accommodation, plan.budget.accommodation),
               const Divider(height: 24),
-              _buildBudgetRow(l10n.foodAndDining, plan.budgetBreakdown.food),
+              _buildBudgetRow(l10n.foodAndDining, plan.budget.food),
               const Divider(height: 24),
-              _buildBudgetRow(l10n.activities, plan.budgetBreakdown.activities),
+              _buildBudgetRow(l10n.activities, plan.budget.activities),
               const Divider(height: 24),
-              _buildBudgetRow(
-                  l10n.miscellaneous, plan.budgetBreakdown.miscellaneous),
+              _buildBudgetRow(l10n.miscellaneous, plan.budget.miscellaneous),
               const Divider(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -975,7 +803,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                     ),
                   ),
                   Text(
-                    '\$${plan.budgetBreakdown.total.toStringAsFixed(0)}',
+                    '\$${plan.budget.total.toStringAsFixed(0)}',
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -1015,7 +843,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
 
   Widget _buildTransportationCard(TravelPlan plan) {
     // 解析航班推荐信息
-    final arrivalDetails = plan.transportation.arrivalDetails;
+    final arrivalDetails = plan.transportation.arrival?.details ?? '';
     final flightRecommendationIndex = arrivalDetails.indexOf('\n\n航班推荐：\n');
 
     String generalInfo = arrivalDetails;
@@ -1030,7 +858,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
           .where((line) => line.trim().isNotEmpty)
           .toList();
     }
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -1043,11 +871,11 @@ class _TravelPlanPageState extends State<TravelPlanPage>
         children: [
           Row(
             children: [
-              const Icon(Icons.flight_takeoff,
+              const Icon(FontAwesomeIcons.plane,
                   color: Color(0xFFFF4458), size: 20),
               const SizedBox(width: 8),
               Text(
-                plan.transportation.arrivalMethod,
+                plan.transportation.arrival?.method ?? 'N/A',
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -1087,7 +915,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                   Row(
                     children: [
                       const Icon(
-                        Icons.local_airport,
+                        FontAwesomeIcons.plane,
                         color: Color(0xFFFF4458),
                         size: 18,
                       ),
@@ -1237,7 +1065,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                           // 价格和时长
                           Row(
                             children: [
-                              Icon(Icons.attach_money,
+                              Icon(FontAwesomeIcons.dollarSign,
                                   size: 14, color: Colors.grey[600]),
                               const SizedBox(width: 4),
                               Text(
@@ -1249,7 +1077,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                                 ),
                               ),
                               const SizedBox(width: 16),
-                              Icon(Icons.schedule,
+                              Icon(FontAwesomeIcons.clock,
                                   size: 14, color: Colors.grey[600]),
                               const SizedBox(width: 4),
                               Text(
@@ -1267,7 +1095,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Icon(Icons.info_outline,
+                                Icon(FontAwesomeIcons.circleInfo,
                                     size: 14, color: Colors.blue[400]),
                                 const SizedBox(width: 4),
                                 Expanded(
@@ -1291,7 +1119,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
               ),
             ),
           ],
-          
+
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(12),
@@ -1307,7 +1135,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                   children: [
                     Text('${l10n.estimatedCost}:'),
                     Text(
-                      '\$${plan.transportation.estimatedCost.toStringAsFixed(0)}',
+                      '\$${plan.transportation.arrival?.estimatedCost.toStringAsFixed(0) ?? '0'}',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Color(0xFFFF4458),
@@ -1323,11 +1151,11 @@ class _TravelPlanPageState extends State<TravelPlanPage>
           const SizedBox(height: 16),
           Row(
             children: [
-              const Icon(Icons.directions_subway,
+              const Icon(FontAwesomeIcons.trainSubway,
                   color: Color(0xFFFF4458), size: 20),
               const SizedBox(width: 8),
               Text(
-                plan.transportation.localTransport,
+                plan.transportation.localTransport?.method ?? 'N/A',
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -1337,7 +1165,8 @@ class _TravelPlanPageState extends State<TravelPlanPage>
           ),
           const SizedBox(height: 8),
           Text(
-            plan.transportation.localTransportDetails,
+            plan.transportation.localTransport?.details ??
+                'No details available',
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey[700],
@@ -1381,7 +1210,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  plan.accommodation.type,
+                  plan.accommodation.type.name,
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -1416,10 +1245,11 @@ class _TravelPlanPageState extends State<TravelPlanPage>
           const SizedBox(height: 8),
           Row(
             children: [
-              const Icon(Icons.location_on, size: 14, color: Colors.grey),
+              const Icon(FontAwesomeIcons.locationDot,
+                  size: 14, color: Colors.grey),
               const SizedBox(width: 4),
               Text(
-                plan.accommodation.area,
+                plan.accommodation.recommendedArea,
                 style: TextStyle(
                   fontSize: 13,
                   color: Colors.grey[600],
@@ -1455,12 +1285,12 @@ class _TravelPlanPageState extends State<TravelPlanPage>
             ),
             child: Row(
               children: [
-                const Icon(Icons.tips_and_updates,
+                const Icon(FontAwesomeIcons.lightbulb,
                     size: 16, color: Colors.blue),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    plan.accommodation.bookingTips,
+                    plan.accommodation.bookingTips ?? '',
                     style: const TextStyle(fontSize: 12),
                   ),
                 ),
@@ -1520,7 +1350,8 @@ class _TravelPlanPageState extends State<TravelPlanPage>
               const SizedBox(height: 16),
               ...dayItinerary.activities
                   .map((activity) => _buildActivityItem(activity)),
-              if (dayItinerary.notes.isNotEmpty) ...[
+              if (dayItinerary.notes != null &&
+                  dayItinerary.notes!.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 Container(
                   padding: const EdgeInsets.all(10),
@@ -1531,12 +1362,12 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.info_outline,
+                      const Icon(FontAwesomeIcons.circleInfo,
                           size: 16, color: Colors.amber),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          dayItinerary.notes,
+                          dayItinerary.notes!,
                           style: const TextStyle(fontSize: 12),
                         ),
                       ),
@@ -1551,7 +1382,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
     );
   }
 
-  Widget _buildActivityItem(Activity activity) {
+  Widget _buildActivityItem(PlannedActivity activity) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -1596,7 +1427,8 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Icon(Icons.location_on, size: 12, color: Colors.grey[500]),
+                    Icon(FontAwesomeIcons.locationDot,
+                        size: 12, color: Colors.grey[500]),
                     const SizedBox(width: 4),
                     Text(
                       activity.location,
@@ -1606,7 +1438,8 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Icon(Icons.attach_money, size: 12, color: Colors.grey[500]),
+                    Icon(FontAwesomeIcons.dollarSign,
+                        size: 12, color: Colors.grey[500]),
                     Text(
                       '\$${activity.estimatedCost.toStringAsFixed(0)}',
                       style: TextStyle(
@@ -1624,7 +1457,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
     );
   }
 
-  Widget _buildAttractionCard(Attraction attraction) {
+  Widget _buildAttractionCard(AttractionRecommendation attraction) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -1638,7 +1471,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
             borderRadius:
                 const BorderRadius.horizontal(left: Radius.circular(12)),
             child: Image.network(
-              attraction.image,
+              attraction.image ?? '',
               width: 100,
               height: 100,
               fit: BoxFit.cover,
@@ -1647,7 +1480,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                   width: 100,
                   height: 100,
                   color: Colors.grey[300],
-                  child: const Icon(Icons.image),
+                  child: const Icon(FontAwesomeIcons.image),
                 );
               },
             ),
@@ -1678,14 +1511,15 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(Icons.star, size: 12, color: Colors.amber),
+                      const Icon(FontAwesomeIcons.star,
+                          size: 12, color: Colors.amber),
                       const SizedBox(width: 4),
                       Text(
                         attraction.rating.toString(),
                         style: const TextStyle(fontSize: 11),
                       ),
                       const SizedBox(width: 12),
-                      const Icon(Icons.attach_money,
+                      const Icon(FontAwesomeIcons.dollarSign,
                           size: 12, color: Color(0xFFFF4458)),
                       Text(
                         '\$${attraction.entryFee.toStringAsFixed(0)}',
@@ -1702,7 +1536,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
     );
   }
 
-  Widget _buildRestaurantCard(Restaurant restaurant) {
+  Widget _buildRestaurantCard(RestaurantRecommendation restaurant) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -1716,7 +1550,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
             borderRadius:
                 const BorderRadius.horizontal(left: Radius.circular(12)),
             child: Image.network(
-              restaurant.image,
+              restaurant.image ?? '',
               width: 100,
               height: 100,
               fit: BoxFit.cover,
@@ -1725,7 +1559,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                   width: 100,
                   height: 100,
                   color: Colors.grey[300],
-                  child: const Icon(Icons.restaurant),
+                  child: const Icon(FontAwesomeIcons.utensils),
                 );
               },
             ),
@@ -1764,7 +1598,8 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(Icons.star, size: 12, color: Colors.amber),
+                      const Icon(FontAwesomeIcons.star,
+                          size: 12, color: Colors.amber),
                       const SizedBox(width: 4),
                       Text(
                         restaurant.rating.toString(),
@@ -1772,7 +1607,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        restaurant.priceRange,
+                        restaurant.priceSymbol,
                         style: const TextStyle(
                           fontSize: 11,
                           color: Color(0xFFFF4458),

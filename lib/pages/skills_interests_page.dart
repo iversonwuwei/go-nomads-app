@@ -1,12 +1,14 @@
+import 'package:df_admin_mobile/features/interest/domain/entities/interest.dart';
+import 'package:df_admin_mobile/features/interest/presentation/controllers/interest_state_controller.dart';
+import 'package:df_admin_mobile/features/skill/domain/entities/skill.dart';
+import 'package:df_admin_mobile/features/skill/presentation/controllers/skill_state_controller.dart';
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/interests_selector.dart';
+import 'package:df_admin_mobile/widgets/skills_selector.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import '../models/interest_model.dart';
-import '../models/skill_model.dart';
-import '../services/interests_api_service.dart';
-import '../services/skills_api_service.dart';
-import '../widgets/interests_selector.dart';
-import '../widgets/skills_selector.dart';
 
 /// 技能和兴趣选择页面
 /// 用于用户注册流程或个人资料编辑
@@ -17,10 +19,12 @@ class SkillsInterestsPage extends StatefulWidget {
   State<SkillsInterestsPage> createState() => _SkillsInterestsPageState();
 }
 
-class _SkillsInterestsPageState extends State<SkillsInterestsPage> with SingleTickerProviderStateMixin {
+class _SkillsInterestsPageState extends State<SkillsInterestsPage>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final SkillsApiService _skillsService = SkillsApiService();
-  final InterestsApiService _interestsService = InterestsApiService();
+  late final SkillStateController _skillController;
+  late final InterestStateController _interestController;
+  late final UserStateController _userStateController;
 
   List<UserSkill> _selectedSkills = [];
   List<UserInterest> _selectedInterests = [];
@@ -30,6 +34,9 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage> with SingleTi
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _skillController = Get.find<SkillStateController>();
+    _interestController = Get.find<InterestStateController>();
+    _userStateController = Get.find<UserStateController>();
   }
 
   @override
@@ -39,62 +46,84 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage> with SingleTi
   }
 
   Future<void> _saveSkillsAndInterests() async {
+    final currentUser = _userStateController.currentUser.value;
+
+    if (currentUser == null) {
+      AppToast.error('请先登录以保存您的技能和兴趣');
+      return;
+    }
+
     if (_selectedSkills.isEmpty && _selectedInterests.isEmpty) {
-      Get.snackbar(
-        '提示',
-        '请至少选择一个技能或兴趣',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      AppToast.error('请至少选择一个技能或兴趣');
       return;
     }
 
     setState(() => _isSaving = true);
 
     try {
+      var skillSuccessCount = 0;
+      var interestSuccessCount = 0;
+
       // 保存技能
       if (_selectedSkills.isNotEmpty) {
-        final skillRequests = _selectedSkills.map((skill) {
-          return AddUserSkillRequest(
-            skillId: skill.skillId,
-            proficiencyLevel: skill.proficiencyLevel,
-            yearsOfExperience: skill.yearsOfExperience,
+        for (final skill in _selectedSkills) {
+          final success = await _skillController.addUserSkill(
+            currentUser.id,
+            AddUserSkillRequest(
+              skillId: skill.skillId,
+              proficiencyLevel: skill.proficiencyLevel,
+              yearsOfExperience: skill.yearsOfExperience,
+            ),
           );
-        }).toList();
-
-        await _skillsService.addUserSkillsBatch(skillRequests);
+          if (success) {
+            skillSuccessCount++;
+          }
+        }
       }
 
       // 保存兴趣
       if (_selectedInterests.isNotEmpty) {
-        final interestRequests = _selectedInterests.map((interest) {
-          return AddUserInterestRequest(
-            interestId: interest.interestId,
-            intensityLevel: interest.intensityLevel,
+        for (final interest in _selectedInterests) {
+          final success = await _interestController.addUserInterest(
+            currentUser.id,
+            AddUserInterestRequest(
+              interestId: interest.interestId,
+              intensityLevel: interest.intensityLevel,
+            ),
           );
-        }).toList();
-
-        await _interestsService.addUserInterestsBatch(interestRequests);
+          if (success) {
+            interestSuccessCount++;
+          }
+        }
       }
 
-      Get.snackbar(
-        '保存成功',
-        '已保存 ${_selectedSkills.length} 个技能和 ${_selectedInterests.length} 个兴趣',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
+      final hasSkillFailure = skillSuccessCount != _selectedSkills.length &&
+          _selectedSkills.isNotEmpty;
+      final hasInterestFailure =
+          interestSuccessCount != _selectedInterests.length &&
+              _selectedInterests.isNotEmpty;
 
-      // 返回上一页
-      Get.back();
+      if (!hasSkillFailure && !hasInterestFailure) {
+        AppToast.error('已保存 $skillSuccessCount 个技能和 $interestSuccessCount 个兴趣');
+
+        // 返回上一页
+        Get.back();
+      } else {
+        final failureMessages = <String>[];
+        if (hasSkillFailure) {
+          failureMessages.add(
+              '技能保存失败 ${_selectedSkills.length - skillSuccessCount}/${_selectedSkills.length}');
+        }
+        if (hasInterestFailure) {
+          failureMessages.add(
+              '兴趣保存失败 ${_selectedInterests.length - interestSuccessCount}/${_selectedInterests.length}');
+        }
+
+        AppToast.warning(failureMessages.join(' · '));
+      }
     } catch (e) {
       print('❌ 保存失败: $e');
-      Get.snackbar(
-        '保存失败',
-        '无法保存您的选择，请稍后重试',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      AppToast.error('无法保存您的选择，请稍后重试');
     } finally {
       setState(() => _isSaving = false);
     }
@@ -108,8 +137,8 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage> with SingleTi
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
-            Tab(text: '技能', icon: Icon(Icons.work_outline)),
-            Tab(text: '兴趣', icon: Icon(Icons.favorite_outline)),
+            Tab(text: '技能', icon: Icon(FontAwesomeIcons.briefcase)),
+            Tab(text: '兴趣', icon: Icon(FontAwesomeIcons.heart)),
           ],
         ),
         actions: [
@@ -144,10 +173,11 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage> with SingleTi
             showProficiency: true,
             maxSelection: 10, // 最多选择10个技能
           ),
-          
+
           // 兴趣选择器
           InterestsSelector(
-            selectedInterestIds: _selectedInterests.map((i) => i.interestId).toList(),
+            selectedInterestIds:
+                _selectedInterests.map((i) => i.interestId).toList(),
             onChanged: (interests) {
               setState(() => _selectedInterests = interests);
             },
@@ -193,11 +223,14 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage> with SingleTi
                 ],
               ),
               ElevatedButton(
-                onPressed: (_selectedSkills.isEmpty && _selectedInterests.isEmpty) || _isSaving
-                    ? null
-                    : _saveSkillsAndInterests,
+                onPressed:
+                    (_selectedSkills.isEmpty && _selectedInterests.isEmpty) ||
+                            _isSaving
+                        ? null
+                        : _saveSkillsAndInterests,
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                 ),
                 child: _isSaving
                     ? const SizedBox(

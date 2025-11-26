@@ -1,14 +1,21 @@
-import 'package:df_admin_mobile/models/coworking_space_model.dart';
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_review.dart' as review_entity;
+import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
+import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_review_repository.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/widgets/coworking_verification_badge.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../generated/app_localizations.dart';
+import 'add_coworking_review_page.dart';
+import 'coworking_reviews_page.dart';
 import 'osm_navigation_page.dart';
 
 /// Coworking Detail Page
 /// 共享办公空间详情页面
-class CoworkingDetailPage extends StatelessWidget {
+class CoworkingDetailPage extends StatefulWidget {
   final CoworkingSpace space;
 
   const CoworkingDetailPage({
@@ -17,18 +24,99 @@ class CoworkingDetailPage extends StatelessWidget {
   });
 
   @override
+  State<CoworkingDetailPage> createState() => _CoworkingDetailPageState();
+}
+
+class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
+  final PageController _pageController = PageController();
+  int _currentImageIndex = 0;
+  late CoworkingSpace _space;
+  List<review_entity.CoworkingReview> _comments = [];
+  bool _isLoadingComments = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _space = widget.space;
+    // 异步加载评论,不阻塞页面显示
+    Future.microtask(() => _loadComments());
+  }
+
+  Future<void> _loadComments() async {
+    setState(() {
+      _isLoadingComments = true;
+    });
+
+    try {
+      final reviewRepository = Get.find<ICoworkingReviewRepository>();
+      final reviews = await reviewRepository.getCoworkingReviews(
+        coworkingId: _space.id,
+        page: 1,
+        pageSize: 3, // 只显示最新3条评论
+      );
+
+      setState(() {
+        _comments = reviews;
+        _isLoadingComments = false;
+      });
+    } catch (e) {
+      print('加载评论失败: $e');
+      setState(() {
+        _isLoadingComments = false;
+      });
+    }
+  }
+
+  Future<void> _navigateToAddComment() async {
+    final result = await Get.to<bool>(
+      () => AddCoworkingReviewPage(
+        coworkingId: _space.id,
+        coworkingName: _space.name,
+      ),
+    );
+
+    if (result == true) {
+      // 刷新评论列表
+      await _loadComments();
+    }
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  // 获取所有图片列表
+  List<String> get _allImages {
+    final images = <String>[];
+    images.add(_space.spaceInfo.imageUrl);
+    images.addAll(_space.spaceInfo.images);
+    return images;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final allImages = _allImages;
+    final hasMultipleImages = allImages.length > 1;
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: CustomScrollView(
         slivers: [
           // App Bar with Image
           SliverAppBar(
             expandedHeight: 300,
             pinned: true,
+            backgroundColor: Colors.white,
+            iconTheme: const IconThemeData(color: Colors.black87),
+            leading: IconButton(
+              icon: const Icon(FontAwesomeIcons.arrowLeft),
+              onPressed: () => Get.back(),
+            ),
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
-                space.name,
+                _space.name,
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -43,28 +131,100 @@ class CoworkingDetailPage extends StatelessWidget {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.network(
-                    space.imageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.business, size: 100),
-                      );
-                    },
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Colors.black.withAlpha(128),
-                        ],
+                  // 图片轮播
+                  hasMultipleImages
+                      ? PageView.builder(
+                          controller: _pageController,
+                          onPageChanged: (index) {
+                            setState(() {
+                              _currentImageIndex = index;
+                            });
+                          },
+                          itemCount: allImages.length,
+                          itemBuilder: (context, index) {
+                            return Image.network(
+                              allImages[index],
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  color: Colors.grey[300],
+                                  child: const Icon(FontAwesomeIcons.building, size: 100),
+                                );
+                              },
+                            );
+                          },
+                        )
+                      : Image.network(
+                          _space.spaceInfo.imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: Colors.grey[300],
+                              child: const Icon(FontAwesomeIcons.building, size: 100),
+                            );
+                          },
+                        ),
+                  // 渐变遮罩 (忽略手势，避免阻挡图片滑动)
+                  IgnorePointer(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withAlpha(128),
+                          ],
+                        ),
                       ),
                     ),
                   ),
+                  // 图片指示器
+                  if (hasMultipleImages)
+                    Positioned(
+                      bottom: 80,
+                      left: 0,
+                      right: 0,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(
+                          allImages.length,
+                          (index) => Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _currentImageIndex == index ? Colors.white : Colors.white.withAlpha(128),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  // 图片计数器
+                  if (hasMultipleImages)
+                    Positioned(
+                      top: 100,
+                      right: 16,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withAlpha(128),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          '${_currentImageIndex + 1}/${allImages.length}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -78,67 +238,89 @@ class CoworkingDetailPage extends StatelessWidget {
                 // Rating & Verified Badge
                 Padding(
                   padding: const EdgeInsets.all(16),
-                  child: Row(
+                  child: Wrap(
+                    spacing: 12,
+                    runSpacing: 8,
                     children: [
-                      // Rating
-                      Container(
+                      // Rating - 可点击跳转到评论列表
+                      InkWell(
+                        onTap: () {
+                          Get.to(() => CoworkingReviewsPage(
+                                coworkingId: _space.id,
+                                coworkingName: _space.name,
+                              ))?.then((_) => _loadComments());
+                        },
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.amber[50],
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(FontAwesomeIcons.star, size: 18, color: Colors.amber),
+                              const SizedBox(width: 4),
+                              Text(
+                                _space.spaceInfo.rating.toStringAsFixed(1),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              Text(
+                                ' (${_space.spaceInfo.reviewCount} ${l10n.reviews})',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 14,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Icon(FontAwesomeIcons.chevronRight, size: 16, color: Colors.grey[600]),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      CoworkingVerificationBadge(
+                        space: _space,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 12,
                           vertical: 6,
                         ),
-                        decoration: BoxDecoration(
-                          color: Colors.amber[50],
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.star,
-                                size: 18, color: Colors.amber),
-                            const SizedBox(width: 4),
-                            Text(
-                              space.rating.toStringAsFixed(1),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                            Text(
-                              ' (${space.reviewCount} ${l10n.reviews})',
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
+                        onVerified: (updatedSpace) {
+                          setState(() {
+                            _space = updatedSpace;
+                          });
+                        },
                       ),
 
-                      const SizedBox(width: 12),
-
-                      // Verified Badge
-                      if (space.isVerified)
+                      // Last Updated Badge
+                      if (_space.lastUpdated != null)
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 12,
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.blue[50],
+                            color: Colors.grey[100],
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.verified,
-                                  size: 18, color: Colors.blue),
+                              const Icon(FontAwesomeIcons.arrowsRotate, size: 18, color: Colors.grey),
                               const SizedBox(width: 4),
                               Text(
-                                l10n.verified,
-                                style: const TextStyle(
-                                  color: Colors.blue,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 14,
+                                'Updated ${_formatDate(_space.lastUpdated!)}',
+                                style: TextStyle(
+                                  color: Colors.grey[700],
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 12,
                                 ),
                               ),
                             ],
@@ -152,10 +334,18 @@ class CoworkingDetailPage extends StatelessWidget {
 
                 // Address
                 ListTile(
-                  leading: const Icon(Icons.location_on, color: Colors.red),
-                  title: Text(space.address),
-                  subtitle: Text('${space.city}, ${space.country}'),
+                  leading: const Icon(FontAwesomeIcons.locationDot, color: Colors.red),
+                  title: Text(_space.location.address),
+                  subtitle: Text('${_space.location.city}, ${_space.location.country}'),
                 ),
+
+                // Creator Info
+                if (_space.creatorName != null && _space.creatorName!.isNotEmpty)
+                  ListTile(
+                    leading: const Icon(FontAwesomeIcons.user, color: Colors.blue),
+                    title: Text(l10n.createdBy),
+                    subtitle: Text(_space.creatorName!),
+                  ),
 
                 const Divider(),
 
@@ -174,7 +364,7 @@ class CoworkingDetailPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        space.description,
+                        _space.spaceInfo.description,
                         style: TextStyle(
                           fontSize: 15,
                           color: Colors.grey[700],
@@ -203,13 +393,17 @@ class CoworkingDetailPage extends StatelessWidget {
                 const Divider(),
 
                 // Opening Hours
-                if (space.openingHours.isNotEmpty)
-                  _buildOpeningHoursSection(context),
+                if (_space.operationHours.hasHours) _buildOpeningHoursSection(context),
 
-                if (space.openingHours.isNotEmpty) const Divider(),
+                if (_space.operationHours.hasHours) const Divider(),
 
                 // Contact
                 _buildContactSection(context),
+
+                const Divider(),
+
+                // Comments
+                _buildCommentsSection(context),
 
                 const SizedBox(height: 100),
               ],
@@ -235,28 +429,26 @@ class CoworkingDetailPage extends StatelessWidget {
           children: [
             Expanded(
               child: OutlinedButton.icon(
-                icon: const Icon(Icons.directions),
+                icon: const Icon(FontAwesomeIcons.diamondTurnRight),
                 label: Text(l10n.directions),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 onPressed: () {
                   // 跳转到 OSM Navigation 页面进行导航
-                  Get.to(() => OSMNavigationPage(coworkingSpace: space));
+                  Get.to(() => OSMNavigationPage(coworkingSpace: _space));
                 },
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: ElevatedButton.icon(
-                icon: const Icon(Icons.language),
+                icon: const Icon(FontAwesomeIcons.globe),
                 label: Text(l10n.visitWebsite),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                onPressed: space.website.isNotEmpty
-                    ? () => _launchURL(space.website)
-                    : null,
+                onPressed: _space.contactInfo.hasWebsite ? () => _launchURL(_space.contactInfo.website) : null,
               ),
             ),
           ],
@@ -283,23 +475,23 @@ class CoworkingDetailPage extends StatelessWidget {
           const SizedBox(height: 16),
           Row(
             children: [
-              if (space.pricing.hourlyRate != null)
+              if (_space.pricing.hourlyRate != null)
                 Expanded(
                   child: _buildPriceCard(
                     l10n.hourly,
-                    space.pricing.hourlyRate!,
-                    space.pricing.currency,
-                    Icons.access_time,
+                    _space.pricing.hourlyRate!,
+                    _space.pricing.currency,
+                    FontAwesomeIcons.clock,
                   ),
                 ),
-              if (space.pricing.dailyRate != null) ...[
-                if (space.pricing.hourlyRate != null) const SizedBox(width: 8),
+              if (_space.pricing.dailyRate != null) ...[
+                if (_space.pricing.hourlyRate != null) const SizedBox(width: 8),
                 Expanded(
                   child: _buildPriceCard(
                     l10n.daily,
-                    space.pricing.dailyRate!,
-                    space.pricing.currency,
-                    Icons.today,
+                    _space.pricing.dailyRate!,
+                    _space.pricing.currency,
+                    FontAwesomeIcons.calendarDay,
                   ),
                 ),
               ],
@@ -308,29 +500,29 @@ class CoworkingDetailPage extends StatelessWidget {
           const SizedBox(height: 8),
           Row(
             children: [
-              if (space.pricing.weeklyRate != null)
+              if (_space.pricing.weeklyRate != null)
                 Expanded(
                   child: _buildPriceCard(
                     l10n.weekly,
-                    space.pricing.weeklyRate!,
-                    space.pricing.currency,
-                    Icons.date_range,
+                    _space.pricing.weeklyRate!,
+                    _space.pricing.currency,
+                    FontAwesomeIcons.calendarDays,
                   ),
                 ),
-              if (space.pricing.monthlyRate != null) ...[
-                if (space.pricing.weeklyRate != null) const SizedBox(width: 8),
+              if (_space.pricing.monthlyRate != null) ...[
+                if (_space.pricing.weeklyRate != null) const SizedBox(width: 8),
                 Expanded(
                   child: _buildPriceCard(
                     l10n.monthly,
-                    space.pricing.monthlyRate!,
-                    space.pricing.currency,
-                    Icons.calendar_month,
+                    _space.pricing.monthlyRate!,
+                    _space.pricing.currency,
+                    FontAwesomeIcons.calendarDays,
                   ),
                 ),
               ],
             ],
           ),
-          if (space.pricing.hasFreeTrial) ...[
+          if (_space.pricing.hasFreeTrial) ...[
             const SizedBox(height: 12),
             Container(
               width: double.infinity,
@@ -342,11 +534,11 @@ class CoworkingDetailPage extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.local_offer, color: Colors.green[700]),
+                  Icon(FontAwesomeIcons.tag, color: Colors.green[700]),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      '${l10n.freeTrialAvailable} ${space.pricing.trialDuration ?? ''}',
+                      '${l10n.freeTrialAvailable} ${_space.pricing.trialDuration ?? ''}',
                       style: TextStyle(
                         color: Colors.green[700],
                         fontWeight: FontWeight.w600,
@@ -362,8 +554,7 @@ class CoworkingDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildPriceCard(
-      String label, double price, String currency, IconData icon) {
+  Widget _buildPriceCard(String label, double price, String currency, IconData icon) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -416,8 +607,8 @@ class CoworkingDetailPage extends StatelessWidget {
               Expanded(
                 child: _buildSpecCard(
                   l10n.wifiSpeed,
-                  '${space.specs.wifiSpeed?.toStringAsFixed(0) ?? 'N/A'} Mbps',
-                  Icons.wifi,
+                  '${_space.specs.wifiSpeed?.toStringAsFixed(0) ?? 'N/A'} Mbps',
+                  FontAwesomeIcons.wifi,
                   Colors.blue,
                 ),
               ),
@@ -425,8 +616,8 @@ class CoworkingDetailPage extends StatelessWidget {
               Expanded(
                 child: _buildSpecCard(
                   l10n.capacity,
-                  '${space.specs.capacity ?? 'N/A'} ${l10n.people}',
-                  Icons.people,
+                  '${_space.specs.capacity ?? 'N/A'} ${l10n.people}',
+                  FontAwesomeIcons.users,
                   Colors.green,
                 ),
               ),
@@ -435,35 +626,55 @@ class CoworkingDetailPage extends StatelessWidget {
           const SizedBox(height: 8),
           Row(
             children: [
-              if (space.specs.numberOfDesks != null)
+              if (_space.specs.numberOfDesks != null)
                 Expanded(
                   child: _buildSpecCard(
                     l10n.desks,
-                    '${space.specs.numberOfDesks}',
-                    Icons.desk,
+                    '${_space.specs.numberOfDesks}',
+                    FontAwesomeIcons.chair,
                     Colors.orange,
                   ),
                 ),
-              if (space.specs.numberOfMeetingRooms != null) ...[
-                if (space.specs.numberOfDesks != null) const SizedBox(width: 8),
+              if (_space.specs.numberOfMeetingRooms != null) ...[
+                if (_space.specs.numberOfDesks != null) const SizedBox(width: 8),
                 Expanded(
                   child: _buildSpecCard(
                     l10n.meetingRooms,
-                    '${space.specs.numberOfMeetingRooms}',
-                    Icons.meeting_room,
+                    '${_space.specs.numberOfMeetingRooms}',
+                    FontAwesomeIcons.doorOpen,
                     Colors.purple,
                   ),
                 ),
               ],
             ],
           ),
-          if (space.specs.noiseLevel != null) ...[
+          if (_space.specs.noiseLevel != null) ...[
             const SizedBox(height: 8),
             _buildSpecCard(
               l10n.noiseLevel,
-              space.specs.noiseLevel!,
-              Icons.volume_down,
+              _getNoiseDisplayText(_space.specs.noiseLevel!, l10n),
+              FontAwesomeIcons.volumeLow,
               Colors.red,
+            ),
+          ],
+          // 空间类型
+          if (_space.specs.spaceType != null) ...[
+            const SizedBox(height: 8),
+            _buildSpecCard(
+              'Space Type',
+              _getSpaceTypeDisplayText(_space.specs.spaceType!, l10n),
+              FontAwesomeIcons.gaugeHigh,
+              Colors.indigo,
+            ),
+          ],
+          // 自然光
+          if (_space.specs.hasNaturalLight) ...[
+            const SizedBox(height: 8),
+            _buildSpecCard(
+              'Natural Light',
+              'Available',
+              FontAwesomeIcons.sun,
+              Colors.amber,
             ),
           ],
         ],
@@ -471,8 +682,31 @@ class CoworkingDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSpecCard(
-      String label, String value, IconData icon, Color color) {
+  /// 获取噪音等级显示文本
+  String _getNoiseDisplayText(NoiseLevel level, AppLocalizations l10n) {
+    switch (level) {
+      case NoiseLevel.quiet:
+        return 'Quiet';
+      case NoiseLevel.moderate:
+        return 'Moderate';
+      case NoiseLevel.loud:
+        return 'Loud';
+    }
+  }
+
+  /// 获取空间类型显示文本
+  String _getSpaceTypeDisplayText(SpaceType type, AppLocalizations l10n) {
+    switch (type) {
+      case SpaceType.open:
+        return 'Open Space';
+      case SpaceType.private:
+        return 'Private Space';
+      case SpaceType.mixed:
+        return 'Mixed Space';
+    }
+  }
+
+  Widget _buildSpecCard(String label, String value, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -513,7 +747,7 @@ class CoworkingDetailPage extends StatelessWidget {
   /// 设施区域
   Widget _buildAmenitiesSection(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final amenities = space.amenities.getAvailableAmenities();
+    final amenities = _space.amenities.getAvailableAmenities();
 
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -532,40 +766,55 @@ class CoworkingDetailPage extends StatelessWidget {
             spacing: 8,
             runSpacing: 8,
             children: amenities.map((amenity) {
-              IconData icon = Icons.check_circle;
+              IconData icon = FontAwesomeIcons.circleCheck;
               Color color = Colors.green;
 
               // 为不同设施设置不同图标
               if (amenity.contains('WiFi')) {
-                icon = Icons.wifi;
+                icon = FontAwesomeIcons.wifi;
                 color = Colors.blue;
               } else if (amenity.contains('Coffee')) {
-                icon = Icons.coffee;
+                icon = FontAwesomeIcons.mugSaucer;
                 color = Colors.brown;
               } else if (amenity.contains('Printer')) {
-                icon = Icons.print;
+                icon = FontAwesomeIcons.print;
                 color = Colors.grey;
               } else if (amenity.contains('Meeting')) {
-                icon = Icons.meeting_room;
+                icon = FontAwesomeIcons.doorOpen;
                 color = Colors.purple;
               } else if (amenity.contains('Phone')) {
-                icon = Icons.phone;
+                icon = FontAwesomeIcons.phone;
                 color = Colors.orange;
               } else if (amenity.contains('Kitchen')) {
-                icon = Icons.kitchen;
+                icon = FontAwesomeIcons.kitchenSet;
                 color = Colors.red;
               } else if (amenity.contains('Parking')) {
-                icon = Icons.local_parking;
+                icon = FontAwesomeIcons.squareParking;
                 color = Colors.indigo;
               } else if (amenity.contains('24/7')) {
-                icon = Icons.access_time;
+                icon = FontAwesomeIcons.clock;
                 color = Colors.deepOrange;
               } else if (amenity.contains('A/C') || amenity.contains('Air')) {
-                icon = Icons.ac_unit;
+                icon = FontAwesomeIcons.snowflake;
                 color = Colors.cyan;
               } else if (amenity.contains('Shower')) {
-                icon = Icons.shower;
+                icon = FontAwesomeIcons.shower;
                 color = Colors.lightBlue;
+              } else if (amenity.contains('Standing Desk')) {
+                icon = FontAwesomeIcons.chair;
+                color = Colors.teal;
+              } else if (amenity.contains('Locker')) {
+                icon = FontAwesomeIcons.lock;
+                color = Colors.blueGrey;
+              } else if (amenity.contains('Bike')) {
+                icon = FontAwesomeIcons.personBiking;
+                color = Colors.lightGreen;
+              } else if (amenity.contains('Event')) {
+                icon = FontAwesomeIcons.calendarDays;
+                color = Colors.deepPurple;
+              } else if (amenity.contains('Pet')) {
+                icon = FontAwesomeIcons.paw;
+                color = Colors.pink;
               }
 
               return Chip(
@@ -597,11 +846,11 @@ class CoworkingDetailPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          ...space.openingHours.map((hours) => Padding(
+          ..._space.operationHours.hours.map((hours) => Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Row(
                   children: [
-                    const Icon(Icons.access_time, size: 20),
+                    const Icon(FontAwesomeIcons.clock, size: 20),
                     const SizedBox(width: 12),
                     Text(
                       hours,
@@ -631,9 +880,9 @@ class CoworkingDetailPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          if (space.phone.isNotEmpty)
+          if (_space.contactInfo.phone.isNotEmpty)
             InkWell(
-              onTap: () => _makePhoneCall(context, space.phone),
+              onTap: () => _makePhoneCall(context, _space.contactInfo.phone),
               borderRadius: BorderRadius.circular(12),
               child: Container(
                 padding: const EdgeInsets.all(16),
@@ -651,7 +900,7 @@ class CoworkingDetailPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(
-                        Icons.phone,
+                        FontAwesomeIcons.phone,
                         color: Colors.white,
                         size: 24,
                       ),
@@ -670,7 +919,7 @@ class CoworkingDetailPage extends StatelessWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            space.phone,
+                            _space.contactInfo.phone,
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -693,7 +942,7 @@ class CoworkingDetailPage extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const Icon(
-                            Icons.call,
+                            FontAwesomeIcons.phone,
                             color: Colors.white,
                             size: 16,
                           ),
@@ -713,11 +962,10 @@ class CoworkingDetailPage extends StatelessWidget {
                 ),
               ),
             ),
-          if (space.phone.isNotEmpty && space.email.isNotEmpty)
-            const SizedBox(height: 12),
-          if (space.email.isNotEmpty)
+          if (_space.contactInfo.phone.isNotEmpty && _space.contactInfo.email.isNotEmpty) const SizedBox(height: 12),
+          if (_space.contactInfo.email.isNotEmpty)
             InkWell(
-              onTap: () => _launchURL('mailto:${space.email}'),
+              onTap: () => _launchURL('mailto:${_space.contactInfo.email}'),
               borderRadius: BorderRadius.circular(12),
               child: Container(
                 padding: const EdgeInsets.all(16),
@@ -735,7 +983,7 @@ class CoworkingDetailPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(
-                        Icons.email,
+                        FontAwesomeIcons.envelope,
                         color: Colors.white,
                         size: 24,
                       ),
@@ -754,7 +1002,7 @@ class CoworkingDetailPage extends StatelessWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            space.email,
+                            _space.contactInfo.email,
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -766,7 +1014,7 @@ class CoworkingDetailPage extends StatelessWidget {
                       ),
                     ),
                     const Icon(
-                      Icons.arrow_forward_ios,
+                      FontAwesomeIcons.arrowRight,
                       size: 16,
                       color: Colors.red,
                     ),
@@ -774,12 +1022,12 @@ class CoworkingDetailPage extends StatelessWidget {
                 ),
               ),
             ),
-          if ((space.phone.isNotEmpty || space.email.isNotEmpty) &&
-              space.website.isNotEmpty)
+          if ((_space.contactInfo.phone.isNotEmpty || _space.contactInfo.email.isNotEmpty) &&
+              _space.contactInfo.hasWebsite)
             const SizedBox(height: 12),
-          if (space.website.isNotEmpty)
+          if (_space.contactInfo.hasWebsite)
             InkWell(
-              onTap: () => _launchURL(space.website),
+              onTap: () => _launchURL(_space.contactInfo.website),
               borderRadius: BorderRadius.circular(12),
               child: Container(
                 padding: const EdgeInsets.all(16),
@@ -797,7 +1045,7 @@ class CoworkingDetailPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(
-                        Icons.language,
+                        FontAwesomeIcons.globe,
                         color: Colors.white,
                         size: 24,
                       ),
@@ -816,7 +1064,7 @@ class CoworkingDetailPage extends StatelessWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            space.website,
+                            _space.contactInfo.website,
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -828,11 +1076,206 @@ class CoworkingDetailPage extends StatelessWidget {
                       ),
                     ),
                     const Icon(
-                      Icons.arrow_forward_ios,
+                      FontAwesomeIcons.arrowRight,
                       size: 16,
                       color: Colors.green,
                     ),
                   ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// 评论区域
+  Widget _buildCommentsSection(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                '用户评论',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              TextButton.icon(
+                onPressed: _navigateToAddComment,
+                icon: const Icon(FontAwesomeIcons.commentMedical, size: 20),
+                label: const Text('发表评论'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (_isLoadingComments)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(32.0),
+                child: CircularProgressIndicator(),
+              ),
+            )
+          else if (_comments.isEmpty)
+            Container(
+              padding: const EdgeInsets.all(32),
+              alignment: Alignment.center,
+              child: Column(
+                children: [
+                  Icon(FontAwesomeIcons.comment, size: 48, color: Colors.grey[400]),
+                  const SizedBox(height: 16),
+                  Text(
+                    '暂无评论',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '成为第一个发表评论的人',
+                    style: TextStyle(
+                      color: Colors.grey[500],
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            Column(
+              children: _comments.map((comment) {
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: Colors.blue[100],
+                              backgroundImage: (comment.userAvatar != null && comment.userAvatar!.isNotEmpty)
+                                  ? NetworkImage(comment.userAvatar!)
+                                  : null,
+                              child: (comment.userAvatar == null || comment.userAvatar!.isEmpty)
+                                  ? Text(
+                                      comment.username.substring(0, 1).toUpperCase(),
+                                      style: TextStyle(
+                                        color: Colors.blue[700],
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    )
+                                  : null,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    comment.username,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  Text(
+                                    _formatDate(comment.createdAt),
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        // 评分星级
+                        if (comment.rating > 0)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Row(
+                              children: List.generate(5, (index) {
+                                return Icon(
+                                  index < comment.rating.toInt() ? FontAwesomeIcons.star : FontAwesomeIcons.star,
+                                  color: Colors.amber,
+                                  size: 18,
+                                );
+                              }),
+                            ),
+                          ),
+                        if (comment.title.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Text(
+                              comment.title,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        Text(
+                          comment.content,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            height: 1.5,
+                          ),
+                        ),
+                        if (comment.photoUrls.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 12),
+                            child: Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: comment.photoUrls.take(3).map((imageUrl) {
+                                return ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.network(
+                                    imageUrl,
+                                    width: 100,
+                                    height: 100,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Container(
+                                        width: 100,
+                                        height: 100,
+                                        color: Colors.grey[300],
+                                        child: const Icon(FontAwesomeIcons.image),
+                                      );
+                                    },
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          if (_comments.isNotEmpty && _comments.length >= 3)
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: Center(
+                child: TextButton(
+                  onPressed: () {
+                    Get.to(() => CoworkingReviewsPage(
+                          coworkingId: _space.id,
+                          coworkingName: _space.name,
+                        ))?.then((_) => _loadComments());
+                  },
+                  child: const Text('查看更多评论'),
                 ),
               ),
             ),
@@ -929,6 +1372,29 @@ class CoworkingDetailPage extends StatelessWidget {
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
+    }
+  }
+
+  /// 格式化日期
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays == 0) {
+      return 'Today';
+    } else if (difference.inDays == 1) {
+      return 'Yesterday';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays} days ago';
+    } else if (difference.inDays < 30) {
+      final weeks = (difference.inDays / 7).floor();
+      return '$weeks ${weeks == 1 ? 'week' : 'weeks'} ago';
+    } else if (difference.inDays < 365) {
+      final months = (difference.inDays / 30).floor();
+      return '$months ${months == 1 ? 'month' : 'months'} ago';
+    } else {
+      final years = (difference.inDays / 365).floor();
+      return '$years ${years == 1 ? 'year' : 'years'} ago';
     }
   }
 }

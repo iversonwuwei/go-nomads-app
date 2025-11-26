@@ -1,14 +1,12 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/routes/app_routes.dart';
+import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import '../config/app_colors.dart';
-import '../controllers/shopping_controller.dart';
-import '../controllers/user_state_controller.dart';
-import '../generated/app_localizations.dart';
-import '../routes/app_routes.dart';
-import '../services/http_service.dart';
-import '../services/nomads_auth_service.dart';
-import '../widgets/app_toast.dart';
 
 class NomadsLoginPage extends StatefulWidget {
   const NomadsLoginPage({super.key});
@@ -37,7 +35,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
 
   void _login() async {
     if (_formKey.currentState!.validate()) {
-      // 显示加载指示�?
+      // 显示加载指示器
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -49,83 +47,81 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
       );
 
       try {
-        print('🔐 开始登录验�?..');
+        print('🔐 开始登录验证..');
         print('   邮箱: ${_emailController.text.trim()}');
 
-        // 调用后端登录接口
-        final nomadsAuthService = NomadsAuthService();
-        final loginResponse = await nomadsAuthService.login(
+        // 调用 AuthStateController 登录
+        final authController = Get.find<AuthStateController>();
+        final success = await authController.login(
           email: _emailController.text.trim(),
           password: _passwordController.text,
         );
 
-        // 关闭加载指示�?
+        // 关闭加载指示器
         if (mounted) {
           Navigator.pop(context);
         }
 
-        if (loginResponse.success && loginResponse.data != null) {
-          // 登录成功
-          final user = loginResponse.data!.user;
+        if (success) {
+          // 登录成功 - 从 AuthStateController 获取当前用户
+          final user = authController.currentUser.value;
+
+          if (user == null) {
+            // 用户数据为空
+            print('❌ 登录失败: 用户数据为空');
+            AppToast.error(
+              'Failed to load user data',
+              title: 'Login Failed',
+            );
+            return;
+          }
 
           print('🎉 登录成功');
           print('   用户ID: ${user.id}');
           print('   用户名: ${user.name}');
           print('   邮箱: ${user.email}');
 
-          // 保存用户状态到全局控制�?
-          try {
-            final userStateController = Get.find<UserStateController>();
-            // 注意：后端返回的�?String ID，需要转换或修改控制�?
-            // 这里暂时使用 hashCode 作为临时方案
-            userStateController.login(
-              user.id.hashCode,
-              user.name,
-              email: user.email,
-            );
-            print('�?用户状态已保存');
-            print('🔔 登录状态变化事件将触发数据重新加载');
-          } catch (e) {
-            print('⚠️ 保存用户状态失�? $e');
-          }
+          // TODO: 需要通过 AuthStateController 处理登录状态
+          // UserStateController 没有 login 方法，应该使用 AuthStateController
+          print('✅ 用户登录成功，待集成状态管理');
 
           AppToast.success(
             'Welcome back, ${user.name}!',
             title: 'Login Successful',
           );
 
-          // 等待一小段时间，确保登录状态事件已被处�?
+          // 等待一小段时间，确保登录状态事件已被处理
           await Future.delayed(const Duration(milliseconds: 300));
 
           // 登录成功后跳转到主页
-          print('🚀 准备跳转到主�?..');
+          print('🚀 准备跳转到主页..');
           Get.offAllNamed('/');
         } else {
           // 登录失败
-          print('�?登录失败: ${loginResponse.message}');
+          print('❌ 登录失败');
           AppToast.error(
-            loginResponse.message,
+            'Invalid email or password',
             title: 'Login Failed',
           );
         }
       } on HttpException catch (e) {
-        // 关闭加载指示�?
+        // 关闭加载指示器
         if (mounted) {
           Navigator.pop(context);
         }
 
-        print('�?HTTP 错误: ${e.message}');
+        print('❌ HTTP 错误: ${e.message}');
         AppToast.error(
           e.message,
           title: 'Network Error',
         );
       } catch (e) {
-        // 关闭加载指示�?
+        // 关闭加载指示器
         if (mounted) {
           Navigator.pop(context);
         }
 
-        print('�?登录错误: $e');
+        print('❌ 登录错误: $e');
         AppToast.error(
           'An error occurred. Please try again.',
           title: 'Error',
@@ -153,25 +149,18 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                     alignment: Alignment.centerLeft,
                     child: IconButton(
                       icon: const Icon(
-                        Icons.arrow_back,
+                        FontAwesomeIcons.arrowLeft,
                         color: NomadsLoginPage.nomadsRed,
                       ),
                       onPressed: () {
-                        // 返回到主页的 home tab
-                        try {
-                          final shoppingController =
-                              Get.find<ShoppingController>();
-                          shoppingController.changeTab(0); // 切换�?home tab
-                        } catch (e) {
-                          print('⚠️ 未找�?ShoppingController: $e');
-                        }
-                        Get.offAllNamed('/'); // 跳转到主�?
+                        // 返回到主页
+                        Get.offAllNamed('/'); // 跳转到主页
                       },
                     ),
                   ),
                   const SizedBox(height: 20),
 
-                  // Logo 和标�?
+                  // Logo 和标题
                   Center(
                     child: Column(
                       children: [
@@ -185,7 +174,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
-                            Icons.travel_explore,
+                            FontAwesomeIcons.earthAmericas,
                             size: 40,
                             color: NomadsLoginPage.nomadsRed,
                           ),
@@ -203,7 +192,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                         ),
                         const SizedBox(height: 12),
 
-                        // 副标�?
+                        // 副标题
                         Text(
                           l10n.login,
                           textAlign: TextAlign.center,
@@ -226,7 +215,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                     decoration: InputDecoration(
                       labelText: l10n.email,
                       hintText: l10n.email,
-                      prefixIcon: const Icon(Icons.email_outlined),
+                      prefixIcon: const Icon(FontAwesomeIcons.envelope),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -262,12 +251,12 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                     decoration: InputDecoration(
                       labelText: l10n.password,
                       hintText: l10n.password,
-                      prefixIcon: const Icon(Icons.lock_outline),
+                      prefixIcon: const Icon(FontAwesomeIcons.lock),
                       suffixIcon: IconButton(
                         icon: Icon(
                           _obscurePassword
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined,
+                              ? FontAwesomeIcons.eye
+                              : FontAwesomeIcons.eyeSlash,
                         ),
                         onPressed: () {
                           setState(() {
@@ -300,7 +289,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
 
                   const SizedBox(height: 16),
 
-                  // 记住�?& 忘记密码
+                  // 记住我 & 忘记密码
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -368,7 +357,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
 
                   const SizedBox(height: 24),
 
-                  // 分隔�?
+                  // 分隔线
                   Row(
                     children: [
                       Expanded(child: Divider(color: Colors.grey.shade300)),
@@ -388,49 +377,103 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
 
                   const SizedBox(height: 24),
 
-                  // 社交登录按钮
+                  // 社交登录按钮 - 第一行
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      // Google 登录
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            AppToast.info(
-                              'Google authentication coming soon',
-                              title: 'Google Sign In',
-                            );
-                          },
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            side: BorderSide(color: Colors.grey.shade300),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          icon: const Icon(Icons.g_mobiledata, size: 24),
-                          label: const Text('Google'),
-                        ),
+                      _buildSocialLoginButton(
+                        onPressed: () {
+                          AppToast.info(
+                            'Google authentication coming soon',
+                            title: 'Google Sign In',
+                          );
+                        },
+                        icon: FontAwesomeIcons.google,
+                        color: const Color(0xFFDB4437), // Google Red
+                        label: 'Google',
                       ),
-                      const SizedBox(width: 12),
-                      // Apple 登录
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            AppToast.info(
-                              'Apple',
-                              title: 'Apple',
-                            );
-                          },
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            side: BorderSide(color: Colors.grey.shade300),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          icon: const Icon(Icons.apple, size: 24),
-                          label: const Text('Apple'),
-                        ),
+                      _buildSocialLoginButton(
+                        onPressed: () {
+                          AppToast.info('Apple Sign In', title: 'Apple');
+                        },
+                        icon: FontAwesomeIcons.apple,
+                        color: Colors.black,
+                        label: 'Apple',
+                      ),
+                      _buildSocialLoginButton(
+                        onPressed: () {
+                          AppToast.info('WeChat Sign In', title: 'WeChat');
+                        },
+                        icon: FontAwesomeIcons.weixin, // WeChat icon
+                        color: const Color(0xFF09BB07), // WeChat Green
+                        label: 'WeChat',
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // 社交登录按钮 - 第二行
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildSocialLoginButton(
+                        onPressed: () {
+                          AppToast.info('Twitter Sign In', title: 'Twitter');
+                        },
+                        icon: FontAwesomeIcons.xTwitter, // X/Twitter icon
+                        color: Colors.black,
+                        label: 'Twitter',
+                      ),
+                      _buildSocialLoginButton(
+                        onPressed: () {
+                          AppToast.info('Alipay Sign In', title: 'Alipay');
+                        },
+                        icon: FontAwesomeIcons.alipay,
+                        color: const Color(0xFF1677FF), // Alipay Blue
+                        label: 'Alipay',
+                      ),
+                      _buildSocialLoginButton(
+                        onPressed: () {
+                          AppToast.info('QQ Sign In', title: 'QQ');
+                        },
+                        icon: FontAwesomeIcons.qq,
+                        color: const Color(0xFF12B7F5), // QQ Blue
+                        label: 'QQ',
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // 社交登录按钮 - 第三行
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildSocialLoginButton(
+                        onPressed: () {
+                          AppToast.info('TikTok Sign In', title: 'TikTok');
+                        },
+                        icon: FontAwesomeIcons.tiktok,
+                        color: Colors.black,
+                        label: 'TikTok',
+                      ),
+                      _buildSocialLoginButton(
+                        onPressed: () {
+                          AppToast.info('Phone Sign In', title: 'Phone');
+                        },
+                        icon: FontAwesomeIcons.mobile,
+                        color: const Color(0xFF4CAF50), // Green for phone
+                        label: 'Phone',
+                      ),
+                      _buildSocialLoginButton(
+                        onPressed: () {
+                          AppToast.info('Xiaohongshu Sign In',
+                              title: 'Xiaohongshu');
+                        },
+                        icon: FontAwesomeIcons.book, // 使用书本图标代表小红书
+                        color: const Color(0xFFFF2442), // 小红书品牌红色
+                        label: '小红书',
                       ),
                     ],
                   ),
@@ -482,6 +525,46 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
     );
   }
 
+  Widget _buildSocialLoginButton({
+    required VoidCallback onPressed,
+    required IconData icon,
+    required Color color,
+    required String label,
+  }) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: 100,
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FaIcon(
+              icon,
+              size: 28,
+              color: color,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade700,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildCommunityHighlight() {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -501,7 +584,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(
-                  Icons.group,
+                  FontAwesomeIcons.userGroup,
                   color: NomadsLoginPage.nomadsRed,
                   size: 24,
                 ),

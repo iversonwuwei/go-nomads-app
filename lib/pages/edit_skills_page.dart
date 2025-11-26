@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-import '../models/user_profile_models.dart';
-import '../services/database/user_profile_dao.dart';
-import '../widgets/app_toast.dart';
+import 'package:df_admin_mobile/features/user_profile/infrastructure/models/user_profile_dto.dart';
+import 'package:df_admin_mobile/services/database/user_profile_dao.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 
 /// 技能编辑页面
 class EditSkillsPage extends StatefulWidget {
@@ -111,10 +112,10 @@ class _EditSkillsPageState extends State<EditSkillsPage> {
         AppToast.success('已移除技能');
       } else {
         // 添加技能
-        final skill = UserSkill(
+        final skill = UserSkillDto(
           accountId: widget.accountId,
           skillName: skillName,
-          createdAt: DateTime.now().millisecondsSinceEpoch.toString(),
+          createdAt: DateTime.now().toIso8601String(),
         );
         await _userProfileDao.addSkill(skill);
         setState(() {
@@ -141,10 +142,10 @@ class _EditSkillsPageState extends State<EditSkillsPage> {
     }
 
     try {
-      final skill = UserSkill(
+      final skill = UserSkillDto(
         accountId: widget.accountId,
         skillName: skillName,
-        createdAt: DateTime.now().millisecondsSinceEpoch.toString(),
+        createdAt: DateTime.now().toIso8601String(),
       );
       await _userProfileDao.addSkill(skill);
       setState(() {
@@ -186,7 +187,7 @@ class _EditSkillsPageState extends State<EditSkillsPage> {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.check_circle, color: Colors.blue),
+                            const Icon(FontAwesomeIcons.circleCheck, color: Colors.blue),
                             const SizedBox(width: 8),
                             Text(
                               '已选择 ${_selectedSkills.length} 项技能',
@@ -204,7 +205,7 @@ class _EditSkillsPageState extends State<EditSkillsPage> {
                           children: _selectedSkills.map((skill) {
                             return Chip(
                               label: Text(skill),
-                              deleteIcon: const Icon(Icons.close, size: 18),
+                              deleteIcon: const Icon(FontAwesomeIcons.xmark, size: 18),
                               onDeleted: () => _toggleSkill(skill),
                               backgroundColor: Colors.blue.shade100,
                             );
@@ -225,7 +226,7 @@ class _EditSkillsPageState extends State<EditSkillsPage> {
                           decoration: const InputDecoration(
                             labelText: '添加自定义技能',
                             border: OutlineInputBorder(),
-                            prefixIcon: Icon(Icons.add_circle_outline),
+                            prefixIcon: Icon(FontAwesomeIcons.circlePlus),
                             hintText: '输入技能名称',
                           ),
                           onSubmitted: (_) => _addCustomSkill(),

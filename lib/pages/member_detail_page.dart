@@ -1,15 +1,17 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/features/user/domain/entities/user.dart'
+    as models;
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../config/app_colors.dart';
-import '../generated/app_localizations.dart';
-import '../models/user_model.dart' as models;
-import '../widgets/app_toast.dart';
 import 'direct_chat_page.dart';
 import 'invite_to_meetup_page.dart';
 
 class MemberDetailPage extends StatelessWidget {
-  final models.UserModel user;
+  final models.User user;
 
   const MemberDetailPage({super.key, required this.user});
 
@@ -40,7 +42,7 @@ class MemberDetailPage extends StatelessWidget {
                   ],
                 ),
                 child: const Icon(
-                  Icons.arrow_back,
+                  FontAwesomeIcons.arrowLeft,
                   color: Color(0xFF1a1a1a),
                   size: 20,
                 ),
@@ -85,9 +87,14 @@ class MemberDetailPage extends StatelessWidget {
                           ),
                           child: CircleAvatar(
                             radius: 73,
-                            backgroundImage: NetworkImage(
-                              user.avatarUrl ?? 'https://i.pravatar.cc/300',
-                            ),
+                            backgroundImage: (user.avatarUrl != null &&
+                                    user.avatarUrl!.isNotEmpty)
+                                ? NetworkImage(user.avatarUrl!)
+                                : null,
+                            child: (user.avatarUrl == null ||
+                                    user.avatarUrl!.isEmpty)
+                                ? const Icon(FontAwesomeIcons.user, size: 40)
+                                : null,
                           ),
                         ),
                       ),
@@ -116,7 +123,7 @@ class MemberDetailPage extends StatelessWidget {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   const Icon(
-                                    Icons.verified,
+                                    FontAwesomeIcons.circleCheck,
                                     color: Colors.white,
                                     size: 16,
                                   ),
@@ -175,7 +182,7 @@ class MemberDetailPage extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 const Icon(
-                                  Icons.location_on,
+                                  FontAwesomeIcons.locationDot,
                                   size: 16,
                                   color: Color(0xFFFF4458),
                                 ),
@@ -246,8 +253,8 @@ class MemberDetailPage extends StatelessWidget {
                       Expanded(
                         child: _buildStatCard(
                           AppLocalizations.of(context)!.cities,
-                          user.stats.citiesLived.toString(),
-                          Icons.location_city,
+                          user.stats.citiesVisited.toString(),
+                          FontAwesomeIcons.city,
                           const Color(0xFFFF4458),
                         ),
                       ),
@@ -256,7 +263,7 @@ class MemberDetailPage extends StatelessWidget {
                         child: _buildStatCard(
                           AppLocalizations.of(context)!.countries,
                           user.stats.countriesVisited.toString(),
-                          Icons.flag,
+                          FontAwesomeIcons.flag,
                           const Color(0xFF3B82F6),
                         ),
                       ),
@@ -264,8 +271,8 @@ class MemberDetailPage extends StatelessWidget {
                       Expanded(
                         child: _buildStatCard(
                           AppLocalizations.of(context)!.meetups,
-                          user.stats.meetupsAttended.toString(),
-                          Icons.people,
+                          user.stats.reviewsWritten.toString(),
+                          FontAwesomeIcons.users,
                           const Color(0xFF10B981),
                         ),
                       ),
@@ -285,7 +292,7 @@ class MemberDetailPage extends StatelessWidget {
                             child: ElevatedButton.icon(
                               onPressed: () =>
                                   Get.to(() => InviteToMeetupPage(user: user)),
-                              icon: const Icon(Icons.event),
+                              icon: const Icon(FontAwesomeIcons.calendarDays),
                               label: Text(l10n.inviteToMeetup),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF10B981),
@@ -307,7 +314,7 @@ class MemberDetailPage extends StatelessWidget {
                                 // 跳转到一对一聊天页面
                                 Get.to(() => DirectChatPage(user: user));
                               },
-                              icon: const Icon(Icons.message),
+                              icon: const Icon(FontAwesomeIcons.message),
                               label: Text(l10n.sendMessage),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFFFF4458),
@@ -338,7 +345,7 @@ class MemberDetailPage extends StatelessWidget {
                                 );
                               },
                               icon: const Icon(
-                                Icons.favorite_border,
+                                FontAwesomeIcons.heart,
                                 color: Color(0xFFFF4458),
                               ),
                             ),
@@ -452,7 +459,7 @@ class MemberDetailPage extends StatelessWidget {
               Row(
                 children: [
                   const Icon(
-                    Icons.emoji_events,
+                    FontAwesomeIcons.trophy,
                     color: Color(0xFFFF6F00),
                     size: 24,
                   ),
@@ -540,7 +547,7 @@ class MemberDetailPage extends StatelessWidget {
           Row(
             children: [
               const Icon(
-                Icons.travel_explore,
+                FontAwesomeIcons.earthAmericas,
                 color: Color(0xFF1976D2),
                 size: 24,
               ),
@@ -591,7 +598,7 @@ class MemberDetailPage extends StatelessWidget {
                             // TODO: Navigate to full travel history page
                           },
                           icon: const Icon(
-                            Icons.arrow_forward,
+                            FontAwesomeIcons.arrowRight,
                             size: 18,
                           ),
                           label: Text(
@@ -667,7 +674,7 @@ class MemberDetailPage extends StatelessWidget {
             ),
             child: Center(
               child: Text(
-                _getCountryFlag(travel.country),
+                _getCountryFlag(travel.countryName ?? ''),
                 style: const TextStyle(fontSize: 32),
               ),
             ),
@@ -681,7 +688,7 @@ class MemberDetailPage extends StatelessWidget {
               children: [
                 // City Name
                 Text(
-                  travel.city,
+                  travel.cityName,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -692,7 +699,7 @@ class MemberDetailPage extends StatelessWidget {
 
                 // Country
                 Text(
-                  travel.country,
+                  travel.countryName ?? 'Unknown',
                   style: const TextStyle(
                     fontSize: 14,
                     color: Color(0xFF6b7280),
@@ -704,13 +711,13 @@ class MemberDetailPage extends StatelessWidget {
                 Row(
                   children: [
                     const Icon(
-                      Icons.calendar_today,
+                      FontAwesomeIcons.calendar,
                       size: 14,
                       color: Color(0xFFFF6F00),
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      _formatDateRange(travel.startDate, travel.endDate),
+                      _formatDate(travel.visitDate),
                       style: const TextStyle(
                         fontSize: 12,
                         color: Color(0xFF9ca3af),
@@ -718,20 +725,6 @@ class MemberDetailPage extends StatelessWidget {
                     ),
                   ],
                 ),
-
-                // Rating (if available)
-                if (travel.rating != null) ...[
-                  const SizedBox(height: 8),
-                  Row(
-                    children: List.generate(5, (index) {
-                      return Icon(
-                        index < travel.rating! ? Icons.star : Icons.star_border,
-                        size: 16,
-                        color: const Color(0xFFFF9800),
-                      );
-                    }),
-                  ),
-                ],
               ],
             ),
           ),
@@ -769,9 +762,7 @@ class MemberDetailPage extends StatelessWidget {
     return flagMap[country] ?? '🌍';
   }
 
-  String _formatDateRange(DateTime? startDate, DateTime? endDate) {
-    if (startDate == null) return '';
-
+  String _formatDate(DateTime date) {
     final months = [
       'Jan',
       'Feb',
@@ -787,21 +778,9 @@ class MemberDetailPage extends StatelessWidget {
       'Dec'
     ];
 
-    final startMonth = months[startDate.month - 1];
-    final startYear = startDate.year;
-
-    if (endDate == null) {
-      return '$startMonth $startYear - Present';
-    }
-
-    final endMonth = months[endDate.month - 1];
-    final endYear = endDate.year;
-
-    if (startYear == endYear) {
-      return '$startMonth - $endMonth $startYear';
-    }
-
-    return '$startMonth $startYear - $endMonth $endYear';
+    final month = months[date.month - 1];
+    final year = date.year;
+    return '$month $year';
   }
 
   Widget _buildStatCard(
@@ -876,7 +855,7 @@ class MemberDetailPage extends StatelessWidget {
           Row(
             children: [
               const Icon(
-                Icons.favorite,
+                FontAwesomeIcons.heart,
                 color: Color(0xFFC2185B),
                 size: 24,
               ),
@@ -935,15 +914,8 @@ class MemberDetailPage extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          if (interest.icon != null) ...[
-                            Text(
-                              interest.icon!,
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                            const SizedBox(width: 6),
-                          ],
                           Text(
-                            interest.interestName,
+                            interest.name,
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 14,
@@ -992,7 +964,7 @@ class MemberDetailPage extends StatelessWidget {
           Row(
             children: [
               const Icon(
-                Icons.stars,
+                FontAwesomeIcons.star,
                 color: Color(0xFF1976D2),
                 size: 24,
               ),
@@ -1051,15 +1023,8 @@ class MemberDetailPage extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          if (skill.icon != null) ...[
-                            Text(
-                              skill.icon!,
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                            const SizedBox(width: 6),
-                          ],
                           Text(
-                            skill.skillName,
+                            skill.name,
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 14,

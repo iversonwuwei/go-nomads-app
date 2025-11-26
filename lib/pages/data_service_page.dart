@@ -1,20 +1,22 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
+import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller.dart';
+import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
+import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
+import 'package:df_admin_mobile/features/meetup/infrastructure/repositories/meetup_repository.dart';
+import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/routes/app_routes.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/copyright_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../config/app_colors.dart';
-import '../controllers/data_service_controller.dart';
-import '../controllers/user_state_controller.dart';
-import '../generated/app_localizations.dart';
-import '../models/meetup_model.dart';
-import '../routes/app_routes.dart';
-import '../services/events_api_service.dart';
-import '../widgets/app_toast.dart';
-import '../widgets/copyright_widget.dart';
 import 'city_detail_page.dart';
 import 'create_meetup_page.dart';
-import 'global_map_page.dart';
-import 'meetup_detail_page.dart';
 
 class DataServicePage extends StatefulWidget {
   final bool scrollToCities;
@@ -25,21 +27,49 @@ class DataServicePage extends StatefulWidget {
   State<DataServicePage> createState() => _DataServicePageState();
 }
 
-class _DataServicePageState extends State<DataServicePage>
-    with WidgetsBindingObserver {
+class _DataServicePageState extends State<DataServicePage> with WidgetsBindingObserver {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
   final GlobalKey _citiesListKey = GlobalKey();
   bool _hasScrolled = false;
+
+  // 本地状态管理
+  final bool _isGridView = true;
+
+  // 获取领域层的 StateController（延迟初始化，避免在构建时查找）
+  CityStateController? _cityControllerCache;
+  CityStateController get _cityController {
+    _cityControllerCache ??= Get.find<CityStateController>();
+    return _cityControllerCache!;
+  }
+
+  MeetupStateController? _meetupControllerCache;
+  MeetupStateController get _meetupController {
+    _meetupControllerCache ??= Get.find<MeetupStateController>();
+    return _meetupControllerCache!;
+  }
+
+  UserStateController? _userControllerCache;
+  UserStateController get _userController {
+    _userControllerCache ??= Get.find<UserStateController>();
+    return _userControllerCache!;
+  }
 
   @override
   void initState() {
     super.initState();
     // 添加生命周期监听
     WidgetsBinding.instance.addObserver(this);
-    // 监听搜索框内容变化以更新清除按钮
-    _searchController.addListener(() {
-      setState(() {}); // 触发重建以显示/隐藏清除按钮
+
+    // 首页不验证 token，直接加载数据
+    // 如果有 token 会自动带上，没有就匿名访问
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      print('🏠 首页初始化，只加载城市数据（不加载活动）');
+      // 只加载城市数据，活动数据按需加载
+      _cityController.loadInitialCities(refresh: true).catchError((e) {
+        print('⚠️ 城市数据加载失败，使用缓存数据: $e');
+        return null;
+      });
     });
   }
 
@@ -49,6 +79,12 @@ class _DataServicePageState extends State<DataServicePage>
     WidgetsBinding.instance.removeObserver(this);
     _scrollController.dispose();
     _searchController.dispose();
+
+    // 清空搜索条件和结果
+    if (_cityControllerCache != null) {
+      _cityControllerCache!.searchQuery.value = '';
+    }
+
     super.dispose();
   }
 
@@ -56,16 +92,22 @@ class _DataServicePageState extends State<DataServicePage>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
 
-    // 当应用回到前台时刷新数据
+    // 当应用回到前台时，仅在城市数据为空时刷新
     if (state == AppLifecycleState.resumed) {
-      print('📱 应用回到前台,刷新首页数据');
-      final controller = Get.find<DataServiceController>();
-      controller.refreshData();
+      if (_cityController.cities.isEmpty) {
+        print('📱 应用回到前台，城市数据为空，刷新数据');
+        _cityController.loadInitialCities(refresh: true).catchError((e) {
+          print('⚠️ 城市数据加载失败: $e');
+          return null;
+        });
+      } else {
+        print('📱 应用回到前台，已有缓存数据，不刷新');
+      }
     }
   }
 
-  // 页面回退时的刷新逻辑会在路由导航时处�?
-  // 我们在每次页面可见时都刷新数�?
+  // 页面回退时的刷新逻辑会在路由导航时处理
+  // 我们在每次页面可见时都刷新数据
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -73,28 +115,28 @@ class _DataServicePageState extends State<DataServicePage>
     // 检查页面是否从其他页面回退
     final route = ModalRoute.of(context);
     if (route != null && route.isCurrent) {
-      // 延迟执行，避免在build过程中调�?
+      // 延迟执行，避免在build过程中调用
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        // 只在非首次加载时刷新（首次加载已经在controller初始化时执行�?
-        final controller = Get.find<DataServiceController>();
-        if (controller.dataItems.isNotEmpty || controller.meetups.isNotEmpty) {
-          print('🔄 页面回到前台,刷新数据');
-          controller.refreshData();
+        // 检查是否已有数据，使用缓存模式避免重复刷新
+        if (_cityController.cities.isNotEmpty) {
+          print('🔄 页面回到前台，使用缓存数据，不刷新');
+          // 不刷新，避免并发请求
         }
       });
     }
   }
 
-  /// 检查登录状态，未登录则跳转到登录页
+  /// 严格检查登录状态和 Token 有效性
+  /// 在发起任何请求前就验证 token，而不是等到 HTTP 拦截器
   bool _checkLoginAndNavigate(VoidCallback onLoggedIn) {
-    final userStateController = Get.find<UserStateController>();
+    final authController = Get.find<AuthStateController>();
 
-    print('🔒 DataServicePage: 检查登录状态');
-    print('   当前登录状态: ${userStateController.isLoggedIn}');
+    print('🔒 [严格验证] 检查登录状态...');
 
-    if (!userStateController.isLoggedIn) {
-      print('�?用户未登录，跳转到登录页');
-      AppToast.info(
+    // 1️⃣ 检查登录状态
+    if (!authController.isAuthenticated.value) {
+      print('❌ 用户未登录');
+      AppToast.warning(
         'Please login to access this feature',
         title: 'Login Required',
       );
@@ -102,27 +144,177 @@ class _DataServicePageState extends State<DataServicePage>
       return false;
     }
 
-    print('�?用户已登录，执行操作');
+    // 2️⃣ 检查 Token 是否存在
+    final token = authController.currentToken.value;
+    if (token == null) {
+      print('❌ Token 为空，清除登录状态');
+      authController.isAuthenticated.value = false;
+      authController.currentUser.value = null;
+
+      AppToast.error(
+        'Invalid session. Please login again.',
+        title: 'Authentication Error',
+      );
+      Get.toNamed(AppRoutes.login);
+      return false;
+    }
+
+    // 3️⃣ 检查 Token 是否过期 (关键检查！)
+    if (token.isExpired) {
+      print('❌ Token 已过期');
+      print('   ExpiresAt: ${token.expiresAt}');
+      print('   Current: ${DateTime.now()}');
+
+      // 立即清除过期状态
+      authController.isAuthenticated.value = false;
+      authController.currentUser.value = null;
+      authController.currentToken.value = null;
+
+      // 异步清除存储
+      authController.logout();
+
+      AppToast.error(
+        'Your session has expired. Please login again.',
+        title: 'Session Expired',
+      );
+      Get.toNamed(AppRoutes.login);
+      return false;
+    }
+
+    // ✅ 所有检查通过，执行操作
+    print('✅ Token 验证通过，允许操作');
+    print('   ExpiresAt: ${token.expiresAt}');
+    print('   Remaining: ${token.expiresAt!.difference(DateTime.now()).inMinutes} minutes');
+
     onLoggedIn();
     return true;
+  }
+
+  /// 执行城市搜索
+  Future<void> _performSearch(String query) async {
+    print('🔍 开始搜索城市: $query');
+
+    // 调用 CityStateController 的搜索方法，等待后端返回结果
+    await _cityController.searchCities(query);
+
+    if (mounted) {
+      // 搜索完成后显示结果数量
+      final resultCount = _cityController.cities.length;
+      AppToast.success(
+        'Found $resultCount cities',
+        title: 'Search',
+      );
+    }
+  }
+
+  /// 清除搜索
+  Future<void> _clearSearch() async {
+    _searchController.clear();
+
+    // 清除 Controller 中的 searchQuery 状态
+    _cityController.searchQuery.value = '';
+
+    print('🧹 清除搜索，重新加载全部城市');
+
+    // 重新加载全部城市
+    await _cityController.loadInitialCities();
+  }
+
+  /// 搜索结果提示
+  Widget _buildSearchResultHint(bool isMobile) {
+    return Obx(() {
+      final searchQuery = _cityController.searchQuery.value;
+      final cityCount = _cityController.cities.length;
+
+      if (searchQuery.isEmpty) return const SizedBox.shrink();
+
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFF4458).withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: const Color(0xFFFF4458).withValues(alpha: 0.3),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            const Icon(
+              FontAwesomeIcons.magnifyingGlass,
+              color: Color(0xFFFF4458),
+              size: 20,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: RichText(
+                text: TextSpan(
+                  style: TextStyle(
+                    fontSize: isMobile ? 13 : 14,
+                    color: AppColors.textPrimary,
+                  ),
+                  children: [
+                    TextSpan(
+                      text: 'Search results for ',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    TextSpan(
+                      text: '"$searchQuery"',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFFFF4458),
+                      ),
+                    ),
+                    TextSpan(
+                      text: ': ',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    TextSpan(
+                      text: '$cityCount ${cityCount == 1 ? "city" : "cities"} found',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            InkWell(
+              onTap: _clearSearch,
+              borderRadius: BorderRadius.circular(4),
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: const Icon(
+                  FontAwesomeIcons.xmark,
+                  color: AppColors.textSecondary,
+                  size: 18,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   void _scrollToCitiesList() {
     if (_hasScrolled) return;
     _hasScrolled = true;
 
-    // 等待布局完成后滚�?
+    // 等待布局完成后滚动
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(milliseconds: 500), () {
         if (!mounted) return;
 
-        final RenderBox? renderBox =
-            _citiesListKey.currentContext?.findRenderObject() as RenderBox?;
+        final RenderBox? renderBox = _citiesListKey.currentContext?.findRenderObject() as RenderBox?;
         if (renderBox != null && _scrollController.hasClients) {
           final position = renderBox.localToGlobal(Offset.zero).dy;
-          final scrollPosition = _scrollController.position.pixels +
-              position -
-              100; // 100px offset for better UX
+          final scrollPosition = _scrollController.position.pixels + position - 100; // 100px offset for better UX
 
           _scrollController.animateTo(
             scrollPosition,
@@ -136,8 +328,8 @@ class _DataServicePageState extends State<DataServicePage>
 
   @override
   Widget build(BuildContext context) {
-    // 使用 Get.find() 获取已经初始化的 Controller，而不是创建新实例
-    final DataServiceController controller = Get.find<DataServiceController>();
+    // 使用领域层的 StateController
+    final MeetupStateController meetupController = Get.find<MeetupStateController>();
     final l10n = AppLocalizations.of(context)!;
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
@@ -165,7 +357,7 @@ class _DataServicePageState extends State<DataServicePage>
                   horizontal: isMobile ? 16 : 32,
                   vertical: 20,
                 ),
-                child: _buildSearchBar(controller, isMobile),
+                child: _buildSearchBar(isMobile),
               ),
             ),
 
@@ -175,11 +367,24 @@ class _DataServicePageState extends State<DataServicePage>
                 padding: EdgeInsets.symmetric(
                   horizontal: isMobile ? 16 : 32,
                 ),
-                child: _buildToolbar(controller),
+                child: _buildToolbar(),
               ),
             ),
 
             const SliverToBoxAdapter(child: SizedBox(height: 8)),
+
+            // 搜索结果提示
+            if (_searchController.text.trim().isNotEmpty)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isMobile ? 16 : 32,
+                  ),
+                  child: _buildSearchResultHint(isMobile),
+                ),
+              ),
+
+            if (_searchController.text.trim().isNotEmpty) const SliverToBoxAdapter(child: SizedBox(height: 8)),
 
             // 城市列表锚点 (用于滚动定位)
             SliverToBoxAdapter(
@@ -194,7 +399,7 @@ class _DataServicePageState extends State<DataServicePage>
               padding: EdgeInsets.symmetric(
                 horizontal: isMobile ? 16 : 32,
               ),
-              sliver: _buildDataGridSliver(controller, isMobile),
+              sliver: _buildDataGridSliver(isMobile),
             ),
 
             // 底部间距
@@ -206,13 +411,13 @@ class _DataServicePageState extends State<DataServicePage>
                 padding: EdgeInsets.symmetric(
                   horizontal: isMobile ? 16 : 32,
                 ),
-                child: _buildMeetupsSection(controller, isMobile),
+                child: _buildMeetupsSection(meetupController, isMobile),
               ),
             ),
 
             const SliverToBoxAdapter(child: SizedBox(height: 60)),
 
-            // 特性列�?
+            // 特性列表
             SliverToBoxAdapter(
               child: Container(
                 padding: EdgeInsets.symmetric(
@@ -263,7 +468,7 @@ class _DataServicePageState extends State<DataServicePage>
               ),
               child: Column(
                 children: [
-                  // Logo和标题区�?
+                  // Logo和标题区域
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -274,7 +479,7 @@ class _DataServicePageState extends State<DataServicePage>
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Icon(
-                          Icons.public,
+                          FontAwesomeIcons.earthAmericas,
                           color: Colors.white,
                           size: 32,
                         ),
@@ -294,7 +499,7 @@ class _DataServicePageState extends State<DataServicePage>
 
                   SizedBox(height: isMobile ? 24 : 32),
 
-                  // 副标�?
+                  // 副标题
                   Text(
                     l10n.joinGlobalCommunity,
                     textAlign: TextAlign.center,
@@ -330,15 +535,15 @@ class _DataServicePageState extends State<DataServicePage>
     );
   }
 
-  // 紧凑型服务卡�?- 响应式网格布局
+  // 紧凑型服务卡片 - 响应式网格布局
   Widget _buildServiceCards(bool isMobile, AppLocalizations l10n) {
     final screenWidth = MediaQuery.of(context).size.width;
 
     // 根据屏幕宽度决定布局
-    // 超小�?<400px): 2�?�?
-    // 小屏(400-768px): 2�?�?
-    // 中屏(768-1024px): 4�?�?
-    // 大屏(>1024px): 4�?�?
+    // 超小屏(<400px): 2列布局
+    // 小屏(400-768px): 2列布局
+    // 中屏(768-1024px): 4列布局
+    // 大屏(>1024px): 4列布局
     final isVerySmall = screenWidth < 400;
     final useGridLayout = screenWidth < 768;
 
@@ -348,17 +553,16 @@ class _DataServicePageState extends State<DataServicePage>
         constraints: const BoxConstraints(maxWidth: 600),
         child: Column(
           children: [
-            // 第一�? Cities + Coworkings
+            // 第一行: Cities + Coworkings
             Row(
               children: [
                 Expanded(
                   child: _buildCompactCard(
                     isMobile: true,
-                    icon: Icons.location_city_rounded,
+                    icon: FontAwesomeIcons.city,
                     title: l10n.cities,
                     color: const Color(0xFFFF4458),
-                    onTap: () => _checkLoginAndNavigate(
-                        () => Get.toNamed(AppRoutes.cityList)),
+                    onTap: () => _checkLoginAndNavigate(() => Get.toNamed(AppRoutes.cityList)),
                     isCompact: isVerySmall,
                   ),
                 ),
@@ -366,18 +570,17 @@ class _DataServicePageState extends State<DataServicePage>
                 Expanded(
                   child: _buildCompactCard(
                     isMobile: true,
-                    icon: Icons.business_center_rounded,
+                    icon: FontAwesomeIcons.building,
                     title: l10n.coworks,
                     color: const Color(0xFF6366F1),
-                    onTap: () => _checkLoginAndNavigate(
-                        () => Get.toNamed(AppRoutes.coworking)),
+                    onTap: () => _checkLoginAndNavigate(() => Get.toNamed(AppRoutes.coworking)),
                     isCompact: isVerySmall,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            // 第二�? Meetups + Innovation
+            // 第二行: Meetups + Innovation
             Row(
               children: [
                 Expanded(
@@ -386,11 +589,10 @@ class _DataServicePageState extends State<DataServicePage>
                       final l10n = AppLocalizations.of(context)!;
                       return _buildCompactCard(
                         isMobile: true,
-                        icon: Icons.groups_rounded,
+                        icon: FontAwesomeIcons.userGroup,
                         title: l10n.meetups,
                         color: const Color(0xFF10B981),
-                        onTap: () => _checkLoginAndNavigate(
-                            () => Get.toNamed(AppRoutes.meetupsList)),
+                        onTap: () => _checkLoginAndNavigate(() => Get.toNamed(AppRoutes.meetupsList)),
                         isCompact: isVerySmall,
                       );
                     },
@@ -403,11 +605,10 @@ class _DataServicePageState extends State<DataServicePage>
                       final l10n = AppLocalizations.of(context)!;
                       return _buildCompactCard(
                         isMobile: true,
-                        icon: Icons.lightbulb_outline,
+                        icon: FontAwesomeIcons.lightbulb,
                         title: l10n.innovation,
                         color: const Color(0xFF8B5CF6),
-                        onTap: () => _checkLoginAndNavigate(
-                            () => Get.toNamed(AppRoutes.innovation)),
+                        onTap: () => _checkLoginAndNavigate(() => Get.toNamed(AppRoutes.innovation)),
                         isCompact: isVerySmall,
                       );
                     },
@@ -419,7 +620,7 @@ class _DataServicePageState extends State<DataServicePage>
         ),
       );
     } else {
-      // 1x4 横向布局(桌面�?
+      // 1x4 横向布局(桌面端)
       return Container(
         constraints: const BoxConstraints(maxWidth: 900),
         child: Row(
@@ -429,11 +630,10 @@ class _DataServicePageState extends State<DataServicePage>
             Expanded(
               child: _buildCompactCard(
                 isMobile: false,
-                icon: Icons.location_city_rounded,
+                icon: FontAwesomeIcons.city,
                 title: l10n.cities,
                 color: const Color(0xFFFF4458),
-                onTap: () => _checkLoginAndNavigate(
-                    () => Get.toNamed(AppRoutes.cityList)),
+                onTap: () => _checkLoginAndNavigate(() => Get.toNamed(AppRoutes.cityList)),
               ),
             ),
 
@@ -443,11 +643,10 @@ class _DataServicePageState extends State<DataServicePage>
             Expanded(
               child: _buildCompactCard(
                 isMobile: false,
-                icon: Icons.business_center_rounded,
+                icon: FontAwesomeIcons.building,
                 title: l10n.coworks,
                 color: const Color(0xFF6366F1),
-                onTap: () => _checkLoginAndNavigate(
-                    () => Get.toNamed(AppRoutes.coworking)),
+                onTap: () => _checkLoginAndNavigate(() => Get.toNamed(AppRoutes.coworking)),
               ),
             ),
 
@@ -460,11 +659,10 @@ class _DataServicePageState extends State<DataServicePage>
                   final l10n = AppLocalizations.of(context)!;
                   return _buildCompactCard(
                     isMobile: false,
-                    icon: Icons.groups_rounded,
+                    icon: FontAwesomeIcons.userGroup,
                     title: l10n.meetups,
                     color: const Color(0xFF10B981),
-                    onTap: () => _checkLoginAndNavigate(
-                        () => Get.toNamed(AppRoutes.meetupsList)),
+                    onTap: () => _checkLoginAndNavigate(() => Get.toNamed(AppRoutes.meetupsList)),
                   );
                 },
               ),
@@ -479,11 +677,10 @@ class _DataServicePageState extends State<DataServicePage>
                   final l10n = AppLocalizations.of(context)!;
                   return _buildCompactCard(
                     isMobile: false,
-                    icon: Icons.lightbulb_outline,
+                    icon: FontAwesomeIcons.lightbulb,
                     title: l10n.innovation,
                     color: const Color(0xFF8B5CF6),
-                    onTap: () => _checkLoginAndNavigate(
-                        () => Get.toNamed(AppRoutes.innovation)),
+                    onTap: () => _checkLoginAndNavigate(() => Get.toNamed(AppRoutes.innovation)),
                   );
                 },
               ),
@@ -494,7 +691,7 @@ class _DataServicePageState extends State<DataServicePage>
     }
   }
 
-  // 紧凑型卡片组�?
+  // 紧凑型卡片组件
   Widget _buildCompactCard({
     required bool isMobile,
     required IconData icon,
@@ -562,7 +759,7 @@ class _DataServicePageState extends State<DataServicePage>
     );
   }
 
-  // 底部特性亮点列�?
+  // 底部特性亮点列表
   Widget _buildFeatureHighlights(bool isMobile) {
     final l10n = AppLocalizations.of(context)!;
     final features = [
@@ -626,7 +823,7 @@ class _DataServicePageState extends State<DataServicePage>
   }
 
   // 工具栏 - 只保留地图功能
-  Widget _buildToolbar(DataServiceController controller) {
+  Widget _buildToolbar() {
     final l10n = AppLocalizations.of(context)!;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -647,7 +844,7 @@ class _DataServicePageState extends State<DataServicePage>
             size: 20,
           ),
           onPressed: () {
-            Get.to(() => const GlobalMapPage());
+            Get.toNamed(AppRoutes.globalMap);
           },
         ),
       ],
@@ -655,7 +852,7 @@ class _DataServicePageState extends State<DataServicePage>
   }
 
   // 搜索栏
-  Widget _buildSearchBar(DataServiceController controller, bool isMobile) {
+  Widget _buildSearchBar(bool isMobile) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       decoration: BoxDecoration(
@@ -672,14 +869,13 @@ class _DataServicePageState extends State<DataServicePage>
       ),
       child: Row(
         children: [
-          const Icon(Icons.search_outlined,
-              color: AppColors.textSecondary, size: 20),
+          const Icon(FontAwesomeIcons.magnifyingGlass, color: AppColors.textSecondary, size: 20),
           const SizedBox(width: 12),
           Expanded(
             child: TextField(
               controller: _searchController,
               decoration: const InputDecoration(
-                hintText: 'Search cities...',
+                hintText: 'Search cities... (支持中英文搜索)',
                 hintStyle: TextStyle(
                   color: AppColors.textTertiary,
                   fontSize: 14,
@@ -693,10 +889,14 @@ class _DataServicePageState extends State<DataServicePage>
                 color: AppColors.textPrimary,
                 fontSize: 14,
               ),
+              onChanged: (value) {
+                // 实时更新清除按钮的显示
+                setState(() {});
+              },
               onSubmitted: (value) {
-                // 按回车键也触发搜索
+                // 按回车键触发搜索
                 if (value.trim().isNotEmpty) {
-                  controller.searchCities(value.trim());
+                  _performSearch(value.trim());
                 }
               },
             ),
@@ -707,9 +907,10 @@ class _DataServicePageState extends State<DataServicePage>
             onTap: () {
               final searchText = _searchController.text.trim();
               if (searchText.isNotEmpty) {
-                controller.searchCities(searchText);
+                _performSearch(searchText);
               } else {
-                controller.refreshCities();
+                // 如果搜索框为空，清除搜索并重新加载全部城市
+                _clearSearch();
               }
             },
             borderRadius: BorderRadius.circular(6),
@@ -734,15 +935,13 @@ class _DataServicePageState extends State<DataServicePage>
             const SizedBox(width: 8),
             InkWell(
               onTap: () {
-                _searchController.clear();
-                controller.refreshCities();
-                setState(() {}); // 更新 UI
+                _clearSearch();
               },
               borderRadius: BorderRadius.circular(20),
               child: Container(
                 padding: const EdgeInsets.all(6),
                 child: const Icon(
-                  Icons.clear,
+                  FontAwesomeIcons.xmark,
                   color: AppColors.textSecondary,
                   size: 18,
                 ),
@@ -755,13 +954,13 @@ class _DataServicePageState extends State<DataServicePage>
   }
 
   // 数据网格 Sliver
-  Widget _buildDataGridSliver(DataServiceController controller, bool isMobile) {
+  Widget _buildDataGridSliver(bool isMobile) {
     final l10n = AppLocalizations.of(context)!;
     return Obx(() {
-      final items = controller.filteredItems;
-      final isGrid = controller.isGridView.value;
+      final items = _cityController.cities;
+      final isGrid = _isGridView;
       final crossAxisCount = isMobile ? 2 : 4;
-      final isLoadingCities = controller.isLoadingCities.value;
+      final isLoadingCities = _cityController.isLoading.value;
 
       // 显示加载中状态
       if (isLoadingCities) {
@@ -777,8 +976,7 @@ class _DataServicePageState extends State<DataServicePage>
                     height: 40,
                     child: CircularProgressIndicator(
                       strokeWidth: 3,
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
+                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -796,20 +994,19 @@ class _DataServicePageState extends State<DataServicePage>
         );
       }
 
-      // 如果城市列表为空，显示空状�?
+      // 如果城市列表为空，显示空状态
       if (items.isEmpty) {
         return SliverToBoxAdapter(
           child: _buildEmptyCitiesState(isMobile, l10n),
         );
       }
 
-      // 限制最多显�?个城�?(暂时改成6,方便测试)
+      // 限制最多显示8个城市(暂时改成6,方便测试)
       final displayItems = items.length > 6 ? items.sublist(0, 6) : items;
       final hasMore = items.length > 6;
 
       // 调试信息
-      debugPrint(
-          '城市总数: ${items.length}, 显示�? ${displayItems.length}, 显示按钮: $hasMore');
+      debugPrint('城市总数: ${items.length}, 显示: ${displayItems.length}, 显示按钮: $hasMore');
 
       if (isGrid) {
         return SliverList(
@@ -832,10 +1029,9 @@ class _DataServicePageState extends State<DataServicePage>
               const SizedBox(height: 24),
               Center(
                 child: OutlinedButton.icon(
-                  onPressed: () => _checkLoginAndNavigate(
-                      () => Get.toNamed(AppRoutes.cityList)),
+                  onPressed: () => _checkLoginAndNavigate(() => Get.toNamed(AppRoutes.cityList)),
                   icon: const Icon(
-                    Icons.location_city_outlined,
+                    FontAwesomeIcons.city,
                     size: 20,
                     color: Color(0xFFFF4458),
                   ),
@@ -880,10 +1076,9 @@ class _DataServicePageState extends State<DataServicePage>
               const SizedBox(height: 24),
               Center(
                 child: OutlinedButton.icon(
-                  onPressed: () => _checkLoginAndNavigate(
-                      () => Get.toNamed(AppRoutes.cityList)),
+                  onPressed: () => _checkLoginAndNavigate(() => Get.toNamed(AppRoutes.cityList)),
                   icon: const Icon(
-                    Icons.location_city_outlined,
+                    FontAwesomeIcons.city,
                     size: 20,
                     color: Color(0xFFFF4458),
                   ),
@@ -918,10 +1113,10 @@ class _DataServicePageState extends State<DataServicePage>
   }
 
   // Meetups 部分 - Nomads.com 风格
-  Widget _buildMeetupsSection(DataServiceController controller, bool isMobile) {
+  Widget _buildMeetupsSection(MeetupStateController meetupController, bool isMobile) {
     return Obx(() {
-      final upcomingMeetups = controller.upcomingMeetups;
-      final isLoadingMeetups = controller.isLoadingMeetups.value;
+      final upcomingMeetups = meetupController.upcomingMeetups;
+      final isLoadingMeetups = _meetupController.isLoading.value;
 
       // 显示加载中状态
       if (isLoadingMeetups) {
@@ -936,8 +1131,7 @@ class _DataServicePageState extends State<DataServicePage>
                   height: 40,
                   child: CircularProgressIndicator(
                     strokeWidth: 3,
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -959,7 +1153,7 @@ class _DataServicePageState extends State<DataServicePage>
         );
       }
 
-      // 如果活动列表为空，显示空状�?
+      // 如果活动列表为空，显示空状态
       if (upcomingMeetups.isEmpty) {
         return _buildEmptyMeetupsState(isMobile);
       }
@@ -1000,12 +1194,11 @@ class _DataServicePageState extends State<DataServicePage>
                     children: [
                       // Create Meetup 按钮
                       Obx(() => ElevatedButton.icon(
-                            onPressed: controller.isLoggedIn.value
+                            onPressed: _userController.isLoggedIn
                                 ? () => Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) =>
-                                            const CreateMeetupPage(),
+                                        builder: (context) => const CreateMeetupPage(),
                                       ),
                                     )
                                 : () {
@@ -1014,9 +1207,8 @@ class _DataServicePageState extends State<DataServicePage>
                                       title: l10n.loginRequired,
                                     );
                                   },
-                            icon: const Icon(Icons.add, size: 18),
-                            label: Text(
-                                isMobile ? l10n.create : l10n.createMeetup),
+                            icon: const Icon(FontAwesomeIcons.plus, size: 18),
+                            label: Text(isMobile ? l10n.create : l10n.createMeetup),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFFF4458),
                               foregroundColor: Colors.white,
@@ -1036,7 +1228,7 @@ class _DataServicePageState extends State<DataServicePage>
                             Get.toNamed(AppRoutes.meetupsList);
                           },
                           icon: const Icon(
-                            Icons.arrow_forward,
+                            FontAwesomeIcons.arrowRight,
                             size: 20,
                             color: Color(0xFFFF4458),
                           ),
@@ -1069,20 +1261,47 @@ class _DataServicePageState extends State<DataServicePage>
 
               const SizedBox(height: 24),
 
-              // Meetups 列表（横向滚动）
+              // Meetups 列表（横向滚动 + 无限加载）
               SizedBox(
-                height: 310,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: upcomingMeetups.length,
-                  itemBuilder: (context, index) {
-                    final meetup = upcomingMeetups[index];
-                    return _MeetupCard(
-                      meetup: meetup,
-                      controller: controller,
-                      isMobile: isMobile,
-                    );
+                height: 300, // 减小卡片高度
+                child: NotificationListener<ScrollNotification>(
+                  onNotification: (ScrollNotification scrollInfo) {
+                    // 当滚动到接近末尾时，加载更多数据
+                    if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent * 0.8 &&
+                        !_meetupController.isLoadingMore.value &&
+                        _meetupController.hasMoreData.value) {
+                      print('📜 接近滚动末尾，触发加载更多活动');
+                      _meetupController.loadMoreMeetups();
+                    }
+                    return false;
                   },
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: upcomingMeetups.length + (_meetupController.hasMoreData.value ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      // 如果是最后一项且还有更多数据，显示加载指示器
+                      if (index == upcomingMeetups.length) {
+                        return Container(
+                          width: 60,
+                          margin: const EdgeInsets.only(left: 12),
+                          child: Center(
+                            child: Obx(() => _meetupController.isLoadingMore.value
+                                ? const CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
+                                  )
+                                : const SizedBox.shrink()),
+                          ),
+                        );
+                      }
+
+                      final meetup = upcomingMeetups[index];
+                      return _MeetupCard(
+                        meetup: meetup,
+                        isMobile: isMobile,
+                      );
+                    },
+                  ),
                 ),
               ),
 
@@ -1098,7 +1317,7 @@ class _DataServicePageState extends State<DataServicePage>
                           Get.toNamed(AppRoutes.meetupsList);
                         },
                         icon: const Icon(
-                          Icons.arrow_forward,
+                          FontAwesomeIcons.arrowRight,
                           size: 20,
                           color: Color(0xFFFF4458),
                         ),
@@ -1135,8 +1354,11 @@ class _DataServicePageState extends State<DataServicePage>
     });
   }
 
-  // 空城市列表状�?
+  // 空城市列表状态
   Widget _buildEmptyCitiesState(bool isMobile, AppLocalizations l10n) {
+    // 检查是否正在搜索
+    final isSearching = _searchController.text.trim().isNotEmpty;
+
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: isMobile ? 24 : 48,
@@ -1154,7 +1376,7 @@ class _DataServicePageState extends State<DataServicePage>
               shape: BoxShape.circle,
             ),
             child: Icon(
-              Icons.location_city_rounded,
+              isSearching ? FontAwesomeIcons.magnifyingGlass : FontAwesomeIcons.city,
               size: isMobile ? 50 : 60,
               color: const Color(0xFFFF4458),
             ),
@@ -1164,7 +1386,7 @@ class _DataServicePageState extends State<DataServicePage>
 
           // 标题
           Text(
-            l10n.noCitiesYet,
+            isSearching ? 'No cities found' : l10n.noCitiesYet,
             style: TextStyle(
               fontSize: isMobile ? 24 : 28,
               fontWeight: FontWeight.bold,
@@ -1176,7 +1398,9 @@ class _DataServicePageState extends State<DataServicePage>
 
           // 描述
           Text(
-            'Start exploring by adding your first city',
+            isSearching
+                ? 'Try searching with a different keyword\n(支持中英文搜索)'
+                : 'Start exploring by adding your first city',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: isMobile ? 14 : 16,
@@ -1187,38 +1411,61 @@ class _DataServicePageState extends State<DataServicePage>
 
           SizedBox(height: isMobile ? 32 : 40),
 
-          // 添加按钮
-          ElevatedButton.icon(
-            onPressed: () {
-              Get.toNamed(AppRoutes.cityList);
-            },
-            icon: const Icon(Icons.add_circle_outline, size: 20),
-            label: Text(
-              l10n.browseCities,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+          // 按钮
+          if (isSearching) ...[
+            // 搜索结果为空时显示清除按钮
+            ElevatedButton.icon(
+              onPressed: () {
+                _clearSearch();
+              },
+              icon: const Icon(FontAwesomeIcons.xmark),
+              label: const Text('Clear Search'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFF4458),
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(
+                  horizontal: isMobile ? 24 : 32,
+                  vertical: isMobile ? 12 : 16,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFF4458),
-              foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 24 : 32,
-                vertical: isMobile ? 14 : 16,
+          ] else ...[
+            // 无城市时显示浏览按钮
+            ElevatedButton.icon(
+              onPressed: () {
+                Get.toNamed(AppRoutes.cityList);
+              },
+              icon: const Icon(FontAwesomeIcons.circlePlus, size: 20),
+              label: Text(
+                l10n.browseCities,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFF4458),
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(
+                  horizontal: isMobile ? 24 : 32,
+                  vertical: isMobile ? 14 : 16,
+                ),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             ),
-          ),
+          ],
         ],
       ),
     );
   }
 
-  // 空活动列表状�?
+  // 空活动列表状态
   Widget _buildEmptyMeetupsState(bool isMobile) {
     return Container(
       padding: EdgeInsets.symmetric(
@@ -1237,7 +1484,7 @@ class _DataServicePageState extends State<DataServicePage>
               shape: BoxShape.circle,
             ),
             child: Icon(
-              Icons.groups_rounded,
+              FontAwesomeIcons.userGroup,
               size: isMobile ? 50 : 60,
               color: const Color(0xFF10B981),
             ),
@@ -1280,7 +1527,7 @@ class _DataServicePageState extends State<DataServicePage>
                 ),
               );
             },
-            icon: const Icon(Icons.add_circle_outline, size: 20),
+            icon: const Icon(FontAwesomeIcons.circlePlus, size: 20),
             label: const Text(
               'Create Meetup',
               style: TextStyle(
@@ -1309,7 +1556,7 @@ class _DataServicePageState extends State<DataServicePage>
 
 // 数据卡片（网格视图）
 class _DataCard extends StatefulWidget {
-  final Map<String, dynamic> data;
+  final City data;
 
   const _DataCard({required this.data});
 
@@ -1324,18 +1571,17 @@ class _DataCardState extends State<_DataCard> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
-    final userStateController = Get.find<UserStateController>();
     final l10n = AppLocalizations.of(context)!;
 
     return GestureDetector(
       onTap: () {
         // 单击跳转到城市详情页面
         print('🏙️ [DEBUG] City card tapped: ${widget.data}');
-        print(
-            '🏙️ [DEBUG] cityId will be: ${widget.data['id']?.toString() ?? widget.data['city']?.toString() ?? "EMPTY"}');
+        print('🏙️ [DEBUG] cityId will be: ${widget.data.id}');
 
         // 检查登录状态
-        if (!userStateController.isLoggedIn) {
+        final authController = Get.find<AuthStateController>();
+        if (!authController.isAuthenticated.value) {
           AppToast.warning(
             l10n.pleaseLoginToCreateMeetup,
             title: l10n.loginRequired,
@@ -1347,13 +1593,11 @@ class _DataCardState extends State<_DataCard> {
           context,
           MaterialPageRoute(
             builder: (context) => CityDetailPage(
-              cityId: widget.data['id']?.toString() ??
-                  widget.data['city']?.toString() ??
-                  '',
-              cityName: widget.data['city']?.toString() ?? 'Unknown City',
-              cityImage: widget.data['image']?.toString() ?? '',
-              overallScore: (widget.data['overall'] as num?)?.toDouble() ?? 0.0,
-              reviewCount: (widget.data['reviews'] as num?)?.toInt() ?? 0,
+              cityId: widget.data.id,
+              cityName: widget.data.name,
+              cityImage: widget.data.imageUrl?.toString() ?? '',
+              overallScore: (widget.data.overallScore as num?)?.toDouble() ?? 0.0,
+              reviewCount: (widget.data.reviewCount as num?)?.toInt() ?? 0,
             ),
           ),
         );
@@ -1363,9 +1607,7 @@ class _DataCardState extends State<_DataCard> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: showDetails
-                ? AppColors.accent.withValues(alpha: 0.5)
-                : AppColors.borderLight,
+            color: showDetails ? AppColors.accent.withValues(alpha: 0.5) : AppColors.borderLight,
             width: 1,
           ),
           boxShadow: [
@@ -1381,35 +1623,46 @@ class _DataCardState extends State<_DataCard> {
             // 背景图片
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Container(
-                width: double.infinity,
-                height: double.infinity,
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: NetworkImage(widget.data['image']),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                // 渐变遮罩
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black.withValues(alpha: 0.3),
-                        Colors.black.withValues(alpha: 0.7),
-                      ],
+              child: widget.data.imageUrl != null && widget.data.imageUrl!.isNotEmpty
+                  ? Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: NetworkImage(widget.data.imageUrl!),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      // 渐变遮罩
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.black.withValues(alpha: 0.3),
+                              Colors.black.withValues(alpha: 0.7),
+                            ],
+                          ),
+                        ),
+                      ),
+                    )
+                  : Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      color: Colors.grey[300],
+                      child: Icon(
+                        FontAwesomeIcons.city,
+                        size: 60,
+                        color: Colors.grey[400],
+                      ),
                     ),
-                  ),
-                ),
-              ),
             ),
 
             // 内容 - 完全复刻 Nomads.com 设计
             Stack(
               children: [
-                // 顶部：排名、徽章和网�?- 防止溢出
+                // 顶部：排名、徽章和网络 - 防止溢出
                 Positioned(
                   top: 8,
                   left: 8,
@@ -1417,21 +1670,19 @@ class _DataCardState extends State<_DataCard> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // 左侧：排�?+ 徽章 - 使用 Flexible 防止溢出
+                      // 左侧：排名 + 徽章 - 使用 Flexible 防止溢出
                       Flexible(
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: isMobile ? 4 : 6,
-                                  vertical: isMobile ? 2 : 3),
+                              padding: EdgeInsets.symmetric(horizontal: isMobile ? 4 : 6, vertical: isMobile ? 2 : 3),
                               decoration: BoxDecoration(
                                 color: Colors.black.withValues(alpha: 0.6),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                '#${widget.data['rank']}',
+                                '#${''}',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: isMobile ? 10 : 12,
@@ -1439,40 +1690,13 @@ class _DataCardState extends State<_DataCard> {
                                 ),
                               ),
                             ),
-                            if (widget.data['badge'] != null &&
-                                widget.data['badge'].toString().isNotEmpty) ...[
-                              SizedBox(width: isMobile ? 3 : 6),
-                              Flexible(
-                                child: Container(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: isMobile ? 4 : 6,
-                                      vertical: isMobile ? 2 : 3),
-                                  decoration: BoxDecoration(
-                                    color: Colors.orange.withValues(alpha: 0.9),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    widget.data['badge'],
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: isMobile ? 8 : 10,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ),
-                            ],
                           ],
                         ),
                       ),
                       SizedBox(width: isMobile ? 3 : 8),
-                      // 右侧：网�?- 移动端简化显�?
+                      // 右侧：网络 - 移动端简化显示
                       Container(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: isMobile ? 3 : 6,
-                            vertical: isMobile ? 2 : 3),
+                        padding: EdgeInsets.symmetric(horizontal: isMobile ? 3 : 6, vertical: isMobile ? 2 : 3),
                         decoration: BoxDecoration(
                           color: Colors.black.withValues(alpha: 0.6),
                           borderRadius: BorderRadius.circular(4),
@@ -1486,7 +1710,7 @@ class _DataCardState extends State<_DataCard> {
                             ),
                             SizedBox(width: isMobile ? 1 : 3),
                             Text(
-                              '${widget.data['internet']}',
+                              '${widget.data.internetScore}',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: isMobile ? 7 : 10,
@@ -1525,9 +1749,9 @@ class _DataCardState extends State<_DataCard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // 城市�?
+                        // 城市名
                         Text(
-                          widget.data['city'] ?? '',
+                          widget.data.name,
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: isMobile ? 16 : 18,
@@ -1539,7 +1763,7 @@ class _DataCardState extends State<_DataCard> {
                         SizedBox(height: isMobile ? 2 : 4),
                         // 国家
                         Text(
-                          widget.data['country'] ?? '',
+                          widget.data.country ?? '',
                           style: TextStyle(
                             color: Colors.white70,
                             fontSize: isMobile ? 12 : 14,
@@ -1552,15 +1776,13 @@ class _DataCardState extends State<_DataCard> {
                         Row(
                           children: [
                             Icon(
-                              Icons.star_rounded,
+                              FontAwesomeIcons.star,
                               color: const Color(0xFFFBBF24),
                               size: isMobile ? 16 : 18,
                             ),
                             SizedBox(width: isMobile ? 3 : 4),
                             Text(
-                              (widget.data['overall'] as num?)
-                                      ?.toStringAsFixed(1) ??
-                                  '0.0',
+                              (widget.data.overallScore as num?)?.toStringAsFixed(1) ?? '0.0',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: isMobile ? 14 : 16,
@@ -1578,7 +1800,7 @@ class _DataCardState extends State<_DataCard> {
                           ],
                         ),
                         SizedBox(height: isMobile ? 4 : 8),
-                        // 天气和价�?
+                        // 天气和价格
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -1586,13 +1808,12 @@ class _DataCardState extends State<_DataCard> {
                             Row(
                               children: [
                                 Text(
-                                  _getWeatherIcon(widget.data['weather']),
-                                  style:
-                                      TextStyle(fontSize: isMobile ? 16 : 18),
+                                  _getWeatherIcon(widget.data.weather),
+                                  style: TextStyle(fontSize: isMobile ? 16 : 18),
                                 ),
                                 SizedBox(width: isMobile ? 3 : 6),
                                 Text(
-                                  '${widget.data['temperature'] ?? '--'}°',
+                                  '${widget.data.temperature ?? '--'}°',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: isMobile ? 13 : 15,
@@ -1601,26 +1822,6 @@ class _DataCardState extends State<_DataCard> {
                                 ),
                               ],
                             ),
-                            // 价格
-                            if (widget.data['price'] != null)
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: isMobile ? 6 : 8,
-                                  vertical: isMobile ? 3 : 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.green.withValues(alpha: 0.9),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  '\$${widget.data['price']}',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: isMobile ? 11 : 13,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
                           ],
                         ),
                       ],
@@ -1663,9 +1864,9 @@ class _DataCardState extends State<_DataCard> {
   }
 }
 
-// 详情悬浮�?- 透明蒙层风格
+// 详情悬浮卡 - 透明蒙层风格
 class _DetailOverlay extends StatelessWidget {
-  final Map<String, dynamic> data;
+  final City data;
   final VoidCallback onClose;
 
   const _DetailOverlay({
@@ -1695,7 +1896,7 @@ class _DetailOverlay extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
-                  Icons.favorite_border,
+                  FontAwesomeIcons.heart,
                   color: Colors.white,
                   size: 20,
                 ),
@@ -1715,7 +1916,7 @@ class _DetailOverlay extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
-                    Icons.close,
+                    FontAwesomeIcons.xmark,
                     color: Colors.white,
                     size: 20,
                   ),
@@ -1723,7 +1924,7 @@ class _DetailOverlay extends StatelessWidget {
               ),
             ),
 
-            // 底部 - 评分�?
+            // 底部 - 评分条
             Positioned(
               left: 16,
               right: 16,
@@ -1731,20 +1932,15 @@ class _DetailOverlay extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildMetricBar(
-                      '�?Overall', data['overall'], const Color(0xFFFBBF24)),
+                  _buildMetricBar('⭐ Overall', data.overallScore ?? 0.0, const Color(0xFFFBBF24)),
                   const SizedBox(height: 6),
-                  _buildMetricBar(
-                      '💰 Cost', data['cost'], const Color(0xFF4ADE80)),
+                  _buildMetricBar('💰 Cost', data.costScore ?? 0.0, const Color(0xFF4ADE80)),
                   const SizedBox(height: 6),
-                  _buildMetricBar('📡 Internet', data['internetScore'],
-                      const Color(0xFFFBBF24)),
+                  _buildMetricBar('📡 Internet', data.internetScore ?? 0.0, const Color(0xFFFBBF24)),
                   const SizedBox(height: 6),
-                  _buildMetricBar(
-                      '👍 乐趣', data['liked'], const Color(0xFF4ADE80)),
+                  _buildMetricBar('👍 乐趣', data.likedScore ?? 0.0, const Color(0xFF4ADE80)),
                   const SizedBox(height: 6),
-                  _buildMetricBar(
-                      '🛡�?Safety', data['safety'], const Color(0xFF4ADE80)),
+                  _buildMetricBar('🛡️ Safety', data.safetyScore ?? 0.0, const Color(0xFF4ADE80)),
                 ],
               ),
             ),
@@ -1778,7 +1974,7 @@ class _DetailOverlay extends StatelessWidget {
         Expanded(
           child: Stack(
             children: [
-              // 背景�?- 深色半透明
+              // 背景条 - 深色半透明
               Container(
                 height: 18,
                 decoration: BoxDecoration(
@@ -1786,10 +1982,10 @@ class _DetailOverlay extends StatelessWidget {
                   borderRadius: BorderRadius.circular(9),
                 ),
               ),
-              // 进度�?
+              // 进度条
               FractionallySizedBox(
                 alignment: Alignment.centerLeft,
-                widthFactor: value / 5.0, // �?0-5 分转换为 0-1 比例
+                widthFactor: value / 5.0, // 将 0-5 分转换为 0-1 比例
                 child: Container(
                   height: 18,
                   decoration: BoxDecoration(
@@ -1806,9 +2002,9 @@ class _DetailOverlay extends StatelessWidget {
   }
 }
 
-// 列表项（列表视图�?
+// 列表项（列表视图用）
 class _DataListItem extends StatelessWidget {
-  final Map<String, dynamic> data;
+  final City data;
 
   const _DataListItem({required this.data});
 
@@ -1822,11 +2018,11 @@ class _DataListItem extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (context) => CityDetailPage(
-              cityId: data['id']?.toString() ?? data['city']?.toString() ?? '',
-              cityName: data['city']?.toString() ?? 'Unknown City',
-              cityImage: data['image']?.toString() ?? '',
-              overallScore: (data['score'] as num?)?.toDouble() ?? 0.0,
-              reviewCount: (data['reviews'] as num?)?.toInt() ?? 0,
+              cityId: data.id,
+              cityName: data.name,
+              cityImage: data.imageUrl?.toString() ?? '',
+              overallScore: (data.overallScore as num?)?.toDouble() ?? 0.0,
+              reviewCount: (data.reviewCount as num?)?.toInt() ?? 0,
             ),
           ),
         );
@@ -1848,11 +2044,11 @@ class _DataListItem extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // 缩略�?
+            // 缩略图
             ClipRRect(
               borderRadius: BorderRadius.circular(6),
               child: Image.network(
-                data['image'],
+                data.imageUrl ?? '',
                 width: 80,
                 height: 80,
                 fit: BoxFit.cover,
@@ -1866,7 +2062,7 @@ class _DataListItem extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    data['city'],
+                    data.name,
                     style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 16,
@@ -1875,7 +2071,7 @@ class _DataListItem extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    data['country'],
+                    data.country ?? '',
                     style: const TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 13,
@@ -1890,7 +2086,7 @@ class _DataListItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '\$${data['price']}',
+                  '\$${null}',
                   style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 18,
@@ -1915,13 +2111,11 @@ class _DataListItem extends StatelessWidget {
 
 // Meetup 卡片 - Nomads.com 风格
 class _MeetupCard extends StatefulWidget {
-  final Map<String, dynamic> meetup;
-  final DataServiceController controller;
+  final Meetup meetup;
   final bool isMobile;
 
   const _MeetupCard({
     required this.meetup,
-    required this.controller,
     required this.isMobile,
   });
 
@@ -1930,95 +2124,64 @@ class _MeetupCard extends StatefulWidget {
 }
 
 class _MeetupCardState extends State<_MeetupCard> {
-  // 卡片自己的状�?- 符合 DDD 原则
+  // 获取 MeetupStateController
+  MeetupStateController get _meetupController => Get.find<MeetupStateController>();
+
+  // 卡片自己的状态 - 符合 DDD 原则
   late bool _isJoined;
-
-  // �?widget.meetup 获取最新的参与人数（getter方式，始终读取最新值）
-  int get _currentAttendees {
-    final value = widget.meetup['attendees'];
-    print('🔍 Getting _currentAttendees: $value (type: ${value.runtimeType})');
-    return (value is int) ? value : 0;
-  }
-
-  int get _maxAttendees {
-    final value = widget.meetup['maxAttendees'];
-    print('🔍 Getting _maxAttendees: $value (type: ${value.runtimeType})');
-    return (value is int) ? value : 0;
-  }
+  late bool _isOrganizer;
+  late int _currentAttendees;
+  late int _maxAttendees;
+  // 判断是否已满
+  bool get _isFull => _currentAttendees >= _maxAttendees;
 
   @override
   void initState() {
     super.initState();
 
-    // 调试：打�?meetup 数据
+    // 初始化本地状态 - 直接使用后端返回的字段
+    _isJoined = widget.meetup.isJoined;
+    _isOrganizer = widget.meetup.isOrganizer;
+    _currentAttendees = widget.meetup.capacity.currentAttendees;
+    _maxAttendees = widget.meetup.capacity.maxAttendees;
+
+    // 调试：打印 meetup 数据
     print('🔍 MeetupCard initState:');
-    print('   ID: ${widget.meetup['id']}');
-    print('   Title: ${widget.meetup['title']}');
-    print('   Raw meetup data keys: ${widget.meetup.keys.toList()}');
-    print(
-        '   Raw attendees value: ${widget.meetup['attendees']} (${widget.meetup['attendees']?.runtimeType})');
-    print(
-        '   Raw maxAttendees value: ${widget.meetup['maxAttendees']} (${widget.meetup['maxAttendees']?.runtimeType})');
-    print('   Computed Attendees: $_currentAttendees / $_maxAttendees');
-    print(
-        '   containsKey(isParticipant): ${widget.meetup.containsKey('isParticipant')}');
-    if (widget.meetup.containsKey('isParticipant')) {
-      print('   isParticipant: ${widget.meetup['isParticipant']}');
-    }
-
-    // �?API 数据获取参与状态（优先）或�?controller �?rsvpedMeetups 获取
-    if (widget.meetup.containsKey('isParticipant')) {
-      _isJoined = widget.meetup['isParticipant'] as bool? ?? false;
-      print('   �?�?API 数据读取 isParticipant: $_isJoined');
-    } else {
-      // 降级方案：从 controller 获取初始�?joined 状�?
-      final meetupId = widget.meetup['id'];
-      final int meetupIdInt;
-      if (meetupId is int) {
-        meetupIdInt = meetupId;
-      } else if (meetupId is String) {
-        meetupIdInt = int.tryParse(meetupId) ?? 0;
-      } else {
-        meetupIdInt = 0;
-      }
-      _isJoined = widget.controller.rsvpedMeetups.contains(meetupIdInt);
-      print('   ⚠️ API �?isParticipant，从 controller 读取: $_isJoined');
-    }
-
-    print('   最终状�?_isJoined: $_isJoined');
+    print('   ID: ${widget.meetup.id}');
+    print('   Title: ${widget.meetup.title}');
+    print('   isJoined (from backend): $_isJoined');
+    print('   isOrganizer (from backend): $_isOrganizer');
+    print('   Attendees: $_currentAttendees / $_maxAttendees');
   }
 
   @override
   void didUpdateWidget(_MeetupCard oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    // �?widget 更新时，检查数据是否变�?
-    if (oldWidget.meetup['id'] == widget.meetup['id']) {
-      // 同一�?meetup，更新参与状�?
-      if (widget.meetup.containsKey('isParticipant')) {
-        final newIsParticipant =
-            widget.meetup['isParticipant'] as bool? ?? false;
-        if (_isJoined != newIsParticipant) {
-          print(
-              '🔄 Meetup ${widget.meetup['title']} 参与状态更�? $_isJoined -> $newIsParticipant');
-          setState(() {
-            _isJoined = newIsParticipant;
-          });
-        }
+    // 当 widget 更新时，检查数据是否变化
+    if (oldWidget.meetup.id == widget.meetup.id) {
+      // 同一个 meetup，使用后端返回的 isJoined 字段更新状态
+      final newIsJoined = widget.meetup.isJoined;
+      final newCurrentAttendees = widget.meetup.capacity.currentAttendees;
+      if (_isJoined != newIsJoined || _currentAttendees != newCurrentAttendees) {
+        print('🔄 Meetup ${widget.meetup.title} 数据更新:');
+        print('   isJoined: $_isJoined -> $newIsJoined');
+        print('   Attendees: $_currentAttendees -> $newCurrentAttendees');
+        setState(() {
+          _isJoined = newIsJoined;
+          _currentAttendees = newCurrentAttendees;
+          _maxAttendees = widget.meetup.capacity.maxAttendees;
+        });
       }
-
-      // 参与人数会通过 getter 自动获取最新值，无需手动更新
-      print(
-          '🔄 Meetup ${widget.meetup['title']} 数据更新: $_currentAttendees / $_maxAttendees');
     }
   }
 
   Future<void> _handleToggleJoin(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
-    final userStateController = Get.find<UserStateController>();
+    final authController = Get.find<AuthStateController>();
 
-    // 检查登录状�?
-    if (!userStateController.isLoggedIn) {
+    // 检查登录状态
+    if (!authController.isAuthenticated.value) {
       AppToast.warning(
         l10n.pleaseLoginToCreateMeetup,
         title: l10n.loginRequired,
@@ -2028,64 +2191,87 @@ class _MeetupCardState extends State<_MeetupCard> {
     }
 
     // 获取 meetup id
-    final meetupId = widget.meetup['id'];
-    String meetupIdString;
-    int meetupIdInt;
-
-    // 类型转换
-    if (meetupId is int) {
-      meetupIdInt = meetupId;
-      meetupIdString = meetupId.toString();
-    } else if (meetupId is String) {
-      meetupIdString = meetupId;
-      meetupIdInt = int.tryParse(meetupId) ?? 0;
-    } else {
-      print('�?无效�?meetup id 类型: ${meetupId.runtimeType}');
-      AppToast.error('Invalid meetup ID');
-      return;
-    }
+    final meetupIdString = widget.meetup.id;
 
     final isJoining = !_isJoined;
 
     try {
-      // 调用真实�?API
-      final eventsApiService = EventsApiService();
+      // 使用 MeetupRepository 替代直接调用 API
+      final meetupRepository = MeetupRepository();
 
       if (isJoining) {
         // 加入活动
-        await eventsApiService.joinEvent(meetupIdString);
+        await meetupRepository.rsvpToMeetup(meetupIdString);
       } else {
-        // 退出活�?
-        await eventsApiService.leaveEvent(meetupIdString);
+        // 退出活动
+        await meetupRepository.cancelRsvp(meetupIdString);
       }
 
-      // API 调用成功，更新全局 rsvpedMeetups 列表
-      widget.controller.toggleRSVP(meetupIdInt);
+      // API 调用成功后，直接更新 Controller 的 rsvpedMeetupIds（避免重复调用 API）
+      if (isJoining) {
+        print('✅ 成功加入活动: ${widget.meetup.title}');
+        if (!_meetupController.rsvpedMeetupIds.contains(widget.meetup.id)) {
+          _meetupController.rsvpedMeetupIds.add(widget.meetup.id);
+        }
+      } else {
+        print('✅ 成功退出活动: ${widget.meetup.title}');
+        _meetupController.rsvpedMeetupIds.remove(widget.meetup.id);
+      }
 
-      // 更新 widget.meetup 中的数据（这�?getter 就能获取最新值）
-      widget.meetup['isParticipant'] = isJoining;
-      widget.meetup['attendees'] =
-          (widget.meetup['attendees'] as int) + (isJoining ? 1 : -1);
-
-      // 更新卡片自己的状�?
+      // API 调用成功，更新本地状态
       setState(() {
         _isJoined = isJoining;
+        _currentAttendees = _currentAttendees + (isJoining ? 1 : -1);
       });
 
       // 显示成功消息
-      if (_isJoined) {
+      if (isJoining) {
         AppToast.success(
-          l10n.joinedSuccessfully,
+          l10n.youHaveJoined(widget.meetup.title),
           title: l10n.joined,
         );
       } else {
         AppToast.info(
-          l10n.youLeftMeetup,
+          l10n.youLeft(widget.meetup.title),
           title: l10n.leftMeetup,
         );
       }
+
+      // 刷新聚会列表
+      _meetupController.refreshMeetups();
     } catch (e) {
       print('❌ API 调用失败: $e');
+
+      // 特殊处理:如果是"已经参加"的错误,说明状态不同步,需要纠正前端状态
+      final errorMessage = e.toString();
+      if (errorMessage.contains('已经参加') || errorMessage.contains('already joined')) {
+        print('⚠️ 检测到状态不同步:用户实际已加入,但前端状态为未加入,正在纠正...');
+        setState(() {
+          _isJoined = true; // 纠正为已加入状态
+        });
+        // 更新 Controller
+        if (!_meetupController.rsvpedMeetupIds.contains(widget.meetup.id)) {
+          _meetupController.rsvpedMeetupIds.add(widget.meetup.id);
+        }
+        AppToast.info('您已经加入了这个活动');
+        return;
+      }
+
+      // 特殊处理:如果是"未参加"的错误,说明状态不同步,需要纠正前端状态
+      if (errorMessage.contains('未参加') ||
+          errorMessage.contains('not joined') ||
+          errorMessage.contains('not a participant')) {
+        print('⚠️ 检测到状态不同步:用户实际未加入,但前端状态为已加入,正在纠正...');
+        setState(() {
+          _isJoined = false; // 纠正为未加入状态
+        });
+        // 更新 Controller
+        _meetupController.rsvpedMeetupIds.remove(widget.meetup.id);
+        AppToast.info('您尚未加入这个活动');
+        return;
+      }
+
+      // 其他错误正常提示
       AppToast.error(
         _isJoined ? '退出活动失败' : '加入活动失败',
         title: '操作失败',
@@ -2093,200 +2279,151 @@ class _MeetupCardState extends State<_MeetupCard> {
     }
   }
 
+  Future<void> _handleCancelMeetup(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final meetupRepository = Get.find<IMeetupRepository>();
+
+    // 显示确认对话框
+    final confirmed = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('取消活动'),
+        content: const Text('确定要取消这个活动吗？此操作无法撤销。'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Get.back(result: true),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
+            ),
+            child: const Text('确定'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      await meetupRepository.cancelMeetup(widget.meetup.id);
+      print('✅ 成功取消活动: ${widget.meetup.title}');
+
+      // 显示成功消息
+      AppToast.success(
+        '活动已取消',
+        title: '成功',
+      );
+
+      // 刷新聚会列表
+      _meetupController.refreshMeetups();
+    } catch (e) {
+      print('❌ 取消活动失败: $e');
+      AppToast.error('取消活动失败');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final date = widget.meetup['date'] as DateTime;
+    final date = widget.meetup.schedule.startTime;
 
-    return InkWell(
-      onTap: () {
-        // �?Map 转换�?MeetupModel
-        final meetupModel = _convertToMeetupModel(widget.meetup);
-        // 跳转�?meetup 详情�?
-        Get.to(() => MeetupDetailPage(meetup: meetupModel));
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        width: widget.isMobile ? 280 : 320,
-        margin: const EdgeInsets.only(right: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
+    return Container(
+      width: widget.isMobile ? 280 : 320,
+      margin: const EdgeInsets.only(right: 16),
+      child: Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.borderLight, width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          side: BorderSide(color: AppColors.borderLight, width: 1),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 图片和类型标�?
-            Stack(
-              children: [
-                ClipRRect(
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(12)),
-                  child: Image.network(
-                    widget.meetup['image'],
-                    width: double.infinity,
-                    height: 140,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                Positioned(
-                  top: 12,
-                  left: 12,
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: _getTypeColor(widget.meetup['type']),
-                      borderRadius: BorderRadius.circular(6),
+            // 图片和类型标签 - 可点击跳转到详情
+            InkWell(
+              onTap: () {
+                Get.toNamed(AppRoutes.meetupDetail, arguments: widget.meetup);
+              },
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              child: Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                    child: Image.network(
+                      widget.meetup.images.isNotEmpty
+                          ? widget.meetup.images.first
+                          : 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=400',
+                      width: double.infinity,
+                      height: 140,
+                      fit: BoxFit.cover,
                     ),
-                    child: Text(
-                      widget.meetup['type'],
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                  ),
+                  Positioned(
+                    top: 12,
+                    left: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: _getTypeColor(widget.meetup.eventType?.enName ?? widget.meetup.type.value),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        widget.meetup.eventType?.name ?? widget.meetup.type.value,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
 
-            // 内容
-            Padding(
-              padding: const EdgeInsets.all(10),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 标题
-                  Text(
-                    widget.meetup['title'],
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+            // 内容区域 - 可点击跳转到详情
+            InkWell(
+              onTap: () {
+                Get.toNamed(AppRoutes.meetupDetail, arguments: widget.meetup);
+              },
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(10, 10, 10, 6), // 按钮到卡片底部只留少量空间
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 标题
+                    Text(
+                      widget.meetup.title,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
 
-                  const SizedBox(height: 6),
+                    const SizedBox(height: 6),
 
-                  // 日期、地点、组织�?- 合并为紧凑显�?
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 日期和时�?
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.calendar_today_outlined,
-                            size: 13,
-                            color: AppColors.textSecondary,
-                          ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              '${_formatDate(date)} ${widget.meetup['time'] ?? ''}',
-                              style: const TextStyle(
-                                fontSize: 11,
-                                color: AppColors.textSecondary,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      // 地点
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.location_on_outlined,
-                            size: 13,
-                            color: AppColors.textSecondary,
-                          ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              widget.meetup['venue'] ??
-                                  widget.meetup['city'] ??
-                                  'TBD',
-                              style: const TextStyle(
-                                fontSize: 11,
-                                color: AppColors.textSecondary,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  // 参加人数和组织�?- 合并为一�?
-                  Row(
-                    children: [
-                      // 参加人数
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.people_outline,
-                            size: 13,
-                            color: AppColors.textSecondary,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '$_currentAttendees',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: AppColors.textSecondary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 12),
-                      // 剩余名额
-                      if ((_maxAttendees - _currentAttendees) > 0)
-                        Text(
-                          '${_maxAttendees - _currentAttendees} left',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: Color(0xFFFF4458),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      const Spacer(),
-                      // 组织�?
-                      Flexible(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                    // 日期、地点、组织者 - 合并为紧凑显示
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 日期和时间
+                        Row(
                           children: [
                             const Icon(
-                              Icons.person_outline,
+                              FontAwesomeIcons.calendar,
                               size: 13,
                               color: AppColors.textSecondary,
                             ),
-                            const SizedBox(width: 3),
-                            Flexible(
+                            const SizedBox(width: 4),
+                            Expanded(
                               child: Text(
-                                widget.meetup['organizer'] ?? 'Organizer',
+                                '${_formatDate(date)} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}',
                                 style: const TextStyle(
                                   fontSize: 11,
                                   color: AppColors.textSecondary,
@@ -2297,164 +2434,108 @@ class _MeetupCardState extends State<_MeetupCard> {
                             ),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // Going/RSVP+Chat 按钮逻辑 - 使用本地状�?
-                  // 如果已加入，显示 RSVP（已确认状态）+ Join Chat 两个按钮
-                  if (_isJoined)
-                    Row(
-                      children: [
-                        // RSVP 按钮（已确认状态，点击可取消）
-                        Expanded(
-                          child: SizedBox(
-                            height: 32,
-                            child: ElevatedButton(
-                              onPressed: () => _handleToggleJoin(context),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                foregroundColor: const Color(0xFFFF4458),
-                                elevation: 0,
-                                side: const BorderSide(
-                                  color: Color(0xFFFF4458),
-                                  width: 1.5,
+                        const SizedBox(height: 4),
+                        // 地点
+                        Row(
+                          children: [
+                            const Icon(
+                              FontAwesomeIcons.locationDot,
+                              size: 13,
+                              color: AppColors.textSecondary,
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                widget.meetup.venue.name.isNotEmpty
+                                    ? widget.meetup.venue.name
+                                    : widget.meetup.location.city,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.textSecondary,
+                                  fontWeight: FontWeight.w500,
                                 ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 6),
-                              ),
-                              child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.check_circle,
-                                    size: 14,
-                                  ),
-                                  SizedBox(width: 3),
-                                  Flexible(
-                                    child: Text(
-                                      'RSVP\'d',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        // Join Chat 按钮
-                        Expanded(
-                          child: SizedBox(
-                            height: 32,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                // 跳转到聊天页面并加入该城市的聊天�?
-                                // 检查登录状�?
-                                final userStateController =
-                                    Get.find<UserStateController>();
-                                final l10n = AppLocalizations.of(context)!;
-                                if (!userStateController.isLoggedIn) {
-                                  AppToast.warning(
-                                    l10n.pleaseLoginToCreateMeetup,
-                                    title: l10n.loginRequired,
-                                  );
-                                  Get.toNamed(AppRoutes.login);
-                                  return;
-                                }
-
-                                Get.toNamed(
-                                  AppRoutes.cityChat,
-                                  arguments: {
-                                    'city': widget.meetup['city'],
-                                    'country': widget.meetup['country'],
-                                    'meetupId': widget.meetup['id'],
-                                    'meetupTitle': widget.meetup['title'],
-                                  },
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFFF4458),
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 6),
-                              ),
-                              child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.chat_bubble_outline,
-                                    size: 14,
-                                  ),
-                                  SizedBox(width: 3),
-                                  Flexible(
-                                    child: Text(
-                                      'Chat',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+                          ],
                         ),
                       ],
-                    )
-                  else
-                    // 如果未加入，显示单个 Going 按钮
-                    SizedBox(
-                      width: double.infinity,
-                      height: 32,
-                      child: ElevatedButton(
-                        onPressed: () => _handleToggleJoin(context),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFFF4458),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                        ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    // 参加人数和组织者 - 合并为一行
+                    Row(
+                      children: [
+                        // 参加人数
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
-                              Icons.add_circle_outline,
-                              size: 14,
+                            const Icon(
+                              FontAwesomeIcons.users,
+                              size: 13,
+                              color: AppColors.textSecondary,
                             ),
-                            SizedBox(width: 4),
+                            const SizedBox(width: 4),
                             Text(
-                              'Going',
-                              style: TextStyle(
-                                fontSize: 12,
+                              '$_currentAttendees',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: AppColors.textSecondary,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],
                         ),
-                      ),
+                        const SizedBox(width: 12),
+                        // 剩余名额
+                        if ((_maxAttendees - _currentAttendees) > 0)
+                          Text(
+                            '${_maxAttendees - _currentAttendees} left',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Color(0xFFFF4458),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        const Spacer(),
+                        // 组织者
+                        Flexible(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                FontAwesomeIcons.user,
+                                size: 13,
+                                color: AppColors.textSecondary,
+                              ),
+                              const SizedBox(width: 3),
+                              Flexible(
+                                child: Text(
+                                  widget.meetup.organizer.name,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: AppColors.textSecondary,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                ],
+                  ],
+                ),
               ),
+            ),
+
+            // 操作按钮区域
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 6, 10, 6),
+              child: _buildActionButton(context),
             ),
           ],
         ),
@@ -2462,108 +2543,356 @@ class _MeetupCardState extends State<_MeetupCard> {
     );
   }
 
+  // 构建操作按钮 - 根据 status 和 isOrganizer 判断
+  Widget _buildActionButton(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final status = widget.meetup.status; // status 已经是字符串类型,值为 'upcoming', 'ongoing', 'completed', 'cancelled'
+
+    // 如果是组织者
+    if (_isOrganizer) {
+      // 已取消的活动
+      if (status == 'cancelled') {
+        return SizedBox(
+          width: double.infinity,
+          height: 32,
+          child: ElevatedButton(
+            onPressed: null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.borderLight,
+              foregroundColor: AppColors.textSecondary,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
+              disabledBackgroundColor: AppColors.borderLight,
+              disabledForegroundColor: AppColors.textSecondary,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(FontAwesomeIcons.ban, size: 14),
+                SizedBox(width: 4),
+                Text(
+                  '已取消',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+
+      // 已完成的活动
+      if (status == 'completed' || widget.meetup.isEnded) {
+        return SizedBox(
+          width: double.infinity,
+          height: 32,
+          child: ElevatedButton(
+            onPressed: null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.borderLight,
+              foregroundColor: AppColors.textSecondary,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
+              disabledBackgroundColor: AppColors.borderLight,
+              disabledForegroundColor: AppColors.textSecondary,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(FontAwesomeIcons.circleCheck, size: 14),
+                SizedBox(width: 4),
+                Text(
+                  '已结束',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+
+      // 进行中或即将开始的活动 - 显示取消按钮
+      return SizedBox(
+        width: double.infinity,
+        height: 32,
+        child: ElevatedButton(
+          onPressed: () => _handleCancelMeetup(context),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(6),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(FontAwesomeIcons.ban, size: 14),
+              SizedBox(width: 4),
+              Text(
+                '取消活动',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // 不是组织者的情况
+    // 已取消的活动
+    if (status == 'cancelled') {
+      return SizedBox(
+        width: double.infinity,
+        height: 32,
+        child: ElevatedButton(
+          onPressed: null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.borderLight,
+            foregroundColor: AppColors.textSecondary,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(6),
+            ),
+            disabledBackgroundColor: AppColors.borderLight,
+            disabledForegroundColor: AppColors.textSecondary,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(FontAwesomeIcons.ban, size: 14),
+              SizedBox(width: 4),
+              Text(
+                '活动已取消',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // 已完成的活动
+    if (status == 'completed' || widget.meetup.isEnded) {
+      return SizedBox(
+        width: double.infinity,
+        height: 32,
+        child: ElevatedButton(
+          onPressed: null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.borderLight,
+            foregroundColor: AppColors.textSecondary,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(6),
+            ),
+            disabledBackgroundColor: AppColors.borderLight,
+            disabledForegroundColor: AppColors.textSecondary,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(FontAwesomeIcons.circleCheck, size: 14),
+              SizedBox(width: 4),
+              Text(
+                '活动已结束',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // upcoming 或 ongoing - 显示 Chat + Join/Leave 按钮
+    return Row(
+      children: [
+        // Chat 按钮 - 只有加入了才能点击
+        Expanded(
+          child: SizedBox(
+            height: 32,
+            child: OutlinedButton(
+              onPressed: _isJoined
+                  ? () {
+                      final authController = Get.find<AuthStateController>();
+                      final l10n = AppLocalizations.of(context)!;
+                      if (!authController.isAuthenticated.value) {
+                        AppToast.warning(
+                          l10n.pleaseLoginToCreateMeetup,
+                          title: l10n.loginRequired,
+                        );
+                        Get.toNamed(AppRoutes.login);
+                        return;
+                      }
+
+                      Get.toNamed(
+                        AppRoutes.cityChat,
+                        arguments: {
+                          'city': widget.meetup.location.city,
+                          'country': widget.meetup.location.country,
+                          'meetupId': widget.meetup.id,
+                          'meetupTitle': widget.meetup.title,
+                        },
+                      );
+                    }
+                  : null,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: _isJoined ? Colors.blue : Colors.grey,
+                side: BorderSide(
+                  color: _isJoined ? Colors.blue : Colors.grey.shade300,
+                  width: 1.5,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                backgroundColor: _isJoined ? null : Colors.grey.shade50,
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(FontAwesomeIcons.message, size: 14),
+                  SizedBox(width: 3),
+                  Flexible(
+                    child: Text(
+                      'Chat',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 6),
+        // Join/Leave 按钮
+        Expanded(
+          child: SizedBox(
+            height: 32,
+            child: ElevatedButton(
+              onPressed: (_isFull && !_isJoined) ? null : () => _handleToggleJoin(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _isJoined ? AppColors.borderLight : const Color(0xFFFF4458),
+                foregroundColor: _isJoined ? AppColors.textSecondary : Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                disabledBackgroundColor: AppColors.borderLight,
+                disabledForegroundColor: AppColors.textSecondary,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    _isJoined ? FontAwesomeIcons.circleCheck : FontAwesomeIcons.circlePlus,
+                    size: 14,
+                  ),
+                  const SizedBox(width: 3),
+                  Flexible(
+                    child: Text(
+                      _isFull && !_isJoined
+                          ? l10n.full
+                          : _isJoined
+                              ? 'Leave'
+                              : 'Join',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Color _getTypeColor(String type) {
-    switch (type) {
-      case 'Drinks':
-        return const Color(0xFFFF4458);
-      case 'Coworking':
-        return const Color(0xFF6366F1);
-      case 'Dinner':
-        return const Color(0xFFEC4899);
-      case 'Activity':
-        return const Color(0xFF10B981);
-      case 'Workshop':
-        return const Color(0xFFF59E0B);
-      case 'Networking':
-        return const Color(0xFF8B5CF6);
-      default:
-        return const Color(0xFF6B7280);
+    // 根据类型名称设置颜色（支持中英文）- 与 meetups_list_page 保持一致
+    final typeLower = type.toLowerCase();
+    if (typeLower.contains('coffee') || typeLower.contains('咖啡')) {
+      return Colors.brown;
+    } else if (typeLower.contains('coworking') ||
+        typeLower.contains('business') ||
+        typeLower.contains('共享办公') ||
+        typeLower.contains('商务')) {
+      return Colors.blue;
+    } else if (typeLower.contains('activity') ||
+        typeLower.contains('outdoor') ||
+        typeLower.contains('户外') ||
+        typeLower.contains('徒步')) {
+      return Colors.green;
+    } else if (typeLower.contains('language') || typeLower.contains('语言')) {
+      return Colors.purple;
+    } else if (typeLower.contains('social') ||
+        typeLower.contains('社交') ||
+        typeLower.contains('networking') ||
+        typeLower.contains('网络')) {
+      return Colors.orange;
+    } else if (typeLower.contains('tech') ||
+        typeLower.contains('workshop') ||
+        typeLower.contains('技术') ||
+        typeLower.contains('工作坊')) {
+      return Colors.indigo;
+    } else if (typeLower.contains('food') ||
+        typeLower.contains('dinner') ||
+        typeLower.contains('美食') ||
+        typeLower.contains('饮品')) {
+      return Colors.red;
+    } else if (typeLower.contains('sports') ||
+        typeLower.contains('fitness') ||
+        typeLower.contains('运动') ||
+        typeLower.contains('健身')) {
+      return Colors.teal;
+    } else if (typeLower.contains('culture') ||
+        typeLower.contains('art') ||
+        typeLower.contains('文化') ||
+        typeLower.contains('艺术')) {
+      return Colors.pink;
+    } else if (typeLower.contains('yoga') ||
+        typeLower.contains('meditation') ||
+        typeLower.contains('瑜伽') ||
+        typeLower.contains('冥想')) {
+      return const Color(0xFF4CAF50);
+    } else {
+      // 默认颜色
+      return const Color(0xFF9C27B0);
     }
   }
 
   String _formatDate(DateTime date) {
-    final months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec'
-    ];
+    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return '${months[date.month - 1]} ${date.day}';
-  }
-
-  // �?Map 转换�?MeetupModel
-  MeetupModel _convertToMeetupModel(Map<String, dynamic> meetup) {
-    final date = meetup['date'] as DateTime;
-    final time = meetup['time'] as String;
-
-    // 合并日期和时�?
-    final timeParts = time.split(':');
-    final dateTime = DateTime(
-      date.year,
-      date.month,
-      date.day,
-      int.parse(timeParts[0]),
-      int.parse(timeParts[1]),
-    );
-
-    // 处理 meetup id 的类型转�?
-    final meetupId = meetup['id'];
-    final int meetupIdInt;
-    if (meetupId is int) {
-      meetupIdInt = meetupId;
-    } else if (meetupId is String) {
-      meetupIdInt = int.tryParse(meetupId) ?? 0;
-    } else {
-      meetupIdInt = 0;
-    }
-
-    // 安全地获取字符串字段,处理可能的 Map 类型
-    String safeGetString(dynamic value, String defaultValue) {
-      if (value == null) return defaultValue;
-      if (value is String) return value;
-      if (value is Map<String, dynamic>) {
-        // 如果是 Map,尝试获取常见的名称字段
-        return value['name'] ??
-            value['displayName'] ??
-            value['title'] ??
-            defaultValue;
-      }
-      return value.toString();
-    }
-
-    return MeetupModel(
-      id: meetup['id'].toString(),
-      title: safeGetString(meetup['title'], 'Unknown Event'),
-      type: safeGetString(meetup['type'], 'Meetup'),
-      description: safeGetString(meetup['description'], ''),
-      city: safeGetString(meetup['city'], 'Unknown'),
-      country: safeGetString(meetup['country'], 'Unknown'),
-      venue: safeGetString(meetup['venue'], 'TBD'),
-      venueAddress: safeGetString(meetup['venue'], 'TBD'), // 使用 venue 作为地址
-      dateTime: dateTime,
-      maxAttendees:
-          (meetup['maxAttendees'] is int) ? meetup['maxAttendees'] as int : 20,
-      currentAttendees:
-          (meetup['attendees'] is int) ? meetup['attendees'] as int : 0,
-      organizerId: meetup['id'].toString(),
-      organizerName: safeGetString(meetup['organizer'], 'Organizer'),
-      organizerAvatar: safeGetString(
-          meetup['organizerAvatar'], 'https://i.pravatar.cc/150?img=1'),
-      images: [
-        safeGetString(meetup['image'],
-            'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=400')
-      ],
-      attendeeIds: [],
-      isJoined: widget.controller.rsvpedMeetups.contains(meetupIdInt),
-      createdAt: DateTime.now(),
-    );
   }
 }

@@ -1,12 +1,15 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/core/core.dart';
+import 'package:df_admin_mobile/features/city/application/use_cases/city_use_cases.dart';
+import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/pages/add_coworking_page.dart';
 import 'package:df_admin_mobile/pages/coworking_list_page.dart';
-import 'package:df_admin_mobile/services/cities_api_service.dart';
+import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-
-import '../config/app_colors.dart';
-import '../generated/app_localizations.dart';
-import '../widgets/app_toast.dart';
+import 'package:get/get.dart';
 
 /// Coworking Home Page
 /// 共享办公空间首页 - 城市选择
@@ -17,10 +20,11 @@ class CoworkingHomePage extends StatefulWidget {
   State<CoworkingHomePage> createState() => _CoworkingHomePageState();
 }
 
-class _CoworkingHomePageState extends State<CoworkingHomePage> {
-  final CitiesApiService _citiesApiService = CitiesApiService();
+class _CoworkingHomePageState extends State<CoworkingHomePage>
+    with RouteAwareRefreshMixin<CoworkingHomePage> {
   List<Map<String, dynamic>> _cities = [];
   bool _isLoading = true;
+  bool _isLoadingRequest = false; // 防止并发请求
 
   @override
   void initState() {
@@ -102,75 +106,132 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
     await _loadCitiesWithCoworkingCount();
   }
 
+  @override
+  Future<void> onRouteResume() async {
+    // 页面恢复时不自动刷新，避免并发请求
+    // 只在数据为空时才加载
+    if (_cities.isEmpty) {
+      print('🔄 CoworkingHome: 数据为空，重新加载');
+      await _refreshData();
+    } else {
+      print('✅ CoworkingHome: 使用缓存数据，跳过刷新');
+    }
+  }
+
   /// 加载城市及其coworking空间数量
-  /// 使用新的后端接口: /api/v1/home/cities-with-coworking
+  /// 使用 City 域的 UseCase
   Future<void> _loadCitiesWithCoworkingCount() async {
+    // 防止并发请求
+    if (_isLoadingRequest) {
+      print('⏸️ CoworkingHome: 正在加载中，跳过重复请求');
+      return;
+    }
+
     try {
+      if (!mounted) return;
+
+      _isLoadingRequest = true; // 立即设置加载标志
       setState(() => _isLoading = true);
 
       print('🏙️ 开始获取城市列表(含Coworking数量)...');
 
-      // 调用新的一体化接口,后端已经聚合了 coworking 数量
-      final response = await _citiesApiService.getCitiesWithCoworkingCount(
-        page: 1,
-        pageSize: 100,
+      // 防御性地获取 UseCase 实例,带错误处理
+      GetCitiesWithCoworkingCountUseCase? getCitiesUseCase;
+      try {
+        getCitiesUseCase = Get.find<GetCitiesWithCoworkingCountUseCase>();
+      } catch (e) {
+        print('❌ 无法找到 GetCitiesWithCoworkingCountUseCase: $e');
+        print('⚠️ 尝试重新初始化依赖...');
+
+        // 尝试直接创建 UseCase
+        final repository = Get.find<ICityRepository>();
+        getCitiesUseCase = GetCitiesWithCoworkingCountUseCase(repository);
+      }
+
+      // 使用 UseCase 获取数据
+      final result = await getCitiesUseCase.execute(
+        const GetCitiesWithCoworkingCountParams(
+          page: 1,
+          pageSize: 100,
+        ),
       );
 
-      final cities = response['items'] as List<dynamic>;
-      print('✅ 获取到 ${cities.length} 个城市');
+      // 处理结果
+      switch (result) {
+        case Success(:final data):
+          final cities = data['items'] as List<dynamic>;
+          print('✅ 获取到 ${cities.length} 个城市');
 
-      if (cities.isEmpty) {
-        setState(() {
-          _cities = [];
-          _isLoading = false;
-        });
-        return;
-      }
+          if (cities.isEmpty) {
+            if (!mounted) return;
+            setState(() {
+              _cities = [];
+              _isLoading = false;
+              _isLoadingRequest = false;
+            });
+            return;
+          }
 
-      // 组装城市数据,只保留有 coworking 空间的城市
-      List<Map<String, dynamic>> citiesWithCount = [];
+          // 组装城市数据,只保留有 coworking 空间的城市
+          List<Map<String, dynamic>> citiesWithCount = [];
 
-      for (var city in cities) {
-        // 处理 coworkingCount 可能是字符串或整数的情况
-        final coworkingCountValue = city['coworkingCount'];
-        final count = coworkingCountValue is int
-            ? coworkingCountValue
-            : (coworkingCountValue is String
-                ? int.tryParse(coworkingCountValue) ?? 0
-                : 0);
+          for (var city in cities) {
+            // 处理 coworkingCount 可能是字符串或整数的情况
+            final coworkingCountValue = city['coworkingCount'];
+            final count = coworkingCountValue is int
+                ? coworkingCountValue
+                : (coworkingCountValue is String
+                    ? int.tryParse(coworkingCountValue) ?? 0
+                    : 0);
 
-        // 只添加有 coworking 空间的城市
-        if (count > 0) {
-          // 提取天气信息
-          final weather = city['weather'] as Map<String, dynamic>?;
-          final temperature = weather?['temperature']?.toDouble();
-          final weatherIcon = weather?['weatherIcon'] as String?;
-          final weatherDesc = weather?['weatherDescription'] as String?;
+            // 只添加有 coworking 空间的城市
+            if (count > 0) {
+              // 提取天气信息
+              final weather = city['weather'] as Map<String, dynamic>?;
+              final temperature = weather?['temperature']?.toDouble();
+              final weatherIcon = weather?['weatherIcon'] as String?;
+              final weatherDesc = weather?['weatherDescription'] as String?;
 
-          citiesWithCount.add({
-            'id': city['id'] as String,
-            'name': city['name'] as String,
-            'country': city['country'] as String? ?? '',
-            'image': city['imageUrl'] as String? ??
-                'https://images.unsplash.com/photo-1449824913935-59a10b8d2000',
-            'spaces': count,
-            'temperature': temperature,
-            'weatherIcon': weatherIcon,
-            'weatherDescription': weatherDesc,
+              citiesWithCount.add({
+                'id': city['id'] as String,
+                'name': city['name'] as String,
+                'country': city['country'] as String? ?? '',
+                'image': city['imageUrl'] as String? ??
+                    'https://images.unsplash.com/photo-1449824913935-59a10b8d2000',
+                'spaces': count,
+                'temperature': temperature,
+                'weatherIcon': weatherIcon,
+                'weatherDescription': weatherDesc,
+              });
+            }
+          }
+
+          print('✅ 找到 ${citiesWithCount.length} 个有 Coworking 空间的城市');
+
+          if (!mounted) return;
+          setState(() {
+            _cities = citiesWithCount;
+            _isLoading = false;
+            _isLoadingRequest = false;
           });
-        }
+
+        case Failure(:final exception):
+          print('❌ 加载城市数据失败: ${exception.message}');
+          if (!mounted) return;
+          setState(() {
+            _isLoading = false;
+            _isLoadingRequest = false;
+          });
+          AppToast.error('加载失败: ${exception.message}');
       }
-
-      print('✅ 找到 ${citiesWithCount.length} 个有 Coworking 空间的城市');
-
-      setState(() {
-        _cities = citiesWithCount;
-        _isLoading = false;
-      });
     } catch (e) {
-      print('❌ 加载城市数据失败: $e');
-      setState(() => _isLoading = false);
-      AppToast.error('加载失败,请稍后重试');
+      print('❌ 加载城市数据异常: $e');
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _isLoadingRequest = false;
+      });
+      AppToast.error('加载失败，请重试');
     }
   }
 
@@ -179,18 +240,20 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(l10n.coworkingSpaces),
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
+        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(FontAwesomeIcons.arrowLeft),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(8),
               children: [
                 // Create Space Button
                 SizedBox(
@@ -211,7 +274,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
                         await _refreshData();
                       }
                     },
-                    icon: const Icon(Icons.add_circle_outline, size: 24),
+                    icon: const Icon(FontAwesomeIcons.circlePlus, size: 24),
                     label: Builder(
                       builder: (context) {
                         final l10n = AppLocalizations.of(context)!;
@@ -235,13 +298,13 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 12),
 
                 // Section Title
                 Row(
                   children: [
                     const Icon(
-                      Icons.explore,
+                      FontAwesomeIcons.compass,
                       color: Color(0xFF6366F1),
                       size: 24,
                     ),
@@ -257,7 +320,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
                   ],
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
 
                 // City Grid
                 _cities.isEmpty
@@ -279,9 +342,9 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                          childAspectRatio: 0.85,
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 8,
+                          childAspectRatio: 0.78,
                         ),
                         itemCount: _cities.length,
                         itemBuilder: (context, index) {
@@ -296,14 +359,28 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
 
   Widget _buildCityCard(BuildContext context, Map<String, dynamic> city) {
     final l10n = AppLocalizations.of(context)!;
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: InkWell(
+        borderRadius: BorderRadius.circular(12),
         onTap: () async {
+          // 添加调试日志
+          print('🏙️ 点击城市卡片:');
+          print('   城市ID: ${city['id']}');
+          print('   城市名称: ${city['name']}');
+          print('   Coworking数量: ${city['spaces']}');
+
           // 等待列表页返回,如果返回 true 则刷新城市列表
           final result = await Navigator.push(
             context,
@@ -311,6 +388,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
               builder: (context) => CoworkingListPage(
                 cityId: city['id'],
                 cityName: city['name'],
+                countryName: city['country'] as String?,
               ),
             ),
           );
@@ -326,17 +404,21 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
             // Image
             Stack(
               children: [
-                AspectRatio(
-                  aspectRatio: 1.5,
-                  child: Image.network(
-                    city['image'],
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.location_city, size: 50),
-                      );
-                    },
+                ClipRRect(
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(12)),
+                  child: AspectRatio(
+                    aspectRatio: 1.5,
+                    child: Image.network(
+                      city['image'],
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.grey[300],
+                          child: const Icon(FontAwesomeIcons.city, size: 50),
+                        );
+                      },
+                    ),
                   ),
                 ),
                 Positioned(
@@ -366,7 +448,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> {
 
             // Info
             Padding(
-              padding: const EdgeInsets.all(4),
+              padding: const EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

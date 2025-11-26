@@ -1,7 +1,7 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 
-import '../widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 
 /// 位置服务类
 /// 提供位置权限管理和位置获取功能

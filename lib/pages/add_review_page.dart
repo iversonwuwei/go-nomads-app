@@ -1,14 +1,15 @@
 import 'dart:io';
 
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-
-import '../config/app_colors.dart';
-import '../generated/app_localizations.dart';
-import '../services/user_city_content_api_service.dart';
-import '../widgets/app_toast.dart';
 
 /// 添加 Review 页面 - 独立页面形式
 class AddReviewPage extends StatefulWidget {
@@ -43,9 +44,10 @@ class _AddReviewPageState extends State<AddReviewPage> {
   void _validateCityId() {
     if (widget.cityId.isEmpty || !_isValidUuid(widget.cityId)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        final l10n = AppLocalizations.of(context)!;
         AppToast.error(
-          '城市ID无效,无法提交评论',
-          title: '错误',
+          l10n.invalidCityId,
+          title: l10n.error,
         );
         Get.back();
       });
@@ -75,10 +77,10 @@ class _AddReviewPageState extends State<AddReviewPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.cityPrimary,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.close, color: AppColors.textPrimary, size: 24.sp),
+          icon: Icon(FontAwesomeIcons.xmark, color: Colors.white, size: 24.sp),
           onPressed: () => Get.back(),
         ),
         title: Column(
@@ -87,7 +89,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
             Text(
               l10n.writeAReview,
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: Colors.white,
                 fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
               ),
@@ -95,7 +97,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
             Text(
               widget.cityName,
               style: TextStyle(
-                color: AppColors.textSecondary,
+                color: Colors.white70,
                 fontSize: 14.sp,
                 fontWeight: FontWeight.normal,
               ),
@@ -134,122 +136,187 @@ class _AddReviewPageState extends State<AddReviewPage> {
     );
   }
 
-  /// 评分区域
+  /// 评分区域 - 创意表情滑动条设计
   Widget _buildRatingSection() {
     final l10n = AppLocalizations.of(context)!;
 
     return Container(
-      padding: EdgeInsets.all(24.w),
+      padding: EdgeInsets.all(28.w),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white,
+            _getRatingColor(_rating.value).withValues(alpha: 0.05),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10.r,
-            offset: Offset(0, 2.h),
+            color: _getRatingColor(_rating.value).withValues(alpha: 0.15),
+            blurRadius: 20.r,
+            offset: Offset(0, 4.h),
           ),
         ],
       ),
       child: Column(
         children: [
+          // 标题
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.star_border,
-                  color: const Color(0xFFFF4458), size: 24.sp),
-              SizedBox(width: 8.w),
+              Icon(
+                FontAwesomeIcons.faceSmile,
+                color: _getRatingColor(_rating.value),
+                size: 24.sp,
+              ),
+              SizedBox(width: 12.w),
               Text(
                 l10n.overallRating,
                 style: TextStyle(
-                  fontSize: 16.sp,
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
                 ),
               ),
             ],
           ),
-          SizedBox(height: 20.h),
-          Obx(() => Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(5, (index) {
-                  final fullStar = index < _rating.value.floor();
-                  final halfStar = index < _rating.value &&
-                      index >= _rating.value.floor() &&
-                      _rating.value % 1 != 0;
+          SizedBox(height: 32.h),
 
-                  return Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 6.w),
-                    child: SizedBox(
-                      width: 44.w,
-                      height: 44.w,
-                      child: Stack(
-                        children: [
-                          // 星星图标
-                          Icon(
-                            fullStar
-                                ? Icons.star
-                                : halfStar
-                                    ? Icons.star_half
-                                    : Icons.star_border,
-                            color: const Color(0xFFFF4458),
-                            size: 44.sp,
-                          ),
-                          // 左半边点击区域
-                          Positioned(
-                            left: 0,
-                            top: 0,
-                            bottom: 0,
-                            width: 22.w,
-                            child: GestureDetector(
-                              onTap: () {
-                                _rating.value = index + 0.5;
-                              },
-                              behavior: HitTestBehavior.opaque,
-                            ),
-                          ),
-                          // 右半边点击区域
-                          Positioned(
-                            right: 0,
-                            top: 0,
-                            bottom: 0,
-                            width: 22.w,
-                            child: GestureDetector(
-                              onTap: () {
-                                _rating.value = (index + 1).toDouble();
-                              },
-                              behavior: HitTestBehavior.opaque,
-                            ),
-                          ),
-                        ],
-                      ),
+          // 大表情符号显示
+          Obx(() => AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                transitionBuilder: (child, animation) {
+                  return ScaleTransition(
+                    scale: animation,
+                    child: FadeTransition(
+                      opacity: animation,
+                      child: child,
                     ),
                   );
-                }),
-              )),
-          SizedBox(height: 16.h),
-          Obx(() => Text(
-                _rating.value == 0
-                    ? l10n.tapStarsToRate
-                    : '${_rating.value.toStringAsFixed(1)} / 5.0',
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
-                  color: _rating.value == 0
-                      ? AppColors.textTertiary
-                      : const Color(0xFFFF4458),
+                },
+                child: Text(
+                  _getRatingEmoji(_rating.value),
+                  key: ValueKey<double>(_rating.value),
+                  style: TextStyle(
+                    fontSize: 80.sp,
+                    height: 1.0,
+                  ),
                 ),
               )),
-          if (_rating.value > 0)
-            Obx(() => Text(
-                  _getRatingLabel(_rating.value),
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    color: AppColors.textSecondary,
+          SizedBox(height: 24.h),
+
+          // 评分文字
+          Obx(() => Column(
+                children: [
+                  Text(
+                    _rating.value == 0 ? l10n.tapStarsToRate : _getRatingLabel(_rating.value),
+                    style: TextStyle(
+                      fontSize: 24.sp,
+                      fontWeight: FontWeight.bold,
+                      color: _getRatingColor(_rating.value),
+                    ),
                   ),
-                )),
+                  if (_rating.value > 0) ...[
+                    SizedBox(height: 4.h),
+                    Text(
+                      '${_rating.value.toStringAsFixed(1)} / 5.0',
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ],
+              )),
+          SizedBox(height: 32.h),
+
+          // 滑动条
+          Obx(() => Column(
+                children: [
+                  SliderTheme(
+                    data: SliderThemeData(
+                      trackHeight: 8.h,
+                      activeTrackColor: _getRatingColor(_rating.value),
+                      inactiveTrackColor: Colors.grey.shade200,
+                      thumbColor: Colors.white,
+                      overlayColor: _getRatingColor(_rating.value).withValues(alpha: 0.2),
+                      thumbShape: RoundSliderThumbShape(
+                        enabledThumbRadius: 16.r,
+                        elevation: 4,
+                      ),
+                      overlayShape: RoundSliderOverlayShape(
+                        overlayRadius: 28.r,
+                      ),
+                      trackShape: const RoundedRectSliderTrackShape(),
+                    ),
+                    child: Slider(
+                      value: _rating.value,
+                      min: 0,
+                      max: 5,
+                      divisions: 10,
+                      onChanged: (value) {
+                        _rating.value = value;
+                      },
+                    ),
+                  ),
+                  SizedBox(height: 12.h),
+                  // 表情符号刻度
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8.w),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: List.generate(6, (index) {
+                        final value = index.toDouble();
+                        final isSelected = (_rating.value - value).abs() < 0.3;
+                        return GestureDetector(
+                          onTap: () => _rating.value = value,
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: EdgeInsets.all(isSelected ? 8.w : 4.w),
+                            decoration: BoxDecoration(
+                              color: isSelected ? _getRatingColor(value).withValues(alpha: 0.15) : Colors.transparent,
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                            child: Text(
+                              _getRatingEmoji(value),
+                              style: TextStyle(
+                                fontSize: isSelected ? 28.sp : 20.sp,
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                  ),
+                ],
+              )),
         ],
       ),
     );
+  }
+
+  /// 获取评分对应的表情符号
+  String _getRatingEmoji(double rating) {
+    if (rating == 0) return '🤔';
+    if (rating <= 1.0) return '😢';
+    if (rating <= 2.0) return '😕';
+    if (rating <= 3.0) return '😐';
+    if (rating <= 4.0) return '🙂';
+    if (rating <= 4.5) return '😊';
+    return '🤩';
+  }
+
+  /// 获取评分对应的颜色
+  Color _getRatingColor(double rating) {
+    if (rating == 0) return Colors.grey;
+    if (rating <= 1.5) return const Color(0xFFE74C3C); // 红色
+    if (rating <= 2.5) return const Color(0xFFE67E22); // 橙色
+    if (rating <= 3.5) return const Color(0xFFF39C12); // 黄色
+    if (rating <= 4.5) return const Color(0xFF2ECC71); // 绿色
+    return const Color(0xFF9B59B6); // 紫色（完美）
   }
 
   /// 标题输入
@@ -261,7 +328,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
       children: [
         Row(
           children: [
-            Icon(Icons.title, color: AppColors.textSecondary, size: 20.sp),
+            Icon(FontAwesomeIcons.heading, color: AppColors.textSecondary, size: 20.sp),
             SizedBox(width: 8.w),
             Text(
               l10n.reviewTitle,
@@ -332,7 +399,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
       children: [
         Row(
           children: [
-            Icon(Icons.edit_note, color: AppColors.textSecondary, size: 20.sp),
+            Icon(FontAwesomeIcons.penToSquare, color: AppColors.textSecondary, size: 20.sp),
             SizedBox(width: 8.w),
             Text(
               l10n.yourExperience,
@@ -407,7 +474,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
           children: [
             Row(
               children: [
-                Icon(Icons.photo_library,
+                Icon(FontAwesomeIcons.images,
                     color: AppColors.textSecondary, size: 20.sp),
                 SizedBox(width: 8.w),
                 Text(
@@ -493,7 +560,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  Icons.close,
+                  FontAwesomeIcons.xmark,
                   size: 16.sp,
                   color: Colors.white,
                 ),
@@ -527,7 +594,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.add_photo_alternate,
+              FontAwesomeIcons.photoFilm,
               color: const Color(0xFFFF4458),
               size: 32.sp,
             ),
@@ -565,7 +632,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
         children: [
           Row(
             children: [
-              Icon(Icons.info_outline, color: Colors.blue, size: 20.sp),
+              Icon(FontAwesomeIcons.circleInfo, color: Colors.blue, size: 20.sp),
               SizedBox(width: 8.w),
               Text(
                 l10n.reviewGuidelines,
@@ -621,7 +688,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
         child: Obx(() => ElevatedButton(
               onPressed: _isSubmitting.value ? null : _submitReview,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF4458),
+                backgroundColor: AppColors.cityPrimary,
                 foregroundColor: Colors.white,
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 shape: RoundedRectangleBorder(
@@ -629,7 +696,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
                 ),
                 elevation: 0,
                 disabledBackgroundColor:
-                    const Color(0xFFFF4458).withValues(alpha: 0.5),
+                    AppColors.cityPrimary.withValues(alpha: 0.5),
               ),
               child: _isSubmitting.value
                   ? SizedBox(
@@ -644,7 +711,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.check_circle_outline, size: 20.sp),
+                        Icon(FontAwesomeIcons.circleCheck, size: 20.sp),
                         SizedBox(width: 8.w),
                         Text(
                           l10n.submitReview,
@@ -705,9 +772,13 @@ class _AddReviewPageState extends State<AddReviewPage> {
 
     try {
       // 实际的 API 调用
-      final apiService = UserCityContentApiService();
+      final apiService = Get.find<IUserCityContentRepository>();
 
-      final review = await apiService.upsertCityReview(
+      print('🔄 Submitting review for city: ${widget.cityId}');
+      print('   Rating: ${_rating.value.round()}');
+      print('   Title: ${_titleController.text.trim()}');
+      
+      final result = await apiService.upsertCityReview(
         cityId: widget.cityId,
         rating: _rating.value.round(),
         title: _titleController.text.trim(),
@@ -715,21 +786,56 @@ class _AddReviewPageState extends State<AddReviewPage> {
         // visitDate: 可以添加一个日期选择器
       );
 
-      Get.back(result: {
-        'success': true,
-        'review': review,
-      });
+      print('✅ API Response: ${result.runtimeType}');
 
-      AppToast.success(
-        l10n.reviewSubmitted,
-        title: l10n.success,
-      );
-    } catch (e) {
+      switch (result) {
+        case Success(:final data):
+          print('✅ Success! Review data: $data');
+
+          // 先重置按钮状态,让用户看到提交完成
+          _isSubmitting.value = false;
+
+          // 显示成功提示
+          if (mounted) {
+            AppToast.success(
+              l10n.reviewSubmitted,
+              title: l10n.success,
+            );
+          }
+
+          print('🔙 等待 Toast 显示后跳转...');
+
+          // 等待 Toast 显示
+          await Future.delayed(const Duration(milliseconds: 800));
+
+          // 返回上一页并传递结果
+          if (mounted) {
+            print('✅ Widget mounted, calling Get.back()');
+            Get.back(result: {
+              'success': true,
+              'review': data,
+            });
+            print('✅ Get.back() called');
+          } else {
+            print('❌ Widget not mounted, cannot navigate');
+          }
+          return;
+          
+        case Failure(:final exception):
+          print('❌ Failure: $exception');
+          AppToast.error(
+            l10n.failedToSubmitReview(exception.toString()),
+            title: l10n.error,
+          );
+          _isSubmitting.value = false;
+      }
+    } catch (e, stackTrace) {
+      print('❌ Exception caught: $e');
+      print('Stack trace: $stackTrace');
       AppToast.error(
         l10n.failedToSubmitReview('$e'),
         title: l10n.error,
       );
-    } finally {
       _isSubmitting.value = false;
     }
   }

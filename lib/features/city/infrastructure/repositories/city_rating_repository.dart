@@ -1,0 +1,154 @@
+import 'package:df_admin_mobile/features/city/domain/entities/city_rating_category.dart';
+import 'package:df_admin_mobile/features/city/domain/entities/city_rating_info.dart';
+import 'package:df_admin_mobile/features/city/domain/repositories/icity_rating_repository.dart';
+import 'package:df_admin_mobile/features/city/infrastructure/models/city_rating_category_dto.dart';
+import 'package:df_admin_mobile/features/city/infrastructure/models/city_rating_info_dto.dart';
+import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:get/get.dart';
+
+/// 城市评分仓储实现
+class CityRatingRepository implements ICityRatingRepository {
+  final HttpService _httpService = Get.find();
+
+  @override
+  Future<CityRatingInfo> getCityRatings(String cityId) async {
+    try {
+      print('📡 [CityRatingRepository] 发送请求: GET /cities/$cityId/ratings');
+      final response = await _httpService.get(
+        '/cities/$cityId/ratings',
+      );
+
+      print('📦 [CityRatingRepository] 收到响应: ${response.statusCode}');
+      final data = response.data as Map<String, dynamic>;
+      print('📄 [CityRatingRepository] 响应数据: ${data.keys.toList()}');
+      
+      final dto = CityRatingInfoDto.fromJson(data);
+      print('✅ [CityRatingRepository] 解析成功:');
+      print('  - categories: ${dto.categories.length}');
+      print('  - statistics: ${dto.statistics.length}');
+      print('  - overallScore: ${dto.overallScore}');
+      
+      return dto.toEntity();
+    } catch (e) {
+      print('❌ [CityRatingRepository] 请求失败: $e');
+      throw Exception('获取城市评分信息失败: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> submitRating(String cityId, String categoryId, int rating) async {
+    try {
+      await _httpService.post(
+        '/cities/$cityId/ratings',
+        data: {
+          'categoryId': categoryId,
+          'rating': rating,
+        },
+      );
+    } catch (e) {
+      throw Exception('提交评分失败: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<List<CityRatingCategory>> getCategories() async {
+    try {
+      // 使用任意 cityId 获取所有评分项（评分项是全局的）
+      final response = await _httpService.get(
+        '/cities/00000000-0000-0000-0000-000000000000/ratings/categories',
+      );
+
+      final data = response.data as List<dynamic>;
+      return data
+          .map((item) =>
+              CityRatingCategoryDto.fromJson(item as Map<String, dynamic>))
+          .map((dto) => dto.toEntity())
+          .toList();
+    } catch (e) {
+      throw Exception('获取评分项列表失败: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<CityRatingCategory> createCategory({
+    required String name,
+    String? nameEn,
+    String? description,
+    String? icon,
+    int displayOrder = 0,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/cities/00000000-0000-0000-0000-000000000000/ratings/categories',
+        data: {
+          'name': name,
+          if (nameEn != null) 'nameEn': nameEn,
+          if (description != null) 'description': description,
+          if (icon != null) 'icon': icon,
+          'displayOrder': displayOrder,
+        },
+      );
+
+      final data = response.data as Map<String, dynamic>;
+      final dto = CityRatingCategoryDto.fromJson(data);
+      return dto.toEntity();
+    } catch (e) {
+      throw Exception('创建评分项失败: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<CityRatingCategory> updateCategory({
+    required String cityId,
+    required String categoryId,
+    required String name,
+    String? nameEn,
+    String? description,
+    String? icon,
+  }) async {
+    try {
+      final response = await _httpService.put(
+        '/cities/$cityId/ratings/categories/$categoryId',
+        data: {
+          'name': name,
+          if (nameEn != null) 'nameEn': nameEn,
+          if (description != null) 'description': description,
+          if (icon != null) 'icon': icon,
+        },
+      );
+
+      final data = response.data as Map<String, dynamic>;
+      final dto = CityRatingCategoryDto.fromJson(data);
+      return dto.toEntity();
+    } catch (e) {
+      throw Exception('更新评分项失败: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> deleteCategory(String cityId, String categoryId) async {
+    try {
+      await _httpService.delete(
+        '/cities/$cityId/ratings/categories/$categoryId',
+      );
+    } catch (e) {
+      throw Exception('删除评分项失败: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> initializeDefaultCategories() async {
+    try {
+      print('🎬 [CityRatingRepository] 开始初始化默认评分项...');
+      final response = await _httpService.post(
+        '/cities/00000000-0000-0000-0000-000000000000/ratings/categories/initialize',
+        data: {},
+      );
+
+      print('✅ [CityRatingRepository] 初始化完成: ${response.data}');
+    } catch (e) {
+      print('❌ [CityRatingRepository] 初始化失败: $e');
+      throw Exception('初始化默认评分项失败: ${e.toString()}');
+    }
+  }
+}

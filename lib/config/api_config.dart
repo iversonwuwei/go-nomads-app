@@ -4,57 +4,99 @@ import 'package:flutter/foundation.dart';
 
 /// API 配置
 class ApiConfig {
+  // ============================================================
   // 环境配置
+  // ============================================================
   static const bool kIsProduction = false;
 
-  // 生产环境地址
-  static const String productionUrl = 'https://api.yourapp.com';
+  // ============================================================
+  // 端口配置
+  // ============================================================
+  /// Gateway 端口 (所有服务统一通过 Gateway 访问)
+  static const int gatewayPort = 5000;
 
-  // 开发环境地址 - 根据平台自动选择
-  static String get developmentUrl {
+  /// Message Service 端口 (SignalR Hub 需要直连)
+  static const int messageServicePort = 5005;
+
+  // ============================================================
+  // 主机地址配置
+  // ============================================================
+
+  /// 生产环境主机
+  static const String productionHost = 'api.yourapp.com';
+
+  /// 真机测试主机 - 使用电脑局域网 IP
+  /// 通过 ipconfig (Windows) 或 ifconfig (Mac/Linux) 查看
+  /// ⚠️ 雷电模拟器也需要使用这个地址(雷电使用 VirtualBox 网络,10.0.2.2 无效)
+  static const String physicalDeviceHost = '192.168.110.67';
+
+  /// 开发环境主机 - 根据平台自动选择
+  static String get developmentHost {
     if (kIsWeb) {
-      // Web 环境使用 localhost
-      return 'http://localhost:5000';
+      return 'localhost';
     } else if (Platform.isAndroid) {
-      // Android 模拟器使用特殊地址 10.0.2.2
-      // 雷电/Android 模拟器应该通过 10.0.2.2 访问宿主机映射端口
-      return 'http://10.0.2.2:5000';
+      // Android 模拟器使用特殊地址访问宿主机
+      return '10.0.2.2';
     } else if (Platform.isIOS) {
-      // iOS 模拟器可以使用 localhost
-      return 'http://127.0.0.1:5000';
+      return '127.0.0.1';
     } else {
-      // 其他平台（Desktop等）使用 localhost
-      return 'http://localhost:5000';
+      // 其他平台（Desktop等）
+      return 'localhost';
     }
   }
 
-  // 真机测试地址 - 使用电脑局域网 IP
-  // 通过 ipconfig (Windows) 或 ifconfig (Mac/Linux) 查看
-  // ⚠️ 雷电模拟器也需要使用这个地址(雷电使用 VirtualBox 网络,10.0.2.2 无效)
-  static const String physicalDeviceUrl = 'http://192.168.110.54:5000';
+  // ============================================================
+  // 模式切换
+  // ============================================================
 
-  // 是否使用真机测试地址(手动切换)
-  // ⚠️ 雷电模拟器用户请设置为 true
-  // ⚠️ Android 官方模拟器用户请设置为 false,使用 10.0.2.2
+  /// 是否使用真机测试地址(手动切换)
+  /// ⚠️ 雷电模拟器用户请设置为 true
+  /// ⚠️ Android 官方模拟器用户请设置为 false
   static const bool usePhysicalDevice = false;
 
   // ============================================================
-  // CityService 直连配置 (端口 8002)
+  // URL 组装
   // ============================================================
-  // 注意: CityService 和主 API 使用同一个端口 5000,不需要单独配置
 
-  // 基础 URL - 智能选择
+  /// 获取当前主机地址
+  static String get currentHost {
+    if (kIsProduction) {
+      return productionHost;
+    }
+    if (usePhysicalDevice) {
+      return physicalDeviceHost;
+    }
+    return developmentHost;
+  }
+
+  /// 生产环境基础 URL
+  static String get productionUrl => 'https://$productionHost';
+
+  /// 开发环境基础 URL
+  static String get developmentUrl => 'http://$developmentHost:$gatewayPort';
+
+  /// 真机测试基础 URL
+  static String get physicalDeviceUrl => 'http://$physicalDeviceHost:$gatewayPort';
+
+  /// 基础 URL - 智能选择
   static String get baseUrl {
     if (kIsProduction) {
       return productionUrl;
     }
-
-    // 开发模式
     if (usePhysicalDevice) {
       return physicalDeviceUrl;
     }
-
     return developmentUrl;
+  }
+
+  /// Message Service 地址 (SignalR Hub 需要直连,不经过 Gateway)
+  /// SignalR WebSocket 连接需要保持长连接,因此直连 MessageService
+  static String get messageServiceBaseUrl {
+    if (kIsProduction) {
+      return productionUrl; // 生产环境通过专用域名
+    }
+    final host = usePhysicalDevice ? physicalDeviceHost : developmentHost;
+    return 'http://$host:$messageServicePort';
   }
 
   // API 版本
@@ -64,9 +106,9 @@ class ApiConfig {
   static String get apiBaseUrl => '$baseUrl$apiVersion';
 
   // 超时配置 (毫秒)
-  static const int connectTimeout = 15000;
-  static const int receiveTimeout = 15000;
-  static const int sendTimeout = 15000;
+  static const int connectTimeout = 30000;
+  static const int receiveTimeout = 60000; // 增加到60秒,因为城市列表需要获取天气数据
+  static const int sendTimeout = 30000;
 
   // 认证相关
   static const String authTokenKey = 'auth_token';
@@ -105,8 +147,7 @@ class ApiConfig {
   static const String cityRecommendedEndpoint = '/cities/recommended';
   static const String citySearchEndpoint = '/cities/search';
   static const String cityByCountryEndpoint = '/cities/by-country/{id}';
-  static const String cityGroupedByCountryEndpoint =
-      '/cities/grouped-by-country';
+  static const String cityGroupedByCountryEndpoint = '/cities/grouped-by-country';
   static const String cityCountriesEndpoint = '/cities/countries';
   static const String cityStatisticsEndpoint = '/cities/{id}/statistics';
   static const String cityCreateEndpoint = '/cities';
@@ -118,28 +159,40 @@ class ApiConfig {
   // ============================================================
 
   // 照片相关
-  static const String cityPhotosEndpoint =
-      '/cities/{cityId}/user-content/photos';
-  static const String cityPhotoDetailEndpoint =
-      '/cities/{cityId}/user-content/photos/{photoId}';
+  static const String cityPhotosEndpoint = '/cities/{cityId}/user-content/photos';
+  static const String cityPhotoBatchEndpoint = '/cities/{cityId}/user-content/photos/batch';
+  static const String cityPhotoDetailEndpoint = '/cities/{cityId}/user-content/photos/{photoId}';
   static const String myPhotosEndpoint = '/user/city-content/photos';
 
   // 费用相关
-  static const String cityExpensesEndpoint =
-      '/cities/{cityId}/user-content/expenses';
-  static const String cityExpenseDetailEndpoint =
-      '/cities/{cityId}/user-content/expenses/{expenseId}';
+  static const String cityExpensesEndpoint = '/cities/{cityId}/user-content/expenses';
+  static const String cityExpenseDetailEndpoint = '/cities/{cityId}/user-content/expenses/{expenseId}';
   static const String myExpensesEndpoint = '/user/city-content/expenses';
 
   // 评论相关
-  static const String cityReviewsEndpoint =
-      '/cities/{cityId}/user-content/reviews';
-  static const String myCityReviewEndpoint =
-      '/cities/{cityId}/user-content/reviews/mine';
+  static const String cityReviewsEndpoint = '/cities/{cityId}/user-content/reviews';
+  static const String myCityReviewEndpoint = '/cities/{cityId}/user-content/reviews/mine';
 
   // 统计相关
-  static const String cityUserContentStatsEndpoint =
-      '/cities/{cityId}/user-content/stats';
+  static const String cityUserContentStatsEndpoint = '/cities/{cityId}/user-content/stats';
+
+  // ============================================================
+  // Cache Service Endpoints - /api/v1/cache (通过 Gateway 访问)
+  // 注意: 这些端点通过 Gateway 转发到 CacheService
+  // ============================================================
+
+  // 评分缓存
+  static const String cityScoreEndpoint = '/cache/scores/city/{cityId}';
+  static const String cityScoreBatchEndpoint = '/cache/scores/city/batch';
+  static const String coworkingScoreEndpoint = '/cache/scores/coworking/{coworkingId}';
+  static const String coworkingScoreBatchEndpoint = '/cache/scores/coworking/batch';
+  static const String invalidateCityScoreEndpoint = '/cache/scores/city/{cityId}';
+  static const String invalidateCoworkingScoreEndpoint = '/cache/scores/coworking/{coworkingId}';
+
+  // 费用缓存
+  static const String cityCostEndpoint = '/cache/costs/city/{cityId}';
+  static const String cityCostBatchEndpoint = '/cache/costs/city/batch';
+  static const String invalidateCityCostEndpoint = '/cache/costs/city/{cityId}';
 
   // ============================================================
   // Product Endpoints - /api/v1/products
@@ -190,6 +243,19 @@ class ApiConfig {
   static const String chatMessagesEndpoint = '/chats/{id}/messages';
   static const String chatSendMessageEndpoint = '/chats/{id}/messages';
   static const String chatParticipantsEndpoint = '/chats/{id}/participants';
+
+  // ============================================================
+  // Notification Endpoints - /api/v1/notifications
+  // ============================================================
+  static const String notificationsEndpoint = '/notifications';
+  static const String notificationDetailEndpoint = '/notifications/{id}';
+  static const String notificationUnreadCountEndpoint = '/notifications/unread/count';
+  static const String notificationMarkReadEndpoint = '/notifications/{id}/read';
+  static const String notificationMarkReadBatchEndpoint = '/notifications/read/batch';
+  static const String notificationMarkAllReadEndpoint = '/notifications/read/all';
+  static const String notificationDeleteEndpoint = '/notifications/{id}';
+  static const String notificationSendEndpoint = '/notifications';
+  static const String notificationSendToAdminsEndpoint = '/notifications/admins';
 
   // 环境判断
   static bool get isDevelopment => !kIsProduction;
@@ -249,8 +315,7 @@ class ApiConfig {
   /// );
   /// // 结果: http://10.0.2.2:5000/api/v1/cities?page=1&pageSize=10
   /// ```
-  static String buildUrlWithQuery(
-      String endpoint, Map<String, String> queryParams) {
+  static String buildUrlWithQuery(String endpoint, Map<String, String> queryParams) {
     final uri = Uri.parse('$currentApiBaseUrl$endpoint');
     final newUri = uri.replace(queryParameters: queryParams);
     return newUri.toString();
@@ -259,14 +324,18 @@ class ApiConfig {
   /// 获取当前配置信息（用于调试）
   static String getConfigInfo() {
     return '''
-配置信息:
-- 环境: ${kIsProduction ? '生产' : '开发'}
-- 平台: ${kIsWeb ? 'Web' : Platform.operatingSystem}
-- 基础地址: $currentBaseUrl
-- API地址: $currentApiBaseUrl
-- API版本: $apiVersion
-- 真机模式: ${usePhysicalDevice ? '是' : '否'}
-- 自定义地址: ${_customBaseUrl ?? '未设置'}
+📡 API 配置信息:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🌍 环境: ${kIsProduction ? '生产环境 🚀' : '开发环境 🔧'}
+💻 平台: ${kIsWeb ? 'Web 🌐' : Platform.operatingSystem}
+🏠 当前主机: $currentHost
+🔌 Gateway 端口: $gatewayPort
+📍 基础地址: $currentBaseUrl
+🔗 API地址: $currentApiBaseUrl
+📌 API版本: $apiVersion
+📱 真机模式: ${usePhysicalDevice ? '✅ 是' : '❌ 否'}
+🎯 自定义地址: ${_customBaseUrl ?? '未设置'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ''';
   }
 }

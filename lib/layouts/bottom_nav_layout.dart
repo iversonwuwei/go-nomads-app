@@ -1,16 +1,16 @@
 import 'dart:ui';
 
+import 'package:df_admin_mobile/controllers/bottom_nav_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/routes/app_routes.dart';
+import 'package:df_admin_mobile/services/token_storage_service.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import '../controllers/bottom_nav_controller.dart';
-import '../controllers/user_state_controller.dart';
-import '../generated/app_localizations.dart';
-import '../routes/app_routes.dart';
 
 /// 全局底部导航布局包装器
 /// 包装任意页面内容，在底部显示导航栏
-class BottomNavLayout extends StatelessWidget {
+class BottomNavLayout extends StatefulWidget {
   final Widget child;
   final bool showBottomNav;
 
@@ -21,9 +21,13 @@ class BottomNavLayout extends StatelessWidget {
   });
 
   @override
+  State<BottomNavLayout> createState() => _BottomNavLayoutState();
+}
+
+class _BottomNavLayoutState extends State<BottomNavLayout> {
+  @override
   Widget build(BuildContext context) {
     final controller = Get.put(BottomNavController(), permanent: true);
-    final userStateController = Get.find<UserStateController>();
     final l10n = AppLocalizations.of(context)!;
 
     // 根据当前路由更新选中的标签索引
@@ -32,12 +36,12 @@ class BottomNavLayout extends StatelessWidget {
     });
 
     // 如果不显示底部导航，直接返回子组件
-    if (!showBottomNav) {
-      return child;
+    if (!widget.showBottomNav) {
+      return widget.child;
     }
 
     return Scaffold(
-      body: child,
+      body: widget.child,
       bottomNavigationBar: Obx(() {
         // 如果底部导航不可见，返回空容器
         if (!controller.isBottomNavVisible.value) {
@@ -46,52 +50,66 @@ class BottomNavLayout extends StatelessWidget {
 
         return _ModernBottomNavBar(
           currentIndex: controller.currentIndex.value,
-          onTap: (index) {
-            // AI助手需要特殊处理 (索引 2)
-            if (index == 2) {
-              if (userStateController.isLoggedIn) {
-                // 已登录，跳转到AI聊天页面
-                Get.toNamed(AppRoutes.aiChat);
-              } else {
-                // 未登录，跳转到登录页
-                print('🔒 需要登录才能使用AI助手');
-                Get.toNamed(AppRoutes.login);
-              }
-              return; // 不改变当前索引
+          onTap: (index) async {
+            print('🔘 Bottom Nav 点击: index=$index');
+
+            // 首页不需要验证，直接跳转
+            if (index == 0) {
+              print('✅ 首页，无需验证');
+              controller.changeTab(index);
+              Get.offAllNamed(AppRoutes.home);
+              return;
             }
 
-            // 其他标签页正常切换
+            // 🔒 其他所有页面都需要验证 token（索引 1, 2, 3）
+            print('🔒 检查 token...');
+            final tokenService = TokenStorageService();
+            final accessToken = await tokenService.getAccessToken();
+            print('   Token: ${accessToken?.substring(0, 20)}...');
+
+            if (accessToken == null || accessToken.isEmpty) {
+              print('❌ 无 token，跳转登录页');
+              Get.toNamed(AppRoutes.login);
+              return;
+            }
+
+            // Token 存在，允许跳转
+            print('✅ Token 有效，允许跳转');
             controller.changeTab(index);
 
             // 根据索引跳转到对应页面
             switch (index) {
-              case 0: // 主页
-                Get.offAllNamed(AppRoutes.home);
-                break;
               case 1: // Profile
+                print('   → Profile 页面');
                 Get.toNamed(AppRoutes.profile);
                 break;
+              case 2: // 用户消息列表（系统消息、通知等）
+                print('   → 用户消息列表页面');
+                Get.toNamed(AppRoutes.notifications);
+                break;
               case 3: // 编辑资料
+                print('   → 编辑资料页面');
                 Get.toNamed(AppRoutes.profileEdit);
                 break;
             }
           },
           items: [
             _NavBarItem(
-              icon: Icons.home,
+              icon: FontAwesomeIcons.house,
               label: l10n.home,
             ),
             _NavBarItem(
-              icon: Icons.person,
+              icon: FontAwesomeIcons.user,
               label: 'Profile',
             ),
             _NavBarItem(
-              icon: Icons.memory,
-              label: 'AI助手',
+              icon: FontAwesomeIcons.solidBell,
+              label: '消息',
+              badge: controller.unreadCount.value,
             ),
             _NavBarItem(
-              icon: Icons.settings,
-              label: '编辑',
+              icon: FontAwesomeIcons.gear,
+              label: '设置',
             ),
           ],
         );
@@ -104,10 +122,12 @@ class BottomNavLayout extends StatelessWidget {
 class _NavBarItem {
   final IconData icon;
   final String label;
+  final int badge;
 
   _NavBarItem({
     required this.icon,
     required this.label,
+    this.badge = 0,
   });
 }
 
@@ -203,31 +223,54 @@ class _ModernBottomNavBar extends StatelessWidget {
                               duration: const Duration(milliseconds: 200),
                               curve: Curves.easeInOut,
                               width: indicatorSize,
-                              height: navBarHeight * 0.9, // 保证垂直居中
+                              height: navBarHeight * 0.9,
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
-                                color: isSelected
-                                    ? const Color(0xFF2196F3).withOpacity(0.13)
-                                    : Colors.transparent,
+                                color: Colors.transparent, // 去掉背景色
                                 borderRadius:
                                     BorderRadius.circular(18 * scaleFactor),
-                                boxShadow: isSelected
-                                    ? [
-                                        BoxShadow(
-                                          color: const Color(0xFF2196F3)
-                                              .withOpacity(0.10),
-                                          blurRadius: 16,
-                                          offset: const Offset(0, 4),
-                                        ),
-                                      ]
-                                    : [],
+                                // 去掉阴影
                               ),
-                              child: Icon(
-                                item.icon,
-                                size: iconSize,
-                                color: isSelected
-                                    ? const Color(0xFF2196F3)
-                                    : const Color(0xFF8E8E93),
+                              child: Stack(
+                                clipBehavior: Clip.none,
+                                children: [
+                                  Icon(
+                                    item.icon,
+                                    size: iconSize,
+                                    color: isSelected
+                                        ? const Color(0xFF2196F3) // 选中：蓝色
+                                        : const Color(0xFF8E8E93), // 未选中：灰色
+                                  ),
+                                  if (item.badge > 0)
+                                    Positioned(
+                                      right: -6,
+                                      top: -6,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFFF4458),
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Colors.white,
+                                            width: 1.5,
+                                          ),
+                                        ),
+                                        constraints: const BoxConstraints(
+                                          minWidth: 18,
+                                          minHeight: 18,
+                                        ),
+                                        child: Text(
+                                          item.badge > 99 ? '99+' : '${item.badge}',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               ),
                             ),
                           ),

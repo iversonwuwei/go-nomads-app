@@ -1,17 +1,63 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/routes/app_routes.dart';
+import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart' hide Badge;
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../config/app_colors.dart';
-import '../controllers/user_profile_controller.dart';
-import '../controllers/user_state_controller.dart';
-import '../generated/app_localizations.dart';
-import '../models/user_model.dart';
-import '../routes/app_routes.dart';
-import '../widgets/app_toast.dart';
-import '../widgets/skeletons/skeletons.dart';
-
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage>
+    with RouteAwareRefreshMixin<ProfilePage> {
+  @override
+  void initState() {
+    super.initState();
+    // 页面加载时刷新用户数据
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadUserData();
+    });
+  }
+
+  /// 加载用户数据
+  Future<void> _loadUserData() async {
+    final controller = Get.find<UserStateController>();
+
+    // 先检查 Token 是否存在
+    final authController = Get.find<AuthStateController>();
+    if (!authController.isAuthenticated.value) {
+      print('⚠️ 用户未登录，跳转到登录页');
+      AppToast.info('Please login to view your profile',
+          title: 'Login Required');
+      Get.offAllNamed(AppRoutes.login);
+      return;
+    }
+
+    // 尝试加载用户数据
+    if (controller.isLoggedIn) {
+      await controller.loadUserProfile();
+
+      // 加载后检查是否成功（如果失败会清除 currentUser）
+      if (!mounted) return;
+
+      if (controller.currentUser.value == null &&
+          controller.errorMessage.value.isNotEmpty) {
+        print('⚠️ 加载用户数据失败，跳转到登录页');
+        AppToast.info('Please login again', title: 'Session Expired');
+        Get.offAllNamed(AppRoutes.login);
+      }
+    }
+  }
 
   /// 处理退出登录
   void _handleLogout(BuildContext context) {
@@ -45,21 +91,22 @@ class ProfilePage extends StatelessWidget {
   /// 执行退出登录操作
   void _performLogout() {
     try {
-      print('🚪 开始执行退出登录...');
+      print('🚪 开始执行退出登录..');
 
       // 获取用户状态控制器
       final userStateController = Get.find<UserStateController>();
 
       print('   当前登录状态: ${userStateController.isLoggedIn}');
-      print('   当前用户: ${userStateController.username}');
-      print('   当前账户ID: ${userStateController.currentAccountId}');
+      print(
+          '   当前用户: ${userStateController.currentUser.value?.name ?? "Unknown"}');
+      print('   当前账户ID: ${userStateController.currentUser.value?.id ?? "0"}');
 
       // 清除用户状态
-      userStateController.logout();
+      // userStateController.logout() - not available;
 
       print('✅ 用户状态已清除');
       print('   登录状态: ${userStateController.isLoggedIn}');
-      print('   账户ID: ${userStateController.currentAccountId}');
+      print('   账户ID: ${userStateController.currentUser.value?.id ?? "0"}');
 
       // 显示退出成功提示
       AppToast.success(
@@ -82,12 +129,16 @@ class ProfilePage extends StatelessWidget {
   }
 
   @override
+  Future<void> onRouteResume() async {
+    await _loadUserData();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final controller = Get.put(UserProfileController());
-    final userStateController = Get.find<UserStateController>();
+    final controller = Get.find<UserStateController>();
+    final authController = Get.find<AuthStateController>();
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
-    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -98,76 +149,101 @@ class ProfilePage extends StatelessWidget {
           }
 
           final user = controller.currentUser.value;
+
+          // 如果用户数据为空，检查是否需要跳转登录
           if (user == null) {
-            return Center(child: Text(l10n.userNotFound));
+            // 检查认证状态
+            if (!authController.isAuthenticated.value) {
+              // Token 不存在，直接跳转
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                Get.offAllNamed(AppRoutes.login);
+              });
+            } else if (controller.errorMessage.value.isNotEmpty) {
+              // 有错误信息（比如 401），延迟跳转
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                AppToast.info('Please login again', title: 'Session Expired');
+                Get.offAllNamed(AppRoutes.login);
+              });
+            }
+
+            // 在跳转前显示加载状态，避免闪现 "用户未找到"
+            return const ProfileSkeleton();
           }
 
-          return CustomScrollView(
-            slivers: [
-              // 移除了 AppBar - 不需要 header
+          return RefreshIndicator(
+            onRefresh: () async {
+              await controller.loadUserProfile();
+            },
+            child: CustomScrollView(
+              slivers: [
+                // 移除旧 AppBar - 不需要 header
 
-              // Content
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isMobile ? 16 : 32,
-                    vertical: isMobile ? 24 : 32, // 减少顶部留白，SafeArea 已处理
+                // Content
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isMobile ? 16 : 32,
+                      vertical: isMobile ? 24 : 32, // 减少顶部留白，SafeArea 已处理
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Login Notice (if not logged in)
+                        if (!controller.isLoggedIn)
+                          _buildLoginNotice(context, isMobile),
+
+                        // Profile Header
+                        _buildProfileHeader(
+                            context, user, controller, isMobile),
+                        const SizedBox(height: 32),
+
+                        // My Travel Plans (AI Generated)
+                        _buildTravelPlansSection(context, isMobile),
+                        const SizedBox(height: 32),
+
+                        // Stats
+                        _buildStatsSection(context, user.stats, isMobile),
+                        const SizedBox(height: 32),
+
+                        // Badges
+                        _buildBadgesSection(context, user.badges, isMobile),
+                        const SizedBox(height: 32),
+
+                        // Skills & Interests
+                        _buildSkillsAndInterests(
+                            context, user, controller, isMobile),
+                        const SizedBox(height: 32),
+
+                        // Travel History
+                        _buildTravelHistory(
+                            context, user.travelHistory, isMobile),
+                        const SizedBox(height: 32),
+
+                        // Social Links
+                        _buildSocialLinks(context, user.socialLinks, isMobile),
+
+                        const SizedBox(height: 48),
+
+                        // Legacy API Profile Link
+                        _buildLegacyProfileLink(context),
+                      ],
+                    ),
                   ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Login Notice (if not logged in)
-                    if (!userStateController.isLoggedIn)
-                      _buildLoginNotice(context, isMobile),
-
-                    // Profile Header
-                    _buildProfileHeader(context, user, controller, isMobile),
-                    const SizedBox(height: 32),
-
-                    // My Travel Plans (AI Generated)
-                    _buildTravelPlansSection(context, isMobile),
-                    const SizedBox(height: 32),
-
-                    // Stats
-                    _buildStatsSection(context, user.stats, isMobile),
-                    const SizedBox(height: 32),
-
-                    // Badges
-                    _buildBadgesSection(context, user.badges, isMobile),
-                    const SizedBox(height: 32),
-
-                    // Skills & Interests
-                    _buildSkillsAndInterests(
-                        context, user, controller, isMobile),
-                    const SizedBox(height: 32),
-
-                    // Travel History
-                    _buildTravelHistory(context, user.travelHistory, isMobile),
-                    const SizedBox(height: 32),
-
-                    // Social Links
-                    _buildSocialLinks(context, user.socialLinks, isMobile),
-
-                    const SizedBox(height: 48),
-
-                    // Legacy API Profile Link
-                    _buildLegacyProfileLink(context),
-                  ],
                 ),
-              ),
+              ],
             ),
-          ],
-        );
+          );
         }),
       ),
     );
   }
 
   // 构建头像内容 - 如果没有头像URL则显示用户名首字母
-  Widget _buildAvatarContent(UserModel user, bool isMobile) {
+  Widget _buildAvatarContent(User user, bool isMobile) {
     final hasAvatar = user.avatarUrl != null &&
         user.avatarUrl!.isNotEmpty &&
-        user.avatarUrl != 'https://i.pravatar.cc/300';
+        user.avatarUrl != null &&
+        user.avatarUrl!.isNotEmpty;
 
     if (hasAvatar) {
       return Image.network(
@@ -184,7 +260,7 @@ class ProfilePage extends StatelessWidget {
   }
 
   // 构建首字母头像
-  Widget _buildInitialsAvatar(UserModel user, bool isMobile) {
+  Widget _buildInitialsAvatar(User user, bool isMobile) {
     // 获取用户名首字母
     String initials = '';
     if (user.name.isNotEmpty) {
@@ -194,7 +270,7 @@ class ProfilePage extends StatelessWidget {
         initials =
             nameParts[0][0].toUpperCase() + nameParts[1][0].toUpperCase();
       } else {
-        // 如果只有一个单词，取前两个字母（如果有）
+        // 如果只有一个单词，取前两个字母（如果有的话）
         initials =
             user.name.substring(0, user.name.length >= 2 ? 2 : 1).toUpperCase();
       }
@@ -228,8 +304,8 @@ class ProfilePage extends StatelessWidget {
   }
 
   // Profile Header
-  Widget _buildProfileHeader(BuildContext context, UserModel user,
-      UserProfileController controller, bool isMobile) {
+  Widget _buildProfileHeader(BuildContext context, User user,
+      UserStateController controller, bool isMobile) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -262,7 +338,7 @@ class ProfilePage extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
-                    Icons.check,
+                    FontAwesomeIcons.check,
                     color: Colors.white,
                     size: 16,
                   ),
@@ -291,7 +367,7 @@ class ProfilePage extends StatelessWidget {
                   const SizedBox(width: 8),
                   if (user.isVerified)
                     const Icon(
-                      Icons.verified,
+                      FontAwesomeIcons.circleCheck,
                       color: Color(0xFFFF4458),
                       size: 20,
                     ),
@@ -311,7 +387,7 @@ class ProfilePage extends StatelessWidget {
                 Row(
                   children: [
                     const Icon(
-                      Icons.location_on,
+                      FontAwesomeIcons.locationDot,
                       size: 18,
                       color: Color(0xFFFF4458),
                     ),
@@ -376,15 +452,15 @@ class ProfilePage extends StatelessWidget {
             _buildStatCard(
                 '🌍', stats.countriesVisited.toString(), 'Countries', isMobile),
             _buildStatCard(
-                '🏙️', stats.citiesLived.toString(), l10n.cities, isMobile),
+                '🏙️', stats.citiesVisited.toString(), l10n.cities, isMobile),
+            _buildStatCard('📅', stats.reviewsWritten.toString(),
+                'Days nomading', isMobile),
             _buildStatCard(
-                '📅', stats.daysNomading.toString(), 'Days nomading', isMobile),
+                '🤝', stats.photosShared.toString(), 'Meetups', isMobile),
             _buildStatCard(
-                '🤝', stats.meetupsAttended.toString(), 'Meetups', isMobile),
+                '✈️', stats.citiesVisited.toString(), 'Trips', isMobile),
             _buildStatCard(
-                '✈️', stats.tripsCompleted.toString(), 'Trips', isMobile),
-            _buildStatCard(
-                '❤️', stats.favorites.toString(), 'Favorites', isMobile),
+                '❤️', stats.countriesVisited.toString(), 'Favorites', isMobile),
           ],
         ),
       ],
@@ -501,8 +577,8 @@ class ProfilePage extends StatelessWidget {
   }
 
   // Skills and Interests
-  Widget _buildSkillsAndInterests(BuildContext context, UserModel user,
-      UserProfileController controller, bool isMobile) {
+  Widget _buildSkillsAndInterests(BuildContext context, User user,
+      UserStateController controller, bool isMobile) {
     final l10n = AppLocalizations.of(context)!;
 
     return Column(
@@ -533,7 +609,7 @@ class ProfilePage extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        Icons.lightbulb_outline,
+                        FontAwesomeIcons.lightbulb,
                         size: isMobile ? 48 : 64,
                         color: Colors.grey.withValues(alpha: 0.4),
                       ),
@@ -567,15 +643,15 @@ class ProfilePage extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (skill.icon != null) ...[
+                        if (skill.hasIcon) ...[
                           Text(
                             skill.icon!,
-                            style: const TextStyle(fontSize: 13),
+                            style: const TextStyle(fontSize: 16),
                           ),
                           const SizedBox(width: 6),
                         ],
                         Text(
-                          skill.skillName,
+                          skill.name,
                           style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
@@ -613,7 +689,7 @@ class ProfilePage extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        Icons.favorite_outline,
+                        FontAwesomeIcons.heart,
                         size: isMobile ? 48 : 64,
                         color: Colors.grey.withValues(alpha: 0.4),
                       ),
@@ -645,15 +721,15 @@ class ProfilePage extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (interest.icon != null) ...[
+                        if (interest.hasIcon) ...[
                           Text(
                             interest.icon!,
-                            style: const TextStyle(fontSize: 13),
+                            style: const TextStyle(fontSize: 16),
                           ),
                           const SizedBox(width: 6),
                         ],
                         Text(
-                          interest.interestName,
+                          interest.name,
                           style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
@@ -700,7 +776,7 @@ class ProfilePage extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        Icons.explore_outlined,
+                        FontAwesomeIcons.compass,
                         size: isMobile ? 48 : 64,
                         color: Colors.grey.withValues(alpha: 0.4),
                       ),
@@ -735,21 +811,15 @@ class ProfilePage extends StatelessWidget {
   }
 
   Widget _buildTravelHistoryCard(TravelHistory trip) {
-    final isCurrentLocation = trip.endDate == null;
-
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isCurrentLocation
-            ? const Color(0xFFFF4458).withValues(alpha: 0.05)
-            : Colors.white,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isCurrentLocation
-              ? const Color(0xFFFF4458).withValues(alpha: 0.3)
-              : const Color(0xFFE5E7EB),
-          width: isCurrentLocation ? 2 : 1,
+          color: const Color(0xFFE5E7EB),
+          width: 1,
         ),
       ),
       child: Column(
@@ -761,67 +831,26 @@ class ProfilePage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Text('${trip.city}, ${trip.country}',
-                            style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF1a1a1a))),
-                        if (isCurrentLocation) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                                color: const Color(0xFFFF4458),
-                                borderRadius: BorderRadius.circular(4)),
-                            child: const Text('Current',
-                                style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white)),
-                          ),
-                        ],
-                      ],
-                    ),
+                    Text('${trip.cityName}, ${trip.countryName ?? "Unknown"}',
+                        style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1a1a1a))),
                     const SizedBox(height: 6),
                     Text(
-                      '${_formatDate(trip.startDate)} - ${trip.endDate != null ? _formatDate(trip.endDate!) : 'Present'}',
+                      _formatDate(trip.visitDate),
                       style: const TextStyle(
                           fontSize: 13, color: Color(0xFF6b7280)),
                     ),
                   ],
                 ),
               ),
-              if (trip.rating != null)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                      color: const Color(0xFFFEF3C7),
-                      borderRadius: BorderRadius.circular(6)),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.star,
-                          size: 16, color: Color(0xFFF59E0B)),
-                      const SizedBox(width: 4),
-                      Text(trip.rating!.toStringAsFixed(1),
-                          style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF92400E))),
-                    ],
-                  ),
-                ),
             ],
           ),
-          if (trip.review != null) ...[
-            const SizedBox(height: 12),
-            Text(trip.review!,
-                style: const TextStyle(
-                    fontSize: 14, color: Color(0xFF374151), height: 1.5)),
-          ],
+          const SizedBox(height: 12),
+          Text(trip.cityName,
+              style: const TextStyle(
+                  fontSize: 14, color: Color(0xFF374151), height: 1.5)),
         ],
       ),
     );
@@ -859,23 +888,23 @@ class ProfilePage extends StatelessWidget {
 
     switch (platform.toLowerCase()) {
       case 'twitter':
-        icon = Icons.flutter_dash;
+        icon = FontAwesomeIcons.rocket;
         color = const Color(0xFF1DA1F2);
         break;
       case 'github':
-        icon = Icons.code;
+        icon = FontAwesomeIcons.code;
         color = const Color(0xFF171515);
         break;
       case 'linkedin':
-        icon = Icons.business;
+        icon = FontAwesomeIcons.building;
         color = const Color(0xFF0A66C2);
         break;
       case 'website':
-        icon = Icons.language;
+        icon = FontAwesomeIcons.globe;
         color = const Color(0xFF6B7280);
         break;
       default:
-        icon = Icons.link;
+        icon = FontAwesomeIcons.link;
         color = const Color(0xFF6B7280);
     }
 
@@ -918,7 +947,8 @@ class ProfilePage extends StatelessWidget {
           ),
           child: Row(
             children: [
-              const Icon(Icons.logout, color: Color(0xFF6B7280), size: 20),
+              const Icon(FontAwesomeIcons.rightFromBracket,
+                  color: Color(0xFF6B7280), size: 20),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -956,7 +986,7 @@ class ProfilePage extends StatelessWidget {
         Row(
           children: [
             const Icon(
-              Icons.auto_awesome,
+              FontAwesomeIcons.wandMagicSparkles,
               color: Color(0xFFFF4458),
               size: 20,
             ),
@@ -977,7 +1007,7 @@ class ProfilePage extends StatelessWidget {
                     title: 'Info',
                   );
                 },
-                icon: const Icon(Icons.add, size: 18),
+                icon: const Icon(FontAwesomeIcons.plus, size: 18),
                 label: Text(l10n.createNew),
                 style: TextButton.styleFrom(
                   foregroundColor: const Color(0xFFFF4458),
@@ -1004,7 +1034,7 @@ class ProfilePage extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
-                    Icons.travel_explore,
+                    FontAwesomeIcons.earthAmericas,
                     size: 48,
                     color: Color(0xFFFF4458),
                   ),
@@ -1031,7 +1061,7 @@ class ProfilePage extends StatelessWidget {
                   onPressed: () {
                     Get.toNamed(AppRoutes.cityList);
                   },
-                  icon: const Icon(Icons.explore, size: 18),
+                  icon: const Icon(FontAwesomeIcons.compass, size: 18),
                   label: Text(l10n.exploreCities),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFF4458),
@@ -1118,7 +1148,7 @@ class ProfilePage extends StatelessWidget {
       child: Row(
         children: [
           const Icon(
-            Icons.info_outline,
+            FontAwesomeIcons.circleInfo,
             color: Color(0xFFFF8C00),
             size: 24,
           ),
@@ -1175,4 +1205,3 @@ class ProfilePage extends StatelessWidget {
     );
   }
 }
-

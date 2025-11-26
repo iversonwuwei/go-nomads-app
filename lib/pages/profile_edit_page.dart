@@ -1,16 +1,22 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/config/supabase_config.dart';
+import 'package:df_admin_mobile/controllers/locale_controller.dart';
+import 'package:df_admin_mobile/features/interest/domain/entities/interest.dart';
+import 'package:df_admin_mobile/features/interest/presentation/controllers/interest_state_controller.dart';
+import 'package:df_admin_mobile/features/skill/domain/entities/skill.dart';
+import 'package:df_admin_mobile/features/skill/presentation/controllers/skill_state_controller.dart';
+import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:df_admin_mobile/features/user_management/domain/repositories/iuser_management_repository.dart';
+import 'package:df_admin_mobile/features/user_management/presentation/controllers/user_management_state_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
+import 'package:df_admin_mobile/services/token_storage_service.dart';
+import 'package:df_admin_mobile/utils/image_upload_helper.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import '../config/app_colors.dart';
-import '../controllers/locale_controller.dart';
-import '../controllers/user_profile_controller.dart';
-import '../generated/app_localizations.dart';
-import '../models/interest_model.dart';
-import '../models/skill_model.dart';
-import '../models/user_model.dart';
-import '../services/interests_api_service.dart';
-import '../services/skills_api_service.dart';
-import '../widgets/app_toast.dart';
 
 /// 用户资料编辑页面 - 浅色性冷淡风格
 class ProfileEditPage extends StatefulWidget {
@@ -20,7 +26,8 @@ class ProfileEditPage extends StatefulWidget {
   State<ProfileEditPage> createState() => _ProfileEditPageState();
 }
 
-class _ProfileEditPageState extends State<ProfileEditPage> {
+class _ProfileEditPageState extends State<ProfileEditPage>
+    with RouteAwareRefreshMixin<ProfileEditPage> {
   // 用户偏好设置
   bool _notifications = true;
   bool _travelHistoryVisible = true;
@@ -36,12 +43,21 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _bioController = TextEditingController();
 
+  // 头像上传状态
+  bool _uploadingAvatar = false;
+  String? _newAvatarUrl;
+
+  // 当前用户角色
+  bool _isAdmin = false;
+  UserManagementStateController? _userManagementController;
+
   @override
   void initState() {
     super.initState();
     // 延迟到下一帧执行，避免在 build 过程中触发状态更新
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadUserProfile();
+      _checkAdminRole();
     });
   }
 
@@ -53,11 +69,79 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     super.dispose();
   }
 
+  // 检查用户是否为管理员
+  Future<void> _checkAdminRole() async {
+    final role = await TokenStorageService().getUserRole();
+    debugPrint('🔍 检查用户角色: $role');
+
+    final isAdmin = await TokenStorageService().isAdmin();
+    debugPrint('🔍 是否管理员: $isAdmin');
+
+    if (mounted) {
+      setState(() {
+        _isAdmin = isAdmin;
+        if (_isAdmin) {
+          // 安全地获取或初始化用户管理 controller
+          try {
+            if (Get.isRegistered<UserManagementStateController>()) {
+              _userManagementController =
+                  Get.find<UserManagementStateController>();
+            } else {
+              // 如果未注册，强制创建实例
+              _userManagementController = Get.put(
+                UserManagementStateController(
+                    Get.find<IUserManagementRepository>()),
+              );
+            }
+            debugPrint('✅ UserManagementStateController 初始化成功');
+          } catch (e) {
+            debugPrint('❌ 获取 UserManagementStateController 失败: $e');
+          }
+        } else {
+          debugPrint('⚠️ 当前用户不是管理员，不显示管理区域');
+        }
+      });
+    }
+  }
+
   // 加载用户资料
   Future<void> _loadUserProfile() async {
-    final profileController = Get.put(UserProfileController());
+    final profileController = Get.find<UserStateController>();
 
-    // 监听用户数据变化，填充输入框
+    // 安全地获取或初始化 controller
+    final skillController = Get.isRegistered<SkillStateController>()
+        ? Get.find<SkillStateController>()
+        : null;
+    final interestController = Get.isRegistered<InterestStateController>()
+        ? Get.find<InterestStateController>()
+        : null;
+
+    // 并行加载所有数据：用户信息、技能选项、兴趣选项
+    final futures = <Future>[
+      profileController.loadUserProfile(),
+    ];
+
+    if (skillController != null) {
+      futures.add(skillController.getSkills());
+    }
+
+    if (interestController != null) {
+      futures.add(interestController.getInterests());
+    }
+
+    await Future.wait(futures);
+
+    // 加载后填充输入框
+    final user = profileController.currentUser.value;
+    if (user != null && mounted) {
+      setState(() {
+        _nameController.text = user.name;
+        _emailController.text = user.email ?? '';
+        _bioController.text = user.bio ?? '';
+      });
+    }
+
+    // 继续监听后续的用户数据变化
     ever(profileController.currentUser, (user) {
       if (user != null && mounted) {
         setState(() {
@@ -69,13 +153,82 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     });
   }
 
+  // 处理头像上传
+  Future<void> _handleAvatarUpload() async {
+    final l10n = AppLocalizations.of(context)!;
+
+    if (!SupabaseConfig.isConfigured) {
+      AppToast.error(
+        'Supabase 未配置，请联系管理员',
+        title: l10n.error,
+      );
+      return;
+    }
+
+    setState(() => _uploadingAvatar = true);
+
+    try {
+      final avatarUrl = await ImageUploadHelper.uploadAvatar(context);
+
+      if (avatarUrl == null) {
+        return;
+      }
+
+      if (!mounted) {
+        return;
+      }
+
+      final previousAvatar = _newAvatarUrl;
+      setState(() {
+        _newAvatarUrl = avatarUrl;
+      });
+
+      final profileController = Get.find<UserStateController>();
+      final updateSuccess =
+          await profileController.updateUser({'avatarUrl': avatarUrl});
+
+      if (updateSuccess) {
+        AppToast.success(
+          l10n.profileUpdatedSuccessfully,
+          title: l10n.success,
+        );
+      } else {
+        setState(() {
+          _newAvatarUrl = previousAvatar;
+        });
+        AppToast.error(
+          '头像保存失败，请稍后重试',
+          title: l10n.error,
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ 头像上传失败: $e');
+      if (mounted) {
+        AppToast.error(
+          '头像上传失败: $e',
+          title: l10n.error,
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _uploadingAvatar = false);
+      }
+    }
+  }
+
+  @override
+  Future<void> onRouteResume() async {
+    await _loadUserProfile();
+    await _checkAdminRole();
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final l10n = AppLocalizations.of(context)!;
-    
-    // 在这里获取 controller，如果不存在则创建
-    final profileController = Get.put(UserProfileController());
+
+    // 在这里获取 controller
+    final profileController = Get.find<UserStateController>();
     final isMobile = screenWidth < 768;
 
     return Scaffold(
@@ -89,60 +242,79 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
             100, // 底部留白给导航栏
           ),
           children: [
-          // 头像和基本信息编辑
-          _buildProfileEditCard(isMobile),
+            // 头像和基本信息编辑
+            _buildProfileEditCard(isMobile),
 
-          const SizedBox(height: 24),
+            const SizedBox(height: 24),
 
-          // 技能编辑
-          _buildSkillsSection(isMobile, profileController),
+            // 技能编辑
+            _buildSkillsSection(isMobile, profileController),
 
-          const SizedBox(height: 24),
+            const SizedBox(height: 24),
 
-          // 兴趣爱好编辑
-          _buildInterestsSection(isMobile, profileController),
+            // 兴趣爱好编辑
+            _buildInterestsSection(isMobile, profileController),
 
-          const SizedBox(height: 24),
+            const SizedBox(height: 24),
 
-          // 偏好设置
-          _buildPreferencesSection(isMobile),
+            // 偏好设置
+            _buildPreferencesSection(isMobile),
 
-          const SizedBox(height: 24),
+            const SizedBox(height: 24),
 
-          // 账户操作
-          _buildAccountActionsSection(isMobile),
+            // 账户操作
+            _buildAccountActionsSection(isMobile),
 
-          const SizedBox(height: 32),
+            // 管理员权限管理区域（仅管理员可见）
+            if (_isAdmin) ...[
+              const SizedBox(height: 24),
+              _buildAdminManagementSection(isMobile),
+            ],
 
-          // 保存按钮
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                AppToast.success(
-                  l10n.profileUpdatedSuccessfully,
-                  title: l10n.saved,
-                );
-                Get.back();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.accent,
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(vertical: isMobile ? 16 : 20),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+            const SizedBox(height: 32),
+
+            // 保存按钮
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () async {
+                  // TODO: 保存所有更改到后端
+                  // 包括：name, bio, avatarUrl (_newAvatarUrl)
+
+                  if (_newAvatarUrl != null) {
+                    // 如果上传了新头像，这里应该调用 API 保存
+                    debugPrint('新头像 URL: $_newAvatarUrl');
+                    // await profileController.updateProfile(
+                    //   name: _nameController.text,
+                    //   bio: _bioController.text,
+                    //   avatarUrl: _newAvatarUrl,
+                    // );
+                  }
+
+                  AppToast.success(
+                    l10n.profileUpdatedSuccessfully,
+                    title: l10n.saved,
+                  );
+                  Get.back();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.accent,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: isMobile ? 16 : 20),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-              ),
-              child: Text(
-                l10n.saveChanges,
-                style: TextStyle(
-                  fontSize: isMobile ? 16 : 18,
-                  fontWeight: FontWeight.w600,
+                child: Text(
+                  l10n.saveChanges,
+                  style: TextStyle(
+                    fontSize: isMobile ? 16 : 18,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
         ),
       ),
     );
@@ -150,15 +322,20 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
   Widget _buildProfileEditCard(bool isMobile) {
     final l10n = AppLocalizations.of(Get.context!)!;
-    final profileController = Get.find<UserProfileController>();
+    final profileController = Get.find<UserStateController>();
 
     return Obx(() {
       final user = profileController.currentUser.value;
 
-      // 生成头像 URL (如果没有 avatarUrl，使用用户名生成)
-      final avatarUrl = user?.avatarUrl ??
-          'https://ui-avatars.com/api/?name=${Uri.encodeComponent(user?.name ?? 'User')}&background=FF9800&color=fff&size=200';
-      
+      // 使用新上传的头像或原头像
+      String avatarUrl = _newAvatarUrl ?? user?.avatarUrl ?? '';
+
+      // 处理空字符串的情况
+      if (avatarUrl.isEmpty) {
+        avatarUrl =
+            'https://ui-avatars.com/api/?name=${Uri.encodeComponent(user?.name ?? 'User')}&background=FF9800&color=fff&size=200';
+      }
+
       return Container(
         padding: EdgeInsets.all(isMobile ? 20 : 32),
         decoration: BoxDecoration(
@@ -175,21 +352,41 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                   radius: isMobile ? 50 : 70,
                   backgroundImage: NetworkImage(avatarUrl),
                   backgroundColor: Colors.orange,
+                  child: _uploadingAvatar
+                      ? Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black54,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 3,
+                            ),
+                          ),
+                        )
+                      : null,
                 ),
                 Positioned(
                   bottom: 0,
                   right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppColors.accent,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
-                    child: const Icon(
-                      Icons.camera_alt,
-                      color: Colors.white,
-                      size: 20,
+                  child: GestureDetector(
+                    onTap: _uploadingAvatar ? null : _handleAvatarUpload,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color:
+                            _uploadingAvatar ? Colors.grey : AppColors.accent,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                      child: Icon(
+                        _uploadingAvatar
+                            ? FontAwesomeIcons.hourglass
+                            : FontAwesomeIcons.camera,
+                        color: Colors.white,
+                        size: 20,
+                      ),
                     ),
                   ),
                 ),
@@ -198,96 +395,103 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
             SizedBox(height: isMobile ? 16 : 24),
 
-          // 用户名编辑
-          TextField(
+            // 用户名编辑
+            TextField(
               controller: _nameController,
-            decoration: InputDecoration(
-              labelText: l10n.name,
-              labelStyle: TextStyle(color: AppColors.textSecondary),
-              hintText: l10n.enterYourName,
-              hintStyle: TextStyle(color: AppColors.textTertiary),
-              filled: true,
-              fillColor: AppColors.containerLight,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.border),
+              decoration: InputDecoration(
+                labelText: l10n.name,
+                labelStyle: TextStyle(color: AppColors.textSecondary),
+                hintText: l10n.enterYourName,
+                hintStyle: TextStyle(color: AppColors.textTertiary),
+                filled: true,
+                fillColor: AppColors.containerLight,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.border),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.border),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.accent),
+                ),
               ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.border),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.accent),
-              ),
+              style: TextStyle(color: AppColors.textPrimary),
             ),
-            style: TextStyle(color: AppColors.textPrimary),
-          ),
 
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
             // 邮箱(只读)
-          TextField(
+            TextField(
               controller: _emailController,
-            readOnly: true,
-            decoration: InputDecoration(
-              labelText: l10n.email,
-              labelStyle: TextStyle(color: AppColors.textSecondary),
-              hintText: 'nomad@example.com',
-              hintStyle: TextStyle(color: AppColors.textTertiary),
-              filled: true,
-              fillColor: AppColors.containerLight.withValues(alpha: 0.5),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.borderLight),
+              readOnly: true,
+              decoration: InputDecoration(
+                labelText: l10n.email,
+                labelStyle: TextStyle(color: AppColors.textSecondary),
+                hintText: 'nomad@example.com',
+                hintStyle: TextStyle(color: AppColors.textTertiary),
+                filled: true,
+                fillColor: AppColors.containerLight.withValues(alpha: 0.5),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.borderLight),
+                ),
+                suffixIcon: Icon(
+                  FontAwesomeIcons.lock,
+                  color: AppColors.iconSecondary,
+                ),
               ),
-              suffixIcon: Icon(
-                Icons.lock_outline,
-                color: AppColors.iconSecondary,
-              ),
+              style: TextStyle(color: AppColors.textSecondary),
             ),
-            style: TextStyle(color: AppColors.textSecondary),
-          ),
 
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-          // Bio
-          TextField(
+            // Bio
+            TextField(
               controller: _bioController,
-            maxLines: 3,
-            decoration: InputDecoration(
-              labelText: l10n.bio,
-              labelStyle: TextStyle(color: AppColors.textSecondary),
-              hintText: l10n.tellUsAboutYourself,
-              hintStyle: TextStyle(color: AppColors.textTertiary),
-              filled: true,
-              fillColor: AppColors.containerLight,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.border),
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: l10n.bio,
+                labelStyle: TextStyle(color: AppColors.textSecondary),
+                hintText: l10n.tellUsAboutYourself,
+                hintStyle: TextStyle(color: AppColors.textTertiary),
+                filled: true,
+                fillColor: AppColors.containerLight,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.border),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.border),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.accent),
+                ),
               ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.border),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.accent),
-              ),
+              style: TextStyle(color: AppColors.textPrimary),
             ),
-            style: TextStyle(color: AppColors.textPrimary),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
     }); // 关闭 Obx
   }
 
-  Widget _buildSkillsSection(bool isMobile, UserProfileController profileController) {
+  Widget _buildSkillsSection(
+      bool isMobile, UserStateController profileController) {
     final l10n = AppLocalizations.of(Get.context!)!;
-    
+
+    // 安全地获取 controller，如果不存在则不显示加载状态
+    final skillController = Get.isRegistered<SkillStateController>()
+        ? Get.find<SkillStateController>()
+        : null;
+
     return Obx(() {
       final user = profileController.currentUser.value;
+      final isLoading = skillController?.isLoading.value ?? false;
 
       if (user == null) {
         return const SizedBox.shrink();
@@ -308,26 +512,53 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  l10n.skills,
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: isMobile ? 18 : 22,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      l10n.skills,
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: isMobile ? 18 : 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    if (isLoading) ...[
+                      const SizedBox(width: 8),
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColors.accent,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
                 TextButton.icon(
-                  icon: Icon(Icons.edit, color: AppColors.accent, size: 20),
+                  icon: Icon(FontAwesomeIcons.pen,
+                      color: AppColors.accent, size: 20),
                   label: Text(
                     '编辑',
                     style: TextStyle(color: AppColors.accent),
                   ),
-                  onPressed: () => _showSkillsBottomSheet(profileController),
+                  onPressed: isLoading
+                      ? null
+                      : () => _showSkillsBottomSheet(profileController),
                 ),
               ],
             ),
             SizedBox(height: isMobile ? 12 : 16),
-            if (skills.isEmpty)
+            if (isLoading && skills.isEmpty)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24),
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            else if (skills.isEmpty)
               Center(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 24),
@@ -346,17 +577,25 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 runSpacing: 8,
                 children: skills.map((skill) {
                   return Chip(
-                    label: Text(skill.skillName),
-                    avatar: skill.icon != null ? Text(skill.icon!) : null,
-                    deleteIcon: const Icon(Icons.close, size: 18),
-                    onDeleted: () => profileController.removeSkill(skill.id),
+                    avatar: skill.hasIcon
+                        ? Text(
+                            skill.icon!,
+                            style: const TextStyle(fontSize: 16),
+                          )
+                        : null,
+                    label: Text(skill.name),
+                    deleteIcon: const Icon(FontAwesomeIcons.xmark, size: 18),
+                    onDeleted: isLoading
+                        ? null
+                        : () => profileController.removeSkill(skill.id),
                     backgroundColor: AppColors.accent.withValues(alpha: 0.1),
                     labelStyle: TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 14,
                     ),
                     deleteIconColor: AppColors.textSecondary,
-                    side: BorderSide(color: AppColors.accent.withValues(alpha: 0.3)),
+                    side: BorderSide(
+                        color: AppColors.accent.withValues(alpha: 0.3)),
                   );
                 }).toList(),
               ),
@@ -366,11 +605,18 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     });
   }
 
-  Widget _buildInterestsSection(bool isMobile, UserProfileController profileController) {
+  Widget _buildInterestsSection(
+      bool isMobile, UserStateController profileController) {
     final l10n = AppLocalizations.of(Get.context!)!;
-    
+
+    // 安全地获取 controller，如果不存在则不显示加载状态
+    final interestController = Get.isRegistered<InterestStateController>()
+        ? Get.find<InterestStateController>()
+        : null;
+
     return Obx(() {
       final user = profileController.currentUser.value;
+      final isLoading = interestController?.isLoading.value ?? false;
 
       if (user == null) {
         return const SizedBox.shrink();
@@ -391,26 +637,53 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  l10n.interests,
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: isMobile ? 18 : 22,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      l10n.interests,
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: isMobile ? 18 : 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    if (isLoading) ...[
+                      const SizedBox(width: 8),
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            const Color(0xFFBA68C8),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
                 TextButton.icon(
-                  icon: Icon(Icons.edit, color: AppColors.accent, size: 20),
-                  label: Text(
+                  icon: const Icon(FontAwesomeIcons.pen,
+                      color: Color(0xFFBA68C8), size: 20),
+                  label: const Text(
                     '编辑',
-                    style: TextStyle(color: AppColors.accent),
+                    style: TextStyle(color: Color(0xFFBA68C8)),
                   ),
-                  onPressed: () => _showInterestsBottomSheet(profileController),
+                  onPressed: isLoading
+                      ? null
+                      : () => _showInterestsBottomSheet(profileController),
                 ),
               ],
             ),
             SizedBox(height: isMobile ? 12 : 16),
-            if (interests.isEmpty)
+            if (isLoading && interests.isEmpty)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24),
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            else if (interests.isEmpty)
               Center(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 24),
@@ -429,12 +702,19 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 runSpacing: 8,
                 children: interests.map((interest) {
                   return Chip(
-                    label: Text(interest.interestName),
-                    avatar: interest.icon != null ? Text(interest.icon!) : null,
-                    deleteIcon: const Icon(Icons.close, size: 18),
-                    onDeleted: () =>
-                        profileController.removeInterest(interest.id),
-                    backgroundColor: const Color(0xFFBA68C8).withValues(alpha: 0.1),
+                    avatar: interest.hasIcon
+                        ? Text(
+                            interest.icon!,
+                            style: const TextStyle(fontSize: 16),
+                          )
+                        : null,
+                    label: Text(interest.name),
+                    deleteIcon: const Icon(FontAwesomeIcons.xmark, size: 18),
+                    onDeleted: isLoading
+                        ? null
+                        : () => profileController.removeInterest(interest.id),
+                    backgroundColor:
+                        const Color(0xFFBA68C8).withValues(alpha: 0.1),
                     labelStyle: TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 14,
@@ -454,7 +734,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
   Widget _buildPreferencesSection(bool isMobile) {
     final l10n = AppLocalizations.of(Get.context!)!;
-    
+
     return Container(
       padding: EdgeInsets.all(isMobile ? 16 : 20),
       decoration: BoxDecoration(
@@ -541,7 +821,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
             dropdownColor: Colors.white,
             underline: const SizedBox(),
             icon: Icon(
-              Icons.arrow_drop_down,
+              FontAwesomeIcons.chevronDown,
               color: AppColors.iconSecondary,
             ),
             items: [
@@ -613,7 +893,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
         dropdownColor: Colors.white,
         underline: const SizedBox(),
         icon: Icon(
-          Icons.arrow_drop_down,
+          FontAwesomeIcons.chevronDown,
           color: AppColors.iconSecondary,
         ),
         items: options.map((option) {
@@ -629,7 +909,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
   Widget _buildAccountActionsSection(bool isMobile) {
     final l10n = AppLocalizations.of(Get.context!)!;
-    
+
     return Container(
       padding: EdgeInsets.all(isMobile ? 16 : 20),
       decoration: BoxDecoration(
@@ -650,19 +930,19 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
           ),
           SizedBox(height: isMobile ? 12 : 16),
           _buildActionTile(
-            icon: Icons.lock_outline,
+            icon: FontAwesomeIcons.lock,
             title: l10n.changePassword,
             onTap: () => AppToast.info(l10n.changePasswordComingSoon),
           ),
           Divider(color: AppColors.divider),
           _buildActionTile(
-            icon: Icons.privacy_tip_outlined,
+            icon: FontAwesomeIcons.userSecret,
             title: l10n.privacySettings,
             onTap: () => AppToast.info(l10n.privacySettingsComingSoon),
           ),
           Divider(color: AppColors.divider),
           _buildActionTile(
-            icon: Icons.delete_outline,
+            icon: FontAwesomeIcons.trash,
             title: l10n.deleteAccount,
             titleColor: Colors.red,
             onTap: () {
@@ -712,7 +992,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
         ),
       ),
       trailing: Icon(
-        Icons.chevron_right,
+        FontAwesomeIcons.chevronRight,
         color: AppColors.iconLight,
       ),
       onTap: onTap,
@@ -720,37 +1000,58 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   }
 
   // 显示技能选择底部抽屉
-  void _showSkillsBottomSheet(UserProfileController profileController) {
-    final SkillsApiService skillsService = SkillsApiService();
-    final currentSkills = profileController.currentUser.value?.skills ?? [];
-    
+  void _showSkillsBottomSheet(UserStateController profileController) {
+    final SkillStateController skillController =
+        Get.find<SkillStateController>();
+    final currentUser = profileController.currentUser.value;
+
+    if (currentUser == null) {
+      AppToast.error('请先登录');
+      return;
+    }
+
+    final currentSkills = currentUser.skills;
+    print('📋 打开技能 Drawer: currentSkills = ${currentSkills.length} 个');
+    for (var skill in currentSkills) {
+      print('  - id=${skill.id}, name=${skill.name}, level=${skill.level}');
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => _SkillsBottomSheet(
-        skillsService: skillsService,
+        skillController: skillController,
         currentSkills: currentSkills,
         onSave: (selectedSkills) async {
           if (selectedSkills.isNotEmpty) {
             try {
-              final requests = selectedSkills.map((skill) {
-                return AddUserSkillRequest(
-                  skillId: skill.skillId,
-                  proficiencyLevel: skill.proficiencyLevel,
-                  yearsOfExperience: skill.yearsOfExperience,
+              var successCount = 0;
+              for (final skill in selectedSkills) {
+                final success = await skillController.addUserSkill(
+                  currentUser.id,
+                  AddUserSkillRequest(
+                    skillId: skill.skillId,
+                    proficiencyLevel: skill.proficiencyLevel,
+                    yearsOfExperience: skill.yearsOfExperience,
+                  ),
                 );
-              }).toList();
+                if (success) {
+                  successCount++;
+                }
+              }
 
-              await skillsService.addUserSkillsBatch(requests);
+              if (successCount > 0) {
+                AppToast.success(
+                  '已保存 $successCount 个技能',
+                  title: '保存成功',
+                );
 
-              AppToast.success(
-                '已保存 ${selectedSkills.length} 个技能',
-                title: '保存成功',
-              );
-
-              // 刷新用户资料数据
-              await profileController.loadUserProfile();
+                // 刷新用户资料数据
+                await profileController.loadUserProfile();
+              } else {
+                AppToast.error('保存失败，请稍后重试');
+              }
             } catch (e) {
               print('❌ 保存技能失败: $e');
               AppToast.error('保存失败，请稍后重试');
@@ -762,37 +1063,57 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   }
 
   // 显示兴趣选择底部抽屉
-  void _showInterestsBottomSheet(UserProfileController profileController) {
-    final InterestsApiService interestsService = InterestsApiService();
-    final currentInterests =
-        profileController.currentUser.value?.interests ?? [];
+  void _showInterestsBottomSheet(UserStateController profileController) {
+    final InterestStateController interestController =
+        Get.find<InterestStateController>();
+    final currentUser = profileController.currentUser.value;
+
+    if (currentUser == null) {
+      AppToast.error('请先登录');
+      return;
+    }
+
+    final currentInterests = currentUser.interests;
+    print('📋 打开兴趣 Drawer: currentInterests = ${currentInterests.length} 个');
+    for (var interest in currentInterests) {
+      print('  - id=${interest.id}, name=${interest.name}');
+    }
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => _InterestsBottomSheet(
-        interestsService: interestsService,
+        interestController: interestController,
         currentInterests: currentInterests,
         onSave: (selectedInterests) async {
           if (selectedInterests.isNotEmpty) {
             try {
-              final requests = selectedInterests.map((interest) {
-                return AddUserInterestRequest(
-                  interestId: interest.interestId,
-                  intensityLevel: interest.intensityLevel,
+              var successCount = 0;
+              for (final interest in selectedInterests) {
+                final success = await interestController.addUserInterest(
+                  currentUser.id,
+                  AddUserInterestRequest(
+                    interestId: interest.interestId,
+                    intensityLevel: interest.intensityLevel,
+                  ),
                 );
-              }).toList();
+                if (success) {
+                  successCount++;
+                }
+              }
 
-              await interestsService.addUserInterestsBatch(requests);
+              if (successCount > 0) {
+                AppToast.success(
+                  '已保存 $successCount 个兴趣',
+                  title: '保存成功',
+                );
 
-              AppToast.success(
-                '已保存 ${selectedInterests.length} 个兴趣',
-                title: '保存成功',
-              );
-
-              // 刷新用户资料数据
-              await profileController.loadUserProfile();
+                // 刷新用户资料数据
+                await profileController.loadUserProfile();
+              } else {
+                AppToast.error('保存失败，请稍后重试');
+              }
             } catch (e) {
               print('❌ 保存兴趣失败: $e');
               AppToast.error('保存失败，请稍后重试');
@@ -802,16 +1123,368 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       ),
     );
   }
+
+  /// 构建管理员权限管理区域
+  Widget _buildAdminManagementSection(bool isMobile) {
+    if (_userManagementController == null) return const SizedBox.shrink();
+
+    return Container(
+      padding: EdgeInsets.all(isMobile ? 16 : 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '🔐 管理员权限管理',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: isMobile ? 18 : 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Obx(() => Text(
+                    '已选择 ${_userManagementController!.selectedUserIds.length} 人',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 14,
+                    ),
+                  )),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // 角色加载状态提示
+          Obx(() {
+            if (_userManagementController!.roles.isEmpty) {
+              return Container(
+                padding: const EdgeInsets.all(12),
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border:
+                      Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(FontAwesomeIcons.triangleExclamation,
+                        color: Colors.orange, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '⚠️ 角色数据未加载，批量操作功能受限\n请确认后端 /api/v1/roles 接口已正确配置',
+                        style: TextStyle(
+                          color: Colors.orange.shade800,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+            return const SizedBox.shrink();
+          }),
+
+          // 操作按钮行
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () => _batchSetAdmin(),
+                  icon: const Icon(FontAwesomeIcons.userShield, size: 18),
+                  label: const Text('设为管理员'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _batchSetUser(),
+                  icon: const Icon(FontAwesomeIcons.user, size: 18),
+                  label: const Text('设为普通用户'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.textPrimary,
+                    side: BorderSide(color: AppColors.border),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _userManagementController!.toggleSelectAll(),
+                  icon: const Icon(FontAwesomeIcons.squareCheck, size: 18),
+                  label: const Text('全选/取消全选'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.textSecondary,
+                    side: BorderSide(color: AppColors.border),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () =>
+                      _userManagementController!.loadUsers(refresh: true),
+                  icon: const Icon(FontAwesomeIcons.arrowsRotate, size: 18),
+                  label: const Text('刷新'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.textSecondary,
+                    side: BorderSide(color: AppColors.border),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // 用户列表
+          Container(
+            height: 400,
+            decoration: BoxDecoration(
+              border: Border.all(color: AppColors.border),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Obx(() {
+              if (_userManagementController!.isLoading.value &&
+                  _userManagementController!.users.isEmpty) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              if (_userManagementController!.errorMessage.value.isNotEmpty) {
+                return Center(
+                  child: Text(
+                    _userManagementController!.errorMessage.value,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                );
+              }
+
+              if (_userManagementController!.users.isEmpty) {
+                return const Center(child: Text('暂无用户'));
+              }
+
+              return NotificationListener<ScrollNotification>(
+                onNotification: (ScrollNotification scrollInfo) {
+                  if (scrollInfo.metrics.pixels ==
+                      scrollInfo.metrics.maxScrollExtent) {
+                    _userManagementController!.loadUsers();
+                  }
+                  return false;
+                },
+                child: ListView.builder(
+                  itemCount: _userManagementController!.users.length +
+                      (_userManagementController!.hasMoreData.value ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (index == _userManagementController!.users.length) {
+                      return const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: CircularProgressIndicator(),
+                        ),
+                      );
+                    }
+
+                    final user = _userManagementController!.users[index];
+                    final isSelected = _userManagementController!
+                        .selectedUserIds
+                        .contains(user.id);
+
+                    return CheckboxListTile(
+                      value: isSelected,
+                      onChanged: (checked) {
+                        _userManagementController!.toggleUserSelection(user.id);
+                      },
+                      title: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 16,
+                            backgroundImage: user.avatarUrl != null
+                                ? NetworkImage(user.avatarUrl!)
+                                : null,
+                            child: user.avatarUrl == null
+                                ? Text(user.name.substring(0, 1).toUpperCase())
+                                : null,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  user.name,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                if (user.email != null)
+                                  Text(
+                                    user.email!,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      subtitle: Row(
+                        children: [
+                          _buildRoleBadge(user.role),
+                          const SizedBox(width: 8),
+                          Text(
+                            '加入于 ${_formatDate(user.createdAt)}',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: AppColors.textTertiary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      activeColor: AppColors.accent,
+                      dense: true,
+                    );
+                  },
+                ),
+              );
+            }),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRoleBadge(String role) {
+    Color badgeColor;
+    String roleText;
+
+    switch (role.toLowerCase()) {
+      case 'admin':
+        badgeColor = Colors.red;
+        roleText = '管理员';
+        break;
+      case 'moderator':
+        badgeColor = Colors.orange;
+        roleText = '版主';
+        break;
+      default:
+        badgeColor = Colors.grey;
+        roleText = '用户';
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: badgeColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: badgeColor.withValues(alpha: 0.3)),
+      ),
+      child: Text(
+        roleText,
+        style: TextStyle(
+          fontSize: 11,
+          color: badgeColor,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays < 1) {
+      return '今天';
+    } else if (difference.inDays < 30) {
+      return '${difference.inDays}天前';
+    } else if (difference.inDays < 365) {
+      return '${(difference.inDays / 30).floor()}个月前';
+    } else {
+      return '${(difference.inDays / 365).floor()}年前';
+    }
+  }
+
+  Future<void> _batchSetAdmin() async {
+    if (_userManagementController == null) return;
+
+    if (_userManagementController!.selectedUserIds.isEmpty) {
+      AppToast.warning('请先选择要设置的用户');
+      return;
+    }
+
+    final success = await _userManagementController!.batchSetAdmin();
+
+    if (success) {
+      AppToast.success(
+        '已成功将 ${_userManagementController!.selectedUserIds.length} 个用户设为管理员',
+        title: '成功',
+      );
+    } else {
+      AppToast.error(
+        _userManagementController!.errorMessage.value.isNotEmpty
+            ? _userManagementController!.errorMessage.value
+            : '批量设置管理员失败',
+        title: '失败',
+      );
+    }
+  }
+
+  Future<void> _batchSetUser() async {
+    if (_userManagementController == null) return;
+
+    if (_userManagementController!.selectedUserIds.isEmpty) {
+      AppToast.warning('请先选择要设置的用户');
+      return;
+    }
+
+    final success = await _userManagementController!.batchSetUser();
+
+    if (success) {
+      AppToast.success(
+        '已成功将 ${_userManagementController!.selectedUserIds.length} 个用户设为普通用户',
+        title: '成功',
+      );
+    } else {
+      AppToast.error(
+        _userManagementController!.errorMessage.value.isNotEmpty
+            ? _userManagementController!.errorMessage.value
+            : '批量设置用户失败',
+        title: '失败',
+      );
+    }
+  }
 }
 
 // 技能选择底部抽屉组件
 class _SkillsBottomSheet extends StatefulWidget {
-  final SkillsApiService skillsService;
+  final SkillStateController skillController;
   final List<UserSkillInfo> currentSkills;
   final Function(List<UserSkill>) onSave;
 
   const _SkillsBottomSheet({
-    required this.skillsService,
+    required this.skillController,
     required this.currentSkills,
     required this.onSave,
   });
@@ -830,52 +1503,83 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
   @override
   void initState() {
     super.initState();
-    _loadSkills();
+    // 延迟到下一帧加载，避免在父组件 build 期间触发状态更新
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadSkills();
+    });
   }
 
   Future<void> _loadSkills() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
 
     try {
-      final skillsByCategory = await widget.skillsService.getSkillsByCategory();
+      await widget.skillController.getSkills();
+      if (!mounted) return;
+
+      final skills = List<Skill>.from(widget.skillController.skills);
+
+      // 先设置数据，再调用预选方法
+      _skillsByCategory = _groupSkillsByCategory(skills);
+      _preselectCurrentSkills();
+
+      if (!mounted) return;
       setState(() {
-        _skillsByCategory = skillsByCategory;
         _isLoading = false;
-        // 预填充当前用户已有的技能
-        _preselectCurrentSkills();
+      });
+
+      // 延迟到下一帧检查错误，避免在 build 期间触发状态更新
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final error = widget.skillController.errorMessage.value;
+        if (error != null && error.isNotEmpty) {
+          AppToast.error(error);
+        }
       });
     } catch (e) {
       print('❌ 加载技能失败: $e');
+      if (!mounted) return;
       setState(() => _isLoading = false);
-
-      if (mounted) {
-        Get.snackbar(
-          '加载失败',
-          '无法加载技能列表: $e',
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 5),
-        );
-      }
+      AppToast.error('无法加载技能列表: $e');
     }
+  }
+
+  List<SkillsByCategory> _groupSkillsByCategory(List<Skill> skills) {
+    final Map<String, List<Skill>> grouped = {};
+    for (final skill in skills) {
+      grouped.putIfAbsent(skill.category, () => []).add(skill);
+    }
+
+    final categories = grouped.entries
+        .map((entry) => SkillsByCategory(
+              category: entry.key,
+              skills: entry.value,
+            ))
+        .toList()
+      ..sort((a, b) => a.category.compareTo(b.category));
+
+    return categories;
   }
 
   void _preselectCurrentSkills() {
     // 预填充用户已有的技能
+    print('🔍 预选技能开始: currentSkills = ${widget.currentSkills.length} 个');
     for (var userSkill in widget.currentSkills) {
+      print('  - 查找技能: id=${userSkill.id}, name=${userSkill.name}');
       for (var category in _skillsByCategory) {
         final skill = category.skills.firstWhere(
-          (s) => s.id == userSkill.skillId,
+          (s) => s.id == userSkill.id,
           orElse: () => Skill(
             id: '',
             name: '',
             category: '',
-            icon: '',
             createdAt: DateTime.now(),
           ),
         );
 
         if (skill.id.isNotEmpty &&
             !_selectedSkills.any((s) => s.skillId == skill.id)) {
+          print('  ✅ 找到并添加技能: ${skill.name}');
           _selectedSkills.add(UserSkill(
             id: DateTime.now().millisecondsSinceEpoch.toString(),
             userId: '',
@@ -883,13 +1587,16 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
             skillName: skill.name,
             category: skill.category,
             icon: skill.icon,
-            proficiencyLevel: userSkill.proficiencyLevel ?? 'Intermediate',
-            yearsOfExperience: userSkill.yearsOfExperience,
+            proficiencyLevel: userSkill.level,
+            yearsOfExperience: null,
             createdAt: DateTime.now(),
           ));
+        } else if (skill.id.isEmpty) {
+          print('  ❌ 未找到技能: ${userSkill.name}');
         }
       }
     }
+    print('🔍 预选完成: _selectedSkills = ${_selectedSkills.length} 个');
   }
 
   void _toggleSkill(Skill skill) {
@@ -985,7 +1692,7 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
                           ),
                         const SizedBox(width: 8),
                         IconButton(
-                          icon: const Icon(Icons.close),
+                          icon: const Icon(FontAwesomeIcons.xmark),
                           onPressed: () => Navigator.pop(context),
                         ),
                       ],
@@ -1000,7 +1707,7 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
                 child: TextField(
                   decoration: InputDecoration(
                     hintText: '搜索技能...',
-                    prefixIcon: const Icon(Icons.search),
+                    prefixIcon: const Icon(FontAwesomeIcons.magnifyingGlass),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -1052,7 +1759,7 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
                   color: Colors.white,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 10,
                       offset: const Offset(0, -2),
                     ),
@@ -1135,12 +1842,15 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
           children: filteredSkills.map((skill) {
             final isSelected =
                 _selectedSkills.any((s) => s.skillId == skill.id);
+            if (isSelected) {
+              print('🎯 技能 ${skill.name} (id=${skill.id}) 被标记为选中');
+            }
             return FilterChip(
               avatar: Text(skill.icon ?? '💼'),
               label: Text(skill.name),
               selected: isSelected,
               onSelected: (_) => _toggleSkill(skill),
-              selectedColor: AppColors.accent.withOpacity(0.2),
+              selectedColor: AppColors.accent.withValues(alpha: 0.2),
               checkmarkColor: AppColors.accent,
               backgroundColor: Colors.white,
               side: BorderSide(
@@ -1169,12 +1879,12 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
 
 // 兴趣选择底部抽屉组件
 class _InterestsBottomSheet extends StatefulWidget {
-  final InterestsApiService interestsService;
+  final InterestStateController interestController;
   final List<UserInterestInfo> currentInterests;
   final Function(List<UserInterest>) onSave;
 
   const _InterestsBottomSheet({
-    required this.interestsService,
+    required this.interestController,
     required this.currentInterests,
     required this.onSave,
   });
@@ -1193,53 +1903,85 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
   @override
   void initState() {
     super.initState();
-    _loadInterests();
+    // 延迟到下一帧加载，避免在父组件 build 期间触发状态更新
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadInterests();
+    });
   }
 
   Future<void> _loadInterests() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
 
     try {
-      final interestsByCategory =
-          await widget.interestsService.getInterestsByCategory();
+      await widget.interestController.getInterests();
+      if (!mounted) return;
+
+      final interests =
+          List<Interest>.from(widget.interestController.interests);
+
+      // 先设置数据，再调用预选方法
+      _interestsByCategory = _groupInterestsByCategory(interests);
+      _preselectCurrentInterests();
+
+      if (!mounted) return;
       setState(() {
-        _interestsByCategory = interestsByCategory;
         _isLoading = false;
-        // 预填充当前用户已有的兴趣
-        _preselectCurrentInterests();
+      });
+
+      // 延迟到下一帧检查错误，避免在 build 期间触发状态更新
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final error = widget.interestController.errorMessage.value;
+        if (error != null && error.isNotEmpty) {
+          AppToast.error(error);
+        }
       });
     } catch (e) {
       print('❌ 加载兴趣失败: $e');
+      if (!mounted) return;
       setState(() => _isLoading = false);
-
-      if (mounted) {
-        Get.snackbar(
-          '加载失败',
-          '无法加载兴趣列表: $e',
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 5),
-        );
-      }
+      AppToast.error('无法加载兴趣列表: $e');
     }
+  }
+
+  List<InterestsByCategory> _groupInterestsByCategory(
+      List<Interest> interests) {
+    final Map<String, List<Interest>> grouped = {};
+    for (final interest in interests) {
+      grouped.putIfAbsent(interest.category, () => []).add(interest);
+    }
+
+    final categories = grouped.entries
+        .map((entry) => InterestsByCategory(
+              category: entry.key,
+              interests: entry.value,
+            ))
+        .toList()
+      ..sort((a, b) => a.category.compareTo(b.category));
+
+    return categories;
   }
 
   void _preselectCurrentInterests() {
     // 预填充用户已有的兴趣
+    print('🔍 预选兴趣开始: currentInterests = ${widget.currentInterests.length} 个');
     for (var userInterest in widget.currentInterests) {
+      print('  - 查找兴趣: id=${userInterest.id}, name=${userInterest.name}');
       for (var category in _interestsByCategory) {
         final interest = category.interests.firstWhere(
-          (i) => i.id == userInterest.interestId,
+          (i) => i.id == userInterest.id,
           orElse: () => Interest(
             id: '',
             name: '',
             category: '',
-            icon: '',
             createdAt: DateTime.now(),
           ),
         );
 
         if (interest.id.isNotEmpty &&
             !_selectedInterests.any((i) => i.interestId == interest.id)) {
+          print('  ✅ 找到并添加兴趣: ${interest.name}');
           _selectedInterests.add(UserInterest(
             id: DateTime.now().millisecondsSinceEpoch.toString(),
             userId: '',
@@ -1247,12 +1989,15 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
             interestName: interest.name,
             category: interest.category,
             icon: interest.icon,
-            intensityLevel: userInterest.intensityLevel ?? 'Medium',
+            intensityLevel: 'moderate',
             createdAt: DateTime.now(),
           ));
+        } else if (interest.id.isEmpty) {
+          print('  ❌ 未找到兴趣: ${userInterest.name}');
         }
       }
     }
+    print('🔍 预选完成: _selectedInterests = ${_selectedInterests.length} 个');
   }
 
   void _toggleInterest(Interest interest) {
@@ -1348,7 +2093,7 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
                           ),
                         const SizedBox(width: 8),
                         IconButton(
-                          icon: const Icon(Icons.close),
+                          icon: const Icon(FontAwesomeIcons.xmark),
                           onPressed: () => Navigator.pop(context),
                         ),
                       ],
@@ -1363,7 +2108,7 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
                 child: TextField(
                   decoration: InputDecoration(
                     hintText: '搜索兴趣...',
-                    prefixIcon: const Icon(Icons.search),
+                    prefixIcon: const Icon(FontAwesomeIcons.magnifyingGlass),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -1415,7 +2160,7 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
                   color: Colors.white,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 10,
                       offset: const Offset(0, -2),
                     ),
@@ -1498,12 +2243,15 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
           children: filteredInterests.map((interest) {
             final isSelected =
                 _selectedInterests.any((i) => i.interestId == interest.id);
+            if (isSelected) {
+              print('🎯 兴趣 ${interest.name} (id=${interest.id}) 被标记为选中');
+            }
             return FilterChip(
               avatar: Text(interest.icon ?? '❤️'),
               label: Text(interest.name),
               selected: isSelected,
               onSelected: (_) => _toggleInterest(interest),
-              selectedColor: AppColors.accent.withOpacity(0.2),
+              selectedColor: AppColors.accent.withValues(alpha: 0.2),
               checkmarkColor: AppColors.accent,
               backgroundColor: Colors.white,
               side: BorderSide(
@@ -1530,3 +2278,5 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
     return categoryMap[category] ?? category;
   }
 }
+
+// 技能选择底部抽屉组件

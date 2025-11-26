@@ -1,8 +1,10 @@
+import 'package:df_admin_mobile/features/innovation_project/domain/entities/innovation_project.dart';
+import 'package:df_admin_mobile/features/user/domain/entities/user.dart'
+    as models;
+import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-import '../generated/app_localizations.dart';
-import '../models/innovation_project_model.dart';
-import '../models/user_model.dart' as models;
 import 'add_innovation_page.dart';
 import 'direct_chat_page.dart';
 import 'innovation_detail_page.dart';
@@ -38,7 +40,8 @@ class _InnovationListPageState extends State<InnovationListPage> {
   // 模拟数据
   final List<InnovationProject> _projects = [
     InnovationProject(
-      id: '1',
+      id: 1,
+      userId: 1,
       projectName: '智课通',
       elevatorPitch: '我们是面向大学生的AI学习伙伴，像私人tutor一样个性化辅导，但完全自动化且价格更低。',
       problem: '大学生备考四六级时缺乏个性化练习和及时反馈，导致复习效率低下、通过率不高。',
@@ -46,13 +49,7 @@ class _InnovationListPageState extends State<InnovationListPage> {
       targetAudience:
           '主要用户：一二线城市的大二至大四本科生\n次要用户：考研学生、语言培训机构\n用户画像：年龄18-24岁，手机使用频繁，愿意为提分付费',
       productType: '微信小程序 + 后台管理系统',
-      keyFeatures: [
-        '智能错题分析与知识点定位',
-        '个性化每日学习任务推送',
-        '模拟考试+成绩预测',
-        '语音口语练习与评分',
-        '学习进度可视化报告',
-      ],
+      keyFeatures: '智能错题分析与知识点定位\n个性化每日学习任务推送\n模拟考试+成绩预测\n语音口语练习与评分\n学习进度可视化报告',
       competitiveAdvantage:
           '竞品A：题库大但无个性化推荐 → 我们有AI自适应引擎\n竞品B：价格高 → 我们采用订阅制，性价比更高\n我们的优势：团队有教育+AI背景，已获得某高校试点合作',
       businessModel: '基础功能免费，高级功能月费19元，支持学期/年费套餐',
@@ -79,12 +76,11 @@ class _InnovationListPageState extends State<InnovationListPage> {
       ask: '需要技术合伙人一起开发后端\n寻求天使投资50万，出让10%股权\n希望接入某平台API资源',
       createdAt: DateTime.now().subtract(const Duration(days: 30)),
       updatedAt: DateTime.now().subtract(const Duration(days: 2)),
-      imageUrl: 'https://picsum.photos/400/300?random=1',
-      creatorId: 'user1',
-      creatorName: '张三',
+      userName: '张三',
     ),
     InnovationProject(
-      id: '2',
+      id: 2,
+      userId: 2,
       projectName: '碳迹追踪',
       elevatorPitch: '我们是个人碳足迹管理工具，帮助用户追踪和减少日常碳排放，但更注重游戏化和社交互动。',
       problem: '随着环保意识提升，人们想减少碳排放，但不知道从何下手，也缺乏持续动力。',
@@ -92,13 +88,7 @@ class _InnovationListPageState extends State<InnovationListPage> {
       targetAudience:
           '主要用户：25-40岁中产阶级，关注环保和可持续生活\n次要用户：企业ESG部门、环保组织\n用户画像：有环保意识，愿意为绿色产品付费',
       productType: 'App（iOS + Android）',
-      keyFeatures: [
-        '自动碳足迹计算',
-        '个性化减排建议',
-        '碳积分商城',
-        '好友排行榜',
-        '企业碳中和服务',
-      ],
+      keyFeatures: '自动碳足迹计算\n个性化减排建议\n碳积分商城\n好友排行榜\n企业碳中和服务',
       competitiveAdvantage: '市面上工具多为企业端，我们专注C端用户体验\n游戏化设计增强用户粘性\n已与多家新能源企业建立合作',
       businessModel: '免费版限制功能，高级版月费9.9元\n企业版按需定价\n碳积分商城抽成',
       marketOpportunity: '全球碳中和市场规模超万亿美元，个人碳管理是蓝海市场。',
@@ -118,25 +108,18 @@ class _InnovationListPageState extends State<InnovationListPage> {
       ask: '寻求Pre-A轮融资200万\n希望接入更多碳数据源\n招募市场推广人员',
       createdAt: DateTime.now().subtract(const Duration(days: 15)),
       updatedAt: DateTime.now().subtract(const Duration(days: 1)),
-      imageUrl: 'https://picsum.photos/400/300?random=2',
-      creatorId: 'user2',
-      creatorName: '陈六',
+      userName: '陈六',
     ),
     InnovationProject(
-      id: '3',
+      id: 3,
+      userId: 3,
       projectName: '灵犀翻译',
       elevatorPitch: '我们是专业文档翻译工具，像Google翻译一样快速，但专业度媲美人工翻译。',
       problem: '传统翻译工具无法处理专业术语，人工翻译价格昂贵且周期长。',
       solution: '利用垂直领域AI模型，针对法律、医疗、金融等专业文档提供高质量翻译，成本仅为人工翻译的1/10。',
       targetAudience: '主要用户：律所、医院、金融机构\n次要用户：留学生、科研人员\n用户画像：对翻译质量要求高，愿意为专业服务付费',
       productType: 'SaaS 平台 + API 服务',
-      keyFeatures: [
-        '多领域专业术语库',
-        '上下文智能理解',
-        '格式保留（PDF、Word等）',
-        '人工审核服务',
-        '批量翻译',
-      ],
+      keyFeatures: '多领域专业术语库\n上下文智能理解\n格式保留（PDF、Word等）\n人工审核服务\n批量翻译',
       competitiveAdvantage: '专注垂直领域，翻译准确度高于通用工具\n提供人工复核，质量有保障\n已服务多家500强企业',
       businessModel: '按字数收费，起步价0.1元/字\nAPI调用按次收费\n企业年费套餐',
       marketOpportunity: '中国翻译市场规模超400亿元，专业翻译占比60%以上。',
@@ -159,11 +142,9 @@ class _InnovationListPageState extends State<InnovationListPage> {
         ),
       ],
       ask: '寻求A轮融资500万\n拓展更多垂直领域\n招募NLP算法工程师',
-      createdAt: DateTime.now().subtract(const Duration(days: 60)),
-      updatedAt: DateTime.now(),
-      imageUrl: 'https://picsum.photos/400/300?random=3',
-      creatorId: 'user3',
-      creatorName: '孙八',
+      createdAt: DateTime.now().subtract(const Duration(days: 10)),
+      updatedAt: DateTime.now().subtract(const Duration(hours: 12)),
+      userName: '孙八',
     ),
   ];
 
@@ -179,7 +160,8 @@ class _InnovationListPageState extends State<InnovationListPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1a1a1a)),
+          icon:
+              const Icon(FontAwesomeIcons.arrowLeft, color: Color(0xFF1a1a1a)),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -212,7 +194,7 @@ class _InnovationListPageState extends State<InnovationListPage> {
                   await _refreshData();
                 }
               },
-              icon: const Icon(Icons.add_circle_outline, size: 24),
+              icon: const Icon(FontAwesomeIcons.circlePlus, size: 24),
               label: Text(
                 l10n.createMyInnovation,
                 style: const TextStyle(
@@ -237,7 +219,7 @@ class _InnovationListPageState extends State<InnovationListPage> {
           Row(
             children: [
               const Icon(
-                Icons.explore,
+                FontAwesomeIcons.compass,
                 color: Color(0xFF8B5CF6),
                 size: 24,
               ),
@@ -275,18 +257,18 @@ class _InnovationListPageState extends State<InnovationListPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 项目封面
-          if (project.imageUrl != null)
+          if (project.userAvatar != null)
             Stack(
               children: [
                 AspectRatio(
                   aspectRatio: 16 / 9,
                   child: Image.network(
-                    project.imageUrl!,
+                    project.userAvatar!,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
                         color: Colors.grey[300],
-                        child: const Icon(Icons.lightbulb, size: 50),
+                        child: const Icon(FontAwesomeIcons.lightbulb, size: 50),
                       );
                     },
                   ),
@@ -295,7 +277,7 @@ class _InnovationListPageState extends State<InnovationListPage> {
                 Positioned(
                   top: 12,
                   right: 12,
-                  child: _buildFollowButton(project.id),
+                  child: _buildFollowButton(project.id.toString()),
                 ),
               ],
             ),
@@ -337,7 +319,7 @@ class _InnovationListPageState extends State<InnovationListPage> {
                   runSpacing: 8,
                   children: [
                     _buildTag(project.productType, const Color(0xFF8B5CF6)),
-                    ...project.keyFeatures.take(2).map((feature) =>
+                    ...project.keyFeatures.split("\n").take(2).map((feature) =>
                         _buildTag(feature, const Color(0xFF6366F1))),
                   ],
                 ),
@@ -351,7 +333,7 @@ class _InnovationListPageState extends State<InnovationListPage> {
                       radius: 12,
                       backgroundColor: const Color(0xFF8B5CF6),
                       child: Text(
-                        project.creatorName.substring(0, 1),
+                        (project.userName ?? '?').substring(0, 1),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,
@@ -360,17 +342,18 @@ class _InnovationListPageState extends State<InnovationListPage> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      project.creatorName,
+                      project.userName ?? 'Unknown',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey[600],
                       ),
                     ),
                     const Spacer(),
-                    Icon(Icons.access_time, size: 14, color: Colors.grey[600]),
+                    Icon(FontAwesomeIcons.clock,
+                        size: 14, color: Colors.grey[600]),
                     const SizedBox(width: 4),
                     Text(
-                      _formatDate(project.updatedAt),
+                      _formatDate(project.updatedAt!),
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey[600],
@@ -396,7 +379,7 @@ class _InnovationListPageState extends State<InnovationListPage> {
                             ),
                           );
                         },
-                        icon: const Icon(Icons.visibility, size: 18),
+                        icon: const Icon(FontAwesomeIcons.eye, size: 18),
                         label: Text(l10n.viewDetails),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: const Color(0xFF8B5CF6),
@@ -413,17 +396,17 @@ class _InnovationListPageState extends State<InnovationListPage> {
                       child: ElevatedButton.icon(
                         onPressed: () {
                           // 创建临时用户对象用于聊天
-                          final chatUser = models.UserModel(
-                            id: project.creatorId,
-                            name: project.creatorName,
-                            username: project.creatorName,
-                            avatarUrl: null,
+                          final chatUser = models.User(
+                            id: project.userId.toString(),
+                            name: project.userName ?? 'Unknown',
+                            username: project.userName ?? 'unknown',
+                            avatarUrl: project.userAvatar,
                             stats: models.TravelStats(
+                              citiesVisited: 0,
                               countriesVisited: 0,
-                              citiesLived: 0,
-                              daysNomading: 0,
-                              meetupsAttended: 0,
-                              tripsCompleted: 0,
+                              reviewsWritten: 0,
+                              photosShared: 0,
+                              totalDistanceTraveled: 0,
                             ),
                             joinedDate: DateTime.now(),
                           );
@@ -435,7 +418,7 @@ class _InnovationListPageState extends State<InnovationListPage> {
                             ),
                           );
                         },
-                        icon: const Icon(Icons.chat, size: 18),
+                        icon: const Icon(FontAwesomeIcons.comments, size: 18),
                         label: Text(l10n.contactCreator),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF8B5CF6),
@@ -515,7 +498,7 @@ class _InnovationListPageState extends State<InnovationListPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                isFollowed ? Icons.favorite : Icons.favorite_border,
+                isFollowed ? FontAwesomeIcons.heart : FontAwesomeIcons.heart,
                 size: 16,
                 color: isFollowed ? Colors.white : const Color(0xFF8B5CF6),
               ),

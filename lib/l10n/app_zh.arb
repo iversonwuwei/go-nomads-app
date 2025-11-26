@@ -130,6 +130,7 @@
   "privacy": "隐私",
   "termsOfService": "服务条款",
   "about": "关于",
+  "createdBy": "创建者",
   "version": "版本",
   "help": "帮助",
   "contact": "联系我们",
@@ -257,6 +258,32 @@
   "callNow": "立即呼叫",
   "bookNow": "立即预订",
   "visitWebsite": "访问网站",
+  "coworkingVerifyTitle": "空间认证",
+  "@coworkingVerifyTitle": {
+    "description": "提交共享办公认证时弹窗的标题"
+  },
+  "coworkingVerifyLoginRequired": "请先登录再进行空间认证。",
+  "@coworkingVerifyLoginRequired": {
+    "description": "未登录用户点击认证徽章时的提示"
+  },
+  "coworkingVerifyMessage": "确定要为 {spaceName} 提交认证吗？",
+  "@coworkingVerifyMessage": {
+    "description": "提交共享办公认证前的确认文案",
+    "placeholders": {
+      "spaceName": {
+        "type": "String",
+        "example": "Nomad Hub 上海"
+      }
+    }
+  },
+  "coworkingVerifySuccess": "认证已提交，感谢你的贡献！",
+  "@coworkingVerifySuccess": {
+    "description": "认证成功后的提示"
+  },
+  "coworkingVerifyFailed": "认证提交失败，请稍后再试。",
+  "@coworkingVerifyFailed": {
+    "description": "认证失败后的提示"
+  },
   "shareLocation": "分享位置",
   "addToFavorites": "添加到收藏",
   "removeFromFavorites": "从收藏移除",
@@ -1215,6 +1242,34 @@
       }
     }
   },
+  "invalidCityId": "城市ID无效,无法提交评论",
+  "cannotSubmitReview": "无法提交评论",
+  "maxPhotosWarning": "最多只能选择5张图片",
+  "coworkingReviewSubmitSuccess": "评论提交成功！",
+  "submitFailed": "提交失败: {error}",
+  "@submitFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "visitDate": "访问日期",
+  "visitDateOptional": "访问日期(可选)",
+  "whenDidYouVisit": "您什么时候去的?",
+  "sumUpExperience": "用几句话总结您的体验",
+  "coworkingExperienceHint": "分享您关于WiFi、工作空间、氛围的体验...",
+  "reviewMinLength": "评论至少需要20个字符",
+  "photosOptional": "照片(可选)",
+  "addFromGallery": "从相册添加",
+  "takePhoto": "拍照",
+  "chooseFromGallery": "从相册选择",
+  "takeAPhoto": "拍一张照片",
+  "coworkingReviewGuidelines": "评论指南",
+  "coworkingGuidelineHonest": "• 诚实具体",
+  "coworkingGuidelineFocus": "• 关注工作空间功能",
+  "coworkingGuidelineMention": "• 提及WiFi、噪音、设施",
+  "coworkingGuidelineRespectful": "• 尊重他人，建设性反馈",
   "welcomeBack": "欢迎回来",
   "loginToContinue": "登录您的账号以继续使用",
   "orLoginWith": "或使用其他方式登录",
@@ -1540,7 +1595,7 @@
   "enterMeetupTitle": "输入聚会标题",
   "pleaseEnterTitle": "请输入标题",
   "meetupType": "类型",
-  "meetupTypeHint": "例如：休闲聚会、商务社交、文化交流",
+  "meetupTypeHint": "选择聚会类型",
   "pleaseEnterType": "请输入类型",
   "selectCity": "选择城市",
   "country": "国家",

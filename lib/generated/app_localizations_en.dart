@@ -390,6 +390,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get about => 'About';
 
   @override
+  String get createdBy => 'Created by';
+
+  @override
   String get version => 'Version';
 
   @override
@@ -745,6 +748,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get visitWebsite => 'Visit Website';
+
+  @override
+  String get coworkingVerifyTitle => 'Verify Coworking Space';
+
+  @override
+  String get coworkingVerifyLoginRequired =>
+      'Please log in before verifying a space.';
+
+  @override
+  String coworkingVerifyMessage(String spaceName) {
+    return 'Are you sure you want to verify $spaceName for the community?';
+  }
+
+  @override
+  String get coworkingVerifySuccess =>
+      'Thanks! Your verification helps keep listings trustworthy.';
+
+  @override
+  String get coworkingVerifyFailed =>
+      'Verification failed. Please try again later.';
 
   @override
   String get shareLocation => 'Share Location';
@@ -2720,6 +2743,66 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get invalidCityId => 'Invalid city ID, cannot submit review';
+
+  @override
+  String get cannotSubmitReview => 'Cannot Submit Review';
+
+  @override
+  String get maxPhotosWarning => 'You can only select up to 5 photos';
+
+  @override
+  String get coworkingReviewSubmitSuccess => 'Review submitted successfully!';
+
+  @override
+  String submitFailed(String error) {
+    return 'Submit failed: $error';
+  }
+
+  @override
+  String get visitDate => 'Visit Date';
+
+  @override
+  String get visitDateOptional => 'Visit Date (Optional)';
+
+  @override
+  String get whenDidYouVisit => 'When did you visit?';
+
+  @override
+  String get sumUpExperience => 'Sum up your experience in a few words';
+
+  @override
+  String get coworkingExperienceHint =>
+      'Share your experience about WiFi, workspace, atmosphere...';
+
+  @override
+  String get reviewMinLength => 'Review must be at least 20 characters';
+
+  @override
+  String get photosOptional => 'Photos (Optional)';
+
+  @override
+  String get addFromGallery => 'Add from Gallery';
+
+  @override
+  String get takeAPhoto => 'Take a photo';
+
+  @override
+  String get coworkingReviewGuidelines => 'Review Guidelines';
+
+  @override
+  String get coworkingGuidelineHonest => '• Be honest and specific';
+
+  @override
+  String get coworkingGuidelineFocus => '• Focus on workspace features';
+
+  @override
+  String get coworkingGuidelineMention => '• Mention WiFi, noise, facilities';
+
+  @override
+  String get coworkingGuidelineRespectful => '• Be respectful and constructive';
+
+  @override
   String get loginToContinue => 'Login to your account to continue';
 
   @override
@@ -3262,8 +3345,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enterMeetupTitle => 'Enter meetup title';
 
   @override
-  String get meetupTypeHint =>
-      'e.g., Casual Meetup, Business Networking, Cultural Exchange';
+  String get meetupTypeHint => 'Select meetup type';
 
   @override
   String get pleaseEnterType => 'Please enter a type';

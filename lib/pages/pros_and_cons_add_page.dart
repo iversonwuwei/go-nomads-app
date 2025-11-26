@@ -1,7 +1,10 @@
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/features/city/application/state_controllers/pros_cons_state_controller.dart';
+import 'package:df_admin_mobile/services/token_storage_service.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import '../controllers/pros_and_cons_add_controller.dart';
 
 /// Pros & Cons 添加页面
 class ProsAndConsAddPage extends StatefulWidget {
@@ -23,48 +26,278 @@ class ProsAndConsAddPage extends StatefulWidget {
 class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  late ProsAndConsAddController controller;
+  late final ProsConsStateController _prosConsController;
+
+  // 本地状态管理
+  final TextEditingController prosTextController = TextEditingController();
+  final TextEditingController consTextController = TextEditingController();
+  final RxBool isAddingPros = false.obs;
+  final RxBool isAddingCons = false.obs;
+  final RxBool canDelete = false.obs;
+
+  bool get hasChanges =>
+      prosTextController.text.isNotEmpty ||
+      consTextController.text.isNotEmpty ||
+      _prosConsController.prosList.isNotEmpty ||
+      _prosConsController.consList.isNotEmpty;
 
   @override
   void initState() {
     super.initState();
+    _prosConsController = Get.find<ProsConsStateController>();
     _tabController = TabController(
       length: 2,
       vsync: this,
       initialIndex: widget.initialTab, // 设置初始 tab
     );
+    _checkPermissions();
+    // 延迟到首帧之后再加载，避免在构建阶段触发 setState/Obx
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadData();
+    });
+  }
 
-    // 初始化 Controller
-    controller = Get.put(
-      ProsAndConsAddController(
-        cityId: widget.cityId,
-        cityName: widget.cityName,
-      ),
-    );
+  /// 检查用户权限
+  Future<void> _checkPermissions() async {
+    final isAdmin = await TokenStorageService().isAdmin();
+    canDelete.value = isAdmin;
+  }
+
+  /// 加载已有数据
+  Future<void> _loadData() async {
+    // 直接调用 controller 加载数据，不需要同步到本地列表
+    await _prosConsController.loadCityProsCons(widget.cityId);
   }
 
   @override
   void dispose() {
     _tabController.dispose();
-    Get.delete<ProsAndConsAddController>();
+    prosTextController.dispose();
+    consTextController.dispose();
     super.dispose();
+  }
+
+  /// 添加优点
+  Future<void> addPros() async {
+    if (prosTextController.text.trim().isEmpty) return;
+
+    isAddingPros.value = true;
+    try {
+      // 调用后端 API 保存数据
+      final success = await _prosConsController.addPros(
+        cityId: widget.cityId,
+        text: prosTextController.text.trim(),
+      );
+
+      if (success) {
+        prosTextController.clear();
+        AppToast.success('优点已添加');
+
+        // 重新加载数据
+        await _loadData();
+      } else {
+        AppToast.error('添加优点失败，请重试');
+      }
+    } catch (e) {
+      AppToast.error('添加失败: $e');
+    } finally {
+      isAddingPros.value = false;
+    }
+  }
+
+  /// 删除优点
+  Future<void> deletePros(String id) async {
+    // 确认对话框
+    final confirmed = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('确认删除'),
+        content: const Text('确定要删除这条优点吗？'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Get.back(result: true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.cityPrimary),
+            child: const Text('删除'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      final success =
+          await _prosConsController.deleteProsCons(widget.cityId, id, true);
+
+      if (success) {
+        AppToast.success('优点已删除');
+        await _loadData();
+      } else {
+        AppToast.error('删除失败，请重试');
+      }
+    } catch (e) {
+      AppToast.error('删除失败: $e');
+    }
+  }
+
+  /// 删除挑战
+  Future<void> deleteCons(String id) async {
+    // 确认对话框
+    final confirmed = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('确认删除'),
+        content: const Text('确定要删除这条挑战吗？'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Get.back(result: true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.cityPrimary),
+            child: const Text('删除'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      final success =
+          await _prosConsController.deleteProsCons(widget.cityId, id, false);
+
+      if (success) {
+        AppToast.success('挑战已删除');
+        await _loadData();
+      } else {
+        AppToast.error('删除失败，请重试');
+      }
+    } catch (e) {
+      AppToast.error('删除失败: $e');
+    }
+  }
+
+  Future<void> _handleVote(String id, bool isPro) async {
+    if (id.isEmpty) return;
+
+    // Flutter 只需要传 isUpvote=true 给后端
+    // 后端会自动判断：没投过就创建，投过就删除（取消）
+    final success = await _prosConsController.upvote(id, isPro);
+    if (success) {
+      await _loadData(); // 重新加载数据以获取最新的投票状态和投票数
+    } else {
+      final message = _prosConsController.error.value ?? '操作失败，请稍后再试';
+      AppToast.error(message);
+    }
+  }
+
+  Widget _buildVoteChip({
+    required int count,
+    required VoidCallback? onTap,
+    bool? currentUserVoted, // null=未登录/未投票, true=已点赞, false=已点踩
+  }) {
+    // 如果是点赞按钮且用户已点赞，则显示激活状态
+    final bool isActive = currentUserVoted == true;
+    final Color activeColor = const Color(0xFFFF4458);
+    final Color inactiveColor = Colors.grey;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: isActive ? const Color(0xFFFFEEF2) : Colors.grey[100],
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isActive
+                  ? activeColor.withOpacity(0.4)
+                  : inactiveColor.withOpacity(0.2),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                FontAwesomeIcons.thumbsUp,
+                size: 18,
+                color: isActive ? activeColor : inactiveColor,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '$count',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: activeColor,
+                ),
+              ),
+              Text(
+                '投票',
+                style: TextStyle(fontSize: 10, color: activeColor),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 添加挑战
+  Future<void> addCons() async {
+    if (consTextController.text.trim().isEmpty) return;
+
+    isAddingCons.value = true;
+    try {
+      // 调用后端 API 保存数据
+      final success = await _prosConsController.addCons(
+        cityId: widget.cityId,
+        text: consTextController.text.trim(),
+      );
+
+      if (success) {
+        consTextController.clear();
+        AppToast.success('挑战已添加');
+
+        // 重新加载数据
+        await _loadData();
+      } else {
+        AppToast.error('添加挑战失败，请重试');
+      }
+    } catch (e) {
+      AppToast.error('添加失败: $e');
+    } finally {
+      isAddingCons.value = false;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: AppColors.cityPrimary,
+        foregroundColor: Colors.white,
         title: Text('${widget.cityName} - 添加乐趣'),
         leading: IconButton(
-          icon: const Icon(Icons.close),
+          icon: const Icon(FontAwesomeIcons.xmark),
           onPressed: () {
-            Get.back(result: controller.hasChanges.value);
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop(hasChanges);
+            } else {
+              Get.back(result: hasChanges, closeOverlays: false);
+            }
           },
         ),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: const Color(0xFFFF4458),
-          unselectedLabelColor: Colors.grey[600],
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
           labelStyle: const TextStyle(
             fontWeight: FontWeight.w600,
             fontSize: 15,
@@ -74,11 +307,12 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
             fontSize: 15,
           ),
           indicatorSize: TabBarIndicatorSize.label,
+          indicatorColor: Colors.white,
           indicator: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
             border: const Border(
               bottom: BorderSide(
-                color: Color(0xFFFF4458),
+                color: Colors.white,
                 width: 3,
               ),
             ),
@@ -125,7 +359,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                 // 输入框
                 Expanded(
                   child: TextField(
-                    controller: controller.prosTextController,
+                    controller: prosTextController,
                     decoration: InputDecoration(
                       hintText: '分享这个城市的优点...',
                       hintStyle: TextStyle(
@@ -138,7 +372,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                         vertical: 12,
                       ),
                       prefixIcon: Icon(
-                        Icons.lightbulb_outline,
+                        FontAwesomeIcons.lightbulb,
                         color: Colors.grey[400],
                         size: 22,
                       ),
@@ -149,7 +383,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                 ),
                 const SizedBox(width: 12),
                 // 添加按钮
-                controller.isAddingPros.value
+                isAddingPros.value
                     ? Container(
                         width: 44,
                         height: 44,
@@ -176,7 +410,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                     : Material(
                         color: Colors.transparent,
                         child: InkWell(
-                          onTap: () => controller.addPros(),
+                          onTap: () => addPros(),
                           borderRadius: BorderRadius.circular(12),
                           child: Ink(
                             width: 44,
@@ -198,7 +432,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                               ],
                             ),
                             child: const Icon(
-                              Icons.add_rounded,
+                              FontAwesomeIcons.circlePlus,
                               color: Colors.white,
                               size: 24,
                             ),
@@ -211,14 +445,14 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
 
           // 列表区域
           Expanded(
-            child: controller.isLoadingPros.value
+            child: _prosConsController.isLoadingPros.value
                 ? const Center(child: CircularProgressIndicator())
-                : controller.prosList.isEmpty
+                : _prosConsController.prosList.isEmpty
                     ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.check_circle_outline,
+                            Icon(FontAwesomeIcons.circleCheck,
                                 size: 64, color: Colors.grey[300]),
                             const SizedBox(height: 16),
                             Text(
@@ -231,9 +465,10 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                       )
                     : ListView.builder(
                         padding: const EdgeInsets.all(16),
-                        itemCount: controller.prosList.length,
+                        itemCount: _prosConsController.prosList.length,
                         itemBuilder: (context, index) {
-                          final item = controller.prosList[index];
+                          final item = _prosConsController.prosList[index];
+                          final itemId = item.id;
                           return Card(
                             margin: const EdgeInsets.only(bottom: 12),
                             child: Padding(
@@ -241,7 +476,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                               child: Row(
                                 children: [
                                   const Icon(
-                                    Icons.check_circle,
+                                    FontAwesomeIcons.circleCheck,
                                     color: Colors.green,
                                     size: 24,
                                   ),
@@ -252,18 +487,22 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                                       style: const TextStyle(fontSize: 15),
                                     ),
                                   ),
-                                  Column(
-                                    children: [
-                                      const Icon(Icons.arrow_upward,
-                                          size: 16, color: Color(0xFFFF4458)),
-                                      Text(
-                                        '${item.upvotes}',
-                                        style: const TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ],
+                                  _buildVoteChip(
+                                    count: item.upvotes,
+                                    onTap: itemId.isEmpty
+                                        ? null
+                                        : () => _handleVote(itemId, true),
+                                    currentUserVoted: item.currentUserVoted,
                                   ),
+                                  if (canDelete.value) const SizedBox(width: 8),
+                                  if (canDelete.value)
+                                    IconButton(
+                                      icon: const Icon(FontAwesomeIcons.trash,
+                                          color: Colors.red, size: 20),
+                                      onPressed: () => deletePros(item.id),
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                    ),
                                 ],
                               ),
                             ),
@@ -302,7 +541,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                 // 输入框
                 Expanded(
                   child: TextField(
-                    controller: controller.consTextController,
+                    controller: consTextController,
                     decoration: InputDecoration(
                       hintText: '分享这个城市的挑战...',
                       hintStyle: TextStyle(
@@ -315,7 +554,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                         vertical: 12,
                       ),
                       prefixIcon: Icon(
-                        Icons.info_outline,
+                        FontAwesomeIcons.circleInfo,
                         color: Colors.grey[400],
                         size: 22,
                       ),
@@ -326,7 +565,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                 ),
                 const SizedBox(width: 12),
                 // 添加按钮
-                controller.isAddingCons.value
+                isAddingCons.value
                     ? Container(
                         width: 44,
                         height: 44,
@@ -353,7 +592,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                     : Material(
                         color: Colors.transparent,
                         child: InkWell(
-                          onTap: () => controller.addCons(),
+                          onTap: () => addCons(),
                           borderRadius: BorderRadius.circular(12),
                           child: Ink(
                             width: 44,
@@ -375,7 +614,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                               ],
                             ),
                             child: const Icon(
-                              Icons.add_rounded,
+                              FontAwesomeIcons.circlePlus,
                               color: Colors.white,
                               size: 24,
                             ),
@@ -388,14 +627,14 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
 
           // 列表区域
           Expanded(
-            child: controller.isLoadingCons.value
+            child: _prosConsController.isLoadingCons.value
                 ? const Center(child: CircularProgressIndicator())
-                : controller.consList.isEmpty
+                : _prosConsController.consList.isEmpty
                     ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.cancel_outlined,
+                            Icon(FontAwesomeIcons.ban,
                                 size: 64, color: Colors.grey[300]),
                             const SizedBox(height: 16),
                             Text(
@@ -408,9 +647,10 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                       )
                     : ListView.builder(
                         padding: const EdgeInsets.all(16),
-                        itemCount: controller.consList.length,
+                        itemCount: _prosConsController.consList.length,
                         itemBuilder: (context, index) {
-                          final item = controller.consList[index];
+                          final item = _prosConsController.consList[index];
+                          final itemId = item.id;
                           return Card(
                             margin: const EdgeInsets.only(bottom: 12),
                             child: Padding(
@@ -418,7 +658,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                               child: Row(
                                 children: [
                                   const Icon(
-                                    Icons.cancel,
+                                    FontAwesomeIcons.ban,
                                     color: Colors.red,
                                     size: 24,
                                   ),
@@ -429,18 +669,22 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                                       style: const TextStyle(fontSize: 15),
                                     ),
                                   ),
-                                  Column(
-                                    children: [
-                                      const Icon(Icons.arrow_upward,
-                                          size: 16, color: Color(0xFFFF4458)),
-                                      Text(
-                                        '${item.upvotes}',
-                                        style: const TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ],
+                                  _buildVoteChip(
+                                    count: item.upvotes,
+                                    onTap: itemId.isEmpty
+                                        ? null
+                                        : () => _handleVote(itemId, false),
+                                    currentUserVoted: item.currentUserVoted,
                                   ),
+                                  if (canDelete.value) const SizedBox(width: 8),
+                                  if (canDelete.value)
+                                    IconButton(
+                                      icon: const Icon(FontAwesomeIcons.trash,
+                                          color: Colors.red, size: 20),
+                                      onPressed: () => deleteCons(item.id),
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                    ),
                                 ],
                               ),
                             ),

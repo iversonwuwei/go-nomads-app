@@ -1,15 +1,22 @@
 import 'dart:io';
 
 import 'package:add_2_calendar/add_2_calendar.dart';
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/config/supabase_config.dart';
+import 'package:df_admin_mobile/features/city/domain/entities/city_option.dart';
+import 'package:df_admin_mobile/features/location/presentation/controllers/location_state_controller.dart';
+import 'package:df_admin_mobile/features/meetup/domain/entities/event_type.dart';
+import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
+import 'package:df_admin_mobile/features/meetup/presentation/controllers/event_type_controller.dart';
+import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/services/image_upload_service.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../config/app_colors.dart';
-import '../controllers/data_service_controller.dart';
-import '../generated/app_localizations.dart';
-import '../models/city_option.dart';
-import '../widgets/app_toast.dart';
 import 'venue_map_picker_page.dart';
 
 class CreateMeetupPage extends StatefulWidget {
@@ -34,21 +41,60 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   double _maxAttendees = 10;
-  final GlobalKey<FormFieldState<String>> _cityFieldKey =
-      GlobalKey<FormFieldState<String>>();
-  final GlobalKey<FormFieldState<String>> _countryFieldKey =
-      GlobalKey<FormFieldState<String>>();
+  final GlobalKey<FormFieldState<String>> _cityFieldKey = GlobalKey<FormFieldState<String>>();
+  final GlobalKey<FormFieldState<String>> _countryFieldKey = GlobalKey<FormFieldState<String>>();
+
+  // 类型相关
+  List<EventType> _meetupTypes = [];
+  bool _isLoadingTypes = false;
+  bool _showCustomTypeInput = false;
+  String? _selectedType; // 显示用的名称
+  String? _selectedTypeId; // 后端需要的 type ID
 
   // 图片相关
   final List<XFile> _selectedImages = [];
   final ImagePicker _imagePicker = ImagePicker();
+  final ImageUploadService _imageUploadService = ImageUploadService();
+  bool _isUploadingImages = false;
+  double _uploadProgress = 0.0;
+  bool _isSubmitting = false;
 
-  final DataServiceController controller = Get.find<DataServiceController>();
+  final LocationStateController _locationController = Get.find<LocationStateController>();
+  final MeetupStateController meetupController = Get.find<MeetupStateController>();
+  final EventTypeController _eventTypeController = Get.put(EventTypeController());
 
   @override
   void initState() {
     super.initState();
-    controller.loadCountries();
+    _locationController.loadCountries();
+    _loadMeetupTypes();
+  }
+
+  Future<void> _loadMeetupTypes() async {
+    setState(() {
+      _isLoadingTypes = true;
+    });
+
+    try {
+      // 从 EventTypeController 加载类型列表（自动使用缓存）
+      await _eventTypeController.loadEventTypes();
+
+      setState(() {
+        _meetupTypes = _eventTypeController.eventTypes;
+      });
+
+      print('✅ 成功加载 ${_meetupTypes.length} 个事件类型');
+    } catch (e) {
+      print('❌ 加载聚会类型失败: $e');
+      // EventTypeController 已有后备方案，直接使用
+      setState(() {
+        _meetupTypes = _eventTypeController.eventTypes;
+      });
+    } finally {
+      setState(() {
+        _isLoadingTypes = false;
+      });
+    }
   }
 
   @override
@@ -255,7 +301,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(
-                    Icons.photo_library_outlined,
+                    FontAwesomeIcons.images,
                     color: Color(0xFFFF4458),
                   ),
                 ),
@@ -267,8 +313,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                   ),
                 ),
                 subtitle: Text(
-                  AppLocalizations.of(context)!
-                      .selectMultiplePhotos(_selectedImages.length),
+                  AppLocalizations.of(context)!.selectMultiplePhotos(_selectedImages.length),
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.grey.shade600,
@@ -288,7 +333,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(
-                    Icons.camera_alt_outlined,
+                    FontAwesomeIcons.camera,
                     color: Color(0xFFFF4458),
                   ),
                 ),
@@ -319,6 +364,78 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
       isDismissible: true,
       enableDrag: true,
     );
+  }
+
+  Future<List<String>> _uploadVenueImages() async {
+    if (_selectedImages.isEmpty) {
+      return [];
+    }
+
+    if (!SupabaseConfig.isConfigured) {
+      final l10n = AppLocalizations.of(context)!;
+      AppToast.error(
+        'Image upload service is not configured. Please contact support.',
+        title: l10n.error,
+      );
+      throw Exception('Supabase not configured');
+    }
+
+    if (mounted) {
+      setState(() {
+        _isUploadingImages = true;
+        _uploadProgress = 0.0;
+      });
+    }
+
+    final l10n = AppLocalizations.of(context)!;
+    final imageFiles = _selectedImages.map((image) => File(image.path)).toList();
+    final sanitizedFolderSegment =
+        (_selectedCityId?.isNotEmpty == true ? _selectedCityId! : (_selectedCity ?? 'general'))
+            .replaceAll(RegExp(r'[^a-zA-Z0-9-_]'), '_');
+    final folderPath = 'meetups/$sanitizedFolderSegment/venues';
+
+    AppToast.info(
+      'Uploading ${imageFiles.length} venue photo${imageFiles.length > 1 ? 's' : ''}...',
+      title: l10n.notice,
+    );
+
+    try {
+      final uploadedUrls = await _imageUploadService.uploadMultipleImages(
+        imageFiles: imageFiles,
+        bucket: SupabaseConfig.defaultBucket,
+        folder: folderPath,
+        onProgress: (current, total) {
+          if (!mounted) return;
+          setState(() {
+            _uploadProgress = total == 0 ? 0 : current / total;
+          });
+        },
+      );
+
+      if (uploadedUrls.isEmpty) {
+        throw Exception('No venue photos were uploaded');
+      }
+
+      AppToast.success(
+        'Uploaded ${uploadedUrls.length} venue photo${uploadedUrls.length > 1 ? 's' : ''}',
+        title: l10n.success,
+      );
+
+      return uploadedUrls;
+    } catch (e) {
+      AppToast.error(
+        'Failed to upload venue photos: $e',
+        title: l10n.error,
+      );
+      rethrow;
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUploadingImages = false;
+          _uploadProgress = 0.0;
+        });
+      }
+    }
   }
 
   void _showOptionPicker({
@@ -395,16 +512,13 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                     title: Text(
                       option,
                       style: TextStyle(
-                        color: isSelected
-                            ? const Color(0xFFFF4458)
-                            : Colors.black87,
-                        fontWeight:
-                            isSelected ? FontWeight.w600 : FontWeight.normal,
+                        color: isSelected ? const Color(0xFFFF4458) : Colors.black87,
+                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                       ),
                     ),
                     trailing: isSelected
                         ? const Icon(
-                            Icons.check,
+                            FontAwesomeIcons.check,
                             color: Color(0xFFFF4458),
                           )
                         : null,
@@ -424,60 +538,105 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
   }
 
   void _createMeetup() async {
-    if (_formKey.currentState!.validate()) {
-      if (_selectedCity == null ||
-          _selectedDate == null ||
-          _selectedTime == null) {
-        final l10n = AppLocalizations.of(context)!;
-        AppToast.error(
-          l10n.pleaseFillAllFields,
-          title: l10n.error,
-        );
+    if (_isUploadingImages || _isSubmitting) {
+      return;
+    }
+
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    if (_selectedCity == null || _selectedDate == null || _selectedTime == null) {
+      final l10n = AppLocalizations.of(context)!;
+      AppToast.error(
+        l10n.pleaseFillAllFields,
+        title: l10n.error,
+      );
+      return;
+    }
+
+    try {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = true;
+        });
+      }
+
+      final startDateTime = DateTime(
+        _selectedDate!.year,
+        _selectedDate!.month,
+        _selectedDate!.day,
+        _selectedTime!.hour,
+        _selectedTime!.minute,
+      );
+
+      // 获取选中的 EventType（用于传递给后端）
+      MeetupType meetupType;
+      String? eventTypeId; // EventType 的 UUID
+      if (_showCustomTypeInput || _selectedTypeId == null) {
+        // 自定义类型或未选择类型时，使用输入的文本
+        meetupType =
+            MeetupType.fromString(_typeController.text.isEmpty ? 'social' : _typeController.text.toLowerCase());
+      } else {
+        // 从 EventTypeController 获取选中的 EventType
+        final selectedEventType = _eventTypeController.getEventTypeById(_selectedTypeId!);
+        if (selectedEventType != null) {
+          // 使用 EventType 的 ID 和 enName
+          eventTypeId = selectedEventType.id;
+          meetupType = MeetupType.fromString(selectedEventType.enName.toLowerCase());
+          print('✅ 使用事件类型: ${selectedEventType.name} (ID: $eventTypeId)');
+        } else {
+          // 如果找不到（不应该发生），回退到文本
+          meetupType =
+              MeetupType.fromString(_typeController.text.isEmpty ? 'social' : _typeController.text.toLowerCase());
+        }
+      }
+
+      List<String> uploadedImageUrls = [];
+      if (_selectedImages.isNotEmpty) {
+        uploadedImageUrls = await _uploadVenueImages();
+      }
+
+      final createdMeetup = await meetupController.createMeetup(
+        title: _titleController.text,
+        type: meetupType,
+        eventTypeId: eventTypeId, // 传递 UUID
+        description: _descriptionController.text,
+        cityId: _selectedCityId ?? '',
+        venue: _venueController.text,
+        venueAddress: _venueController.text,
+        startTime: startDateTime,
+        maxAttendees: _maxAttendees.toInt(),
+        imageUrl: uploadedImageUrls.isNotEmpty ? uploadedImageUrls.first : null,
+        images: uploadedImageUrls.isEmpty ? null : uploadedImageUrls,
+      );
+
+      if (createdMeetup == null) {
         return;
       }
 
-      try {
-        // 将 TimeOfDay 转换为字符串格式 "HH:mm"
-        final timeString =
-            '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}';
+      final l10n = AppLocalizations.of(context)!;
+      AppToast.success(
+        l10n.meetupCreatedSuccess,
+        title: l10n.success,
+      );
 
-        await controller.createMeetup(
-          title: _titleController.text,
-          type: _typeController.text,
-          city: _selectedCity!,
-          country: _selectedCountry ?? '',
-          cityId: _selectedCityId,
-          countryId: _selectedCountryId,
-          venue: _venueController.text,
-          date: _selectedDate!,
-          time: timeString,
-          maxAttendees: _maxAttendees.toInt(),
-          description: _descriptionController.text,
-          images: _selectedImages.map((image) => image.path).toList(),
-          // TODO: 如果有地址信息，可以在这里添加
-          // address: _addressController.text,
-          // TODO: 如果有GPS坐标，可以在这里添加
-          // latitude: _latitude,
-          // longitude: _longitude,
-          // TODO: 如果有标签，可以在这里添加
-          // tags: _selectedTags,
-        );
+      await _showAddToCalendarDialog();
 
-        // 显示成功消息
-        final l10n = AppLocalizations.of(context)!;
-        AppToast.success(
-          l10n.meetupCreatedSuccess,
-          title: l10n.success,
-        );
+      if (mounted) {
+        setState(() {
+          _selectedImages.clear();
+        });
+      }
 
-        // 先显示添加到日历的对话框
-        await _showAddToCalendarDialog();
-
-        // 对话框关闭后，返回到列表页并触发刷新
-        Get.back(result: true);
-      } catch (e) {
-        print('❌ 创建 meetup 失败: $e');
-        // 错误已经在 controller 中通过 AppToast 显示了
+      Get.back(result: true);
+    } catch (e) {
+      print('❌ 创建 meetup 失败: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
       }
     }
   }
@@ -502,7 +661,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
-                  Icons.calendar_today,
+                  FontAwesomeIcons.calendar,
                   color: Color(0xFFFF4458),
                   size: 32,
                 ),
@@ -602,9 +761,8 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
     // 创建日历事件 (默认持续2小时)
     final Event event = Event(
       title: _titleController.text,
-      description: _descriptionController.text.isNotEmpty
-          ? _descriptionController.text
-          : 'Meetup organized via Nomads.com',
+      description:
+          _descriptionController.text.isNotEmpty ? _descriptionController.text : 'Meetup organized via Nomads.com',
       location: _venueController.text,
       startDate: eventDateTime,
       endDate: eventDateTime.add(const Duration(hours: 2)),
@@ -653,7 +811,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
         backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: const Icon(FontAwesomeIcons.arrowLeft, color: AppColors.textPrimary),
           onPressed: () => Get.back(),
         ),
         title: Text(
@@ -713,26 +871,152 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
               ),
             ),
             const SizedBox(height: 8),
-            TextFormField(
-              controller: _typeController,
-              decoration: InputDecoration(
-                hintText: AppLocalizations.of(context)!.meetupTypeHint,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: AppColors.borderLight),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
+            if (!_showCustomTypeInput)
+              FormField<String>(
+                initialValue: _selectedType,
+                validator: (value) {
+                  if ((value == null || value.isEmpty) && _typeController.text.isEmpty) {
+                    return AppLocalizations.of(context)!.pleaseEnterType;
+                  }
+                  return null;
+                },
+                builder: (field) {
+                  final displayType = field.value ?? _selectedType;
+                  return GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      final l10n = AppLocalizations.of(context)!;
+
+                      if (_isLoadingTypes) {
+                        AppToast.info(l10n.loading, title: l10n.notice);
+                        return;
+                      }
+
+                      if (_meetupTypes.isEmpty) {
+                        AppToast.info(l10n.noData, title: l10n.notice);
+                        return;
+                      }
+
+                      FocusScope.of(context).unfocus();
+
+                      // 获取当前语言环境
+                      final localeCode = Localizations.localeOf(context).languageCode.toLowerCase();
+
+                      // 构建显示选项（本地化名称）
+                      final displayOptions = _meetupTypes.map((type) => type.getDisplayName(localeCode)).toList();
+                      final optionsWithCustom = [...displayOptions, '+ 自定义类型'];
+
+                      _showOptionPicker(
+                        options: optionsWithCustom,
+                        title: l10n.meetupType,
+                        initialValue: _selectedType,
+                        onSelected: (value) {
+                          if (value == '+ 自定义类型') {
+                            setState(() {
+                              _showCustomTypeInput = true;
+                              _selectedType = null;
+                              _selectedTypeId = null;
+                              _typeController.clear();
+                            });
+                            field.didChange(null);
+                          } else {
+                            // 根据显示名称找到对应的 EventType
+                            final selectedEventType = _meetupTypes.firstWhereOrNull(
+                              (type) => type.getDisplayName(localeCode) == value,
+                            );
+
+                            if (selectedEventType != null) {
+                              setState(() {
+                                _selectedType = value;
+                                _selectedTypeId = selectedEventType.id;
+                                _typeController.text = value;
+                              });
+                              field.didChange(value);
+                              print('✅ 选择类型: ${selectedEventType.name} (ID: ${selectedEventType.id})');
+                            }
+                          }
+                        },
+                      );
+                    },
+                    child: InputDecorator(
+                      decoration: InputDecoration(
+                        hintText: AppLocalizations.of(context)!.meetupTypeHint,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: AppColors.borderLight),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        suffixIcon: _isLoadingTypes
+                            ? const Padding(
+                                padding: EdgeInsets.all(8),
+                                child: SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              )
+                            : const Icon(FontAwesomeIcons.chevronDown),
+                        errorText: field.errorText,
+                      ),
+                      isEmpty: displayType == null || displayType.isEmpty,
+                      child: Text(
+                        displayType ?? '',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: displayType == null || displayType.isEmpty
+                                  ? Theme.of(context).hintColor
+                                  : Theme.of(context).textTheme.bodyMedium?.color,
+                            ),
+                      ),
+                    ),
+                  );
+                },
+              )
+            else
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _typeController,
+                      autofocus: true,
+                      decoration: InputDecoration(
+                        hintText: '输入自定义类型',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: AppColors.borderLight),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return AppLocalizations.of(context)!.pleaseEnterType;
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(FontAwesomeIcons.xmark, color: Colors.grey),
+                    onPressed: () {
+                      setState(() {
+                        _showCustomTypeInput = false;
+                        _typeController.clear();
+                      });
+                    },
+                    tooltip: '返回选择列表',
+                  ),
+                ],
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return AppLocalizations.of(context)!.pleaseEnterType;
-                }
-                return null;
-              },
-            ),
 
             const SizedBox(height: 20),
 
@@ -747,11 +1031,10 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
             ),
             const SizedBox(height: 8),
             Obx(() {
-              final countryList = controller.countries;
+              final countryList = _locationController.countries;
               final _ = countryList.length;
-              final isLoadingCountries = controller.isLoadingCountries.value;
-              final localeCode =
-                  Localizations.localeOf(context).languageCode.toLowerCase();
+              final isLoadingCountries = _locationController.isLoadingCountries.value;
+              final localeCode = Localizations.localeOf(context).languageCode.toLowerCase();
 
               final countryEntries = countryList
                   .where((country) => country.isActive)
@@ -763,8 +1046,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                   .toList()
                 ..sort((a, b) => a.value.compareTo(b.value));
 
-              final countries =
-                  countryEntries.map((entry) => entry.value).toList();
+              final countries = countryEntries.map((entry) => entry.value).toList();
 
               return FormField<String>(
                 key: _countryFieldKey,
@@ -789,7 +1071,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
 
                       if (countries.isEmpty) {
                         AppToast.info(l10n.noData, title: l10n.notice);
-                        controller.loadCountries(forceRefresh: true);
+                        _locationController.loadCountries(forceRefresh: true);
                         return;
                       }
 
@@ -799,8 +1081,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                         title: l10n.selectCountry,
                         initialValue: _selectedCountry,
                         onSelected: (value) {
-                          final selectedEntry = countryEntries.firstWhereOrNull(
-                              (entry) => entry.value == value);
+                          final selectedEntry = countryEntries.firstWhereOrNull((entry) => entry.value == value);
                           if (selectedEntry == null) {
                             return;
                           }
@@ -816,7 +1097,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                           final cityFieldState = _cityFieldKey.currentState;
                           cityFieldState?.didChange(null);
 
-                          controller.loadCitiesByCountry(selectedEntry.key.id);
+                          _locationController.loadCitiesByCountry(selectedEntry.key.id);
                         },
                       );
                     },
@@ -825,8 +1106,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                         hintText: AppLocalizations.of(context)!.selectCountry,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide:
-                              const BorderSide(color: AppColors.borderLight),
+                          borderSide: const BorderSide(color: AppColors.borderLight),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16,
@@ -843,7 +1123,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                                   ),
                                 ),
                               )
-                            : const Icon(Icons.keyboard_arrow_down),
+                            : const Icon(FontAwesomeIcons.chevronDown),
                         errorText: field.errorText,
                       ),
                       isEmpty: displayCountry == null || displayCountry.isEmpty,
@@ -852,13 +1132,9 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: displayCountry == null ||
-                                      displayCountry.isEmpty
+                              color: displayCountry == null || displayCountry.isEmpty
                                   ? Theme.of(context).hintColor
-                                  : Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
-                                      ?.color,
+                                  : Theme.of(context).textTheme.bodyMedium?.color,
                             ),
                       ),
                     ),
@@ -881,18 +1157,14 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
             const SizedBox(height: 8),
             Obx(() {
               final selectedCountryId = _selectedCountryId;
-              final cityMap = controller.citiesByCountry;
+              final cityMap = _locationController.citiesByCountry;
               final _ = cityMap.length;
               final cachedCities = selectedCountryId == null
                   ? const <CityOption>[]
                   : (cityMap[selectedCountryId] ?? const <CityOption>[]);
 
-              final cachedCityNames = cachedCities
-                  .map((city) => city.name)
-                  .where((name) => name.isNotEmpty)
-                  .toSet()
-                  .toList()
-                ..sort();
+              final cachedCityNames =
+                  cachedCities.map((city) => city.name).where((name) => name.isNotEmpty).toSet().toList()..sort();
 
               return FormField<String>(
                 key: _cityFieldKey,
@@ -928,8 +1200,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                         );
                         List<CityOption> selectionSource = cachedCities;
 
-                        final fetchedCities = await controller
-                            .loadCitiesByCountry(_selectedCountryId!);
+                        final fetchedCities = await _locationController.loadCitiesByCountry(_selectedCountryId!);
                         final fetchedCityNames = fetchedCities
                             .map((city) => city.name)
                             .where((name) => name.isNotEmpty)
@@ -953,8 +1224,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                           title: l10n.selectCity,
                           initialValue: _selectedCity,
                           onSelected: (value) {
-                            final selectedCity = selectionSource
-                                .firstWhereOrNull((city) => city.name == value);
+                            final selectedCity = selectionSource.firstWhereOrNull((city) => city.name == value);
 
                             setState(() {
                               _selectedCity = value;
@@ -976,8 +1246,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                         hintText: AppLocalizations.of(context)!.selectCity,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide:
-                              const BorderSide(color: AppColors.borderLight),
+                          borderSide: const BorderSide(color: AppColors.borderLight),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16,
@@ -994,7 +1263,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                                   ),
                                 ),
                               )
-                            : const Icon(Icons.keyboard_arrow_down),
+                            : const Icon(FontAwesomeIcons.chevronDown),
                         errorText: field.errorText,
                       ),
                       isEmpty: displayCity == null || displayCity.isEmpty,
@@ -1005,10 +1274,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: displayCity == null || displayCity.isEmpty
                                   ? Theme.of(context).hintColor
-                                  : Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
-                                      ?.color,
+                                  : Theme.of(context).textTheme.bodyMedium?.color,
                             ),
                       ),
                     ),
@@ -1042,14 +1308,12 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                           hintText: AppLocalizations.of(context)!.enterVenue,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide:
-                                const BorderSide(color: AppColors.borderLight),
+                            borderSide: const BorderSide(color: AppColors.borderLight),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                             borderSide: BorderSide(
-                              color: _venueErrorText != null &&
-                                      _venueErrorText!.isNotEmpty
+                              color: _venueErrorText != null && _venueErrorText!.isNotEmpty
                                   ? Theme.of(context).colorScheme.error
                                   : AppColors.borderLight,
                             ),
@@ -1057,8 +1321,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                             borderSide: BorderSide(
-                              color: _venueErrorText != null &&
-                                      _venueErrorText!.isNotEmpty
+                              color: _venueErrorText != null && _venueErrorText!.isNotEmpty
                                   ? Theme.of(context).colorScheme.error
                                   : const Color(0xFFFF4458),
                             ),
@@ -1097,7 +1360,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                           ),
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                         ),
-                        child: const Icon(Icons.map_outlined, size: 20),
+                        child: const Icon(FontAwesomeIcons.map, size: 20),
                       ),
                     ),
                   ],
@@ -1148,8 +1411,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.calendar_today,
-                                  size: 18, color: Colors.grey),
+                              const Icon(FontAwesomeIcons.calendar, size: 18, color: Colors.grey),
                               const SizedBox(width: 8),
                               Text(
                                 _selectedDate == null
@@ -1157,9 +1419,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                                     : '${_selectedDate!.year}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.day.toString().padLeft(2, '0')}',
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: _selectedDate == null
-                                      ? Colors.grey
-                                      : Colors.black87,
+                                  color: _selectedDate == null ? Colors.grey : Colors.black87,
                                 ),
                               ),
                             ],
@@ -1197,8 +1457,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.access_time,
-                                  size: 18, color: Colors.grey),
+                              const Icon(FontAwesomeIcons.clock, size: 18, color: Colors.grey),
                               const SizedBox(width: 8),
                               Text(
                                 _selectedTime == null
@@ -1206,9 +1465,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                                     : '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}',
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: _selectedTime == null
-                                      ? Colors.grey
-                                      : Colors.black87,
+                                  color: _selectedTime == null ? Colors.grey : Colors.black87,
                                 ),
                               ),
                             ],
@@ -1300,8 +1557,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              AppLocalizations.of(context)!
-                  .addVenuePhotosCount(_selectedImages.length),
+              AppLocalizations.of(context)!.addVenuePhotosCount(_selectedImages.length),
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.grey.shade600,
@@ -1325,15 +1581,11 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                   if (index == _selectedImages.length) {
                     // 添加更多图片按钮
                     return InkWell(
-                      onTap: _selectedImages.length < 10
-                          ? _showImagePickerOptions
-                          : null,
+                      onTap: _selectedImages.length < 10 ? _showImagePickerOptions : null,
                       child: Container(
                         decoration: BoxDecoration(
                           border: Border.all(
-                            color: _selectedImages.length < 10
-                                ? const Color(0xFFFF4458)
-                                : Colors.grey.shade300,
+                            color: _selectedImages.length < 10 ? const Color(0xFFFF4458) : Colors.grey.shade300,
                             width: 2,
                             style: BorderStyle.solid,
                           ),
@@ -1346,20 +1598,16 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              Icons.add_photo_alternate_outlined,
+                              FontAwesomeIcons.photoFilm,
                               size: 32,
-                              color: _selectedImages.length < 10
-                                  ? const Color(0xFFFF4458)
-                                  : Colors.grey.shade400,
+                              color: _selectedImages.length < 10 ? const Color(0xFFFF4458) : Colors.grey.shade400,
                             ),
                             const SizedBox(height: 4),
                             Text(
                               AppLocalizations.of(context)!.addPhoto,
                               style: TextStyle(
                                 fontSize: 11,
-                                color: _selectedImages.length < 10
-                                    ? const Color(0xFFFF4458)
-                                    : Colors.grey.shade400,
+                                color: _selectedImages.length < 10 ? const Color(0xFFFF4458) : Colors.grey.shade400,
                               ),
                             ),
                           ],
@@ -1392,7 +1640,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(
-                              Icons.close,
+                              FontAwesomeIcons.xmark,
                               size: 16,
                               color: Colors.white,
                             ),
@@ -1428,6 +1676,48 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                 },
               ),
 
+            if (_isUploadingImages)
+              Padding(
+                padding: const EdgeInsets.only(top: 12, bottom: 4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            value: _uploadProgress > 0 ? _uploadProgress : null,
+                            valueColor: const AlwaysStoppedAnimation(
+                              Color(0xFFFF4458),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Uploading venue photos... (${(_uploadProgress * 100).clamp(0, 100).toStringAsFixed(0)}%)',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    LinearProgressIndicator(
+                      value: _uploadProgress > 0 ? _uploadProgress : null,
+                      minHeight: 4,
+                      backgroundColor: Colors.grey.shade200,
+                      valueColor: const AlwaysStoppedAnimation(Color(0xFFFF4458)),
+                    ),
+                  ],
+                ),
+              ),
+
             // 如果没有图片，显示添加按钮
             if (_selectedImages.isEmpty)
               InkWell(
@@ -1447,7 +1737,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        Icons.add_photo_alternate_outlined,
+                        FontAwesomeIcons.photoFilm,
                         size: 48,
                         color: Colors.grey.shade400,
                       ),
@@ -1476,28 +1766,58 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
             const SizedBox(height: 32),
 
             // Create Button
-            SizedBox(
-              height: 48,
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _createMeetup,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFF4458),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+            Obx(() {
+              final isControllerLoading = meetupController.isLoading.value;
+              final isProcessing = isControllerLoading || _isUploadingImages || _isSubmitting;
+              final buttonLabel = AppLocalizations.of(context)!.createMeetup;
+
+              return SizedBox(
+                height: 48,
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: isProcessing ? null : _createMeetup,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF4458),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
+                  child: isProcessing
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: const AlwaysStoppedAnimation(
+                                  Colors.white,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              buttonLabel,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        )
+                      : Text(
+                          buttonLabel,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                 ),
-                child: Text(
-                  AppLocalizations.of(context)!.createMeetup,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
+              );
+            }),
 
             // 底部安全区域间距
             SizedBox(height: MediaQuery.of(context).padding.bottom + 32),
