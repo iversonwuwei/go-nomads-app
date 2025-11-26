@@ -83,12 +83,33 @@ class CityRepository implements ICityRepository {
   Future<Result<City>> getCityById(String cityId) async {
     try {
       final response = await _httpService.get('$_baseUrl/$cityId');
-      final responseData = response.data as Map<String, dynamic>;
 
-      // 后端返回 ApiResponse<CityDto> 格式: { success, message, data }
-      final cityData = responseData['data'] as Map<String, dynamic>;
+      // 处理不同的响应格式
+      Map<String, dynamic> cityData;
+
+      if (response.data is Map<String, dynamic>) {
+        final responseData = response.data as Map<String, dynamic>;
+        
+        print('🔍 [getCityById] 原始响应数据: ${responseData.keys.toList()}');
+        
+        // 检查是否是 ApiResponse 包装格式: { success, message, data }
+        if (responseData.containsKey('data') && responseData['data'] != null) {
+          cityData = responseData['data'] as Map<String, dynamic>;
+          print('✅ [getCityById] 使用 data 字段');
+          print('🔍 [getCityById] cityData 包含字段: ${cityData.keys.toList()}');
+          print('🔍 [getCityById] moderatorId: ${cityData['moderatorId']}');
+          print('🔍 [getCityById] moderator: ${cityData['moderator']}');
+        } else {
+          // 直接就是城市数据
+          cityData = responseData;
+          print('⚠️ [getCityById] 直接使用 responseData');
+        }
+      } else {
+        throw Exception('Invalid response format');
+      }
+
       final city = City.fromJson(cityData);
-
+      print('🏙️ [getCityById] 解析后城市版主: moderatorId=${city.moderatorId}, moderator=${city.moderator?.name}');
       return Success(city);
     } on HttpException catch (e) {
       return Failure(_convertHttpException(e));
