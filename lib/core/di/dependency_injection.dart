@@ -79,6 +79,10 @@ import 'package:df_admin_mobile/features/meetup/application/use_cases/rsvp_to_me
 import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
 import 'package:df_admin_mobile/features/meetup/infrastructure/repositories/meetup_repository.dart';
 import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
+// Moderator Domain
+import 'package:df_admin_mobile/features/moderator/domain/repositories/i_moderator_application_repository.dart';
+import 'package:df_admin_mobile/features/moderator/infrastructure/repositories/moderator_application_repository.dart';
+import 'package:df_admin_mobile/features/moderator/presentation/controllers/moderator_application_controller.dart';
 // Notification Domain
 import 'package:df_admin_mobile/features/notification/domain/repositories/i_notification_repository.dart';
 import 'package:df_admin_mobile/features/notification/infrastructure/repositories/notification_repository.dart';
@@ -176,6 +180,9 @@ class DependencyInjection {
     // UserManagement 领域
     _registerUserManagementDomain();
 
+    // Moderator 领域
+    _registerModeratorDomain();
+
     // 其他领域...
 
     // ⚠️ 强制初始化全局 Controllers，防止路由切换时被删除
@@ -197,6 +204,15 @@ class DependencyInjection {
     Get.find<InterestStateController>();
     Get.find<ChatStateController>();
     Get.find<LocationStateController>(); // 添加 LocationStateController 初始化
+    
+    print('🚀 开始强制初始化 NotificationStateController');
+    try {
+      final notificationController = Get.find<NotificationStateController>();
+      print('✅ NotificationStateController 初始化成功: $notificationController');
+    } catch (e) {
+      print('❌ NotificationStateController 初始化失败: $e');
+      print('❌ 异常堆栈: ${StackTrace.current}');
+    }
 
     // 确保常用的 UseCase 也被初始化（防止 lazyPut 延迟导致找不到）
     Get.find<GetCitiesWithCoworkingCountUseCase>();
@@ -718,17 +734,26 @@ class DependencyInjection {
 
   /// 注册Notification领域依赖
   static void _registerNotificationDomain() {
-    // Repository - 使用 put 立即创建实例
-    Get.put<INotificationRepository>(
-      NotificationRepository(Get.find<HttpService>()),
-      permanent: true,
+    print('📦 开始注册 Notification 领域依赖');
+
+    // Repository
+    Get.lazyPut<INotificationRepository>(
+      () {
+        print('📦 创建 NotificationRepository 实例');
+        return NotificationRepository(Get.find<HttpService>());
+      },
     );
 
-    // Controller
+    // Controller（fenix: true 允许删除后重新创建）
     Get.lazyPut(
-      () => NotificationStateController(Get.find<INotificationRepository>()),
+      () {
+        print('📦 创建 NotificationStateController 实例');
+        return NotificationStateController(Get.find<INotificationRepository>());
+      },
       fenix: true,
     );
+    
+    print('✅ Notification 领域依赖注册完成');
   }
 
   /// 注册Interest领域依赖
@@ -902,6 +927,19 @@ class DependencyInjection {
     Get.lazyPut(
       () =>
           UserManagementStateController(Get.find<IUserManagementRepository>()),
+    );
+  }
+
+  /// 注册版主申请领域依赖
+  static void _registerModeratorDomain() {
+    // Repository
+    Get.lazyPut<IModeratorApplicationRepository>(
+      () => ModeratorApplicationRepository(),
+    );
+
+    // Controller
+    Get.lazyPut(
+      () => ModeratorApplicationController(Get.find<IModeratorApplicationRepository>()),
     );
   }
 }

@@ -18,6 +18,8 @@ class NotificationsPage extends StatefulWidget {
 class _NotificationsPageState extends State<NotificationsPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  late NotificationStateController _controller;
+  bool _isInitialized = false;
 
   @override
   void initState() {
@@ -26,6 +28,19 @@ class _NotificationsPageState extends State<NotificationsPage>
 
     // 设置中文 timeago
     timeago.setLocaleMessages('zh_CN', timeago.ZhCnMessages());
+
+    // 获取控制器
+    _controller = Get.find<NotificationStateController>();
+
+    // 页面显示后立即加载数据
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_isInitialized) {
+        _isInitialized = true;
+        print('📱 页面初始化完成，开始加载通知数据');
+        // 只调用一次，获取列表和未读数量
+        _controller.loadNotifications();
+      }
+    });
   }
 
   @override
@@ -36,7 +51,8 @@ class _NotificationsPageState extends State<NotificationsPage>
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<NotificationStateController>();
+    print('📱 NotificationsPage.build() 开始');
+    
     final isMobile = MediaQuery.of(context).size.width < 768;
 
     return Scaffold(
@@ -67,13 +83,13 @@ class _NotificationsPageState extends State<NotificationsPage>
                           onTap: (index) {
                             switch (index) {
                               case 0:
-                                controller.loadNotifications();
+                                _controller.loadNotifications();
                                 break;
                               case 1:
-                                controller.loadNotifications(isRead: false);
+                                _controller.loadNotifications(isRead: false);
                                 break;
                               case 2:
-                                controller.loadNotifications(isRead: true);
+                                _controller.loadNotifications(isRead: true);
                                 break;
                             }
                           },
@@ -81,14 +97,14 @@ class _NotificationsPageState extends State<NotificationsPage>
                       ),
                       // 全部标记为已读按钮
                       Obx(() {
-                        final hasUnread = controller.unreadCount.value > 0;
+                        final hasUnread = _controller.unreadCount.value > 0;
                         return hasUnread
                             ? IconButton(
                                 icon: const Icon(FontAwesomeIcons.checkDouble),
                                 tooltip: '全部标记为已读',
                                 onPressed: () async {
                                   final success =
-                                      await controller.markAllAsRead();
+                                      await _controller.markAllAsRead();
                                   if (success) {
                                     AppToast.success('已全部标记为已读');
                                   }
@@ -107,9 +123,9 @@ class _NotificationsPageState extends State<NotificationsPage>
             child: TabBarView(
               controller: _tabController,
               children: [
-                _buildNotificationList(controller, isMobile, null),
-                _buildNotificationList(controller, isMobile, false),
-                _buildNotificationList(controller, isMobile, true),
+                _buildNotificationList(_controller, isMobile, null),
+                _buildNotificationList(_controller, isMobile, false),
+                _buildNotificationList(_controller, isMobile, true),
               ],
             ),
           ),
@@ -124,11 +140,11 @@ class _NotificationsPageState extends State<NotificationsPage>
     bool? isRead,
   ) {
     return Obx(() {
-      if (controller.isLoading.value && controller.notifications.isEmpty) {
+      if (_controller.isLoading.value && _controller.notifications.isEmpty) {
         return const Center(child: CircularProgressIndicator());
       }
 
-      if (controller.errorMessage.value.isNotEmpty) {
+      if (_controller.errorMessage.value.isNotEmpty) {
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -137,12 +153,12 @@ class _NotificationsPageState extends State<NotificationsPage>
                   size: 64, color: AppColors.iconSecondary),
               const SizedBox(height: 16),
               Text(
-                controller.errorMessage.value,
+                _controller.errorMessage.value,
                 style: TextStyle(color: AppColors.textSecondary),
               ),
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () => controller.loadNotifications(isRead: isRead),
+                onPressed: () => _controller.loadNotifications(isRead: isRead),
                 child: const Text('重试'),
               ),
             ],
@@ -150,7 +166,7 @@ class _NotificationsPageState extends State<NotificationsPage>
         );
       }
 
-      final notifications = controller.notifications
+      final notifications = _controller.notifications
           .where((n) => isRead == null || n.isRead == isRead)
           .toList();
 
@@ -176,7 +192,7 @@ class _NotificationsPageState extends State<NotificationsPage>
       }
 
       return RefreshIndicator(
-        onRefresh: controller.refresh,
+        onRefresh: _controller.refresh,
         child: ListView.separated(
           padding: EdgeInsets.all(isMobile ? 8 : 16),
           itemCount: notifications.length,
@@ -213,13 +229,13 @@ class _NotificationsPageState extends State<NotificationsPage>
       ),
       direction: DismissDirection.endToStart,
       onDismissed: (_) {
-        controller.deleteNotification(notification.id);
+        _controller.deleteNotification(notification.id);
         AppToast.info('通知已删除');
       },
       child: InkWell(
         onTap: () async {
           if (!notification.isRead) {
-            await controller.markAsRead(notification.id);
+            await _controller.markAsRead(notification.id);
           }
 
           // 导航到相关页面

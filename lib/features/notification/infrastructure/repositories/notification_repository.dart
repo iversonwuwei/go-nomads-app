@@ -2,7 +2,9 @@ import 'package:df_admin_mobile/config/api_config.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/notification/domain/entities/app_notification.dart';
 import 'package:df_admin_mobile/features/notification/domain/repositories/i_notification_repository.dart';
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:get/get.dart';
 
 /// 通知仓储实现
 class NotificationRepository implements INotificationRepository {
@@ -10,256 +12,194 @@ class NotificationRepository implements INotificationRepository {
 
   NotificationRepository(this._httpService);
 
+  /// 获取当前用户ID
+  String? get _currentUserId {
+    try {
+      final userController = Get.find<UserStateController>();
+      final userId = userController.currentUser.value?.id;
+      print('📋 NotificationRepository._currentUserId: $userId');
+      print('📋 currentUser 对象: ${userController.currentUser.value}');
+      return userId;
+    } catch (e) {
+      print('❌ 获取当前用户ID失败: $e');
+      return null;
+    }
+  }
+
   @override
-  Future<Result<List<AppNotification>>> getUserNotifications({
+  Future<Result<NotificationDataResponse>> getUserNotifications({
     bool? isRead,
     NotificationType? type,
     int? limit,
     int? offset,
   }) async {
-    // TODO: 临时使用测试数据，后续替换为真实 API 调用
-    await Future.delayed(const Duration(milliseconds: 500)); // 模拟网络延迟
-
-    final testNotifications = [
-      // 系统消息
-      AppNotification(
-        id: '1',
-        userId: 'current-user-id',
-        type: NotificationType.systemAnnouncement,
-        title: '🎉 欢迎加入 Nomads 社区',
-        message: '感谢您注册成为 Nomads 平台的一员！在这里，您可以探索全球数字游民热门城市，结识志同道合的朋友，分享您的远程工作经验。',
-        isRead: false,
-        createdAt: DateTime.now().subtract(const Duration(minutes: 10)),
-        metadata: {'priority': 'high', 'category': 'welcome'},
-      ),
-      AppNotification(
-        id: '2',
-        userId: 'current-user-id',
-        type: NotificationType.systemAnnouncement,
-        title: '📢 系统维护通知',
-        message: '系统将于今晚 23:00 - 24:00 进行例行维护，届时部分功能可能暂时无法使用，敬请谅解。',
-        isRead: false,
-        createdAt: DateTime.now().subtract(const Duration(hours: 3)),
-        metadata: {'priority': 'medium', 'maintenanceTime': '23:00-24:00'},
-      ),
-
-      // 版主申请消息
-      AppNotification(
-        id: '3',
-        userId: 'current-user-id',
-        type: NotificationType.moderatorApplication,
-        title: '📝 新的城市版主申请',
-        message: '用户 @张伟 申请成为「清迈」的城市版主。请审核申请人的资料和申请理由。',
-        isRead: false,
-        createdAt: DateTime.now().subtract(const Duration(hours: 5)),
-        relatedId: 'chiang-mai',
-        metadata: {
-          'applicantName': '张伟',
-          'applicantId': 'user-123',
-          'cityName': '清迈',
-          'applicationReason': '我在清迈生活工作2年，熟悉当地数字游民社区'
-        },
-      ),
-      AppNotification(
-        id: '4',
-        userId: 'current-user-id',
-        type: NotificationType.moderatorApproved,
-        title: '✅ 版主申请已通过',
-        message: '恭喜！您申请的「巴厘岛」城市版主已通过审核。现在您可以管理该城市的内容，帮助更多数字游民了解巴厘岛。',
-        isRead: true,
-        createdAt: DateTime.now().subtract(const Duration(days: 1)),
-        relatedId: 'bali',
-        metadata: {
-          'cityName': '巴厘岛',
-          'approvedBy': 'admin-001',
-          'approvedAt': DateTime.now().subtract(const Duration(days: 1)).toIso8601String()
-        },
-      ),
-      AppNotification(
-        id: '5',
-        userId: 'current-user-id',
-        type: NotificationType.moderatorRejected,
-        title: '❌ 版主申请未通过',
-        message: '很遗憾，您申请的「东京」城市版主未通过审核。原因：需要更多在该城市的实际居住经验。欢迎在积累更多经验后再次申请。',
-        isRead: true,
-        createdAt: DateTime.now().subtract(const Duration(days: 3)),
-        relatedId: 'tokyo',
-        metadata: {'cityName': '东京', 'rejectionReason': '需要更多在该城市的实际居住经验', 'rejectedBy': 'admin-002'},
-      ),
-
-      // 聊天提醒消息
-      AppNotification(
-        id: '6',
-        userId: 'current-user-id',
-        type: NotificationType.cityUpdate,
-        title: '💬 曼谷聊天室有新消息',
-        message: '@李明 在曼谷聊天室提到了你：「@你 周末一起去 Hubba 共享办公空间看看？」',
-        isRead: false,
-        createdAt: DateTime.now().subtract(const Duration(minutes: 25)),
-        relatedId: 'bangkok-chat',
-        metadata: {
-          'chatRoomId': 'bangkok',
-          'chatRoomName': '曼谷数字游民',
-          'senderName': '李明',
-          'senderId': 'user-456',
-          'messagePreview': '周末一起去 Hubba 共享办公空间看看？'
-        },
-      ),
-      AppNotification(
-        id: '7',
-        userId: 'current-user-id',
-        type: NotificationType.cityUpdate,
-        title: '💬 清迈聊天室消息',
-        message: '清迈聊天室有 3 条新消息未读。快来看看大家都在聊什么吧！',
-        isRead: false,
-        createdAt: DateTime.now().subtract(const Duration(hours: 1)),
-        relatedId: 'chiang-mai-chat',
-        metadata: {'chatRoomId': 'chiang-mai', 'chatRoomName': '清迈数字游民', 'unreadCount': 3},
-      ),
-      AppNotification(
-        id: '8',
-        userId: 'current-user-id',
-        type: NotificationType.other,
-        title: '👥 新的活动邀请',
-        message: '@Sarah 邀请您参加「曼谷数字游民周末聚会」。时间：本周六下午 3:00，地点：Sukhumvit 路 The Commons。',
-        isRead: true,
-        createdAt: DateTime.now().subtract(const Duration(hours: 8)),
-        relatedId: 'meetup-001',
-        metadata: {
-          'eventName': '曼谷数字游民周末聚会',
-          'eventTime': '本周六 15:00',
-          'eventLocation': 'The Commons, Sukhumvit',
-          'inviterName': 'Sarah',
-          'inviterId': 'user-789'
-        },
-      ),
-    ];
-
-    // 应用过滤条件
-    var filtered = testNotifications;
-
-    if (isRead != null) {
-      filtered = filtered.where((n) => n.isRead == isRead).toList();
-    }
-
-    if (type != null) {
-      filtered = filtered.where((n) => n.type == type).toList();
-    }
-
-    // 按时间倒序排序
-    filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-
-    // 应用分页
-    if (offset != null) {
-      filtered = filtered.skip(offset).toList();
-    }
-
-    if (limit != null) {
-      filtered = filtered.take(limit).toList();
-    }
-
-    return Result.success(filtered);
-
-    /* 真实 API 调用代码（暂时注释）
     try {
-      final queryParams = <String, dynamic>{};
-      if (isRead != null) queryParams['isRead'] = isRead.toString();
-      if (type != null) queryParams['type'] = type.value;
-      if (limit != null) queryParams['limit'] = limit.toString();
-      if (offset != null) queryParams['offset'] = offset.toString();
+      final userId = _currentUserId;
+      if (userId == null) {
+        return Result.failure(const UnauthorizedException('用户未登录'));
+      }
 
-      final queryString = queryParams.isEmpty
-          ? ''
-          : '?${queryParams.entries.map((e) => '${e.key}=${e.value}').join('&')}';
+      // 构建查询参数
+      final params = <String, dynamic>{
+        'userId': userId,
+        'page': (offset ?? 0) ~/ (limit ?? 20) + 1,
+        'pageSize': limit ?? 20,
+      };
+
+      if (isRead != null) {
+        params['isRead'] = isRead;
+      }
 
       final response = await _httpService.get(
-        ApiConfig.buildUrl('/notifications$queryString'),
+        '${ApiConfig.apiBaseUrl}/notifications',
+        queryParameters: params,
       );
 
-      final List<dynamic> data = response.data as List<dynamic>;
-      final notifications = data
-          .map((json) => AppNotification.fromJson(json as Map<String, dynamic>))
-          .toList();
+      print('📦 Repository 收到响应: statusCode=${response.statusCode}');
+      print('📦 response.data: ${response.data}');
 
-      return Result.success(notifications);
-    } catch (e) {
-      return Result.failure(NetworkException('获取通知列表失败: ${e.toString()}'));
+      if (response.statusCode == 200) {
+        if (response.data == null) {
+          print('❌ response.data 为 null');
+          return Result.failure(const NetworkException('响应数据为空'));
+        }
+
+        // HttpService 已经解包了外层的 {success, message, data, errors}
+        // 所以 response.data 直接就是 {notifications: [], totalCount: 0, unreadCount: 0, ...}
+        final notificationsList = response.data['notifications'];
+        final totalCount = response.data['totalCount'] as int? ?? 0;
+        final unreadCount = response.data['unreadCount'] as int? ?? 0;
+
+        if (notificationsList == null || notificationsList is! List) {
+          print('⚠️ notificationsList 为空或不是 List 类型');
+          return Result.success(NotificationDataResponse(
+            notifications: [],
+            totalCount: 0,
+            unreadCount: unreadCount,
+          ));
+        }
+
+        final notifications = notificationsList.map((json) => _mapFromJson(json)).toList();
+
+        print('✅ 成功解析 ${notifications.length} 条通知, 未读: $unreadCount');
+        return Result.success(NotificationDataResponse(
+          notifications: notifications,
+          totalCount: totalCount,
+          unreadCount: unreadCount,
+        ));
+      } else {
+        print('❌ HTTP 状态码非 200: ${response.statusCode}');
+        return Result.failure(NetworkException(response.data?['message'] ?? '获取通知列表失败'));
+      }
+    } catch (e, stackTrace) {
+      print('❌ Repository 异常: $e');
+      print('❌ 堆栈: $stackTrace');
+      return Result.failure(NetworkException('获取通知列表失败: $e'));
     }
-    */
   }
 
   @override
   Future<Result<int>> getUnreadCount() async {
-    // TODO: 临时返回测试数据中的未读数量
-    await Future.delayed(const Duration(milliseconds: 300));
-    return Result.success(5); // 5条未读消息
-
-    /* 真实 API 调用代码（暂时注释）
     try {
+      final userId = _currentUserId;
+      if (userId == null) {
+        return Result.failure(const UnauthorizedException('用户未登录'));
+      }
+
       final response = await _httpService.get(
-        ApiConfig.buildUrl('/notifications/unread/count'),
+        '${ApiConfig.apiBaseUrl}/notifications/unread/count',
+        queryParameters: {'userId': userId},
       );
 
-      final count = response.data['count'] as int? ?? 0;
-      return Result.success(count);
+      if (response.statusCode == 200) {
+        final count = response.data['data']['unreadCount'] as int? ?? 0;
+        return Result.success(count);
+      } else {
+        return Result.failure(NetworkException(response.data['message'] ?? '获取未读数量失败'));
+      }
     } catch (e) {
-      return Result.failure(NetworkException('获取未读数量失败: ${e.toString()}'));
+      return Result.failure(NetworkException('获取未读数量失败: $e'));
     }
-    */
   }
 
   @override
   Future<Result<bool>> markAsRead(String notificationId) async {
     try {
-      await _httpService.put(
-        ApiConfig.buildUrl('/notifications/$notificationId/read'),
-        data: {},
+      final response = await _httpService.put(
+        '${ApiConfig.apiBaseUrl}/notifications/$notificationId/read',
       );
 
-      return Result.success(true);
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        return Result.success(true);
+      } else {
+        return Result.failure(NetworkException(response.data['message'] ?? '标记已读失败'));
+      }
     } catch (e) {
-      return Result.failure(NetworkException('标记通知已读失败: ${e.toString()}'));
+      return Result.failure(NetworkException('标记已读失败: $e'));
     }
   }
 
   @override
   Future<Result<bool>> markMultipleAsRead(List<String> notificationIds) async {
     try {
-      await _httpService.put(
-        ApiConfig.buildUrl('/notifications/read/batch'),
-        data: {'notificationIds': notificationIds},
+      final userId = _currentUserId;
+      if (userId == null) {
+        return Result.failure(const UnauthorizedException('用户未登录'));
+      }
+
+      final response = await _httpService.put(
+        '${ApiConfig.apiBaseUrl}/notifications/read/batch?userId=$userId',
+        data: {
+          'notificationIds': notificationIds,
+        },
       );
 
-      return Result.success(true);
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        return Result.success(true);
+      } else {
+        return Result.failure(NetworkException(response.data['message'] ?? '批量标记已读失败'));
+      }
     } catch (e) {
-      return Result.failure(NetworkException('批量标记已读失败: ${e.toString()}'));
+      return Result.failure(NetworkException('批量标记已读失败: $e'));
     }
   }
 
   @override
   Future<Result<bool>> markAllAsRead() async {
     try {
-      await _httpService.put(
-        ApiConfig.buildUrl('/notifications/read/all'),
-        data: {},
+      final userId = _currentUserId;
+      if (userId == null) {
+        return Result.failure(const UnauthorizedException('用户未登录'));
+      }
+
+      final response = await _httpService.put(
+        '${ApiConfig.apiBaseUrl}/notifications/read/all?userId=$userId',
       );
 
-      return Result.success(true);
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        return Result.success(true);
+      } else {
+        return Result.failure(NetworkException(response.data['message'] ?? '标记所有已读失败'));
+      }
     } catch (e) {
-      return Result.failure(NetworkException('标记全部已读失败: ${e.toString()}'));
+      return Result.failure(NetworkException('标记所有已读失败: $e'));
     }
   }
 
   @override
   Future<Result<bool>> deleteNotification(String notificationId) async {
     try {
-      await _httpService.delete(
-        ApiConfig.buildUrl('/notifications/$notificationId'),
+      final response = await _httpService.delete(
+        '${ApiConfig.apiBaseUrl}/notifications/$notificationId',
       );
 
-      return Result.success(true);
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        return Result.success(true);
+      } else {
+        return Result.failure(NetworkException(response.data['message'] ?? '删除通知失败'));
+      }
     } catch (e) {
-      return Result.failure(NetworkException('删除通知失败: ${e.toString()}'));
+      return Result.failure(NetworkException('删除通知失败: $e'));
     }
   }
 
@@ -274,23 +214,25 @@ class NotificationRepository implements INotificationRepository {
   }) async {
     try {
       final response = await _httpService.post(
-        ApiConfig.buildUrl('/notifications'),
+        '${ApiConfig.apiBaseUrl}/notifications',
         data: {
-          'recipientUserId': recipientUserId,
+          'userId': recipientUserId,
           'title': title,
           'message': message,
-          'type': type.value,
-          'relatedId': relatedId,
-          'metadata': metadata,
+          'type': _typeToString(type),
+          if (relatedId != null) 'relatedId': relatedId,
+          if (metadata != null) 'metadata': metadata,
         },
       );
 
-      final notification = AppNotification.fromJson(
-        response.data as Map<String, dynamic>,
-      );
-      return Result.success(notification);
+      if (response.statusCode == 200) {
+        final notification = _mapFromJson(response.data['data']);
+        return Result.success(notification);
+      } else {
+        return Result.failure(NetworkException(response.data['message'] ?? '发送通知失败'));
+      }
     } catch (e) {
-      return Result.failure(NetworkException('发送通知失败: ${e.toString()}'));
+      return Result.failure(NetworkException('发送通知失败: $e'));
     }
   }
 
@@ -303,25 +245,100 @@ class NotificationRepository implements INotificationRepository {
     Map<String, dynamic>? metadata,
   }) async {
     try {
+      print('📤 发送通知给管理员: title=$title, type=${_typeToString(type)}');
+      
       final response = await _httpService.post(
-        ApiConfig.buildUrl('/notifications/admins'),
+        '${ApiConfig.apiBaseUrl}/notifications/admins',
         data: {
           'title': title,
           'message': message,
-          'type': type.value,
-          'relatedId': relatedId,
-          'metadata': metadata,
+          'type': _typeToString(type),
+          if (relatedId != null) 'relatedId': relatedId,
+          if (metadata != null) 'metadata': metadata,
         },
       );
 
-      final List<dynamic> data = response.data as List<dynamic>;
-      final notifications = data
-          .map((json) => AppNotification.fromJson(json as Map<String, dynamic>))
-          .toList();
+      print('📤 SendToAdmins 响应: statusCode=${response.statusCode}');
+      print('📤 response.data 类型: ${response.data?.runtimeType}');
+      print('📤 response.data: ${response.data}');
 
-      return Result.success(notifications);
-    } catch (e) {
-      return Result.failure(NetworkException('发送管理员通知失败: ${e.toString()}'));
+      if (response.statusCode == 200) {
+        // HttpService 已经解包了响应，response.data 直接是数据数组
+        if (response.data == null) {
+          print('⚠️ response.data 为 null，返回空列表');
+          return Result.success([]);
+        }
+
+        if (response.data is! List) {
+          print('❌ response.data 不是 List 类型: ${response.data.runtimeType}');
+          return Result.failure(const NetworkException('响应数据格式错误'));
+        }
+
+        final notifications =
+            (response.data as List).map((json) => _mapFromJson(json as Map<String, dynamic>)).toList();
+        
+        print('✅ 成功发送通知给 ${notifications.length} 位管理员');
+        return Result.success(notifications);
+      } else {
+        print('❌ 发送失败: statusCode=${response.statusCode}');
+        return Result.failure(NetworkException(response.data?['message'] ?? '发送通知给管理员失败'));
+      }
+    } catch (e, stackTrace) {
+      print('❌ 发送通知给管理员异常: $e');
+      print('❌ 堆栈: $stackTrace');
+      return Result.failure(NetworkException('发送通知给管理员失败: $e'));
+    }
+  }
+
+  /// 将 JSON 映射为 AppNotification 对象
+  AppNotification _mapFromJson(Map<String, dynamic> json) {
+    return AppNotification(
+      id: json['id'] as String,
+      userId: json['userId'] as String,
+      title: json['title'] as String,
+      message: json['message'] as String,
+      type: _stringToType(json['type'] as String),
+      relatedId: json['relatedId'] as String?,
+      metadata: json['metadata'] as Map<String, dynamic>?,
+      isRead: json['isRead'] as bool? ?? false,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      readAt: json['readAt'] != null ? DateTime.parse(json['readAt'] as String) : null,
+    );
+  }
+
+  /// 将 NotificationType 转换为字符串
+  String _typeToString(NotificationType type) {
+    switch (type) {
+      case NotificationType.moderatorApplication:
+        return 'moderator_application';
+      case NotificationType.moderatorApproved:
+        return 'moderator_approved';
+      case NotificationType.moderatorRejected:
+        return 'moderator_rejected';
+      case NotificationType.cityUpdate:
+        return 'city_update';
+      case NotificationType.systemAnnouncement:
+        return 'system_announcement';
+      case NotificationType.other:
+        return 'other';
+    }
+  }
+
+  /// 将字符串转换为 NotificationType
+  NotificationType _stringToType(String type) {
+    switch (type) {
+      case 'moderator_application':
+        return NotificationType.moderatorApplication;
+      case 'moderator_approved':
+        return NotificationType.moderatorApproved;
+      case 'moderator_rejected':
+        return NotificationType.moderatorRejected;
+      case 'city_update':
+        return NotificationType.cityUpdate;
+      case 'system_announcement':
+        return NotificationType.systemAnnouncement;
+      default:
+        return NotificationType.other;
     }
   }
 }

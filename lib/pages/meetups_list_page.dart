@@ -208,13 +208,16 @@ class _MeetupsListPageState extends State<MeetupsListPage>
           break;
         case 3: // Cancelled - 当前用户取消的活动
           if (_currentUserId == null) {
+            print('⚠️ 用户未登录，无法加载已取消的活动');
             meetups = [];
           } else {
+            print('🔍 正在加载用户 $_currentUserId 取消的活动...');
             meetups = await _meetupRepository.getCancelledMeetupsByUser(
               _currentUserId!,
               page: page,
               pageSize: 20,
             );
+            print('✅ 成功加载 ${meetups.length} 个已取消的活动');
           }
           break;
       }
@@ -456,31 +459,65 @@ class _MeetupsListPageState extends State<MeetupsListPage>
 
   Widget _buildEmptyState() {
     final l10n = AppLocalizations.of(context)!;
+    
+    String emptyMessage;
+    String emptyHint;
+    IconData emptyIcon;
+
+    switch (_tabController.index) {
+      case 1: // Joined
+        emptyMessage = l10n.noJoinedMeetupsYet;
+        emptyHint = '参加一些活动来认识新朋友吧！';
+        emptyIcon = FontAwesomeIcons.calendarPlus;
+        break;
+      case 2: // Past
+        emptyMessage = l10n.noPastMeetups;
+        emptyHint = '还没有参加过任何活动';
+        emptyIcon = FontAwesomeIcons.clockRotateLeft;
+        break;
+      case 3: // Cancelled
+        emptyMessage = '暂无已取消的活动';
+        emptyHint = '这里会显示你取消参与的活动记录';
+        emptyIcon = FontAwesomeIcons.calendarXmark;
+        break;
+      default: // All/Upcoming
+        emptyMessage = l10n.noMeetupsAvailable;
+        emptyHint = '目前没有即将举行的活动';
+        emptyIcon = FontAwesomeIcons.calendarDay;
+        break;
+    }
 
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            FontAwesomeIcons.calendarXmark,
-            size: 80.sp,
-            color: AppColors.textTertiary,
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            _tabController.index == 1
-                ? l10n.noJoinedMeetupsYet
-                : _tabController.index == 2
-                    ? l10n.noPastMeetups
-                    : _tabController.index == 3
-                        ? '暂无已取消的活动'
-                        : l10n.noMeetupsAvailable,
-            style: TextStyle(
-              fontSize: 16.sp,
-              color: AppColors.textSecondary,
+      child: Padding(
+        padding: EdgeInsets.all(32.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              emptyIcon,
+              size: 80.sp,
+              color: AppColors.textTertiary,
             ),
-          ),
-        ],
+            SizedBox(height: 24.h),
+            Text(
+              emptyMessage,
+              style: TextStyle(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              emptyHint,
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: AppColors.textTertiary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }

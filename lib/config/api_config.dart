@@ -52,7 +52,7 @@ class ApiConfig {
   /// 是否使用真机测试地址(手动切换)
   /// ⚠️ 雷电模拟器用户请设置为 true
   /// ⚠️ Android 官方模拟器用户请设置为 false
-  static const bool usePhysicalDevice = true;
+  static const bool usePhysicalDevice = false;
 
   // ============================================================
   // URL 组装
@@ -243,6 +243,19 @@ class ApiConfig {
   static const String chatMessagesEndpoint = '/chats/{id}/messages';
   static const String chatSendMessageEndpoint = '/chats/{id}/messages';
   static const String chatParticipantsEndpoint = '/chats/{id}/participants';
+
+  // ============================================================
+  // Notification Endpoints - /api/v1/notifications
+  // ============================================================
+  static const String notificationsEndpoint = '/notifications';
+  static const String notificationDetailEndpoint = '/notifications/{id}';
+  static const String notificationUnreadCountEndpoint = '/notifications/unread/count';
+  static const String notificationMarkReadEndpoint = '/notifications/{id}/read';
+  static const String notificationMarkReadBatchEndpoint = '/notifications/read/batch';
+  static const String notificationMarkAllReadEndpoint = '/notifications/read/all';
+  static const String notificationDeleteEndpoint = '/notifications/{id}';
+  static const String notificationSendEndpoint = '/notifications';
+  static const String notificationSendToAdminsEndpoint = '/notifications/admins';
 
   // 环境判断
   static bool get isDevelopment => !kIsProduction;

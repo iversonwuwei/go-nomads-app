@@ -260,6 +260,7 @@ class MeetupRepository implements IMeetupRepository {
   }) async {
     try {
       print('📡 调用 HttpService GET /events/cancelled...');
+      print('   userId: $userId');
       print('   page: $page, pageSize: $pageSize');
 
       final queryParams = <String, dynamic>{
@@ -273,9 +274,13 @@ class MeetupRepository implements IMeetupRepository {
         queryParameters: queryParams,
       );
 
+      print('📦 收到响应: ${response.data}');
+
       // 提取活动列表 (HttpService 已自动解包 data 字段)
       final data = response.data as Map<String, dynamic>;
       final eventsJson = (data['items'] as List?) ?? [];
+
+      print('📝 解析到 ${eventsJson.length} 个活动记录');
 
       // 将 JSON 转换为 DTO 再转换为领域实体
       final meetups = eventsJson
@@ -293,8 +298,9 @@ class MeetupRepository implements IMeetupRepository {
 
       print('✅ 获取到 ${meetups.length} 个已取消的活动');
       return meetups;
-    } catch (e) {
+    } catch (e, stackTrace) {
       print('❌ MeetupRepository.getCancelledMeetupsByUser 失败: $e');
+      print('Stack trace: $stackTrace');
       rethrow;
     }
   }
