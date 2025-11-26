@@ -89,9 +89,9 @@ class CityRepository implements ICityRepository {
 
       if (response.data is Map<String, dynamic>) {
         final responseData = response.data as Map<String, dynamic>;
-        
+
         print('🔍 [getCityById] 原始响应数据: ${responseData.keys.toList()}');
-        
+
         // 检查是否是 ApiResponse 包装格式: { success, message, data }
         if (responseData.containsKey('data') && responseData['data'] != null) {
           cityData = responseData['data'] as Map<String, dynamic>;
