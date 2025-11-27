@@ -44,17 +44,28 @@ struct CityMarkerData {
 
 /// Platform view displaying global city markers on AMap.
 final class AmapGlobalPlatformView: NSObject, FlutterPlatformView {
+  private let containerView: UIView
   private let mapView: MAMapView
   private let methodChannel: FlutterMethodChannel
   private var cities: [CityMarkerData] = []
   private var annotations: [MAPointAnnotation] = []
 
   init(frame: CGRect, viewId: Int64, arguments args: Any?, messenger: FlutterBinaryMessenger) {
-    mapView = MAMapView(frame: frame)
+    // 创建容器视图
+    containerView = UIView(frame: frame)
+    containerView.backgroundColor = UIColor.white
+    containerView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+    
+    // 创建地图视图 - 确保有足够的初始 frame
+    let mapFrame = CGRect(x: 0, y: 0, width: max(frame.width, 300), height: max(frame.height, 500))
+    mapView = MAMapView(frame: mapFrame)
     mapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
     mapView.showsUserLocation = false
     mapView.showsCompass = true
     mapView.showsScale = true
+    
+    // 使用标准地图类型（2D），在模拟器上更兼容
+    mapView.mapType = MAMapType.standard
     
     // 设置方法通道用于 Flutter 和原生通信
     methodChannel = FlutterMethodChannel(
@@ -64,6 +75,9 @@ final class AmapGlobalPlatformView: NSObject, FlutterPlatformView {
 
     super.init()
 
+    // 将地图添加到容器
+    containerView.addSubview(mapView)
+    
     mapView.delegate = self
     
     // 设置方法通道处理
@@ -71,10 +85,12 @@ final class AmapGlobalPlatformView: NSObject, FlutterPlatformView {
     
     // 配置地图和城市标记
     configureMap(arguments: args)
+    
+    NSLog("🗺️ AmapGlobalPlatformView initialized with frame: \(frame), mapFrame: \(mapFrame)")
   }
 
   func view() -> UIView {
-    mapView
+    containerView
   }
 
   private func setupMethodChannel() {
@@ -126,34 +142,43 @@ final class AmapGlobalPlatformView: NSObject, FlutterPlatformView {
 
   private func configureMap(arguments args: Any?) {
     guard let params = args as? [String: Any] else {
+      NSLog("🗺️ No arguments provided, using defaults")
       setDefaultMapPosition()
       return
     }
 
-    // 设置初始缩放
-    if let initialZoom = params["initialZoom"] as? Double {
-      mapView.setZoomLevel(CGFloat(initialZoom), animated: false)
-    } else {
-      mapView.setZoomLevel(2, animated: false)
-    }
+    NSLog("🗺️ Configuring map with params: \(params)")
 
-    // 设置初始中心点
-    let centerLat = params["centerLatitude"] as? Double ?? 20.0
-    let centerLng = params["centerLongitude"] as? Double ?? 0.0
+    // 设置初始中心点 - 默认使用中国中心以确保底图可见
+    let centerLat = params["centerLatitude"] as? Double ?? 35.0
+    let centerLng = params["centerLongitude"] as? Double ?? 105.0
     let centerCoordinate = CLLocationCoordinate2D(latitude: centerLat, longitude: centerLng)
     mapView.setCenter(centerCoordinate, animated: false)
+    NSLog("🗺️ Set center: \(centerLat), \(centerLng)")
+
+    // 设置初始缩放 - 使用较高的缩放级别确保底图可见
+    if let initialZoom = params["initialZoom"] as? Double {
+      // 确保缩放级别不会太小
+      let safeZoom = max(initialZoom, 3.0)
+      mapView.setZoomLevel(CGFloat(safeZoom), animated: false)
+      NSLog("🗺️ Set zoom level: \(safeZoom)")
+    } else {
+      mapView.setZoomLevel(4, animated: false)
+    }
 
     // 添加城市标记
     if let citiesData = params["cities"] as? [[String: Any]] {
+      NSLog("🗺️ Received \(citiesData.count) cities")
       updateCities(citiesData: citiesData)
     }
   }
 
   private func setDefaultMapPosition() {
-    // 默认显示世界视图
-    let worldCenter = CLLocationCoordinate2D(latitude: 20.0, longitude: 0.0)
-    mapView.setCenter(worldCenter, animated: false)
-    mapView.setZoomLevel(2, animated: false)
+    // 默认显示中国视图 - 高德地图在中国区域底图覆盖完整
+    let chinaCenter = CLLocationCoordinate2D(latitude: 35.0, longitude: 105.0)
+    mapView.setCenter(chinaCenter, animated: false)
+    mapView.setZoomLevel(4, animated: false)  // 使用更高的缩放级别确保底图可见
+    NSLog("🗺️ Set default map position to China center")
   }
 
   private func updateCities(citiesData: [[String: Any]]) {
@@ -199,6 +224,18 @@ final class AmapGlobalPlatformView: NSObject, FlutterPlatformView {
 // MARK: - MAMapViewDelegate
 
 extension AmapGlobalPlatformView: MAMapViewDelegate {
+  
+  func mapViewDidFinishLoadingMap(_ mapView: MAMapView!) {
+    NSLog("✅ AMap finished loading map tiles")
+  }
+  
+  func mapViewDidFailLoadingMap(_ mapView: MAMapView!, withError error: Error!) {
+    NSLog("❌ AMap failed to load map: \(error?.localizedDescription ?? "unknown error")")
+  }
+  
+  func mapInitComplete(_ mapView: MAMapView!) {
+    NSLog("✅ AMap init complete")
+  }
   
   func mapView(_ mapView: MAMapView!, viewFor annotation: MAAnnotation!) -> MAAnnotationView! {
     guard !(annotation is MAUserLocation) else { return nil }

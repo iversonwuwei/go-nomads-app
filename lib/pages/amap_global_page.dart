@@ -157,9 +157,9 @@ class _AmapGlobalPageState extends State<AmapGlobalPage> {
 
     final creationParams = {
       'cities': citiesData,
-      'initialZoom': 2.0,
-      'centerLatitude': 20.0,
-      'centerLongitude': 0.0,
+      'initialZoom': 4.0,  // 使用较高的缩放级别确保底图可见
+      'centerLatitude': 35.0,  // 中国中心纬度
+      'centerLongitude': 105.0,  // 中国中心经度
     };
 
     if (Platform.isIOS) {
