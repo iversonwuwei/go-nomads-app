@@ -403,6 +403,7 @@ class DependencyInjection {
         toggleCityFavoriteUseCase: Get.find<ToggleCityFavoriteUseCase>(),
         getFavoriteCitiesUseCase: Get.find<GetFavoriteCitiesUseCase>(),
         getUserFavoriteCityIdsUseCase: Get.find<GetUserFavoriteCityIdsUseCase>(),
+        cityRepository: Get.find<ICityRepository>(),
       ),
       fenix: true, // 允许在删除后重新创建
     );
