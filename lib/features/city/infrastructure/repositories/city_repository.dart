@@ -5,6 +5,7 @@ import 'package:df_admin_mobile/features/city/domain/entities/city_detail.dart';
 import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
 import 'package:df_admin_mobile/features/city/infrastructure/models/city_detail_dto.dart' as dto;
 import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:dio/dio.dart';
 
 /// 城市仓储实现 (Infrastructure Layer)
 ///
@@ -526,6 +527,41 @@ class CityRepository implements ICityRepository {
       print('💥 [CityRepository] 未知异常: $e');
       print('📚 [CityRepository] StackTrace: $stackTrace');
       return Failure(UnknownException('指定版主失败: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Result<Map<String, dynamic>>> generateCityImages(String cityId) async {
+    try {
+      print('🖼️ [CityRepository] 调用生成城市图片 API: cityId=$cityId');
+
+      // AI 图片生成需要较长时间（1-3分钟），设置 10 分钟超时
+      final response = await _httpService.post(
+        '$_baseUrl/$cityId/generate-images',
+        data: {},
+        options: Options(
+          receiveTimeout: const Duration(minutes: 10),
+          sendTimeout: const Duration(minutes: 1),
+        ),
+      );
+
+      print('✅ [CityRepository] 生成城市图片成功');
+
+      final data = response.data;
+      if (data is Map<String, dynamic>) {
+        return Success(data);
+      }
+      if (data is Map) {
+        return Success(Map<String, dynamic>.from(data));
+      }
+      return Failure(UnknownException('响应格式错误'));
+    } on HttpException catch (e) {
+      print('❌ [CityRepository] HTTP异常: statusCode=${e.statusCode}, message=${e.message}');
+      return Failure(_convertHttpException(e));
+    } catch (e, stackTrace) {
+      print('💥 [CityRepository] 未知异常: $e');
+      print('📚 [CityRepository] StackTrace: $stackTrace');
+      return Failure(UnknownException('生成城市图片失败: ${e.toString()}'));
     }
   }
 }

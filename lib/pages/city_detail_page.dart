@@ -1191,8 +1191,20 @@ class _CityDetailPageState extends State<CityDetailPage>
   }
 
   List<String> _getCityImages() {
-    // 基于城市主图片生成多张展示图片
-    // 使用不同的Unsplash参数来获取该城市的不同视角图片
+    // 优先使用后端返回的横屏图片列表
+    final cityDetailController = Get.find<CityDetailStateController>();
+    final city = cityDetailController.currentCity.value;
+
+    // 如果有 landscapeImageUrls，优先使用
+    if (city?.landscapeImageUrls != null && city!.landscapeImageUrls!.isNotEmpty) {
+      // 如果有主图片，放在第一位
+      if (cityImage.isNotEmpty && !city.landscapeImageUrls!.contains(cityImage)) {
+        return [cityImage, ...city.landscapeImageUrls!];
+      }
+      return city.landscapeImageUrls!;
+    }
+
+    // 回退：基于城市主图片生成多张展示图片
     final baseImage = cityImage;
 
     // 检查图片 URL 是否有效

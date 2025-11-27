@@ -1,6 +1,7 @@
 import 'package:df_admin_mobile/core/core.dart';
 import 'package:df_admin_mobile/features/city/application/use_cases/city_use_cases.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
+import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:get/get.dart';
 
@@ -16,6 +17,7 @@ class CityStateController extends GetxController {
   final ToggleCityFavoriteUseCase _toggleCityFavoriteUseCase;
   final GetFavoriteCitiesUseCase _getFavoriteCitiesUseCase;
   final GetUserFavoriteCityIdsUseCase _getUserFavoriteCityIdsUseCase;
+  final ICityRepository _cityRepository;
 
   CityStateController({
     required GetCitiesUseCase getCitiesUseCase,
@@ -25,13 +27,15 @@ class CityStateController extends GetxController {
     required ToggleCityFavoriteUseCase toggleCityFavoriteUseCase,
     required GetFavoriteCitiesUseCase getFavoriteCitiesUseCase,
     required GetUserFavoriteCityIdsUseCase getUserFavoriteCityIdsUseCase,
+    required ICityRepository cityRepository,
   })  : _getCitiesUseCase = getCitiesUseCase,
         _searchCitiesUseCase = searchCitiesUseCase,
         _getRecommendedCitiesUseCase = getRecommendedCitiesUseCase,
         _getPopularCitiesUseCase = getPopularCitiesUseCase,
         _toggleCityFavoriteUseCase = toggleCityFavoriteUseCase,
         _getFavoriteCitiesUseCase = getFavoriteCitiesUseCase,
-        _getUserFavoriteCityIdsUseCase = getUserFavoriteCityIdsUseCase;
+        _getUserFavoriteCityIdsUseCase = getUserFavoriteCityIdsUseCase,
+        _cityRepository = cityRepository;
 
   // ==================== State ====================
   final RxBool isLoading = false.obs;
@@ -79,17 +83,17 @@ class CityStateController extends GetxController {
     recommendedCities.clear();
     popularCities.clear();
     favoriteCities.clear();
-    
+
     // ??????
     isLoading.value = false;
     isLoadingMore.value = false;
     hasError.value = false;
     errorMessage.value = null;
-    
+
     // ??????
     _currentPage = 1;
     _hasMoreData = true;
-    
+
     // ??????
     searchQuery.value = '';
     selectedCountryId.value = null;
@@ -102,7 +106,7 @@ class CityStateController extends GetxController {
     minRating.value = 0.0;
     maxAqi.value = 500;
     selectedClimates.clear();
-    
+
     super.onClose();
   }
 
@@ -152,7 +156,7 @@ class CityStateController extends GetxController {
         hasError.value = true;
         errorMessage.value = exception.message;
         isLoading.value = false;
-        
+
         // ????????,????(??? Toast)
         // ?? AuthStateController ??? 401 ????????
         if (exception is! UnauthorizedException) {
@@ -270,18 +274,12 @@ class CityStateController extends GetxController {
 
     // ????
     if (selectedRegions.isNotEmpty) {
-      items = items
-          .where((city) =>
-              city.region != null && selectedRegions.contains(city.region))
-          .toList();
+      items = items.where((city) => city.region != null && selectedRegions.contains(city.region)).toList();
     }
 
     // ???? (???)
     if (selectedCountries.isNotEmpty) {
-      items = items
-          .where((city) =>
-              city.country != null && selectedCountries.contains(city.country))
-          .toList();
+      items = items.where((city) => city.country != null && selectedCountries.contains(city.country)).toList();
     }
 
     // ???? (?? costScore * 500 ??????)
@@ -294,8 +292,7 @@ class CityStateController extends GetxController {
     // ???? (?? internetScore * 20 ????)
     items = items.where((city) {
       if (city.internetScore == null) return true;
-      final estimatedSpeed =
-          city.internetScore! * 20; // 0-5 score ? 0-100 Mbps range
+      final estimatedSpeed = city.internetScore! * 20; // 0-5 score ? 0-100 Mbps range
       return estimatedSpeed >= minInternet.value;
     }).toList();
 
@@ -328,8 +325,7 @@ class CityStateController extends GetxController {
   }
 
   /// ??????
-  Future<void> loadRecommendedCities(
-      {String? countryId, int limit = 10}) async {
+  Future<void> loadRecommendedCities({String? countryId, int limit = 10}) async {
     // print('?? ??????...');
 
     final result = await _getRecommendedCitiesUseCase.execute(
@@ -449,8 +445,7 @@ class CityStateController extends GetxController {
   Future<Result<List<String>>> loadUserFavoriteCityIds() async {
     // print('?? ??????ID??...');
 
-    final result =
-        await _getUserFavoriteCityIdsUseCase.execute(const NoParams());
+    final result = await _getUserFavoriteCityIdsUseCase.execute(const NoParams());
 
     return result.fold(
       onSuccess: (ids) {
@@ -493,22 +488,12 @@ class CityStateController extends GetxController {
 
   /// ???????????
   List<String> get availableRegions {
-    return cities
-        .where((city) => city.region != null)
-        .map((city) => city.region!)
-        .toSet()
-        .toList()
-      ..sort();
+    return cities.where((city) => city.region != null).map((city) => city.region!).toSet().toList()..sort();
   }
 
   /// ???????????
   List<String> get availableCountries {
-    return cities
-        .where((city) => city.country != null)
-        .map((city) => city.country!)
-        .toSet()
-        .toList()
-      ..sort();
+    return cities.where((city) => city.country != null).map((city) => city.country!).toSet().toList()..sort();
   }
 
   /// ?????????????
@@ -521,5 +506,57 @@ class CityStateController extends GetxController {
     // ??: City ?????? climate ??
     // ???????,?????????????
     return <String>[];
+  }
+
+  /// 为城市生成 AI 图片
+  ///
+  /// [cityId] 城市ID
+  /// 返回生成结果
+  Future<Result<Map<String, dynamic>>> generateCityImages(String cityId) async {
+    print('🖼️ [CityStateController] 开始生成城市图片: $cityId');
+
+    try {
+      final result = await _cityRepository.generateCityImages(cityId);
+
+      return result.fold(
+        onSuccess: (data) {
+          print('✅ [CityStateController] 图片生成成功');
+          return Success(data);
+        },
+        onFailure: (exception) {
+          print('❌ [CityStateController] 图片生成失败: ${exception.message}');
+          return Failure(exception);
+        },
+      );
+    } catch (e) {
+      print('💥 [CityStateController] 生成图片异常: $e');
+      return Failure(UnknownException('生成图片失败: $e'));
+    }
+  }
+
+  /// 刷新单个城市数据
+  ///
+  /// [cityId] 城市ID
+  /// 更新本地城市列表中的对应城市数据
+  Future<void> refreshSingleCity(String cityId) async {
+    print('🔄 [CityStateController] 刷新单个城市数据: $cityId');
+
+    final result = await _cityRepository.getCityById(cityId);
+
+    result.fold(
+      onSuccess: (city) {
+        print('✅ [CityStateController] 获取城市数据成功');
+        // 更新列表中的城市数据
+        final index = cities.indexWhere((c) => c.id == cityId);
+        if (index != -1) {
+          cities[index] = city;
+          cities.refresh();
+          print('🔄 [CityStateController] 城市列表已更新');
+        }
+      },
+      onFailure: (exception) {
+        print('❌ [CityStateController] 刷新城市数据失败: ${exception.message}');
+      },
+    );
   }
 }

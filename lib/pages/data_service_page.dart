@@ -1,4 +1,5 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/core/core.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
 import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller.dart';
@@ -1694,31 +1695,44 @@ class _DataCardState extends State<_DataCard> {
                         ),
                       ),
                       SizedBox(width: isMobile ? 3 : 8),
-                      // 右侧：网络 - 移动端简化显示
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: isMobile ? 3 : 6, vertical: isMobile ? 2 : 3),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.6),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              '📡',
-                              style: TextStyle(fontSize: isMobile ? 7 : 10),
+                      // 右侧：刷新按钮 + 网络
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // 刷新图片按钮
+                          _GenerateImageButton(
+                            cityId: widget.data.id,
+                            cityName: widget.data.name,
+                            isMobile: isMobile,
+                          ),
+                          SizedBox(width: isMobile ? 3 : 6),
+                          // 网络 - 移动端简化显示
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: isMobile ? 3 : 6, vertical: isMobile ? 2 : 3),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.6),
+                              borderRadius: BorderRadius.circular(4),
                             ),
-                            SizedBox(width: isMobile ? 1 : 3),
-                            Text(
-                              '${widget.data.internetScore}',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: isMobile ? 7 : 10,
-                                fontWeight: FontWeight.w500,
-                              ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '📡',
+                                  style: TextStyle(fontSize: isMobile ? 7 : 10),
+                                ),
+                                SizedBox(width: isMobile ? 1 : 3),
+                                Text(
+                                  '${widget.data.internetScore}',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: isMobile ? 7 : 10,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -2894,5 +2908,117 @@ class _MeetupCardState extends State<_MeetupCard> {
   String _formatDate(DateTime date) {
     final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return '${months[date.month - 1]} ${date.day}';
+  }
+}
+
+/// 生成城市图片按钮组件
+class _GenerateImageButton extends StatefulWidget {
+  final String cityId;
+  final String cityName;
+  final bool isMobile;
+
+  const _GenerateImageButton({
+    required this.cityId,
+    required this.cityName,
+    required this.isMobile,
+  });
+
+  @override
+  State<_GenerateImageButton> createState() => _GenerateImageButtonState();
+}
+
+class _GenerateImageButtonState extends State<_GenerateImageButton> {
+  bool _isGenerating = false;
+
+  Future<void> _generateImages() async {
+    if (_isGenerating) return;
+
+    // 检查登录状态
+    final authController = Get.find<AuthStateController>();
+    if (!authController.isAuthenticated.value) {
+      AppToast.warning(
+        'Please login to generate images',
+        title: 'Login Required',
+      );
+      Get.toNamed(AppRoutes.login);
+      return;
+    }
+
+    // 检查是否是管理员（只有管理员可以生成图片）
+    final user = authController.currentUser.value;
+    final userRole = user?.role.toLowerCase() ?? '';
+    if (userRole != 'admin') {
+      AppToast.warning(
+        'Only administrators can generate images',
+        title: 'Permission Denied',
+      );
+      return;
+    }
+
+    setState(() => _isGenerating = true);
+
+    AppToast.info(
+      'Generating AI images for ${widget.cityName}...\nThis may take 1-2 minutes.',
+      title: 'Generating Images',
+    );
+
+    try {
+      final cityController = Get.find<CityStateController>();
+      final result = await cityController.generateCityImages(widget.cityId);
+
+      result.fold(
+        onSuccess: (data) {
+          AppToast.success(
+            'Images generated successfully!',
+            title: 'Success',
+          );
+          // 刷新城市数据
+          cityController.refreshSingleCity(widget.cityId);
+        },
+        onFailure: (exception) {
+          AppToast.error(
+            exception.message,
+            title: 'Generation Failed',
+          );
+        },
+      );
+    } catch (e) {
+      AppToast.error(
+        'Failed to generate images: $e',
+        title: 'Error',
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isGenerating = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _isGenerating ? null : _generateImages,
+      child: Container(
+        padding: EdgeInsets.all(widget.isMobile ? 4 : 6),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.6),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: _isGenerating
+            ? SizedBox(
+                width: widget.isMobile ? 12 : 16,
+                height: widget.isMobile ? 12 : 16,
+                child: const CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              )
+            : Icon(
+                FontAwesomeIcons.arrowsRotate,
+                color: Colors.white,
+                size: widget.isMobile ? 10 : 14,
+              ),
+      ),
+    );
   }
 }
