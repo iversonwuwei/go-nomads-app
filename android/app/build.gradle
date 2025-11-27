@@ -73,7 +73,6 @@ dependencies {
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     
-    // 高德地图 SDK
-    implementation 'com.amap.api:3dmap:10.0.700'
-    implementation 'com.amap.api:search:9.7.2'
+    // 高德地图 SDK (本地 aar 文件)
+    implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
 }

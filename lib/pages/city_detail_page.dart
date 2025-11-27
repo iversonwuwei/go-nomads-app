@@ -84,6 +84,10 @@ class _CityDetailPageState extends State<CityDetailPage>
   bool _isRefreshingReviews = false;
   bool _isRefreshingPhotos = false;
 
+  // Guide Tab 初始化标志，防止滚动时重复请求
+  bool _hasInitializedGuide = false;
+  String? _lastGuideLoadedCityId;
+
   // 从 Get.arguments 或构造函数获取参数
   late final String cityId;
   late final String cityName;
@@ -789,22 +793,25 @@ class _CityDetailPageState extends State<CityDetailPage>
           _currentPage = _tabController.index;
         });
 
-        // 当切换到 Weather tab (索引 6) 时，加载最新天气数据
+        // 当切换到 Weather tab (索引 6) 时，加载天气数据（利用controller内部缓存）
         if (_tabController.index == 6) {
           final weatherController = Get.find<WeatherStateController>();
+          // 不使用forceRefresh，让controller内部缓存机制决定是否需要加载
           weatherController.loadCityWeather(
             cityId,
             includeForecast: true,
             days: 7,
-            forceRefresh: true, // 强制刷新以获取最新数据
           );
         }
 
-        // 当切换到 Coworking tab (索引 9) 时，加载最新共享办公空间数据
+        // 当切换到 Coworking tab (索引 9) 时，检查缓存后再决定是否加载
         if (_tabController.index == 9) {
           final coworkingController = Get.find<CoworkingStateController>();
-          coworkingController.loadCoworkingSpacesByCity(cityId);
-          print('🔄 [TabSwitch] 切换到 Coworking tab，重新加载数据');
+          // 只有在城市ID不同或数据为空时才重新加载
+          if (coworkingController.currentCityId.value != cityId) {
+            coworkingController.loadCoworkingSpacesByCity(cityId);
+            print('🔄 [TabSwitch] 切换到 Coworking tab，加载新城市数据');
+          }
         }
       }
     });
@@ -2018,29 +2025,34 @@ class _CityDetailPageState extends State<CityDetailPage>
 
   // Digital Nomad Guide 标签页
   Widget _buildGuideTab(AiStateController controller) {
-    // 🔥 检查城市是否变化,如果变化则清空旧数据并加载新数据
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final currentGuide = controller.currentGuide;
+    // 🔥 只在首次加载或城市变化时请求数据，防止滚动时重复请求
+    if (!_hasInitializedGuide || _lastGuideLoadedCityId != cityId) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final currentGuide = controller.currentGuide;
 
-      final shouldReload = currentGuide == null || currentGuide.cityId != cityId;
-
-      if (shouldReload) {
         // 如果是不同城市,先清空旧数据
         if (currentGuide != null && currentGuide.cityId != cityId) {
           print('🔄 [GuideTab] 城市切换: ${currentGuide.cityId} → $cityId, 清空旧数据');
           controller.resetGuideState();
         }
 
-        // 加载新城市的指南(优先使用缓存)
+        // 只在未加载过且控制器空闲时才加载
         if (!controller.isGeneratingGuide && !controller.isLoadingGuide) {
-          print('📖 [GuideTab] 加载城市指南: $cityName (ID: $cityId)');
-          controller.loadCityGuide(
-            cityId: cityId,
-            cityName: cityName,
-          );
+          final shouldLoad = currentGuide == null || currentGuide.cityId != cityId;
+          if (shouldLoad) {
+            print('📖 [GuideTab] 加载城市指南: $cityName (ID: $cityId)');
+            controller.loadCityGuide(
+              cityId: cityId,
+              cityName: cityName,
+            );
+          }
         }
-      }
-    });
+
+        // 标记已初始化
+        _hasInitializedGuide = true;
+        _lastGuideLoadedCityId = cityId;
+      });
+    }
 
     return Obx(() {
       print(
@@ -4043,34 +4055,13 @@ class _CityDetailPageState extends State<CityDetailPage>
       // 显示共享办公空间列表
       return RefreshIndicator(
         onRefresh: () => controller.loadCoworkingSpacesByCity(cityName),
-        child: Stack(
-          children: [
-            ListView.builder(
-              padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
-              itemCount: controller.coworkingSpaces.length,
-              itemBuilder: (context, index) {
-                final space = controller.coworkingSpaces[index];
-                return _buildCoworkingSpaceCard(space);
-              },
-            ),
-            // 添加按钮（仅 admin/moderator 可见）
-            FutureBuilder<bool>(
-              future: _canUserManageContent(),
-              builder: (context, snapshot) {
-                if (snapshot.data != true) return const SizedBox.shrink();
-                return Positioned(
-                  right: 16,
-                  bottom: 16,
-                  child: FloatingActionButton(
-                    heroTag: 'add_coworking',
-                    onPressed: _showAddCoworkingPage,
-                    backgroundColor: const Color(0xFFFF4458),
-                    child: const Icon(FontAwesomeIcons.plus, color: Colors.white),
-                  ),
-                );
-              },
-            ),
-          ],
+        child: ListView.builder(
+          padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
+          itemCount: controller.coworkingSpaces.length,
+          itemBuilder: (context, index) {
+            final space = controller.coworkingSpaces[index];
+            return _buildCoworkingSpaceCard(space);
+          },
         ),
       );
     });

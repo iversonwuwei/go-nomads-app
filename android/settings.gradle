@@ -27,7 +27,6 @@ dependencyResolutionManagement {
         mavenCentral()
         maven { url 'https://maven.aliyun.com/repository/public/' }
         maven { url 'https://jitpack.io' }
-        maven { url 'https://dl.bintray.com/thelasterstar/maven/' }
         def flutterMavenUri = settings.ext.has("flutterSdkPath") && settings.ext.flutterSdkPath != null
             ? uri("file://${settings.ext.flutterSdkPath.replace('\\', '/')}/bin/cache/artifacts/engine/android")
             : null
