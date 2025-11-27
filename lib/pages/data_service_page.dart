@@ -2912,7 +2912,7 @@ class _MeetupCardState extends State<_MeetupCard> {
 }
 
 /// 生成城市图片按钮组件
-class _GenerateImageButton extends StatefulWidget {
+class _GenerateImageButton extends StatelessWidget {
   final String cityId;
   final String cityName;
   final bool isMobile;
@@ -2923,15 +2923,11 @@ class _GenerateImageButton extends StatefulWidget {
     required this.isMobile,
   });
 
-  @override
-  State<_GenerateImageButton> createState() => _GenerateImageButtonState();
-}
-
-class _GenerateImageButtonState extends State<_GenerateImageButton> {
-  bool _isGenerating = false;
-
   Future<void> _generateImages() async {
-    if (_isGenerating) return;
+    final cityController = Get.find<CityStateController>();
+
+    // 检查是否正在生成
+    if (cityController.isGeneratingImages(cityId)) return;
 
     // 检查登录状态
     final authController = Get.find<AuthStateController>();
@@ -2955,70 +2951,63 @@ class _GenerateImageButtonState extends State<_GenerateImageButton> {
       return;
     }
 
-    setState(() => _isGenerating = true);
-
     AppToast.info(
-      'Generating AI images for ${widget.cityName}...\nThis may take 1-2 minutes.',
-      title: 'Generating Images',
+      'AI image generation task created for $cityName.\nYou will be notified when complete.',
+      title: 'Task Created',
     );
 
-    try {
-      final cityController = Get.find<CityStateController>();
-      final result = await cityController.generateCityImages(widget.cityId);
+    final result = await cityController.generateCityImages(cityId);
 
-      result.fold(
-        onSuccess: (data) {
-          AppToast.success(
-            'Images generated successfully!',
-            title: 'Success',
-          );
-          // 刷新城市数据
-          cityController.refreshSingleCity(widget.cityId);
-        },
-        onFailure: (exception) {
-          AppToast.error(
-            exception.message,
-            title: 'Generation Failed',
-          );
-        },
-      );
-    } catch (e) {
-      AppToast.error(
-        'Failed to generate images: $e',
-        title: 'Error',
-      );
-    } finally {
-      if (mounted) {
-        setState(() => _isGenerating = false);
-      }
-    }
+    result.fold(
+      onSuccess: (data) {
+        // 异步模式：任务已创建，等待 SignalR 通知
+        // 不需要在这里更新图片，SignalR 会推送更新
+        final taskData = data['data'] as Map<String, dynamic>?;
+        final taskId = taskData?['taskId'] as String? ?? '';
+        print('🖼️ Image generation task created: taskId=$taskId');
+        // 加载状态由 controller 管理，等待 SignalR 通知时自动结束
+      },
+      onFailure: (exception) {
+        AppToast.error(
+          exception.message,
+          title: 'Task Creation Failed',
+        );
+        // 失败时 controller 已经移除了 cityId
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _isGenerating ? null : _generateImages,
-      child: Container(
-        padding: EdgeInsets.all(widget.isMobile ? 4 : 6),
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.6),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: _isGenerating
-            ? SizedBox(
-                width: widget.isMobile ? 12 : 16,
-                height: widget.isMobile ? 12 : 16,
-                child: const CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+    final cityController = Get.find<CityStateController>();
+
+    return Obx(() {
+      final isGenerating = cityController.isGeneratingImages(cityId);
+
+      return GestureDetector(
+        onTap: isGenerating ? null : _generateImages,
+        child: Container(
+          padding: EdgeInsets.all(isMobile ? 4 : 6),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.6),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: isGenerating
+              ? SizedBox(
+                  width: isMobile ? 12 : 16,
+                  height: isMobile ? 12 : 16,
+                  child: const CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              : Icon(
+                  FontAwesomeIcons.arrowsRotate,
+                  color: Colors.white,
+                  size: isMobile ? 10 : 14,
                 ),
-              )
-            : Icon(
-                FontAwesomeIcons.arrowsRotate,
-                color: Colors.white,
-                size: widget.isMobile ? 10 : 14,
-              ),
-      ),
-    );
+        ),
+      );
+    });
   }
 }

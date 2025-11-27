@@ -533,22 +533,24 @@ class CityRepository implements ICityRepository {
   @override
   Future<Result<Map<String, dynamic>>> generateCityImages(String cityId) async {
     try {
-      print('🖼️ [CityRepository] 调用生成城市图片 API: cityId=$cityId');
+      print('🖼️ [CityRepository] 调用生成城市图片 API (异步模式): cityId=$cityId');
 
-      // AI 图片生成需要较长时间（1-3分钟），设置 10 分钟超时
+      // 使用新的异步接口，立即返回任务ID，不等待图片生成完成
+      // 图片生成完成后会通过 SignalR 推送通知
       final response = await _httpService.post(
         '$_baseUrl/$cityId/generate-images',
         data: {},
         options: Options(
-          receiveTimeout: const Duration(minutes: 10),
-          sendTimeout: const Duration(minutes: 1),
+          receiveTimeout: const Duration(seconds: 30),
+          sendTimeout: const Duration(seconds: 10),
         ),
       );
 
-      print('✅ [CityRepository] 生成城市图片成功');
+      print('✅ [CityRepository] 图片生成任务已创建');
 
       final data = response.data;
       if (data is Map<String, dynamic>) {
+        print('📋 [CityRepository] 任务详情: taskId=${data['data']?['taskId']}, status=${data['data']?['status']}');
         return Success(data);
       }
       if (data is Map) {
@@ -561,7 +563,7 @@ class CityRepository implements ICityRepository {
     } catch (e, stackTrace) {
       print('💥 [CityRepository] 未知异常: $e');
       print('📚 [CityRepository] StackTrace: $stackTrace');
-      return Failure(UnknownException('生成城市图片失败: ${e.toString()}'));
+      return Failure(UnknownException('创建图片生成任务失败: ${e.toString()}'));
     }
   }
 }
