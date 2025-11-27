@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:signalr_netcore/signalr_client.dart';
-
 import 'package:df_admin_mobile/features/async_task/domain/entities/async_task.dart';
 import 'package:df_admin_mobile/features/async_task/infrastructure/models/async_task_dto.dart';
+import 'package:signalr_netcore/signalr_client.dart';
+
 import 'token_storage_service.dart';
 
 /// SignalR 实时通知服务
@@ -14,25 +14,33 @@ class SignalRService {
 
   HubConnection? _hubConnection;
   bool _isConnected = false;
+  String? _currentUserId;
 
   // 事件流控制器
   final _taskProgressController = StreamController<AsyncTask>.broadcast();
   final _taskCompletedController = StreamController<AsyncTask>.broadcast();
   final _taskFailedController = StreamController<AsyncTask>.broadcast();
+  final _cityImageUpdatedController = StreamController<Map<String, dynamic>>.broadcast();
 
   // 事件流
   Stream<AsyncTask> get taskProgressStream => _taskProgressController.stream;
   Stream<AsyncTask> get taskCompletedStream => _taskCompletedController.stream;
   Stream<AsyncTask> get taskFailedStream => _taskFailedController.stream;
+  Stream<Map<String, dynamic>> get cityImageUpdatedStream => _cityImageUpdatedController.stream;
 
   SignalRService._internal();
 
   /// 连接到 SignalR Hub
   ///
   /// [baseUrl] AI Service 基础 URL,例如 'http://localhost:8009'
-  Future<void> connect(String baseUrl) async {
+  /// [userId] 当前登录用户的 ID（可选，用于加入用户组）
+  Future<void> connect(String baseUrl, {String? userId}) async {
     if (_isConnected) {
       print('📡 SignalR 已连接,跳过重复连接');
+      // 如果已连接但用户ID变化，重新加入用户组
+      if (userId != null && userId != _currentUserId) {
+        await joinUserGroup(userId);
+      }
       return;
     }
 
@@ -65,6 +73,7 @@ class SignalRService {
       _hubConnection?.onclose(({error}) {
         print('❌ SignalR 连接关闭: $error');
         _isConnected = false;
+        _currentUserId = null;
       });
 
       _hubConnection?.onreconnecting(({error}) {
@@ -72,9 +81,13 @@ class SignalRService {
         _isConnected = false;
       });
 
-      _hubConnection?.onreconnected(({connectionId}) {
+      _hubConnection?.onreconnected(({connectionId}) async {
         print('✅ SignalR 重新连接成功: $connectionId');
         _isConnected = true;
+        // 重连后重新加入用户组
+        if (_currentUserId != null) {
+          await joinUserGroup(_currentUserId!);
+        }
       });
 
       // 启动连接
@@ -82,10 +95,48 @@ class SignalRService {
       _isConnected = true;
 
       print('✅ SignalR 连接成功! ConnectionId: ${_hubConnection?.connectionId}');
+
+      // 连接成功后加入用户组
+      if (userId != null) {
+        await joinUserGroup(userId);
+      }
     } catch (e) {
       print('❌ SignalR 连接失败: $e');
       _isConnected = false;
       rethrow;
+    }
+  }
+
+  /// 加入用户组（用于接收用户相关通知）
+  Future<void> joinUserGroup(String userId) async {
+    if (!_isConnected) {
+      print('❌ SignalR 未连接，无法加入用户组');
+      return;
+    }
+
+    try {
+      await _hubConnection?.invoke('JoinUserGroup', args: [userId]);
+      _currentUserId = userId;
+      print('✅ 已加入用户组: user-$userId');
+    } catch (e) {
+      print('❌ 加入用户组失败: $e');
+    }
+  }
+
+  /// 离开用户组
+  Future<void> leaveUserGroup(String userId) async {
+    if (!_isConnected) {
+      return;
+    }
+
+    try {
+      await _hubConnection?.invoke('LeaveUserGroup', args: [userId]);
+      if (_currentUserId == userId) {
+        _currentUserId = null;
+      }
+      print('✅ 已离开用户组: user-$userId');
+    } catch (e) {
+      print('❌ 离开用户组失败: $e');
     }
   }
 
@@ -187,6 +238,38 @@ class SignalRService {
       }
     });
 
+    // CityImageUpdated: 城市图片更新完成
+    _hubConnection?.on('CityImageUpdated', (arguments) {
+      print('🎯 收到 CityImageUpdated 事件！');
+      print('   参数数量: ${arguments?.length ?? 0}');
+
+      if (arguments == null || arguments.isEmpty) {
+        print('❌ CityImageUpdated 参数为空');
+        return;
+      }
+
+      try {
+        final data = arguments[0] as Map<String, dynamic>;
+        print('🖼️ 收到城市图片更新通知:');
+        print('   CityId: ${data['CityId'] ?? data['cityId']}');
+        print('   CityName: ${data['CityName'] ?? data['cityName']}');
+        print('   Success: ${data['Success'] ?? data['success']}');
+
+        // 转换为小写 key 的 map
+        final normalizedData = <String, dynamic>{};
+        data.forEach((key, value) {
+          // 转换 PascalCase 到 camelCase
+          final normalizedKey = key[0].toLowerCase() + key.substring(1);
+          normalizedData[normalizedKey] = value;
+        });
+
+        _cityImageUpdatedController.add(normalizedData);
+      } catch (e) {
+        print('❌ 解析 CityImageUpdated 失败: $e');
+        print('   原始数据: ${arguments[0]}');
+      }
+    });
+
     print('✅ SignalR 事件处理器注册完成');
   }
 
@@ -252,6 +335,7 @@ class SignalRService {
     _taskProgressController.close();
     _taskCompletedController.close();
     _taskFailedController.close();
+    _cityImageUpdatedController.close();
     disconnect();
   }
 }

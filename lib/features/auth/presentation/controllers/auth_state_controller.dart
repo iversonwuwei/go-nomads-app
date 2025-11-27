@@ -7,6 +7,7 @@ import 'package:df_admin_mobile/features/auth/domain/entities/auth_user.dart';
 import 'package:df_admin_mobile/features/auth/domain/repositories/iauth_database_repository.dart';
 import 'package:df_admin_mobile/features/auth/domain/repositories/iauth_repository.dart';
 import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:df_admin_mobile/services/signalr_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:get/get.dart';
 
@@ -81,12 +82,17 @@ class AuthStateController extends GetxController {
     final result =
         await _checkLoginStatusWithDatabaseUseCase.execute(NoParams());
     result.fold(
-      onSuccess: (isAuth) {
+      onSuccess: (isAuth) async {
         isAuthenticated.value = isAuth;
         if (isAuth) {
           // ✅ 加载并刷新用户信息(会更新本地缓存的角色)
-          _loadCurrentUser();
+          await _loadCurrentUser();
           _autoRefreshToken();
+
+          // 加入 SignalR 用户通知组（应用启动时恢复登录状态）
+          if (currentUser.value != null) {
+            await _joinSignalRUserGroup(currentUser.value!.id);
+          }
         }
       },
       onFailure: (_) => isAuthenticated.value = false,
@@ -201,6 +207,9 @@ class AuthStateController extends GetxController {
 
           // 设置用户ID到 HttpService
           httpService.setUserId(currentUser.value!.id);
+
+          // 加入 SignalR 用户通知组
+          await _joinSignalRUserGroup(currentUser.value!.id);
         }
 
         return true;
@@ -210,6 +219,21 @@ class AuthStateController extends GetxController {
         return false;
       },
     );
+  }
+
+  /// 加入 SignalR 用户通知组
+  Future<void> _joinSignalRUserGroup(String userId) async {
+    try {
+      final signalRService = SignalRService();
+      if (signalRService.isConnected) {
+        await signalRService.joinUserGroup(userId);
+        print('✅ 登录成功后已加入 SignalR 用户通知组: user-$userId');
+      } else {
+        print('⚠️ SignalR 未连接，稍后将在连接时加入用户组');
+      }
+    } catch (e) {
+      print('❌ 加入 SignalR 用户通知组失败: $e');
+    }
   }
 
   /// 注册
@@ -257,6 +281,9 @@ class AuthStateController extends GetxController {
 
           // 设置用户ID到 HttpService
           httpService.setUserId(currentUser.value!.id);
+
+          // 加入 SignalR 用户通知组
+          await _joinSignalRUserGroup(currentUser.value!.id);
         }
 
         return true;

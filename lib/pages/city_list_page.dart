@@ -1,8 +1,10 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/core/core.dart';
+import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
 import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
@@ -456,7 +458,16 @@ class _CityListPageState extends State<CityListPage>
                           ),
                   ),
                 ),
-                // 关注按钮
+                // 左上角：生成图片按钮
+                Positioned(
+                  top: 12,
+                  left: 12,
+                  child: _GenerateImageButton(
+                    cityId: city.id,
+                    cityName: city.name,
+                  ),
+                ),
+                // 右上角：关注按钮
                 Positioned(
                   top: 12,
                   right: 12,
@@ -1329,5 +1340,125 @@ class _CityFilterDrawer extends StatelessWidget {
     if (aqi <= 200) return l10n.aqiUnhealthy;
     if (aqi <= 300) return l10n.aqiVeryUnhealthy;
     return l10n.aqiHazardous;
+  }
+}
+
+/// 生成城市图片按钮组件
+class _GenerateImageButton extends StatelessWidget {
+  final String cityId;
+  final String cityName;
+
+  const _GenerateImageButton({
+    required this.cityId,
+    required this.cityName,
+  });
+
+  Future<void> _generateImages() async {
+    final cityController = Get.find<CityStateController>();
+
+    // 检查是否正在生成
+    if (cityController.isGeneratingImages(cityId)) return;
+
+    // 检查登录状态
+    final authController = Get.find<AuthStateController>();
+    if (!authController.isAuthenticated.value) {
+      AppToast.warning(
+        'Please login to generate images',
+        title: 'Login Required',
+      );
+      Get.toNamed(AppRoutes.login);
+      return;
+    }
+
+    // 检查是否是管理员（只有管理员可以生成图片）
+    final user = authController.currentUser.value;
+    final userRole = user?.role.toLowerCase() ?? '';
+    if (userRole != 'admin') {
+      AppToast.warning(
+        'Only administrators can generate images',
+        title: 'Permission Denied',
+      );
+      return;
+    }
+
+    AppToast.info(
+      'AI image generation task created for $cityName.\nYou will be notified when complete.',
+      title: 'Task Created',
+    );
+
+    final result = await cityController.generateCityImages(cityId);
+
+    result.fold(
+      onSuccess: (data) {
+        // 异步模式：任务已创建，等待 SignalR 通知
+        // 不需要在这里更新图片，SignalR 会推送更新
+        final taskData = data['data'] as Map<String, dynamic>?;
+        final taskId = taskData?['taskId'] as String? ?? '';
+        print('🖼️ Image generation task created: taskId=$taskId');
+        // 加载状态由 controller 管理，等待 SignalR 通知时自动结束
+      },
+      onFailure: (exception) {
+        AppToast.error(
+          exception.message,
+          title: 'Task Creation Failed',
+        );
+        // 失败时 controller 已经移除了 cityId
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cityController = Get.find<CityStateController>();
+
+    return Obx(() {
+      final isGenerating = cityController.isGeneratingImages(cityId);
+
+      return GestureDetector(
+        onTap: isGenerating ? null : _generateImages,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.6),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.10),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              isGenerating
+                  ? const SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : const Icon(
+                      FontAwesomeIcons.arrowsRotate,
+                      color: Colors.white,
+                      size: 14,
+                    ),
+              const SizedBox(width: 4),
+              Text(
+                isGenerating ? '生成中...' : '更新图片',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
   }
 }
