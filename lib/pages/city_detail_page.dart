@@ -1191,21 +1191,25 @@ class _CityDetailPageState extends State<CityDetailPage>
   }
 
   List<String> _getCityImages() {
-    // 优先使用后端返回的横屏图片列表
+    // 优先使用后端返回的城市图片数据
     final cityDetailController = Get.find<CityDetailStateController>();
     final city = cityDetailController.currentCity.value;
 
+    // 优先使用后端返回的主图（最新的 imageUrl 或 portraitImageUrl）
+    final latestMainImage = city?.imageUrl ?? city?.portraitImageUrl ?? cityImage;
+
     // 如果有 landscapeImageUrls，优先使用
     if (city?.landscapeImageUrls != null && city!.landscapeImageUrls!.isNotEmpty) {
-      // 如果有主图片，放在第一位
-      if (cityImage.isNotEmpty && !city.landscapeImageUrls!.contains(cityImage)) {
-        return [cityImage, ...city.landscapeImageUrls!];
+      // 如果有最新主图片，放在第一位
+      if (latestMainImage.isNotEmpty && !city.landscapeImageUrls!.contains(latestMainImage)) {
+        return [latestMainImage, ...city.landscapeImageUrls!];
       }
       return city.landscapeImageUrls!;
     }
 
     // 回退：基于城市主图片生成多张展示图片
-    final baseImage = cityImage;
+    // 优先使用后端返回的最新主图，否则使用传入的 cityImage
+    final baseImage = latestMainImage.isNotEmpty ? latestMainImage : cityImage;
 
     // 检查图片 URL 是否有效
     if (baseImage.isEmpty) {
@@ -1631,97 +1635,126 @@ class _CityDetailPageState extends State<CityDetailPage>
                         fit: StackFit.expand,
                         children: [
                           // PageView carousel - 城市图片轮播
-                          PageView.builder(
-                            controller: _pageController,
-                            onPageChanged: (index) {
-                              setState(() {
-                                _currentPage = index;
+                          // 使用 Obx 包裹以响应 currentCity 变化
+                          Obx(() {
+                            // 触发 Obx 订阅 currentCity 的变化
+                            final cityDetailController = Get.find<CityDetailStateController>();
+                            final _ = cityDetailController.currentCity.value;
+                            final images = _getCityImages();
+
+                            // 如果当前页码超出新图片列表范围，重置为0
+                            if (_currentPage >= images.length && images.isNotEmpty) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (mounted) {
+                                  setState(() {
+                                    _currentPage = 0;
+                                  });
+                                  if (_pageController.hasClients) {
+                                    _pageController.jumpToPage(0);
+                                  }
+                                }
                               });
-                            },
-                            itemCount: _getCityImages().length,
-                            itemBuilder: (context, index) {
-                              return Stack(
-                                fit: StackFit.expand,
-                                children: [
-                                  // 城市图片
-                                  Image.network(
-                                    _getCityImages()[index],
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return Container(
-                                        color: Colors.grey[300],
-                                        child: const Center(
-                                          child: Icon(
-                                            FontAwesomeIcons.imagePortrait,
-                                            size: 64,
-                                            color: Colors.grey,
+                            }
+
+                            return PageView.builder(
+                              controller: _pageController,
+                              onPageChanged: (index) {
+                                setState(() {
+                                  _currentPage = index;
+                                });
+                              },
+                              itemCount: images.length,
+                              itemBuilder: (context, index) {
+                                return Stack(
+                                  fit: StackFit.expand,
+                                  children: [
+                                    // 城市图片
+                                    Image.network(
+                                      images[index],
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return Container(
+                                          color: Colors.grey[300],
+                                          child: const Center(
+                                            child: Icon(
+                                              FontAwesomeIcons.imagePortrait,
+                                              size: 64,
+                                              color: Colors.grey,
+                                            ),
                                           ),
-                                        ),
-                                      );
-                                    },
-                                    loadingBuilder: (context, child, loadingProgress) {
-                                      if (loadingProgress == null) return child;
-                                      return Container(
-                                        color: Colors.grey[200],
-                                        child: Center(
-                                          child: CircularProgressIndicator(
-                                            value: loadingProgress.expectedTotalBytes != null
-                                                ? loadingProgress.cumulativeBytesLoaded /
-                                                    loadingProgress.expectedTotalBytes!
-                                                : null,
-                                            color: const Color(0xFFFF4458),
+                                        );
+                                      },
+                                      loadingBuilder: (context, child, loadingProgress) {
+                                        if (loadingProgress == null) return child;
+                                        return Container(
+                                          color: Colors.grey[200],
+                                          child: Center(
+                                            child: CircularProgressIndicator(
+                                              value: loadingProgress.expectedTotalBytes != null
+                                                  ? loadingProgress.cumulativeBytesLoaded /
+                                                      loadingProgress.expectedTotalBytes!
+                                                  : null,
+                                              color: const Color(0xFFFF4458),
+                                            ),
                                           ),
+                                        );
+                                      },
+                                    ),
+                                    // 增强渐变遮罩 - 更现代的三层渐变
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                          colors: [
+                                            Colors.black.withValues(alpha: 0.3),
+                                            Colors.transparent,
+                                            Colors.black.withValues(alpha: 0.8),
+                                          ],
+                                          stops: const [0.0, 0.5, 1.0],
                                         ),
-                                      );
-                                    },
-                                  ),
-                                  // 增强渐变遮罩 - 更现代的三层渐变
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        begin: Alignment.topCenter,
-                                        end: Alignment.bottomCenter,
-                                        colors: [
-                                          Colors.black.withValues(alpha: 0.3),
-                                          Colors.transparent,
-                                          Colors.black.withValues(alpha: 0.8),
-                                        ],
-                                        stops: const [0.0, 0.5, 1.0],
                                       ),
                                     ),
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
+                                  ],
+                                );
+                              },
+                            );
+                          }),
                           // 现代化轮播指示器
                           Positioned(
                             top: 24,
                             left: 0,
                             right: 0,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: List.generate(
-                                _getCityImages().length,
-                                (index) => AnimatedContainer(
-                                  duration: const Duration(milliseconds: 300),
-                                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                                  width: _currentPage == index ? 24 : 8,
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(4),
-                                    color: _currentPage == index ? Colors.white : Colors.white.withValues(alpha: 0.5),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.3),
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
+                            child: Obx(() {
+                              // 触发 Obx 订阅 currentCity 的变化
+                              final cityDetailController = Get.find<CityDetailStateController>();
+                              final _ = cityDetailController.currentCity.value;
+                              final images = _getCityImages();
+
+                              return Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: List.generate(
+                                  images.length,
+                                  (index) => AnimatedContainer(
+                                    duration: const Duration(milliseconds: 300),
+                                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                                    width: _currentPage == index ? 24 : 8,
+                                    height: 8,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(4),
+                                      color: _currentPage == index ? Colors.white : Colors.white.withValues(alpha: 0.5),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withValues(alpha: 0.3),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ),
+                              );
+                            }),
                           ),
 
                           // 版主管理蒙层 - 在城市名称上方
