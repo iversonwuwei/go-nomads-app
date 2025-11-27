@@ -1,9 +1,5 @@
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
-
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/config/supabase_config.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
@@ -15,6 +11,10 @@ import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/services/image_upload_service.dart';
 import 'package:df_admin_mobile/utils/image_upload_helper.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
+
 import 'maplibre_picker_page.dart';
 
 /// Add Coworking Space Page
@@ -52,10 +52,8 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
   String? _selectedCity;
   String? _selectedCountryId;
   String? _selectedCityId;
-  final GlobalKey<FormFieldState<String>> _cityFieldKey =
-      GlobalKey<FormFieldState<String>>();
-  final GlobalKey<FormFieldState<String>> _countryFieldKey =
-      GlobalKey<FormFieldState<String>>();
+  final GlobalKey<FormFieldState<String>> _cityFieldKey = GlobalKey<FormFieldState<String>>();
+  final GlobalKey<FormFieldState<String>> _countryFieldKey = GlobalKey<FormFieldState<String>>();
 
   // Location
   double _latitude = 0.0;
@@ -148,11 +146,9 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
     return null;
   }
 
-  int get _remainingImageSlots =>
-      maxCoworkingImages - _coworkingImageUrls.length;
+  int get _remainingImageSlots => maxCoworkingImages - _coworkingImageUrls.length;
 
-  String get _imageUploadBucket =>
-      SupabaseConfig.buckets['coworkingPhotos'] ?? SupabaseConfig.defaultBucket;
+  String get _imageUploadBucket => SupabaseConfig.buckets['coworkingPhotos'] ?? SupabaseConfig.defaultBucket;
 
   String get _imageUploadFolder => 'coworking/${_selectedCityId ?? 'general'}';
 
@@ -163,12 +159,9 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
     // 获取 LocationStateController (已在 DI 中注册)
     _locationController = Get.find<LocationStateController>();
 
-    final paramCityId =
-        _normalizeInput(widget.cityId) ?? _getRouteValue('cityId');
-    final paramCityName =
-        _normalizeInput(widget.cityName) ?? _getRouteValue('cityName');
-    final paramCountryName =
-        _normalizeInput(widget.countryName) ?? _getRouteValue('countryName');
+    final paramCityId = _normalizeInput(widget.cityId) ?? _getRouteValue('cityId');
+    final paramCityName = _normalizeInput(widget.cityName) ?? _getRouteValue('cityName');
+    final paramCountryName = _normalizeInput(widget.countryName) ?? _getRouteValue('countryName');
 
     // 仅当参数中包含 cityId 时才进行国家和城市的初始化
     if (paramCityId != null) {
@@ -217,17 +210,13 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
           print('✅ [AddCoworking] 获取到 countryId: $foundCountryId');
         }
       } else {
-        print(
-            '❌ [AddCoworking] 获取城市信息失败: ${cityResult.exceptionOrNull?.message}');
+        print('❌ [AddCoworking] 获取城市信息失败: ${cityResult.exceptionOrNull?.message}');
       }
 
       // 3. 如果通过 API 没获取到 countryId，则使用传入的 countryName 来查找（fallback）
-      if (foundCountryId == null &&
-          fallbackCountryName != null &&
-          fallbackCountryName.isNotEmpty) {
+      if (foundCountryId == null && fallbackCountryName != null && fallbackCountryName.isNotEmpty) {
         final trimmedCountryName = fallbackCountryName.trim();
-        print(
-            '🔍 [AddCoworking] fallback: 使用传入的 countryName: "$trimmedCountryName"');
+        print('🔍 [AddCoworking] fallback: 使用传入的 countryName: "$trimmedCountryName"');
 
         // 根据 countryName 查找对应的国家
         final country = _locationController.countries.firstWhereOrNull((c) {
@@ -237,9 +226,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
           final searchName = trimmedCountryName.toLowerCase();
 
           // 尝试完全匹配（优先级最高）
-          var match = displayName == searchName ||
-              name == searchName ||
-              nameZh == searchName;
+          var match = displayName == searchName || name == searchName || nameZh == searchName;
 
           // 如果完全匹配失败，尝试包含匹配
           if (!match && searchName.length >= 3) {
@@ -247,9 +234,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                 searchName.contains(displayName) ||
                 name.contains(searchName) ||
                 searchName.contains(name) ||
-                (nameZh.isNotEmpty &&
-                    (nameZh.contains(searchName) ||
-                        searchName.contains(nameZh)));
+                (nameZh.isNotEmpty && (nameZh.contains(searchName) || searchName.contains(nameZh)));
           }
 
           return match;
@@ -257,8 +242,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
 
         if (country != null) {
           foundCountryId = country.id;
-          print(
-              '✅ [AddCoworking] 通过 countryName 找到匹配的国家: ${country.name} (ID: ${country.id})');
+          print('✅ [AddCoworking] 通过 countryName 找到匹配的国家: ${country.name} (ID: ${country.id})');
 
           // 加载该国家的城市列表
           await _locationController.loadCitiesByCountry(country.id);
@@ -268,8 +252,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
           foundCity = cities.firstWhereOrNull((c) => c.id == cityId);
 
           if (foundCity != null) {
-            print(
-                '✅ [AddCoworking] 在 ${country.name} 中找到城市: ${foundCity.name}');
+            print('✅ [AddCoworking] 在 ${country.name} 中找到城市: ${foundCity.name}');
           }
         } else {
           print('⚠️ [AddCoworking] 未找到匹配的国家: "$trimmedCountryName"');
@@ -281,8 +264,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
       if (fallbackCountryName != null && fallbackCountryName.isNotEmpty) {
         final trimmedCountryName = fallbackCountryName.trim();
         print('🔍 [AddCoworking] 使用传入的 countryName: "$trimmedCountryName"');
-        print(
-            '🔍 [AddCoworking] countryName长度: ${trimmedCountryName.length}, 编码: ${trimmedCountryName.codeUnits}');
+        print('🔍 [AddCoworking] countryName长度: ${trimmedCountryName.length}, 编码: ${trimmedCountryName.codeUnits}');
 
         // 打印所有国家名称用于调试
         print('📋 [AddCoworking] 可用的国家列表 (前10个):');
@@ -299,9 +281,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
           final searchName = trimmedCountryName.toLowerCase();
 
           // 尝试完全匹配（优先级最高）
-          var match = displayName == searchName ||
-              name == searchName ||
-              nameZh == searchName;
+          var match = displayName == searchName || name == searchName || nameZh == searchName;
 
           // 如果完全匹配失败，尝试包含匹配（但只有在搜索词足够长时）
           if (!match && searchName.length >= 3) {
@@ -309,14 +289,11 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                 searchName.contains(displayName) ||
                 name.contains(searchName) ||
                 searchName.contains(name) ||
-                (nameZh.isNotEmpty &&
-                    (nameZh.contains(searchName) ||
-                        searchName.contains(nameZh)));
+                (nameZh.isNotEmpty && (nameZh.contains(searchName) || searchName.contains(nameZh)));
           }
 
           if (match) {
-            print(
-                '✅ [AddCoworking] 找到匹配: ${c.name} (${c.nameZh}) - displayName: $displayName');
+            print('✅ [AddCoworking] 找到匹配: ${c.name} (${c.nameZh}) - displayName: $displayName');
           }
 
           return match;
@@ -324,8 +301,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
 
         if (country != null) {
           foundCountryId = country.id;
-          print(
-              '✅ [AddCoworking] 找到匹配的国家: ${country.name} (ID: ${country.id})');
+          print('✅ [AddCoworking] 找到匹配的国家: ${country.name} (ID: ${country.id})');
 
           // 加载该国家的城市列表
           await _locationController.loadCitiesByCountry(country.id);
@@ -335,8 +311,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
           foundCity = cities.firstWhereOrNull((c) => c.id == cityId);
 
           if (foundCity != null) {
-            print(
-                '✅ [AddCoworking] 在 ${country.name} 中找到城市: ${foundCity.name}');
+            print('✅ [AddCoworking] 在 ${country.name} 中找到城市: ${foundCity.name}');
           } else {
             print('⚠️ [AddCoworking] 在 ${country.name} 中未找到 cityId=$cityId');
           }
@@ -350,8 +325,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
       // 3. 如果通过 countryName 没找到，则遍历所有国家查找（兜底方案）
       if (foundCountryId == null || foundCity == null) {
         print('🔍 [AddCoworking] 遍历所有国家查找 cityId=$cityId...');
-        print(
-            '📋 [AddCoworking] 国家总数: ${_locationController.countries.length}');
+        print('📋 [AddCoworking] 国家总数: ${_locationController.countries.length}');
 
         for (final country in _locationController.countries) {
           print('   检查国家: ${country.name} (${country.nameZh})...');
@@ -378,8 +352,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
 
       // 4. 如果找到了，设置选中状态
       if (foundCountryId != null && foundCity != null) {
-        final country = _locationController.countries
-            .firstWhereOrNull((c) => c.id == foundCountryId);
+        final country = _locationController.countries.firstWhereOrNull((c) => c.id == foundCountryId);
 
         if (country != null && mounted) {
           setState(() {
@@ -407,8 +380,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
             _selectedCity = fallbackCityName;
             _selectedCityId = cityId;
           });
-          print(
-              '📝 [AddCoworking] 直接使用传入的参数: $fallbackCountryName > $fallbackCityName');
+          print('📝 [AddCoworking] 直接使用传入的参数: $fallbackCountryName > $fallbackCityName');
         }
       }
     } catch (e) {
@@ -421,8 +393,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
           _selectedCity = fallbackCityName;
           _selectedCityId = cityId;
         });
-        print(
-            '🔄 [AddCoworking] 降级处理，使用传入参数: $fallbackCountryName > $fallbackCityName');
+        print('🔄 [AddCoworking] 降级处理，使用传入参数: $fallbackCountryName > $fallbackCityName');
       }
     }
   }
@@ -475,8 +446,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
             child: Form(
               key: _formKey,
               child: ListView(
-                padding: const EdgeInsets.only(
-                    left: 16, right: 16, top: 16, bottom: 16),
+                padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 16),
                 children: [
                   // Image Upload
                   _buildImageSection(),
@@ -527,8 +497,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                   const SizedBox(height: 32),
 
                   // Contact Information
-                  _buildSectionTitle(
-                      l10n.contactInformation, FontAwesomeIcons.addressBook),
+                  _buildSectionTitle(l10n.contactInformation, FontAwesomeIcons.addressBook),
                   const SizedBox(height: 16),
                   _buildTextField(
                     controller: _phoneController,
@@ -666,22 +635,14 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                   _buildDropdown(
                     l10n.noiseLevel,
                     _noiseLevel,
-                    [
-                      l10n.noiseLevelQuiet,
-                      l10n.noiseLevelModerate,
-                      l10n.noiseLevelLoud
-                    ],
+                    [l10n.noiseLevelQuiet, l10n.noiseLevelModerate, l10n.noiseLevelLoud],
                     (value) => setState(() => _noiseLevel = value),
                   ),
                   const SizedBox(height: 16),
                   _buildDropdown(
                     l10n.spaceType,
                     _spaceType,
-                    [
-                      l10n.spaceTypeOpen,
-                      l10n.spaceTypePrivate,
-                      l10n.spaceTypeMixed
-                    ],
+                    [l10n.spaceTypeOpen, l10n.spaceTypePrivate, l10n.spaceTypeMixed],
                     (value) => setState(() => _spaceType = value),
                   ),
                   const SizedBox(height: 16),
@@ -696,36 +657,26 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                   // Amenities
                   _buildSectionTitle(l10n.amenities, FontAwesomeIcons.star),
                   const SizedBox(height: 16),
-                  _buildSwitchTile(l10n.wifi, _hasWifi,
-                      (value) => setState(() => _hasWifi = value)),
-                  _buildSwitchTile(l10n.freeCoffee, _hasCoffee,
-                      (value) => setState(() => _hasCoffee = value)),
-                  _buildSwitchTile(l10n.printer, _hasPrinter,
-                      (value) => setState(() => _hasPrinter = value)),
-                  _buildSwitchTile(l10n.meetingRooms, _hasMeetingRoom,
-                      (value) => setState(() => _hasMeetingRoom = value)),
-                  _buildSwitchTile(l10n.phoneBooth, _hasPhoneBooth,
-                      (value) => setState(() => _hasPhoneBooth = value)),
-                  _buildSwitchTile(l10n.kitchen, _hasKitchen,
-                      (value) => setState(() => _hasKitchen = value)),
-                  _buildSwitchTile(l10n.parking, _hasParking,
-                      (value) => setState(() => _hasParking = value)),
-                  _buildSwitchTile(l10n.locker, _hasLocker,
-                      (value) => setState(() => _hasLocker = value)),
+                  _buildSwitchTile(l10n.wifi, _hasWifi, (value) => setState(() => _hasWifi = value)),
+                  _buildSwitchTile(l10n.freeCoffee, _hasCoffee, (value) => setState(() => _hasCoffee = value)),
+                  _buildSwitchTile(l10n.printer, _hasPrinter, (value) => setState(() => _hasPrinter = value)),
+                  _buildSwitchTile(
+                      l10n.meetingRooms, _hasMeetingRoom, (value) => setState(() => _hasMeetingRoom = value)),
+                  _buildSwitchTile(l10n.phoneBooth, _hasPhoneBooth, (value) => setState(() => _hasPhoneBooth = value)),
+                  _buildSwitchTile(l10n.kitchen, _hasKitchen, (value) => setState(() => _hasKitchen = value)),
+                  _buildSwitchTile(l10n.parking, _hasParking, (value) => setState(() => _hasParking = value)),
+                  _buildSwitchTile(l10n.locker, _hasLocker, (value) => setState(() => _hasLocker = value)),
                   _buildSwitchTile(l10n.twentyFourSevenAccess, _has24HourAccess,
                       (value) => setState(() => _has24HourAccess = value)),
                   _buildSwitchTile(l10n.airConditioning, _hasAirConditioning,
                       (value) => setState(() => _hasAirConditioning = value)),
-                  _buildSwitchTile(l10n.standingDesk, _hasStandingDesk,
-                      (value) => setState(() => _hasStandingDesk = value)),
-                  _buildSwitchTile(l10n.shower, _hasShower,
-                      (value) => setState(() => _hasShower = value)),
-                  _buildSwitchTile(l10n.bikeStorage, _hasBike,
-                      (value) => setState(() => _hasBike = value)),
-                  _buildSwitchTile(l10n.eventSpace, _hasEventSpace,
-                      (value) => setState(() => _hasEventSpace = value)),
-                  _buildSwitchTile(l10n.petFriendly, _hasPetFriendly,
-                      (value) => setState(() => _hasPetFriendly = value)),
+                  _buildSwitchTile(
+                      l10n.standingDesk, _hasStandingDesk, (value) => setState(() => _hasStandingDesk = value)),
+                  _buildSwitchTile(l10n.shower, _hasShower, (value) => setState(() => _hasShower = value)),
+                  _buildSwitchTile(l10n.bikeStorage, _hasBike, (value) => setState(() => _hasBike = value)),
+                  _buildSwitchTile(l10n.eventSpace, _hasEventSpace, (value) => setState(() => _hasEventSpace = value)),
+                  _buildSwitchTile(
+                      l10n.petFriendly, _hasPetFriendly, (value) => setState(() => _hasPetFriendly = value)),
 
                   const SizedBox(height: 32),
                 ],
@@ -888,8 +839,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
               _longitude = result['longitude'] ?? 0.0;
 
               // 只更新名称字段（如果有POI名称的话）
-              if (result['name'] != null &&
-                  result['name'].toString().isNotEmpty) {
+              if (result['name'] != null && result['name'].toString().isNotEmpty) {
                 _nameController.text = result['name'];
               }
             });
@@ -902,6 +852,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
   Widget _buildImageSection() {
     final l10n = AppLocalizations.of(context)!;
     final canAddMore = _remainingImageSlots > 0;
+    final hasImages = _coworkingImageUrls.isNotEmpty;
 
     final tiles = List<Widget>.generate(
       _coworkingImageUrls.length,
@@ -909,7 +860,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
     );
 
     if (canAddMore) {
-      tiles.add(_buildAddImageTile(l10n));
+      tiles.add(_buildAddImageTile(l10n, fullWidth: !hasImages));
     }
 
     return Column(
@@ -935,11 +886,14 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
           ],
         ),
         const SizedBox(height: 12),
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: tiles,
-        ),
+        if (hasImages)
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: tiles,
+          )
+        else
+          tiles.first,
         if (_isUploadingImages) ...[
           const SizedBox(height: 12),
           Row(
@@ -998,11 +952,11 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
     );
   }
 
-  Widget _buildAddImageTile(AppLocalizations l10n) {
+  Widget _buildAddImageTile(AppLocalizations l10n, {bool fullWidth = false}) {
     return GestureDetector(
       onTap: _showImageOptions,
       child: Container(
-        width: 120,
+        width: fullWidth ? double.infinity : 120,
         height: 120,
         decoration: BoxDecoration(
           color: Colors.grey[100],
@@ -1199,8 +1153,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                           width: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
                       : const Icon(FontAwesomeIcons.circleCheck, size: 20),
@@ -1251,9 +1204,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
       final repository = Get.find<ICoworkingRepository>();
 
       // 构建 opening hours 列表
-      final openingHours = _openingHours.isNotEmpty
-          ? _openingHours
-          : ['Monday-Friday: 9:00-18:00']; // 默认营业时间
+      final openingHours = _openingHours.isNotEmpty ? _openingHours : ['Monday-Friday: 9:00-18:00']; // 默认营业时间
 
       // 构建领域实体
       final coworkingSpace = CoworkingSpace(
@@ -1273,26 +1224,17 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
           website: _websiteController.text,
         ),
         spaceInfo: SpaceInfo(
-          imageUrl:
-              _coworkingImageUrls.isNotEmpty ? _coworkingImageUrls.first : '',
+          imageUrl: _coworkingImageUrls.isNotEmpty ? _coworkingImageUrls.first : '',
           images: _coworkingImageUrls,
           rating: 0.0,
           reviewCount: 0,
           description: _descriptionController.text,
         ),
         pricing: Pricing(
-          hourlyRate: _hourlyRateController.text.isNotEmpty
-              ? double.tryParse(_hourlyRateController.text)
-              : null,
-          dailyRate: _dailyRateController.text.isNotEmpty
-              ? double.tryParse(_dailyRateController.text)
-              : null,
-          weeklyRate: _weeklyRateController.text.isNotEmpty
-              ? double.tryParse(_weeklyRateController.text)
-              : null,
-          monthlyRate: _monthlyRateController.text.isNotEmpty
-              ? double.tryParse(_monthlyRateController.text)
-              : null,
+          hourlyRate: _hourlyRateController.text.isNotEmpty ? double.tryParse(_hourlyRateController.text) : null,
+          dailyRate: _dailyRateController.text.isNotEmpty ? double.tryParse(_dailyRateController.text) : null,
+          weeklyRate: _weeklyRateController.text.isNotEmpty ? double.tryParse(_weeklyRateController.text) : null,
+          monthlyRate: _monthlyRateController.text.isNotEmpty ? double.tryParse(_monthlyRateController.text) : null,
           currency: _currency,
           hasFreeTrial: _hasFreeTrial,
           trialDuration: _hasFreeTrial ? _trialDurationController.text : null,
@@ -1315,18 +1257,12 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
           hasPetFriendly: _hasPetFriendly,
         ),
         specs: Specifications(
-          wifiSpeed: _wifiSpeedController.text.isNotEmpty
-              ? double.tryParse(_wifiSpeedController.text)
-              : null,
-          numberOfDesks: _numberOfDesksController.text.isNotEmpty
-              ? int.tryParse(_numberOfDesksController.text)
-              : null,
+          wifiSpeed: _wifiSpeedController.text.isNotEmpty ? double.tryParse(_wifiSpeedController.text) : null,
+          numberOfDesks: _numberOfDesksController.text.isNotEmpty ? int.tryParse(_numberOfDesksController.text) : null,
           numberOfMeetingRooms: _numberOfMeetingRoomsController.text.isNotEmpty
               ? int.tryParse(_numberOfMeetingRoomsController.text)
               : null,
-          capacity: _capacityController.text.isNotEmpty
-              ? int.tryParse(_capacityController.text)
-              : null,
+          capacity: _capacityController.text.isNotEmpty ? int.tryParse(_capacityController.text) : null,
           noiseLevel: NoiseLevel.fromString(_noiseLevel),
           hasNaturalLight: _hasNaturalLight,
           spaceType: SpaceType.fromString(_spaceType),
@@ -1383,10 +1319,8 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
         const SizedBox(height: 8),
         Obx(() {
           final countryList = _locationController.countries;
-          final isLoadingCountries =
-              _locationController.isLoadingCountries.value;
-          final localeCode =
-              Localizations.localeOf(context).languageCode.toLowerCase();
+          final isLoadingCountries = _locationController.isLoadingCountries.value;
+          final localeCode = Localizations.localeOf(context).languageCode.toLowerCase();
 
           final countryEntries = countryList
               .where((country) => country.isActive)
@@ -1431,8 +1365,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                     title: l10n.selectCountry,
                     initialValue: _selectedCountry,
                     onSelected: (value) {
-                      final selectedEntry = countryEntries
-                          .firstWhereOrNull((entry) => entry.value == value);
+                      final selectedEntry = countryEntries.firstWhereOrNull((entry) => entry.value == value);
                       if (selectedEntry == null) {
                         return;
                       }
@@ -1448,8 +1381,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                       final cityFieldState = _cityFieldKey.currentState;
                       cityFieldState?.didChange(null);
 
-                      _locationController
-                          .loadCitiesByCountry(selectedEntry.key.id);
+                      _locationController.loadCitiesByCountry(selectedEntry.key.id);
                     },
                   );
                 },
@@ -1479,8 +1411,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: displayCountry == null ||
-                                  displayCountry.isEmpty
+                          color: displayCountry == null || displayCountry.isEmpty
                               ? Theme.of(context).hintColor
                               : Theme.of(context).textTheme.bodyMedium?.color,
                         ),
@@ -1512,16 +1443,11 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
           final selectedCountryId = _selectedCountryId;
           final cityMap = _locationController.citiesByCountry;
           final _ = cityMap.length; // 触发 Obx 监听
-          final cachedCities = selectedCountryId == null
-              ? const <CityOption>[]
-              : (cityMap[selectedCountryId] ?? const <CityOption>[]);
+          final cachedCities =
+              selectedCountryId == null ? const <CityOption>[] : (cityMap[selectedCountryId] ?? const <CityOption>[]);
 
-          final cachedCityNames = cachedCities
-              .map((city) => city.name)
-              .where((name) => name.isNotEmpty)
-              .toSet()
-              .toList()
-            ..sort();
+          final cachedCityNames =
+              cachedCities.map((city) => city.name).where((name) => name.isNotEmpty).toSet().toList()..sort();
 
           return FormField<String>(
             key: _cityFieldKey,
@@ -1544,8 +1470,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                         FocusScope.of(context).unfocus();
 
                         // 使用缓存的城市列表
-                        List<String> options =
-                            List<String>.from(cachedCityNames);
+                        List<String> options = List<String>.from(cachedCityNames);
 
                         if (options.isEmpty) {
                           AppToast.info(l10n.noData, title: l10n.notice);
@@ -1557,8 +1482,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                           title: l10n.selectCity,
                           initialValue: _selectedCity,
                           onSelected: (value) {
-                            final selectedCity = cachedCities
-                                .firstWhereOrNull((city) => city.name == value);
+                            final selectedCity = cachedCities.firstWhereOrNull((city) => city.name == value);
 
                             setState(() {
                               _selectedCity = value;
@@ -1577,9 +1501,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     filled: true,
-                    fillColor: (_selectedCountryId == null || isLoadingCities)
-                        ? Colors.grey[200]
-                        : Colors.grey[50],
+                    fillColor: (_selectedCountryId == null || isLoadingCities) ? Colors.grey[200] : Colors.grey[50],
                     suffixIcon: isLoadingCities
                         ? const Padding(
                             padding: EdgeInsets.all(8),
@@ -1681,11 +1603,8 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                     title: Text(
                       option,
                       style: TextStyle(
-                        color: isSelected
-                            ? const Color(0xFFFF4458)
-                            : Colors.black87,
-                        fontWeight:
-                            isSelected ? FontWeight.w600 : FontWeight.normal,
+                        color: isSelected ? const Color(0xFFFF4458) : Colors.black87,
+                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                       ),
                     ),
                     trailing: isSelected
