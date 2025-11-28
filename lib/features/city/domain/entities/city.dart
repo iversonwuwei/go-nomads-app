@@ -190,36 +190,12 @@ class City {
     final weather = json['weather'] as Map<String, dynamic>?;
     final moderatorData = json['moderator'] as Map<String, dynamic>?;
 
-    // 调试日志
-    print('🔍 City.fromJson: reviewCount=${json['reviewCount']}, averageCost=${json['averageCost']}');
-    
     // 解析横屏图片列表
     final rawLandscapeImageUrls = json['landscapeImageUrls'];
-    print('🖼️ City.fromJson 横屏图片原始数据:');
-    print('   类型: ${rawLandscapeImageUrls?.runtimeType}');
-    print('   值: $rawLandscapeImageUrls');
-    
     List<String>? landscapeImageUrls;
     if (rawLandscapeImageUrls != null) {
       if (rawLandscapeImageUrls is List) {
         landscapeImageUrls = rawLandscapeImageUrls.map((e) => e.toString()).toList();
-        print('   解析后: $landscapeImageUrls');
-        print('   数量: ${landscapeImageUrls.length}');
-      } else if (rawLandscapeImageUrls is String) {
-        // 可能是 JSON 字符串数组
-        try {
-          final parsed = List<String>.from(
-            (rawLandscapeImageUrls as String).isNotEmpty 
-              ? (rawLandscapeImageUrls.startsWith('[') 
-                  ? (json['landscapeImageUrls'] as List).map((e) => e.toString())
-                  : [rawLandscapeImageUrls])
-              : []
-          );
-          landscapeImageUrls = parsed;
-          print('   从字符串解析: $landscapeImageUrls');
-        } catch (e) {
-          print('   解析字符串失败: $e');
-        }
       }
     }
 

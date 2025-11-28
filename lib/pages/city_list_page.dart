@@ -23,8 +23,7 @@ class CityListPage extends StatefulWidget {
   State<CityListPage> createState() => _CityListPageState();
 }
 
-class _CityListPageState extends State<CityListPage>
-    with RouteAwareRefreshMixin<CityListPage> {
+class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin<CityListPage> {
   final CityStateController controller = Get.find<CityStateController>();
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -37,6 +36,12 @@ class _CityListPageState extends State<CityListPage>
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+
+    // 页面初始化时，始终从后端重新加载数据
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      print('🏙️ CityListPage 初始化，从后端加载最新城市数据');
+      controller.loadInitialCities(refresh: true);
+    });
 
     // 异步加载数据,不阻塞页面显示
     Future.microtask(() => _loadFollowedCities());
@@ -160,9 +165,7 @@ class _CityListPageState extends State<CityListPage>
 
               // 城市列表
               Expanded(
-                child: _filteredCities.isEmpty
-                    ? _buildEmptyState()
-                    : _buildCityList(isMobile),
+                child: _filteredCities.isEmpty ? _buildEmptyState() : _buildCityList(isMobile),
               ),
             ],
           );
@@ -190,12 +193,10 @@ class _CityListPageState extends State<CityListPage>
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Obx(() {
-                    final hasFilters =
-                        controller.hasActiveFilters || _searchQuery.isNotEmpty;
+                    final hasFilters = controller.hasActiveFilters || _searchQuery.isNotEmpty;
                     if (!hasFilters) return const SizedBox.shrink();
                     return Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFF4458).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
@@ -240,8 +241,7 @@ class _CityListPageState extends State<CityListPage>
           ),
           child: Row(
             children: [
-              const Icon(FontAwesomeIcons.magnifyingGlass,
-                  color: AppColors.textSecondary, size: 20),
+              const Icon(FontAwesomeIcons.magnifyingGlass, color: AppColors.textSecondary, size: 20),
               const SizedBox(width: 12),
               Expanded(
                 child: TextField(
@@ -312,8 +312,7 @@ class _CityListPageState extends State<CityListPage>
                 },
                 borderRadius: BorderRadius.circular(6),
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFF4458),
                     borderRadius: BorderRadius.circular(6),
@@ -345,8 +344,7 @@ class _CityListPageState extends State<CityListPage>
             isMobile ? 16 : 20,
             100, // 底部留白给导航栏
           ),
-          itemCount: controller.cities.length +
-              (controller.hasMoreData ? 1 : 0), // +1 for loading indicator
+          itemCount: controller.cities.length + (controller.hasMoreData ? 1 : 0), // +1 for loading indicator
           itemBuilder: (context, index) {
             // 加载指示器
             if (index == controller.cities.length) {
@@ -397,7 +395,7 @@ class _CityListPageState extends State<CityListPage>
     // 调试日志
     print(
         '🏙️ City: ${city.name}, ReviewCount: ${city.reviewCount}, AverageCost: ${city.averageCost}, OverallScore: ${city.overallScore}');
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -419,8 +417,7 @@ class _CityListPageState extends State<CityListPage>
               builder: (context) => CityDetailPage(
                 cityId: city.id,
                 cityName: city.name,
-                cityImage: city.imageUrl ??
-                    'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=400',
+                cityImage: city.imageUrl ?? 'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=400',
                 overallScore: city.overallScore ?? 0.0,
                 reviewCount: city.reviewCount ?? 0,
               ),
@@ -435,8 +432,7 @@ class _CityListPageState extends State<CityListPage>
             Stack(
               children: [
                 ClipRRect(
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(12)),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                   child: AspectRatio(
                     aspectRatio: 16 / 9,
                     child: city.imageUrl != null && city.imageUrl!.isNotEmpty
@@ -446,15 +442,13 @@ class _CityListPageState extends State<CityListPage>
                             errorBuilder: (context, error, stackTrace) {
                               return Container(
                                 color: Colors.grey[200],
-                                child: const Icon(FontAwesomeIcons.imagePortrait,
-                                    size: 48),
+                                child: const Icon(FontAwesomeIcons.imagePortrait, size: 48),
                               );
                             },
                           )
                         : Container(
                             color: Colors.grey[200],
-                            child:
-                                const Icon(FontAwesomeIcons.imagePortrait, size: 48),
+                            child: const Icon(FontAwesomeIcons.imagePortrait, size: 48),
                           ),
                   ),
                 ),
@@ -500,8 +494,7 @@ class _CityListPageState extends State<CityListPage>
                             const SizedBox(height: 4),
                             Row(
                               children: [
-                                const Icon(FontAwesomeIcons.locationDot,
-                                    size: 14, color: AppColors.textSecondary),
+                                const Icon(FontAwesomeIcons.locationDot, size: 14, color: AppColors.textSecondary),
                                 const SizedBox(width: 4),
                                 Text(
                                   city.country ?? '',
@@ -564,9 +557,7 @@ class _CityListPageState extends State<CityListPage>
                       _buildInfoChip(
                         FontAwesomeIcons.dollarSign,
                         '${city.averageCost != null && city.averageCost! > 0 ? city.averageCost!.toInt() : 0}',
-                        city.averageCost != null && city.averageCost! > 0
-                            ? Colors.green
-                            : Colors.grey,
+                        city.averageCost != null && city.averageCost! > 0 ? Colors.green : Colors.grey,
                       ),
                       if (city.airQualityIndex != null)
                         _buildInfoChip(
@@ -765,9 +756,7 @@ class _CityListPageState extends State<CityListPage>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isFollowed
-              ? const Color(0xFF8B5CF6)
-              : Colors.white.withValues(alpha: 0.90),
+          color: isFollowed ? const Color(0xFF8B5CF6) : Colors.white.withValues(alpha: 0.90),
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
@@ -964,8 +953,7 @@ class _CityFilterDrawer extends StatelessWidget {
                         spacing: 8,
                         runSpacing: 8,
                         children: controller.availableRegions.map((region) {
-                          final isSelected =
-                              controller.selectedRegions.contains(region);
+                          final isSelected = controller.selectedRegions.contains(region);
                           return FilterChip(
                             label: Text(region),
                             selected: isSelected,
@@ -976,21 +964,14 @@ class _CityFilterDrawer extends StatelessWidget {
                                 controller.selectedRegions.remove(region);
                               }
                             },
-                            selectedColor:
-                                const Color(0xFFFF4458).withValues(alpha: 0.1),
+                            selectedColor: const Color(0xFFFF4458).withValues(alpha: 0.1),
                             checkmarkColor: const Color(0xFFFF4458),
                             labelStyle: TextStyle(
-                              color: isSelected
-                                  ? const Color(0xFFFF4458)
-                                  : AppColors.textSecondary,
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.normal,
+                              color: isSelected ? const Color(0xFFFF4458) : AppColors.textSecondary,
+                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                             ),
                             side: BorderSide(
-                              color: isSelected
-                                  ? const Color(0xFFFF4458)
-                                  : AppColors.borderLight,
+                              color: isSelected ? const Color(0xFFFF4458) : AppColors.borderLight,
                             ),
                           );
                         }).toList(),
@@ -1005,8 +986,7 @@ class _CityFilterDrawer extends StatelessWidget {
                         spacing: 8,
                         runSpacing: 8,
                         children: controller.availableCountries.map((country) {
-                          final isSelected =
-                              controller.selectedCountries.contains(country);
+                          final isSelected = controller.selectedCountries.contains(country);
                           return FilterChip(
                             label: Text(country),
                             selected: isSelected,
@@ -1017,21 +997,14 @@ class _CityFilterDrawer extends StatelessWidget {
                                 controller.selectedCountries.remove(country);
                               }
                             },
-                            selectedColor:
-                                const Color(0xFFFF4458).withValues(alpha: 0.1),
+                            selectedColor: const Color(0xFFFF4458).withValues(alpha: 0.1),
                             checkmarkColor: const Color(0xFFFF4458),
                             labelStyle: TextStyle(
-                              color: isSelected
-                                  ? const Color(0xFFFF4458)
-                                  : AppColors.textSecondary,
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.normal,
+                              color: isSelected ? const Color(0xFFFF4458) : AppColors.textSecondary,
+                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                             ),
                             side: BorderSide(
-                              color: isSelected
-                                  ? const Color(0xFFFF4458)
-                                  : AppColors.borderLight,
+                              color: isSelected ? const Color(0xFFFF4458) : AppColors.borderLight,
                             ),
                           );
                         }).toList(),
@@ -1046,8 +1019,7 @@ class _CityFilterDrawer extends StatelessWidget {
                         spacing: 8,
                         runSpacing: 8,
                         children: controller.availableCities.map((city) {
-                          final isSelected =
-                              controller.selectedCities.contains(city);
+                          final isSelected = controller.selectedCities.contains(city);
                           return FilterChip(
                             label: Text(city),
                             selected: isSelected,
@@ -1058,21 +1030,14 @@ class _CityFilterDrawer extends StatelessWidget {
                                 controller.selectedCities.remove(city);
                               }
                             },
-                            selectedColor:
-                                const Color(0xFFFF4458).withValues(alpha: 0.1),
+                            selectedColor: const Color(0xFFFF4458).withValues(alpha: 0.1),
                             checkmarkColor: const Color(0xFFFF4458),
                             labelStyle: TextStyle(
-                              color: isSelected
-                                  ? const Color(0xFFFF4458)
-                                  : AppColors.textSecondary,
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.normal,
+                              color: isSelected ? const Color(0xFFFF4458) : AppColors.textSecondary,
+                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                             ),
                             side: BorderSide(
-                              color: isSelected
-                                  ? const Color(0xFFFF4458)
-                                  : AppColors.borderLight,
+                              color: isSelected ? const Color(0xFFFF4458) : AppColors.borderLight,
                             ),
                           );
                         }).toList(),
@@ -1202,8 +1167,7 @@ class _CityFilterDrawer extends StatelessWidget {
                         spacing: 8,
                         runSpacing: 8,
                         children: controller.availableClimates.map((climate) {
-                          final isSelected =
-                              controller.selectedClimates.contains(climate);
+                          final isSelected = controller.selectedClimates.contains(climate);
                           return FilterChip(
                             label: Text(climate),
                             selected: isSelected,
@@ -1214,21 +1178,14 @@ class _CityFilterDrawer extends StatelessWidget {
                                 controller.selectedClimates.remove(climate);
                               }
                             },
-                            selectedColor:
-                                const Color(0xFFFF4458).withValues(alpha: 0.1),
+                            selectedColor: const Color(0xFFFF4458).withValues(alpha: 0.1),
                             checkmarkColor: const Color(0xFFFF4458),
                             labelStyle: TextStyle(
-                              color: isSelected
-                                  ? const Color(0xFFFF4458)
-                                  : AppColors.textSecondary,
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.normal,
+                              color: isSelected ? const Color(0xFFFF4458) : AppColors.textSecondary,
+                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                             ),
                             side: BorderSide(
-                              color: isSelected
-                                  ? const Color(0xFFFF4458)
-                                  : AppColors.borderLight,
+                              color: isSelected ? const Color(0xFFFF4458) : AppColors.borderLight,
                             ),
                           );
                         }).toList(),
