@@ -5,8 +5,7 @@ import 'package:df_admin_mobile/core/core.dart';
 import 'package:df_admin_mobile/features/ai/domain/repositories/iai_repository.dart';
 import 'package:df_admin_mobile/features/async_task/domain/entities/async_task.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/digital_nomad_guide.dart';
-import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan.dart'
-    as entity;
+import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan.dart' as entity;
 import 'package:df_admin_mobile/services/database/digital_nomad_guide_dao.dart';
 import 'package:df_admin_mobile/services/database_service.dart';
 import 'package:df_admin_mobile/services/http_service.dart';
@@ -50,8 +49,7 @@ class AiRepository implements IAiRepository {
           final amount = double.tryParse(parts[1]);
           if (amount != null) {
             finalCustomBudget = amount;
-            finalBudget =
-                amount < 3000 ? 'low' : (amount < 10000 ? 'medium' : 'high');
+            finalBudget = amount < 3000 ? 'low' : (amount < 10000 ? 'medium' : 'high');
           }
         }
       }
@@ -67,11 +65,9 @@ class AiRepository implements IAiRepository {
           'travelStyle': travelStyle,
           'interests': interests,
           if (departureLocation != null) 'departureLocation': departureLocation,
-          if (finalCustomBudget != null)
-            'customBudget': finalCustomBudget.toString(),
+          if (finalCustomBudget != null) 'customBudget': finalCustomBudget.toString(),
           if (finalCurrency != null) 'currency': finalCurrency,
-          if (selectedAttractions != null)
-            'selectedAttractions': selectedAttractions,
+          if (selectedAttractions != null) 'selectedAttractions': selectedAttractions,
         },
       );
 
@@ -130,8 +126,7 @@ class AiRepository implements IAiRepository {
   }
 
   @override
-  Future<Result<DigitalNomadGuide?>> getDigitalNomadGuideFromBackend(
-      String cityId) async {
+  Future<Result<DigitalNomadGuide?>> getDigitalNomadGuideFromBackend(String cityId) async {
     try {
       print('🔍 正在从后端获取数字游民指南...');
       print('   城市ID: $cityId');
@@ -139,21 +134,23 @@ class AiRepository implements IAiRepository {
 
       final response = await _httpService.get('/cities/$cityId/guide');
 
-      if (response.statusCode == 404) {
-        print('ℹ️ 后端没有该城市的指南数据');
-        return Result.success(null);
-      }
-
       if (response.statusCode == 200) {
-        final guideData = response.data as Map<String, dynamic>;
-        final guide = DigitalNomadGuide.fromMap(guideData);
-        print('✅ 成功获取指南数据');
-        return Result.success(guide);
+        // HttpService 的拦截器会自动解包 API 响应，response.data 就是内层的 data 字段
+        // 如果 data 为 null，表示该城市尚未生成指南，这是正常状态
+        final guideData = response.data;
+
+        if (guideData != null && guideData is Map<String, dynamic>) {
+          final guide = DigitalNomadGuide.fromMap(guideData);
+          print('✅ 成功获取指南数据');
+          return Result.success(guide);
+        } else {
+          print('ℹ️ 后端没有该城市的指南数据');
+          return Result.success(null);
+        }
       }
 
       print('⚠️ 意外的响应状态: ${response.statusCode}');
-      return Result.failure(
-          UnknownException('Unexpected status: ${response.statusCode}'));
+      return Result.failure(UnknownException('Unexpected status: ${response.statusCode}'));
     } on DioException catch (e) {
       // 特殊处理 404 - 表示该城市尚未生成指南
       if (e.response?.statusCode == 404) {
@@ -186,12 +183,9 @@ class AiRepository implements IAiRepository {
       final signalRService = SignalRService();
 
       // SignalR Hub 连接到 MessageService 的 ai-progress hub (端口 5005)
-      final host = ApiConfig.usePhysicalDevice
-          ? ApiConfig.physicalDeviceHost
-          : ApiConfig.developmentHost;
+      final host = ApiConfig.usePhysicalDevice ? ApiConfig.physicalDeviceHost : ApiConfig.developmentHost;
       final messageServiceUrl = 'http://$host:5005'; // MessageService 端口 5005
-      print(
-          '🔌 连接到 MessageService SignalR Hub: $messageServiceUrl/hubs/ai-progress');
+      print('🔌 连接到 MessageService SignalR Hub: $messageServiceUrl/hubs/ai-progress');
 
       if (!signalRService.isConnected) {
         await signalRService.connect(messageServiceUrl);
