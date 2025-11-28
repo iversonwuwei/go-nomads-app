@@ -1195,14 +1195,6 @@ class _CityDetailPageState extends State<CityDetailPage>
     final cityDetailController = Get.find<CityDetailStateController>();
     final city = cityDetailController.currentCity.value;
 
-    // 调试日志
-    print('🖼️ _getCityImages 调试:');
-    print('   city: ${city?.name}');
-    print('   landscapeImageUrls: ${city?.landscapeImageUrls}');
-    print('   landscapeImageUrls长度: ${city?.landscapeImageUrls?.length ?? 0}');
-    print('   imageUrl: ${city?.imageUrl}');
-    print('   portraitImageUrl: ${city?.portraitImageUrl}');
-
     // 优先使用后端返回的主图（最新的 imageUrl 或 portraitImageUrl）
     final latestMainImage = city?.imageUrl ?? city?.portraitImageUrl ?? cityImage;
 

@@ -10,6 +10,7 @@ import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_
 import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
+import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/copyright_widget.dart';
 import 'package:flutter/material.dart';
@@ -28,7 +29,8 @@ class DataServicePage extends StatefulWidget {
   State<DataServicePage> createState() => _DataServicePageState();
 }
 
-class _DataServicePageState extends State<DataServicePage> with WidgetsBindingObserver {
+class _DataServicePageState extends State<DataServicePage>
+    with WidgetsBindingObserver, RouteAwareRefreshMixin<DataServicePage> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
   final GlobalKey _citiesListKey = GlobalKey();
@@ -87,6 +89,16 @@ class _DataServicePageState extends State<DataServicePage> with WidgetsBindingOb
     }
 
     super.dispose();
+  }
+
+  /// 当从其他页面返回时，重新加载数据
+  @override
+  Future<void> onRouteResume() async {
+    print('🔄 DataServicePage: 从其他页面返回，重新加载数据');
+    await _cityController.loadInitialCities(refresh: true).catchError((e) {
+      print('⚠️ 城市数据加载失败: $e');
+      return null;
+    });
   }
 
   @override
