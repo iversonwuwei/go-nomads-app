@@ -1,6 +1,7 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/notification/domain/entities/app_notification.dart';
 import 'package:df_admin_mobile/features/notification/presentation/controllers/notification_state_controller.dart';
+import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -351,24 +352,51 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
   }
 
   void _handleNotificationTap(AppNotification notification) {
+    print('🔔 _handleNotificationTap: type=${notification.type}');
+    print('   relatedId: ${notification.relatedId}');
+    print('   metadata: ${notification.metadata}');
+    
     switch (notification.type) {
       case NotificationType.moderatorApplication:
-        // 管理员：跳转到审核页面（待实现）
-        // Get.toNamed('/admin/moderator-applications');
-        AppToast.info('审核功能开发中');
+        // 管理员：跳转到申请详情页面
+        // 优先使用 metadata 中的 applicationId，其次使用 relatedId
+        final applicationId = notification.metadata?['applicationId'] ?? notification.relatedId;
+        print('   applicationId to use: $applicationId');
+
+        if (applicationId != null && applicationId.toString().isNotEmpty) {
+          Get.toNamed(
+            AppRoutes.moderatorApplicationDetail,
+            arguments: {'applicationId': applicationId.toString()},
+          );
+        } else {
+          AppToast.error('无法获取申请ID，请刷新通知列表');
+        }
         break;
 
       case NotificationType.moderatorApproved:
       case NotificationType.moderatorRejected:
         // 跳转到相关城市页面
-        if (notification.relatedId != null) {
-          Get.toNamed('/city/${notification.relatedId}');
+        final cityId = notification.metadata?['cityId'] ?? notification.relatedId;
+        if (cityId != null) {
+          Get.toNamed(
+            AppRoutes.cityDetail,
+            arguments: {
+              'cityId': cityId,
+              'cityName': notification.metadata?['cityName'] ?? '',
+            },
+          );
         }
         break;
 
       case NotificationType.cityUpdate:
         if (notification.relatedId != null) {
-          Get.toNamed('/city/${notification.relatedId}');
+          Get.toNamed(
+            AppRoutes.cityDetail,
+            arguments: {
+              'cityId': notification.relatedId,
+              'cityName': notification.metadata?['cityName'] ?? '',
+            },
+          );
         }
         break;
 

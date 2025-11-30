@@ -1,3 +1,4 @@
+import 'package:df_admin_mobile/features/moderator/presentation/pages/moderator_application_detail_page.dart';
 import 'package:df_admin_mobile/layouts/bottom_nav_layout.dart';
 import 'package:df_admin_mobile/middlewares/auth_middleware.dart';
 import 'package:df_admin_mobile/pages/add_cost_page.dart';
@@ -124,6 +125,11 @@ class AppRoutes {
   // 社区相关路由
   // ============================================================================
   static const String community = '/community';
+
+  // ============================================================================
+  // 管理员路由
+  // ============================================================================
+  static const String moderatorApplicationDetail = '/admin/moderator-application-detail';
 
   // ============================================================================
   // 其他路由
@@ -440,6 +446,20 @@ class AppRoutes {
     GetPage(
       name: community,
       page: () => const CommunityPage(),
+      middlewares: [AuthMiddleware()],
+    ),
+
+    // ============================================================================
+    // 🔒 管理员相关路由 - 需要认证
+    // ============================================================================
+    GetPage(
+      name: moderatorApplicationDetail,
+      page: () {
+        final args = Get.arguments as Map<String, dynamic>? ?? {};
+        return ModeratorApplicationDetailPage(
+          applicationId: args['applicationId'] ?? '',
+        );
+      },
       middlewares: [AuthMiddleware()],
     ),
   ];

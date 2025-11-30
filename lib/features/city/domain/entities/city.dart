@@ -14,8 +14,8 @@ class Moderator {
 
   factory Moderator.fromJson(Map<String, dynamic> json) {
     return Moderator(
-      id: json['id'] as String,
-      name: json['name'] as String,
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? '',
       email: json['email'] as String?,
       avatar: json['avatar'] as String?,
     );
