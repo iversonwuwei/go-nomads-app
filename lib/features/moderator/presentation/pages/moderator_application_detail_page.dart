@@ -154,6 +154,40 @@ class _ModeratorApplicationDetailPageState
     }
   }
 
+  Future<void> _handleRevoke() async {
+    final confirmed = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('确认撤销'),
+        content: Text('确定要撤销 ${_application?.userName ?? "该用户"} 的版主资格吗？\n\n此操作将移除该用户在此城市的所有版主权限。'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Get.back(result: true),
+            child: const Text('确认撤销'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      setState(() => _isProcessing = true);
+
+      try {
+        await _repository.revokeModerator(widget.applicationId);
+        AppToast.success('已撤销版主资格');
+        Get.back(result: true);
+      } catch (e) {
+        AppToast.error('撤销失败: $e');
+      } finally {
+        setState(() => _isProcessing = false);
+      }
+    }
+  }
+
   Future<void> _processApplication(String action,
       {String? rejectionReason}) async {
     setState(() => _isProcessing = true);
@@ -262,6 +296,9 @@ class _ModeratorApplicationDetailPageState
 
           // 操作按钮（仅待处理状态显示）
           if (_application!.isPending) _buildActionButtons(),
+
+          // 撤销版主按钮（仅已通过状态显示）
+          if (_application!.isApproved) _buildRevokeButton(),
         ],
       ),
     );
@@ -568,6 +605,28 @@ class _ModeratorApplicationDetailPageState
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildRevokeButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: _isProcessing ? null : _handleRevoke,
+        icon: _isProcessing
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : const FaIcon(FontAwesomeIcons.userSlash, size: 18),
+        label: const Text('撤销版主资格'),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: Colors.red,
+          side: const BorderSide(color: Colors.red),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+        ),
+      ),
     );
   }
 

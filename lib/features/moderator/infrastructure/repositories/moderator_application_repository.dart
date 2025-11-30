@@ -125,4 +125,18 @@ class ModeratorApplicationRepository implements IModeratorApplicationRepository 
 
     return data.map((key, value) => MapEntry(key, value as int));
   }
+
+  @override
+  Future<void> revokeModerator(String applicationId) async {
+    final response = await _httpService.post(
+      '/cities/moderator/revoke',
+      data: {
+        'applicationId': applicationId,
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(response.data?['message'] ?? '撤销版主失败');
+    }
+  }
 }
