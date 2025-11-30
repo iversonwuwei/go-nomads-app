@@ -112,6 +112,29 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
             backgroundColor: Colors.white,
             iconTheme: const IconThemeData(color: Colors.black87),
             leading: const SliverBackButton(),
+            actions: [
+              // 图片计数器 - 与返回按钮同一水平线
+              if (hasMultipleImages)
+                Container(
+                  margin: const EdgeInsets.only(right: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withAlpha(128),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '${_currentImageIndex + 1}/${allImages.length}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
                 _space.name,
@@ -195,30 +218,6 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                               shape: BoxShape.circle,
                               color: _currentImageIndex == index ? Colors.white : Colors.white.withAlpha(128),
                             ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  // 图片计数器
-                  if (hasMultipleImages)
-                    Positioned(
-                      top: 100,
-                      right: 16,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withAlpha(128),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          '${_currentImageIndex + 1}/${allImages.length}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 12,
                           ),
                         ),
                       ),
