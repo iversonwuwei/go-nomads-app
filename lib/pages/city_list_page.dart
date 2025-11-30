@@ -38,9 +38,14 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
     super.initState();
     _scrollController.addListener(_onScroll);
 
-    // 页面初始化时，始终从后端重新加载数据
+    // 页面初始化时，清空搜索条件并从后端重新加载数据
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      print('🏙️ CityListPage 初始化，从后端加载最新城市数据');
+      print('🏙️ CityListPage 初始化，清空搜索条件并加载最新城市数据');
+      // 清空搜索条件
+      _searchQuery = '';
+      _searchController.clear();
+      controller.searchQuery.value = '';
+      // 重新加载数据
       controller.loadInitialCities(refresh: true);
     });
 
@@ -61,10 +66,7 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
   void dispose() {
     _searchController.dispose();
     _scrollController.dispose();
-
-    // 清空搜索条件和结果
-    controller.searchQuery.value = '';
-
+    // 注意：不再清除共享控制器的 searchQuery，每个页面管理自己的搜索状态
     super.dispose();
   }
 
@@ -98,6 +100,12 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
 
   @override
   Future<void> onRouteResume() async {
+    // 返回页面时清空搜索条件
+    setState(() {
+      _searchQuery = '';
+      _searchController.clear();
+    });
+    controller.searchQuery.value = '';
     await controller.loadInitialCities();
     _syncFollowedStatusFromController();
   }
@@ -450,15 +458,23 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
                           ),
                   ),
                 ),
-                // 左上角：生成图片按钮
-                Positioned(
-                  top: 12,
-                  left: 12,
-                  child: _GenerateImageButton(
-                    cityId: city.id,
-                    cityName: city.name,
-                  ),
-                ),
+                // 左上角：生成图片按钮（仅管理员可见）
+                Obx(() {
+                  final authController = Get.find<AuthStateController>();
+                  final user = authController.currentUser.value;
+                  final isAdmin = user?.role.toLowerCase() == 'admin';
+
+                  if (!isAdmin) return const SizedBox.shrink();
+
+                  return Positioned(
+                    top: 12,
+                    left: 12,
+                    child: _GenerateImageButton(
+                      cityId: city.id,
+                      cityName: city.name,
+                    ),
+                  );
+                }),
                 // 右上角：关注按钮
                 Positioned(
                   top: 12,

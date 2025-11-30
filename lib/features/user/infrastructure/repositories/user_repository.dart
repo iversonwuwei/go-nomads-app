@@ -1,11 +1,11 @@
-import 'package:dio/dio.dart';
-
 import 'package:df_admin_mobile/config/api_config.dart';
 import 'package:df_admin_mobile/core/core.dart';
-import 'package:df_admin_mobile/services/token_storage_service.dart';
+import 'package:df_admin_mobile/features/user/domain/entities/nomad_stats.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
 import 'package:df_admin_mobile/features/user/domain/repositories/iuser_repository.dart';
 import 'package:df_admin_mobile/features/user/infrastructure/models/user_dto.dart';
+import 'package:df_admin_mobile/services/token_storage_service.dart';
+import 'package:dio/dio.dart';
 
 /// 用户仓储实现
 class UserRepository extends BaseRepository implements IUserRepository {
@@ -279,6 +279,85 @@ class UserRepository extends BaseRepository implements IUserRepository {
       return (response.data as List<dynamic>)
           .map((id) => id as String)
           .toList();
+    });
+  }
+
+  // ==================== 用户统计数据相关方法 ====================
+
+  @override
+  Future<Result<NomadStats>> getCurrentUserStats() async {
+    return execute(() async {
+      final token = await _tokenService.getAccessToken();
+
+      if (token == null || token.isEmpty) {
+        throw UnauthorizedException('未登录', code: 'NOT_AUTHENTICATED');
+      }
+
+      final response = await _dio.get(
+        '${ApiConfig.currentApiBaseUrl}${ApiConfig.userMeStatsEndpoint}',
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      );
+
+      if (response.data['success'] == true && response.data['data'] != null) {
+        return NomadStats.fromJson(response.data['data'] as Map<String, dynamic>);
+      }
+
+      throw ServerException('获取用户统计数据失败', code: 'GET_USER_STATS_FAILED');
+    });
+  }
+
+  @override
+  Future<Result<NomadStats>> getUserStats(String userId) async {
+    return execute(() async {
+      final token = await _tokenService.getAccessToken();
+
+      final endpoint = '${ApiConfig.usersEndpoint}/$userId/stats';
+      final response = await _dio.get(
+        '${ApiConfig.currentApiBaseUrl}$endpoint',
+        options: Options(
+          headers: {
+            if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      if (response.data['success'] == true && response.data['data'] != null) {
+        return NomadStats.fromJson(response.data['data'] as Map<String, dynamic>);
+      }
+
+      throw ServerException('获取用户统计数据失败', code: 'GET_USER_STATS_FAILED');
+    });
+  }
+
+  @override
+  Future<Result<NomadStats>> updateCurrentUserStats(NomadStats stats) async {
+    return execute(() async {
+      final token = await _tokenService.getAccessToken();
+
+      if (token == null || token.isEmpty) {
+        throw UnauthorizedException('未登录', code: 'NOT_AUTHENTICATED');
+      }
+
+      final response = await _dio.put(
+        '${ApiConfig.currentApiBaseUrl}${ApiConfig.userMeStatsEndpoint}',
+        data: {
+          'countriesVisited': stats.countriesVisited,
+          'citiesLived': stats.citiesLived,
+          'daysNomading': stats.daysNomading,
+          'tripsCompleted': stats.tripsCompleted,
+        },
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      );
+
+      if (response.data['success'] == true && response.data['data'] != null) {
+        return NomadStats.fromJson(response.data['data'] as Map<String, dynamic>);
+      }
+
+      throw ServerException('更新用户统计数据失败', code: 'UPDATE_USER_STATS_FAILED');
     });
   }
 }

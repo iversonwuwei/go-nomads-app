@@ -129,6 +129,7 @@ class ApiConfig {
   static const String usersEndpoint = '/users';
   static const String userDetailEndpoint = '/users/{id}';
   static const String userMeEndpoint = '/users/me';
+  static const String userMeStatsEndpoint = '/users/me/stats';
   static const String userUpdateEndpoint = '/users/{id}';
   static const String userUpdateMeEndpoint = '/users/me';
   static const String userDeleteEndpoint = '/users/{id}';
