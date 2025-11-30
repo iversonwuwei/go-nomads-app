@@ -29,11 +29,11 @@ class CoworkingReviewsPage extends StatefulWidget {
 
 class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
   final ScrollController _scrollController = ScrollController();
-  final List<CoworkingReview> _reviews = [];
+  final RxList<CoworkingReview> _reviews = <CoworkingReview>[].obs;
   final RxBool _isLoading = false.obs;
+  final RxBool _isLoadingMore = false.obs; // 加载更多状态
   final RxBool _hasMore = true.obs;
   final RxBool _isAdmin = false.obs;
-  final RxBool _isRefreshing = false.obs; // 下拉刷新状态标志
   int _currentPage = 1;
   final int _pageSize = 10;
 
@@ -65,16 +65,20 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
   void _onScroll() {
     if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 &&
         !_isLoading.value &&
+        !_isLoadingMore.value &&
         _hasMore.value) {
       _loadMore();
     }
   }
 
-  /// 加载评论
+  /// 首次加载评论
   Future<void> _loadReviews() async {
     if (_isLoading.value) return;
 
     _isLoading.value = true;
+    _currentPage = 1;
+    _hasMore.value = true;
+
     try {
       final repository = Get.find<ICoworkingReviewRepository>();
       final reviews = await repository.getCoworkingReviews(
@@ -83,10 +87,8 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
         pageSize: _pageSize,
       );
 
-      setState(() {
-        _reviews.addAll(reviews);
-        _hasMore.value = reviews.length >= _pageSize;
-      });
+      _reviews.assignAll(reviews);
+      _hasMore.value = reviews.length >= _pageSize;
     } catch (e) {
       print('❌ 加载评论失败: $e');
       if (mounted) {
@@ -101,20 +103,33 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
 
   /// 加载更多
   Future<void> _loadMore() async {
+    if (_isLoadingMore.value || !_hasMore.value) return;
+
+    _isLoadingMore.value = true;
     _currentPage++;
-    await _loadReviews();
+
+    try {
+      final repository = Get.find<ICoworkingReviewRepository>();
+      final reviews = await repository.getCoworkingReviews(
+        coworkingId: widget.coworkingId,
+        page: _currentPage,
+        pageSize: _pageSize,
+      );
+
+      _reviews.addAll(reviews);
+      _hasMore.value = reviews.length >= _pageSize;
+    } catch (e) {
+      print('❌ 加载更多评论失败: $e');
+      // 加载失败时回退页码
+      _currentPage--;
+    } finally {
+      _isLoadingMore.value = false;
+    }
   }
 
   /// 刷新
   Future<void> _refresh() async {
-    _isRefreshing.value = true;
-    setState(() {
-      _reviews.clear();
-      _currentPage = 1;
-      _hasMore.value = true;
-    });
     await _loadReviews();
-    _isRefreshing.value = false;
   }
 
   /// 格式化日期
@@ -173,7 +188,7 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
       ),
       body: Obx(() {
         // 首次加载时显示中间加载指示器
-        if (_isLoading.value && _reviews.isEmpty && !_isRefreshing.value) {
+        if (_isLoading.value && _reviews.isEmpty) {
           return const Center(
             child: CircularProgressIndicator(
               strokeWidth: 2,
@@ -206,7 +221,7 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
           child: ListView.builder(
             controller: _scrollController,
             padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: _reviews.length + (_hasMore.value ? 1 : 0),
+            itemCount: _reviews.length + (_hasMore.value || _isLoadingMore.value ? 1 : 0),
             itemBuilder: (context, index) {
               if (index == _reviews.length) {
                 return _buildLoadingIndicator();
@@ -373,9 +388,7 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
             try {
               final repository = Get.find<ICoworkingReviewRepository>();
               await repository.deleteReview(review.id);
-              setState(() {
-                _reviews.removeAt(index);
-              });
+              _reviews.removeAt(index);
               AppToast.success('Review deleted');
             } catch (e) {
               AppToast.error('Failed to delete: $e');
