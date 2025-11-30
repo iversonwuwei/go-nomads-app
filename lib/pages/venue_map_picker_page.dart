@@ -1,6 +1,7 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -243,11 +244,7 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(FontAwesomeIcons.arrowLeft,
-              color: AppColors.backButtonDark),
-          onPressed: () => Get.back(),
-        ),
+        leading: const AppBackButton(color: AppColors.backButtonDark),
         title: Text(
           l10n.selectVenue,
           style: const TextStyle(

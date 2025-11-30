@@ -4,6 +4,7 @@ import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworkin
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/services/token_storage_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -130,10 +131,7 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
-        leading: IconButton(
-          icon: const Icon(FontAwesomeIcons.arrowLeft, color: Colors.black87),
-          onPressed: () => Get.back(),
-        ),
+        leading: const AppBackButton(color: Colors.black87),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

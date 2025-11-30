@@ -4,6 +4,7 @@ import 'package:df_admin_mobile/features/user/domain/entities/user.dart'
     as models;
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -55,10 +56,7 @@ class _DirectChatPageState extends State<DirectChatPage> {
         backgroundColor: const Color(0xFFFFFC00),
         elevation: 0,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
-        leading: IconButton(
-          icon: const Icon(FontAwesomeIcons.arrowLeft, color: Colors.black),
-          onPressed: () => Get.back(),
-        ),
+        leading: const AppBackButton(color: Colors.black),
         title: GestureDetector(
           onTap: () {
             Get.to(() => MemberDetailPage(user: widget.user));

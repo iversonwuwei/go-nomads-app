@@ -1,3 +1,4 @@
+import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -15,10 +16,7 @@ class AiChatPage extends StatelessWidget {
         title: const Text('AI Chat'),
         backgroundColor: Colors.white,
         elevation: 1,
-        leading: IconButton(
-          icon: const Icon(FontAwesomeIcons.arrowLeft),
-          onPressed: () => Get.back(),
-        ),
+        leading: const AppBackButton(),
       ),
       body: Center(
         child: Padding(
