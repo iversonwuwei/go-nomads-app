@@ -4,6 +4,7 @@ import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/async_task_progress_dialog.dart';
+import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -139,11 +140,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
             SliverAppBar(
               expandedHeight: 200,
               pinned: true,
-              leading: IconButton(
-                icon: const Icon(FontAwesomeIcons.arrowLeft,
-                    color: AppColors.backButtonLight),
-                onPressed: () => Get.back(),
-              ),
+              leading: const SliverBackButton(),
               flexibleSpace: FlexibleSpaceBar(
                 background: AnimatedBuilder(
                   animation: _shimmerController,
@@ -373,10 +370,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(l10n.travelPlan),
-        leading: IconButton(
-          icon: const Icon(FontAwesomeIcons.arrowLeft),
-          onPressed: () => Get.back(),
-        ),
+        leading: const AppBackButton(),
       ),
       body: Center(
         child: Column(
@@ -426,11 +420,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
           SliverAppBar(
             expandedHeight: 200,
             pinned: true,
-            leading: IconButton(
-              icon: const Icon(FontAwesomeIcons.arrowLeft,
-                  color: AppColors.backButtonLight),
-              onPressed: () => Get.back(),
-            ),
+            leading: const SliverBackButton(),
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
                 plan.destination.cityName,

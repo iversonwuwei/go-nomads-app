@@ -11,6 +11,7 @@ import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/services/image_upload_service.dart';
 import 'package:df_admin_mobile/utils/image_upload_helper.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -427,10 +428,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(FontAwesomeIcons.arrowLeft, color: AppColors.textPrimary),
-          onPressed: () => Get.back(),
-        ),
+        leading: const AppBackButton(),
         title: Text(
           l10n.addCoworkingSpace,
           style: const TextStyle(

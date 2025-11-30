@@ -3,6 +3,7 @@ import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_rev
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
 import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_review_repository.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/coworking_verification_badge.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -110,10 +111,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
             pinned: true,
             backgroundColor: Colors.white,
             iconTheme: const IconThemeData(color: Colors.black87),
-            leading: IconButton(
-              icon: const Icon(FontAwesomeIcons.arrowLeft),
-              onPressed: () => Get.back(),
-            ),
+            leading: const SliverBackButton(),
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
                 _space.name,

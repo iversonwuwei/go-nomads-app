@@ -23,6 +23,7 @@ import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
 import 'package:df_admin_mobile/services/token_storage_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/coworking_verification_badge.dart';
 import 'package:df_admin_mobile/widgets/rating_item_dialog.dart';
 import 'package:df_admin_mobile/widgets/share_bottom_sheet.dart';
@@ -1389,30 +1390,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                       Colors.white,
                       _appBarOpacity,
                     ),
-                    leading: Container(
-                      margin: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: _appBarOpacity > 0.5
-                            ? Colors.grey.withValues(alpha: 0.1)
-                            : Colors.black.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.2),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: IconButton(
-                        icon: Icon(
-                          FontAwesomeIcons.arrowLeft,
-                          color: _appBarOpacity > 0.5 ? Colors.black87 : Colors.white,
-                          size: 20,
-                        ),
-                        onPressed: () => Get.back(),
-                      ),
-                    ),
+                    leading: SliverBackButton(opacity: _appBarOpacity),
                     actions: [
                       // 添加按钮 - 所有登录用户都可见，但跳转行为不同
                       AnimatedBuilder(

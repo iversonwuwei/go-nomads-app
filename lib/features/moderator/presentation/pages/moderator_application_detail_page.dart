@@ -3,6 +3,7 @@ import 'package:df_admin_mobile/features/moderator/domain/entities/moderator_app
 import 'package:df_admin_mobile/features/moderator/domain/repositories/i_moderator_application_repository.dart';
 import 'package:df_admin_mobile/features/moderator/infrastructure/repositories/moderator_application_repository.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -183,28 +184,7 @@ class _ModeratorApplicationDetailPageState
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: const FaIcon(
-              FontAwesomeIcons.arrowLeft,
-              color: Color(0xFF1a1a1a),
-              size: 18,
-            ),
-          ),
-          onPressed: () => Get.back(),
-        ),
+        leading: const AppBackButton(),
         title: const Text('版主申请详情'),
       ),
       body: _buildBody(),

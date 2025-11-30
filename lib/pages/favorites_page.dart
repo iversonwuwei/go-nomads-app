@@ -1,11 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
-
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/back_button.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
+
 import 'city_detail_page.dart';
 
 /// 收藏夹页面 - 管理收藏的城市
@@ -112,11 +113,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
             ),
           ],
         ),
-        leading: IconButton(
-          icon: const Icon(FontAwesomeIcons.arrowLeft,
-              color: AppColors.backButtonLight),
-          onPressed: () => Get.back(),
-        ),
+        leading: const AppBackButton(color: AppColors.backButtonLight),
         actions: [
           // 排序按钮
           PopupMenuButton<String>(

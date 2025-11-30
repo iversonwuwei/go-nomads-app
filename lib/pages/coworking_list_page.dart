@@ -5,6 +5,7 @@ import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/pages/add_coworking_page.dart';
 import 'package:df_admin_mobile/pages/coworking_detail_page.dart';
 import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
+import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/coworking_verification_badge.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -96,10 +97,7 @@ class _CoworkingListPageState extends State<CoworkingListPage>
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(FontAwesomeIcons.arrowLeft, color: Colors.black87),
-          onPressed: () => Get.back(),
-        ),
+        leading: const AppBackButton(color: Colors.black87),
         title: Text(
           widget.cityName,
           style: const TextStyle(

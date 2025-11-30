@@ -3,6 +3,7 @@ import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
 import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:flutter/material.dart' hide Badge;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -186,10 +187,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
       backgroundColor: AppColors.background,
       elevation: 0,
       iconTheme: const IconThemeData(color: AppColors.textPrimary),
-      leading: IconButton(
-        icon: const Icon(FontAwesomeIcons.arrowLeft),
-        onPressed: () => Get.back(),
-      ),
+      leading: const AppBackButton(),
       title: Text(
         _userInfo['username'] ?? 'Profile',
         style: const TextStyle(
