@@ -770,6 +770,19 @@ class AppLocalizationsEn extends AppLocalizations {
       'Verification failed. Please try again later.';
 
   @override
+  String get coworkingVerifyAlreadyVoted =>
+      'You have already verified this space.';
+
+  @override
+  String get coworkingVerifyIsCreator => 'You cannot verify your own space.';
+
+  @override
+  String get coworkingVerifySpaceVerified => 'This space is already verified.';
+
+  @override
+  String get coworkingVerifyChecking => 'Checking eligibility...';
+
+  @override
   String get shareLocation => 'Share Location';
 
   @override

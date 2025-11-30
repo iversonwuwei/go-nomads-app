@@ -27,6 +27,7 @@ import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/coworking_verification_badge.dart';
 import 'package:df_admin_mobile/widgets/rating_item_dialog.dart';
 import 'package:df_admin_mobile/widgets/share_bottom_sheet.dart';
+import 'package:df_admin_mobile/widgets/share_button.dart';
 import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -1538,32 +1539,9 @@ class _CityDetailPageState extends State<CityDetailPage>
                         },
                       ),
                       const SizedBox(width: 4),
-                      Container(
-                        margin: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: _appBarOpacity > 0.5
-                              ? Colors.grey.withValues(alpha: 0.1)
-                              : Colors.black.withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: IconButton(
-                          icon: Icon(
-                            FontAwesomeIcons.shareNodes,
-                            color: _appBarOpacity > 0.5 ? Colors.black87 : Colors.white,
-                            size: 20,
-                          ),
-                          onPressed: () {
-                            // 分享城市信息
-                            _shareCityInfo();
-                          },
-                        ),
+                      SliverShareButton(
+                        opacity: _appBarOpacity,
+                        onPressed: _shareCityInfo,
                       ),
                     ],
                     flexibleSpace: FlexibleSpaceBar(

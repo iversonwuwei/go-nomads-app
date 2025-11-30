@@ -284,6 +284,22 @@
   "@coworkingVerifyFailed": {
     "description": "Snackbar body shown when verification submission fails"
   },
+  "coworkingVerifyAlreadyVoted": "You have already verified this space.",
+  "@coworkingVerifyAlreadyVoted": {
+    "description": "Toast message when user has already verified this coworking space"
+  },
+  "coworkingVerifyIsCreator": "You cannot verify your own space.",
+  "@coworkingVerifyIsCreator": {
+    "description": "Toast message when creator tries to verify their own space"
+  },
+  "coworkingVerifySpaceVerified": "This space is already verified.",
+  "@coworkingVerifySpaceVerified": {
+    "description": "Toast message when the space is already verified"
+  },
+  "coworkingVerifyChecking": "Checking eligibility...",
+  "@coworkingVerifyChecking": {
+    "description": "Loading message while checking verification eligibility"
+  },
   "shareLocation": "Share Location",
   "addToFavorites": "Add to Favorites",
   "removeFromFavorites": "Remove from Favorites",

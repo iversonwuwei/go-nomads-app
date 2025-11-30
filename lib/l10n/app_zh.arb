@@ -284,6 +284,22 @@
   "@coworkingVerifyFailed": {
     "description": "认证失败后的提示"
   },
+  "coworkingVerifyAlreadyVoted": "您已经为该空间提交过认证。",
+  "@coworkingVerifyAlreadyVoted": {
+    "description": "用户已经验证过该空间的提示"
+  },
+  "coworkingVerifyIsCreator": "创建者不能为自己的空间认证。",
+  "@coworkingVerifyIsCreator": {
+    "description": "创建者尝试验证自己的空间的提示"
+  },
+  "coworkingVerifySpaceVerified": "该空间已通过认证。",
+  "@coworkingVerifySpaceVerified": {
+    "description": "空间已经是已验证状态的提示"
+  },
+  "coworkingVerifyChecking": "正在检查资格...",
+  "@coworkingVerifyChecking": {
+    "description": "检查验证资格时的加载提示"
+  },
   "shareLocation": "分享位置",
   "addToFavorites": "添加到收藏",
   "removeFromFavorites": "从收藏移除",

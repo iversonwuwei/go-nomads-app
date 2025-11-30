@@ -1,5 +1,6 @@
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
+import 'package:df_admin_mobile/features/coworking/domain/entities/verification_eligibility.dart';
 
 /// Coworking Repository 接口
 /// 定义 Coworking 数据访问契约
@@ -40,6 +41,9 @@ abstract class ICoworkingRepository {
 
   /// 删除 Coworking 空间
   Future<Result<void>> deleteCoworkingSpace(String id);
+
+  /// 检查当前用户是否有资格验证指定的 Coworking 空间
+  Future<Result<VerificationEligibility>> checkVerificationEligibility(String id);
 
   /// 提交 Coworking 空间认证
   Future<Result<CoworkingSpace>> submitVerification(String id);

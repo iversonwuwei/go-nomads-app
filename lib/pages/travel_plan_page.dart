@@ -5,6 +5,7 @@ import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/async_task_progress_dialog.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
+import 'package:df_admin_mobile/widgets/share_button.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -481,8 +482,7 @@ class _TravelPlanPageState extends State<TravelPlanPage>
                   );
                 },
               ),
-              IconButton(
-                icon: const Icon(FontAwesomeIcons.shareNodes),
+              SliverShareButton(
                 onPressed: () {
                   final l10n = AppLocalizations.of(context)!;
                   AppToast.info(

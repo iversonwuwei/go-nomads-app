@@ -766,6 +766,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get coworkingVerifyFailed => '认证提交失败，请稍后再试。';
 
   @override
+  String get coworkingVerifyAlreadyVoted => '您已经为该空间提交过认证。';
+
+  @override
+  String get coworkingVerifyIsCreator => '创建者不能为自己的空间认证。';
+
+  @override
+  String get coworkingVerifySpaceVerified => '该空间已通过认证。';
+
+  @override
+  String get coworkingVerifyChecking => '正在检查资格...';
+
+  @override
   String get shareLocation => '分享位置';
 
   @override

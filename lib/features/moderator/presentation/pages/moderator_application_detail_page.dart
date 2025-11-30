@@ -191,7 +191,7 @@ class _ModeratorApplicationDetailPageState
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildBody() { 
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }

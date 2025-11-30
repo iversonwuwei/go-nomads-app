@@ -1604,6 +1604,30 @@ abstract class AppLocalizations {
   /// **'认证提交失败，请稍后再试。'**
   String get coworkingVerifyFailed;
 
+  /// 用户已经验证过该空间的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'您已经为该空间提交过认证。'**
+  String get coworkingVerifyAlreadyVoted;
+
+  /// 创建者尝试验证自己的空间的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'创建者不能为自己的空间认证。'**
+  String get coworkingVerifyIsCreator;
+
+  /// 空间已经是已验证状态的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'该空间已通过认证。'**
+  String get coworkingVerifySpaceVerified;
+
+  /// 检查验证资格时的加载提示
+  ///
+  /// In zh, this message translates to:
+  /// **'正在检查资格...'**
+  String get coworkingVerifyChecking;
+
   /// No description provided for @shareLocation.
   ///
   /// In zh, this message translates to:

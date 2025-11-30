@@ -1,6 +1,7 @@
 import 'package:df_admin_mobile/core/application/use_case.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
+import 'package:df_admin_mobile/features/coworking/domain/entities/verification_eligibility.dart';
 import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_repository.dart';
 
 /// 获取城市 Coworking 空间列表 Use Case
@@ -234,4 +235,31 @@ class SubmitCoworkingVerificationParams extends UseCaseParams {
   final String coworkingId;
 
   const SubmitCoworkingVerificationParams({required this.coworkingId});
+}
+
+/// 检查 Coworking 验证资格 Use Case
+class CheckVerificationEligibilityUseCase extends UseCase<VerificationEligibility, CheckVerificationEligibilityParams> {
+  final ICoworkingRepository _repository;
+
+  CheckVerificationEligibilityUseCase(this._repository);
+
+  @override
+  Future<Result<VerificationEligibility>> execute(
+    CheckVerificationEligibilityParams params,
+  ) async {
+    if (params.coworkingId.isEmpty) {
+      return Result.failure(
+        ValidationException('Coworking 空间ID不能为空', code: 'INVALID_ID'),
+      );
+    }
+
+    return _repository.checkVerificationEligibility(params.coworkingId);
+  }
+}
+
+/// 检查 Coworking 验证资格参数
+class CheckVerificationEligibilityParams extends UseCaseParams {
+  final String coworkingId;
+
+  const CheckVerificationEligibilityParams({required this.coworkingId});
 }
