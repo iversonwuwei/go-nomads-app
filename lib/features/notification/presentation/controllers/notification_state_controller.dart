@@ -177,6 +177,14 @@ class NotificationStateController extends GetxController {
     await loadNotifications();
   }
 
+  /// 清除所有通知数据（用户登出时调用）
+  void clearNotifications() {
+    print('🔔 清除通知数据');
+    notifications.clear();
+    unreadCount.value = 0;
+    errorMessage.value = '';
+  }
+
   @override
   void onClose() {
     // 清空所有响应式变量

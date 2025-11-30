@@ -14,8 +14,6 @@ import 'package:df_admin_mobile/features/city/presentation/controllers/city_rati
 import 'package:df_admin_mobile/features/city/presentation/widgets/city_ratings_card.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart' as coworking;
 import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
-import 'package:df_admin_mobile/features/notification/domain/entities/app_notification.dart';
-import 'package:df_admin_mobile/features/notification/presentation/controllers/notification_state_controller.dart';
 import 'package:df_admin_mobile/features/user_city_content/domain/entities/user_city_content.dart';
 import 'package:df_admin_mobile/features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
 import 'package:df_admin_mobile/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
@@ -189,12 +187,20 @@ class _CityDetailPageState extends State<CityDetailPage>
       // 如果已有版主且当前用户不是管理员也不是该城市版主，只显示版主信息
       if (hasModerator && !isAdmin && !isModerator) {
         print('✅ [版主管理] 显示只读版主信息');
+        // 安全检查：如果 moderator 对象为空，显示加载中
+        if (city.moderator == null) {
+          return const SizedBox.shrink();
+        }
         return _buildModeratorInfoBanner(city.moderator!);
       }
 
       // 如果已有版主且当前用户是管理员或该城市版主，显示版主信息+更换按钮
       if (hasModerator && (isAdmin || isModerator)) {
         print('✅ [版主管理] 显示版主信息+管理按钮');
+        // 安全检查：如果 moderator 对象为空，显示加载中
+        if (city.moderator == null) {
+          return const SizedBox.shrink();
+        }
         return _buildModeratorInfoWithChange(city.moderator!);
       }
 
@@ -603,22 +609,8 @@ class _CityDetailPageState extends State<CityDetailPage>
         onSuccess: (success) async {
           AppToast.success('申请已提交！我们会尽快审核');
 
-          // 发送通知给所有管理员
-          if (Get.isRegistered<NotificationStateController>()) {
-            final notificationController = Get.find<NotificationStateController>();
-            final city = controller.currentCity.value;
-
-            await notificationController.sendToAdmins(
-              title: '新的版主申请',
-              message: '用户申请成为 ${city?.name ?? '某城市'} 的版主，请及时审核',
-              type: NotificationType.moderatorApplication,
-              relatedId: cityId,
-              metadata: {
-                'cityName': city?.name ?? '',
-                'cityId': cityId,
-              },
-            );
-          }
+          // 注意：通知已由后端 ModeratorApplicationService 统一发送给管理员
+          // 不需要在 Flutter 端重复发送
 
           // 刷新城市信息
           controller.loadCityDetail(cityId);

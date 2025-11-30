@@ -1,5 +1,6 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:df_admin_mobile/features/notification/presentation/controllers/notification_state_controller.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
 import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
@@ -89,24 +90,32 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   /// 执行退出登录操作
-  void _performLogout() {
+  Future<void> _performLogout() async {
     try {
-      print('🚪 开始执行退出登录..');
+      print('🚪 开始执行退出登录...');
 
-      // 获取用户状态控制器
+      // 获取控制器
+      final authController = Get.find<AuthStateController>();
       final userStateController = Get.find<UserStateController>();
 
       print('   当前登录状态: ${userStateController.isLoggedIn}');
-      print(
-          '   当前用户: ${userStateController.currentUser.value?.name ?? "Unknown"}');
+      print('   当前用户: ${userStateController.currentUser.value?.name ?? "Unknown"}');
       print('   当前账户ID: ${userStateController.currentUser.value?.id ?? "0"}');
 
-      // 清除用户状态
-      // userStateController.logout() - not available;
+      // 调用 AuthStateController 的 logout 方法
+      await authController.logout();
+
+      // 清除 UserStateController 状态
+      userStateController.clearUser();
+
+      // 清除通知控制器状态
+      if (Get.isRegistered<NotificationStateController>()) {
+        final notificationController = Get.find<NotificationStateController>();
+        notificationController.clearNotifications();
+      }
 
       print('✅ 用户状态已清除');
       print('   登录状态: ${userStateController.isLoggedIn}');
-      print('   账户ID: ${userStateController.currentUser.value?.id ?? "0"}');
 
       // 显示退出成功提示
       AppToast.success(
@@ -114,11 +123,8 @@ class _ProfilePageState extends State<ProfilePage>
         title: 'Logout Success',
       );
 
-      // 延迟一小段时间让用户看到提示，然后跳转到登录页
-      Future.delayed(const Duration(milliseconds: 500), () {
-        print('🔄 跳转到登录页...');
-        Get.offAllNamed(AppRoutes.login);
-      });
+      // 跳转到登录页
+      Get.offAllNamed(AppRoutes.login);
     } catch (e) {
       print('❌ 退出登录失败: $e');
       AppToast.error(
