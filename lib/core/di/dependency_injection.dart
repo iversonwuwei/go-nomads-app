@@ -489,6 +489,9 @@ class DependencyInjection {
     Get.lazyPut(() => SubmitCoworkingVerificationUseCase(
           Get.find<ICoworkingRepository>(),
         ));
+    Get.lazyPut(() => CheckVerificationEligibilityUseCase(
+          Get.find<ICoworkingRepository>(),
+        ));
 
     // Use Cases - 评论
     Get.lazyPut(() => CoworkingCommentUseCases(
@@ -502,6 +505,7 @@ class DependencyInjection {
         getCoworkingByIdUseCase: Get.find<GetCoworkingByIdUseCase>(),
         getCityCoworkingCountUseCase: Get.find<GetCityCoworkingCountUseCase>(),
         submitCoworkingVerificationUseCase: Get.find<SubmitCoworkingVerificationUseCase>(),
+        checkVerificationEligibilityUseCase: Get.find<CheckVerificationEligibilityUseCase>(),
       ),
       fenix: true, // 允许在删除后重新创建,防止路由切换导致的状态丢失
     );

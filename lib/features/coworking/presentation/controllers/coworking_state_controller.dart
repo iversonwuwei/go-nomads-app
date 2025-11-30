@@ -1,6 +1,7 @@
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/coworking/application/use_cases/coworking_use_cases.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
+import 'package:df_admin_mobile/features/coworking/domain/entities/verification_eligibility.dart';
 import 'package:get/get.dart';
 
 /// Coworking State Controller
@@ -10,6 +11,7 @@ class CoworkingStateController extends GetxController {
   final GetCoworkingByIdUseCase _getCoworkingByIdUseCase;
   final GetCityCoworkingCountUseCase _getCityCoworkingCountUseCase;
   final SubmitCoworkingVerificationUseCase _submitCoworkingVerificationUseCase;
+  final CheckVerificationEligibilityUseCase _checkVerificationEligibilityUseCase;
 
   CoworkingStateController({
     required GetCoworkingSpacesByCityUseCase getCoworkingSpacesByCityUseCase,
@@ -17,11 +19,13 @@ class CoworkingStateController extends GetxController {
     required GetCityCoworkingCountUseCase getCityCoworkingCountUseCase,
     required SubmitCoworkingVerificationUseCase
         submitCoworkingVerificationUseCase,
+    required CheckVerificationEligibilityUseCase checkVerificationEligibilityUseCase,
   })  : _getCoworkingSpacesByCityUseCase = getCoworkingSpacesByCityUseCase,
         _getCoworkingByIdUseCase = getCoworkingByIdUseCase,
         _getCityCoworkingCountUseCase = getCityCoworkingCountUseCase,
         _submitCoworkingVerificationUseCase =
-            submitCoworkingVerificationUseCase;
+            submitCoworkingVerificationUseCase,
+        _checkVerificationEligibilityUseCase = checkVerificationEligibilityUseCase;
 
   // === 状态管理 ===
 
@@ -361,6 +365,19 @@ class CoworkingStateController extends GetxController {
   void sortByDistance() {
     // TODO: 实现距离排序,需要获取用户当前位置
     // 暂时保持原顺序
+  }
+
+  /// 检查用户是否有资格验证指定的 Coworking 空间
+  Future<Result<VerificationEligibility>> checkVerificationEligibility(String coworkingId) async {
+    if (coworkingId.isEmpty) {
+      return Result.failure(
+        ValidationException('Coworking 空间ID不能为空', code: 'INVALID_ID'),
+      );
+    }
+
+    return _checkVerificationEligibilityUseCase.execute(
+      CheckVerificationEligibilityParams(coworkingId: coworkingId),
+    );
   }
 
   /// 提交 Coworking 认证

@@ -8,7 +8,9 @@ import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/services/http_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/share_bottom_sheet.dart';
+import 'package:df_admin_mobile/widgets/share_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -103,29 +105,9 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
             expandedHeight: 300.h,
             pinned: true,
             backgroundColor: Colors.white,
-            leading: IconButton(
-              icon: Container(
-                padding: EdgeInsets.all(8.w),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.3),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(FontAwesomeIcons.arrowLeft, color: Colors.white, size: 20.sp),
-              ),
-              onPressed: () => Get.back(),
-            ),
+            leading: const SliverBackButton(),
             actions: [
-              IconButton(
-                icon: Container(
-                  padding: EdgeInsets.all(8.w),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(FontAwesomeIcons.shareNodes, color: Colors.white, size: 20.sp),
-                ),
-                onPressed: _shareMeetup,
-              ),
+              SliverShareButton(onPressed: _shareMeetup),
               SizedBox(width: 8.w),
             ],
             flexibleSpace: FlexibleSpaceBar(
