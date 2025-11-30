@@ -335,6 +335,7 @@ class AppRoutes {
       page: () {
         final args = Get.arguments as Map<String, dynamic>;
         return TravelPlanPage(
+          planId: args['planId'], // 从数据库加载时传入
           cityId: args['cityId'],
           cityName: args['cityName'],
         );

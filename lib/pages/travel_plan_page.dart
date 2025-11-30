@@ -13,6 +13,7 @@ import 'package:get/get.dart';
 /// 旅行计划详情页
 class TravelPlanPage extends StatefulWidget {
   final TravelPlan? plan;
+  final String? planId; // 从数据库加载时传入
   final String? cityId;
   final String? cityName;
   final int? duration;
@@ -25,6 +26,7 @@ class TravelPlanPage extends StatefulWidget {
   const TravelPlanPage({
     super.key,
     this.plan,
+    this.planId,
     this.cityId,
     this.cityName,
     this.duration,
@@ -46,8 +48,11 @@ class _TravelPlanPageState extends State<TravelPlanPage>
   late AnimationController _shimmerController;
 
   // 流式进度状态
-  final String _progressMessage = '正在准备...';
-  final int _progressValue = 0;
+  String _progressMessage = '正在准备...';
+  int _progressValue = 0;
+
+  // GetX 监听器
+  final List<Worker> _workers = [];
 
   @override
   void initState() {
@@ -60,6 +65,11 @@ class _TravelPlanPageState extends State<TravelPlanPage>
     if (widget.plan != null) {
       _plan = widget.plan;
       _isLoading = false;
+    } else if (widget.planId != null) {
+      // 从数据库加载已保存的旅行计划
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _loadPlanFromDatabase();
+      });
     } else {
       // 延迟执行异步任务生成,避免在 initState 中显示对话框
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -71,21 +81,66 @@ class _TravelPlanPageState extends State<TravelPlanPage>
   @override
   void dispose() {
     _shimmerController.dispose();
+    // 取消所有 GetX 监听器
+    for (final worker in _workers) {
+      worker.dispose();
+    }
+    _workers.clear();
     // 确保页面销毁时关闭任何可能残留的对话框
-    print('[TravelPlanPage] dispose: 关闭可能残留的对话框');
     AsyncTaskProgressDialog.dismiss();
     super.dispose();
   }
 
-  /// 使用AI State Controller生成旅行计划
+  /// 从数据库加载已保存的旅行计划
+  Future<void> _loadPlanFromDatabase() async {
+    final aiController = Get.find<AiStateController>();
+
+    try {
+      setState(() {
+        _isLoading = true;
+        _progressMessage = '正在加载旅行计划...';
+        _progressValue = 50;
+      });
+
+      final result = await aiController.getTravelPlanDetail(widget.planId!);
+
+      if (result != null && mounted) {
+        setState(() {
+          _plan = result;
+          _isLoading = false;
+        });
+      } else if (mounted) {
+        setState(() => _isLoading = false);
+        AppToast.error('无法加载旅行计划');
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      debugPrint('❌ 加载旅行计划失败: $e');
+      if (mounted) {
+        setState(() => _isLoading = false);
+        AppToast.error('加载失败: $e');
+        Navigator.of(context).pop();
+      }
+    }
+  }
+
+  /// 使用异步任务生成旅行计划
+  /// 流程: Flutter -> AIService(创建任务) -> RabbitMQ -> MessageService -> SignalR -> Flutter
   Future<void> _generatePlanAsync() async {
     final aiController = Get.find<AiStateController>();
 
     try {
-      setState(() => _isLoading = true);
+      setState(() {
+        _isLoading = true;
+        _progressMessage = '正在连接 AI 服务...';
+        _progressValue = 0;
+      });
 
-      // 调用AI Controller生成旅行计划
-      final plan = await aiController.generateTravelPlan(
+      // 设置 GetX 监听器
+      _setupListeners(aiController);
+
+      // 使用异步任务方式生成（通过 SignalR 监听 RabbitMQ 消息）
+      await aiController.generateTravelPlanStream(
         cityId: widget.cityId ?? '',
         cityName: widget.cityName ?? '',
         cityImage: '',
@@ -95,27 +150,57 @@ class _TravelPlanPageState extends State<TravelPlanPage>
         interests: widget.interests ?? [],
         departureLocation: widget.departureLocation,
       );
-
-      if (plan != null && mounted) {
-        setState(() {
-          _plan = plan;
-          _isLoading = false;
-        });
-        AppToast.success('Travel plan generated successfully!');
-      } else if (mounted) {
-        // 生成失败
-        setState(() => _isLoading = false);
-        AppToast.error('Failed to generate travel plan');
-        Navigator.of(context).pop();
-      }
     } catch (e) {
-      print('❌ 生成旅行计划失败: $e');
+      debugPrint('❌ 生成旅行计划失败: $e');
       if (mounted) {
         setState(() => _isLoading = false);
         AppToast.error('Error: $e');
         Navigator.of(context).pop();
       }
     }
+  }
+
+  /// 设置 GetX 监听器
+  void _setupListeners(AiStateController aiController) {
+    // 清理之前的监听器
+    for (final worker in _workers) {
+      worker.dispose();
+    }
+    _workers.clear();
+
+    // 监听进度更新
+    _workers.add(ever(aiController.travelPlanGenerationProgressRx, (progress) {
+      if (mounted) {
+        setState(() => _progressValue = progress);
+      }
+    }));
+
+    // 监听进度消息更新
+    _workers.add(ever(aiController.travelPlanGenerationMessageRx, (message) {
+      if (mounted) {
+        setState(() => _progressMessage = message);
+      }
+    }));
+
+    // 监听任务完成，获取计划
+    _workers.add(ever(aiController.currentTravelPlanRx, (plan) {
+      if (plan != null && mounted) {
+        setState(() {
+          _plan = plan;
+          _isLoading = false;
+        });
+        AppToast.success('Travel plan generated successfully!');
+      }
+    }));
+
+    // 监听错误
+    _workers.add(ever(aiController.travelPlanErrorRx, (error) {
+      if (error != null && mounted) {
+        setState(() => _isLoading = false);
+        AppToast.error('Failed to generate: $error');
+        Navigator.of(context).pop();
+      }
+    }));
   }
 
   @override

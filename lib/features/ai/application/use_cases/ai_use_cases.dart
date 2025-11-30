@@ -4,6 +4,7 @@ import 'package:df_admin_mobile/features/ai/domain/repositories/iai_repository.d
 import 'package:df_admin_mobile/features/async_task/domain/entities/async_task.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/digital_nomad_guide.dart';
 import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan.dart';
+import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan_summary.dart';
 
 // ==================== Use Case参数类 ====================
 
@@ -200,5 +201,50 @@ class GenerateDigitalNomadGuideStreamUseCase
       onData: params.onData,
       onError: params.onError,
     );
+  }
+}
+
+/// 获取用户旅行计划列表参数
+class GetUserTravelPlansParams {
+  final int page;
+  final int pageSize;
+
+  const GetUserTravelPlansParams({
+    this.page = 1,
+    this.pageSize = 20,
+  });
+}
+
+/// 获取用户旅行计划列表
+class GetUserTravelPlansUseCase extends UseCase<List<TravelPlanSummary>, GetUserTravelPlansParams> {
+  final IAiRepository _repository;
+
+  GetUserTravelPlansUseCase(this._repository);
+
+  @override
+  Future<Result<List<TravelPlanSummary>>> execute(GetUserTravelPlansParams params) async {
+    return await _repository.getUserTravelPlans(
+      page: params.page,
+      pageSize: params.pageSize,
+    );
+  }
+}
+
+/// 获取旅行计划详情参数
+class GetTravelPlanDetailParams {
+  final String planId;
+
+  const GetTravelPlanDetailParams({required this.planId});
+}
+
+/// 获取旅行计划详情（从数据库）
+class GetTravelPlanDetailUseCase extends UseCase<TravelPlan, GetTravelPlanDetailParams> {
+  final IAiRepository _repository;
+
+  GetTravelPlanDetailUseCase(this._repository);
+
+  @override
+  Future<Result<TravelPlan>> execute(GetTravelPlanDetailParams params) async {
+    return await _repository.getTravelPlanDetail(params.planId);
   }
 }

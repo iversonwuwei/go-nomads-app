@@ -1,6 +1,8 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/features/ai/presentation/controllers/ai_state_controller.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/features/notification/presentation/controllers/notification_state_controller.dart';
+import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan_summary.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
 import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
@@ -57,6 +59,22 @@ class _ProfilePageState extends State<ProfilePage>
         AppToast.info('Please login again', title: 'Session Expired');
         Get.offAllNamed(AppRoutes.login);
       }
+
+      // 加载用户统计数据
+      controller.loadNomadStats();
+
+      // 加载用户旅行计划
+      _loadUserTravelPlans();
+    }
+  }
+
+  /// 加载用户旅行计划
+  Future<void> _loadUserTravelPlans() async {
+    try {
+      final aiController = Get.find<AiStateController>();
+      await aiController.loadUserTravelPlans(page: 1, pageSize: 1);
+    } catch (e) {
+      print('⚠️ 加载用户旅行计划失败: $e');
     }
   }
 
@@ -208,7 +226,7 @@ class _ProfilePageState extends State<ProfilePage>
                         const SizedBox(height: 32),
 
                         // Stats
-                        _buildStatsSection(context, user.stats, isMobile),
+                        _buildStatsSection(context, isMobile),
                         const SizedBox(height: 32),
 
                         // Badges
@@ -435,42 +453,47 @@ class _ProfilePageState extends State<ProfilePage>
     );
   }
 
-  // Stats Section
-  Widget _buildStatsSection(
-      BuildContext context, TravelStats stats, bool isMobile) {
+  // Stats Section - 使用后端返回的 NomadStats
+  Widget _buildStatsSection(BuildContext context, bool isMobile) {
     final l10n = AppLocalizations.of(context)!;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Nomad Stats',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF1a1a1a),
+    final controller = Get.find<UserStateController>();
+
+    return Obx(() {
+      final stats = controller.nomadStats.value;
+      final favoriteCityCount = controller.favoriteCityIds.length;
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Nomad Stats',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1a1a1a),
+            ),
           ),
-        ),
-        const SizedBox(height: 16),
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: [
-            _buildStatCard(
-                '🌍', stats.countriesVisited.toString(), 'Countries', isMobile),
-            _buildStatCard(
-                '🏙️', stats.citiesVisited.toString(), l10n.cities, isMobile),
-            _buildStatCard('📅', stats.reviewsWritten.toString(),
-                'Days nomading', isMobile),
-            _buildStatCard(
-                '🤝', stats.photosShared.toString(), 'Meetups', isMobile),
-            _buildStatCard(
-                '✈️', stats.citiesVisited.toString(), 'Trips', isMobile),
-            _buildStatCard(
-                '❤️', stats.countriesVisited.toString(), 'Favorites', isMobile),
-          ],
-        ),
-      ],
-    );
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              _buildStatCard(
+                  '🌍', (stats?.countriesVisited ?? 0).toString(), 'Countries', isMobile),
+              _buildStatCard(
+                  '🏙️', (stats?.citiesLived ?? 0).toString(), l10n.cities, isMobile),
+              _buildStatCard('📅', (stats?.daysNomading ?? 0).toString(), 'Days nomading', isMobile),
+              _buildStatCard(
+                  '🤝', (stats?.meetupsCreated ?? 0).toString(), 'Meetups', isMobile),
+              _buildStatCard(
+                  '✈️', (stats?.tripsCompleted ?? 0).toString(), 'Trips', isMobile),
+              _buildStatCard(
+                  '❤️', (stats?.favoriteCitiesCount ?? favoriteCityCount).toString(), 'Favorites', isMobile),
+            ],
+          ),
+        ],
+      );
+    });
   }
 
   Widget _buildStatCard(
@@ -982,122 +1005,362 @@ class _ProfilePageState extends State<ProfilePage>
   /// 我的旅行计划部分
   Widget _buildTravelPlansSection(BuildContext context, bool isMobile) {
     final l10n = AppLocalizations.of(context)!;
-    // 这里应该从用户数据中获取保存的计划
-    // 暂时使用空列表演示
-    final savedPlans = <String>[]; // TODO: 从UserProfileController获取
+    final aiController = Get.find<AiStateController>();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Icon(
-              FontAwesomeIcons.wandMagicSparkles,
-              color: Color(0xFFFF4458),
-              size: 20,
-            ),
-            const SizedBox(width: 8),
-            const Text(
-              'My Travel Plans',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+    return Obx(() {
+      final latestPlan = aiController.latestTravelPlan;
+      final isLoading = aiController.isLoadingUserPlans;
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                FontAwesomeIcons.wandMagicSparkles,
+                color: Color(0xFFFF4458),
+                size: 20,
               ),
-            ),
-            if (savedPlans.isNotEmpty) ...[
-              const Spacer(),
-              TextButton.icon(
-                onPressed: () {
-                  AppToast.info(
-                    'Visit city details and click "AI Travel Plan" to generate new plans',
-                    title: 'Info',
-                  );
-                },
-                icon: const Icon(FontAwesomeIcons.plus, size: 18),
-                label: Text(l10n.createNew),
-                style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFFFF4458),
+              const SizedBox(width: 8),
+              const Text(
+                'My Travel Plans',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            ],
-          ],
-        ),
-        const SizedBox(height: 16),
-        if (savedPlans.isEmpty)
-          Container(
-            padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(
-              color: Colors.grey[50],
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey[200]!),
-            ),
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    FontAwesomeIcons.earthAmericas,
-                    size: 48,
-                    color: Color(0xFFFF4458),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'No Travel Plans Yet',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Generate AI-powered travel plans from city detail pages',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton.icon(
+              if (latestPlan != null) ...[
+                const Spacer(),
+                TextButton.icon(
                   onPressed: () {
                     Get.toNamed(AppRoutes.cityList);
                   },
-                  icon: const Icon(FontAwesomeIcons.compass, size: 18),
-                  label: Text(l10n.exploreCities),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFF4458),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
+                  icon: const Icon(FontAwesomeIcons.plus, size: 16),
+                  label: Text(l10n.createNew),
+                  style: TextButton.styleFrom(
+                    foregroundColor: const Color(0xFFFF4458),
                   ),
                 ),
               ],
-            ),
-          )
-        else
-          // TODO: 显示保存的旅行计划列表
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: savedPlans.length,
-            itemBuilder: (context, index) {
-              return Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                child: Text(l10n.travelPlanCard), // Placeholder
-              );
-            },
+            ],
           ),
-      ],
+          const SizedBox(height: 16),
+          if (isLoading)
+            _buildLoadingPlanCard()
+          else if (latestPlan == null)
+            _buildEmptyPlansCard(context, l10n)
+          else
+            _buildLatestPlanCard(latestPlan),
+        ],
+      );
+    });
+  }
+
+  /// 加载中的计划卡片
+  Widget _buildLoadingPlanCard() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
+        ),
+      ),
+    );
+  }
+
+  /// 空计划卡片
+  Widget _buildEmptyPlansCard(BuildContext context, AppLocalizations l10n) {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFF4458).withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              FontAwesomeIcons.earthAmericas,
+              size: 48,
+              color: Color(0xFFFF4458),
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'No Travel Plans Yet',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Generate AI-powered travel plans from city detail pages',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[600],
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton.icon(
+            onPressed: () {
+              Get.toNamed(AppRoutes.cityList);
+            },
+            icon: const Icon(FontAwesomeIcons.compass, size: 18),
+            label: Text(l10n.exploreCities),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFF4458),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 12,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 最新旅行计划卡片
+  Widget _buildLatestPlanCard(TravelPlanSummary plan) {
+    return GestureDetector(
+      onTap: () {
+        // 导航到旅行计划详情页
+        Get.toNamed(
+          AppRoutes.travelPlan,
+          arguments: {
+            'planId': plan.id,
+            'cityId': plan.cityId,
+            'cityName': plan.cityName,
+          },
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 城市图片
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              child: Stack(
+                children: [
+                  if (plan.cityImage != null && plan.cityImage!.isNotEmpty)
+                    Image.network(
+                      plan.cityImage!,
+                      height: 120,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          height: 120,
+                          color: const Color(0xFFFF4458).withValues(alpha: 0.1),
+                          child: const Center(
+                            child: Icon(
+                              FontAwesomeIcons.city,
+                              size: 40,
+                              color: Color(0xFFFF4458),
+                            ),
+                          ),
+                        );
+                      },
+                    )
+                  else
+                    Container(
+                      height: 120,
+                      color: const Color(0xFFFF4458).withValues(alpha: 0.1),
+                      child: const Center(
+                        child: Icon(
+                          FontAwesomeIcons.city,
+                          size: 40,
+                          color: Color(0xFFFF4458),
+                        ),
+                      ),
+                    ),
+                  // 渐变遮罩
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      height: 60,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withValues(alpha: 0.6),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  // 城市名称
+                  Positioned(
+                    bottom: 12,
+                    left: 16,
+                    child: Text(
+                      plan.cityName,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                            offset: Offset(0, 1),
+                            blurRadius: 3,
+                            color: Colors.black45,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // AI 标签
+                  Positioned(
+                    top: 12,
+                    right: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF4458),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            FontAwesomeIcons.wandMagicSparkles,
+                            size: 12,
+                            color: Colors.white,
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            'AI Generated',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // 计划详情
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 标签行
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildPlanTag(
+                        FontAwesomeIcons.calendarDays,
+                        '${plan.duration} days',
+                      ),
+                      _buildPlanTag(
+                        FontAwesomeIcons.dollarSign,
+                        plan.budgetLevelDisplay,
+                      ),
+                      _buildPlanTag(
+                        FontAwesomeIcons.paintbrush,
+                        plan.travelStyleDisplay,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // 创建时间
+                  Row(
+                    children: [
+                      Icon(
+                        FontAwesomeIcons.clock,
+                        size: 12,
+                        color: Colors.grey[500],
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Created ${plan.formattedCreatedAt}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[500],
+                        ),
+                      ),
+                      const Spacer(),
+                      Icon(
+                        FontAwesomeIcons.chevronRight,
+                        size: 14,
+                        color: Colors.grey[400],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 计划标签
+  Widget _buildPlanTag(IconData icon, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF3F4F6),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: const Color(0xFFFF4458)),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF374151),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
