@@ -926,8 +926,15 @@ class _MeetupListCardState extends State<_MeetupListCard> {
 
                   SizedBox(height: 8.h),
 
-                  // 地点
-                  _buildInfoRow(FontAwesomeIcons.locationDot, widget.meetup.venue.name, null),
+                  // 地点（场地 + 城市, 国家）
+                  _buildInfoRow(
+                    FontAwesomeIcons.locationDot,
+                    [
+                      if (widget.meetup.venue.name.isNotEmpty) widget.meetup.venue.name,
+                      widget.meetup.location.fullDescription,
+                    ].where((s) => s.isNotEmpty).join(', '),
+                    null,
+                  ),
 
                   SizedBox(height: 8.h),
 
