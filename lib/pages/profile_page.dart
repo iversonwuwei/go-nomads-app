@@ -21,8 +21,7 @@ class ProfilePage extends StatefulWidget {
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage>
-    with RouteAwareRefreshMixin<ProfilePage> {
+class _ProfilePageState extends State<ProfilePage> with RouteAwareRefreshMixin<ProfilePage> {
   @override
   void initState() {
     super.initState();
@@ -40,8 +39,7 @@ class _ProfilePageState extends State<ProfilePage>
     final authController = Get.find<AuthStateController>();
     if (!authController.isAuthenticated.value) {
       print('⚠️ 用户未登录，跳转到登录页');
-      AppToast.info('Please login to view your profile',
-          title: 'Login Required');
+      AppToast.info('Please login to view your profile', title: 'Login Required');
       Get.offAllNamed(AppRoutes.login);
       return;
     }
@@ -53,8 +51,7 @@ class _ProfilePageState extends State<ProfilePage>
       // 加载后检查是否成功（如果失败会清除 currentUser）
       if (!mounted) return;
 
-      if (controller.currentUser.value == null &&
-          controller.errorMessage.value.isNotEmpty) {
+      if (controller.currentUser.value == null && controller.errorMessage.value.isNotEmpty) {
         print('⚠️ 加载用户数据失败，跳转到登录页');
         AppToast.info('Please login again', title: 'Session Expired');
         Get.offAllNamed(AppRoutes.login);
@@ -213,12 +210,10 @@ class _ProfilePageState extends State<ProfilePage>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Login Notice (if not logged in)
-                        if (!controller.isLoggedIn)
-                          _buildLoginNotice(context, isMobile),
+                        if (!controller.isLoggedIn) _buildLoginNotice(context, isMobile),
 
                         // Profile Header
-                        _buildProfileHeader(
-                            context, user, controller, isMobile),
+                        _buildProfileHeader(context, user, controller, isMobile),
                         const SizedBox(height: 32),
 
                         // My Travel Plans (AI Generated)
@@ -234,13 +229,11 @@ class _ProfilePageState extends State<ProfilePage>
                         const SizedBox(height: 32),
 
                         // Skills & Interests
-                        _buildSkillsAndInterests(
-                            context, user, controller, isMobile),
+                        _buildSkillsAndInterests(context, user, controller, isMobile),
                         const SizedBox(height: 32),
 
                         // Travel History
-                        _buildTravelHistory(
-                            context, user.travelHistory, isMobile),
+                        _buildTravelHistory(context, user.travelHistory, isMobile),
                         const SizedBox(height: 32),
 
                         // Social Links
@@ -264,10 +257,8 @@ class _ProfilePageState extends State<ProfilePage>
 
   // 构建头像内容 - 如果没有头像URL则显示用户名首字母
   Widget _buildAvatarContent(User user, bool isMobile) {
-    final hasAvatar = user.avatarUrl != null &&
-        user.avatarUrl!.isNotEmpty &&
-        user.avatarUrl != null &&
-        user.avatarUrl!.isNotEmpty;
+    final hasAvatar =
+        user.avatarUrl != null && user.avatarUrl!.isNotEmpty && user.avatarUrl != null && user.avatarUrl!.isNotEmpty;
 
     if (hasAvatar) {
       return Image.network(
@@ -291,12 +282,10 @@ class _ProfilePageState extends State<ProfilePage>
       final nameParts = user.name.trim().split(' ');
       if (nameParts.length >= 2) {
         // 如果有多个单词，取前两个单词的首字母
-        initials =
-            nameParts[0][0].toUpperCase() + nameParts[1][0].toUpperCase();
+        initials = nameParts[0][0].toUpperCase() + nameParts[1][0].toUpperCase();
       } else {
         // 如果只有一个单词，取前两个字母（如果有的话）
-        initials =
-            user.name.substring(0, user.name.length >= 2 ? 2 : 1).toUpperCase();
+        initials = user.name.substring(0, user.name.length >= 2 ? 2 : 1).toUpperCase();
       }
     } else {
       initials = '?';
@@ -328,8 +317,7 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   // Profile Header
-  Widget _buildProfileHeader(BuildContext context, User user,
-      UserStateController controller, bool isMobile) {
+  Widget _buildProfileHeader(BuildContext context, User user, UserStateController controller, bool isMobile) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -478,17 +466,24 @@ class _ProfilePageState extends State<ProfilePage>
             spacing: 12,
             runSpacing: 12,
             children: [
-              _buildStatCard(
-                  '🌍', (stats?.countriesVisited ?? 0).toString(), 'Countries', isMobile),
-              _buildStatCard(
-                  '🏙️', (stats?.citiesLived ?? 0).toString(), l10n.cities, isMobile),
+              _buildStatCard('🌍', (stats?.countriesVisited ?? 0).toString(), 'Countries', isMobile),
+              _buildStatCard('🏙️', (stats?.citiesLived ?? 0).toString(), l10n.cities, isMobile),
               _buildStatCard('📅', (stats?.daysNomading ?? 0).toString(), 'Days nomading', isMobile),
-              _buildStatCard(
-                  '🤝', (stats?.meetupsCreated ?? 0).toString(), 'Meetups', isMobile),
-              _buildStatCard(
-                  '✈️', (stats?.tripsCompleted ?? 0).toString(), 'Trips', isMobile),
-              _buildStatCard(
-                  '❤️', (stats?.favoriteCitiesCount ?? favoriteCityCount).toString(), 'Favorites', isMobile),
+              _buildClickableStatCard(
+                '🤝',
+                (stats?.meetupsCreated ?? 0).toString(),
+                'Meetups',
+                isMobile,
+                onTap: () => Get.toNamed(AppRoutes.myMeetups),
+              ),
+              _buildStatCard('✈️', (stats?.tripsCompleted ?? 0).toString(), 'Trips', isMobile),
+              _buildClickableStatCard(
+                '❤️',
+                (stats?.favoriteCitiesCount ?? favoriteCityCount).toString(),
+                'Favorites',
+                isMobile,
+                onTap: () => Get.toNamed(AppRoutes.favorites),
+              ),
             ],
           ),
         ],
@@ -496,8 +491,7 @@ class _ProfilePageState extends State<ProfilePage>
     });
   }
 
-  Widget _buildStatCard(
-      String emoji, String value, String label, bool isMobile) {
+  Widget _buildStatCard(String emoji, String value, String label, bool isMobile) {
     return Container(
       width: isMobile ? ((Get.width - 44) / 2) : 150,
       padding: const EdgeInsets.all(16),
@@ -532,9 +526,59 @@ class _ProfilePageState extends State<ProfilePage>
     );
   }
 
+  Widget _buildClickableStatCard(String emoji, String value, String label, bool isMobile, {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: isMobile ? ((Get.width - 44) / 2) : 150,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF9FAFB),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE5E7EB)),
+        ),
+        child: Column(
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 32)),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1a1a1a),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF6b7280),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                if (onTap != null) ...[
+                  const SizedBox(width: 4),
+                  const Icon(
+                    FontAwesomeIcons.chevronRight,
+                    size: 10,
+                    color: Color(0xFF6b7280),
+                  ),
+                ],
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // Badges Section
-  Widget _buildBadgesSection(
-      BuildContext context, List<Badge> badges, bool isMobile) {
+  Widget _buildBadgesSection(BuildContext context, List<Badge> badges, bool isMobile) {
     final l10n = AppLocalizations.of(context)!;
     if (badges.isEmpty) return const SizedBox.shrink();
 
@@ -606,19 +650,14 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   // Skills and Interests
-  Widget _buildSkillsAndInterests(BuildContext context, User user,
-      UserStateController controller, bool isMobile) {
+  Widget _buildSkillsAndInterests(BuildContext context, User user, UserStateController controller, bool isMobile) {
     final l10n = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Skills Section
-        Text(l10n.skills,
-            style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1a1a1a))),
+        Text(l10n.skills, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1a1a1a))),
         const SizedBox(height: 12),
         user.skills.isEmpty
             ? Container(
@@ -660,14 +699,11 @@ class _ProfilePageState extends State<ProfilePage>
                 runSpacing: 8,
                 children: user.skills.map((skill) {
                   return Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFF4458).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                          color:
-                              const Color(0xFFFF4458).withValues(alpha: 0.3)),
+                      border: Border.all(color: const Color(0xFFFF4458).withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -681,10 +717,7 @@ class _ProfilePageState extends State<ProfilePage>
                         ],
                         Text(
                           skill.name,
-                          style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFFFF4458)),
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFFFF4458)),
                         ),
                       ],
                     ),
@@ -695,10 +728,7 @@ class _ProfilePageState extends State<ProfilePage>
 
         // Interests Section
         Text(l10n.interests,
-            style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1a1a1a))),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1a1a1a))),
         const SizedBox(height: 12),
         user.interests.isEmpty
             ? Container(
@@ -740,8 +770,7 @@ class _ProfilePageState extends State<ProfilePage>
                 runSpacing: 8,
                 children: user.interests.map((interest) {
                   return Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF3F4F6),
                       borderRadius: BorderRadius.circular(20),
@@ -759,10 +788,7 @@ class _ProfilePageState extends State<ProfilePage>
                         ],
                         Text(
                           interest.name,
-                          style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF374151)),
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF374151)),
                         ),
                       ],
                     ),
@@ -774,18 +800,14 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   // Travel History
-  Widget _buildTravelHistory(
-      BuildContext context, List<TravelHistory> history, bool isMobile) {
+  Widget _buildTravelHistory(BuildContext context, List<TravelHistory> history, bool isMobile) {
     final l10n = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(l10n.travelHistory,
-            style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1a1a1a))),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1a1a1a))),
         const SizedBox(height: 16),
         history.isEmpty
             ? Container(
@@ -831,9 +853,7 @@ class _ProfilePageState extends State<ProfilePage>
                 ),
               )
             : Column(
-                children: history
-                    .map((trip) => _buildTravelHistoryCard(trip))
-                    .toList(),
+                children: history.map((trip) => _buildTravelHistoryCard(trip)).toList(),
               ),
       ],
     );
@@ -861,15 +881,11 @@ class _ProfilePageState extends State<ProfilePage>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('${trip.cityName}, ${trip.countryName ?? "Unknown"}',
-                        style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1a1a1a))),
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1a1a1a))),
                     const SizedBox(height: 6),
                     Text(
                       _formatDate(trip.visitDate),
-                      style: const TextStyle(
-                          fontSize: 13, color: Color(0xFF6b7280)),
+                      style: const TextStyle(fontSize: 13, color: Color(0xFF6b7280)),
                     ),
                   ],
                 ),
@@ -877,35 +893,26 @@ class _ProfilePageState extends State<ProfilePage>
             ],
           ),
           const SizedBox(height: 12),
-          Text(trip.cityName,
-              style: const TextStyle(
-                  fontSize: 14, color: Color(0xFF374151), height: 1.5)),
+          Text(trip.cityName, style: const TextStyle(fontSize: 14, color: Color(0xFF374151), height: 1.5)),
         ],
       ),
     );
   }
 
   // Social Links
-  Widget _buildSocialLinks(
-      BuildContext context, Map<String, String> links, bool isMobile) {
+  Widget _buildSocialLinks(BuildContext context, Map<String, String> links, bool isMobile) {
     final l10n = AppLocalizations.of(context)!;
     if (links.isEmpty) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(l10n.connect,
-            style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1a1a1a))),
+        Text(l10n.connect, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1a1a1a))),
         const SizedBox(height: 16),
         Wrap(
           spacing: 12,
           runSpacing: 12,
-          children: links.entries
-              .map((entry) => _buildSocialLinkButton(entry.key, entry.value))
-              .toList(),
+          children: links.entries.map((entry) => _buildSocialLinkButton(entry.key, entry.value)).toList(),
         ),
       ],
     );
@@ -952,9 +959,7 @@ class _ProfilePageState extends State<ProfilePage>
           children: [
             Icon(icon, size: 20, color: color),
             const SizedBox(width: 8),
-            Text(platform.toUpperCase(),
-                style: TextStyle(
-                    fontSize: 13, fontWeight: FontWeight.w600, color: color)),
+            Text(platform.toUpperCase(), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: color)),
           ],
         ),
       ),
@@ -976,24 +981,19 @@ class _ProfilePageState extends State<ProfilePage>
           ),
           child: Row(
             children: [
-              const Icon(FontAwesomeIcons.rightFromBracket,
-                  color: Color(0xFF6B7280), size: 20),
+              const Icon(FontAwesomeIcons.rightFromBracket, color: Color(0xFF6B7280), size: 20),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   l10n.logout,
-                  style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF374151)),
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF374151)),
                 ),
               ),
               TextButton(
                 onPressed: () {
                   _handleLogout(context);
                 },
-                child: Text(l10n.logout,
-                    style: const TextStyle(color: Color(0xFFFF4458))),
+                child: Text(l10n.logout, style: const TextStyle(color: Color(0xFFFF4458))),
               ),
             ],
           ),
@@ -1365,38 +1365,12 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   String _formatJoinDate(DateTime date) {
-    final months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec'
-    ];
+    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return '${months[date.month - 1]} ${date.year}';
   }
 
   String _formatDate(DateTime date) {
-    final months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec'
-    ];
+    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 

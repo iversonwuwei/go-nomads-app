@@ -33,6 +33,7 @@ import 'package:df_admin_mobile/pages/invite_to_meetup_page.dart';
 import 'package:df_admin_mobile/pages/meetup_detail_page.dart';
 import 'package:df_admin_mobile/pages/meetups_list_page.dart';
 import 'package:df_admin_mobile/pages/member_detail_page.dart';
+import 'package:df_admin_mobile/pages/my_meetups_page.dart';
 import 'package:df_admin_mobile/pages/nomads_login_page.dart';
 import 'package:df_admin_mobile/pages/notifications_page.dart';
 import 'package:df_admin_mobile/pages/profile_edit_page.dart';
@@ -73,6 +74,7 @@ class AppRoutes {
   static const String meetupDetail = '/meetup-detail';
   static const String createMeetup = '/create-meetup';
   static const String inviteToMeetup = '/invite-to-meetup';
+  static const String myMeetups = '/my-meetups';
 
   // ============================================================================
   // 共享办公相关路由
@@ -266,6 +268,11 @@ class AppRoutes {
     GetPage(
       name: inviteToMeetup,
       page: () => InviteToMeetupPage(user: Get.arguments),
+      middlewares: [AuthMiddleware()],
+    ),
+    GetPage(
+      name: myMeetups,
+      page: () => const MyMeetupsPage(),
       middlewares: [AuthMiddleware()],
     ),
 

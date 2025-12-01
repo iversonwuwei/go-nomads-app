@@ -1,4 +1,7 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
+import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller.dart';
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
@@ -18,67 +21,41 @@ class FavoritesPage extends StatefulWidget {
 }
 
 class _FavoritesPageState extends State<FavoritesPage> {
-  // 模拟收藏的城市数据
-  final List<Map<String, dynamic>> _favoriteCities = [
-    {
-      'city': 'Bangkok',
-      'country': 'Thailand',
-      'price': 800,
-      'internet': 150,
-      'temperature': 32,
-      'rank': 1,
-      'image':
-          'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800',
-      'overall': 4.8,
-      'addedDate': '2025-01-15',
-    },
-    {
-      'city': 'Lisbon',
-      'country': 'Portugal',
-      'price': 1500,
-      'internet': 120,
-      'temperature': 22,
-      'rank': 5,
-      'image':
-          'https://images.unsplash.com/photo-1555881400-74d7acaacd8b?w=800',
-      'overall': 4.6,
-      'addedDate': '2025-01-10',
-    },
-    {
-      'city': 'Bali',
-      'country': 'Indonesia',
-      'price': 900,
-      'internet': 100,
-      'temperature': 30,
-      'rank': 3,
-      'image':
-          'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800',
-      'overall': 4.7,
-      'addedDate': '2025-01-08',
-    },
-  ];
+  late final CityStateController _cityController;
+  late final UserStateController _userController;
 
-  String _sortBy = 'date'; // date, price, rank, name
+  String _sortBy = 'score'; // score, price, name
+  bool _isLoading = true;
 
-  void _sortCities() {
-    setState(() {
-      switch (_sortBy) {
-        case 'date':
-          _favoriteCities.sort((a, b) =>
-              b['addedDate'].toString().compareTo(a['addedDate'].toString()));
-          break;
-        case 'price':
-          _favoriteCities.sort((a, b) => a['price'].compareTo(b['price']));
-          break;
-        case 'rank':
-          _favoriteCities.sort((a, b) => a['rank'].compareTo(b['rank']));
-          break;
-        case 'name':
-          _favoriteCities.sort(
-              (a, b) => a['city'].toString().compareTo(b['city'].toString()));
-          break;
-      }
-    });
+  @override
+  void initState() {
+    super.initState();
+    _cityController = Get.find<CityStateController>();
+    _userController = Get.find<UserStateController>();
+    _loadFavorites();
+  }
+
+  Future<void> _loadFavorites() async {
+    setState(() => _isLoading = true);
+    await _cityController.loadFavoriteCities();
+    setState(() => _isLoading = false);
+  }
+
+  List<City> get _sortedCities {
+    final cities = List<City>.from(_cityController.favoriteCities);
+    switch (_sortBy) {
+      case 'price':
+        cities.sort((a, b) => (a.averageCost ?? 0).compareTo(b.averageCost ?? 0));
+        break;
+      case 'name':
+        cities.sort((a, b) => a.name.compareTo(b.name));
+        break;
+      case 'score':
+      default:
+        cities.sort((a, b) => (b.overallScore ?? 0).compareTo(a.overallScore ?? 0));
+        break;
+    }
+    return cities;
   }
 
   @override
@@ -92,27 +69,27 @@ class _FavoritesPageState extends State<FavoritesPage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF1a1a1a),
         elevation: 0,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.favorites,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: isMobile ? 20 : 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              '${_favoriteCities.length} ${l10n.cities}',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.6),
-                fontSize: isMobile ? 12 : 14,
-                fontWeight: FontWeight.normal,
-              ),
-            ),
-          ],
-        ),
+        title: Obx(() => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.favorites,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: isMobile ? 20 : 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  '${_cityController.favoriteCities.length} ${l10n.cities}',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.6),
+                    fontSize: isMobile ? 12 : 14,
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
+              ],
+            )),
         leading: const AppBackButton(color: AppColors.backButtonLight),
         actions: [
           // 排序按钮
@@ -123,35 +100,44 @@ class _FavoritesPageState extends State<FavoritesPage> {
               setState(() {
                 _sortBy = value;
               });
-              _sortCities();
             },
             itemBuilder: (context) {
               final l10n = AppLocalizations.of(context)!;
               return [
-                _buildPopupMenuItem('date', l10n.date, FontAwesomeIcons.calendar),
+                _buildPopupMenuItem('score', l10n.ranking, FontAwesomeIcons.star),
                 _buildPopupMenuItem('price', l10n.price, FontAwesomeIcons.dollarSign),
-                _buildPopupMenuItem('rank', l10n.ranking, FontAwesomeIcons.star),
                 _buildPopupMenuItem('name', l10n.name, FontAwesomeIcons.arrowDownAZ),
               ];
             },
           ),
         ],
       ),
-      body: _favoriteCities.isEmpty
-          ? _buildEmptyState(isMobile)
-          : ListView.builder(
-              padding: EdgeInsets.all(isMobile ? 16 : 24),
-              itemCount: _favoriteCities.length,
-              itemBuilder: (context, index) {
-                final city = _favoriteCities[index];
-                return _buildFavoriteCard(city, isMobile, index);
-              },
-            ),
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: Colors.orange),
+            )
+          : Obx(() {
+              final cities = _sortedCities;
+              if (cities.isEmpty) {
+                return _buildEmptyState(isMobile);
+              }
+              return RefreshIndicator(
+                onRefresh: _loadFavorites,
+                color: Colors.orange,
+                child: ListView.builder(
+                  padding: EdgeInsets.all(isMobile ? 16 : 24),
+                  itemCount: cities.length,
+                  itemBuilder: (context, index) {
+                    final city = cities[index];
+                    return _buildFavoriteCard(city, isMobile);
+                  },
+                ),
+              );
+            }),
     );
   }
 
-  PopupMenuItem<String> _buildPopupMenuItem(
-      String value, String label, IconData icon) {
+  PopupMenuItem<String> _buildPopupMenuItem(String value, String label, IconData icon) {
     final isSelected = _sortBy == value;
     return PopupMenuItem(
       value: value,
@@ -242,8 +228,10 @@ class _FavoritesPageState extends State<FavoritesPage> {
     );
   }
 
-  Widget _buildFavoriteCard(
-      Map<String, dynamic> city, bool isMobile, int index) {
+  Widget _buildFavoriteCard(City city, bool isMobile) {
+    final l10n = AppLocalizations.of(context)!;
+    final imageUrl = city.portraitImageUrl ?? city.imageUrl ?? '';
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -254,20 +242,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
         ),
       ),
       child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => CityDetailPage(
-                cityId: city['city']?.toString() ?? '',
-                cityName: city['city']?.toString() ?? '',
-                cityImage: city['image']?.toString() ?? '',
-                overallScore: (city['overall'] as num?)?.toDouble() ?? 0.0,
-                reviewCount: 0,
-              ),
-            ),
-          );
-        },
+        onTap: () => _navigateToCityDetail(city),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -276,24 +251,17 @@ class _FavoritesPageState extends State<FavoritesPage> {
               // 城市图片
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  city['image'],
-                  width: isMobile ? 80 : 120,
-                  height: isMobile ? 80 : 120,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      width: isMobile ? 80 : 120,
-                      height: isMobile ? 80 : 120,
-                      color: Colors.white.withValues(alpha: 0.1),
-                      child: const Icon(
-                        FontAwesomeIcons.city,
-                        color: Colors.white54,
-                        size: 40,
-                      ),
-                    );
-                  },
-                ),
+                child: imageUrl.isNotEmpty
+                    ? Image.network(
+                        imageUrl,
+                        width: isMobile ? 80 : 120,
+                        height: isMobile ? 80 : 120,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return _buildPlaceholderImage(isMobile);
+                        },
+                      )
+                    : _buildPlaceholderImage(isMobile),
               ),
 
               const SizedBox(width: 16),
@@ -303,12 +271,12 @@ class _FavoritesPageState extends State<FavoritesPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 城市名称和排名
+                    // 城市名称和评分
                     Row(
                       children: [
                         Expanded(
                           child: Text(
-                            city['city'],
+                            city.name,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: isMobile ? 18 : 22,
@@ -318,38 +286,51 @@ class _FavoritesPageState extends State<FavoritesPage> {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.orange.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(color: Colors.orange),
-                          ),
-                          child: Text(
-                            '#${city['rank']}',
-                            style: const TextStyle(
-                              color: Colors.orange,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
+                        if (city.overallScore != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(color: Colors.orange),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  FontAwesomeIcons.solidStar,
+                                  color: Colors.orange,
+                                  size: 10,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  city.overallScore!.toStringAsFixed(1),
+                                  style: const TextStyle(
+                                    color: Colors.orange,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ),
                       ],
                     ),
 
                     const SizedBox(height: 4),
 
                     // 国家
-                    Text(
-                      city['country'],
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.7),
-                        fontSize: isMobile ? 14 : 16,
+                    if (city.country != null)
+                      Text(
+                        city.country!,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.7),
+                          fontSize: isMobile ? 14 : 16,
+                        ),
                       ),
-                    ),
 
                     const SizedBox(height: 12),
 
@@ -358,24 +339,27 @@ class _FavoritesPageState extends State<FavoritesPage> {
                       spacing: 16,
                       runSpacing: 8,
                       children: [
-                        _buildInfoChip(
-                          FontAwesomeIcons.dollarSign,
-                          '\$${city['price']}/mo',
-                          Colors.green,
-                          isMobile,
-                        ),
-                        _buildInfoChip(
-                          FontAwesomeIcons.wifi,
-                          '${city['internet']} Mbps',
-                          Colors.blue,
-                          isMobile,
-                        ),
-                        _buildInfoChip(
-                          FontAwesomeIcons.temperatureHalf,
-                          '${city['temperature']}°C',
-                          Colors.orange,
-                          isMobile,
-                        ),
+                        if (city.averageCost != null)
+                          _buildInfoChip(
+                            FontAwesomeIcons.dollarSign,
+                            '\$${city.averageCost!.toInt()}/mo',
+                            Colors.green,
+                            isMobile,
+                          ),
+                        if (city.internetScore != null)
+                          _buildInfoChip(
+                            FontAwesomeIcons.wifi,
+                            '${(city.internetScore! * 20).toInt()} Mbps',
+                            Colors.blue,
+                            isMobile,
+                          ),
+                        if (city.temperature != null)
+                          _buildInfoChip(
+                            FontAwesomeIcons.temperatureHalf,
+                            '${city.temperature}°C',
+                            Colors.orange,
+                            isMobile,
+                          ),
                       ],
                     ),
                   ],
@@ -388,17 +372,8 @@ class _FavoritesPageState extends State<FavoritesPage> {
               Column(
                 children: [
                   IconButton(
-                    icon: const Icon(FontAwesomeIcons.heart, color: Colors.red),
-                    onPressed: () {
-                      final l10n = AppLocalizations.of(context)!;
-                      setState(() {
-                        _favoriteCities.removeAt(index);
-                      });
-                      AppToast.success(
-                        l10n.favoriteRemoved,
-                        title: l10n.removeFromFavorites,
-                      );
-                    },
+                    icon: const Icon(FontAwesomeIcons.solidHeart, color: Colors.red),
+                    onPressed: () => _unfavoriteCity(city, l10n),
                   ),
                   const SizedBox(height: 8),
                   IconButton(
@@ -406,21 +381,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                       FontAwesomeIcons.arrowRight,
                       color: Colors.white70,
                     ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => CityDetailPage(
-                            cityId: city['city']?.toString() ?? '',
-                            cityName: city['city']?.toString() ?? '',
-                            cityImage: city['image']?.toString() ?? '',
-                            overallScore:
-                                (city['overall'] as num?)?.toDouble() ?? 0.0,
-                            reviewCount: 0,
-                          ),
-                        ),
-                      );
-                    },
+                    onPressed: () => _navigateToCityDetail(city),
                   ),
                 ],
               ),
@@ -431,8 +392,47 @@ class _FavoritesPageState extends State<FavoritesPage> {
     );
   }
 
-  Widget _buildInfoChip(
-      IconData icon, String label, Color color, bool isMobile) {
+  Widget _buildPlaceholderImage(bool isMobile) {
+    return Container(
+      width: isMobile ? 80 : 120,
+      height: isMobile ? 80 : 120,
+      color: Colors.white.withValues(alpha: 0.1),
+      child: const Icon(
+        FontAwesomeIcons.city,
+        color: Colors.white54,
+        size: 40,
+      ),
+    );
+  }
+
+  void _navigateToCityDetail(City city) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CityDetailPage(
+          cityId: city.id,
+          cityName: city.name,
+          cityImage: city.portraitImageUrl ?? city.imageUrl ?? '',
+          overallScore: city.overallScore ?? 0.0,
+          reviewCount: city.reviewCount ?? 0,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _unfavoriteCity(City city, AppLocalizations l10n) async {
+    final result = await _userController.removeFavoriteCity(city.id);
+    if (result) {
+      // 从收藏列表中移除
+      _cityController.favoriteCities.removeWhere((c) => c.id == city.id);
+      AppToast.success(
+        l10n.favoriteRemoved,
+        title: l10n.removeFromFavorites,
+      );
+    }
+  }
+
+  Widget _buildInfoChip(IconData icon, String label, Color color, bool isMobile) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [

@@ -2635,6 +2635,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get upcoming => 'Upcoming';
 
   @override
+  String get statusOngoing => 'Ongoing';
+
+  @override
+  String get statusCancelled => 'Cancelled';
+
+  @override
   String joinedEvents(String count) {
     return '$count Joined Events';
   }
@@ -2647,6 +2653,39 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noMeetupsAvailable => 'No meetups available';
+
+  @override
+  String get myMeetups => 'My Meetups';
+
+  @override
+  String get noMeetups => 'No Meetups Yet';
+
+  @override
+  String get createFirstMeetup =>
+      'Create your first meetup to connect with other nomads';
+
+  @override
+  String get confirmCancelMeetupTitle => 'Cancel meetup';
+
+  @override
+  String get confirmCancelMeetupMessage =>
+      'Are you sure you want to cancel this meetup? This action cannot be undone.';
+
+  @override
+  String get confirmLeaveMeetupTitle => 'Leave meetup';
+
+  @override
+  String get confirmLeaveMeetupMessage =>
+      'Are you sure you want to leave this meetup?';
+
+  @override
+  String get cancelMeetupSuccess => 'Meetup cancelled';
+
+  @override
+  String get cancelMeetupFailed => 'Failed to cancel meetup';
+
+  @override
+  String get leaveMeetupFailed => 'Failed to leave meetup';
 
   @override
   String get join => 'Join';

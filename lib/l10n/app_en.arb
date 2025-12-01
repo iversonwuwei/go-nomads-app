@@ -1143,6 +1143,8 @@
   "allMeetups": "All Meetups",
   "past": "Past",
   "upcoming": "Upcoming",
+  "statusOngoing": "Ongoing",
+  "statusCancelled": "Cancelled",
   "upcomingEvents": "{count} Upcoming Events",
   "@upcomingEvents": {
     "placeholders": {
@@ -1173,6 +1175,16 @@
   "noJoinedMeetupsYet": "No joined meetups yet",
   "noPastMeetups": "No past meetups",
   "noMeetupsAvailable": "No meetups available",
+  "myMeetups": "My Meetups",
+  "noMeetups": "No Meetups Yet",
+  "createFirstMeetup": "Create your first meetup to connect with other nomads",
+  "confirmCancelMeetupTitle": "Cancel meetup",
+  "confirmCancelMeetupMessage": "Are you sure you want to cancel this meetup? This action cannot be undone.",
+  "confirmLeaveMeetupTitle": "Leave meetup",
+  "confirmLeaveMeetupMessage": "Are you sure you want to leave this meetup?",
+  "cancelMeetupSuccess": "Meetup cancelled",
+  "cancelMeetupFailed": "Failed to cancel meetup",
+  "leaveMeetupFailed": "Failed to leave meetup",
   "join": "Join",
   "youHaveJoined": "You have joined {title}",
   "@youHaveJoined": {
