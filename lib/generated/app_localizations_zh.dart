@@ -141,6 +141,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get createMeetup => '创建聚会';
 
   @override
+  String get editMeetup => '编辑聚会';
+
+  @override
   String get invite => '邀请';
 
   @override
@@ -764,6 +767,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get coworkingVerifyFailed => '认证提交失败，请稍后再试。';
+
+  @override
+  String get coworkingVerifyAlreadyVoted => '您已经为该空间提交过认证。';
+
+  @override
+  String get coworkingVerifyIsCreator => '创建者不能为自己的空间认证。';
+
+  @override
+  String get coworkingVerifySpaceVerified => '该空间已通过认证。';
+
+  @override
+  String get coworkingVerifyChecking => '正在检查资格...';
 
   @override
   String get shareLocation => '分享位置';
@@ -2608,6 +2623,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get upcoming => '即将到来';
 
   @override
+  String get statusOngoing => '进行中';
+
+  @override
+  String get statusCancelled => '已取消';
+
+  @override
   String joinedEvents(String count) {
     return '$count 个已加入的活动';
   }
@@ -2620,6 +2641,36 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get noMeetupsAvailable => '暂无可用聚会';
+
+  @override
+  String get myMeetups => '我的聚会';
+
+  @override
+  String get noMeetups => '暂无聚会';
+
+  @override
+  String get createFirstMeetup => '创建您的第一个聚会来与其他游牧者建立联系';
+
+  @override
+  String get confirmCancelMeetupTitle => '取消活动';
+
+  @override
+  String get confirmCancelMeetupMessage => '确定要取消这个活动吗？此操作无法撤销。';
+
+  @override
+  String get confirmLeaveMeetupTitle => '退出活动';
+
+  @override
+  String get confirmLeaveMeetupMessage => '确定要退出这个活动吗？';
+
+  @override
+  String get cancelMeetupSuccess => '活动已取消';
+
+  @override
+  String get cancelMeetupFailed => '取消活动失败';
+
+  @override
+  String get leaveMeetupFailed => '退出活动失败';
 
   @override
   String get join => '加入';

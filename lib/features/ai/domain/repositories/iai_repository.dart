@@ -2,6 +2,7 @@ import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/async_task/domain/entities/async_task.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/digital_nomad_guide.dart';
 import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan.dart';
+import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan_summary.dart';
 
 /// AI服务Repository接口
 ///
@@ -90,6 +91,26 @@ abstract class IAiRepository {
   ///
   /// 注意: 计划24小时后过期
   Future<Result<TravelPlan>> getTravelPlanById(String planId);
+
+  /// 获取当前用户的旅行计划列表
+  ///
+  /// 参数:
+  /// - [page]: 页码，默认1
+  /// - [pageSize]: 每页数量，默认20
+  ///
+  /// 返回: Result<List<TravelPlanSummary>>
+  Future<Result<List<TravelPlanSummary>>> getUserTravelPlans({
+    int page = 1,
+    int pageSize = 20,
+  });
+
+  /// 根据ID获取旅行计划详情（从数据库）
+  ///
+  /// 参数:
+  /// - [planId]: 计划ID
+  ///
+  /// 返回: Result<TravelPlan>
+  Future<Result<TravelPlan>> getTravelPlanDetail(String planId);
 
   // ==================== 数字游民指南 ====================
 

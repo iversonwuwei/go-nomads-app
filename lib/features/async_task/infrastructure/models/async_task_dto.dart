@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:df_admin_mobile/features/async_task/domain/entities/async_task.dart';
 
 /// AsyncTask DTO - 基础设施层数据传输对象
@@ -31,12 +33,27 @@ class AsyncTaskDto {
   factory AsyncTaskDto.fromJson(Map<String, dynamic> json) {
     // 支持 camelCase 和 PascalCase 字段名
     final taskId = json['taskId'] as String? ?? json['TaskId'] as String? ?? '';
-    final status =
-        json['status'] as String? ?? json['Status'] as String? ?? 'unknown';
+    final status = json['status'] as String? ?? json['Status'] as String? ?? 'unknown';
     final planId = json['planId'] as String? ?? json['PlanId'] as String?;
     final guideId = json['guideId'] as String? ?? json['GuideId'] as String?;
-    final result = json['result'] as Map<String, dynamic>? ??
-        json['Result'] as Map<String, dynamic>?;
+
+    // result 字段可能是 Map 或 JSON 字符串，需要兼容处理
+    Map<String, dynamic>? result;
+    final rawResult = json['result'] ?? json['Result'];
+    if (rawResult != null) {
+      if (rawResult is Map<String, dynamic>) {
+        result = rawResult;
+      } else if (rawResult is String) {
+        // 后端可能返回 JSON 字符串，需要解析
+        try {
+          result = jsonDecode(rawResult) as Map<String, dynamic>;
+        } catch (e) {
+          print('⚠️ 解析 result JSON 字符串失败: $e');
+          result = null;
+        }
+      }
+    }
+
     final error = json['error'] as String? ?? json['Error'] as String?;
 
     // Progress 字段支持多种格式
@@ -70,19 +87,13 @@ class AsyncTaskDto {
       progressMessage: progressMessage,
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'] as String)
-          : (json['CreatedAt'] != null
-              ? DateTime.parse(json['CreatedAt'] as String)
-              : DateTime.now()),
+          : (json['CreatedAt'] != null ? DateTime.parse(json['CreatedAt'] as String) : DateTime.now()),
       updatedAt: json['updatedAt'] != null
           ? DateTime.parse(json['updatedAt'] as String)
-          : (json['UpdatedAt'] != null
-              ? DateTime.parse(json['UpdatedAt'] as String)
-              : DateTime.now()),
+          : (json['UpdatedAt'] != null ? DateTime.parse(json['UpdatedAt'] as String) : DateTime.now()),
       completedAt: json['completedAt'] != null
           ? DateTime.parse(json['completedAt'] as String)
-          : (json['CompletedAt'] != null
-              ? DateTime.parse(json['CompletedAt'] as String)
-              : null),
+          : (json['CompletedAt'] != null ? DateTime.parse(json['CompletedAt'] as String) : null),
     );
   }
 

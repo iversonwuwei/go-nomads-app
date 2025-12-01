@@ -118,4 +118,10 @@ abstract class ICityRepository implements IRepository {
   /// [userId] 用户ID
   /// 返回 true 表示指定成功
   Future<Result<bool>> assignModerator(String cityId, String userId);
+
+  /// 为城市生成 AI 图片
+  ///
+  /// [cityId] 城市ID
+  /// 返回生成结果，包含竖屏封面图和横屏图片的 URL
+  Future<Result<Map<String, dynamic>>> generateCityImages(String cityId);
 }

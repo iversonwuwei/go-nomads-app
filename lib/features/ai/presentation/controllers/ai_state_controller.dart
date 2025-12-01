@@ -4,6 +4,7 @@ import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/ai/application/use_cases/ai_use_cases.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/digital_nomad_guide.dart';
 import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan.dart';
+import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan_summary.dart';
 import 'package:get/get.dart';
 
 /// AI功能状态控制器
@@ -22,6 +23,8 @@ class AiStateController extends GetxController {
   final GenerateDigitalNomadGuideStreamUseCase
       _generateDigitalNomadGuideStreamUseCase;
   final GetDigitalNomadGuideUseCase _getDigitalNomadGuideUseCase;
+  final GetUserTravelPlansUseCase _getUserTravelPlansUseCase;
+  final GetTravelPlanDetailUseCase _getTravelPlanDetailUseCase;
 
   AiStateController(
     this._generateTravelPlanUseCase,
@@ -29,6 +32,8 @@ class AiStateController extends GetxController {
     this._getTravelPlanByIdUseCase,
     this._generateDigitalNomadGuideStreamUseCase,
     this._getDigitalNomadGuideUseCase,
+    this._getUserTravelPlansUseCase,
+    this._getTravelPlanDetailUseCase,
   );
 
   // ==================== 可观察状态 ====================
@@ -49,14 +54,24 @@ class AiStateController extends GetxController {
   final _guideError = Rx<String?>(null);
   final _isLoadingGuide = false.obs; // 从后端API加载中
 
+  // 用户旅行计划列表状态
+  final _userTravelPlans = <TravelPlanSummary>[].obs;
+  final _isLoadingUserPlans = false.obs;
+  final _userPlansError = Rx<String?>(null);
+
   // ==================== Getters ====================
 
   // 旅行计划
   bool get isGeneratingTravelPlan => _isGeneratingTravelPlan.value;
+  RxBool get isGeneratingTravelPlanRx => _isGeneratingTravelPlan;
   int get travelPlanGenerationProgress => _travelPlanGenerationProgress.value;
+  RxInt get travelPlanGenerationProgressRx => _travelPlanGenerationProgress;
   String get travelPlanGenerationMessage => _travelPlanGenerationMessage.value;
+  RxString get travelPlanGenerationMessageRx => _travelPlanGenerationMessage;
   TravelPlan? get currentTravelPlan => _currentTravelPlan.value;
+  Rx<TravelPlan?> get currentTravelPlanRx => _currentTravelPlan;
   String? get travelPlanError => _travelPlanError.value;
+  Rx<String?> get travelPlanErrorRx => _travelPlanError;
 
   // 数字游民指南
   bool get isGeneratingGuide => _isGeneratingGuide.value;
@@ -71,7 +86,79 @@ class AiStateController extends GetxController {
   String? get guideError => _guideError.value;
   bool get isLoadingGuide => _isLoadingGuide.value;
 
+  // 用户旅行计划列表
+  List<TravelPlanSummary> get userTravelPlans => _userTravelPlans;
+  RxList<TravelPlanSummary> get userTravelPlansRx => _userTravelPlans;
+  bool get isLoadingUserPlans => _isLoadingUserPlans.value;
+  RxBool get isLoadingUserPlansRx => _isLoadingUserPlans;
+  String? get userPlansError => _userPlansError.value;
+  TravelPlanSummary? get latestTravelPlan => _userTravelPlans.isNotEmpty ? _userTravelPlans.first : null;
+
   // ==================== 业务方法 ====================
+
+  /// 获取用户旅行计划列表
+  Future<List<TravelPlanSummary>> loadUserTravelPlans({
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    try {
+      print('📋 [loadUserTravelPlans] 加载用户旅行计划列表...');
+      _isLoadingUserPlans.value = true;
+      _userPlansError.value = null;
+
+      final result = await _getUserTravelPlansUseCase.execute(
+        GetUserTravelPlansParams(page: page, pageSize: pageSize),
+      );
+
+      return result.fold(
+        onSuccess: (plans) {
+          print('✅ [loadUserTravelPlans] 获取到 ${plans.length} 个旅行计划');
+          _userTravelPlans.assignAll(plans);
+          _isLoadingUserPlans.value = false;
+          return plans;
+        },
+        onFailure: (failure) {
+          print('❌ [loadUserTravelPlans] 加载失败: ${failure.message}');
+          _userPlansError.value = failure.message;
+          _isLoadingUserPlans.value = false;
+          return [];
+        },
+      );
+    } catch (e) {
+      print('❌ [loadUserTravelPlans] 异常: $e');
+      _userPlansError.value = e.toString();
+      _isLoadingUserPlans.value = false;
+      return [];
+    }
+  }
+
+  /// 获取旅行计划详情（从数据库）
+  Future<TravelPlan?> getTravelPlanDetail(String planId) async {
+    try {
+      print('📋 [getTravelPlanDetail] 获取旅行计划详情: planId=$planId');
+
+      final result = await _getTravelPlanDetailUseCase.execute(
+        GetTravelPlanDetailParams(planId: planId),
+      );
+
+      return result.fold(
+        onSuccess: (plan) {
+          print('✅ [getTravelPlanDetail] 获取成功');
+          _currentTravelPlan.value = plan;
+          return plan;
+        },
+        onFailure: (failure) {
+          print('❌ [getTravelPlanDetail] 获取失败: ${failure.message}');
+          _travelPlanError.value = failure.message;
+          return null;
+        },
+      );
+    } catch (e) {
+      print('❌ [getTravelPlanDetail] 异常: $e');
+      _travelPlanError.value = e.toString();
+      return null;
+    }
+  }
 
   /// 加载城市指南 (从后端API获取)
   ///

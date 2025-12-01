@@ -1,10 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
-
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/back_button.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 /// 城市搜索和筛选页面
 class CitySearchPage extends StatefulWidget {
@@ -61,11 +60,7 @@ class _CitySearchPageState extends State<CitySearchPage> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        leading: IconButton(
-          icon: const Icon(FontAwesomeIcons.arrowLeft,
-              color: AppColors.backButtonLight),
-          onPressed: () => Get.back(),
-        ),
+        leading: const AppBackButton(color: AppColors.backButtonLight),
       ),
       body: CustomScrollView(
         slivers: [

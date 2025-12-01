@@ -29,4 +29,7 @@ abstract class IModeratorApplicationRepository {
 
   /// 获取申请统计（管理员使用）
   Future<Map<String, int>> getStatistics();
+
+  /// 撤销版主资格（管理员使用）
+  Future<void> revokeModerator(String applicationId);
 }

@@ -1,5 +1,6 @@
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
+import 'package:df_admin_mobile/features/coworking/domain/entities/verification_eligibility.dart';
 import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
 import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
@@ -47,15 +48,61 @@ class CoworkingVerificationBadge extends StatelessWidget {
   Future<void> _handleTap(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
     final currentUser = _userStateController.currentUser.value;
+
+    // 检查是否登录
     if (currentUser == null) {
       AppToast.error(l10n.coworkingVerifyLoginRequired);
       return;
     }
 
+    // 前端基本检查
     if (!_canCurrentUserVerify) {
+      if (space.isVerified) {
+        AppToast.info(l10n.coworkingVerifySpaceVerified);
+      } else if (_isCreator) {
+        AppToast.warning(l10n.coworkingVerifyIsCreator);
+      }
       return;
     }
 
+    // 调用后端 API 检查验证资格
+    final eligibilityResult = await _coworkingController.checkVerificationEligibility(space.id);
+
+    // 检查 context 是否仍然有效
+    if (!context.mounted) return;
+
+    switch (eligibilityResult) {
+      case Success(:final data):
+        if (!data.canVerify) {
+          // 根据原因代码显示对应的提示
+          _showEligibilityError(context, data, l10n);
+          return;
+        }
+        // 可以验证，显示确认对话框
+        _showVerificationDialog(context, l10n);
+      case Failure(:final exception):
+        // API 调用失败，显示错误
+        AppToast.error(exception.message);
+    }
+  }
+
+  void _showEligibilityError(BuildContext context, VerificationEligibility eligibility, AppLocalizations l10n) {
+    switch (eligibility.reasonCode) {
+      case 'ALREADY_VOTED':
+        AppToast.warning(l10n.coworkingVerifyAlreadyVoted);
+        break;
+      case 'IS_CREATOR':
+        AppToast.warning(l10n.coworkingVerifyIsCreator);
+        break;
+      case 'SPACE_VERIFIED':
+        AppToast.info(l10n.coworkingVerifySpaceVerified);
+        break;
+      default:
+        AppToast.error(eligibility.reason ?? l10n.coworkingVerifyFailed);
+    }
+  }
+
+  Future<void> _showVerificationDialog(BuildContext context, AppLocalizations l10n) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
@@ -101,7 +148,8 @@ class CoworkingVerificationBadge extends StatelessWidget {
     return Obx(() {
       final isVerifying =
           _coworkingController.verifyingCoworkingIds.contains(space.id);
-      final bool canTap = _canCurrentUserVerify && !isVerifying;
+      // 未验证的空间允许点击（包括创建者，点击时会显示提示）
+      final bool canTap = !space.isVerified && !isVerifying;
 
       final Color backgroundColor =
           space.isVerified ? Colors.blue : Colors.grey;

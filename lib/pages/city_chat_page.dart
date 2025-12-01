@@ -1,14 +1,14 @@
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:flutter/services.dart';
-import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
-
 import 'package:df_admin_mobile/features/chat/domain/entities/chat.dart';
 import 'package:df_admin_mobile/features/chat/presentation/controllers/chat_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 
 /// 城市聊天室页面 - WeChat 风格设计
 ///
@@ -54,10 +54,7 @@ class _ChatRoomsListView extends StatelessWidget {
         backgroundColor: const Color(0xFFEDEDED),
         elevation: 0,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
-        leading: IconButton(
-          icon: const Icon(FontAwesomeIcons.arrowLeft, color: Colors.black),
-          onPressed: () => Get.back(),
-        ),
+        leading: const AppBackButton(color: Colors.black),
         title: Text(
           l10n.cityChats,
           style: const TextStyle(
@@ -284,8 +281,8 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
       backgroundColor: const Color(0xFFEDEDED),
       elevation: 0,
       systemOverlayStyle: SystemUiOverlayStyle.dark,
-      leading: IconButton(
-        icon: const Icon(FontAwesomeIcons.arrowLeft, color: Colors.black),
+      leading: AppBackButton(
+        color: Colors.black,
         onPressed: () => widget.controller.leaveRoom(),
       ),
       title: Column(

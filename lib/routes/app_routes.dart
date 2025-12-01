@@ -1,3 +1,4 @@
+import 'package:df_admin_mobile/features/moderator/presentation/pages/moderator_application_detail_page.dart';
 import 'package:df_admin_mobile/layouts/bottom_nav_layout.dart';
 import 'package:df_admin_mobile/middlewares/auth_middleware.dart';
 import 'package:df_admin_mobile/pages/add_cost_page.dart';
@@ -5,6 +6,7 @@ import 'package:df_admin_mobile/pages/add_coworking_page.dart';
 import 'package:df_admin_mobile/pages/add_innovation_page.dart';
 import 'package:df_admin_mobile/pages/add_review_page.dart';
 import 'package:df_admin_mobile/pages/ai_chat_page.dart';
+import 'package:df_admin_mobile/pages/amap_global_page.dart';
 import 'package:df_admin_mobile/pages/city_chat_page.dart';
 import 'package:df_admin_mobile/pages/city_detail_page.dart';
 import 'package:df_admin_mobile/pages/city_list_page.dart';
@@ -31,6 +33,7 @@ import 'package:df_admin_mobile/pages/invite_to_meetup_page.dart';
 import 'package:df_admin_mobile/pages/meetup_detail_page.dart';
 import 'package:df_admin_mobile/pages/meetups_list_page.dart';
 import 'package:df_admin_mobile/pages/member_detail_page.dart';
+import 'package:df_admin_mobile/pages/my_meetups_page.dart';
 import 'package:df_admin_mobile/pages/nomads_login_page.dart';
 import 'package:df_admin_mobile/pages/notifications_page.dart';
 import 'package:df_admin_mobile/pages/profile_edit_page.dart';
@@ -59,6 +62,7 @@ class AppRoutes {
   static const String cityChat = '/city-chat';
   static const String favorites = '/favorites';
   static const String globalMap = '/global-map';
+  static const String amapGlobal = '/amap-global';
   static const String addReview = '/add-review';
   static const String addCost = '/add-cost';
   static const String prosConsAdd = '/pros-cons-add';
@@ -70,6 +74,7 @@ class AppRoutes {
   static const String meetupDetail = '/meetup-detail';
   static const String createMeetup = '/create-meetup';
   static const String inviteToMeetup = '/invite-to-meetup';
+  static const String myMeetups = '/my-meetups';
 
   // ============================================================================
   // 共享办公相关路由
@@ -122,6 +127,11 @@ class AppRoutes {
   // 社区相关路由
   // ============================================================================
   static const String community = '/community';
+
+  // ============================================================================
+  // 管理员路由
+  // ============================================================================
+  static const String moderatorApplicationDetail = '/admin/moderator-application-detail';
 
   // ============================================================================
   // 其他路由
@@ -198,6 +208,11 @@ class AppRoutes {
       middlewares: [AuthMiddleware()],
     ),
     GetPage(
+      name: amapGlobal,
+      page: () => const AmapGlobalPage(),
+      middlewares: [AuthMiddleware()],
+    ),
+    GetPage(
       name: addReview,
       page: () {
         final args = Get.arguments as Map<String, dynamic>;
@@ -253,6 +268,11 @@ class AppRoutes {
     GetPage(
       name: inviteToMeetup,
       page: () => InviteToMeetupPage(user: Get.arguments),
+      middlewares: [AuthMiddleware()],
+    ),
+    GetPage(
+      name: myMeetups,
+      page: () => const MyMeetupsPage(),
       middlewares: [AuthMiddleware()],
     ),
 
@@ -322,6 +342,7 @@ class AppRoutes {
       page: () {
         final args = Get.arguments as Map<String, dynamic>;
         return TravelPlanPage(
+          planId: args['planId'], // 从数据库加载时传入
           cityId: args['cityId'],
           cityName: args['cityName'],
         );
@@ -433,6 +454,20 @@ class AppRoutes {
     GetPage(
       name: community,
       page: () => const CommunityPage(),
+      middlewares: [AuthMiddleware()],
+    ),
+
+    // ============================================================================
+    // 🔒 管理员相关路由 - 需要认证
+    // ============================================================================
+    GetPage(
+      name: moderatorApplicationDetail,
+      page: () {
+        final args = Get.arguments as Map<String, dynamic>? ?? {};
+        return ModeratorApplicationDetailPage(
+          applicationId: args['applicationId'] ?? '',
+        );
+      },
       middlewares: [AuthMiddleware()],
     ),
   ];

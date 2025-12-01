@@ -3,12 +3,14 @@ import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_rev
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
 import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_review_repository.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/coworking_verification_badge.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'add_coworking_page.dart';
 import 'add_coworking_review_page.dart';
 import 'coworking_reviews_page.dart';
 import 'osm_navigation_page.dart';
@@ -110,10 +112,63 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
             pinned: true,
             backgroundColor: Colors.white,
             iconTheme: const IconThemeData(color: Colors.black87),
-            leading: IconButton(
-              icon: const Icon(FontAwesomeIcons.arrowLeft),
-              onPressed: () => Get.back(),
-            ),
+            leading: const SliverBackButton(),
+            actions: [
+              // 编辑按钮（仅创建者可见）
+              if (_space.isOwner)
+                Container(
+                  margin: const EdgeInsets.only(right: 8),
+                  child: IconButton(
+                    icon: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withAlpha(128),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        FontAwesomeIcons.penToSquare,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                    ),
+                    onPressed: () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AddCoworkingPage(
+                            editingSpace: _space,
+                          ),
+                        ),
+                      );
+                      if (result == true && mounted) {
+                        // 返回 true 表示数据已更新，通知上级页面刷新
+                        Navigator.pop(context, true);
+                      }
+                    },
+                  ),
+                ),
+              // 图片计数器 - 与返回按钮同一水平线
+              if (hasMultipleImages)
+                Container(
+                  margin: const EdgeInsets.only(right: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withAlpha(128),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '${_currentImageIndex + 1}/${allImages.length}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
                 _space.name,
@@ -197,30 +252,6 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                               shape: BoxShape.circle,
                               color: _currentImageIndex == index ? Colors.white : Colors.white.withAlpha(128),
                             ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  // 图片计数器
-                  if (hasMultipleImages)
-                    Positioned(
-                      top: 100,
-                      right: 16,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withAlpha(128),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          '${_currentImageIndex + 1}/${allImages.length}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 12,
                           ),
                         ),
                       ),

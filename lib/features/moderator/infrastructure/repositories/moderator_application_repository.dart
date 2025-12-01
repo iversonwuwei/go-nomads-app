@@ -13,9 +13,9 @@ class ModeratorApplicationRepository implements IModeratorApplicationRepository 
     required String reason,
   }) async {
     final response = await _httpService.post(
-      '/api/v1/cities/moderator/apply',
+      '/cities/moderator/apply',
       data: {
-        'city_id': cityId,
+        'cityId': cityId,
         'reason': reason,
       },
     );
@@ -27,13 +27,14 @@ class ModeratorApplicationRepository implements IModeratorApplicationRepository 
 
   @override
   Future<List<ModeratorApplication>> getMyApplications() async {
-    final response = await _httpService.get('/api/v1/cities/moderator/applications/my');
+    final response = await _httpService.get('/cities/moderator/applications/my');
 
     if (response.statusCode != 200) {
       throw Exception(response.data?['message'] ?? '获取申请列表失败');
     }
 
-    final data = response.data?['data'] as List<dynamic>?;
+    // HttpService 已自动解包响应，response.data 直接就是数据
+    final data = response.data as List<dynamic>?;
     if (data == null) {
       return [];
     }
@@ -49,10 +50,10 @@ class ModeratorApplicationRepository implements IModeratorApplicationRepository 
     int pageSize = 20,
   }) async {
     final response = await _httpService.get(
-      '/api/v1/cities/moderator/applications/pending',
+      '/cities/moderator/applications/pending',
       queryParameters: {
         'page': page,
-        'page_size': pageSize,
+        'pageSize': pageSize,
       },
     );
 
@@ -60,7 +61,8 @@ class ModeratorApplicationRepository implements IModeratorApplicationRepository 
       throw Exception(response.data?['message'] ?? '获取待处理申请失败');
     }
 
-    final data = response.data?['data'] as List<dynamic>?;
+    // HttpService 已自动解包响应，response.data 直接就是数据
+    final data = response.data as List<dynamic>?;
     if (data == null) {
       return [];
     }
@@ -77,11 +79,11 @@ class ModeratorApplicationRepository implements IModeratorApplicationRepository 
     String? rejectionReason,
   }) async {
     final response = await _httpService.post(
-      '/api/v1/cities/moderator/handle',
+      '/cities/moderator/handle',
       data: {
-        'application_id': applicationId,
+        'applicationId': applicationId,
         'action': action,
-        if (rejectionReason != null) 'rejection_reason': rejectionReason,
+        if (rejectionReason != null) 'rejectionReason': rejectionReason,
       },
     );
 
@@ -92,13 +94,14 @@ class ModeratorApplicationRepository implements IModeratorApplicationRepository 
 
   @override
   Future<ModeratorApplication> getApplicationById(String id) async {
-    final response = await _httpService.get('/api/v1/cities/moderator/applications/$id');
+    final response = await _httpService.get('/cities/moderator/applications/$id');
 
     if (response.statusCode != 200) {
       throw Exception(response.data?['message'] ?? '获取申请详情失败');
     }
 
-    final data = response.data?['data'];
+    // HttpService 已自动解包响应，response.data 直接就是数据对象
+    final data = response.data;
     if (data == null) {
       throw Exception('申请不存在');
     }
@@ -108,17 +111,32 @@ class ModeratorApplicationRepository implements IModeratorApplicationRepository 
 
   @override
   Future<Map<String, int>> getStatistics() async {
-    final response = await _httpService.get('/api/v1/cities/moderator/applications/statistics');
+    final response = await _httpService.get('/cities/moderator/applications/statistics');
 
     if (response.statusCode != 200) {
       throw Exception(response.data?['message'] ?? '获取统计数据失败');
     }
 
-    final data = response.data?['data'] as Map<String, dynamic>?;
+    // HttpService 已自动解包响应，response.data 直接就是数据
+    final data = response.data as Map<String, dynamic>?;
     if (data == null) {
       return {};
     }
 
     return data.map((key, value) => MapEntry(key, value as int));
+  }
+
+  @override
+  Future<void> revokeModerator(String applicationId) async {
+    final response = await _httpService.post(
+      '/cities/moderator/revoke',
+      data: {
+        'applicationId': applicationId,
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(response.data?['message'] ?? '撤销版主失败');
+    }
   }
 }

@@ -1,4 +1,5 @@
 import 'package:df_admin_mobile/core/core.dart';
+import 'package:df_admin_mobile/features/user/domain/entities/nomad_stats.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
 
 /// 用户仓储接口
@@ -43,4 +44,15 @@ abstract class IUserRepository implements IRepository {
 
   /// 获取用户收藏的城市ID列表
   Future<Result<List<String>>> getUserFavoriteCityIds();
+
+  // ==================== 用户统计数据相关方法 ====================
+
+  /// 获取当前用户的游牧统计数据
+  Future<Result<NomadStats>> getCurrentUserStats();
+
+  /// 获取指定用户的游牧统计数据
+  Future<Result<NomadStats>> getUserStats(String userId);
+
+  /// 更新当前用户的游牧统计数据
+  Future<Result<NomadStats>> updateCurrentUserStats(NomadStats stats);
 }

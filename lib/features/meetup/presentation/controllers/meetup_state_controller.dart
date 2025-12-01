@@ -5,6 +5,7 @@ import 'package:df_admin_mobile/features/meetup/application/use_cases/create_mee
 import 'package:df_admin_mobile/features/meetup/application/use_cases/get_meetups_by_city_use_case.dart';
 import 'package:df_admin_mobile/features/meetup/application/use_cases/get_meetups_use_case.dart';
 import 'package:df_admin_mobile/features/meetup/application/use_cases/rsvp_to_meetup_use_case.dart';
+import 'package:df_admin_mobile/features/meetup/application/use_cases/update_meetup_use_case.dart';
 import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
 import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
@@ -17,6 +18,7 @@ class MeetupStateController extends GetxController {
   final GetMeetupsUseCase _getMeetupsUseCase;
   final GetMeetupsByCityUseCase _getMeetupsByCityUseCase;
   final CreateMeetupUseCase _createMeetupUseCase;
+  final UpdateMeetupUseCase _updateMeetupUseCase;
   final RsvpToMeetupUseCase _rsvpToMeetupUseCase;
   final CancelRsvpUseCase _cancelRsvpUseCase;
   final CancelMeetupUseCase _cancelMeetupUseCase;
@@ -25,12 +27,14 @@ class MeetupStateController extends GetxController {
     required GetMeetupsUseCase getMeetupsUseCase,
     required GetMeetupsByCityUseCase getMeetupsByCityUseCase,
     required CreateMeetupUseCase createMeetupUseCase,
+    required UpdateMeetupUseCase updateMeetupUseCase,
     required RsvpToMeetupUseCase rsvpToMeetupUseCase,
     required CancelRsvpUseCase cancelRsvpUseCase,
     required CancelMeetupUseCase cancelMeetupUseCase,
   })  : _getMeetupsUseCase = getMeetupsUseCase,
         _getMeetupsByCityUseCase = getMeetupsByCityUseCase,
         _createMeetupUseCase = createMeetupUseCase,
+        _updateMeetupUseCase = updateMeetupUseCase,
         _rsvpToMeetupUseCase = rsvpToMeetupUseCase,
         _cancelRsvpUseCase = cancelRsvpUseCase,
         _cancelMeetupUseCase = cancelMeetupUseCase;
@@ -332,6 +336,73 @@ class MeetupStateController extends GetxController {
       errorMessage.value = '创建活动失败: $e';
       print('❌ 创建活动失败: $e');
       AppToast.error('创建活动失败: $e');
+      return null;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// 更新活动
+  Future<Meetup?> updateMeetup({
+    required String meetupId,
+    String? title,
+    String? description,
+    String? cityId,
+    String? venue,
+    String? venueAddress,
+    String? category,
+    DateTime? startTime,
+    DateTime? endTime,
+    int? maxAttendees,
+    String? imageUrl,
+    List<String>? images,
+    List<String>? tags,
+    double? latitude,
+    double? longitude,
+  }) async {
+    try {
+      // 检查登录状态
+      if (!_requireLogin(action: '更新活动')) {
+        return null;
+      }
+
+      isLoading.value = true;
+      errorMessage.value = '';
+
+      print('✏️ 更新活动: $meetupId');
+
+      final updatedMeetup = await _updateMeetupUseCase.execute(
+        meetupId: meetupId,
+        title: title,
+        description: description,
+        cityId: cityId,
+        venue: venue,
+        venueAddress: venueAddress,
+        category: category,
+        startTime: startTime,
+        endTime: endTime,
+        maxAttendees: maxAttendees,
+        imageUrl: imageUrl,
+        images: images,
+        tags: tags,
+        latitude: latitude,
+        longitude: longitude,
+      );
+
+      // 更新本地列表中的活动
+      final index = meetups.indexWhere((m) => m.id == meetupId);
+      if (index != -1) {
+        meetups[index] = updatedMeetup;
+      }
+
+      print('✅ 活动更新成功: ${updatedMeetup.id}');
+      AppToast.success('活动更新成功!');
+
+      return updatedMeetup;
+    } catch (e) {
+      errorMessage.value = '更新活动失败: $e';
+      print('❌ 更新活动失败: $e');
+      AppToast.error('更新活动失败: $e');
       return null;
     } finally {
       isLoading.value = false;

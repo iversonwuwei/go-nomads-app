@@ -3,6 +3,7 @@ import 'package:df_admin_mobile/features/user/domain/entities/user.dart'
     as models;
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -27,28 +28,7 @@ class MemberDetailPage extends StatelessWidget {
             pinned: true,
             backgroundColor: Colors.white,
             elevation: 0,
-            leading: IconButton(
-              icon: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  FontAwesomeIcons.arrowLeft,
-                  color: Color(0xFF1a1a1a),
-                  size: 20,
-                ),
-              ),
-              onPressed: () => Get.back(),
-            ),
+            leading: const SliverBackButton(),
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
                 fit: StackFit.expand,

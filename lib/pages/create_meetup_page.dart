@@ -12,6 +12,7 @@ import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/services/image_upload_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -20,13 +21,22 @@ import 'package:image_picker/image_picker.dart';
 import 'venue_map_picker_page.dart';
 
 class CreateMeetupPage extends StatefulWidget {
-  const CreateMeetupPage({super.key});
+  /// 编辑模式：传入要编辑的 Meetup
+  final Meetup? editingMeetup;
+
+  const CreateMeetupPage({super.key, this.editingMeetup});
+
+  /// 是否是编辑模式
+  bool get isEditMode => editingMeetup != null;
 
   @override
   State<CreateMeetupPage> createState() => _CreateMeetupPageState();
 }
 
 class _CreateMeetupPageState extends State<CreateMeetupPage> {
+  /// 是否是编辑模式（便捷访问）
+  bool get isEditMode => widget.isEditMode;
+
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _typeController = TextEditingController();
@@ -53,10 +63,15 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
 
   // 图片相关
   final List<XFile> _selectedImages = [];
+  final List<String> _existingImageUrls = []; // 编辑模式: 已上传的图片URL
   final ImagePicker _imagePicker = ImagePicker();
   final ImageUploadService _imageUploadService = ImageUploadService();
   bool _isUploadingImages = false;
   double _uploadProgress = 0.0;
+
+  // 地点坐标
+  double? _venueLatitude;
+  double? _venueLongitude;
   bool _isSubmitting = false;
 
   final LocationStateController _locationController = Get.find<LocationStateController>();
@@ -68,6 +83,42 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
     super.initState();
     _locationController.loadCountries();
     _loadMeetupTypes();
+
+    // 如果是编辑模式，填充现有数据
+    if (widget.isEditMode) {
+      _fillFormWithExistingData(widget.editingMeetup!);
+    }
+  }
+
+  /// 编辑模式：用现有数据填充表单
+  void _fillFormWithExistingData(Meetup meetup) {
+    print('✏️ [CreateMeetup] 编辑模式 - 填充现有数据');
+
+    _titleController.text = meetup.title;
+    _descriptionController.text = meetup.description;
+    _venueController.text = meetup.venue.name;
+
+    // 日期时间
+    _selectedDate = meetup.schedule.startTime;
+    _selectedTime = TimeOfDay.fromDateTime(meetup.schedule.startTime);
+
+    // 人数上限
+    _maxAttendees = meetup.capacity.maxAttendees.toDouble();
+
+    // 地点
+    _selectedCity = meetup.location.city;
+    _selectedCountry = meetup.location.country;
+    // 注意：Venue 实体目前没有 latitude/longitude 字段
+    // 如需要可以后续扩展 Venue 实体或从后端 EventResponse 获取
+
+    // 类型
+    if (meetup.eventType != null) {
+      _selectedTypeId = meetup.eventType!.id;
+      _selectedType = meetup.eventType!.name;
+    }
+
+    // 图片
+    _existingImageUrls.addAll(meetup.images);
   }
 
   Future<void> _loadMeetupTypes() async {
@@ -597,31 +648,64 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
         uploadedImageUrls = await _uploadVenueImages();
       }
 
-      final createdMeetup = await meetupController.createMeetup(
-        title: _titleController.text,
-        type: meetupType,
-        eventTypeId: eventTypeId, // 传递 UUID
-        description: _descriptionController.text,
-        cityId: _selectedCityId ?? '',
-        venue: _venueController.text,
-        venueAddress: _venueController.text,
-        startTime: startDateTime,
-        maxAttendees: _maxAttendees.toInt(),
-        imageUrl: uploadedImageUrls.isNotEmpty ? uploadedImageUrls.first : null,
-        images: uploadedImageUrls.isEmpty ? null : uploadedImageUrls,
-      );
+      // 合并现有图片和新上传的图片
+      final allImages = [..._existingImageUrls, ...uploadedImageUrls];
 
-      if (createdMeetup == null) {
-        return;
+      if (isEditMode) {
+        // 编辑模式：更新活动
+        final updatedMeetup = await meetupController.updateMeetup(
+          meetupId: widget.editingMeetup!.id,
+          title: _titleController.text,
+          description: _descriptionController.text,
+          cityId: _selectedCityId,
+          venue: _venueController.text,
+          venueAddress: _venueController.text,
+          category: eventTypeId ?? meetupType.value,
+          startTime: startDateTime,
+          maxAttendees: _maxAttendees.toInt(),
+          imageUrl: allImages.isNotEmpty ? allImages.first : null,
+          images: allImages.isEmpty ? null : allImages,
+          latitude: _venueLatitude,
+          longitude: _venueLongitude,
+        );
+
+        if (updatedMeetup == null) {
+          return;
+        }
+
+        final l10n = AppLocalizations.of(context)!;
+        AppToast.success(
+          l10n.updateSuccess,
+          title: l10n.success,
+        );
+      } else {
+        // 创建模式：创建新活动
+        final createdMeetup = await meetupController.createMeetup(
+          title: _titleController.text,
+          type: meetupType,
+          eventTypeId: eventTypeId, // 传递 UUID
+          description: _descriptionController.text,
+          cityId: _selectedCityId ?? '',
+          venue: _venueController.text,
+          venueAddress: _venueController.text,
+          startTime: startDateTime,
+          maxAttendees: _maxAttendees.toInt(),
+          imageUrl: allImages.isNotEmpty ? allImages.first : null,
+          images: allImages.isEmpty ? null : allImages,
+        );
+
+        if (createdMeetup == null) {
+          return;
+        }
+
+        final l10n = AppLocalizations.of(context)!;
+        AppToast.success(
+          l10n.meetupCreatedSuccess,
+          title: l10n.success,
+        );
+
+        await _showAddToCalendarDialog();
       }
-
-      final l10n = AppLocalizations.of(context)!;
-      AppToast.success(
-        l10n.meetupCreatedSuccess,
-        title: l10n.success,
-      );
-
-      await _showAddToCalendarDialog();
 
       if (mounted) {
         setState(() {
@@ -805,17 +889,16 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
 
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(FontAwesomeIcons.arrowLeft, color: AppColors.textPrimary),
-          onPressed: () => Get.back(),
-        ),
+        leading: const AppBackButton(),
         title: Text(
-          AppLocalizations.of(context)!.createMeetup,
+          isEditMode ? l10n.editMeetup : l10n.createMeetup,
           style: const TextStyle(
             color: AppColors.textPrimary,
             fontSize: 18,
@@ -1769,7 +1852,8 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
             Obx(() {
               final isControllerLoading = meetupController.isLoading.value;
               final isProcessing = isControllerLoading || _isUploadingImages || _isSubmitting;
-              final buttonLabel = AppLocalizations.of(context)!.createMeetup;
+              final l10n = AppLocalizations.of(context)!;
+              final buttonLabel = isEditMode ? l10n.save : l10n.createMeetup;
 
               return SizedBox(
                 height: 48,

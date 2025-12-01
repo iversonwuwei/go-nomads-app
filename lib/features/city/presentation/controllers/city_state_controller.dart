@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:df_admin_mobile/core/core.dart';
 import 'package:df_admin_mobile/features/city/application/use_cases/city_use_cases.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
+import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
+import 'package:df_admin_mobile/services/signalr_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:get/get.dart';
 
@@ -16,6 +20,7 @@ class CityStateController extends GetxController {
   final ToggleCityFavoriteUseCase _toggleCityFavoriteUseCase;
   final GetFavoriteCitiesUseCase _getFavoriteCitiesUseCase;
   final GetUserFavoriteCityIdsUseCase _getUserFavoriteCityIdsUseCase;
+  final ICityRepository _cityRepository;
 
   CityStateController({
     required GetCitiesUseCase getCitiesUseCase,
@@ -25,13 +30,15 @@ class CityStateController extends GetxController {
     required ToggleCityFavoriteUseCase toggleCityFavoriteUseCase,
     required GetFavoriteCitiesUseCase getFavoriteCitiesUseCase,
     required GetUserFavoriteCityIdsUseCase getUserFavoriteCityIdsUseCase,
+    required ICityRepository cityRepository,
   })  : _getCitiesUseCase = getCitiesUseCase,
         _searchCitiesUseCase = searchCitiesUseCase,
         _getRecommendedCitiesUseCase = getRecommendedCitiesUseCase,
         _getPopularCitiesUseCase = getPopularCitiesUseCase,
         _toggleCityFavoriteUseCase = toggleCityFavoriteUseCase,
         _getFavoriteCitiesUseCase = getFavoriteCitiesUseCase,
-        _getUserFavoriteCityIdsUseCase = getUserFavoriteCityIdsUseCase;
+        _getUserFavoriteCityIdsUseCase = getUserFavoriteCityIdsUseCase,
+        _cityRepository = cityRepository;
 
   // ==================== State ====================
   final RxBool isLoading = false.obs;
@@ -39,6 +46,9 @@ class CityStateController extends GetxController {
   final RxBool hasError = false.obs;
   final Rx<String?> errorMessage = Rx<String?>(null);
   final RxList<City> cities = <City>[].obs;
+
+  // 正在生成图片的城市 ID 集合
+  final RxSet<String> generatingImageCityIds = <String>{}.obs;
 
   // ????
   int _currentPage = 1;
@@ -70,26 +80,90 @@ class CityStateController extends GetxController {
   // ????? (??????)
   int get totalCitiesCount => cities.length;
 
+  // SignalR 订阅
+  StreamSubscription<Map<String, dynamic>>? _cityImageUpdatedSubscription;
+
   // ==================== Lifecycle ====================
 
   @override
+  void onInit() {
+    super.onInit();
+    _setupSignalRListeners();
+  }
+
+  /// 设置 SignalR 监听器
+  void _setupSignalRListeners() {
+    final signalRService = SignalRService();
+
+    // 监听城市图片更新事件
+    _cityImageUpdatedSubscription = signalRService.cityImageUpdatedStream.listen((data) {
+      print('🖼️ [CityStateController] 收到城市图片更新通知: $data');
+
+      final cityId = data['cityId'] as String?;
+      final success = data['success'] as bool? ?? false;
+
+      if (cityId == null) {
+        print('⚠️ [CityStateController] 城市ID为空，忽略通知');
+        return;
+      }
+
+      // 无论成功还是失败，都从生成中列表移除
+      generatingImageCityIds.remove(cityId);
+
+      if (!success) {
+        final errorMessage = data['errorMessage'] as String? ?? '图片生成失败';
+        print('❌ [CityStateController] 城市图片生成失败: $errorMessage');
+        AppToast.error(errorMessage, title: '图片生成失败');
+        return;
+      }
+
+      // 构造图片数据
+      final imageData = <String, dynamic>{};
+
+      // 处理竖屏图片
+      final portraitUrl = data['portraitImageUrl'] as String?;
+      if (portraitUrl != null) {
+        imageData['portraitImage'] = {'url': portraitUrl};
+      }
+
+      // 处理横屏图片
+      final landscapeUrls = data['landscapeImageUrls'];
+      if (landscapeUrls is List && landscapeUrls.isNotEmpty) {
+        imageData['landscapeImages'] = landscapeUrls.map((url) => {'url': url}).toList();
+      }
+
+      // 调用更新方法
+      updateCityImages(cityId, imageData);
+
+      // 显示成功提示
+      final cityName = data['cityName'] as String? ?? '';
+      AppToast.success('$cityName 的图片已更新', title: '图片生成完成');
+    });
+
+    print('✅ [CityStateController] SignalR 城市图片更新监听已设置');
+  }
+
+  @override
   void onClose() {
+    // 取消 SignalR 订阅
+    _cityImageUpdatedSubscription?.cancel();
+    _cityImageUpdatedSubscription = null;
     // ?????????
     cities.clear();
     recommendedCities.clear();
     popularCities.clear();
     favoriteCities.clear();
-    
+
     // ??????
     isLoading.value = false;
     isLoadingMore.value = false;
     hasError.value = false;
     errorMessage.value = null;
-    
+
     // ??????
     _currentPage = 1;
     _hasMoreData = true;
-    
+
     // ??????
     searchQuery.value = '';
     selectedCountryId.value = null;
@@ -102,7 +176,7 @@ class CityStateController extends GetxController {
     minRating.value = 0.0;
     maxAqi.value = 500;
     selectedClimates.clear();
-    
+
     super.onClose();
   }
 
@@ -152,7 +226,7 @@ class CityStateController extends GetxController {
         hasError.value = true;
         errorMessage.value = exception.message;
         isLoading.value = false;
-        
+
         // ????????,????(??? Toast)
         // ?? AuthStateController ??? 401 ????????
         if (exception is! UnauthorizedException) {
@@ -270,18 +344,12 @@ class CityStateController extends GetxController {
 
     // ????
     if (selectedRegions.isNotEmpty) {
-      items = items
-          .where((city) =>
-              city.region != null && selectedRegions.contains(city.region))
-          .toList();
+      items = items.where((city) => city.region != null && selectedRegions.contains(city.region)).toList();
     }
 
     // ???? (???)
     if (selectedCountries.isNotEmpty) {
-      items = items
-          .where((city) =>
-              city.country != null && selectedCountries.contains(city.country))
-          .toList();
+      items = items.where((city) => city.country != null && selectedCountries.contains(city.country)).toList();
     }
 
     // ???? (?? costScore * 500 ??????)
@@ -294,8 +362,7 @@ class CityStateController extends GetxController {
     // ???? (?? internetScore * 20 ????)
     items = items.where((city) {
       if (city.internetScore == null) return true;
-      final estimatedSpeed =
-          city.internetScore! * 20; // 0-5 score ? 0-100 Mbps range
+      final estimatedSpeed = city.internetScore! * 20; // 0-5 score ? 0-100 Mbps range
       return estimatedSpeed >= minInternet.value;
     }).toList();
 
@@ -328,8 +395,7 @@ class CityStateController extends GetxController {
   }
 
   /// ??????
-  Future<void> loadRecommendedCities(
-      {String? countryId, int limit = 10}) async {
+  Future<void> loadRecommendedCities({String? countryId, int limit = 10}) async {
     // print('?? ??????...');
 
     final result = await _getRecommendedCitiesUseCase.execute(
@@ -449,8 +515,7 @@ class CityStateController extends GetxController {
   Future<Result<List<String>>> loadUserFavoriteCityIds() async {
     // print('?? ??????ID??...');
 
-    final result =
-        await _getUserFavoriteCityIdsUseCase.execute(const NoParams());
+    final result = await _getUserFavoriteCityIdsUseCase.execute(const NoParams());
 
     return result.fold(
       onSuccess: (ids) {
@@ -493,22 +558,12 @@ class CityStateController extends GetxController {
 
   /// ???????????
   List<String> get availableRegions {
-    return cities
-        .where((city) => city.region != null)
-        .map((city) => city.region!)
-        .toSet()
-        .toList()
-      ..sort();
+    return cities.where((city) => city.region != null).map((city) => city.region!).toSet().toList()..sort();
   }
 
   /// ???????????
   List<String> get availableCountries {
-    return cities
-        .where((city) => city.country != null)
-        .map((city) => city.country!)
-        .toSet()
-        .toList()
-      ..sort();
+    return cities.where((city) => city.country != null).map((city) => city.country!).toSet().toList()..sort();
   }
 
   /// ?????????????
@@ -521,5 +576,142 @@ class CityStateController extends GetxController {
     // ??: City ?????? climate ??
     // ???????,?????????????
     return <String>[];
+  }
+
+  /// 检查城市是否正在生成图片
+  bool isGeneratingImages(String cityId) {
+    return generatingImageCityIds.contains(cityId);
+  }
+
+  /// 为城市生成 AI 图片
+  ///
+  /// [cityId] 城市ID
+  /// 返回生成结果
+  Future<Result<Map<String, dynamic>>> generateCityImages(String cityId) async {
+    print('🖼️ [CityStateController] 开始生成城市图片: $cityId');
+
+    // 标记为正在生成
+    generatingImageCityIds.add(cityId);
+
+    try {
+      final result = await _cityRepository.generateCityImages(cityId);
+
+      return result.fold(
+        onSuccess: (data) {
+          print('✅ [CityStateController] 图片生成任务已创建，等待 SignalR 通知');
+          // 注意：这里不移除 cityId，等待 SignalR 通知时再移除
+          return Success(data);
+        },
+        onFailure: (exception) {
+          print('❌ [CityStateController] 图片生成失败: ${exception.message}');
+          // 失败时移除
+          generatingImageCityIds.remove(cityId);
+          return Failure(exception);
+        },
+      );
+    } catch (e) {
+      print('💥 [CityStateController] 生成图片异常: $e');
+      // 异常时移除
+      generatingImageCityIds.remove(cityId);
+      return Failure(UnknownException('生成图片失败: $e'));
+    }
+  }
+
+  /// 刷新单个城市数据
+  ///
+  /// [cityId] 城市ID
+  /// 更新本地城市列表中的对应城市数据
+  Future<void> refreshSingleCity(String cityId) async {
+    print('🔄 [CityStateController] 刷新单个城市数据: $cityId');
+
+    final result = await _cityRepository.getCityById(cityId);
+
+    result.fold(
+      onSuccess: (city) {
+        print('✅ [CityStateController] 获取城市数据成功');
+        // 更新列表中的城市数据
+        final index = cities.indexWhere((c) => c.id == cityId);
+        if (index != -1) {
+          cities[index] = city;
+          cities.refresh();
+          print('🔄 [CityStateController] 城市列表已更新');
+        }
+      },
+      onFailure: (exception) {
+        print('❌ [CityStateController] 刷新城市数据失败: ${exception.message}');
+      },
+    );
+  }
+
+  /// 只更新城市图片字段（不影响其他数据如温度等）
+  ///
+  /// [cityId] 城市ID
+  /// [imageData] 图片生成结果数据
+  void updateCityImages(String cityId, Map<String, dynamic> imageData) {
+    print('🖼️ [CityStateController] 更新城市图片: $cityId');
+    print('🖼️ [CityStateController] 原始数据: $imageData');
+
+    final index = cities.indexWhere((c) => c.id == cityId);
+    if (index == -1) {
+      print('⚠️ [CityStateController] 未找到城市: $cityId');
+      return;
+    }
+
+    final oldCity = cities[index];
+
+    // 从返回数据中提取图片信息
+    // 后端返回格式: { success: true, data: { portraitImage: {...}, landscapeImages: [...] } }
+    // 或者直接是 data 层级的内容
+    Map<String, dynamic>? data;
+    if (imageData.containsKey('data') && imageData['data'] is Map<String, dynamic>) {
+      data = imageData['data'] as Map<String, dynamic>;
+    } else if (imageData.containsKey('portraitImage') || imageData.containsKey('landscapeImages')) {
+      // 直接就是 data 层级
+      data = imageData;
+    }
+
+    print('🖼️ [CityStateController] 解析后的 data: $data');
+
+    if (data == null) {
+      print('⚠️ [CityStateController] 图片数据为空，尝试直接使用 imageData');
+      data = imageData;
+    }
+
+    // 提取竖屏图片 URL
+    String? portraitUrl;
+    final portraitImage = data['portraitImage'];
+    if (portraitImage is Map<String, dynamic>) {
+      portraitUrl = portraitImage['url'] as String?;
+    }
+    print('🖼️ [CityStateController] 竖屏图片: $portraitUrl');
+
+    // 提取横屏图片 URL 列表
+    List<String>? landscapeUrls;
+    final landscapeImages = data['landscapeImages'];
+    if (landscapeImages is List && landscapeImages.isNotEmpty) {
+      landscapeUrls = landscapeImages
+          .where((img) => img is Map<String, dynamic> && img['url'] != null)
+          .map((img) => (img as Map<String, dynamic>)['url'] as String)
+          .toList();
+    }
+    print('🖼️ [CityStateController] 横屏图片数量: ${landscapeUrls?.length ?? 0}');
+
+    // 如果没有解析到任何图片，不更新
+    if (portraitUrl == null && (landscapeUrls == null || landscapeUrls.isEmpty)) {
+      print('⚠️ [CityStateController] 未解析到图片URL，跳过更新');
+      return;
+    }
+
+    // 使用 copyWith 只更新图片字段，保留其他所有数据
+    final updatedCity = oldCity.copyWith(
+      portraitImageUrl: portraitUrl ?? oldCity.portraitImageUrl,
+      landscapeImageUrls: landscapeUrls ?? oldCity.landscapeImageUrls,
+      // 如果有竖屏图片，也更新主图
+      imageUrl: portraitUrl ?? oldCity.imageUrl,
+    );
+
+    cities[index] = updatedCity;
+    cities.refresh();
+    print('✅ [CityStateController] 城市图片已更新: portrait=$portraitUrl, landscape=${landscapeUrls?.length ?? 0}张');
   }
 }
