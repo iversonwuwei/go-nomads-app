@@ -3,25 +3,24 @@ import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:latlong2/latlong.dart';
 
-/// Flutter-only MapLibre implementation of the venue picker.
+/// Flutter-map implementation of the venue picker used by the meetup form.
 class VenueMapPickerPage extends StatefulWidget {
   final String? cityName;
 
-  const VenueMapPickerPage({
-    super.key,
-    this.cityName,
-  });
+  const VenueMapPickerPage({super.key, this.cityName});
 
   @override
   State<VenueMapPickerPage> createState() => _VenueMapPickerPageState();
 }
 
 class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
-  static const _mapStyleUrl = 'https://demotiles.maplibre.org/style.json';
+  static const _tileUrl =
+      'https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}';
 
   final List<Map<String, dynamic>> _allVenues = [
     {
@@ -89,36 +88,24 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
     },
   ];
 
-  final Map<String, Symbol> _symbols = {};
-  MapLibreMapController? _mapController;
-  late final CameraPosition _initialCameraPosition;
-
+  final MapController _mapController = MapController();
+  late LatLng _initialCenter;
   String _selectedFilter = 'All';
   String? _selectedVenueName;
 
   @override
   void initState() {
     super.initState();
-    final firstVenue = _allVenues.first;
-    _initialCameraPosition = CameraPosition(
-      target: _venueLatLng(firstVenue),
-      zoom: 12,
+    final first = _allVenues.first;
+    _initialCenter = LatLng(
+      first['latitude'] as double,
+      first['longitude'] as double,
     );
   }
 
-  @override
-  void dispose() {
-    _mapController?.onSymbolTapped.remove(_onSymbolTapped);
-    super.dispose();
-  }
-
   List<Map<String, dynamic>> get _filteredVenues {
-    if (_selectedFilter == 'All') {
-      return _allVenues;
-    }
-    return _allVenues
-        .where((venue) => venue['type'] == _selectedFilter)
-        .toList();
+    if (_selectedFilter == 'All') return _allVenues;
+    return _allVenues.where((v) => v['type'] == _selectedFilter).toList();
   }
 
   void _onFilterChanged(String filter) {
@@ -127,106 +114,26 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
       _selectedFilter = filter;
       _selectedVenueName = null;
     });
-    _refreshSymbols();
   }
 
-  Future<void> _onMapCreated(MapLibreMapController controller) async {
-    _mapController = controller;
-    controller.onSymbolTapped.add(_onSymbolTapped);
-    await _refreshSymbols();
-  }
-
-  Future<void> _refreshSymbols() async {
-    final controller = _mapController;
-    if (controller == null) return;
-
-    if (_symbols.isNotEmpty) {
-      for (final symbol in _symbols.values) {
-        await controller.removeSymbol(symbol);
-      }
-      _symbols.clear();
-    }
-
-    for (final venue in _filteredVenues) {
-      final symbol = await controller.addSymbol(
-        SymbolOptions(
-          geometry: _venueLatLng(venue),
-          iconImage: 'marker-15',
-          iconSize: 1.1,
-          iconColor: _colorToHex(_getMarkerColor(venue['type'])),
-          textField: venue['name'],
-          textOffset: const Offset(0, 1.8),
-          textColor: '#333333',
-          textSize: 11,
-        ),
-        {'name': venue['name']},
-      );
-      _symbols[venue['name']] = symbol;
-    }
-
-    if (_selectedVenueName != null) {
-      await _highlightSelection();
-    }
-  }
-
-  Future<void> _highlightSelection() async {
-    final controller = _mapController;
-    if (controller == null) return;
-    for (final entry in _symbols.entries) {
-      final isSelected = entry.key == _selectedVenueName;
-      await controller.updateSymbol(
-        entry.value,
-        SymbolOptions(
-          iconSize: isSelected ? 1.4 : 1.1,
-          textColor: isSelected ? '#111111' : '#333333',
-        ),
+  void _selectVenue(Map<String, dynamic> venue, {bool moveCamera = true}) {
+    setState(() => _selectedVenueName = venue['name']);
+    if (moveCamera) {
+      _mapController.move(
+        LatLng(venue['latitude'] as double, venue['longitude'] as double),
+        15,
       );
     }
-  }
-
-  void _onSymbolTapped(Symbol symbol) {
-    final name = symbol.data?['name'] as String?;
-    if (name == null) return;
-    Map<String, dynamic>? venue;
-    for (final candidate in _allVenues) {
-      if (candidate['name'] == name) {
-        venue = candidate;
-        break;
-      }
-    }
-    if (venue == null) return;
-    _selectVenue(venue, focusCamera: false);
-  }
-
-  Future<void> _selectVenue(Map<String, dynamic> venue,
-      {bool focusCamera = true}) async {
-    setState(() {
-      _selectedVenueName = venue['name'];
-    });
-    await _highlightSelection();
-    if (focusCamera) {
-      _focusVenue(venue);
-    }
-  }
-
-  Future<void> _focusVenue(Map<String, dynamic> venue) async {
-    final controller = _mapController;
-    if (controller == null) return;
-    await controller.animateCamera(
-      CameraUpdate.newLatLngZoom(_venueLatLng(venue), 15),
-    );
   }
 
   void _confirmSelection() {
     final l10n = AppLocalizations.of(context)!;
-    final venueName = _selectedVenueName;
-
-    if (venueName == null) {
+    final name = _selectedVenueName;
+    if (name == null) {
       AppToast.warning(l10n.pleaseSelectVenue, title: l10n.noSelection);
       return;
     }
-
-    final venue = _allVenues.firstWhere((v) => v['name'] == venueName);
+    final venue = _allVenues.firstWhere((v) => v['name'] == name);
     Get.back(result: {
       'name': venue['name'],
       'address': venue['address'],
@@ -234,6 +141,32 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
       'latitude': venue['latitude'],
       'longitude': venue['longitude'],
     });
+  }
+
+  Color _markerColor(String type) {
+    switch (type) {
+      case 'Restaurants':
+        return const Color(0xFFFF6B6B);
+      case 'Coworking':
+        return const Color(0xFF3A86FF);
+      case 'Hotels':
+        return const Color(0xFF8338EC);
+      default:
+        return const Color(0xFFFF4458);
+    }
+  }
+
+  IconData _markerIcon(String type) {
+    switch (type) {
+      case 'Restaurants':
+        return FontAwesomeIcons.utensils;
+      case 'Coworking':
+        return FontAwesomeIcons.building;
+      case 'Hotels':
+        return FontAwesomeIcons.hotel;
+      default:
+        return FontAwesomeIcons.locationDot;
+    }
   }
 
   @override
@@ -270,22 +203,21 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildFilterChips(),
+          _buildFilterChips(l10n),
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.4,
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: _buildMap(),
+              child: _buildMap(l10n),
             ),
           ),
-          Expanded(child: _buildVenueList()),
+          Expanded(child: _buildVenueList(l10n)),
         ],
       ),
     );
   }
 
-  Widget _buildFilterChips() {
-    final l10n = AppLocalizations.of(context)!;
+  Widget _buildFilterChips(AppLocalizations l10n) {
     final filters = [
       {'key': 'All', 'label': l10n.all},
       {'key': 'Restaurants', 'label': l10n.restaurants},
@@ -334,89 +266,74 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
     );
   }
 
-  Widget _buildMap() {
+  Widget _buildMap(AppLocalizations l10n) {
+    final markers = _filteredVenues.map((venue) {
+      final venueLatLng = LatLng(
+        venue['latitude'] as double,
+        venue['longitude'] as double,
+      );
+      final isSelected = venue['name'] == _selectedVenueName;
+      return Marker(
+        width: 60,
+        height: 60,
+        point: venueLatLng,
+        alignment: Alignment.topCenter,
+        child: GestureDetector(
+          onTap: () => _selectVenue(venue, moveCamera: false),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                _markerIcon(venue['type'] as String),
+                color: _markerColor(venue['type'] as String),
+                size: isSelected ? 32 : 26,
+              ),
+              Icon(
+                FontAwesomeIcons.locationDot,
+                color: isSelected ? _markerColor(venue['type'] as String) : Colors.grey[700],
+                size: isSelected ? 30 : 24,
+              ),
+            ],
+          ),
+        ),
+      );
+    }).toList();
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: Stack(
         children: [
-          MapLibreMap(
-            styleString: _mapStyleUrl,
-            initialCameraPosition: _initialCameraPosition,
-            myLocationEnabled: false,
-            compassEnabled: true,
-            onMapCreated: _onMapCreated,
+          FlutterMap(
+            mapController: _mapController,
+            options: MapOptions(
+              initialCenter: _initialCenter,
+              initialZoom: 12,
+              interactionOptions: const InteractionOptions(
+                flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
+              ),
+            ),
+            children: [
+              TileLayer(
+                urlTemplate: _tileUrl,
+                userAgentPackageName: 'df_admin_mobile',
+              ),
+              MarkerLayer(markers: markers),
+            ],
           ),
           Positioned(
             top: 12,
             left: 12,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.9),
-                borderRadius: BorderRadius.circular(8),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    FontAwesomeIcons.city,
-                    size: 16,
-                    color: Colors.grey[700],
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    widget.cityName ?? 'Bangkok',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey[800],
-                    ),
-                  ),
-                ],
-              ),
+            child: _mapBadge(
+              icon: FontAwesomeIcons.city,
+              text: widget.cityName ?? 'Bangkok',
             ),
           ),
           Positioned(
             bottom: 12,
             right: 12,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.9),
-                borderRadius: BorderRadius.circular(6),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 4,
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    FontAwesomeIcons.layerGroup,
-                    size: 14,
-                    color: Colors.grey[600],
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${_filteredVenues.length} ${AppLocalizations.of(context)!.venues}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[700],
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
+            child: _mapBadge(
+              icon: FontAwesomeIcons.layerGroup,
+              text: '${_filteredVenues.length} ${l10n.venues}',
             ),
           ),
         ],
@@ -424,7 +341,39 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
     );
   }
 
-  Widget _buildVenueList() {
+  Widget _mapBadge({required IconData icon, required String text}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: Colors.grey[700]),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[800],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVenueList(AppLocalizations l10n) {
     final venues = _filteredVenues;
     final selectedName = _selectedVenueName;
     return Container(
@@ -472,7 +421,7 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
               itemBuilder: (context, index) {
                 final venue = venues[index];
                 final isSelected = selectedName == venue['name'];
-                return _buildVenueCard(venue, isSelected);
+                return _venueCard(venue, isSelected);
               },
             ),
           ),
@@ -481,16 +430,14 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
     );
   }
 
-  Widget _buildVenueCard(Map<String, dynamic> venue, bool isSelected) {
+  Widget _venueCard(Map<String, dynamic> venue, bool isSelected) {
     return GestureDetector(
       onTap: () => _selectVenue(venue),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isSelected
-              ? const Color(0xFFFF4458).withValues(alpha: 0.05)
-              : Colors.white,
+          color: isSelected ? const Color(0xFFFF4458).withValues(alpha: 0.05) : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? const Color(0xFFFF4458) : Colors.grey[300]!,
@@ -503,12 +450,12 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: _getMarkerColor(venue['type']).withValues(alpha: 0.1),
+                color: _markerColor(venue['type'] as String).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
-                _getMarkerIcon(venue['type']),
-                color: _getMarkerColor(venue['type']),
+                _markerIcon(venue['type'] as String),
+                color: _markerColor(venue['type'] as String),
                 size: 24,
               ),
             ),
@@ -518,7 +465,7 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    venue['name'],
+                    venue['name'] as String,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -527,11 +474,8 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    venue['address'],
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[600],
-                    ),
+                    venue['address'] as String,
+                    style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -551,11 +495,8 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        venue['priceRange'],
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey[600],
-                        ),
+                        venue['priceRange'] as String,
+                        style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                       ),
                     ],
                   ),
@@ -565,15 +506,15 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: _getMarkerColor(venue['type']).withValues(alpha: 0.1),
+                color: _markerColor(venue['type'] as String).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
-                venue['type'],
+                venue['type'] as String,
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
-                  color: _getMarkerColor(venue['type']),
+                  color: _markerColor(venue['type'] as String),
                 ),
               ),
             ),
@@ -581,45 +522,5 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
         ),
       ),
     );
-  }
-
-  LatLng _venueLatLng(Map<String, dynamic> venue) {
-    return LatLng(venue['latitude'] as double, venue['longitude'] as double);
-  }
-
-  IconData _getMarkerIcon(String type) {
-    switch (type) {
-      case 'Restaurants':
-        return FontAwesomeIcons.utensils;
-      case 'Coworking':
-        return FontAwesomeIcons.building;
-      case 'Hotels':
-        return FontAwesomeIcons.hotel;
-      default:
-        return FontAwesomeIcons.locationPin;
-    }
-  }
-
-  Color _getMarkerColor(String type) {
-    switch (type) {
-      case 'Restaurants':
-        return const Color(0xFFFF6B6B);
-      case 'Coworking':
-        return const Color(0xFF3A86FF);
-      case 'Hotels':
-        return const Color(0xFF8338EC);
-      default:
-        return const Color(0xFFFF4458);
-    }
-  }
-
-  String _colorToHex(Color color) {
-    int asChannel(double component) =>
-        (component * 255.0).round().clamp(0, 255).toInt();
-
-    final r = asChannel(color.r).toRadixString(16).padLeft(2, '0');
-    final g = asChannel(color.g).toRadixString(16).padLeft(2, '0');
-    final b = asChannel(color.b).toRadixString(16).padLeft(2, '0');
-    return '#$r$g$b';
   }
 }

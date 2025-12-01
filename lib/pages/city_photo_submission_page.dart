@@ -1,6 +1,6 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
-import 'package:df_admin_mobile/pages/maplibre_picker_page.dart';
+import 'package:df_admin_mobile/pages/flutter_map_picker_page.dart';
 import 'package:df_admin_mobile/utils/image_upload_helper.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
@@ -163,7 +163,7 @@ class _CityPhotoSubmissionPageState extends State<CityPhotoSubmissionPage> {
     final address = _locationNoteController.text.trim();
 
     final result = await Get.to<Map<String, dynamic>>(
-      () => MapLibrePickerPage(
+      () => FlutterMapPickerPage(
         initialLatitude: _selectedLat,
         initialLongitude: _selectedLng,
         searchQuery: address,

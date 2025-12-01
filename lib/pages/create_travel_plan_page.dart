@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import 'maplibre_picker_page.dart';
+import 'flutter_map_picker_page.dart';
 import 'travel_plan_page.dart';
 
 /// 创建旅行计划页面 - 完整页面版本
@@ -270,7 +270,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                               onPressed: () async {
                                 try {
                                   final result = await Get.to(
-                                    () => const MapLibrePickerPage(),
+                                    () => const FlutterMapPickerPage(),
                                   );
                                   if (result != null && result is Map) {
                                     final address =

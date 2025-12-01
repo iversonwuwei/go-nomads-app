@@ -909,7 +909,7 @@ class _DataServicePageState extends State<DataServicePage>
             size: 20,
           ),
           onPressed: () {
-            Get.toNamed(AppRoutes.amapGlobal);
+            Get.toNamed(AppRoutes.globalMap);
           },
         ),
       ],
