@@ -141,6 +141,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get createMeetup => 'Create Meetup';
 
   @override
+  String get editMeetup => 'Edit Meetup';
+
+  @override
   String get invite => 'Invite';
 
   @override

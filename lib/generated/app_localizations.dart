@@ -362,6 +362,12 @@ abstract class AppLocalizations {
   /// **'创建聚会'**
   String get createMeetup;
 
+  /// No description provided for @editMeetup.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑聚会'**
+  String get editMeetup;
+
   /// No description provided for @invite.
   ///
   /// In zh, this message translates to:

@@ -69,8 +69,7 @@ class CoworkingSpace {
   bool get isTrusted => isVerified && isHighlyRated && hasEnoughReviews;
 
   /// 是否有高速网络 (50+ Mbps)
-  bool get hasHighSpeedInternet =>
-      specs.wifiSpeed != null && specs.wifiSpeed! >= 50;
+  bool get hasHighSpeedInternet => specs.wifiSpeed != null && specs.wifiSpeed! >= 50;
 
   /// 是否适合团队 (有会议室)
   bool get isSuitableForTeams => amenities.hasMeetingRoom;
@@ -79,20 +78,17 @@ class CoworkingSpace {
   bool get is24HourAccess => amenities.has24HourAccess;
 
   /// 获取完整地址
-  String get fullAddress =>
-      '${location.address}, ${location.city}, ${location.country}';
+  String get fullAddress => '${location.address}, ${location.city}, ${location.country}';
 
   /// 获取地图链接
-  String get googleMapsUrl =>
-      'https://www.google.com/maps?q=${location.latitude},${location.longitude}';
+  String get googleMapsUrl => 'https://www.google.com/maps?q=${location.latitude},${location.longitude}';
 
   /// 获取所有可用设施列表
   List<String> get availableAmenities => amenities.getAvailableAmenities();
 
   /// 检查是否有特定设施
   bool hasAmenity(String amenity) {
-    return availableAmenities
-        .any((a) => a.toLowerCase().contains(amenity.toLowerCase()));
+    return availableAmenities.any((a) => a.toLowerCase().contains(amenity.toLowerCase()));
   }
 
   /// 计算性价比分数 (0-100)
@@ -123,6 +119,43 @@ class CoworkingSpace {
     }
 
     return score.clamp(0, 100);
+  }
+
+  /// 创建一个带有修改属性的新实例
+  CoworkingSpace copyWith({
+    String? id,
+    String? name,
+    Location? location,
+    ContactInfo? contactInfo,
+    SpaceInfo? spaceInfo,
+    Pricing? pricing,
+    Amenities? amenities,
+    Specifications? specs,
+    OperationHours? operationHours,
+    bool? isVerified,
+    DateTime? lastUpdated,
+    String? createdBy,
+    String? creatorName,
+    int? verificationVotes,
+    bool? isOwner,
+  }) {
+    return CoworkingSpace(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      location: location ?? this.location,
+      contactInfo: contactInfo ?? this.contactInfo,
+      spaceInfo: spaceInfo ?? this.spaceInfo,
+      pricing: pricing ?? this.pricing,
+      amenities: amenities ?? this.amenities,
+      specs: specs ?? this.specs,
+      operationHours: operationHours ?? this.operationHours,
+      isVerified: isVerified ?? this.isVerified,
+      lastUpdated: lastUpdated ?? this.lastUpdated,
+      createdBy: createdBy ?? this.createdBy,
+      creatorName: creatorName ?? this.creatorName,
+      verificationVotes: verificationVotes ?? this.verificationVotes,
+      isOwner: isOwner ?? this.isOwner,
+    );
   }
 }
 

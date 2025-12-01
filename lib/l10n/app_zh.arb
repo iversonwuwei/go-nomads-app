@@ -47,6 +47,7 @@
   "members": "成员列表",
   "meetup": "聚会",
   "createMeetup": "创建聚会",
+  "editMeetup": "编辑聚会",
   "invite": "邀请",
   "inviteToMeetup": "邀请参加聚会",
   "selectMeetup": "选择聚会",

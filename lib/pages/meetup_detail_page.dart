@@ -5,6 +5,7 @@ import 'package:df_admin_mobile/features/meetup/infrastructure/models/meetup_dto
 import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/pages/create_meetup_page.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/services/http_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
@@ -107,6 +108,22 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
             backgroundColor: Colors.white,
             leading: const SliverBackButton(),
             actions: [
+              // 编辑按钮 - 只有组织者可见
+              if (_isOrganizer)
+                IconButton(
+                  onPressed: () async {
+                    final result = await Get.to(() => CreateMeetupPage(editingMeetup: _meetup.value));
+                    if (result == true) {
+                      // 编辑成功，刷新数据
+                      await _loadEventDetails();
+                    }
+                  },
+                  icon: Icon(
+                    FontAwesomeIcons.penToSquare,
+                    size: 18.sp,
+                    color: Colors.white,
+                  ),
+                ),
               SliverShareButton(onPressed: _shareMeetup),
               SizedBox(width: 8.w),
             ],
