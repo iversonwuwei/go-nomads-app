@@ -48,16 +48,6 @@ void main() async {
     print('⚠️ SignalR 连接失败: $e (将使用轮询机制作为备选)');
   }
 
-  // 🔌 初始化 SignalR 实时通信
-  print('🔌 初始化 SignalR 实时通信...');
-  try {
-    final signalrService = SignalRService();
-    await signalrService.connect(ApiConfig.messageServiceBaseUrl);
-    print('✅ SignalR 连接成功');
-  } catch (e) {
-    print('❌ SignalR 连接失败: $e (将继续使用轮询机制)');
-  }
-
   // 📢 初始化通知服务
   print('📢 初始化通知服务...');
   try {

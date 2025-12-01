@@ -14,8 +14,6 @@ import 'package:df_admin_mobile/features/city/presentation/controllers/city_rati
 import 'package:df_admin_mobile/features/city/presentation/widgets/city_ratings_card.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart' as coworking;
 import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
-import 'package:df_admin_mobile/features/notification/domain/entities/app_notification.dart';
-import 'package:df_admin_mobile/features/notification/presentation/controllers/notification_state_controller.dart';
 import 'package:df_admin_mobile/features/user_city_content/domain/entities/user_city_content.dart';
 import 'package:df_admin_mobile/features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
 import 'package:df_admin_mobile/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
@@ -25,9 +23,11 @@ import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
 import 'package:df_admin_mobile/services/token_storage_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/coworking_verification_badge.dart';
 import 'package:df_admin_mobile/widgets/rating_item_dialog.dart';
 import 'package:df_admin_mobile/widgets/share_bottom_sheet.dart';
+import 'package:df_admin_mobile/widgets/share_button.dart';
 import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -83,6 +83,10 @@ class _CityDetailPageState extends State<CityDetailPage>
   // 下拉刷新状态标志
   bool _isRefreshingReviews = false;
   bool _isRefreshingPhotos = false;
+
+  // Guide Tab 初始化标志，防止滚动时重复请求
+  bool _hasInitializedGuide = false;
+  String? _lastGuideLoadedCityId;
 
   // 从 Get.arguments 或构造函数获取参数
   late final String cityId;
@@ -185,12 +189,20 @@ class _CityDetailPageState extends State<CityDetailPage>
       // 如果已有版主且当前用户不是管理员也不是该城市版主，只显示版主信息
       if (hasModerator && !isAdmin && !isModerator) {
         print('✅ [版主管理] 显示只读版主信息');
+        // 安全检查：如果 moderator 对象为空，显示加载中
+        if (city.moderator == null) {
+          return const SizedBox.shrink();
+        }
         return _buildModeratorInfoBanner(city.moderator!);
       }
 
       // 如果已有版主且当前用户是管理员或该城市版主，显示版主信息+更换按钮
       if (hasModerator && (isAdmin || isModerator)) {
         print('✅ [版主管理] 显示版主信息+管理按钮');
+        // 安全检查：如果 moderator 对象为空，显示加载中
+        if (city.moderator == null) {
+          return const SizedBox.shrink();
+        }
         return _buildModeratorInfoWithChange(city.moderator!);
       }
 
@@ -599,22 +611,8 @@ class _CityDetailPageState extends State<CityDetailPage>
         onSuccess: (success) async {
           AppToast.success('申请已提交！我们会尽快审核');
 
-          // 发送通知给所有管理员
-          if (Get.isRegistered<NotificationStateController>()) {
-            final notificationController = Get.find<NotificationStateController>();
-            final city = controller.currentCity.value;
-
-            await notificationController.sendToAdmins(
-              title: '新的版主申请',
-              message: '用户申请成为 ${city?.name ?? '某城市'} 的版主，请及时审核',
-              type: NotificationType.moderatorApplication,
-              relatedId: cityId,
-              metadata: {
-                'cityName': city?.name ?? '',
-                'cityId': cityId,
-              },
-            );
-          }
+          // 注意：通知已由后端 ModeratorApplicationService 统一发送给管理员
+          // 不需要在 Flutter 端重复发送
 
           // 刷新城市信息
           controller.loadCityDetail(cityId);
@@ -789,22 +787,25 @@ class _CityDetailPageState extends State<CityDetailPage>
           _currentPage = _tabController.index;
         });
 
-        // 当切换到 Weather tab (索引 6) 时，加载最新天气数据
+        // 当切换到 Weather tab (索引 6) 时，加载天气数据（利用controller内部缓存）
         if (_tabController.index == 6) {
           final weatherController = Get.find<WeatherStateController>();
+          // 不使用forceRefresh，让controller内部缓存机制决定是否需要加载
           weatherController.loadCityWeather(
             cityId,
             includeForecast: true,
             days: 7,
-            forceRefresh: true, // 强制刷新以获取最新数据
           );
         }
 
-        // 当切换到 Coworking tab (索引 9) 时，加载最新共享办公空间数据
+        // 当切换到 Coworking tab (索引 9) 时，检查缓存后再决定是否加载
         if (_tabController.index == 9) {
           final coworkingController = Get.find<CoworkingStateController>();
-          coworkingController.loadCoworkingSpacesByCity(cityId);
-          print('🔄 [TabSwitch] 切换到 Coworking tab，重新加载数据');
+          // 只有在城市ID不同或数据为空时才重新加载
+          if (coworkingController.currentCityId.value != cityId) {
+            coworkingController.loadCoworkingSpacesByCity(cityId);
+            print('🔄 [TabSwitch] 切换到 Coworking tab，加载新城市数据');
+          }
         }
       }
     });
@@ -1184,9 +1185,25 @@ class _CityDetailPageState extends State<CityDetailPage>
   }
 
   List<String> _getCityImages() {
-    // 基于城市主图片生成多张展示图片
-    // 使用不同的Unsplash参数来获取该城市的不同视角图片
-    final baseImage = cityImage;
+    // 优先使用后端返回的城市图片数据
+    final cityDetailController = Get.find<CityDetailStateController>();
+    final city = cityDetailController.currentCity.value;
+
+    // 优先使用后端返回的主图（最新的 imageUrl 或 portraitImageUrl）
+    final latestMainImage = city?.imageUrl ?? city?.portraitImageUrl ?? cityImage;
+
+    // 如果有 landscapeImageUrls，优先使用
+    if (city?.landscapeImageUrls != null && city!.landscapeImageUrls!.isNotEmpty) {
+      // 如果有最新主图片，放在第一位
+      if (latestMainImage.isNotEmpty && !city.landscapeImageUrls!.contains(latestMainImage)) {
+        return [latestMainImage, ...city.landscapeImageUrls!];
+      }
+      return city.landscapeImageUrls!;
+    }
+
+    // 回退：基于城市主图片生成多张展示图片
+    // 优先使用后端返回的最新主图，否则使用传入的 cityImage
+    final baseImage = latestMainImage.isNotEmpty ? latestMainImage : cityImage;
 
     // 检查图片 URL 是否有效
     if (baseImage.isEmpty) {
@@ -1374,30 +1391,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                       Colors.white,
                       _appBarOpacity,
                     ),
-                    leading: Container(
-                      margin: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: _appBarOpacity > 0.5
-                            ? Colors.grey.withValues(alpha: 0.1)
-                            : Colors.black.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.2),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: IconButton(
-                        icon: Icon(
-                          FontAwesomeIcons.arrowLeft,
-                          color: _appBarOpacity > 0.5 ? Colors.black87 : Colors.white,
-                          size: 20,
-                        ),
-                        onPressed: () => Get.back(),
-                      ),
-                    ),
+                    leading: SliverBackButton(opacity: _appBarOpacity),
                     actions: [
                       // 添加按钮 - 所有登录用户都可见，但跳转行为不同
                       AnimatedBuilder(
@@ -1545,32 +1539,9 @@ class _CityDetailPageState extends State<CityDetailPage>
                         },
                       ),
                       const SizedBox(width: 4),
-                      Container(
-                        margin: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: _appBarOpacity > 0.5
-                              ? Colors.grey.withValues(alpha: 0.1)
-                              : Colors.black.withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: IconButton(
-                          icon: Icon(
-                            FontAwesomeIcons.shareNodes,
-                            color: _appBarOpacity > 0.5 ? Colors.black87 : Colors.white,
-                            size: 20,
-                          ),
-                          onPressed: () {
-                            // 分享城市信息
-                            _shareCityInfo();
-                          },
-                        ),
+                      SliverShareButton(
+                        opacity: _appBarOpacity,
+                        onPressed: _shareCityInfo,
                       ),
                     ],
                     flexibleSpace: FlexibleSpaceBar(
@@ -1612,97 +1583,126 @@ class _CityDetailPageState extends State<CityDetailPage>
                         fit: StackFit.expand,
                         children: [
                           // PageView carousel - 城市图片轮播
-                          PageView.builder(
-                            controller: _pageController,
-                            onPageChanged: (index) {
-                              setState(() {
-                                _currentPage = index;
+                          // 使用 Obx 包裹以响应 currentCity 变化
+                          Obx(() {
+                            // 触发 Obx 订阅 currentCity 的变化
+                            final cityDetailController = Get.find<CityDetailStateController>();
+                            final _ = cityDetailController.currentCity.value;
+                            final images = _getCityImages();
+
+                            // 如果当前页码超出新图片列表范围，重置为0
+                            if (_currentPage >= images.length && images.isNotEmpty) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (mounted) {
+                                  setState(() {
+                                    _currentPage = 0;
+                                  });
+                                  if (_pageController.hasClients) {
+                                    _pageController.jumpToPage(0);
+                                  }
+                                }
                               });
-                            },
-                            itemCount: _getCityImages().length,
-                            itemBuilder: (context, index) {
-                              return Stack(
-                                fit: StackFit.expand,
-                                children: [
-                                  // 城市图片
-                                  Image.network(
-                                    _getCityImages()[index],
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return Container(
-                                        color: Colors.grey[300],
-                                        child: const Center(
-                                          child: Icon(
-                                            FontAwesomeIcons.imagePortrait,
-                                            size: 64,
-                                            color: Colors.grey,
+                            }
+
+                            return PageView.builder(
+                              controller: _pageController,
+                              onPageChanged: (index) {
+                                setState(() {
+                                  _currentPage = index;
+                                });
+                              },
+                              itemCount: images.length,
+                              itemBuilder: (context, index) {
+                                return Stack(
+                                  fit: StackFit.expand,
+                                  children: [
+                                    // 城市图片
+                                    Image.network(
+                                      images[index],
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return Container(
+                                          color: Colors.grey[300],
+                                          child: const Center(
+                                            child: Icon(
+                                              FontAwesomeIcons.imagePortrait,
+                                              size: 64,
+                                              color: Colors.grey,
+                                            ),
                                           ),
-                                        ),
-                                      );
-                                    },
-                                    loadingBuilder: (context, child, loadingProgress) {
-                                      if (loadingProgress == null) return child;
-                                      return Container(
-                                        color: Colors.grey[200],
-                                        child: Center(
-                                          child: CircularProgressIndicator(
-                                            value: loadingProgress.expectedTotalBytes != null
-                                                ? loadingProgress.cumulativeBytesLoaded /
-                                                    loadingProgress.expectedTotalBytes!
-                                                : null,
-                                            color: const Color(0xFFFF4458),
+                                        );
+                                      },
+                                      loadingBuilder: (context, child, loadingProgress) {
+                                        if (loadingProgress == null) return child;
+                                        return Container(
+                                          color: Colors.grey[200],
+                                          child: Center(
+                                            child: CircularProgressIndicator(
+                                              value: loadingProgress.expectedTotalBytes != null
+                                                  ? loadingProgress.cumulativeBytesLoaded /
+                                                      loadingProgress.expectedTotalBytes!
+                                                  : null,
+                                              color: const Color(0xFFFF4458),
+                                            ),
                                           ),
+                                        );
+                                      },
+                                    ),
+                                    // 增强渐变遮罩 - 更现代的三层渐变
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                          colors: [
+                                            Colors.black.withValues(alpha: 0.3),
+                                            Colors.transparent,
+                                            Colors.black.withValues(alpha: 0.8),
+                                          ],
+                                          stops: const [0.0, 0.5, 1.0],
                                         ),
-                                      );
-                                    },
-                                  ),
-                                  // 增强渐变遮罩 - 更现代的三层渐变
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        begin: Alignment.topCenter,
-                                        end: Alignment.bottomCenter,
-                                        colors: [
-                                          Colors.black.withValues(alpha: 0.3),
-                                          Colors.transparent,
-                                          Colors.black.withValues(alpha: 0.8),
-                                        ],
-                                        stops: const [0.0, 0.5, 1.0],
                                       ),
                                     ),
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
+                                  ],
+                                );
+                              },
+                            );
+                          }),
                           // 现代化轮播指示器
                           Positioned(
                             top: 24,
                             left: 0,
                             right: 0,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: List.generate(
-                                _getCityImages().length,
-                                (index) => AnimatedContainer(
-                                  duration: const Duration(milliseconds: 300),
-                                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                                  width: _currentPage == index ? 24 : 8,
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(4),
-                                    color: _currentPage == index ? Colors.white : Colors.white.withValues(alpha: 0.5),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.3),
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
+                            child: Obx(() {
+                              // 触发 Obx 订阅 currentCity 的变化
+                              final cityDetailController = Get.find<CityDetailStateController>();
+                              final _ = cityDetailController.currentCity.value;
+                              final images = _getCityImages();
+
+                              return Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: List.generate(
+                                  images.length,
+                                  (index) => AnimatedContainer(
+                                    duration: const Duration(milliseconds: 300),
+                                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                                    width: _currentPage == index ? 24 : 8,
+                                    height: 8,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(4),
+                                      color: _currentPage == index ? Colors.white : Colors.white.withValues(alpha: 0.5),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withValues(alpha: 0.3),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ),
+                              );
+                            }),
                           ),
 
                           // 版主管理蒙层 - 在城市名称上方
@@ -2018,29 +2018,34 @@ class _CityDetailPageState extends State<CityDetailPage>
 
   // Digital Nomad Guide 标签页
   Widget _buildGuideTab(AiStateController controller) {
-    // 🔥 检查城市是否变化,如果变化则清空旧数据并加载新数据
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final currentGuide = controller.currentGuide;
+    // 🔥 只在首次加载或城市变化时请求数据，防止滚动时重复请求
+    if (!_hasInitializedGuide || _lastGuideLoadedCityId != cityId) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final currentGuide = controller.currentGuide;
 
-      final shouldReload = currentGuide == null || currentGuide.cityId != cityId;
-
-      if (shouldReload) {
         // 如果是不同城市,先清空旧数据
         if (currentGuide != null && currentGuide.cityId != cityId) {
           print('🔄 [GuideTab] 城市切换: ${currentGuide.cityId} → $cityId, 清空旧数据');
           controller.resetGuideState();
         }
 
-        // 加载新城市的指南(优先使用缓存)
+        // 只在未加载过且控制器空闲时才加载
         if (!controller.isGeneratingGuide && !controller.isLoadingGuide) {
-          print('📖 [GuideTab] 加载城市指南: $cityName (ID: $cityId)');
-          controller.loadCityGuide(
-            cityId: cityId,
-            cityName: cityName,
-          );
+          final shouldLoad = currentGuide == null || currentGuide.cityId != cityId;
+          if (shouldLoad) {
+            print('📖 [GuideTab] 加载城市指南: $cityName (ID: $cityId)');
+            controller.loadCityGuide(
+              cityId: cityId,
+              cityName: cityName,
+            );
+          }
         }
-      }
-    });
+
+        // 标记已初始化
+        _hasInitializedGuide = true;
+        _lastGuideLoadedCityId = cityId;
+      });
+    }
 
     return Obx(() {
       print(
@@ -4043,34 +4048,13 @@ class _CityDetailPageState extends State<CityDetailPage>
       // 显示共享办公空间列表
       return RefreshIndicator(
         onRefresh: () => controller.loadCoworkingSpacesByCity(cityName),
-        child: Stack(
-          children: [
-            ListView.builder(
-              padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
-              itemCount: controller.coworkingSpaces.length,
-              itemBuilder: (context, index) {
-                final space = controller.coworkingSpaces[index];
-                return _buildCoworkingSpaceCard(space);
-              },
-            ),
-            // 添加按钮（仅 admin/moderator 可见）
-            FutureBuilder<bool>(
-              future: _canUserManageContent(),
-              builder: (context, snapshot) {
-                if (snapshot.data != true) return const SizedBox.shrink();
-                return Positioned(
-                  right: 16,
-                  bottom: 16,
-                  child: FloatingActionButton(
-                    heroTag: 'add_coworking',
-                    onPressed: _showAddCoworkingPage,
-                    backgroundColor: const Color(0xFFFF4458),
-                    child: const Icon(FontAwesomeIcons.plus, color: Colors.white),
-                  ),
-                );
-              },
-            ),
-          ],
+        child: ListView.builder(
+          padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
+          itemCount: controller.coworkingSpaces.length,
+          itemBuilder: (context, index) {
+            final space = controller.coworkingSpaces[index];
+            return _buildCoworkingSpaceCard(space);
+          },
         ),
       );
     });

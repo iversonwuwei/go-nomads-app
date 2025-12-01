@@ -1,10 +1,11 @@
+import 'package:df_admin_mobile/features/innovation_project/domain/entities/innovation_project.dart';
+import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import 'package:df_admin_mobile/features/innovation_project/domain/entities/innovation_project.dart';
-import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
-import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'direct_chat_page.dart';
 
 /// Innovation Project Detail Page
@@ -60,10 +61,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
             expandedHeight: 250,
             pinned: true,
             backgroundColor: const Color(0xFF8B5CF6),
-            leading: IconButton(
-              icon: const Icon(FontAwesomeIcons.arrowLeft, color: Colors.white),
-              onPressed: () => Navigator.pop(context),
-            ),
+            leading: const SliverBackButton(),
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
                 widget.project.projectName,

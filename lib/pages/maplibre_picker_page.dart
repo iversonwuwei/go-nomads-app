@@ -1,15 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:maplibre_gl/maplibre_gl.dart';
-
-import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
 
 class MapLibrePickerPage extends StatefulWidget {
   final double? initialLatitude;
@@ -263,11 +263,7 @@ class _MapLibrePickerPageState extends State<MapLibrePickerPage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(FontAwesomeIcons.arrowLeft,
-              color: AppColors.backButtonDark),
-          onPressed: () => Get.back(),
-        ),
+        leading: const AppBackButton(color: AppColors.backButtonDark),
         title: Text(
           l10n.selectLocation,
           style: const TextStyle(

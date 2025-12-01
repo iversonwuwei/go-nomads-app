@@ -362,6 +362,12 @@ abstract class AppLocalizations {
   /// **'创建聚会'**
   String get createMeetup;
 
+  /// No description provided for @editMeetup.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑聚会'**
+  String get editMeetup;
+
   /// No description provided for @invite.
   ///
   /// In zh, this message translates to:
@@ -1603,6 +1609,30 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'认证提交失败，请稍后再试。'**
   String get coworkingVerifyFailed;
+
+  /// 用户已经验证过该空间的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'您已经为该空间提交过认证。'**
+  String get coworkingVerifyAlreadyVoted;
+
+  /// 创建者尝试验证自己的空间的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'创建者不能为自己的空间认证。'**
+  String get coworkingVerifyIsCreator;
+
+  /// 空间已经是已验证状态的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'该空间已通过认证。'**
+  String get coworkingVerifySpaceVerified;
+
+  /// 检查验证资格时的加载提示
+  ///
+  /// In zh, this message translates to:
+  /// **'正在检查资格...'**
+  String get coworkingVerifyChecking;
 
   /// No description provided for @shareLocation.
   ///
@@ -5240,6 +5270,18 @@ abstract class AppLocalizations {
   /// **'即将到来'**
   String get upcoming;
 
+  /// No description provided for @statusOngoing.
+  ///
+  /// In zh, this message translates to:
+  /// **'进行中'**
+  String get statusOngoing;
+
+  /// No description provided for @statusCancelled.
+  ///
+  /// In zh, this message translates to:
+  /// **'已取消'**
+  String get statusCancelled;
+
   /// No description provided for @joinedEvents.
   ///
   /// In zh, this message translates to:
@@ -5263,6 +5305,66 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'暂无可用聚会'**
   String get noMeetupsAvailable;
+
+  /// No description provided for @myMeetups.
+  ///
+  /// In zh, this message translates to:
+  /// **'我的聚会'**
+  String get myMeetups;
+
+  /// No description provided for @noMeetups.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无聚会'**
+  String get noMeetups;
+
+  /// No description provided for @createFirstMeetup.
+  ///
+  /// In zh, this message translates to:
+  /// **'创建您的第一个聚会来与其他游牧者建立联系'**
+  String get createFirstMeetup;
+
+  /// No description provided for @confirmCancelMeetupTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消活动'**
+  String get confirmCancelMeetupTitle;
+
+  /// No description provided for @confirmCancelMeetupMessage.
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要取消这个活动吗？此操作无法撤销。'**
+  String get confirmCancelMeetupMessage;
+
+  /// No description provided for @confirmLeaveMeetupTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'退出活动'**
+  String get confirmLeaveMeetupTitle;
+
+  /// No description provided for @confirmLeaveMeetupMessage.
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要退出这个活动吗？'**
+  String get confirmLeaveMeetupMessage;
+
+  /// No description provided for @cancelMeetupSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'活动已取消'**
+  String get cancelMeetupSuccess;
+
+  /// No description provided for @cancelMeetupFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消活动失败'**
+  String get cancelMeetupFailed;
+
+  /// No description provided for @leaveMeetupFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'退出活动失败'**
+  String get leaveMeetupFailed;
 
   /// No description provided for @join.
   ///

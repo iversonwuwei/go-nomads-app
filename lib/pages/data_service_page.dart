@@ -1,6 +1,8 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/core/core.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
+import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
 import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller.dart';
 import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
 import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
@@ -9,6 +11,7 @@ import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_
 import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
+import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/copyright_widget.dart';
 import 'package:flutter/material.dart';
@@ -27,7 +30,8 @@ class DataServicePage extends StatefulWidget {
   State<DataServicePage> createState() => _DataServicePageState();
 }
 
-class _DataServicePageState extends State<DataServicePage> with WidgetsBindingObserver {
+class _DataServicePageState extends State<DataServicePage>
+    with WidgetsBindingObserver, RouteAwareRefreshMixin<DataServicePage> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
   final GlobalKey _citiesListKey = GlobalKey();
@@ -35,6 +39,11 @@ class _DataServicePageState extends State<DataServicePage> with WidgetsBindingOb
 
   // 本地状态管理
   final bool _isGridView = true;
+  
+  // 本页面的搜索状态（独立于 CityListPage）
+  String _localSearchQuery = '';
+  List<City> _localCities = [];
+  bool _isLocalSearching = false;
 
   // 获取领域层的 StateController（延迟初始化，避免在构建时查找）
   CityStateController? _cityControllerCache;
@@ -66,11 +75,33 @@ class _DataServicePageState extends State<DataServicePage> with WidgetsBindingOb
     WidgetsBinding.instance.addPostFrameCallback((_) {
       print('🏠 首页初始化，只加载城市数据（不加载活动）');
       // 只加载城市数据，活动数据按需加载
-      _cityController.loadInitialCities(refresh: true).catchError((e) {
-        print('⚠️ 城市数据加载失败，使用缓存数据: $e');
-        return null;
-      });
+      _loadHomeCities();
     });
+    
+    // 监听控制器数据变化，同步到本地（仅在非搜索状态时）
+    ever(_cityController.cities, (cities) {
+      if (!_isLocalSearching && mounted) {
+        setState(() {
+          _localCities = cities.toList();
+        });
+      }
+    });
+  }
+
+  /// 加载首页城市数据（不带搜索条件）
+  Future<void> _loadHomeCities() async {
+    try {
+      // 首页加载时，清除控制器的搜索条件，确保加载全部城市
+      _cityController.searchQuery.value = '';
+      await _cityController.loadInitialCities(refresh: true);
+      if (mounted) {
+        setState(() {
+          _localCities = _cityController.cities.toList();
+        });
+      }
+    } catch (e) {
+      print('⚠️ 城市数据加载失败，使用缓存数据: $e');
+    }
   }
 
   @override
@@ -79,13 +110,29 @@ class _DataServicePageState extends State<DataServicePage> with WidgetsBindingOb
     WidgetsBinding.instance.removeObserver(this);
     _scrollController.dispose();
     _searchController.dispose();
-
-    // 清空搜索条件和结果
-    if (_cityControllerCache != null) {
-      _cityControllerCache!.searchQuery.value = '';
-    }
-
+    // 注意：不再清除共享控制器的 searchQuery，每个页面管理自己的搜索状态
     super.dispose();
+  }
+
+  /// 当从其他页面返回时，重新加载数据
+  @override
+  Future<void> onRouteResume() async {
+    print('🔄 DataServicePage: 从其他页面返回，重新加载数据');
+    _clearSearchOnReturn();
+    await _loadHomeCities();
+  }
+
+  /// 清除搜索状态（从 detail 页面返回时调用）
+  void _clearSearchOnReturn() {
+    print('🔍 DataServicePage: 清除搜索状态，当前 _localSearchQuery=$_localSearchQuery');
+    if (mounted) {
+      setState(() {
+        _localSearchQuery = '';
+        _isLocalSearching = false;
+      });
+      _searchController.clear();
+      print('🔍 DataServicePage: 本地搜索状态已清除');
+    }
   }
 
   @override
@@ -190,45 +237,64 @@ class _DataServicePageState extends State<DataServicePage> with WidgetsBindingOb
     return true;
   }
 
-  /// 执行城市搜索
+  /// 执行城市搜索（本页面独立搜索，不影响 CityListPage）
   Future<void> _performSearch(String query) async {
-    print('🔍 开始搜索城市: $query');
+    print('🔍 [首页] 开始搜索城市: $query');
 
-    // 调用 CityStateController 的搜索方法，等待后端返回结果
-    await _cityController.searchCities(query);
+    setState(() {
+      _localSearchQuery = query;
+      _isLocalSearching = true;
+    });
 
-    if (mounted) {
-      // 搜索完成后显示结果数量
-      final resultCount = _cityController.cities.length;
-      AppToast.success(
-        'Found $resultCount cities',
-        title: 'Search',
-      );
-    }
+    // 使用 controller 的公共 searchCities 方法，但只更新本地状态
+    // 注意：我们不直接调用 controller.searchCities() 因为它会修改共享状态
+    // 所以通过 Repository 直接搜索
+    final cityRepository = Get.find<ICityRepository>();
+    final result = await cityRepository.searchCities(name: query, pageSize: 20);
+
+    result.fold(
+      onSuccess: (data) {
+        if (mounted) {
+          setState(() {
+            _localCities = data;
+          });
+          AppToast.success(
+            'Found ${data.length} cities',
+            title: 'Search',
+          );
+        }
+      },
+      onFailure: (exception) {
+        if (mounted) {
+          AppToast.error(exception.message, title: 'Search Failed');
+        }
+      },
+    );
   }
 
-  /// 清除搜索
+  /// 清除搜索（仅清除本页面的搜索状态）
   Future<void> _clearSearch() async {
     _searchController.clear();
 
-    // 清除 Controller 中的 searchQuery 状态
-    _cityController.searchQuery.value = '';
+    print('🧹 [首页] 清除搜索，重新加载全部城市');
 
-    print('🧹 清除搜索，重新加载全部城市');
+    setState(() {
+      _localSearchQuery = '';
+      _isLocalSearching = false;
+    });
 
-    // 重新加载全部城市
-    await _cityController.loadInitialCities();
+    // 重新加载全部城市到本地
+    await _loadHomeCities();
   }
 
   /// 搜索结果提示
   Widget _buildSearchResultHint(bool isMobile) {
-    return Obx(() {
-      final searchQuery = _cityController.searchQuery.value;
-      final cityCount = _cityController.cities.length;
+    // 使用本地搜索状态，不使用 Obx
+    if (_localSearchQuery.isEmpty) return const SizedBox.shrink();
+    
+    final cityCount = _localCities.length;
 
-      if (searchQuery.isEmpty) return const SizedBox.shrink();
-
-      return Container(
+    return Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: const Color(0xFFFF4458).withValues(alpha: 0.1),
@@ -261,7 +327,7 @@ class _DataServicePageState extends State<DataServicePage> with WidgetsBindingOb
                       ),
                     ),
                     TextSpan(
-                      text: '"$searchQuery"',
+                    text: '"$_localSearchQuery"',
                       style: const TextStyle(
                         fontWeight: FontWeight.w600,
                         color: Color(0xFFFF4458),
@@ -298,8 +364,7 @@ class _DataServicePageState extends State<DataServicePage> with WidgetsBindingOb
             ),
           ],
         ),
-      );
-    });
+    );
   }
 
   void _scrollToCitiesList() {
@@ -373,8 +438,8 @@ class _DataServicePageState extends State<DataServicePage> with WidgetsBindingOb
 
             const SliverToBoxAdapter(child: SizedBox(height: 8)),
 
-            // 搜索结果提示
-            if (_searchController.text.trim().isNotEmpty)
+            // 搜索结果提示 - 使用本地搜索状态
+            if (_localSearchQuery.isNotEmpty)
               SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.symmetric(
@@ -384,7 +449,7 @@ class _DataServicePageState extends State<DataServicePage> with WidgetsBindingOb
                 ),
               ),
 
-            if (_searchController.text.trim().isNotEmpty) const SliverToBoxAdapter(child: SizedBox(height: 8)),
+            if (_localSearchQuery.isNotEmpty) const SliverToBoxAdapter(child: SizedBox(height: 8)),
 
             // 城市列表锚点 (用于滚动定位)
             SliverToBoxAdapter(
@@ -844,7 +909,7 @@ class _DataServicePageState extends State<DataServicePage> with WidgetsBindingOb
             size: 20,
           ),
           onPressed: () {
-            Get.toNamed(AppRoutes.globalMap);
+            Get.toNamed(AppRoutes.amapGlobal);
           },
         ),
       ],
@@ -953,11 +1018,12 @@ class _DataServicePageState extends State<DataServicePage> with WidgetsBindingOb
     );
   }
 
-  // 数据网格 Sliver
+  // 数据网格 Sliver - 使用本地数据状态
   Widget _buildDataGridSliver(bool isMobile) {
     final l10n = AppLocalizations.of(context)!;
     return Obx(() {
-      final items = _cityController.cities;
+      // 使用本地城市列表，而不是共享的 controller.cities
+      final items = _localCities;
       final isGrid = _isGridView;
       final crossAxisCount = isMobile ? 2 : 4;
       final isLoadingCities = _cityController.isLoading.value;
@@ -1022,7 +1088,10 @@ class _DataServicePageState extends State<DataServicePage> with WidgetsBindingOb
               ),
               itemCount: displayItems.length,
               itemBuilder: (context, index) {
-                return _DataCard(data: displayItems[index]);
+                return _DataCard(
+                  data: displayItems[index],
+                  onReturnFromDetail: _clearSearchOnReturn,
+                );
               },
             ),
             if (hasMore) ...[
@@ -1069,7 +1138,10 @@ class _DataServicePageState extends State<DataServicePage> with WidgetsBindingOb
               physics: const NeverScrollableScrollPhysics(),
               itemCount: displayItems.length,
               itemBuilder: (context, index) {
-                return _DataListItem(data: displayItems[index]);
+                return _DataListItem(
+                  data: displayItems[index],
+                  onReturnFromDetail: _clearSearchOnReturn,
+                );
               },
             ),
             if (hasMore) ...[
@@ -1557,8 +1629,9 @@ class _DataServicePageState extends State<DataServicePage> with WidgetsBindingOb
 // 数据卡片（网格视图）
 class _DataCard extends StatefulWidget {
   final City data;
+  final VoidCallback? onReturnFromDetail;
 
-  const _DataCard({required this.data});
+  const _DataCard({required this.data, this.onReturnFromDetail});
 
   @override
   State<_DataCard> createState() => _DataCardState();
@@ -1572,6 +1645,8 @@ class _DataCardState extends State<_DataCard> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
     final l10n = AppLocalizations.of(context)!;
+    // 在构建时捕获回调，确保导航返回时仍可用
+    final onReturnCallback = widget.onReturnFromDetail;
 
     return GestureDetector(
       onTap: () {
@@ -1600,7 +1675,11 @@ class _DataCardState extends State<_DataCard> {
               reviewCount: (widget.data.reviewCount as num?)?.toInt() ?? 0,
             ),
           ),
-        );
+        ).then((_) {
+          // 从 detail 页面返回时，通知父组件清除搜索
+          print('🔙 [DEBUG] 从 CityDetailPage 返回，调用清除搜索回调');
+          onReturnCallback?.call();
+        });
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
@@ -1694,31 +1773,57 @@ class _DataCardState extends State<_DataCard> {
                         ),
                       ),
                       SizedBox(width: isMobile ? 3 : 8),
-                      // 右侧：网络 - 移动端简化显示
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: isMobile ? 3 : 6, vertical: isMobile ? 2 : 3),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.6),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              '📡',
-                              style: TextStyle(fontSize: isMobile ? 7 : 10),
+                      // 右侧：刷新按钮 + 网络
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // 刷新图片按钮（仅管理员可见）
+                          Obx(() {
+                            final authController = Get.find<AuthStateController>();
+                            final user = authController.currentUser.value;
+                            final isAdmin = user?.role.toLowerCase() == 'admin';
+
+                            if (!isAdmin) return const SizedBox.shrink();
+
+                            return Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _GenerateImageButton(
+                                  cityId: widget.data.id,
+                                  cityName: widget.data.name,
+                                  isMobile: isMobile,
+                                ),
+                                SizedBox(width: isMobile ? 3 : 6),
+                              ],
+                            );
+                          }),
+                          // 网络 - 移动端简化显示
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: isMobile ? 3 : 6, vertical: isMobile ? 2 : 3),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.6),
+                              borderRadius: BorderRadius.circular(4),
                             ),
-                            SizedBox(width: isMobile ? 1 : 3),
-                            Text(
-                              '${widget.data.internetScore}',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: isMobile ? 7 : 10,
-                                fontWeight: FontWeight.w500,
-                              ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '📡',
+                                  style: TextStyle(fontSize: isMobile ? 7 : 10),
+                                ),
+                                SizedBox(width: isMobile ? 1 : 3),
+                                Text(
+                                  '${widget.data.internetScore}',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: isMobile ? 7 : 10,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -2005,12 +2110,16 @@ class _DetailOverlay extends StatelessWidget {
 // 列表项（列表视图用）
 class _DataListItem extends StatelessWidget {
   final City data;
+  final VoidCallback? onReturnFromDetail;
 
-  const _DataListItem({required this.data});
+  const _DataListItem({required this.data, this.onReturnFromDetail});
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    // 在构建时捕获回调，确保导航返回时仍可用
+    final onReturnCallback = onReturnFromDetail;
+    
     return GestureDetector(
       onTap: () {
         // 单击跳转到城市详情页面
@@ -2025,7 +2134,11 @@ class _DataListItem extends StatelessWidget {
               reviewCount: (data.reviewCount as num?)?.toInt() ?? 0,
             ),
           ),
-        );
+        ).then((_) {
+          // 从 detail 页面返回时，通知父组件清除搜索
+          print('🔙 [DEBUG] 从 CityDetailPage 返回 (列表视图)，调用清除搜索回调');
+          onReturnCallback?.call();
+        });
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
@@ -2894,5 +3007,106 @@ class _MeetupCardState extends State<_MeetupCard> {
   String _formatDate(DateTime date) {
     final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return '${months[date.month - 1]} ${date.day}';
+  }
+}
+
+/// 生成城市图片按钮组件
+class _GenerateImageButton extends StatelessWidget {
+  final String cityId;
+  final String cityName;
+  final bool isMobile;
+
+  const _GenerateImageButton({
+    required this.cityId,
+    required this.cityName,
+    required this.isMobile,
+  });
+
+  Future<void> _generateImages() async {
+    final cityController = Get.find<CityStateController>();
+
+    // 检查是否正在生成
+    if (cityController.isGeneratingImages(cityId)) return;
+
+    // 检查登录状态
+    final authController = Get.find<AuthStateController>();
+    if (!authController.isAuthenticated.value) {
+      AppToast.warning(
+        'Please login to generate images',
+        title: 'Login Required',
+      );
+      Get.toNamed(AppRoutes.login);
+      return;
+    }
+
+    // 检查是否是管理员（只有管理员可以生成图片）
+    final user = authController.currentUser.value;
+    final userRole = user?.role.toLowerCase() ?? '';
+    if (userRole != 'admin') {
+      AppToast.warning(
+        'Only administrators can generate images',
+        title: 'Permission Denied',
+      );
+      return;
+    }
+
+    AppToast.info(
+      'AI image generation task created for $cityName.\nYou will be notified when complete.',
+      title: 'Task Created',
+    );
+
+    final result = await cityController.generateCityImages(cityId);
+
+    result.fold(
+      onSuccess: (data) {
+        // 异步模式：任务已创建，等待 SignalR 通知
+        // 不需要在这里更新图片，SignalR 会推送更新
+        final taskData = data['data'] as Map<String, dynamic>?;
+        final taskId = taskData?['taskId'] as String? ?? '';
+        print('🖼️ Image generation task created: taskId=$taskId');
+        // 加载状态由 controller 管理，等待 SignalR 通知时自动结束
+      },
+      onFailure: (exception) {
+        AppToast.error(
+          exception.message,
+          title: 'Task Creation Failed',
+        );
+        // 失败时 controller 已经移除了 cityId
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cityController = Get.find<CityStateController>();
+
+    return Obx(() {
+      final isGenerating = cityController.isGeneratingImages(cityId);
+
+      return GestureDetector(
+        onTap: isGenerating ? null : _generateImages,
+        child: Container(
+          padding: EdgeInsets.all(isMobile ? 4 : 6),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.6),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: isGenerating
+              ? SizedBox(
+                  width: isMobile ? 12 : 16,
+                  height: isMobile ? 12 : 16,
+                  child: const CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              : Icon(
+                  FontAwesomeIcons.arrowsRotate,
+                  color: Colors.white,
+                  size: isMobile ? 10 : 14,
+                ),
+        ),
+      );
+    });
   }
 }

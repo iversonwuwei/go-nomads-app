@@ -141,6 +141,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get createMeetup => 'Create Meetup';
 
   @override
+  String get editMeetup => 'Edit Meetup';
+
+  @override
   String get invite => 'Invite';
 
   @override
@@ -768,6 +771,19 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get coworkingVerifyFailed =>
       'Verification failed. Please try again later.';
+
+  @override
+  String get coworkingVerifyAlreadyVoted =>
+      'You have already verified this space.';
+
+  @override
+  String get coworkingVerifyIsCreator => 'You cannot verify your own space.';
+
+  @override
+  String get coworkingVerifySpaceVerified => 'This space is already verified.';
+
+  @override
+  String get coworkingVerifyChecking => 'Checking eligibility...';
 
   @override
   String get shareLocation => 'Share Location';
@@ -2622,6 +2638,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get upcoming => 'Upcoming';
 
   @override
+  String get statusOngoing => 'Ongoing';
+
+  @override
+  String get statusCancelled => 'Cancelled';
+
+  @override
   String joinedEvents(String count) {
     return '$count Joined Events';
   }
@@ -2634,6 +2656,39 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noMeetupsAvailable => 'No meetups available';
+
+  @override
+  String get myMeetups => 'My Meetups';
+
+  @override
+  String get noMeetups => 'No Meetups Yet';
+
+  @override
+  String get createFirstMeetup =>
+      'Create your first meetup to connect with other nomads';
+
+  @override
+  String get confirmCancelMeetupTitle => 'Cancel meetup';
+
+  @override
+  String get confirmCancelMeetupMessage =>
+      'Are you sure you want to cancel this meetup? This action cannot be undone.';
+
+  @override
+  String get confirmLeaveMeetupTitle => 'Leave meetup';
+
+  @override
+  String get confirmLeaveMeetupMessage =>
+      'Are you sure you want to leave this meetup?';
+
+  @override
+  String get cancelMeetupSuccess => 'Meetup cancelled';
+
+  @override
+  String get cancelMeetupFailed => 'Failed to cancel meetup';
+
+  @override
+  String get leaveMeetupFailed => 'Failed to leave meetup';
 
   @override
   String get join => 'Join';

@@ -2,6 +2,7 @@ import 'package:df_admin_mobile/features/innovation_project/domain/entities/inno
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart'
     as models;
 import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -159,11 +160,7 @@ class _InnovationListPageState extends State<InnovationListPage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon:
-              const Icon(FontAwesomeIcons.arrowLeft, color: Color(0xFF1a1a1a)),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: const AppBackButton(color: Color(0xFF1a1a1a)),
         title: Text(
           l10n.innovation,
           style: const TextStyle(

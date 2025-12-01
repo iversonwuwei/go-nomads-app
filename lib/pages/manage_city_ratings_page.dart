@@ -1,5 +1,6 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/city/presentation/controllers/city_rating_controller.dart';
+import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -174,8 +175,8 @@ class _ManageCityRatingsPageState extends State<ManageCityRatingsPage> {
           backgroundColor: AppColors.cityPrimary,
           foregroundColor: Colors.white,
           title: Text('${widget.cityName} - 评分数据'),
-          leading: IconButton(
-            icon: const Icon(FontAwesomeIcons.arrowLeft),
+          leading: AppBackButton(
+            color: Colors.white,
             onPressed: _finish,
           ),
           actions: [

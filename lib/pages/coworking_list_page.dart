@@ -5,6 +5,7 @@ import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/pages/add_coworking_page.dart';
 import 'package:df_admin_mobile/pages/coworking_detail_page.dart';
 import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
+import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/coworking_verification_badge.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -28,8 +29,7 @@ class CoworkingListPage extends StatefulWidget {
   State<CoworkingListPage> createState() => _CoworkingListPageState();
 }
 
-class _CoworkingListPageState extends State<CoworkingListPage>
-    with RouteAwareRefreshMixin<CoworkingListPage> {
+class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRefreshMixin<CoworkingListPage> {
   late final CoworkingStateController controller;
   final ScrollController _scrollController = ScrollController();
 
@@ -42,11 +42,10 @@ class _CoworkingListPageState extends State<CoworkingListPage>
     // 延迟加载，防止快速导航时的并发请求
     Future.delayed(const Duration(milliseconds: 100), () {
       if (!mounted) return;
-      
+
       // 检查是否需要加载数据
-      final needsLoad = controller.currentCityId.value != widget.cityId || 
-                        controller.coworkingSpaces.isEmpty;
-      
+      final needsLoad = controller.currentCityId.value != widget.cityId || controller.coworkingSpaces.isEmpty;
+
       if (needsLoad) {
         print('🔄 CoworkingList: 首次加载或cityId变化,开始加载数据');
         controller.loadCoworkingsByCity(widget.cityId, refresh: true);
@@ -58,8 +57,7 @@ class _CoworkingListPageState extends State<CoworkingListPage>
 
   /// 监听滚动，实现无限滚动加载
   void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent * 0.9) {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent * 0.9) {
       // 滚动到 90% 位置时加载更多
       controller.loadMoreCoworkingSpaces();
     }
@@ -96,10 +94,7 @@ class _CoworkingListPageState extends State<CoworkingListPage>
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(FontAwesomeIcons.arrowLeft, color: Colors.black87),
-          onPressed: () => Get.back(),
-        ),
+        leading: const AppBackButton(color: Colors.black87),
         title: Text(
           widget.cityName,
           style: const TextStyle(
@@ -327,6 +322,29 @@ class _CoworkingListPageState extends State<CoworkingListPage>
                           ),
                         ),
                       ),
+                      // 编辑按钮（仅创建者可见）
+                      if (space.isOwner)
+                        IconButton(
+                          icon: const Icon(FontAwesomeIcons.penToSquare, size: 18),
+                          color: Colors.blue,
+                          onPressed: () async {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AddCoworkingPage(
+                                  editingSpace: space,
+                                ),
+                              ),
+                            );
+                            if (result == true && mounted) {
+                              await _refreshData();
+                            }
+                          },
+                          tooltip: '编辑',
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                      if (space.isOwner) const SizedBox(width: 8),
                       Row(
                         children: [
                           const Icon(
@@ -358,8 +376,7 @@ class _CoworkingListPageState extends State<CoworkingListPage>
                   // 地址
                   Row(
                     children: [
-                      Icon(FontAwesomeIcons.locationDot,
-                          size: 16, color: Colors.grey[600]),
+                      Icon(FontAwesomeIcons.locationDot, size: 16, color: Colors.grey[600]),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
@@ -376,13 +393,11 @@ class _CoworkingListPageState extends State<CoworkingListPage>
                   ),
 
                   // 创建者信息
-                  if (space.creatorName != null &&
-                      space.creatorName!.isNotEmpty) ...[
+                  if (space.creatorName != null && space.creatorName!.isNotEmpty) ...[
                     const SizedBox(height: 6),
                     Row(
                       children: [
-                        Icon(FontAwesomeIcons.user,
-                            size: 14, color: Colors.grey[500]),
+                        Icon(FontAwesomeIcons.user, size: 14, color: Colors.grey[500]),
                         const SizedBox(width: 4),
                         Text(
                           space.creatorName!,
@@ -443,8 +458,7 @@ class _CoworkingListPageState extends State<CoworkingListPage>
                               style: const TextStyle(fontSize: 11),
                             ),
                             padding: EdgeInsets.zero,
-                            materialTapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
                         )
                         .toList(),
@@ -465,8 +479,7 @@ class _CoworkingListPageState extends State<CoworkingListPage>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(FontAwesomeIcons.tag,
-                              size: 16, color: Colors.green[700]),
+                          Icon(FontAwesomeIcons.tag, size: 16, color: Colors.green[700]),
                           const SizedBox(width: 4),
                           Text(
                             space.pricing.trialDuration != null

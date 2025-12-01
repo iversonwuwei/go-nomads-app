@@ -5,6 +5,7 @@ import 'package:df_admin_mobile/features/skill/presentation/controllers/skill_st
 import 'package:df_admin_mobile/features/user/application/use_cases/favorite_city_use_cases.dart';
 import 'package:df_admin_mobile/features/user/application/use_cases/user_use_cases.dart'
     as user_use_cases;
+import 'package:df_admin_mobile/features/user/domain/entities/nomad_stats.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:get/get.dart';
@@ -28,6 +29,9 @@ class UserStateController extends GetxController {
   final GetFavoriteCityIdsUseCase _getFavoriteCityIdsUseCase;
   final ToggleFavoriteCityUseCase _toggleFavoriteCityUseCase;
 
+  // Use Cases注入 - 用户统计数据
+  final user_use_cases.GetCurrentUserStatsUseCase _getCurrentUserStatsUseCase;
+
   UserStateController({
     required user_use_cases.GetUserProfileUseCase getCurrentUserUseCase,
     required user_use_cases.GetUserUseCase getUserUseCase,
@@ -37,6 +41,7 @@ class UserStateController extends GetxController {
     required IsCityFavoritedUseCase isCityFavoritedUseCase,
     required GetFavoriteCityIdsUseCase getFavoriteCityIdsUseCase,
     required ToggleFavoriteCityUseCase toggleFavoriteCityUseCase,
+    required user_use_cases.GetCurrentUserStatsUseCase getCurrentUserStatsUseCase,
   })  : _getCurrentUserUseCase = getCurrentUserUseCase,
         _getUserUseCase = getUserUseCase,
         _updateUserUseCase = updateUserUseCase,
@@ -44,7 +49,8 @@ class UserStateController extends GetxController {
         _removeFavoriteCityUseCase = removeFavoriteCityUseCase,
         _isCityFavoritedUseCase = isCityFavoritedUseCase,
         _getFavoriteCityIdsUseCase = getFavoriteCityIdsUseCase,
-        _toggleFavoriteCityUseCase = toggleFavoriteCityUseCase;
+        _toggleFavoriteCityUseCase = toggleFavoriteCityUseCase,
+        _getCurrentUserStatsUseCase = getCurrentUserStatsUseCase;
 
   // 状态
   final Rx<User?> currentUser = Rx<User?>(null);
@@ -53,6 +59,10 @@ class UserStateController extends GetxController {
 
   // 收藏城市状态
   final RxSet<String> favoriteCityIds = <String>{}.obs;
+
+  // 用户统计数据状态
+  final Rx<NomadStats?> nomadStats = Rx<NomadStats?>(null);
+  final RxBool isLoadingStats = false.obs;
 
   // 编辑模式状态 (从 UserProfileController 合并)
   final RxBool isEditMode = false.obs;
@@ -84,11 +94,13 @@ class UserStateController extends GetxController {
           print('✅ 用户已登录，加载用户数据...');
           loadCurrentUser();
           loadFavoriteCityIds();
+          loadNomadStats(); // 加载统计数据
         } else {
           // 退出登录，清除用户数据
           print('⚠️ 用户已退出，清除用户数据');
           currentUser.value = null;
           favoriteCityIds.clear();
+          nomadStats.value = null;
         }
       });
     } catch (e) {
@@ -150,6 +162,29 @@ class UserStateController extends GetxController {
 
   /// 加载用户资料 (从 UserProfileController 合并的别名方法)
   Future<void> loadUserProfile() => loadCurrentUser();
+
+  /// 加载当前用户的游牧统计数据
+  Future<void> loadNomadStats() async {
+    isLoadingStats.value = true;
+
+    final result = await _getCurrentUserStatsUseCase(const NoParams());
+
+    result.fold(
+      onSuccess: (stats) {
+        nomadStats.value = stats;
+        print('✅ 成功加载用户统计数据');
+      },
+      onFailure: (exception) {
+        print('⚠️ 加载用户统计数据失败: ${exception.message}');
+        // 如果加载失败，使用空的统计数据
+        if (currentUser.value != null) {
+          nomadStats.value = NomadStats.empty(currentUser.value!.id);
+        }
+      },
+    );
+
+    isLoadingStats.value = false;
+  }
 
   /// 切换编辑模式 (从 UserProfileController 合并)
   void toggleEditMode() {
@@ -215,6 +250,7 @@ class UserStateController extends GetxController {
     currentUser.value = null;
     errorMessage.value = '';
     favoriteCityIds.clear();
+    nomadStats.value = null;
     isEditMode.value = false;
     // 触发登录状态变化通知
     loginStateChanged.toggle();
@@ -425,6 +461,10 @@ class UserStateController extends GetxController {
 
     // 清空收藏城市状态
     favoriteCityIds.clear();
+
+    // 清空统计数据
+    nomadStats.value = null;
+    isLoadingStats.value = false;
 
     // 重置编辑模式状态
     isEditMode.value = false;

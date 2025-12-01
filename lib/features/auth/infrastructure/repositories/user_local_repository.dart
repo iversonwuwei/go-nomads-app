@@ -1,8 +1,7 @@
-import 'package:sqflite/sqflite.dart';
-
+import 'package:df_admin_mobile/features/auth/domain/entities/auth_user.dart';
 import 'package:df_admin_mobile/services/database_service.dart';
 import 'package:df_admin_mobile/services/token_storage_service.dart';
-import 'package:df_admin_mobile/features/auth/domain/entities/auth_user.dart';
+import 'package:sqflite/sqflite.dart';
 
 /// 用户本地数据仓储
 /// 协调 SharedPreferences 和 SQLite 的数据存储
@@ -158,20 +157,26 @@ class UserLocalRepository {
   /// 清除用户数据（登出时调用）
   Future<void> clearUserData() async {
     try {
-      // 清除 SharedPreferences
+      // 1. 先获取当前用户ID（在清除 token 之前）
+      final userId = await _tokenStorage.getUserId();
+
+      // 2. 清除 SQLite 中的当前用户数据
+      if (userId != null) {
+        final database = await _db.database;
+        await database.delete('users', where: 'id = ?', whereArgs: [userId]);
+        print('✅ SQLite 用户数据已清除: $userId');
+      }
+
+      // 3. 清除 SharedPreferences（token + 用户信息）
       await _tokenStorage.clearTokens();
 
-      // 可选：清除 SQLite 中的用户缓存（保留离线数据）
-      // 如果需要完全清除，取消注释以下代码：
-      // final userId = await _tokenStorage.getUserId();
-      // if (userId != null) {
-      //   final database = await _db.database;
-      //   await database.delete('users', where: 'id = ?', whereArgs: [userId]);
-      // }
-
-      print('✅ 用户数据已清除');
+      print('✅ 用户数据已完全清除');
     } catch (e) {
       print('❌ 清除用户数据失败: $e');
+      // 确保即使出错也尝试清除 token
+      try {
+        await _tokenStorage.clearTokens();
+      } catch (_) {}
     }
   }
 

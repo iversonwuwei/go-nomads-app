@@ -8,6 +8,7 @@ import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -274,10 +275,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(FontAwesomeIcons.arrowLeft, color: AppColors.textPrimary, size: 24.sp),
-          onPressed: () => Get.back(),
-        ),
+        leading: const AppBackButton(),
         title: Text(
           l10n.meetups,
           style: TextStyle(
@@ -967,6 +965,24 @@ class _MeetupListCardState extends State<_MeetupListCard> {
                       ),
                       _buildJoinButton(l10n),
                       SizedBox(width: 8.w),
+                      // 编辑按钮 - 只有组织者可见
+                      if (_isOrganizer)
+                        IconButton(
+                          onPressed: () {
+                            Get.to(() => CreateMeetupPage(editingMeetup: widget.meetup));
+                          },
+                          icon: Icon(
+                            FontAwesomeIcons.penToSquare,
+                            size: 16.r,
+                            color: const Color(0xFFFF4458),
+                          ),
+                          padding: EdgeInsets.zero,
+                          constraints: BoxConstraints(
+                            minWidth: 32.w,
+                            minHeight: 32.h,
+                          ),
+                        ),
+                      if (_isOrganizer) SizedBox(width: 4.w),
                       _buildChatButton(),
                     ],
                   ),

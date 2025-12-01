@@ -73,6 +73,7 @@ import 'package:df_admin_mobile/features/meetup/application/use_cases/create_mee
 import 'package:df_admin_mobile/features/meetup/application/use_cases/get_meetups_by_city_use_case.dart';
 import 'package:df_admin_mobile/features/meetup/application/use_cases/get_meetups_use_case.dart';
 import 'package:df_admin_mobile/features/meetup/application/use_cases/rsvp_to_meetup_use_case.dart';
+import 'package:df_admin_mobile/features/meetup/application/use_cases/update_meetup_use_case.dart';
 // Meetup Domain
 import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
 import 'package:df_admin_mobile/features/meetup/infrastructure/repositories/meetup_repository.dart';
@@ -267,6 +268,14 @@ class DependencyInjection {
     Get.lazyPut(() => GetFavoriteCityIdsUseCase(Get.find<IUserRepository>()));
     Get.lazyPut(() => ToggleFavoriteCityUseCase(Get.find<IUserRepository>()));
 
+    // Use Cases - 用户统计数据
+    Get.lazyPut<user_use_cases.GetCurrentUserStatsUseCase>(
+        () => user_use_cases.GetCurrentUserStatsUseCase(Get.find<IUserRepository>()));
+    Get.lazyPut<user_use_cases.GetUserStatsUseCase>(
+        () => user_use_cases.GetUserStatsUseCase(Get.find<IUserRepository>()));
+    Get.lazyPut<user_use_cases.UpdateCurrentUserStatsUseCase>(
+        () => user_use_cases.UpdateCurrentUserStatsUseCase(Get.find<IUserRepository>()));
+
     // Controller（fenix: true 允许删除后重新创建）
     Get.lazyPut(
       () => UserStateController(
@@ -278,6 +287,7 @@ class DependencyInjection {
         isCityFavoritedUseCase: Get.find<IsCityFavoritedUseCase>(),
         getFavoriteCityIdsUseCase: Get.find<GetFavoriteCityIdsUseCase>(),
         toggleFavoriteCityUseCase: Get.find<ToggleFavoriteCityUseCase>(),
+        getCurrentUserStatsUseCase: Get.find<user_use_cases.GetCurrentUserStatsUseCase>(),
       ),
       fenix: true,
     );
@@ -403,6 +413,7 @@ class DependencyInjection {
         toggleCityFavoriteUseCase: Get.find<ToggleCityFavoriteUseCase>(),
         getFavoriteCitiesUseCase: Get.find<GetFavoriteCitiesUseCase>(),
         getUserFavoriteCityIdsUseCase: Get.find<GetUserFavoriteCityIdsUseCase>(),
+        cityRepository: Get.find<ICityRepository>(),
       ),
       fenix: true, // 允许在删除后重新创建
     );
@@ -488,6 +499,9 @@ class DependencyInjection {
     Get.lazyPut(() => SubmitCoworkingVerificationUseCase(
           Get.find<ICoworkingRepository>(),
         ));
+    Get.lazyPut(() => CheckVerificationEligibilityUseCase(
+          Get.find<ICoworkingRepository>(),
+        ));
 
     // Use Cases - 评论
     Get.lazyPut(() => CoworkingCommentUseCases(
@@ -501,6 +515,7 @@ class DependencyInjection {
         getCoworkingByIdUseCase: Get.find<GetCoworkingByIdUseCase>(),
         getCityCoworkingCountUseCase: Get.find<GetCityCoworkingCountUseCase>(),
         submitCoworkingVerificationUseCase: Get.find<SubmitCoworkingVerificationUseCase>(),
+        checkVerificationEligibilityUseCase: Get.find<CheckVerificationEligibilityUseCase>(),
       ),
       fenix: true, // 允许在删除后重新创建,防止路由切换导致的状态丢失
     );
@@ -594,24 +609,52 @@ class DependencyInjection {
     // Repository
     Get.lazyPut<IAiRepository>(
       () => AiRepository(),
+      fenix: true,
     );
 
     // Use Cases
-    Get.lazyPut(() => GenerateTravelPlanUseCase(
-          Get.find<IAiRepository>(),
-        ));
-    Get.lazyPut(() => GenerateTravelPlanStreamUseCase(
-          Get.find<IAiRepository>(),
-        ));
-    Get.lazyPut(() => GetTravelPlanByIdUseCase(
-          Get.find<IAiRepository>(),
-        ));
-    Get.lazyPut(() => GetDigitalNomadGuideUseCase(
-          Get.find<IAiRepository>(),
-        ));
-    Get.lazyPut(() => GenerateDigitalNomadGuideStreamUseCase(
-          Get.find<IAiRepository>(),
-        ));
+    Get.lazyPut(
+      () => GenerateTravelPlanUseCase(
+        Get.find<IAiRepository>(),
+      ),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => GenerateTravelPlanStreamUseCase(
+        Get.find<IAiRepository>(),
+      ),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => GetTravelPlanByIdUseCase(
+        Get.find<IAiRepository>(),
+      ),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => GetDigitalNomadGuideUseCase(
+        Get.find<IAiRepository>(),
+      ),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => GenerateDigitalNomadGuideStreamUseCase(
+        Get.find<IAiRepository>(),
+      ),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => GetUserTravelPlansUseCase(
+        Get.find<IAiRepository>(),
+      ),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => GetTravelPlanDetailUseCase(
+        Get.find<IAiRepository>(),
+      ),
+      fenix: true,
+    );
 
     // Controller
     Get.lazyPut(
@@ -621,7 +664,10 @@ class DependencyInjection {
         Get.find<GetTravelPlanByIdUseCase>(),
         Get.find<GenerateDigitalNomadGuideStreamUseCase>(),
         Get.find<GetDigitalNomadGuideUseCase>(),
+        Get.find<GetUserTravelPlansUseCase>(),
+        Get.find<GetTravelPlanDetailUseCase>(),
       ),
+      fenix: true, // 确保控制器在被销毁后可以重新创建
     );
   }
 
@@ -654,6 +700,7 @@ class DependencyInjection {
     Get.lazyPut(() => RsvpToMeetupUseCase(Get.find<IMeetupRepository>()));
     Get.lazyPut(() => CancelRsvpUseCase(Get.find<IMeetupRepository>()));
     Get.lazyPut(() => CancelMeetupUseCase(Get.find<IMeetupRepository>()));
+    Get.lazyPut(() => UpdateMeetupUseCase(Get.find<IMeetupRepository>()));
 
     // Controller（fenix: true 允许删除后重新创建）
     Get.lazyPut(
@@ -661,6 +708,7 @@ class DependencyInjection {
         getMeetupsUseCase: Get.find<GetMeetupsUseCase>(),
         getMeetupsByCityUseCase: Get.find<GetMeetupsByCityUseCase>(),
         createMeetupUseCase: Get.find<CreateMeetupUseCase>(),
+        updateMeetupUseCase: Get.find<UpdateMeetupUseCase>(),
         rsvpToMeetupUseCase: Get.find<RsvpToMeetupUseCase>(),
         cancelRsvpUseCase: Get.find<CancelRsvpUseCase>(),
         cancelMeetupUseCase: Get.find<CancelMeetupUseCase>(),

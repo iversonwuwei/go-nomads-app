@@ -1,7 +1,5 @@
 import 'package:df_admin_mobile/features/moderator/domain/entities/moderator_application.dart';
 import 'package:df_admin_mobile/features/moderator/domain/repositories/i_moderator_application_repository.dart';
-import 'package:df_admin_mobile/features/notification/domain/entities/app_notification.dart';
-import 'package:df_admin_mobile/features/notification/presentation/controllers/notification_state_controller.dart';
 import 'package:get/get.dart';
 
 /// 版主申请控制器
@@ -42,25 +40,8 @@ class ModeratorApplicationController extends GetxController {
         reason: reason,
       );
 
-      // 发送通知给管理员
-      try {
-        final notificationController = Get.find<NotificationStateController>();
-        await notificationController.sendToAdmins(
-          title: '新的版主申请',
-          message: '用户申请成为 $cityName 的版主',
-          type: NotificationType.moderatorApplication,
-          relatedId: cityId,
-          metadata: {
-            'cityId': cityId,
-            'cityName': cityName,
-            'reason': reason,
-          },
-        );
-        print('✅ 版主申请通知已发送给管理员');
-      } catch (e) {
-        print('⚠️ 发送版主申请通知失败: $e');
-        // 不影响申请流程，静默失败
-      }
+      // 注意：通知已由后端 ModeratorApplicationService 统一发送给管理员
+      // 不需要在 Flutter 端重复发送
 
       // 重新加载申请列表
       await loadMyApplications();

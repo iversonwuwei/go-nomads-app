@@ -47,6 +47,7 @@
   "members": "成员列表",
   "meetup": "聚会",
   "createMeetup": "创建聚会",
+  "editMeetup": "编辑聚会",
   "invite": "邀请",
   "inviteToMeetup": "邀请参加聚会",
   "selectMeetup": "选择聚会",
@@ -283,6 +284,22 @@
   "coworkingVerifyFailed": "认证提交失败，请稍后再试。",
   "@coworkingVerifyFailed": {
     "description": "认证失败后的提示"
+  },
+  "coworkingVerifyAlreadyVoted": "您已经为该空间提交过认证。",
+  "@coworkingVerifyAlreadyVoted": {
+    "description": "用户已经验证过该空间的提示"
+  },
+  "coworkingVerifyIsCreator": "创建者不能为自己的空间认证。",
+  "@coworkingVerifyIsCreator": {
+    "description": "创建者尝试验证自己的空间的提示"
+  },
+  "coworkingVerifySpaceVerified": "该空间已通过认证。",
+  "@coworkingVerifySpaceVerified": {
+    "description": "空间已经是已验证状态的提示"
+  },
+  "coworkingVerifyChecking": "正在检查资格...",
+  "@coworkingVerifyChecking": {
+    "description": "检查验证资格时的加载提示"
   },
   "shareLocation": "分享位置",
   "addToFavorites": "添加到收藏",
@@ -1127,6 +1144,8 @@
   "allMeetups": "全部聚会",
   "past": "过往",
   "upcoming": "即将到来",
+  "statusOngoing": "进行中",
+  "statusCancelled": "已取消",
   "upcomingEvents": "{count} 个即将到来的活动",
   "@upcomingEvents": {
     "placeholders": {
@@ -1157,6 +1176,16 @@
   "noJoinedMeetupsYet": "还没有加入任何聚会",
   "noPastMeetups": "暂无过往聚会",
   "noMeetupsAvailable": "暂无可用聚会",
+  "myMeetups": "我的聚会",
+  "noMeetups": "暂无聚会",
+  "createFirstMeetup": "创建您的第一个聚会来与其他游牧者建立联系",
+  "confirmCancelMeetupTitle": "取消活动",
+  "confirmCancelMeetupMessage": "确定要取消这个活动吗？此操作无法撤销。",
+  "confirmLeaveMeetupTitle": "退出活动",
+  "confirmLeaveMeetupMessage": "确定要退出这个活动吗？",
+  "cancelMeetupSuccess": "活动已取消",
+  "cancelMeetupFailed": "取消活动失败",
+  "leaveMeetupFailed": "退出活动失败",
   "join": "加入",
   "youHaveJoined": "您已加入 {title}",
   "@youHaveJoined": {

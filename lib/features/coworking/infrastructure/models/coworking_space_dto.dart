@@ -1,6 +1,5 @@
 // import 'package:df_admin_mobile/models/coworking_space_model.dart' as legacy;
-import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart'
-    as entity;
+import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart' as entity;
 
 // Type aliases for backward compatibility
 typedef CoworkingSpace = CoworkingSpaceDto;
@@ -122,17 +121,12 @@ class CoworkingSpaceDto {
       address: json['address'] ?? '',
       city: json['city'] ?? '',
       country: json['country'] ?? '',
-      latitude:
-          json['latitude'] != null ? (json['latitude'] as num).toDouble() : 0.0,
-      longitude: json['longitude'] != null
-          ? (json['longitude'] as num).toDouble()
-          : 0.0,
+      latitude: json['latitude'] != null ? (json['latitude'] as num).toDouble() : 0.0,
+      longitude: json['longitude'] != null ? (json['longitude'] as num).toDouble() : 0.0,
       imageUrl: json['imageUrl'] ?? '',
       images: json['images'] != null && json['images'] is List
           ? List<String>.from(json['images'])
-          : (json['imageUrl'] != null && json['imageUrl'].toString().isNotEmpty
-              ? [json['imageUrl'].toString()]
-              : []),
+          : (json['imageUrl'] != null && json['imageUrl'].toString().isNotEmpty ? [json['imageUrl'].toString()] : []),
       rating: json['rating'] != null ? (json['rating'] as num).toDouble() : 0.0,
       reviewCount: json['reviewCount'] ?? 0,
       description: json['description'] ?? '',
@@ -146,17 +140,10 @@ class CoworkingSpaceDto {
       // 适配后端扁平化的 amenities 字段
       amenities: CoworkingAmenitiesDto.fromJson({
         'hasWifi': json['amenities']?.contains('wifi') ?? false,
-        'hasMeetingRoom': json['hasMeetingRoom'] ??
-            json['amenities']?.contains('meeting_room') ??
-            false,
-        'hasCoffee':
-            json['hasCoffee'] ?? json['amenities']?.contains('coffee') ?? false,
-        'hasParking': json['hasParking'] ??
-            json['amenities']?.contains('parking') ??
-            false,
-        'has24HourAccess': json['has247Access'] ??
-            json['amenities']?.contains('24_hour') ??
-            false,
+        'hasMeetingRoom': json['hasMeetingRoom'] ?? json['amenities']?.contains('meeting_room') ?? false,
+        'hasCoffee': json['hasCoffee'] ?? json['amenities']?.contains('coffee') ?? false,
+        'hasParking': json['hasParking'] ?? json['amenities']?.contains('parking') ?? false,
+        'has24HourAccess': json['has247Access'] ?? json['amenities']?.contains('24_hour') ?? false,
       }),
       // 适配后端扁平化的 specs 字段
       specs: CoworkingSpecsDto.fromJson({
@@ -166,9 +153,8 @@ class CoworkingSpaceDto {
         'meetingRooms': json['meetingRooms'],
         'wifiSpeed': json['wifiSpeed'],
       }),
-      openingHours: json['openingHours'] != null && json['openingHours'] is List
-          ? List<String>.from(json['openingHours'])
-          : [],
+      openingHours:
+          json['openingHours'] != null && json['openingHours'] is List ? List<String>.from(json['openingHours']) : [],
       phone: json['phone'] ?? '',
       email: json['email'] ?? '',
       website: json['website'] ?? '',
@@ -187,6 +173,7 @@ class CoworkingSpaceDto {
       id: id,
       name: name,
       location: entity.Location(
+        cityId: cityId,
         address: address,
         city: city,
         country: country,
@@ -220,9 +207,7 @@ class CoworkingSpaceDto {
 
   /// 后端返回 verificationStatus 字段时转换为布尔值
   static bool _parseVerificationStatus(Map<String, dynamic> json) {
-    final status = (json['verificationStatus'] ?? json['verification_status'])
-        ?.toString()
-        .toLowerCase();
+    final status = (json['verificationStatus'] ?? json['verification_status'])?.toString().toLowerCase();
 
     if (status == 'verified') return true;
 
@@ -240,8 +225,7 @@ class CoworkingSpaceDto {
   }
 
   static int _parseVerificationVotes(Map<String, dynamic> json) {
-    final dynamic value =
-        json['verificationVotes'] ?? json['verification_votes'];
+    final dynamic value = json['verificationVotes'] ?? json['verification_votes'];
     if (value == null) {
       return 0;
     }

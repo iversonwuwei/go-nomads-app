@@ -6,16 +6,15 @@ class ModeratorApplication {
   final String reason;
   final String status; // 'pending', 'approved', 'rejected'
   final String? processedBy;
+  final String? processedByName;
   final DateTime? processedAt;
   final String? rejectionReason;
   final DateTime createdAt;
-  final DateTime updatedAt;
 
   // 关联数据
   final String? userName;
   final String? userAvatar;
   final String? cityName;
-  final String? cityNameEn;
 
   ModeratorApplication({
     required this.id,
@@ -24,53 +23,49 @@ class ModeratorApplication {
     required this.reason,
     required this.status,
     this.processedBy,
+    this.processedByName,
     this.processedAt,
     this.rejectionReason,
     required this.createdAt,
-    required this.updatedAt,
     this.userName,
     this.userAvatar,
     this.cityName,
-    this.cityNameEn,
   });
 
   factory ModeratorApplication.fromJson(Map<String, dynamic> json) {
     return ModeratorApplication(
-      id: json['id'] as String,
-      userId: json['user_id'] as String,
-      cityId: json['city_id'] as String,
-      reason: json['reason'] as String,
-      status: json['status'] as String,
-      processedBy: json['processed_by'] as String?,
-      processedAt: json['processed_at'] != null
-          ? DateTime.parse(json['processed_at'] as String)
+      id: json['id']?.toString() ?? '',
+      userId: json['userId']?.toString() ?? '',
+      cityId: json['cityId']?.toString() ?? '',
+      reason: json['reason'] as String? ?? '',
+      status: json['status'] as String? ?? 'pending',
+      processedBy: json['processedBy']?.toString(),
+      processedByName: json['processedByName'] as String?,
+      processedAt: json['processedAt'] != null ? DateTime.parse(json['processedAt'] as String)
           : null,
-      rejectionReason: json['rejection_reason'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
-      userName: json['user_name'] as String?,
-      userAvatar: json['user_avatar'] as String?,
-      cityName: json['city_name'] as String?,
-      cityNameEn: json['city_name_en'] as String?,
+      rejectionReason: json['rejectionReason'] as String?,
+      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'] as String) : DateTime.now(),
+      userName: json['userName'] as String?,
+      userAvatar: json['userAvatar'] as String?,
+      cityName: json['cityName'] as String?,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'user_id': userId,
-      'city_id': cityId,
+      'userId': userId,
+      'cityId': cityId,
       'reason': reason,
       'status': status,
-      'processed_by': processedBy,
-      'processed_at': processedAt?.toIso8601String(),
-      'rejection_reason': rejectionReason,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
-      'user_name': userName,
-      'user_avatar': userAvatar,
-      'city_name': cityName,
-      'city_name_en': cityNameEn,
+      'processedBy': processedBy,
+      'processedByName': processedByName,
+      'processedAt': processedAt?.toIso8601String(),
+      'rejectionReason': rejectionReason,
+      'createdAt': createdAt.toIso8601String(),
+      'userName': userName,
+      'userAvatar': userAvatar,
+      'cityName': cityName,
     };
   }
 

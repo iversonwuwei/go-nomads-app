@@ -314,8 +314,21 @@ class MeetupRepository implements IMeetupRepository {
       print('📡 更新活动: $meetupId');
       print('   更新内容: $updates');
 
-      // TODO: 需要 EventsApiService 支持 updateEvent 方法
-      throw UnimplementedError('updateMeetup 尚未实现');
+      // 调用后端 PUT /events/{id} 接口
+      final response = await _httpService.put('/events/$meetupId', data: updates);
+
+      // 后端返回格式: { success: true, data: {...} }
+      final data = response.data;
+      Map<String, dynamic> eventData;
+
+      if (data is Map<String, dynamic>) {
+        eventData = (data['data'] as Map<String, dynamic>?) ?? data;
+      } else {
+        throw Exception('更新活动返回格式错误');
+      }
+
+      print('✅ 活动更新成功');
+      return MeetupDto.fromJson(eventData).toDomain();
     } catch (e) {
       print('❌ MeetupRepository.updateMeetup 失败: $e');
       rethrow;
@@ -334,6 +347,48 @@ class MeetupRepository implements IMeetupRepository {
       return true;
     } catch (e) {
       print('❌ MeetupRepository.cancelMeetup 失败: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<Meetup>> getMyCreatedMeetups() async {
+    try {
+      print('📡 调用 HttpService GET /events/me/created...');
+
+      final response = await _httpService.get('/events/me/created');
+
+      // 后端返回格式: { success: true, data: [...] }
+      final data = response.data;
+      List items;
+
+      if (data is Map<String, dynamic>) {
+        items = (data['data'] as List?) ?? (data['items'] as List?) ?? [];
+      } else if (data is List) {
+        items = data;
+      } else {
+        items = [];
+      }
+
+      print('✅ 获取到 ${items.length} 个我创建的活动');
+
+      final meetups = items
+          .map((json) {
+            try {
+              final dto = MeetupDto.fromJson(json as Map<String, dynamic>);
+              return dto.toDomain();
+            } catch (e) {
+              print('❌ 解析 meetup 失败: $e');
+              return null;
+            }
+          })
+          .whereType<Meetup>()
+          .toList();
+
+      return meetups;
+    } catch (e, stackTrace) {
+      print('❌ MeetupRepository.getMyCreatedMeetups 失败: $e');
+      print('   堆栈: $stackTrace');
       rethrow;
     }
   }

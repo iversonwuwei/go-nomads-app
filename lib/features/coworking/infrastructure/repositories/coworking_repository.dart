@@ -1,6 +1,7 @@
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart'
     as entity;
+import 'package:df_admin_mobile/features/coworking/domain/entities/verification_eligibility.dart';
 import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_repository.dart';
 import 'package:df_admin_mobile/features/coworking/infrastructure/models/coworking_space_dto.dart';
 import 'package:df_admin_mobile/services/http_service.dart';
@@ -268,6 +269,46 @@ class CoworkingRepository implements ICoworkingRepository {
         UnknownException(
           '删除 Coworking 空间失败: ${e.toString()}',
           code: 'COWORKING_DELETE_ERROR',
+          details: stackTrace.toString(),
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<Result<VerificationEligibility>> checkVerificationEligibility(String id) async {
+    try {
+      final response = await _httpService.get('/coworking/$id/verification-eligibility');
+
+      Map<String, dynamic>? payload;
+      if (response.data is Map<String, dynamic>) {
+        final data = response.data as Map<String, dynamic>;
+        if (data['data'] is Map<String, dynamic>) {
+          payload = data['data'] as Map<String, dynamic>;
+        } else {
+          payload = data;
+        }
+      }
+
+      if (payload == null) {
+        throw ServerException('验证资格检查接口返回格式无效');
+      }
+
+      final eligibility = VerificationEligibility.fromJson(payload);
+      return Result.success(eligibility);
+    } on HttpException catch (e) {
+      return Result.failure(
+        UnknownException(
+          e.message,
+          code: 'VERIFICATION_ELIGIBILITY_HTTP_${e.statusCode}',
+          details: e.errors.isEmpty ? null : e.errors.join('\n'),
+        ),
+      );
+    } catch (e, stackTrace) {
+      return Result.failure(
+        UnknownException(
+          '检查验证资格失败: ${e.toString()}',
+          code: 'VERIFICATION_ELIGIBILITY_ERROR',
           details: stackTrace.toString(),
         ),
       );

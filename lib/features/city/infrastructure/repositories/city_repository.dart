@@ -5,6 +5,7 @@ import 'package:df_admin_mobile/features/city/domain/entities/city_detail.dart';
 import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
 import 'package:df_admin_mobile/features/city/infrastructure/models/city_detail_dto.dart' as dto;
 import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:dio/dio.dart';
 
 /// 城市仓储实现 (Infrastructure Layer)
 ///
@@ -246,8 +247,9 @@ class CityRepository implements ICityRepository {
   @override
   Future<Result<List<City>>> getFavoriteCities() async {
     try {
+      // 使用新的 /details 端点获取完整城市信息
       final response = await _httpService.get(
-        '${ApiConfig.apiBaseUrl}/user-favorite-cities',
+        '${ApiConfig.apiBaseUrl}/user-favorite-cities/details',
         queryParameters: {'page': 1, 'pageSize': 100},
       );
 
@@ -526,6 +528,43 @@ class CityRepository implements ICityRepository {
       print('💥 [CityRepository] 未知异常: $e');
       print('📚 [CityRepository] StackTrace: $stackTrace');
       return Failure(UnknownException('指定版主失败: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Result<Map<String, dynamic>>> generateCityImages(String cityId) async {
+    try {
+      print('🖼️ [CityRepository] 调用生成城市图片 API (异步模式): cityId=$cityId');
+
+      // 使用新的异步接口，立即返回任务ID，不等待图片生成完成
+      // 图片生成完成后会通过 SignalR 推送通知
+      final response = await _httpService.post(
+        '$_baseUrl/$cityId/generate-images',
+        data: {},
+        options: Options(
+          receiveTimeout: const Duration(seconds: 30),
+          sendTimeout: const Duration(seconds: 10),
+        ),
+      );
+
+      print('✅ [CityRepository] 图片生成任务已创建');
+
+      final data = response.data;
+      if (data is Map<String, dynamic>) {
+        print('📋 [CityRepository] 任务详情: taskId=${data['data']?['taskId']}, status=${data['data']?['status']}');
+        return Success(data);
+      }
+      if (data is Map) {
+        return Success(Map<String, dynamic>.from(data));
+      }
+      return Failure(UnknownException('响应格式错误'));
+    } on HttpException catch (e) {
+      print('❌ [CityRepository] HTTP异常: statusCode=${e.statusCode}, message=${e.message}');
+      return Failure(_convertHttpException(e));
+    } catch (e, stackTrace) {
+      print('💥 [CityRepository] 未知异常: $e');
+      print('📚 [CityRepository] StackTrace: $stackTrace');
+      return Failure(UnknownException('创建图片生成任务失败: ${e.toString()}'));
     }
   }
 }

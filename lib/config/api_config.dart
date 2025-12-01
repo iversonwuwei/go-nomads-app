@@ -52,7 +52,7 @@ class ApiConfig {
   /// 是否使用真机测试地址(手动切换)
   /// ⚠️ 雷电模拟器用户请设置为 true
   /// ⚠️ Android 官方模拟器用户请设置为 false
-  static const bool usePhysicalDevice = false;
+  static const bool usePhysicalDevice = true;
 
   // ============================================================
   // URL 组装
@@ -129,6 +129,7 @@ class ApiConfig {
   static const String usersEndpoint = '/users';
   static const String userDetailEndpoint = '/users/{id}';
   static const String userMeEndpoint = '/users/me';
+  static const String userMeStatsEndpoint = '/users/me/stats';
   static const String userUpdateEndpoint = '/users/{id}';
   static const String userUpdateMeEndpoint = '/users/me';
   static const String userDeleteEndpoint = '/users/{id}';

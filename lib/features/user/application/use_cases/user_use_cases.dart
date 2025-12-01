@@ -1,4 +1,5 @@
 import 'package:df_admin_mobile/core/core.dart';
+import 'package:df_admin_mobile/features/user/domain/entities/nomad_stats.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
 import 'package:df_admin_mobile/features/user/domain/repositories/iuser_repository.dart';
 
@@ -134,4 +135,59 @@ class SearchUsersParams extends UseCaseParams {
     this.page = 1,
     this.pageSize = 20,
   });
+}
+
+// ==================== 用户统计数据相关用例 ====================
+
+/// 获取当前用户统计数据用例
+class GetCurrentUserStatsUseCase extends NoParamsUseCase<NomadStats> {
+  final IUserRepository _repository;
+
+  GetCurrentUserStatsUseCase(this._repository);
+
+  @override
+  Future<Result<NomadStats>> execute(NoParams params) async {
+    return await _repository.getCurrentUserStats();
+  }
+}
+
+/// 获取指定用户统计数据用例
+class GetUserStatsUseCase extends UseCase<NomadStats, GetUserStatsParams> {
+  final IUserRepository _repository;
+
+  GetUserStatsUseCase(this._repository);
+
+  @override
+  Future<Result<NomadStats>> execute(GetUserStatsParams params) async {
+    if (params.userId.isEmpty) {
+      return Failure(ValidationException('用户ID不能为空', code: 'EMPTY_USER_ID'));
+    }
+    return await _repository.getUserStats(params.userId);
+  }
+}
+
+/// 获取用户统计数据参数
+class GetUserStatsParams extends UseCaseParams {
+  final String userId;
+
+  const GetUserStatsParams({required this.userId});
+}
+
+/// 更新当前用户统计数据用例
+class UpdateCurrentUserStatsUseCase extends UseCase<NomadStats, UpdateUserStatsParams> {
+  final IUserRepository _repository;
+
+  UpdateCurrentUserStatsUseCase(this._repository);
+
+  @override
+  Future<Result<NomadStats>> execute(UpdateUserStatsParams params) async {
+    return await _repository.updateCurrentUserStats(params.stats);
+  }
+}
+
+/// 更新用户统计数据参数
+class UpdateUserStatsParams extends UseCaseParams {
+  final NomadStats stats;
+
+  const UpdateUserStatsParams({required this.stats});
 }

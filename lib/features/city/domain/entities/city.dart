@@ -14,8 +14,8 @@ class Moderator {
 
   factory Moderator.fromJson(Map<String, dynamic> json) {
     return Moderator(
-      id: json['id'] as String,
-      name: json['name'] as String,
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? '',
       email: json['email'] as String?,
       avatar: json['avatar'] as String?,
     );
@@ -52,7 +52,9 @@ class City {
   final String? nameEn; // 英文名称
   final String? country; // 国家
   final String? region; // 地区 (如 Asia, Europe)
-  final String? imageUrl; // 城市图片
+  final String? imageUrl; // 城市图片（主图，向后兼容）
+  final String? portraitImageUrl; // 竖屏封面图 (720x1280)
+  final List<String>? landscapeImageUrls; // 横屏图片列表 (1280x720)
   final String? description; // 描述
   final String? timezone; // 时区
   final String? population; // 人口
@@ -75,9 +77,13 @@ class City {
   final int? meetupCount; // Meetup 数量
   final int? reviewCount; // 评论数量
   final int? coworkingCount; // Coworking 空间数量
-  
+
   // 社区数据
   final double? averageCost; // 平均花费（社区统计）
+
+  // 地理坐标
+  final double? latitude; // 纬度
+  final double? longitude; // 经度
 
   // 用户交互
   final bool isFavorite; // 是否收藏
@@ -97,6 +103,8 @@ class City {
     this.country,
     this.region,
     this.imageUrl,
+    this.portraitImageUrl,
+    this.landscapeImageUrls,
     this.description,
     this.timezone,
     this.population,
@@ -114,6 +122,8 @@ class City {
     this.reviewCount,
     this.coworkingCount,
     this.averageCost,
+    this.latitude,
+    this.longitude,
     this.isFavorite = false,
     this.moderatorId,
     this.moderator,
@@ -180,10 +190,15 @@ class City {
     final weather = json['weather'] as Map<String, dynamic>?;
     final moderatorData = json['moderator'] as Map<String, dynamic>?;
 
-    // 调试日志
-    print(
-        '🔍 City.fromJson: reviewCount=${json['reviewCount']}, averageCost=${json['averageCost']}');
-    
+    // 解析横屏图片列表
+    final rawLandscapeImageUrls = json['landscapeImageUrls'];
+    List<String>? landscapeImageUrls;
+    if (rawLandscapeImageUrls != null) {
+      if (rawLandscapeImageUrls is List) {
+        landscapeImageUrls = rawLandscapeImageUrls.map((e) => e.toString()).toList();
+      }
+    }
+
     return City(
       id: json['id'] as String,
       name: json['name'] as String? ?? 'Unknown',
@@ -191,6 +206,8 @@ class City {
       country: json['country'] as String?,
       region: json['region'] as String?,
       imageUrl: json['imageUrl'] as String?,
+      portraitImageUrl: json['portraitImageUrl'] as String?,
+      landscapeImageUrls: landscapeImageUrls,
       description: json['description'] as String?,
       timezone: json['timezone'] as String?,
       population: json['population'] as String?,
@@ -208,10 +225,11 @@ class City {
       reviewCount: json['reviewCount']?.toInt(),
       coworkingCount: json['coworkingCount']?.toInt(),
       averageCost: json['averageCost']?.toDouble(),
+      latitude: json['latitude']?.toDouble(),
+      longitude: json['longitude']?.toDouble(),
       isFavorite: json['isFavorite'] as bool? ?? false,
       moderatorId: json['moderatorId'] as String?,
-      moderator:
-          moderatorData != null ? Moderator.fromJson(moderatorData) : null,
+      moderator: moderatorData != null ? Moderator.fromJson(moderatorData) : null,
       isCurrentUserModerator: json['isCurrentUserModerator'] as bool? ?? false,
       isCurrentUserAdmin: json['isCurrentUserAdmin'] as bool? ?? false,
     );
@@ -226,14 +244,12 @@ class City {
       if (country != null) 'country': country,
       if (region != null) 'region': region,
       if (imageUrl != null) 'imageUrl': imageUrl,
+      if (portraitImageUrl != null) 'portraitImageUrl': portraitImageUrl,
+      if (landscapeImageUrls != null && landscapeImageUrls!.isNotEmpty) 'landscapeImageUrls': landscapeImageUrls,
       if (description != null) 'description': description,
       if (timezone != null) 'timezone': timezone,
       if (population != null) 'population': population,
-      if (temperature != null ||
-          feelsLike != null ||
-          weather != null ||
-          humidity != null ||
-          airQualityIndex != null)
+      if (temperature != null || feelsLike != null || weather != null || humidity != null || airQualityIndex != null)
         'weather': {
           if (temperature != null) 'temperature': temperature,
           if (feelsLike != null) 'feelsLike': feelsLike,
@@ -250,6 +266,8 @@ class City {
       if (reviewCount != null) 'reviewCount': reviewCount,
       if (coworkingCount != null) 'coworkingCount': coworkingCount,
       if (averageCost != null) 'averageCost': averageCost,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
       'isFavorite': isFavorite,
       if (moderatorId != null) 'moderatorId': moderatorId,
       if (moderator != null) 'moderator': moderator!.toJson(),
@@ -266,6 +284,8 @@ class City {
     String? country,
     String? region,
     String? imageUrl,
+    String? portraitImageUrl,
+    List<String>? landscapeImageUrls,
     String? description,
     String? timezone,
     String? population,
@@ -283,6 +303,8 @@ class City {
     int? reviewCount,
     int? coworkingCount,
     double? averageCost,
+    double? latitude,
+    double? longitude,
     bool? isFavorite,
     String? moderatorId,
     Moderator? moderator,
@@ -296,6 +318,8 @@ class City {
       country: country ?? this.country,
       region: region ?? this.region,
       imageUrl: imageUrl ?? this.imageUrl,
+      portraitImageUrl: portraitImageUrl ?? this.portraitImageUrl,
+      landscapeImageUrls: landscapeImageUrls ?? this.landscapeImageUrls,
       description: description ?? this.description,
       timezone: timezone ?? this.timezone,
       population: population ?? this.population,
@@ -313,11 +337,12 @@ class City {
       reviewCount: reviewCount ?? this.reviewCount,
       coworkingCount: coworkingCount ?? this.coworkingCount,
       averageCost: averageCost ?? this.averageCost,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
       isFavorite: isFavorite ?? this.isFavorite,
       moderatorId: moderatorId ?? this.moderatorId,
       moderator: moderator ?? this.moderator,
-      isCurrentUserModerator:
-          isCurrentUserModerator ?? this.isCurrentUserModerator,
+      isCurrentUserModerator: isCurrentUserModerator ?? this.isCurrentUserModerator,
       isCurrentUserAdmin: isCurrentUserAdmin ?? this.isCurrentUserAdmin,
     );
   }
