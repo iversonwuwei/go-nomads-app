@@ -965,6 +965,24 @@ class _MeetupListCardState extends State<_MeetupListCard> {
                       ),
                       _buildJoinButton(l10n),
                       SizedBox(width: 8.w),
+                      // 编辑按钮 - 只有组织者可见
+                      if (_isOrganizer)
+                        IconButton(
+                          onPressed: () {
+                            Get.to(() => CreateMeetupPage(editingMeetup: widget.meetup));
+                          },
+                          icon: Icon(
+                            FontAwesomeIcons.penToSquare,
+                            size: 16.r,
+                            color: const Color(0xFFFF4458),
+                          ),
+                          padding: EdgeInsets.zero,
+                          constraints: BoxConstraints(
+                            minWidth: 32.w,
+                            minHeight: 32.h,
+                          ),
+                        ),
+                      if (_isOrganizer) SizedBox(width: 4.w),
                       _buildChatButton(),
                     ],
                   ),

@@ -47,6 +47,7 @@
   "members": "Members",
   "meetup": "Meetup",
   "createMeetup": "Create Meetup",
+  "editMeetup": "Edit Meetup",
   "invite": "Invite",
   "inviteToMeetup": "Invite to Meetup",
   "selectMeetup": "Select Meetup",

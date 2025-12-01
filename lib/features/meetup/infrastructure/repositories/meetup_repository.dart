@@ -314,8 +314,21 @@ class MeetupRepository implements IMeetupRepository {
       print('📡 更新活动: $meetupId');
       print('   更新内容: $updates');
 
-      // TODO: 需要 EventsApiService 支持 updateEvent 方法
-      throw UnimplementedError('updateMeetup 尚未实现');
+      // 调用后端 PUT /events/{id} 接口
+      final response = await _httpService.put('/events/$meetupId', data: updates);
+
+      // 后端返回格式: { success: true, data: {...} }
+      final data = response.data;
+      Map<String, dynamic> eventData;
+
+      if (data is Map<String, dynamic>) {
+        eventData = (data['data'] as Map<String, dynamic>?) ?? data;
+      } else {
+        throw Exception('更新活动返回格式错误');
+      }
+
+      print('✅ 活动更新成功');
+      return MeetupDto.fromJson(eventData).toDomain();
     } catch (e) {
       print('❌ MeetupRepository.updateMeetup 失败: $e');
       rethrow;

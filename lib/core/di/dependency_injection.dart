@@ -73,6 +73,7 @@ import 'package:df_admin_mobile/features/meetup/application/use_cases/create_mee
 import 'package:df_admin_mobile/features/meetup/application/use_cases/get_meetups_by_city_use_case.dart';
 import 'package:df_admin_mobile/features/meetup/application/use_cases/get_meetups_use_case.dart';
 import 'package:df_admin_mobile/features/meetup/application/use_cases/rsvp_to_meetup_use_case.dart';
+import 'package:df_admin_mobile/features/meetup/application/use_cases/update_meetup_use_case.dart';
 // Meetup Domain
 import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
 import 'package:df_admin_mobile/features/meetup/infrastructure/repositories/meetup_repository.dart';
@@ -699,6 +700,7 @@ class DependencyInjection {
     Get.lazyPut(() => RsvpToMeetupUseCase(Get.find<IMeetupRepository>()));
     Get.lazyPut(() => CancelRsvpUseCase(Get.find<IMeetupRepository>()));
     Get.lazyPut(() => CancelMeetupUseCase(Get.find<IMeetupRepository>()));
+    Get.lazyPut(() => UpdateMeetupUseCase(Get.find<IMeetupRepository>()));
 
     // Controller（fenix: true 允许删除后重新创建）
     Get.lazyPut(
@@ -706,6 +708,7 @@ class DependencyInjection {
         getMeetupsUseCase: Get.find<GetMeetupsUseCase>(),
         getMeetupsByCityUseCase: Get.find<GetMeetupsByCityUseCase>(),
         createMeetupUseCase: Get.find<CreateMeetupUseCase>(),
+        updateMeetupUseCase: Get.find<UpdateMeetupUseCase>(),
         rsvpToMeetupUseCase: Get.find<RsvpToMeetupUseCase>(),
         cancelRsvpUseCase: Get.find<CancelRsvpUseCase>(),
         cancelMeetupUseCase: Get.find<CancelMeetupUseCase>(),

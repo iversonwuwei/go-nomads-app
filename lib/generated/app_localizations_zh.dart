@@ -141,6 +141,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get createMeetup => '创建聚会';
 
   @override
+  String get editMeetup => '编辑聚会';
+
+  @override
   String get invite => '邀请';
 
   @override
