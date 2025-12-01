@@ -2620,6 +2620,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get upcoming => '即将到来';
 
   @override
+  String get statusOngoing => '进行中';
+
+  @override
+  String get statusCancelled => '已取消';
+
+  @override
   String joinedEvents(String count) {
     return '$count 个已加入的活动';
   }
@@ -2632,6 +2638,36 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get noMeetupsAvailable => '暂无可用聚会';
+
+  @override
+  String get myMeetups => '我的聚会';
+
+  @override
+  String get noMeetups => '暂无聚会';
+
+  @override
+  String get createFirstMeetup => '创建您的第一个聚会来与其他游牧者建立联系';
+
+  @override
+  String get confirmCancelMeetupTitle => '取消活动';
+
+  @override
+  String get confirmCancelMeetupMessage => '确定要取消这个活动吗？此操作无法撤销。';
+
+  @override
+  String get confirmLeaveMeetupTitle => '退出活动';
+
+  @override
+  String get confirmLeaveMeetupMessage => '确定要退出这个活动吗？';
+
+  @override
+  String get cancelMeetupSuccess => '活动已取消';
+
+  @override
+  String get cancelMeetupFailed => '取消活动失败';
+
+  @override
+  String get leaveMeetupFailed => '退出活动失败';
 
   @override
   String get join => '加入';

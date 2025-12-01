@@ -247,8 +247,9 @@ class CityRepository implements ICityRepository {
   @override
   Future<Result<List<City>>> getFavoriteCities() async {
     try {
+      // 使用新的 /details 端点获取完整城市信息
       final response = await _httpService.get(
-        '${ApiConfig.apiBaseUrl}/user-favorite-cities',
+        '${ApiConfig.apiBaseUrl}/user-favorite-cities/details',
         queryParameters: {'page': 1, 'pageSize': 100},
       );
 

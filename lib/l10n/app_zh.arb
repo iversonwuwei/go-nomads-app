@@ -1143,6 +1143,8 @@
   "allMeetups": "全部聚会",
   "past": "过往",
   "upcoming": "即将到来",
+  "statusOngoing": "进行中",
+  "statusCancelled": "已取消",
   "upcomingEvents": "{count} 个即将到来的活动",
   "@upcomingEvents": {
     "placeholders": {
@@ -1173,6 +1175,16 @@
   "noJoinedMeetupsYet": "还没有加入任何聚会",
   "noPastMeetups": "暂无过往聚会",
   "noMeetupsAvailable": "暂无可用聚会",
+  "myMeetups": "我的聚会",
+  "noMeetups": "暂无聚会",
+  "createFirstMeetup": "创建您的第一个聚会来与其他游牧者建立联系",
+  "confirmCancelMeetupTitle": "取消活动",
+  "confirmCancelMeetupMessage": "确定要取消这个活动吗？此操作无法撤销。",
+  "confirmLeaveMeetupTitle": "退出活动",
+  "confirmLeaveMeetupMessage": "确定要退出这个活动吗？",
+  "cancelMeetupSuccess": "活动已取消",
+  "cancelMeetupFailed": "取消活动失败",
+  "leaveMeetupFailed": "退出活动失败",
   "join": "加入",
   "youHaveJoined": "您已加入 {title}",
   "@youHaveJoined": {

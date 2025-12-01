@@ -338,6 +338,48 @@ class MeetupRepository implements IMeetupRepository {
     }
   }
 
+  @override
+  Future<List<Meetup>> getMyCreatedMeetups() async {
+    try {
+      print('📡 调用 HttpService GET /events/me/created...');
+
+      final response = await _httpService.get('/events/me/created');
+
+      // 后端返回格式: { success: true, data: [...] }
+      final data = response.data;
+      List items;
+
+      if (data is Map<String, dynamic>) {
+        items = (data['data'] as List?) ?? (data['items'] as List?) ?? [];
+      } else if (data is List) {
+        items = data;
+      } else {
+        items = [];
+      }
+
+      print('✅ 获取到 ${items.length} 个我创建的活动');
+
+      final meetups = items
+          .map((json) {
+            try {
+              final dto = MeetupDto.fromJson(json as Map<String, dynamic>);
+              return dto.toDomain();
+            } catch (e) {
+              print('❌ 解析 meetup 失败: $e');
+              return null;
+            }
+          })
+          .whereType<Meetup>()
+          .toList();
+
+      return meetups;
+    } catch (e, stackTrace) {
+      print('❌ MeetupRepository.getMyCreatedMeetups 失败: $e');
+      print('   堆栈: $stackTrace');
+      rethrow;
+    }
+  }
+
   /// 将 MeetupType 映射到 API 的 category
   String _mapTypeToCategory(MeetupType type) {
     switch (type.value) {
