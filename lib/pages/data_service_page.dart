@@ -39,7 +39,7 @@ class _DataServicePageState extends State<DataServicePage>
 
   // 本地状态管理
   final bool _isGridView = true;
-  
+
   // 本页面的搜索状态（独立于 CityListPage）
   String _localSearchQuery = '';
   List<City> _localCities = [];
@@ -77,7 +77,7 @@ class _DataServicePageState extends State<DataServicePage>
       // 只加载城市数据，活动数据按需加载
       _loadHomeCities();
     });
-    
+
     // 监听控制器数据变化，同步到本地（仅在非搜索状态时）
     ever(_cityController.cities, (cities) {
       if (!_isLocalSearching && mounted) {
@@ -291,79 +291,79 @@ class _DataServicePageState extends State<DataServicePage>
   Widget _buildSearchResultHint(bool isMobile) {
     // 使用本地搜索状态，不使用 Obx
     if (_localSearchQuery.isEmpty) return const SizedBox.shrink();
-    
+
     final cityCount = _localCities.length;
 
     return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: const Color(0xFFFF4458).withValues(alpha: 0.3),
-            width: 1,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFF4458).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: const Color(0xFFFF4458).withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            FontAwesomeIcons.magnifyingGlass,
+            color: Color(0xFFFF4458),
+            size: 20,
           ),
-        ),
-        child: Row(
-          children: [
-            const Icon(
-              FontAwesomeIcons.magnifyingGlass,
-              color: Color(0xFFFF4458),
-              size: 20,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: RichText(
-                text: TextSpan(
-                  style: TextStyle(
-                    fontSize: isMobile ? 13 : 14,
-                    color: AppColors.textPrimary,
+          const SizedBox(width: 12),
+          Expanded(
+            child: RichText(
+              text: TextSpan(
+                style: TextStyle(
+                  fontSize: isMobile ? 13 : 14,
+                  color: AppColors.textPrimary,
+                ),
+                children: [
+                  TextSpan(
+                    text: 'Search results for ',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                    ),
                   ),
-                  children: [
-                    TextSpan(
-                      text: 'Search results for ',
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    TextSpan(
+                  TextSpan(
                     text: '"$_localSearchQuery"',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFFFF4458),
-                      ),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFFFF4458),
                     ),
-                    TextSpan(
-                      text: ': ',
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                      ),
+                  ),
+                  TextSpan(
+                    text: ': ',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
                     ),
-                    TextSpan(
-                      text: '$cityCount ${cityCount == 1 ? "city" : "cities"} found',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                      ),
+                  ),
+                  TextSpan(
+                    text: '$cityCount ${cityCount == 1 ? "city" : "cities"} found',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(width: 8),
-            InkWell(
-              onTap: _clearSearch,
-              borderRadius: BorderRadius.circular(4),
-              child: Padding(
-                padding: const EdgeInsets.all(4),
-                child: const Icon(
-                  FontAwesomeIcons.xmark,
-                  color: AppColors.textSecondary,
-                  size: 18,
-                ),
+          ),
+          const SizedBox(width: 8),
+          InkWell(
+            onTap: _clearSearch,
+            borderRadius: BorderRadius.circular(4),
+            child: Padding(
+              padding: const EdgeInsets.all(4),
+              child: const Icon(
+                FontAwesomeIcons.xmark,
+                color: AppColors.textSecondary,
+                size: 18,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -2119,7 +2119,7 @@ class _DataListItem extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     // 在构建时捕获回调，确保导航返回时仍可用
     final onReturnCallback = onReturnFromDetail;
-    
+
     return GestureDetector(
       onTap: () {
         // 单击跳转到城市详情页面
@@ -2548,7 +2548,7 @@ class _MeetupCardState extends State<_MeetupCard> {
                           ],
                         ),
                         const SizedBox(height: 4),
-                        // 地点
+                        // 地点（场地 + 城市, 国家）
                         Row(
                           children: [
                             const Icon(
@@ -2559,9 +2559,10 @@ class _MeetupCardState extends State<_MeetupCard> {
                             const SizedBox(width: 4),
                             Expanded(
                               child: Text(
-                                widget.meetup.venue.name.isNotEmpty
-                                    ? widget.meetup.venue.name
-                                    : widget.meetup.location.city,
+                                [
+                                  if (widget.meetup.venue.name.isNotEmpty) widget.meetup.venue.name,
+                                  widget.meetup.location.fullDescription,
+                                ].where((s) => s.isNotEmpty).join(', '),
                                 style: const TextStyle(
                                   fontSize: 11,
                                   color: AppColors.textSecondary,
