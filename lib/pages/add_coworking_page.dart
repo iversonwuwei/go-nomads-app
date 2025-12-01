@@ -16,7 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import 'maplibre_picker_page.dart';
+import 'flutter_map_picker_page.dart';
 
 /// Add/Edit Coworking Space Page
 /// 添加或编辑共享办公空间页面
@@ -955,11 +955,14 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
           print('🗺️ [AddCoworking] 打开地图选择器');
           print('   地址参数: "$addressQuery"');
           print('   当前经纬度: $_latitude, $_longitude');
+          print('   国家: $_selectedCountry, 城市: $_selectedCity');
 
-          final result = await Get.to(() => MapLibrePickerPage(
+          final result = await Get.to(() => FlutterMapPickerPage(
                 initialLatitude: _latitude != 0 ? _latitude : null,
                 initialLongitude: _longitude != 0 ? _longitude : null,
                 searchQuery: addressQuery.isNotEmpty ? addressQuery : null,
+                country: _selectedCountry,
+                city: _selectedCity,
               ));
 
           if (result != null && result is Map<String, dynamic>) {
