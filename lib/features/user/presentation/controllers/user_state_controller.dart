@@ -3,8 +3,7 @@ import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_stat
 import 'package:df_admin_mobile/features/interest/presentation/controllers/interest_state_controller.dart';
 import 'package:df_admin_mobile/features/skill/presentation/controllers/skill_state_controller.dart';
 import 'package:df_admin_mobile/features/user/application/use_cases/favorite_city_use_cases.dart';
-import 'package:df_admin_mobile/features/user/application/use_cases/user_use_cases.dart'
-    as user_use_cases;
+import 'package:df_admin_mobile/features/user/application/use_cases/user_use_cases.dart' as user_use_cases;
 import 'package:df_admin_mobile/features/user/domain/entities/nomad_stats.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
@@ -192,6 +191,7 @@ class UserStateController extends GetxController {
   }
 
   /// 更新用户信息
+  /// [updates] 可以只包含需要更新的字段（支持部分更新）
   Future<bool> updateUser(Map<String, dynamic> updates) async {
     final user = currentUser.value;
     if (user == null) {
@@ -233,8 +233,7 @@ class UserStateController extends GetxController {
       return null;
     }
 
-    final result =
-        await _getUserUseCase(user_use_cases.GetUserParams(userId: userId));
+    final result = await _getUserUseCase(user_use_cases.GetUserParams(userId: userId));
 
     return result.fold(
       onSuccess: (user) => user,
@@ -315,8 +314,7 @@ class UserStateController extends GetxController {
 
   /// 移除收藏城市
   Future<bool> removeFavoriteCity(String cityId) async {
-    final result =
-        await _removeFavoriteCityUseCase(RemoveFavoriteCityParams(cityId));
+    final result = await _removeFavoriteCityUseCase(RemoveFavoriteCityParams(cityId));
 
     return result.fold(
       onSuccess: (success) {
@@ -335,8 +333,7 @@ class UserStateController extends GetxController {
 
   /// 切换收藏状态
   Future<bool> toggleFavoriteCity(String cityId) async {
-    final result =
-        await _toggleFavoriteCityUseCase(ToggleFavoriteCityParams(cityId));
+    final result = await _toggleFavoriteCityUseCase(ToggleFavoriteCityParams(cityId));
 
     return result.fold(
       onSuccess: (success) {
@@ -429,8 +426,7 @@ class UserStateController extends GetxController {
 
     try {
       final interestController = Get.find<InterestStateController>();
-      final success =
-          await interestController.removeUserInterest(user.id, interestId);
+      final success = await interestController.removeUserInterest(user.id, interestId);
 
       if (success) {
         // 刷新用户信息以更新兴趣列表
@@ -447,8 +443,7 @@ class UserStateController extends GetxController {
 
   // Getters - 业务逻辑委托给领域实体
   bool get isLoggedIn => currentUser.value != null;
-  bool get hasCompletedProfile =>
-      currentUser.value?.hasCompletedProfile ?? false;
+  bool get hasCompletedProfile => currentUser.value?.hasCompletedProfile ?? false;
   bool get isActiveNomad => currentUser.value?.isActiveNomad ?? false;
   int get experienceLevel => currentUser.value?.experienceLevel ?? 1;
 
