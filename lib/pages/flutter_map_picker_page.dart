@@ -19,10 +19,10 @@ class FlutterMapPickerPage extends StatefulWidget {
   final double? initialLatitude;
   final double? initialLongitude;
   final String? searchQuery;
-  
+
   /// 国家名称（用于初始化时定位到该国家）
   final String? country;
-  
+
   /// 城市名称（用于初始化时定位到该城市）
   final String? city;
 
@@ -39,11 +39,10 @@ class FlutterMapPickerPage extends StatefulWidget {
   State<FlutterMapPickerPage> createState() => _FlutterMapPickerPageState();
 }
 
-class _FlutterMapPickerPageState extends State<FlutterMapPickerPage>
-    with SingleTickerProviderStateMixin {
+class _FlutterMapPickerPageState extends State<FlutterMapPickerPage> with SingleTickerProviderStateMixin {
   static const _defaultTarget = LatLng(39.909187, 116.397451); // 北京默认位置
   static const _userAgent = 'df-admin-mobile/1.0 (map picker)';
-  
+
   // 模拟位置数据（用于模拟器测试）
   static const _mockLocations = [
     {'name': '北京市', 'lat': 39.909187, 'lng': 116.397451},
@@ -55,10 +54,11 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage>
   ];
 
   final MapController _mapController = MapController();
-  LatLng _currentCenter = _defaultTarget;    // 地图中心点
-  LatLng _markerPosition = _defaultTarget;   // 锚点/标记位置（只在点击时更新）
+  LatLng _currentCenter = _defaultTarget; // 地图中心点
+  LatLng _markerPosition = _defaultTarget; // 锚点/标记位置（只在点击时更新）
+  double _currentZoom = 15.0;
   bool _isInitialized = false;
-  
+
   // 弹跳动画控制器
   AnimationController? _bounceController;
   Animation<double>? _bounceAnimation;
@@ -85,27 +85,25 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage>
   @override
   void initState() {
     super.initState();
-    
+
     // 初始化弹跳动画
     _bounceController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
-    
+
     // 使用弹性曲线实现 duangduang 效果
     _bounceAnimation = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween<double>(begin: 0.0, end: -30.0)
-            .chain(CurveTween(curve: Curves.easeOut)),
+        tween: Tween<double>(begin: 0.0, end: -30.0).chain(CurveTween(curve: Curves.easeOut)),
         weight: 20,
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: -30.0, end: 0.0)
-            .chain(CurveTween(curve: Curves.bounceOut)),
+        tween: Tween<double>(begin: -30.0, end: 0.0).chain(CurveTween(curve: Curves.bounceOut)),
         weight: 80,
       ),
     ]).animate(_bounceController!);
-    
+
     _initializeMap();
   }
 
@@ -131,7 +129,7 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage>
       initialPosition = LatLng(widget.initialLatitude!, widget.initialLongitude!);
       initialZoom = 15.0;
       debugPrint('📍 使用传入的坐标: ${widget.initialLatitude}, ${widget.initialLongitude}');
-    } 
+    }
     // 其次尝试根据城市和国家定位
     else if (widget.city != null || widget.country != null) {
       final locationResult = await _geocodeByLocation(widget.city, widget.country);
@@ -151,10 +149,10 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage>
     else {
       try {
         final locationService = Get.find<LocationService>();
-        
+
         // 使用超时机制，避免无限等待
-        final position = await locationService.getCurrentLocation()
-            .timeout(const Duration(seconds: 3), onTimeout: () => null);
+        final position =
+            await locationService.getCurrentLocation().timeout(const Duration(seconds: 3), onTimeout: () => null);
 
         if (position != null) {
           initialPosition = LatLng(position.latitude, position.longitude);
@@ -187,6 +185,7 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage>
     setState(() {
       _currentCenter = initialPosition;
       _markerPosition = initialPosition; // 初始锚点位置
+      _currentZoom = initialZoom;
       _isLoadingLocation = false;
       _isInitialized = true;
     });
@@ -219,17 +218,17 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage>
     if (country != null && country.isNotEmpty) {
       queryParts.add(country);
     }
-    
+
     if (queryParts.isEmpty) {
       return null;
     }
-    
+
     final query = queryParts.join(', ');
     debugPrint('🔍 根据地区搜索坐标: $query');
-    
+
     try {
       final locale = Localizations.maybeLocaleOf(context);
-      
+
       final uri = Uri.https('nominatim.openstreetmap.org', '/search', {
         'format': 'jsonv2',
         'limit': '1',
@@ -259,31 +258,29 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage>
       final first = data.first as Map<String, dynamic>;
       final lat = double.tryParse(first['lat']?.toString() ?? '');
       final lon = double.tryParse(first['lon']?.toString() ?? '');
-      
+
       if (lat != null && lon != null) {
         debugPrint('✅ 找到地区坐标: $lat, $lon');
-        
+
         // 同时设置地址信息
         final address = first['address'] as Map<String, dynamic>?;
         if (mounted) {
           setState(() {
             _currentAddress = first['display_name'] as String? ?? '';
             _currentName = (first['name'] as String?) ?? _currentAddress;
-            final cityCandidate =
-                (address?['city'] ?? address?['town'] ?? address?['state'])?.toString();
-            final provinceCandidate =
-                (address?['state'] ?? address?['region'] ?? address?['country'])?.toString();
+            final cityCandidate = (address?['city'] ?? address?['town'] ?? address?['state'])?.toString();
+            final provinceCandidate = (address?['state'] ?? address?['region'] ?? address?['country'])?.toString();
             _currentCity = cityCandidate?.isNotEmpty == true ? cityCandidate : null;
             _currentProvince = provinceCandidate?.isNotEmpty == true ? provinceCandidate : null;
           });
         }
-        
+
         return LatLng(lat, lon);
       }
     } catch (e) {
       debugPrint('❌ 地理编码失败: $e');
     }
-    
+
     return null;
   }
 
@@ -292,7 +289,7 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage>
     // 根据位置找到最近的模拟城市
     String cityName = '北京市';
     String provinceName = '北京市';
-    
+
     double minDistance = double.infinity;
     for (final mock in _mockLocations) {
       final lat = mock['lat'] as double;
@@ -313,10 +310,10 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage>
         }
       }
     }
-    
+
     // 显示坐标和最近城市
     final coordStr = '${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)}';
-    
+
     setState(() {
       _currentAddress = '$provinceName$cityName 附近（$coordStr）';
       _currentName = '$provinceName$cityName';
@@ -330,10 +327,10 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage>
     setState(() {
       _markerPosition = point;
     });
-    
+
     // 播放弹跳动画
     _bounceController?.forward(from: 0.0);
-    
+
     // 获取点击位置的地址信息
     if (_isUsingMockLocation) {
       _setMockAddress(point);
@@ -379,19 +376,11 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage>
       if (mounted) {
         setState(() {
           _currentAddress = data['display_name'] as String? ?? '';
-          _currentName = (data['name'] as String?) ??
-              (address?['amenity'] as String?) ??
-              _currentAddress;
-          final cityCandidate =
-              (address?['city'] ?? address?['town'] ?? address?['state'])
-                  ?.toString();
-          final provinceCandidate =
-              (address?['state'] ?? address?['region'] ?? address?['country'])
-                  ?.toString();
-          _currentCity =
-              cityCandidate?.isNotEmpty == true ? cityCandidate : null;
-          _currentProvince =
-              provinceCandidate?.isNotEmpty == true ? provinceCandidate : null;
+          _currentName = (data['name'] as String?) ?? (address?['amenity'] as String?) ?? _currentAddress;
+          final cityCandidate = (address?['city'] ?? address?['town'] ?? address?['state'])?.toString();
+          final provinceCandidate = (address?['state'] ?? address?['region'] ?? address?['country'])?.toString();
+          _currentCity = cityCandidate?.isNotEmpty == true ? cityCandidate : null;
+          _currentProvince = provinceCandidate?.isNotEmpty == true ? provinceCandidate : null;
         });
       }
     } catch (e) {
@@ -423,8 +412,7 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage>
   }
 
   /// 搜索地点
-  Future<void> _searchPlaces(String rawQuery,
-      {bool autoSelectFirst = false}) async {
+  Future<void> _searchPlaces(String rawQuery, {bool autoSelectFirst = false}) async {
     final query = rawQuery.trim();
     if (query.isEmpty) {
       setState(() => _searchResults = const []);
@@ -496,10 +484,10 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage>
     });
 
     _mapController.move(target, 15.0);
-    
+
     // 播放弹跳动画
     _bounceController?.forward(from: 0.0);
-    
+
     if (_isUsingMockLocation) {
       _setMockAddress(target);
     } else {
@@ -526,8 +514,7 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    final canConfirm =
-        (_currentAddress ?? '').isNotEmpty && !_isReverseGeocoding;
+    final canConfirm = (_currentAddress ?? '').isNotEmpty && !_isReverseGeocoding;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -581,8 +568,7 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage>
                 ),
               ),
               onChanged: _onSearchChanged,
-              onSubmitted: (value) =>
-                  _searchPlaces(value, autoSelectFirst: true),
+              onSubmitted: (value) => _searchPlaces(value, autoSelectFirst: true),
             ),
           ),
 
@@ -599,8 +585,7 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage>
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                                Color(0xFFFF4458)),
+                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
                           ),
                           const SizedBox(height: 16),
                           Text(
@@ -619,7 +604,7 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage>
                     mapController: _mapController,
                     options: MapOptions(
                       initialCenter: _currentCenter,
-                      initialZoom: 15.0,
+                      initialZoom: _currentZoom,
                       minZoom: 2,
                       maxZoom: 18,
                       onTap: _onMapTap, // 点击地图更新锚点
@@ -627,8 +612,7 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage>
                     children: [
                       TileLayer(
                         urlTemplate: _tileUrl,
-                        userAgentPackageName:
-                            'com.digitalfuture.df_admin_mobile',
+                        userAgentPackageName: 'com.digitalfuture.df_admin_mobile',
                         maxZoom: 18,
                         minZoom: 2,
                       ),
@@ -788,8 +772,7 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage>
                                     const SizedBox(
                                       width: 16,
                                       height: 16,
-                                      child: CircularProgressIndicator(
-                                          strokeWidth: 2),
+                                      child: CircularProgressIndicator(strokeWidth: 2),
                                     ),
                                     const SizedBox(width: 8),
                                     Text(l10n.loading),
@@ -797,9 +780,7 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage>
                                 )
                               else
                                 Text(
-                                  (_currentAddress ?? '').isNotEmpty
-                                      ? _currentAddress!
-                                      : l10n.pickLocationOnMap,
+                                  (_currentAddress ?? '').isNotEmpty ? _currentAddress! : l10n.pickLocationOnMap,
                                   style: const TextStyle(fontSize: 15),
                                 ),
                               if ((_currentCity ?? '').isNotEmpty)
@@ -807,10 +788,8 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage>
                                   padding: const EdgeInsets.only(top: 4),
                                   child: Text(
                                     [
-                                      if ((_currentCity ?? '').isNotEmpty)
-                                        _currentCity,
-                                      if ((_currentProvince ?? '').isNotEmpty)
-                                        _currentProvince,
+                                      if ((_currentCity ?? '').isNotEmpty) _currentCity,
+                                      if ((_currentProvince ?? '').isNotEmpty) _currentProvince,
                                     ].join(' · '),
                                     style: TextStyle(
                                       color: Colors.grey[600],
@@ -875,14 +854,12 @@ class _SearchResult {
     final address = json['display_name'] as String? ?? '';
     final structured = json['address'] as Map<String, dynamic>?;
 
-    final String title = (json['name'] as String?) ??
-        (structured?['road'] as String?) ??
-        address;
+    final String title = (json['name'] as String?) ?? (structured?['road'] as String?) ?? address;
     final subtitle = structured != null
-        ? [
-            structured['city'] ?? structured['town'] ?? structured['state'],
-            structured['country']
-          ].whereType<String>().where((value) => value.isNotEmpty).join(' · ')
+        ? [structured['city'] ?? structured['town'] ?? structured['state'], structured['country']]
+            .whereType<String>()
+            .where((value) => value.isNotEmpty)
+            .join(' · ')
         : address;
 
     return _SearchResult(
