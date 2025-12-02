@@ -162,9 +162,74 @@ class City {
     return '$name, $country';
   }
 
+  // ============================================================
+  // 智能默认值 Getters - 用于 UI 显示，确保不显示 null
+  // ============================================================
+
+  /// 显示用国家名（默认: 未知）
+  String get displayCountry => country ?? 'Unknown';
+
+  /// 显示用地区（默认: Global）
+  String get displayRegion => region ?? 'Global';
+
+  /// 显示用温度（默认: 25°C）
+  int get displayTemperature => temperature ?? 25;
+
+  /// 显示用天气（默认: Sunny）
+  String get displayWeather => weather ?? 'Sunny';
+
+  /// 显示用湿度（默认: 60%）
+  int get displayHumidity => humidity ?? 60;
+
+  /// 显示用空气质量指数（默认: 50 - Good）
+  int get displayAirQualityIndex => airQualityIndex ?? 50;
+
+  /// 显示用综合评分（默认: 3.0）
+  double get displayOverallScore => overallScore ?? 3.0;
+
+  /// 显示用成本评分（默认: 3.0）
+  double get displayCostScore => costScore ?? 3.0;
+
+  /// 显示用网速评分（默认: 3.0）
+  double get displayInternetScore => internetScore ?? 3.0;
+
+  /// 显示用安全评分（默认: 3.0）
+  double get displaySafetyScore => safetyScore ?? 3.0;
+
+  /// 显示用喜爱度（默认: 3.0）
+  double get displayLikedScore => likedScore ?? 3.0;
+
+  /// 显示用 Meetup 数量（默认: 0）
+  int get displayMeetupCount => meetupCount ?? 0;
+
+  /// 显示用评论数量（默认: 0）
+  int get displayReviewCount => reviewCount ?? 0;
+
+  /// 显示用 Coworking 数量（默认: 0）
+  int get displayCoworkingCount => coworkingCount ?? 0;
+
+  /// 显示用平均花费（默认: 1500 USD/月）
+  double get displayAverageCost => averageCost ?? 1500.0;
+
+  /// 显示用人口（默认: 未知）
+  String get displayPopulation => population ?? 'Unknown';
+
+  /// 显示用时区（默认: UTC）
+  String get displayTimezone => timezone ?? 'UTC';
+
+  /// 显示用描述（默认: 城市简介）
+  String get displayDescription => description ?? 'A vibrant city waiting to be explored by digital nomads.';
+
+  /// 显示用图片（默认占位图）
+  String get displayImageUrl => imageUrl ?? 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800';
+
+  /// 显示用竖屏图片（默认占位图）
+  String get displayPortraitImageUrl =>
+      portraitImageUrl ?? 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=720&h=1280&fit=crop';
+
   /// 获取天气图标
   String get weatherIcon {
-    switch (weather?.toLowerCase()) {
+    switch (displayWeather.toLowerCase()) {
       case 'sunny':
       case 'clear':
         return '☀️';

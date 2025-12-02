@@ -2006,7 +2006,7 @@ class _CityDetailPageState extends State<CityDetailPage>
       return RefreshIndicator(
         onRefresh: () => controller.loadCityDetail(cityId),
         child: ListView(
-          padding: EdgeInsets.zero,
+          padding: const EdgeInsets.only(bottom: 80), // 为底部悬浮按钮留出空间
           children: [
             // 用户评分系统（极简风格）
             CityRatingsCard(cityId: city.id),
@@ -2312,129 +2312,108 @@ class _CityDetailPageState extends State<CityDetailPage>
 
       return RefreshIndicator(
         onRefresh: () => controller.loadCityProsCons(cityId),
-        child: Stack(
+        child: ListView(
+          padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 80),
           children: [
-            ListView(
-              padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
-              children: [
-                const Text(
-                  '优点',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                // 优点列表或空状态
-                if (controller.prosList.isEmpty)
-                  _buildEmptyProsConsState(
-                    icon: FontAwesomeIcons.circleCheck,
-                    iconColor: Colors.green,
-                    title: '还没有优点',
-                    subtitle: '分享你在这座城市的美好体验',
-                    buttonText: '添加优点',
-                    onTap: () => _showAddProsConsPage(initialTab: 0),
-                  )
-                else
-                  ...controller.prosList.map((item) {
-                    final hasVoted = controller.hasUserVoted(item.id);
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              FontAwesomeIcons.circleCheck,
-                              color: Colors.green,
-                              size: 24,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                item.text,
-                                style: const TextStyle(fontSize: 15),
-                              ),
-                            ),
-                            _buildProsConsVoteBadge(
-                              hasVoted: hasVoted,
-                              count: item.upvotes,
-                              onTap: hasVoted ? null : () => _handleProsConsVote(item),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }),
-                const SizedBox(height: 24),
-                const Text(
-                  '挑战',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                // 挑战列表或空状态
-                if (controller.consList.isEmpty)
-                  _buildEmptyProsConsState(
-                    icon: FontAwesomeIcons.ban,
-                    iconColor: Colors.red,
-                    title: '还没有挑战',
-                    subtitle: '分享你遇到的困难和需要改进的地方',
-                    buttonText: '添加挑战',
-                    onTap: () => _showAddProsConsPage(initialTab: 1),
-                  )
-                else
-                  ...controller.consList.map((item) {
-                    final hasVoted = controller.hasUserVoted(item.id);
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              FontAwesomeIcons.ban,
-                              color: Colors.red,
-                              size: 24,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                item.text,
-                                style: const TextStyle(fontSize: 15),
-                              ),
-                            ),
-                            _buildProsConsVoteBadge(
-                              hasVoted: hasVoted,
-                              count: item.upvotes,
-                              onTap: hasVoted ? null : () => _handleProsConsVote(item),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }),
-              ],
+            const Text(
+              '优点',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            // 添加按钮（仅 admin/moderator 可见）
-            FutureBuilder<bool>(
-              future: _canUserManageContent(),
-              builder: (context, snapshot) {
-                if (snapshot.data != true) return const SizedBox.shrink();
-                return Positioned(
-                  right: 16,
-                  bottom: 16,
-                  child: FloatingActionButton(
-                    heroTag: 'add_pros_cons',
-                    onPressed: () => _showAddProsConsPage(),
-                    backgroundColor: const Color(0xFFFF4458),
-                    child: const Icon(FontAwesomeIcons.plus, color: Colors.white),
+            const SizedBox(height: 12),
+            // 优点列表或空状态
+            if (controller.prosList.isEmpty)
+              _buildEmptyProsConsState(
+                icon: FontAwesomeIcons.circleCheck,
+                iconColor: Colors.green,
+                title: '还没有优点',
+                subtitle: '分享你在这座城市的美好体验',
+                buttonText: '添加优点',
+                onTap: () => _showAddProsConsPage(initialTab: 0),
+              )
+            else
+              ...controller.prosList.map((item) {
+                final hasVoted = controller.hasUserVoted(item.id);
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          FontAwesomeIcons.circleCheck,
+                          color: Colors.green,
+                          size: 24,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            item.text,
+                            style: const TextStyle(fontSize: 15),
+                          ),
+                        ),
+                        _buildProsConsVoteBadge(
+                          hasVoted: hasVoted,
+                          count: item.upvotes,
+                          onTap: hasVoted ? null : () => _handleProsConsVote(item),
+                        ),
+                      ],
+                    ),
                   ),
                 );
-              },
+              }),
+            const SizedBox(height: 24),
+            const Text(
+              '挑战',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
+            const SizedBox(height: 12),
+            // 挑战列表或空状态
+            if (controller.consList.isEmpty)
+              _buildEmptyProsConsState(
+                icon: FontAwesomeIcons.ban,
+                iconColor: Colors.red,
+                title: '还没有挑战',
+                subtitle: '分享你遇到的困难和需要改进的地方',
+                buttonText: '添加挑战',
+                onTap: () => _showAddProsConsPage(initialTab: 1),
+              )
+            else
+              ...controller.consList.map((item) {
+                final hasVoted = controller.hasUserVoted(item.id);
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          FontAwesomeIcons.ban,
+                          color: Colors.red,
+                          size: 24,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            item.text,
+                            style: const TextStyle(fontSize: 15),
+                          ),
+                        ),
+                        _buildProsConsVoteBadge(
+                          hasVoted: hasVoted,
+                          count: item.upvotes,
+                          onTap: hasVoted ? null : () => _handleProsConsVote(item),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
           ],
         ),
       );
