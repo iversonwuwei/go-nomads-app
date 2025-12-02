@@ -95,7 +95,8 @@ class AmapPoiService {
       }
 
       final data = jsonDecode(response.body) as Map<String, dynamic>;
-      debugPrint('📦 响应数据: ${jsonEncode(data).substring(0, (jsonEncode(data).length > 500 ? 500 : jsonEncode(data).length))}...');
+      debugPrint(
+          '📦 响应数据: ${jsonEncode(data).substring(0, (jsonEncode(data).length > 500 ? 500 : jsonEncode(data).length))}...');
 
       if (data['status'] != '1') {
         debugPrint('❌ POI 搜索失败: ${data['info']} (infocode: ${data['infocode']})');

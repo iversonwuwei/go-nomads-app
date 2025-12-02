@@ -123,12 +123,12 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
         radius: 3000,
         limitPerType: 15,
       );
-      
+
       debugPrint('📊 POI 加载结果:');
       results.forEach((type, list) {
         debugPrint('   - $type: ${list.length} 个');
       });
-      
+
       if (mounted) setState(() => _poiData = results);
     } catch (e) {
       debugPrint('❌ 加载 POI 失败: $e');
