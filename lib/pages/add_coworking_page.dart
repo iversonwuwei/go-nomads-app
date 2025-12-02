@@ -1550,6 +1550,11 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
     final ScrollController countryScrollController = ScrollController();
     final ScrollController cityScrollController = ScrollController();
 
+    // 确保国家列表已加载
+    if (_locationController.countries.isEmpty) {
+      _locationController.loadCountries();
+    }
+
     // 如果已选择国家，确保城市列表已加载
     if (_selectedCountryId != null) {
       _locationController.loadCitiesByCountry(_selectedCountryId!);

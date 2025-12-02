@@ -83,12 +83,6 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
     }
   }
 
-  // 获取筛选后的城市列表
-  // 注意: 搜索功能现在由后端 API 处理,不再在前端筛选
-  List<City> get _filteredCities {
-    return controller.filteredCities;
-  }
-
   void _clearFilters() {
     setState(() {
       _searchQuery = '';
@@ -171,7 +165,7 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
 
               // 城市列表
               Expanded(
-                child: _filteredCities.isEmpty ? _buildEmptyState() : _buildCityList(isMobile),
+                child: controller.cities.isEmpty ? _buildEmptyState() : _buildCityList(isMobile),
               ),
             ],
           );
@@ -342,25 +336,28 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
 
   // 城市列表
   Widget _buildCityList(bool isMobile) {
-    return Obx(() => ListView.builder(
-          controller: _scrollController,
-          padding: EdgeInsets.fromLTRB(
-            isMobile ? 16 : 20,
-            isMobile ? 16 : 20,
-            isMobile ? 16 : 20,
-            100, // 底部留白给导航栏
-          ),
-          itemCount: controller.cities.length + (controller.hasMoreData ? 1 : 0), // +1 for loading indicator
-          itemBuilder: (context, index) {
-            // 加载指示器
-            if (index == controller.cities.length) {
-              return _buildLoadingIndicator();
-            }
+    return Obx(() {
+      final cityList = controller.cities.toList(); // 使用 controller.cities，保持一致
+      return ListView.builder(
+        controller: _scrollController,
+        padding: EdgeInsets.fromLTRB(
+          isMobile ? 16 : 20,
+          isMobile ? 16 : 20,
+          isMobile ? 16 : 20,
+          100, // 底部留白给导航栏
+        ),
+        itemCount: cityList.length + (controller.hasMoreData ? 1 : 0), // +1 for loading indicator
+        itemBuilder: (context, index) {
+          // 加载指示器
+          if (index == cityList.length) {
+            return _buildLoadingIndicator();
+          }
 
-            final city = controller.cities[index];
-            return _buildCityCard(city, isMobile);
-          },
-        ));
+          final city = cityList[index];
+          return _buildCityCard(city, isMobile);
+        },
+      );
+    });
   }
 
   // 加载指示器
