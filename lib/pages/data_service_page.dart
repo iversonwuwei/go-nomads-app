@@ -1702,40 +1702,29 @@ class _DataCardState extends State<_DataCard> {
             // 背景图片
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: widget.data.imageUrl != null && widget.data.imageUrl!.isNotEmpty
-                  ? Container(
-                      width: double.infinity,
-                      height: double.infinity,
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          image: NetworkImage(widget.data.imageUrl!),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      // 渐变遮罩
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.black.withValues(alpha: 0.3),
-                              Colors.black.withValues(alpha: 0.7),
-                            ],
-                          ),
-                        ),
-                      ),
-                    )
-                  : Container(
-                      width: double.infinity,
-                      height: double.infinity,
-                      color: Colors.grey[300],
-                      child: Icon(
-                        FontAwesomeIcons.city,
-                        size: 60,
-                        color: Colors.grey[400],
-                      ),
+              child: Container(
+                width: double.infinity,
+                height: double.infinity,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: NetworkImage(widget.data.displayImageUrl),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                // 渐变遮罩
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.3),
+                        Colors.black.withValues(alpha: 0.7),
+                      ],
                     ),
+                  ),
+                ),
+              ),
             ),
 
             // 内容 - 完全复刻 Nomads.com 设计
@@ -1749,7 +1738,7 @@ class _DataCardState extends State<_DataCard> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // 左侧：排名 + 徽章 - 使用 Flexible 防止溢出
+                      // 左侧：版主状态徽章
                       Flexible(
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -1757,16 +1746,31 @@ class _DataCardState extends State<_DataCard> {
                             Container(
                               padding: EdgeInsets.symmetric(horizontal: isMobile ? 4 : 6, vertical: isMobile ? 2 : 3),
                               decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: 0.6),
+                                color: widget.data.moderatorId != null
+                                    ? const Color(0xFF10B981).withValues(alpha: 0.9)
+                                    : Colors.orange.withValues(alpha: 0.9),
                                 borderRadius: BorderRadius.circular(4),
                               ),
-                              child: Text(
-                                '#${''}',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: isMobile ? 10 : 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    widget.data.moderatorId != null
+                                        ? FontAwesomeIcons.userCheck
+                                        : FontAwesomeIcons.userXmark,
+                                    color: Colors.white,
+                                    size: isMobile ? 8 : 10,
+                                  ),
+                                  SizedBox(width: isMobile ? 2 : 4),
+                                  Text(
+                                    widget.data.moderatorId != null ? '已指定版主' : '待指定版主',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: isMobile ? 8 : 10,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -1813,7 +1817,7 @@ class _DataCardState extends State<_DataCard> {
                                 ),
                                 SizedBox(width: isMobile ? 1 : 3),
                                 Text(
-                                  '${widget.data.internetScore}',
+                                  widget.data.displayInternetScore.toStringAsFixed(1),
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: isMobile ? 7 : 10,
@@ -1868,7 +1872,7 @@ class _DataCardState extends State<_DataCard> {
                         SizedBox(height: isMobile ? 2 : 4),
                         // 国家
                         Text(
-                          widget.data.country ?? '',
+                          widget.data.displayCountry,
                           style: TextStyle(
                             color: Colors.white70,
                             fontSize: isMobile ? 12 : 14,
@@ -1887,7 +1891,7 @@ class _DataCardState extends State<_DataCard> {
                             ),
                             SizedBox(width: isMobile ? 3 : 4),
                             Text(
-                              (widget.data.overallScore as num?)?.toStringAsFixed(1) ?? '0.0',
+                              widget.data.displayOverallScore.toStringAsFixed(1),
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: isMobile ? 14 : 16,
@@ -1913,12 +1917,12 @@ class _DataCardState extends State<_DataCard> {
                             Row(
                               children: [
                                 Text(
-                                  _getWeatherIcon(widget.data.weather),
+                                  widget.data.weatherIcon,
                                   style: TextStyle(fontSize: isMobile ? 16 : 18),
                                 ),
                                 SizedBox(width: isMobile ? 3 : 6),
                                 Text(
-                                  '${widget.data.temperature ?? '--'}°',
+                                  '${widget.data.displayTemperature}°',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: isMobile ? 13 : 15,
@@ -1948,24 +1952,6 @@ class _DataCardState extends State<_DataCard> {
         ),
       ),
     );
-  }
-
-  // 获取天气图标
-  String _getWeatherIcon(String? weather) {
-    if (weather == null) {
-      return '☀️';
-    }
-    final w = weather.toLowerCase();
-    if (w.contains('sun') || w.contains('clear')) {
-      return '☀️';
-    }
-    if (w.contains('cloud')) return '☁️';
-    if (w.contains('rain')) {
-      return '🌧️';
-    }
-    if (w.contains('storm')) return '⛈️';
-    if (w.contains('snow')) return '❄️';
-    return '☀️';
   }
 }
 
@@ -2037,15 +2023,15 @@ class _DetailOverlay extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildMetricBar('⭐ Overall', data.overallScore ?? 0.0, const Color(0xFFFBBF24)),
+                  _buildMetricBar('⭐ Overall', data.displayOverallScore, const Color(0xFFFBBF24)),
                   const SizedBox(height: 6),
-                  _buildMetricBar('💰 Cost', data.costScore ?? 0.0, const Color(0xFF4ADE80)),
+                  _buildMetricBar('💰 Cost', data.displayCostScore, const Color(0xFF4ADE80)),
                   const SizedBox(height: 6),
-                  _buildMetricBar('📡 Internet', data.internetScore ?? 0.0, const Color(0xFFFBBF24)),
+                  _buildMetricBar('📡 Internet', data.displayInternetScore, const Color(0xFFFBBF24)),
                   const SizedBox(height: 6),
-                  _buildMetricBar('👍 乐趣', data.likedScore ?? 0.0, const Color(0xFF4ADE80)),
+                  _buildMetricBar('👍 乐趣', data.displayLikedScore, const Color(0xFF4ADE80)),
                   const SizedBox(height: 6),
-                  _buildMetricBar('🛡️ Safety', data.safetyScore ?? 0.0, const Color(0xFF4ADE80)),
+                  _buildMetricBar('🛡️ Safety', data.displaySafetyScore, const Color(0xFF4ADE80)),
                 ],
               ),
             ),
@@ -2129,9 +2115,9 @@ class _DataListItem extends StatelessWidget {
             builder: (context) => CityDetailPage(
               cityId: data.id,
               cityName: data.name,
-              cityImage: data.imageUrl?.toString() ?? '',
-              overallScore: (data.overallScore as num?)?.toDouble() ?? 0.0,
-              reviewCount: (data.reviewCount as num?)?.toInt() ?? 0,
+              cityImage: data.displayImageUrl,
+              overallScore: data.displayOverallScore,
+              reviewCount: data.displayReviewCount,
             ),
           ),
         ).then((_) {
@@ -2161,7 +2147,7 @@ class _DataListItem extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(6),
               child: Image.network(
-                data.imageUrl ?? '',
+                data.displayImageUrl,
                 width: 80,
                 height: 80,
                 fit: BoxFit.cover,
@@ -2184,7 +2170,7 @@ class _DataListItem extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    data.country ?? '',
+                    data.displayCountry,
                     style: const TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 13,
@@ -2199,7 +2185,7 @@ class _DataListItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '\$${null}',
+                  '\$${data.displayAverageCost.toStringAsFixed(0)}',
                   style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 18,

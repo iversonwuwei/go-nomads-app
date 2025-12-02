@@ -114,6 +114,53 @@ class AmapPoiService {
     }
   }
 
+  /// 逆地理编码：将坐标转换为地址
+  /// [latitude] 纬度
+  /// [longitude] 经度
+  /// 返回格式化的地址字符串，失败返回 null
+  Future<ReverseGeoResult?> reverseGeocode({
+    required double latitude,
+    required double longitude,
+  }) async {
+    try {
+      final uri = Uri.https('restapi.amap.com', '/v3/geocode/regeo', {
+        'key': _apiKey,
+        'location': '$longitude,$latitude', // 高德使用 经度,纬度 格式
+        'extensions': 'base',
+        'output': 'json',
+      });
+
+      debugPrint('📍 逆地理编码: $latitude, $longitude');
+
+      final response = await http.get(uri).timeout(
+            const Duration(seconds: 10),
+          );
+
+      if (response.statusCode != 200) {
+        debugPrint('❌ 逆地理编码请求失败: ${response.statusCode}');
+        return null;
+      }
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (data['status'] != '1') {
+        debugPrint('❌ 逆地理编码失败: ${data['info']}');
+        return null;
+      }
+
+      final regeocode = data['regeocode'] as Map<String, dynamic>?;
+      if (regeocode == null) {
+        debugPrint('❌ 无逆地理编码结果');
+        return null;
+      }
+
+      return ReverseGeoResult.fromAmapJson(regeocode);
+    } catch (e) {
+      debugPrint('❌ 逆地理编码异常: $e');
+      return null;
+    }
+  }
+
   /// 搜索所有类型的周边 POI
   Future<Map<String, List<PoiResult>>> searchAllTypes({
     required double latitude,
@@ -245,5 +292,68 @@ class PoiResult {
     } else {
       return '${(meters / 1000).toStringAsFixed(1)}km';
     }
+  }
+}
+
+/// 逆地理编码结果
+class ReverseGeoResult {
+  final String formattedAddress; // 完整地址
+  final String? province; // 省
+  final String? city; // 市
+  final String? district; // 区
+  final String? township; // 乡镇/街道
+  final String? street; // 街道名
+  final String? streetNumber; // 门牌号
+
+  const ReverseGeoResult({
+    required this.formattedAddress,
+    this.province,
+    this.city,
+    this.district,
+    this.township,
+    this.street,
+    this.streetNumber,
+  });
+
+  /// 从高德 API 响应解析
+  factory ReverseGeoResult.fromAmapJson(Map<String, dynamic> json) {
+    // 安全获取字符串值
+    String? safeString(dynamic value) {
+      if (value == null) return null;
+      if (value is String) return value.isEmpty ? null : value;
+      if (value is List) return null;
+      return value.toString();
+    }
+
+    final addressComponent = json['addressComponent'] as Map<String, dynamic>?;
+
+    return ReverseGeoResult(
+      formattedAddress: safeString(json['formatted_address']) ?? '',
+      province: safeString(addressComponent?['province']),
+      city: safeString(addressComponent?['city']),
+      district: safeString(addressComponent?['district']),
+      township: safeString(addressComponent?['township']),
+      street: safeString(addressComponent?['streetname']),
+      streetNumber: safeString(addressComponent?['streetnumber']),
+    );
+  }
+
+  /// 获取简短地址（市+区）
+  String get shortAddress {
+    final parts = <String>[];
+    if (city != null && city!.isNotEmpty) parts.add(city!);
+    if (district != null && district!.isNotEmpty) parts.add(district!);
+    if (parts.isEmpty && formattedAddress.isNotEmpty) {
+      return formattedAddress;
+    }
+    return parts.join('');
+  }
+
+  /// 获取城市名
+  String get cityName {
+    // 直辖市的 city 可能为空，使用 province
+    if (city != null && city!.isNotEmpty) return city!;
+    if (province != null && province!.isNotEmpty) return province!;
+    return '';
   }
 }
