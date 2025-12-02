@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/services/amap_poi_service.dart';
 import 'package:df_admin_mobile/services/location_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
@@ -339,7 +340,7 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage> with Single
     }
   }
 
-  /// 反向地理编码
+  /// 反向地理编码 - 使用高德地图 API
   Future<void> _reverseGeocode(LatLng target) async {
     if (!mounted) return;
 
@@ -347,40 +348,29 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage> with Single
       _isReverseGeocoding = true;
     });
 
-    final locale = Localizations.maybeLocaleOf(context);
-
     try {
-      final uri = Uri.https('nominatim.openstreetmap.org', '/reverse', {
-        'format': 'jsonv2',
-        'lat': target.latitude.toString(),
-        'lon': target.longitude.toString(),
-        'zoom': '18',
-        'addressdetails': '1',
-      });
-
-      final response = await http.get(
-        uri,
-        headers: {
-          'User-Agent': _userAgent,
-          if (locale != null) 'Accept-Language': locale.languageCode,
-        },
+      // 使用高德 API 进行逆地理编码（国内访问更快更稳定）
+      final result = await AmapPoiService.instance.reverseGeocode(
+        latitude: target.latitude,
+        longitude: target.longitude,
       );
 
-      if (response.statusCode != 200) {
-        throw Exception('反向地理编码失败 (${response.statusCode})');
-      }
+      if (!mounted) return;
 
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      final address = data['address'] as Map<String, dynamic>?;
-
-      if (mounted) {
+      if (result != null) {
         setState(() {
-          _currentAddress = data['display_name'] as String? ?? '';
-          _currentName = (data['name'] as String?) ?? (address?['amenity'] as String?) ?? _currentAddress;
-          final cityCandidate = (address?['city'] ?? address?['town'] ?? address?['state'])?.toString();
-          final provinceCandidate = (address?['state'] ?? address?['region'] ?? address?['country'])?.toString();
-          _currentCity = cityCandidate?.isNotEmpty == true ? cityCandidate : null;
-          _currentProvince = provinceCandidate?.isNotEmpty == true ? provinceCandidate : null;
+          _currentAddress = result.formattedAddress;
+          _currentName = result.shortAddress.isNotEmpty ? result.shortAddress : result.formattedAddress;
+          _currentCity = (result.city?.isNotEmpty ?? false) ? result.city : null;
+          _currentProvince = (result.province?.isNotEmpty ?? false) ? result.province : null;
+        });
+      } else {
+        // 高德 API 失败时，设置坐标作为地址显示
+        setState(() {
+          _currentAddress = '${target.latitude.toStringAsFixed(6)}, ${target.longitude.toStringAsFixed(6)}';
+          _currentName = _currentAddress;
+          _currentCity = null;
+          _currentProvince = null;
         });
       }
     } catch (e) {
@@ -780,8 +770,27 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage> with Single
                                 )
                               else
                                 Text(
-                                  (_currentAddress ?? '').isNotEmpty ? _currentAddress! : l10n.pickLocationOnMap,
-                                  style: const TextStyle(fontSize: 15),
+                                  // 优先显示名称，其次显示完整地址
+                                  (_currentName ?? '').isNotEmpty
+                                      ? _currentName!
+                                      : ((_currentAddress ?? '').isNotEmpty
+                                          ? _currentAddress!
+                                          : l10n.pickLocationOnMap),
+                                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                                ),
+                              // 显示完整地址作为副标题（如果与名称不同）
+                              if ((_currentAddress ?? '').isNotEmpty && _currentAddress != _currentName)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4),
+                                  child: Text(
+                                    _currentAddress!,
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 13,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
                               if ((_currentCity ?? '').isNotEmpty)
                                 Padding(
