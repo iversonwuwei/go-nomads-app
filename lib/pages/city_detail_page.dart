@@ -25,6 +25,7 @@ import 'package:df_admin_mobile/services/token_storage_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/coworking_verification_badge.dart';
+import 'package:df_admin_mobile/widgets/edit_button.dart';
 import 'package:df_admin_mobile/widgets/rating_item_dialog.dart';
 import 'package:df_admin_mobile/widgets/share_bottom_sheet.dart';
 import 'package:df_admin_mobile/widgets/share_button.dart';
@@ -1513,26 +1514,11 @@ class _CityDetailPageState extends State<CityDetailPage>
                                 return const SizedBox.shrink();
                               }
 
-                              return Container(
-                                margin: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFFFF4458).withValues(alpha: 0.3),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: IconButton(
-                                  icon: Icon(icon, color: Colors.white, size: 20),
-                                  onPressed: onPressed,
-                                  tooltip: 'Add content',
-                                ),
+                              return SliverActionButton(
+                                icon: icon,
+                                opacity: _appBarOpacity,
+                                onPressed: onPressed,
+                                tooltip: 'Add content',
                               );
                             },
                           );

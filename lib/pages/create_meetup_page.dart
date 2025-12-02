@@ -304,6 +304,13 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
     });
   }
 
+  // 删除已上传的图片
+  void _removeExistingImage(int index) {
+    setState(() {
+      _existingImageUrls.removeAt(index);
+    });
+  }
+
   // 显示图片选择选项
   void _showImagePickerOptions() {
     Get.bottomSheet(
@@ -1391,7 +1398,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              AppLocalizations.of(context)!.addVenuePhotosCount(_selectedImages.length),
+              AppLocalizations.of(context)!.addVenuePhotosCount(_existingImageUrls.length + _selectedImages.length),
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.grey.shade600,
@@ -1400,7 +1407,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
             const SizedBox(height: 12),
 
             // 图片网格显示
-            if (_selectedImages.isNotEmpty)
+            if (_existingImageUrls.isNotEmpty || _selectedImages.isNotEmpty)
               GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -1410,23 +1417,24 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                   mainAxisSpacing: 8,
                   childAspectRatio: 1,
                 ),
-                itemCount: _selectedImages.length + 1, // +1 for add button
+                itemCount: _existingImageUrls.length + _selectedImages.length + 1, // +1 for add button
                 itemBuilder: (context, index) {
-                  if (index == _selectedImages.length) {
+                  final totalImages = _existingImageUrls.length + _selectedImages.length;
+
+                  if (index == totalImages) {
                     // 添加更多图片按钮
                     return InkWell(
-                      onTap: _selectedImages.length < 10 ? _showImagePickerOptions : null,
+                      onTap: totalImages < 10 ? _showImagePickerOptions : null,
                       child: Container(
                         decoration: BoxDecoration(
                           border: Border.all(
-                            color: _selectedImages.length < 10 ? const Color(0xFFFF4458) : Colors.grey.shade300,
+                            color: totalImages < 10 ? const Color(0xFFFF4458) : Colors.grey.shade300,
                             width: 2,
                             style: BorderStyle.solid,
                           ),
                           borderRadius: BorderRadius.circular(8),
-                          color: _selectedImages.length < 10
-                              ? const Color(0xFFFF4458).withValues(alpha: 0.05)
-                              : Colors.grey.shade100,
+                          color:
+                              totalImages < 10 ? const Color(0xFFFF4458).withValues(alpha: 0.05) : Colors.grey.shade100,
                         ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -1434,14 +1442,14 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                             Icon(
                               FontAwesomeIcons.photoFilm,
                               size: 32,
-                              color: _selectedImages.length < 10 ? const Color(0xFFFF4458) : Colors.grey.shade400,
+                              color: totalImages < 10 ? const Color(0xFFFF4458) : Colors.grey.shade400,
                             ),
                             const SizedBox(height: 4),
                             Text(
                               AppLocalizations.of(context)!.addPhoto,
                               style: TextStyle(
                                 fontSize: 11,
-                                color: _selectedImages.length < 10 ? const Color(0xFFFF4458) : Colors.grey.shade400,
+                                color: totalImages < 10 ? const Color(0xFFFF4458) : Colors.grey.shade400,
                               ),
                             ),
                           ],
@@ -1450,23 +1458,61 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                     );
                   }
 
+                  // 判断是已上传的图片还是新选择的图片
+                  final isExistingImage = index < _existingImageUrls.length;
+
                   // 图片缩略图
                   return Stack(
                     fit: StackFit.expand,
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: Image.file(
-                          File(_selectedImages[index].path),
-                          fit: BoxFit.cover,
-                        ),
+                        child: isExistingImage
+                            ? Image.network(
+                                _existingImageUrls[index],
+                                fit: BoxFit.cover,
+                                loadingBuilder: (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return Container(
+                                    color: Colors.grey.shade200,
+                                    child: Center(
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        value: loadingProgress.expectedTotalBytes != null
+                                            ? loadingProgress.cumulativeBytesLoaded /
+                                                loadingProgress.expectedTotalBytes!
+                                            : null,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    color: Colors.grey.shade200,
+                                    child: Icon(
+                                      FontAwesomeIcons.image,
+                                      color: Colors.grey.shade400,
+                                    ),
+                                  );
+                                },
+                              )
+                            : Image.file(
+                                File(_selectedImages[index - _existingImageUrls.length].path),
+                                fit: BoxFit.cover,
+                              ),
                       ),
                       // 删除按钮
                       Positioned(
                         top: 4,
                         right: 4,
                         child: InkWell(
-                          onTap: () => _removeImage(index),
+                          onTap: () {
+                            if (isExistingImage) {
+                              _removeExistingImage(index);
+                            } else {
+                              _removeImage(index - _existingImageUrls.length);
+                            }
+                          },
                           child: Container(
                             padding: const EdgeInsets.all(4),
                             decoration: const BoxDecoration(
@@ -1553,7 +1599,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
               ),
 
             // 如果没有图片，显示添加按钮
-            if (_selectedImages.isEmpty)
+            if (_existingImageUrls.isEmpty && _selectedImages.isEmpty)
               InkWell(
                 onTap: _showImagePickerOptions,
                 child: Container(

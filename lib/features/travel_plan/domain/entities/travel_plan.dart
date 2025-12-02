@@ -12,6 +12,8 @@ class TravelPlan {
   final List<String> tips;
   final TripBudget budget;
   final PlanStatus status;
+  final String? departureLocation; // 出发地
+  final DateTime? departureDate; // 出发日期
 
   TravelPlan({
     required this.id,
@@ -25,6 +27,8 @@ class TravelPlan {
     required this.tips,
     required this.budget,
     required this.status,
+    this.departureLocation,
+    this.departureDate,
   });
 
   // === 业务逻辑方法 ===
@@ -128,14 +132,12 @@ class TravelPlan {
 
   /// 获取高评分景点 (4.0+)
   List<AttractionRecommendation> get topRatedAttractions {
-    return attractions.where((a) => a.rating >= 4.0).toList()
-      ..sort((a, b) => b.rating.compareTo(a.rating));
+    return attractions.where((a) => a.rating >= 4.0).toList()..sort((a, b) => b.rating.compareTo(a.rating));
   }
 
   /// 获取高评分餐厅 (4.0+)
   List<RestaurantRecommendation> get topRatedRestaurants {
-    return restaurants.where((r) => r.rating >= 4.0).toList()
-      ..sort((a, b) => b.rating.compareTo(a.rating));
+    return restaurants.where((r) => r.rating >= 4.0).toList()..sort((a, b) => b.rating.compareTo(a.rating));
   }
 
   /// 获取免费景点
@@ -145,14 +147,11 @@ class TravelPlan {
 
   /// 按类别获取景点
   List<AttractionRecommendation> getAttractionsByCategory(String category) {
-    return attractions
-        .where((a) => a.category.toLowerCase() == category.toLowerCase())
-        .toList();
+    return attractions.where((a) => a.category.toLowerCase() == category.toLowerCase()).toList();
   }
 
   /// 按价格范围获取餐厅
-  List<RestaurantRecommendation> getRestaurantsByPriceRange(
-      PriceRange priceRange) {
+  List<RestaurantRecommendation> getRestaurantsByPriceRange(PriceRange priceRange) {
     return restaurants.where((r) => r.priceRange == priceRange).toList();
   }
 }

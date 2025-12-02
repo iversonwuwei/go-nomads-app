@@ -9,6 +9,7 @@ import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
+import 'package:df_admin_mobile/widgets/edit_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -974,20 +975,12 @@ class _MeetupListCardState extends State<_MeetupListCard> {
                       SizedBox(width: 8.w),
                       // 编辑按钮 - 只有组织者可见
                       if (_isOrganizer)
-                        IconButton(
+                        AppEditButton(
                           onPressed: () {
                             Get.to(() => CreateMeetupPage(editingMeetup: widget.meetup));
                           },
-                          icon: Icon(
-                            FontAwesomeIcons.penToSquare,
-                            size: 16.r,
-                            color: const Color(0xFFFF4458),
-                          ),
-                          padding: EdgeInsets.zero,
-                          constraints: BoxConstraints(
-                            minWidth: 32.w,
-                            minHeight: 32.h,
-                          ),
+                          size: 14.r,
+                          mini: true,
                         ),
                       if (_isOrganizer) SizedBox(width: 4.w),
                       _buildChatButton(),
@@ -1200,14 +1193,15 @@ class _MeetupListCardState extends State<_MeetupListCard> {
     return GestureDetector(
       onTap: _openChat,
       child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 4.w),
         padding: EdgeInsets.all(8.w),
         decoration: BoxDecoration(
-          color: Colors.blue.withValues(alpha: 0.1),
-          shape: BoxShape.circle,
+          color: Colors.blue.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(10.r),
         ),
-        child: Icon(
+        child: FaIcon(
           FontAwesomeIcons.message,
-          size: 18.sp,
+          size: 14.sp,
           color: Colors.blue,
         ),
       ),
