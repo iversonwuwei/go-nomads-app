@@ -49,7 +49,7 @@ class CityRepository implements ICityRepository {
   }) async {
     try {
       final queryParameters = <String, dynamic>{
-        'page': page,
+        'pageNumber': page,
         'pageSize': pageSize,
       };
 
