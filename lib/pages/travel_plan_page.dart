@@ -1082,27 +1082,21 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
                           ),
                           const SizedBox(height: 8),
                           // 价格和时长
-                          Row(
+                          Wrap(
+                            spacing: 12,
+                            runSpacing: 8,
                             children: [
-                              Icon(FontAwesomeIcons.dollarSign, size: 14, color: Colors.grey[600]),
-                              const SizedBox(width: 4),
-                              Text(
-                                price,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.grey[800],
-                                ),
+                              _buildInfoTag(
+                                icon: FontAwesomeIcons.dollarSign,
+                                label: price,
+                                iconColor: Colors.green[600],
+                                backgroundColor: Colors.green.withValues(alpha: 0.08),
                               ),
-                              const SizedBox(width: 16),
-                              Icon(FontAwesomeIcons.clock, size: 14, color: Colors.grey[600]),
-                              const SizedBox(width: 4),
-                              Text(
-                                duration,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey[700],
-                                ),
+                              _buildInfoTag(
+                                icon: FontAwesomeIcons.clock,
+                                label: duration,
+                                iconColor: Colors.indigo[500],
+                                backgroundColor: Colors.indigo.withValues(alpha: 0.07),
                               ),
                             ],
                           ),
@@ -1201,6 +1195,36 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
       return Colors.purple;
     }
     return Colors.grey;
+  }
+
+  Widget _buildInfoTag({
+    required IconData icon,
+    required String label,
+    Color? iconColor,
+    Color? backgroundColor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: backgroundColor ?? Colors.grey[100],
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: iconColor ?? Colors.grey[700]),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildAccommodationCard(TravelPlan plan) {

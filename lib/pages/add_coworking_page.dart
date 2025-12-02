@@ -12,6 +12,7 @@ import 'package:df_admin_mobile/services/image_upload_service.dart';
 import 'package:df_admin_mobile/utils/image_upload_helper.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
+import 'package:df_admin_mobile/widgets/location_picker_field.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -60,8 +61,6 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
   String? _selectedCity;
   String? _selectedCountryId;
   String? _selectedCityId;
-  final GlobalKey<FormFieldState<String>> _cityFieldKey = GlobalKey<FormFieldState<String>>();
-  final GlobalKey<FormFieldState<String>> _countryFieldKey = GlobalKey<FormFieldState<String>>();
 
   // Location
   double _latitude = 0.0;
@@ -450,12 +449,6 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
             _selectedCity = foundCity.name;
           });
 
-          // 更新表单字段
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _countryFieldKey.currentState?.didChange(_selectedCountry);
-            _cityFieldKey.currentState?.didChange(_selectedCity);
-          });
-
           print('🎯 [AddCoworking] 初始化完成: $_selectedCountry > $_selectedCity');
         }
       } else {
@@ -486,12 +479,6 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
           if (country != null) {
             _locationController.loadCitiesByCountry(country.id);
           }
-
-          // 更新表单字段
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _countryFieldKey.currentState?.didChange(_selectedCountry);
-            _cityFieldKey.currentState?.didChange(_selectedCity);
-          });
 
           print('📝 [AddCoworking] 直接使用传入的参数: $fallbackCountryName > $fallbackCityName, countryId: ${country?.id}');
         }
@@ -524,12 +511,6 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
         if (country != null) {
           _locationController.loadCitiesByCountry(country.id);
         }
-
-        // 更新表单字段
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _countryFieldKey.currentState?.didChange(_selectedCountry);
-          _cityFieldKey.currentState?.didChange(_selectedCity);
-        });
 
         print('🔄 [AddCoworking] 降级处理，使用传入参数: $fallbackCountryName > $fallbackCityName, countryId: ${country?.id}');
       }
@@ -619,7 +600,24 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
                   const SizedBox(height: 16),
 
                   // Location Selector (Country + City in one field)
-                  _buildLocationSelector(l10n),
+                  LocationPickerField(
+                    locationController: _locationController,
+                    initialCountryId: _selectedCountryId,
+                    initialCountryName: _selectedCountry,
+                    initialCityId: _selectedCityId,
+                    initialCityName: _selectedCity,
+                    required: true,
+                    enabled: !(widget.isEditMode || widget.cityId != null),
+                    label: l10n.city,
+                    onChanged: (result) {
+                      setState(() {
+                        _selectedCountryId = result.countryId;
+                        _selectedCountry = result.countryName;
+                        _selectedCityId = result.cityId;
+                        _selectedCity = result.cityName;
+                      });
+                    },
+                  ),
 
                   const SizedBox(height: 16),
                   _buildLocationPicker(),
@@ -1442,510 +1440,5 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
     } finally {
       _isSubmitting.value = false;
     }
-  }
-
-  /// 构建位置选择器（国家+城市联动）
-  Widget _buildLocationSelector(AppLocalizations l10n) {
-    // 编辑模式或有预设城市时禁用城市选择
-    final isDisabled = widget.isEditMode || widget.cityId != null;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '${l10n.city} *',
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Obx(() {
-          final isLoadingCountries = _locationController.isLoadingCountries.value;
-          final isLoadingCities = _locationController.isLoadingCities.value;
-          final isLoading = isLoadingCountries || isLoadingCities;
-
-          return FormField<String>(
-            key: _cityFieldKey,
-            initialValue: _selectedCity,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return l10n.selectCity;
-              }
-              return null;
-            },
-            builder: (field) {
-              // 显示格式: "城市, 国家" 或 "城市"
-              String? displayText;
-              if (_selectedCity != null && _selectedCity!.isNotEmpty) {
-                if (_selectedCountry != null && _selectedCountry!.isNotEmpty) {
-                  displayText = '$_selectedCity, $_selectedCountry';
-                } else {
-                  displayText = _selectedCity;
-                }
-              }
-
-              return GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: (isLoading || isDisabled)
-                    ? null
-                    : () {
-                        FocusScope.of(context).unfocus();
-                        _showLocationPicker(l10n, field);
-                      },
-                child: InputDecorator(
-                  decoration: InputDecoration(
-                    hintText: l10n.selectCity,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    filled: true,
-                    fillColor: (isLoading || isDisabled) ? Colors.grey[200] : Colors.grey[50],
-                    suffixIcon: isLoading
-                        ? const Padding(
-                            padding: EdgeInsets.all(8),
-                            child: SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                          )
-                        : Icon(
-                            isDisabled ? FontAwesomeIcons.lock : FontAwesomeIcons.chevronDown,
-                            size: isDisabled ? 16 : null,
-                            color: isDisabled ? Colors.grey : null,
-                          ),
-                    errorText: field.errorText,
-                  ),
-                  isEmpty: displayText == null || displayText.isEmpty,
-                  child: Text(
-                    displayText ?? '',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: displayText == null || displayText.isEmpty
-                              ? Theme.of(context).hintColor
-                              : (isDisabled ? Colors.grey[600] : Theme.of(context).textTheme.bodyMedium?.color),
-                        ),
-                  ),
-                ),
-              );
-            },
-          );
-        }),
-      ],
-    );
-  }
-
-  /// 显示位置选择器（国家+城市联动）
-  void _showLocationPicker(AppLocalizations l10n, FormFieldState<String> cityField) {
-    // 使用临时变量存储选中状态
-    final RxnString tempSelectedCountryId = RxnString(_selectedCountryId);
-    final RxnString tempSelectedCountry = RxnString(_selectedCountry);
-    final RxnString tempSelectedCityId = RxnString(_selectedCityId);
-    final RxnString tempSelectedCity = RxnString(_selectedCity);
-
-    // 用于滚动到选中项的控制器
-    final ScrollController countryScrollController = ScrollController();
-    final ScrollController cityScrollController = ScrollController();
-
-    // 确保国家列表已加载
-    if (_locationController.countries.isEmpty) {
-      _locationController.loadCountries();
-    }
-
-    // 如果已选择国家，确保城市列表已加载
-    if (_selectedCountryId != null) {
-      _locationController.loadCitiesByCountry(_selectedCountryId!);
-    }
-
-    Get.bottomSheet(
-      Container(
-        height: MediaQuery.of(context).size.height * 0.7,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
-        ),
-        child: Column(
-          children: [
-            // Header
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: Colors.grey[300]!),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  TextButton(
-                    onPressed: () => Get.back(),
-                    child: Text(
-                      l10n.cancel,
-                      style: const TextStyle(color: Colors.grey),
-                    ),
-                  ),
-                  Text(
-                    l10n.selectCity,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Obx(() => TextButton(
-                        onPressed: tempSelectedCityId.value != null
-                            ? () {
-                                // 确认选择
-                                setState(() {
-                                  _selectedCountryId = tempSelectedCountryId.value;
-                                  _selectedCountry = tempSelectedCountry.value;
-                                  _selectedCityId = tempSelectedCityId.value;
-                                  _selectedCity = tempSelectedCity.value;
-                                });
-                                cityField.didChange(_selectedCity);
-                                _countryFieldKey.currentState?.didChange(_selectedCountry);
-                                Get.back();
-                              }
-                            : null,
-                        child: Text(
-                          l10n.done,
-                          style: TextStyle(
-                            color: tempSelectedCityId.value != null ? const Color(0xFFFF4458) : Colors.grey,
-                          ),
-                        ),
-                      )),
-                ],
-              ),
-            ),
-            // Content
-            Expanded(
-              child: Row(
-                children: [
-                  // 国家列表
-                  Expanded(
-                    flex: 2,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        border: Border(
-                          right: BorderSide(color: Colors.grey[200]!),
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Text(
-                              l10n.country,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: Obx(() {
-                              final countryList = _locationController.countries;
-                              final isLoadingCountries = _locationController.isLoadingCountries.value;
-                              final localeCode = Localizations.localeOf(context).languageCode.toLowerCase();
-
-                              if (isLoadingCountries) {
-                                return const Center(
-                                  child: CircularProgressIndicator(),
-                                );
-                              }
-
-                              final countryEntries = countryList
-                                  .where((country) => country.isActive)
-                                  .map((country) => MapEntry(
-                                        country,
-                                        country.displayName(localeCode),
-                                      ))
-                                  .where((entry) => entry.value.isNotEmpty)
-                                  .toList()
-                                ..sort((a, b) => a.value.compareTo(b.value));
-
-                              // 如果有选中的国家，滚动到该位置
-                              if (tempSelectedCountryId.value != null) {
-                                final selectedIndex =
-                                    countryEntries.indexWhere((e) => e.key.id == tempSelectedCountryId.value);
-                                if (selectedIndex > 0) {
-                                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                                    if (countryScrollController.hasClients) {
-                                      countryScrollController.animateTo(
-                                        selectedIndex * 48.0, // ListTile 的大约高度
-                                        duration: const Duration(milliseconds: 300),
-                                        curve: Curves.easeInOut,
-                                      );
-                                    }
-                                  });
-                                }
-                              }
-
-                              return ListView.builder(
-                                controller: countryScrollController,
-                                itemCount: countryEntries.length,
-                                itemBuilder: (context, index) {
-                                  final entry = countryEntries[index];
-                                  final country = entry.key;
-                                  final displayName = entry.value;
-
-                                  return Obx(() {
-                                    final isSelected = tempSelectedCountryId.value == country.id;
-                                    return ListTile(
-                                      dense: true,
-                                      selected: isSelected,
-                                      selectedTileColor: const Color(0xFFFF4458).withOpacity(0.1),
-                                      title: Text(
-                                        displayName,
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          color: isSelected ? const Color(0xFFFF4458) : Colors.black87,
-                                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                                        ),
-                                      ),
-                                      onTap: () {
-                                        tempSelectedCountryId.value = country.id;
-                                        tempSelectedCountry.value = displayName;
-                                        // 切换国家时清空城市选择
-                                        tempSelectedCityId.value = null;
-                                        tempSelectedCity.value = null;
-                                        // 加载该国家的城市列表
-                                        _locationController.loadCitiesByCountry(country.id);
-                                      },
-                                    );
-                                  });
-                                },
-                              );
-                            }),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  // 城市列表
-                  Expanded(
-                    flex: 3,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Text(
-                            l10n.city,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: Obx(() {
-                            final selectedCountryId = tempSelectedCountryId.value;
-                            final cityMap = _locationController.citiesByCountry;
-                            final _ = cityMap.length; // 触发 RxMap 监听
-                            final isLoadingCities = _locationController.isLoadingCities.value;
-
-                            if (selectedCountryId == null) {
-                              return Center(
-                                child: Text(
-                                  l10n.selectCountryFirst,
-                                  style: TextStyle(
-                                    color: Colors.grey[500],
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              );
-                            }
-
-                            if (isLoadingCities) {
-                              return const Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            }
-
-                            final cities = cityMap[selectedCountryId] ?? <CityOption>[];
-                            final sortedCities = List<CityOption>.from(cities)
-                              ..sort((a, b) => a.name.compareTo(b.name));
-
-                            if (sortedCities.isEmpty) {
-                              return Center(
-                                child: Text(
-                                  l10n.noData,
-                                  style: TextStyle(
-                                    color: Colors.grey[500],
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              );
-                            }
-
-                            // 如果有选中的城市，滚动到该位置
-                            if (tempSelectedCityId.value != null) {
-                              final selectedIndex = sortedCities.indexWhere((c) => c.id == tempSelectedCityId.value);
-                              if (selectedIndex > 0) {
-                                WidgetsBinding.instance.addPostFrameCallback((_) {
-                                  if (cityScrollController.hasClients) {
-                                    cityScrollController.animateTo(
-                                      selectedIndex * 48.0,
-                                      duration: const Duration(milliseconds: 300),
-                                      curve: Curves.easeInOut,
-                                    );
-                                  }
-                                });
-                              }
-                            }
-
-                            return ListView.builder(
-                              controller: cityScrollController,
-                              itemCount: sortedCities.length,
-                              itemBuilder: (context, index) {
-                                final city = sortedCities[index];
-
-                                return Obx(() {
-                                  final isSelected = tempSelectedCityId.value == city.id;
-                                  return ListTile(
-                                    dense: true,
-                                    selected: isSelected,
-                                    selectedTileColor: const Color(0xFFFF4458).withOpacity(0.1),
-                                    title: Text(
-                                      city.name,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: isSelected ? const Color(0xFFFF4458) : Colors.black87,
-                                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                                      ),
-                                    ),
-                                    trailing: isSelected
-                                        ? const Icon(
-                                            FontAwesomeIcons.check,
-                                            size: 14,
-                                            color: Color(0xFFFF4458),
-                                          )
-                                        : null,
-                                    onTap: () {
-                                      tempSelectedCityId.value = city.id;
-                                      tempSelectedCity.value = city.name;
-                                    },
-                                  );
-                                });
-                              },
-                            );
-                          }),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-      isScrollControlled: true,
-    );
-  }
-
-  /// 显示选项选择器（iOS风格）
-  void _showOptionPicker({
-    required List<String> options,
-    required String title,
-    String? initialValue,
-    required Function(String) onSelected,
-  }) {
-    Get.bottomSheet(
-      Container(
-        height: 300,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
-        ),
-        child: Column(
-          children: [
-            // Header
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: Colors.grey[300]!),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  TextButton(
-                    onPressed: () => Get.back(),
-                    child: Text(
-                      AppLocalizations.of(context)!.cancel,
-                      style: const TextStyle(color: Colors.grey),
-                    ),
-                  ),
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      if (Get.isBottomSheetOpen == true) {
-                        Get.back();
-                      }
-                    },
-                    child: Text(
-                      AppLocalizations.of(context)!.done,
-                      style: const TextStyle(color: Color(0xFFFF4458)),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Picker
-            Expanded(
-              child: ListView.builder(
-                itemCount: options.length,
-                itemBuilder: (context, index) {
-                  final option = options[index];
-                  final isSelected = option == initialValue;
-                  return ListTile(
-                    title: Text(
-                      option,
-                      style: TextStyle(
-                        color: isSelected ? const Color(0xFFFF4458) : Colors.black87,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                      ),
-                    ),
-                    trailing: isSelected
-                        ? const Icon(
-                            FontAwesomeIcons.check,
-                            color: Color(0xFFFF4458),
-                          )
-                        : null,
-                    onTap: () {
-                      onSelected(option);
-                      if (Get.isBottomSheetOpen == true) {
-                        Get.back();
-                      }
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-      isScrollControlled: true,
-    );
   }
 }

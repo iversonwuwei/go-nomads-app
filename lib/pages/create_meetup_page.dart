@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:add_2_calendar/add_2_calendar.dart';
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/config/supabase_config.dart';
-import 'package:df_admin_mobile/features/city/domain/entities/city_option.dart';
 import 'package:df_admin_mobile/features/location/presentation/controllers/location_state_controller.dart';
 import 'package:df_admin_mobile/features/meetup/domain/entities/event_type.dart';
 import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
@@ -13,6 +12,7 @@ import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/services/image_upload_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
+import 'package:df_admin_mobile/widgets/location_picker_field.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -47,12 +47,9 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
   String? _selectedCountry;
   String? _selectedCityId;
   String? _selectedCountryId;
-  bool _isLoadingCityOptions = false;
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   double _maxAttendees = 10;
-  final GlobalKey<FormFieldState<String>> _cityFieldKey = GlobalKey<FormFieldState<String>>();
-  final GlobalKey<FormFieldState<String>> _countryFieldKey = GlobalKey<FormFieldState<String>>();
 
   // 类型相关
   List<EventType> _meetupTypes = [];
@@ -1103,268 +1100,22 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
 
             const SizedBox(height: 20),
 
-            // Country
-            Text(
-              AppLocalizations.of(context)!.country,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
+            // City (with Country+City combined picker)
+            LocationPickerField(
+              initialCountryId: _selectedCountryId,
+              initialCountryName: _selectedCountry,
+              initialCityId: _selectedCityId,
+              initialCityName: _selectedCity,
+              required: true,
+              onChanged: (result) {
+                setState(() {
+                  _selectedCountryId = result.countryId;
+                  _selectedCountry = result.countryName;
+                  _selectedCityId = result.cityId;
+                  _selectedCity = result.cityName;
+                });
+              },
             ),
-            const SizedBox(height: 8),
-            Obx(() {
-              final countryList = _locationController.countries;
-              final _ = countryList.length;
-              final isLoadingCountries = _locationController.isLoadingCountries.value;
-              final localeCode = Localizations.localeOf(context).languageCode.toLowerCase();
-
-              final countryEntries = countryList
-                  .where((country) => country.isActive)
-                  .map((country) => MapEntry(
-                        country,
-                        country.displayName(localeCode),
-                      ))
-                  .where((entry) => entry.value.isNotEmpty)
-                  .toList()
-                ..sort((a, b) => a.value.compareTo(b.value));
-
-              final countries = countryEntries.map((entry) => entry.value).toList();
-
-              return FormField<String>(
-                key: _countryFieldKey,
-                initialValue: _selectedCountry,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return AppLocalizations.of(context)!.selectCountry;
-                  }
-                  return null;
-                },
-                builder: (field) {
-                  final displayCountry = field.value ?? _selectedCountry;
-                  return GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () {
-                      final l10n = AppLocalizations.of(context)!;
-
-                      if (isLoadingCountries) {
-                        AppToast.info(l10n.loading, title: l10n.notice);
-                        return;
-                      }
-
-                      if (countries.isEmpty) {
-                        AppToast.info(l10n.noData, title: l10n.notice);
-                        _locationController.loadCountries(forceRefresh: true);
-                        return;
-                      }
-
-                      FocusScope.of(context).unfocus();
-                      _showOptionPicker(
-                        options: countries,
-                        title: l10n.selectCountry,
-                        initialValue: _selectedCountry,
-                        onSelected: (value) {
-                          final selectedEntry = countryEntries.firstWhereOrNull((entry) => entry.value == value);
-                          if (selectedEntry == null) {
-                            return;
-                          }
-
-                          setState(() {
-                            _selectedCountry = value;
-                            _selectedCountryId = selectedEntry.key.id;
-                            _selectedCity = null;
-                            _selectedCityId = null;
-                          });
-                          field.didChange(value);
-
-                          final cityFieldState = _cityFieldKey.currentState;
-                          cityFieldState?.didChange(null);
-
-                          _locationController.loadCitiesByCountry(selectedEntry.key.id);
-                        },
-                      );
-                    },
-                    child: InputDecorator(
-                      decoration: InputDecoration(
-                        hintText: AppLocalizations.of(context)!.selectCountry,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: AppColors.borderLight),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        suffixIcon: isLoadingCountries
-                            ? const Padding(
-                                padding: EdgeInsets.all(8),
-                                child: SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                ),
-                              )
-                            : const Icon(FontAwesomeIcons.chevronDown),
-                        errorText: field.errorText,
-                      ),
-                      isEmpty: displayCountry == null || displayCountry.isEmpty,
-                      child: Text(
-                        displayCountry ?? '',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: displayCountry == null || displayCountry.isEmpty
-                                  ? Theme.of(context).hintColor
-                                  : Theme.of(context).textTheme.bodyMedium?.color,
-                            ),
-                      ),
-                    ),
-                  );
-                },
-              );
-            }),
-
-            const SizedBox(height: 20),
-
-            // City
-            Text(
-              AppLocalizations.of(context)!.city,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Obx(() {
-              final selectedCountryId = _selectedCountryId;
-              final cityMap = _locationController.citiesByCountry;
-              final _ = cityMap.length;
-              final cachedCities = selectedCountryId == null
-                  ? const <CityOption>[]
-                  : (cityMap[selectedCountryId] ?? const <CityOption>[]);
-
-              final cachedCityNames =
-                  cachedCities.map((city) => city.name).where((name) => name.isNotEmpty).toSet().toList()..sort();
-
-              return FormField<String>(
-                key: _cityFieldKey,
-                initialValue: _selectedCity,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return AppLocalizations.of(context)!.selectCity;
-                  }
-                  return null;
-                },
-                builder: (field) {
-                  final displayCity = field.value ?? _selectedCity;
-                  return GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () async {
-                      final l10n = AppLocalizations.of(context)!;
-
-                      if (_selectedCountryId == null) {
-                        AppToast.info(
-                          l10n.selectCountryFirst,
-                          title: l10n.notice,
-                        );
-                        return;
-                      }
-
-                      setState(() {
-                        _isLoadingCityOptions = true;
-                      });
-
-                      try {
-                        List<String> options = List<String>.from(
-                          cachedCityNames,
-                        );
-                        List<CityOption> selectionSource = cachedCities;
-
-                        final fetchedCities = await _locationController.loadCitiesByCountry(_selectedCountryId!);
-                        final fetchedCityNames = fetchedCities
-                            .map((city) => city.name)
-                            .where((name) => name.isNotEmpty)
-                            .toSet()
-                            .toList()
-                          ..sort();
-
-                        if (fetchedCityNames.isNotEmpty) {
-                          options = fetchedCityNames;
-                          selectionSource = fetchedCities;
-                        }
-
-                        if (options.isEmpty) {
-                          AppToast.info(l10n.noData, title: l10n.notice);
-                          return;
-                        }
-
-                        FocusScope.of(context).unfocus();
-                        _showOptionPicker(
-                          options: options,
-                          title: l10n.selectCity,
-                          initialValue: _selectedCity,
-                          onSelected: (value) {
-                            final selectedCity = selectionSource.firstWhereOrNull((city) => city.name == value);
-
-                            setState(() {
-                              _selectedCity = value;
-                              _selectedCityId = selectedCity?.id;
-                            });
-                            field.didChange(value);
-                          },
-                        );
-                      } finally {
-                        if (mounted) {
-                          setState(() {
-                            _isLoadingCityOptions = false;
-                          });
-                        }
-                      }
-                    },
-                    child: InputDecorator(
-                      decoration: InputDecoration(
-                        hintText: AppLocalizations.of(context)!.selectCity,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: AppColors.borderLight),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        suffixIcon: _isLoadingCityOptions
-                            ? const Padding(
-                                padding: EdgeInsets.all(8),
-                                child: SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                ),
-                              )
-                            : const Icon(FontAwesomeIcons.chevronDown),
-                        errorText: field.errorText,
-                      ),
-                      isEmpty: displayCity == null || displayCity.isEmpty,
-                      child: Text(
-                        displayCity ?? '',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: displayCity == null || displayCity.isEmpty
-                                  ? Theme.of(context).hintColor
-                                  : Theme.of(context).textTheme.bodyMedium?.color,
-                            ),
-                      ),
-                    ),
-                  );
-                },
-              );
-            }),
 
             const SizedBox(height: 20),
 
