@@ -7,6 +7,7 @@ import 'package:df_admin_mobile/pages/coworking_detail_page.dart';
 import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/coworking_verification_badge.dart';
+import 'package:df_admin_mobile/widgets/edit_button.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -324,9 +325,7 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
                       ),
                       // 编辑按钮（仅创建者可见）
                       if (space.isOwner)
-                        IconButton(
-                          icon: const Icon(FontAwesomeIcons.penToSquare, size: 18),
-                          color: Colors.blue,
+                        AppEditButton(
                           onPressed: () async {
                             final result = await Navigator.push(
                               context,
@@ -340,9 +339,8 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
                               await _refreshData();
                             }
                           },
-                          tooltip: '编辑',
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
+                          size: 14,
+                          mini: true,
                         ),
                       if (space.isOwner) const SizedBox(width: 8),
                       Row(

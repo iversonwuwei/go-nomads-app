@@ -5,6 +5,7 @@ import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworkin
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/coworking_verification_badge.dart';
+import 'package:df_admin_mobile/widgets/edit_button.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -116,36 +117,22 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
             actions: [
               // 编辑按钮（仅创建者可见）
               if (_space.isOwner)
-                Container(
-                  margin: const EdgeInsets.only(right: 8),
-                  child: IconButton(
-                    icon: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withAlpha(128),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        FontAwesomeIcons.penToSquare,
-                        color: Colors.white,
-                        size: 18,
-                      ),
-                    ),
-                    onPressed: () async {
-                      final result = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => AddCoworkingPage(
-                            editingSpace: _space,
-                          ),
+                SliverEditButton(
+                  onPressed: () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AddCoworkingPage(
+                          editingSpace: _space,
                         ),
-                      );
-                      if (result == true && mounted) {
-                        // 返回 true 表示数据已更新，通知上级页面刷新
-                        Navigator.pop(context, true);
-                      }
-                    },
-                  ),
+                      ),
+                    );
+                    if (result == true && mounted) {
+                      // 返回 true 表示数据已更新，通知上级页面刷新
+                      Navigator.pop(context, true);
+                    }
+                  },
+                  size: 18,
                 ),
               // 图片计数器 - 与返回按钮同一水平线
               if (hasMultipleImages)

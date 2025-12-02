@@ -617,12 +617,14 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
                   Builder(
                     builder: (context) {
                       final l10n = AppLocalizations.of(context)!;
+                      // 优先使用从数据库加载的 departureLocation，其次使用 widget 传入的
+                      final departureLocation = plan.departureLocation ?? widget.departureLocation;
                       return SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
                           children: [
-                            if (widget.departureLocation != null && widget.departureLocation!.isNotEmpty) ...[
-                              _buildInfoChip(FontAwesomeIcons.plane, '${l10n.from}: ${widget.departureLocation}'),
+                            if (departureLocation != null && departureLocation.isNotEmpty) ...[
+                              _buildInfoChip(FontAwesomeIcons.plane, '${l10n.from}: $departureLocation'),
                               const SizedBox(width: 12),
                             ],
                             _buildInfoChip(FontAwesomeIcons.calendar, '${plan.metadata.duration} ${l10n.days}'),

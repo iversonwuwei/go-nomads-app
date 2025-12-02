@@ -12,6 +12,8 @@ class TravelPlanDto {
   final String budget; // 预算等级: low, medium, high
   final String travelStyle; // 旅行风格: adventure, relaxation, culture, nightlife
   final List<String> interests; // 兴趣标签
+  final String? departureLocation; // 出发地
+  final String? departureDate; // 出发日期
 
   // 计划详情
   final TransportationPlanDto transportation;
@@ -32,6 +34,8 @@ class TravelPlanDto {
     required this.budget,
     required this.travelStyle,
     required this.interests,
+    this.departureLocation,
+    this.departureDate,
     required this.transportation,
     required this.accommodation,
     required this.dailyItineraries,
@@ -52,6 +56,8 @@ class TravelPlanDto {
       'budget': budget,
       'travelStyle': travelStyle,
       'interests': interests,
+      'departureLocation': departureLocation,
+      'departureDate': departureDate,
       'transportation': transportation.toJson(),
       'accommodation': accommodation.toJson(),
       'dailyItineraries': dailyItineraries.map((e) => e.toJson()).toList(),
@@ -73,17 +79,13 @@ class TravelPlanDto {
       budget: json['budget'],
       travelStyle: json['travelStyle'],
       interests: List<String>.from(json['interests']),
+      departureLocation: json['departureLocation'],
+      departureDate: json['departureDate'],
       transportation: TransportationPlanDto.fromJson(json['transportation']),
       accommodation: AccommodationPlanDto.fromJson(json['accommodation']),
-      dailyItineraries: (json['dailyItineraries'] as List)
-          .map((e) => DailyItineraryDto.fromJson(e))
-          .toList(),
-      attractions: (json['attractions'] as List)
-          .map((e) => AttractionDto.fromJson(e))
-          .toList(),
-      restaurants: (json['restaurants'] as List)
-          .map((e) => RestaurantDto.fromJson(e))
-          .toList(),
+      dailyItineraries: (json['dailyItineraries'] as List).map((e) => DailyItineraryDto.fromJson(e)).toList(),
+      attractions: (json['attractions'] as List).map((e) => AttractionDto.fromJson(e)).toList(),
+      restaurants: (json['restaurants'] as List).map((e) => RestaurantDto.fromJson(e)).toList(),
       tips: List<String>.from(json['tips']),
       budgetBreakdown: BudgetBreakdownDto.fromJson(json['budgetBreakdown']),
     );
@@ -113,6 +115,8 @@ class TravelPlanDto {
       tips: tips,
       budget: budgetBreakdown.toDomain(),
       status: PlanStatus.planning, // 默认状态
+      departureLocation: departureLocation,
+      departureDate: departureDate != null ? DateTime.tryParse(departureDate!) : null,
     );
   }
 }
@@ -252,9 +256,7 @@ class DailyItineraryDto {
     return DailyItineraryDto(
       day: json['day'],
       theme: json['theme'],
-      activities: (json['activities'] as List)
-          .map((e) => ActivityDto.fromJson(e))
-          .toList(),
+      activities: (json['activities'] as List).map((e) => ActivityDto.fromJson(e)).toList(),
       notes: json['notes'],
     );
   }

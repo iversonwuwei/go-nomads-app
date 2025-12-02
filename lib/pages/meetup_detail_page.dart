@@ -10,6 +10,7 @@ import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/services/http_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
+import 'package:df_admin_mobile/widgets/edit_button.dart';
 import 'package:df_admin_mobile/widgets/share_bottom_sheet.dart';
 import 'package:df_admin_mobile/widgets/share_button.dart';
 import 'package:flutter/material.dart';
@@ -41,6 +42,10 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
   final RxBool _isLoading = true.obs;
   final RxList<Map<String, dynamic>> _participants = <Map<String, dynamic>>[].obs;
 
+  // 图片轮播相关
+  final PageController _imagePageController = PageController();
+  final RxInt _currentImageIndex = 0.obs;
+
   // 检查当前用户是否已加入活动 - 使用 controller 的 isRsvped 方法
   bool get _isJoined => _meetupController.isRsvped(_meetup.value.id);
 
@@ -62,6 +67,12 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     _meetup = widget.meetup.obs;
     // 异步加载详情,不阻塞页面显示
     Future.microtask(() => _loadEventDetails());
+  }
+
+  @override
+  void dispose() {
+    _imagePageController.dispose();
+    super.dispose();
   }
 
   /// 从后端加载活动详情
@@ -110,7 +121,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
             actions: [
               // 编辑按钮 - 只有组织者可见
               if (_isOrganizer)
-                IconButton(
+                SliverEditButton(
                   onPressed: () async {
                     final result = await Get.to(() => CreateMeetupPage(editingMeetup: _meetup.value));
                     if (result == true) {
@@ -118,30 +129,86 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                       await _loadEventDetails();
                     }
                   },
-                  icon: Icon(
-                    FontAwesomeIcons.penToSquare,
-                    size: 18.sp,
-                    color: Colors.white,
-                  ),
+                  size: 18,
                 ),
               SliverShareButton(onPressed: _shareMeetup),
               SizedBox(width: 8.w),
             ],
             flexibleSpace: FlexibleSpaceBar(
-              background: _meetup.value.images.isNotEmpty
-                  ? Image.network(
-                      _meetup.value.images.first,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: AppColors.borderLight,
-                          child: Icon(
-                            FontAwesomeIcons.imagePortrait,
-                            size: 64.sp,
-                            color: AppColors.textTertiary,
+              background: Obx(() => _meetup.value.images.isNotEmpty
+                  ? Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        // 图片轮播
+                        PageView.builder(
+                          controller: _imagePageController,
+                          itemCount: _meetup.value.images.length,
+                          onPageChanged: (index) {
+                            _currentImageIndex.value = index;
+                          },
+                          itemBuilder: (context, index) {
+                            return Image.network(
+                              _meetup.value.images[index],
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  color: AppColors.borderLight,
+                                  child: Icon(
+                                    FontAwesomeIcons.imagePortrait,
+                                    size: 64.sp,
+                                    color: AppColors.textTertiary,
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                        // 图片指示器 - 只有多张图片时显示
+                        if (_meetup.value.images.length > 1)
+                          Positioned(
+                            bottom: 16.h,
+                            left: 0,
+                            right: 0,
+                            child: Obx(() => Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: List.generate(
+                                    _meetup.value.images.length,
+                                    (index) => Container(
+                                      width: _currentImageIndex.value == index ? 24.w : 8.w,
+                                      height: 8.h,
+                                      margin: EdgeInsets.symmetric(horizontal: 4.w),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(4.r),
+                                        color: _currentImageIndex.value == index
+                                            ? Colors.white
+                                            : Colors.white.withValues(alpha: 0.5),
+                                      ),
+                                    ),
+                                  ),
+                                )),
                           ),
-                        );
-                      },
+                        // 图片计数器
+                        if (_meetup.value.images.length > 1)
+                          Positioned(
+                            top: 100.h,
+                            right: 16.w,
+                            child: Obx(() => Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.5),
+                                    borderRadius: BorderRadius.circular(12.r),
+                                  ),
+                                  child: Text(
+                                    '${_currentImageIndex.value + 1} / ${_meetup.value.images.length}',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12.sp,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                )),
+                          ),
+                      ],
                     )
                   : Container(
                       color: AppColors.borderLight,
@@ -150,7 +217,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                         size: 64.sp,
                         color: AppColors.textTertiary,
                       ),
-                    ),
+                    )),
             ),
           ),
 
