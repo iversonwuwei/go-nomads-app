@@ -1,4 +1,6 @@
 // AI Domain
+import 'dart:developer';
+
 import 'package:df_admin_mobile/features/ai/application/use_cases/ai_use_cases.dart';
 import 'package:df_admin_mobile/features/ai/domain/repositories/iai_repository.dart';
 import 'package:df_admin_mobile/features/ai/infrastructure/repositories/ai_repository.dart';
@@ -203,19 +205,19 @@ class DependencyInjection {
     Get.find<ChatStateController>();
     Get.find<LocationStateController>(); // 添加 LocationStateController 初始化
 
-    print('🚀 开始强制初始化 NotificationStateController');
+    log('🚀 开始强制初始化 NotificationStateController');
     try {
       final notificationController = Get.find<NotificationStateController>();
-      print('✅ NotificationStateController 初始化成功: $notificationController');
+      log('✅ NotificationStateController 初始化成功: $notificationController');
     } catch (e) {
-      print('❌ NotificationStateController 初始化失败: $e');
-      print('❌ 异常堆栈: ${StackTrace.current}');
+      log('❌ NotificationStateController 初始化失败: $e');
+      log('❌ 异常堆栈: ${StackTrace.current}');
     }
 
     // 确保常用的 UseCase 也被初始化（防止 lazyPut 延迟导致找不到）
     Get.find<GetCitiesWithCoworkingCountUseCase>();
 
-    print('✅ 全局 Controllers 已强制初始化');
+    log('✅ 全局 Controllers 已强制初始化');
   }
 
   /// 注册基础设施服务
@@ -757,12 +759,12 @@ class DependencyInjection {
 
   /// 注册Notification领域依赖
   static void _registerNotificationDomain() {
-    print('📦 开始注册 Notification 领域依赖');
+    log('📦 开始注册 Notification 领域依赖');
 
     // Repository
     Get.lazyPut<INotificationRepository>(
       () {
-        print('📦 创建 NotificationRepository 实例');
+        log('📦 创建 NotificationRepository 实例');
         return NotificationRepository(Get.find<HttpService>());
       },
     );
@@ -770,13 +772,13 @@ class DependencyInjection {
     // Controller（fenix: true 允许删除后重新创建）
     Get.lazyPut(
       () {
-        print('📦 创建 NotificationStateController 实例');
+        log('📦 创建 NotificationStateController 实例');
         return NotificationStateController(Get.find<INotificationRepository>());
       },
       fenix: true,
     );
 
-    print('✅ Notification 领域依赖注册完成');
+    log('✅ Notification 领域依赖注册完成');
   }
 
   /// 注册Interest领域依赖

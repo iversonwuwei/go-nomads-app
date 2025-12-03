@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/features/meetup/application/use_cases/cancel_meetup_use_case.dart';
 import 'package:df_admin_mobile/features/meetup/application/use_cases/cancel_rsvp_use_case.dart';
@@ -88,7 +90,7 @@ class MeetupStateController extends GetxController {
   }) async {
     try {
       if (!forceRefresh && isLoading.value) {
-        print('⏸️ 正在加载中,跳过重复请求');
+        log('⏸️ 正在加载中,跳过重复请求');
         return;
       }
 
@@ -97,8 +99,8 @@ class MeetupStateController extends GetxController {
       currentPage.value = 1; // 重置页码
       hasMoreData.value = true; // 重置是否有更多数据
 
-      print('🔄 加载活动列表...');
-      print('   cityId: $cityId, status: $status, page: 1, pageSize: $pageSize');
+      log('🔄 加载活动列表...');
+      log('   cityId: $cityId, status: $status, page: 1, pageSize: $pageSize');
 
       final loadedMeetups = await _getMeetupsUseCase.execute(
         status: status ?? 'upcoming',
@@ -113,17 +115,17 @@ class MeetupStateController extends GetxController {
       // 清除现有的 RSVP 列表(可选,根据业务需求)
       // rsvpedMeetupIds.clear();
 
-      print('🔍 开始同步 RSVP 状态...');
-      print('   当前 rsvpedMeetupIds: ${rsvpedMeetupIds.toList()}');
+      log('🔍 开始同步 RSVP 状态...');
+      log('   当前 rsvpedMeetupIds: ${rsvpedMeetupIds.toList()}');
 
       // 获取当前用户 ID
       final userController = Get.find<UserStateController>();
       final currentUserId = userController.currentUser.value?.id;
-      print('   当前用户 ID: $currentUserId');
+      log('   当前用户 ID: $currentUserId');
 
       // 将后端返回的 isJoined=true 的活动添加到 rsvpedMeetupIds
       for (final meetup in loadedMeetups) {
-        print(
+        log(
             '   检查活动: ${meetup.title} (${meetup.id}), isJoined=${meetup.isJoined}, organizerId=${meetup.organizer.id}');
 
         // 检查是否应该标记为已加入:
@@ -134,32 +136,32 @@ class MeetupStateController extends GetxController {
         if (shouldBeJoined) {
           if (!rsvpedMeetupIds.contains(meetup.id)) {
             rsvpedMeetupIds.add(meetup.id);
-            print(
+            log(
                 '   ✅ 添加到 rsvpedMeetupIds: ${meetup.title} (${meetup.id})${meetup.organizer.id == currentUserId ? ' [组织者]' : ''}');
           } else {
-            print('   ℹ️ 已存在于 rsvpedMeetupIds: ${meetup.title} (${meetup.id})');
+            log('   ℹ️ 已存在于 rsvpedMeetupIds: ${meetup.title} (${meetup.id})');
           }
         } else {
           // 如果后端返回 isJoined=false 且不是组织者,从列表中移除(如果存在)
           if (rsvpedMeetupIds.contains(meetup.id)) {
             rsvpedMeetupIds.remove(meetup.id);
-            print('   🔄 从 rsvpedMeetupIds 移除: ${meetup.title} (${meetup.id})');
+            log('   🔄 从 rsvpedMeetupIds 移除: ${meetup.title} (${meetup.id})');
           }
         }
       }
 
-      print('✅ 已同步 ${rsvpedMeetupIds.length} 个已加入的活动');
-      print('   最终 rsvpedMeetupIds: ${rsvpedMeetupIds.toList()}');
+      log('✅ 已同步 ${rsvpedMeetupIds.length} 个已加入的活动');
+      log('   最终 rsvpedMeetupIds: ${rsvpedMeetupIds.toList()}');
 
       // 如果返回的数据少于 pageSize，说明没有更多数据了
       if (loadedMeetups.length < pageSize) {
         hasMoreData.value = false;
       }
 
-      print('✅ 加载了 ${loadedMeetups.length} 个活动');
+      log('✅ 加载了 ${loadedMeetups.length} 个活动');
     } catch (e) {
       errorMessage.value = '加载活动失败: $e';
-      print('❌ 加载活动失败: $e');
+      log('❌ 加载活动失败: $e');
     } finally {
       isLoading.value = false;
     }
@@ -172,7 +174,7 @@ class MeetupStateController extends GetxController {
   }) async {
     // 如果已经在加载或没有更多数据，直接返回
     if (isLoadingMore.value || !hasMoreData.value) {
-      print('⏸️ 跳过加载更多: isLoadingMore=${isLoadingMore.value}, hasMoreData=${hasMoreData.value}');
+      log('⏸️ 跳过加载更多: isLoadingMore=${isLoadingMore.value}, hasMoreData=${hasMoreData.value}');
       return;
     }
 
@@ -180,8 +182,8 @@ class MeetupStateController extends GetxController {
       isLoadingMore.value = true;
       final nextPage = currentPage.value + 1;
 
-      print('🔄 加载更多活动...');
-      print('   cityId: $cityId, status: $status, page: $nextPage, pageSize: $pageSize');
+      log('🔄 加载更多活动...');
+      log('   cityId: $cityId, status: $status, page: $nextPage, pageSize: $pageSize');
 
       final moreMeetups = await _getMeetupsUseCase.execute(
         status: status ?? 'upcoming',
@@ -194,7 +196,7 @@ class MeetupStateController extends GetxController {
         meetups.addAll(moreMeetups);
         currentPage.value = nextPage;
 
-        print('🔍 开始同步更多活动的 RSVP 状态...');
+        log('🔍 开始同步更多活动的 RSVP 状态...');
 
         // 获取当前用户 ID
         final userController = Get.find<UserStateController>();
@@ -202,7 +204,7 @@ class MeetupStateController extends GetxController {
 
         // 同步新加载活动的 isJoined 状态到 rsvpedMeetupIds
         for (final meetup in moreMeetups) {
-          print(
+          log(
               '   检查活动: ${meetup.title} (${meetup.id}), isJoined=${meetup.isJoined}, organizerId=${meetup.organizer.id}');
 
           // 检查是否应该标记为已加入:
@@ -213,33 +215,33 @@ class MeetupStateController extends GetxController {
           if (shouldBeJoined) {
             if (!rsvpedMeetupIds.contains(meetup.id)) {
               rsvpedMeetupIds.add(meetup.id);
-              print(
+              log(
                   '   ✅ 添加到 rsvpedMeetupIds: ${meetup.title} (${meetup.id})${meetup.organizer.id == currentUserId ? ' [组织者]' : ''}');
             } else {
-              print('   ℹ️ 已存在于 rsvpedMeetupIds: ${meetup.title} (${meetup.id})');
+              log('   ℹ️ 已存在于 rsvpedMeetupIds: ${meetup.title} (${meetup.id})');
             }
           } else {
             if (rsvpedMeetupIds.contains(meetup.id)) {
               rsvpedMeetupIds.remove(meetup.id);
-              print('   🔄 从 rsvpedMeetupIds 移除: ${meetup.title} (${meetup.id})');
+              log('   🔄 从 rsvpedMeetupIds 移除: ${meetup.title} (${meetup.id})');
             }
           }
         }
 
-        print('✅ 同步完成,当前共 ${rsvpedMeetupIds.length} 个已加入的活动');
+        log('✅ 同步完成,当前共 ${rsvpedMeetupIds.length} 个已加入的活动');
 
         // 如果返回的数据少于 pageSize，说明没有更多数据了
         if (moreMeetups.length < pageSize) {
           hasMoreData.value = false;
         }
 
-        print('✅ 加载了更多 ${moreMeetups.length} 个活动，当前总数: ${meetups.length}');
+        log('✅ 加载了更多 ${moreMeetups.length} 个活动，当前总数: ${meetups.length}');
       } else {
         hasMoreData.value = false;
-        print('✅ 没有更多活动了');
+        log('✅ 没有更多活动了');
       }
     } catch (e) {
-      print('❌ 加载更多活动失败: $e');
+      log('❌ 加载更多活动失败: $e');
     } finally {
       isLoadingMore.value = false;
     }
@@ -248,17 +250,17 @@ class MeetupStateController extends GetxController {
   /// 按城市获取活动
   Future<List<Meetup>> getMeetupsByCity(String cityName) async {
     try {
-      print('🔍 按城市获取活动: $cityName');
+      log('🔍 按城市获取活动: $cityName');
 
       final cityMeetups = await _getMeetupsByCityUseCase.executeByName(
         cityName: cityName,
         status: 'upcoming',
       );
 
-      print('✅ 找到 ${cityMeetups.length} 个活动');
+      log('✅ 找到 ${cityMeetups.length} 个活动');
       return cityMeetups;
     } catch (e) {
-      print('❌ 按城市获取活动失败: $e');
+      log('❌ 按城市获取活动失败: $e');
       return [];
     }
   }
@@ -266,17 +268,17 @@ class MeetupStateController extends GetxController {
   /// 按城市ID获取活动
   Future<List<Meetup>> getMeetupsByCityId(String cityId) async {
     try {
-      print('🔍 按城市ID获取活动: $cityId');
+      log('🔍 按城市ID获取活动: $cityId');
 
       final cityMeetups = await _getMeetupsByCityUseCase.execute(
         cityId: cityId,
         status: 'upcoming',
       );
 
-      print('✅ 找到 ${cityMeetups.length} 个活动');
+      log('✅ 找到 ${cityMeetups.length} 个活动');
       return cityMeetups;
     } catch (e) {
-      print('❌ 按城市ID获取活动失败: $e');
+      log('❌ 按城市ID获取活动失败: $e');
       return [];
     }
   }
@@ -306,7 +308,7 @@ class MeetupStateController extends GetxController {
       isLoading.value = true;
       errorMessage.value = '';
 
-      print('🎨 创建活动: $title');
+      log('🎨 创建活动: $title');
 
       final newMeetup = await _createMeetupUseCase.execute(
         title: title,
@@ -327,14 +329,14 @@ class MeetupStateController extends GetxController {
       // 添加到列表
       meetups.insert(0, newMeetup);
 
-      print('✅ 活动创建成功: ${newMeetup.id}');
-      print('🔍 isOrganizer: ${newMeetup.isOrganizer}');
+      log('✅ 活动创建成功: ${newMeetup.id}');
+      log('🔍 isOrganizer: ${newMeetup.isOrganizer}');
       AppToast.success('活动创建成功!');
 
       return newMeetup;
     } catch (e) {
       errorMessage.value = '创建活动失败: $e';
-      print('❌ 创建活动失败: $e');
+      log('❌ 创建活动失败: $e');
       AppToast.error('创建活动失败: $e');
       return null;
     } finally {
@@ -369,7 +371,7 @@ class MeetupStateController extends GetxController {
       isLoading.value = true;
       errorMessage.value = '';
 
-      print('✏️ 更新活动: $meetupId');
+      log('✏️ 更新活动: $meetupId');
 
       final updatedMeetup = await _updateMeetupUseCase.execute(
         meetupId: meetupId,
@@ -395,13 +397,13 @@ class MeetupStateController extends GetxController {
         meetups[index] = updatedMeetup;
       }
 
-      print('✅ 活动更新成功: ${updatedMeetup.id}');
+      log('✅ 活动更新成功: ${updatedMeetup.id}');
       AppToast.success('活动更新成功!');
 
       return updatedMeetup;
     } catch (e) {
       errorMessage.value = '更新活动失败: $e';
-      print('❌ 更新活动失败: $e');
+      log('❌ 更新活动失败: $e');
       AppToast.error('更新活动失败: $e');
       return null;
     } finally {
@@ -419,7 +421,7 @@ class MeetupStateController extends GetxController {
 
       final isCurrentlyRsvped = rsvpedMeetupIds.contains(meetupId);
 
-      print('🔄 切换 RSVP: $meetupId (当前: ${isCurrentlyRsvped ? "已RSVP" : "未RSVP"})');
+      log('🔄 切换 RSVP: $meetupId (当前: ${isCurrentlyRsvped ? "已RSVP" : "未RSVP"})');
 
       bool success;
       if (isCurrentlyRsvped) {
@@ -428,7 +430,7 @@ class MeetupStateController extends GetxController {
         if (success) {
           rsvpedMeetupIds.remove(meetupId);
           _updateAttendeeCount(meetupId, -1);
-          print('✅ 已取消 RSVP');
+          log('✅ 已取消 RSVP');
         }
       } else {
         // RSVP
@@ -436,11 +438,11 @@ class MeetupStateController extends GetxController {
         if (success) {
           rsvpedMeetupIds.add(meetupId);
           _updateAttendeeCount(meetupId, 1);
-          print('✅ RSVP 成功');
+          log('✅ RSVP 成功');
         }
       }
     } catch (e) {
-      print('❌ 切换 RSVP 失败: $e');
+      log('❌ 切换 RSVP 失败: $e');
 
       // 特殊处理:如果后端返回"已经参加"错误,说明状态不同步,需要修正
       final errorMessage = e.toString();
@@ -448,14 +450,14 @@ class MeetupStateController extends GetxController {
         // 后端说已经参加了,但前端认为没参加,修正状态
         if (!rsvpedMeetupIds.contains(meetupId)) {
           rsvpedMeetupIds.add(meetupId);
-          print('🔄 修正 RSVP 状态: 已将 $meetupId 标记为已参加');
+          log('🔄 修正 RSVP 状态: 已将 $meetupId 标记为已参加');
         }
         AppToast.error('您已经参加了这个活动');
       } else if (errorMessage.contains('未参加') || errorMessage.contains('not joined')) {
         // 后端说未参加,但前端认为参加了,修正状态
         if (rsvpedMeetupIds.contains(meetupId)) {
           rsvpedMeetupIds.remove(meetupId);
-          print('🔄 修正 RSVP 状态: 已将 $meetupId 标记为未参加');
+          log('🔄 修正 RSVP 状态: 已将 $meetupId 标记为未参加');
         }
         AppToast.error('您还未参加这个活动');
       } else {
@@ -473,7 +475,7 @@ class MeetupStateController extends GetxController {
         return false;
       }
 
-      print('🔄 取消活动: $meetupId');
+      log('🔄 取消活动: $meetupId');
 
       final success = await _cancelMeetupUseCase.execute(meetupId);
 
@@ -502,14 +504,14 @@ class MeetupStateController extends GetxController {
           meetups[index] = updatedMeetup;
         }
 
-        print('✅ 活动已取消');
+        log('✅ 活动已取消');
         AppToast.success('活动已取消');
         return true;
       }
 
       return false;
     } catch (e) {
-      print('❌ 取消活动失败: $e');
+      log('❌ 取消活动失败: $e');
       AppToast.error('取消活动失败: $e');
       return false;
     }
@@ -517,7 +519,7 @@ class MeetupStateController extends GetxController {
 
   /// 刷新活动列表
   Future<void> refreshMeetups() async {
-    print('🔄 刷新活动列表...');
+    log('🔄 刷新活动列表...');
     await loadMeetups(forceRefresh: true);
   }
 
@@ -554,7 +556,7 @@ class MeetupStateController extends GetxController {
       );
 
       meetups[index] = updatedMeetup;
-      print('📊 更新参与人数: $newCount/${meetup.capacity.maxAttendees}');
+      log('📊 更新参与人数: $newCount/${meetup.capacity.maxAttendees}');
     }
   }
 
@@ -564,13 +566,13 @@ class MeetupStateController extends GetxController {
       final authController = Get.find<AuthStateController>();
       if (!authController.isAuthenticated.value) {
         final actionText = action ?? '此操作';
-        print('⚠️ 需要登录: $actionText');
+        log('⚠️ 需要登录: $actionText');
         AppToast.error('请先登录后再$actionText');
         return false;
       }
       return true;
     } catch (e) {
-      print('⚠️ 无法检查登录状态: $e');
+      log('⚠️ 无法检查登录状态: $e');
       return false;
     }
   }
@@ -583,15 +585,15 @@ class MeetupStateController extends GetxController {
       // 监听 currentUser 变化
       ever(userController.currentUser, (user) {
         if (user != null) {
-          print('👤 用户已登录,刷新活动数据...');
+          log('👤 用户已登录,刷新活动数据...');
           refreshMeetups();
         } else {
-          print('👤 用户已登出,清空活动数据...');
+          log('👤 用户已登出,清空活动数据...');
           _clearData();
         }
       });
     } catch (e) {
-      print('⚠️ 无法设置登录状态监听: $e');
+      log('⚠️ 无法设置登录状态监听: $e');
     }
   }
 
@@ -600,7 +602,7 @@ class MeetupStateController extends GetxController {
     meetups.clear();
     rsvpedMeetupIds.clear();
     errorMessage.value = '';
-    print('🧹 活动数据已清空');
+    log('🧹 活动数据已清空');
   }
 
   // Lifecycle
@@ -608,7 +610,7 @@ class MeetupStateController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    print('🎬 MeetupStateController 初始化...');
+    log('🎬 MeetupStateController 初始化...');
 
     // 设置登录状态监听
     _setupLoginStateListener();
@@ -619,7 +621,7 @@ class MeetupStateController extends GetxController {
 
   @override
   void onClose() {
-    print('👋 MeetupStateController 关闭 - 清理所有数据');
+    log('👋 MeetupStateController 关闭 - 清理所有数据');
 
     // 清空所有响应式变量
     meetups.clear();

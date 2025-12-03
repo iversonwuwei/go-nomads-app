@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/moderator/domain/entities/moderator_application.dart';
 import 'package:df_admin_mobile/features/moderator/domain/repositories/i_moderator_application_repository.dart';
@@ -33,8 +35,8 @@ class _ModeratorApplicationDetailPageState
   @override
   void initState() {
     super.initState();
-    print('📝 ModeratorApplicationDetailPage initState');
-    print('   applicationId: "${widget.applicationId}"');
+    log('📝 ModeratorApplicationDetailPage initState');
+    log('   applicationId: "${widget.applicationId}"');
     _initRepository();
     _loadApplication();
   }
@@ -47,7 +49,7 @@ class _ModeratorApplicationDetailPageState
   }
 
   Future<void> _loadApplication() async {
-    print('📝 _loadApplication called with id: "${widget.applicationId}"');
+    log('📝 _loadApplication called with id: "${widget.applicationId}"');
     
     setState(() {
       _isLoading = true;
@@ -57,13 +59,13 @@ class _ModeratorApplicationDetailPageState
     try {
       final application =
           await _repository.getApplicationById(widget.applicationId);
-      print('📝 Application loaded: ${application.id}');
+      log('📝 Application loaded: ${application.id}');
       setState(() {
         _application = application;
         _isLoading = false;
       });
     } catch (e) {
-      print('❌ _loadApplication error: $e');
+      log('❌ _loadApplication error: $e');
       setState(() {
         _error = e.toString();
         _isLoading = false;

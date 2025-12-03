@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
@@ -69,7 +71,7 @@ class _RegisterPageState extends State<RegisterPage> {
         if (success) {
           // 注册成功
           final user = authController.currentUser.value;
-          print('✅ 注册成功: ${user?.name}');
+          log('✅ 注册成功: ${user?.name}');
 
           AppToast.success(
             l10n.welcomeToCommunity,
@@ -83,7 +85,7 @@ class _RegisterPageState extends State<RegisterPage> {
           Get.offAllNamed('/');
         } else {
           // 注册失败
-          print('❌ 注册失败');
+          log('❌ 注册失败');
           AppToast.error(
             '注册失败,请检查输入信息',
             title: '注册失败',
@@ -91,14 +93,14 @@ class _RegisterPageState extends State<RegisterPage> {
         }
       } on HttpException catch (e) {
         // HTTP 异常 - 显示后端返回的错误信息
-        print('❌ 注册失败 (HttpException): ${e.message}');
+        log('❌ 注册失败 (HttpException): ${e.message}');
         AppToast.error(
           e.message,
           title: '注册失败',
         );
       } catch (e) {
         // 其他错误
-        print('❌ 注册错误: $e');
+        log('❌ 注册错误: $e');
         AppToast.error(
           '注册过程中发生错误，请稍后重试',
           title: '错误',

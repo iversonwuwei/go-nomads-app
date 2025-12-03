@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/config/api_config.dart';
 import 'package:df_admin_mobile/core/core.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
@@ -91,26 +93,26 @@ class CityRepository implements ICityRepository {
       if (response.data is Map<String, dynamic>) {
         final responseData = response.data as Map<String, dynamic>;
 
-        print('🔍 [getCityById] 原始响应数据: ${responseData.keys.toList()}');
+        log('🔍 [getCityById] 原始响应数据: ${responseData.keys.toList()}');
 
         // 检查是否是 ApiResponse 包装格式: { success, message, data }
         if (responseData.containsKey('data') && responseData['data'] != null) {
           cityData = responseData['data'] as Map<String, dynamic>;
-          print('✅ [getCityById] 使用 data 字段');
-          print('🔍 [getCityById] cityData 包含字段: ${cityData.keys.toList()}');
-          print('🔍 [getCityById] moderatorId: ${cityData['moderatorId']}');
-          print('🔍 [getCityById] moderator: ${cityData['moderator']}');
+          log('✅ [getCityById] 使用 data 字段');
+          log('🔍 [getCityById] cityData 包含字段: ${cityData.keys.toList()}');
+          log('🔍 [getCityById] moderatorId: ${cityData['moderatorId']}');
+          log('🔍 [getCityById] moderator: ${cityData['moderator']}');
         } else {
           // 直接就是城市数据
           cityData = responseData;
-          print('⚠️ [getCityById] 直接使用 responseData');
+          log('⚠️ [getCityById] 直接使用 responseData');
         }
       } else {
         throw Exception('Invalid response format');
       }
 
       final city = City.fromJson(cityData);
-      print('🏙️ [getCityById] 解析后城市版主: moderatorId=${city.moderatorId}, moderator=${city.moderator?.name}');
+      log('🏙️ [getCityById] 解析后城市版主: moderatorId=${city.moderatorId}, moderator=${city.moderator?.name}');
       return Success(city);
     } on HttpException catch (e) {
       return Failure(_convertHttpException(e));
@@ -509,7 +511,7 @@ class CityRepository implements ICityRepository {
   @override
   Future<Result<bool>> assignModerator(String cityId, String userId) async {
     try {
-      print('🔄 [CityRepository] 调用指定版主 API: cityId=$cityId, userId=$userId');
+      log('🔄 [CityRepository] 调用指定版主 API: cityId=$cityId, userId=$userId');
 
       final response = await _httpService.post(
         '$_baseUrl/moderator/assign',
@@ -519,14 +521,14 @@ class CityRepository implements ICityRepository {
         },
       );
 
-      print('✅ [CityRepository] 指定版主成功: response=$response');
+      log('✅ [CityRepository] 指定版主成功: response=$response');
       return const Success(true);
     } on HttpException catch (e) {
-      print('❌ [CityRepository] HTTP异常: statusCode=${e.statusCode}, message=${e.message}');
+      log('❌ [CityRepository] HTTP异常: statusCode=${e.statusCode}, message=${e.message}');
       return Failure(_convertHttpException(e));
     } catch (e, stackTrace) {
-      print('💥 [CityRepository] 未知异常: $e');
-      print('📚 [CityRepository] StackTrace: $stackTrace');
+      log('💥 [CityRepository] 未知异常: $e');
+      log('📚 [CityRepository] StackTrace: $stackTrace');
       return Failure(UnknownException('指定版主失败: ${e.toString()}'));
     }
   }
@@ -534,7 +536,7 @@ class CityRepository implements ICityRepository {
   @override
   Future<Result<Map<String, dynamic>>> generateCityImages(String cityId) async {
     try {
-      print('🖼️ [CityRepository] 调用生成城市图片 API (异步模式): cityId=$cityId');
+      log('🖼️ [CityRepository] 调用生成城市图片 API (异步模式): cityId=$cityId');
 
       // 使用新的异步接口，立即返回任务ID，不等待图片生成完成
       // 图片生成完成后会通过 SignalR 推送通知
@@ -547,11 +549,11 @@ class CityRepository implements ICityRepository {
         ),
       );
 
-      print('✅ [CityRepository] 图片生成任务已创建');
+      log('✅ [CityRepository] 图片生成任务已创建');
 
       final data = response.data;
       if (data is Map<String, dynamic>) {
-        print('📋 [CityRepository] 任务详情: taskId=${data['data']?['taskId']}, status=${data['data']?['status']}');
+        log('📋 [CityRepository] 任务详情: taskId=${data['data']?['taskId']}, status=${data['data']?['status']}');
         return Success(data);
       }
       if (data is Map) {
@@ -559,11 +561,11 @@ class CityRepository implements ICityRepository {
       }
       return Failure(UnknownException('响应格式错误'));
     } on HttpException catch (e) {
-      print('❌ [CityRepository] HTTP异常: statusCode=${e.statusCode}, message=${e.message}');
+      log('❌ [CityRepository] HTTP异常: statusCode=${e.statusCode}, message=${e.message}');
       return Failure(_convertHttpException(e));
     } catch (e, stackTrace) {
-      print('💥 [CityRepository] 未知异常: $e');
-      print('📚 [CityRepository] StackTrace: $stackTrace');
+      log('💥 [CityRepository] 未知异常: $e');
+      log('📚 [CityRepository] StackTrace: $stackTrace');
       return Failure(UnknownException('创建图片生成任务失败: ${e.toString()}'));
     }
   }

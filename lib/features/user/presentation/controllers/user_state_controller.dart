@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/core/core.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/features/interest/presentation/controllers/interest_state_controller.dart';
@@ -86,24 +88,24 @@ class UserStateController extends GetxController {
 
       // 监听认证状态变化
       ever(authController.isAuthenticated, (isAuthenticated) {
-        print('🔔 UserStateController: 认证状态变化 -> $isAuthenticated');
+        log('🔔 UserStateController: 认证状态变化 -> $isAuthenticated');
 
         if (isAuthenticated) {
           // 登录成功，加载用户数据
-          print('✅ 用户已登录，加载用户数据...');
+          log('✅ 用户已登录，加载用户数据...');
           loadCurrentUser();
           loadFavoriteCityIds();
           loadNomadStats(); // 加载统计数据
         } else {
           // 退出登录，清除用户数据
-          print('⚠️ 用户已退出，清除用户数据');
+          log('⚠️ 用户已退出，清除用户数据');
           currentUser.value = null;
           favoriteCityIds.clear();
           nomadStats.value = null;
         }
       });
     } catch (e) {
-      print('⚠️ AuthStateController 未就绪，无法设置监听器');
+      log('⚠️ AuthStateController 未就绪，无法设置监听器');
     }
   }
 
@@ -120,7 +122,7 @@ class UserStateController extends GetxController {
       }
     } catch (e) {
       // AuthStateController 未初始化，跳过
-      print('⚠️ AuthStateController 未就绪，跳过用户数据加载');
+      log('⚠️ AuthStateController 未就绪，跳过用户数据加载');
     }
   }
 
@@ -142,8 +144,8 @@ class UserStateController extends GetxController {
 
         // 如果是未授权错误，清除用户数据并静默处理
         if (exception is UnauthorizedException) {
-          print('⚠️ 加载用户数据失败: Token 无效或过期');
-          print('   清除用户状态...');
+          log('⚠️ 加载用户数据失败: Token 无效或过期');
+          log('   清除用户状态...');
           currentUser.value = null; // 清除无效的用户数据
           favoriteCityIds.clear();
           loginStateChanged.toggle();
@@ -171,10 +173,10 @@ class UserStateController extends GetxController {
     result.fold(
       onSuccess: (stats) {
         nomadStats.value = stats;
-        print('✅ 成功加载用户统计数据');
+        log('✅ 成功加载用户统计数据');
       },
       onFailure: (exception) {
-        print('⚠️ 加载用户统计数据失败: ${exception.message}');
+        log('⚠️ 加载用户统计数据失败: ${exception.message}');
         // 如果加载失败，使用空的统计数据
         if (currentUser.value != null) {
           nomadStats.value = NomadStats.empty(currentUser.value!.id);
@@ -267,7 +269,7 @@ class UserStateController extends GetxController {
         favoriteCityIds.addAll(ids);
       },
       onFailure: (exception) {
-        print('加载收藏列表失败: ${exception.message}');
+        log('加载收藏列表失败: ${exception.message}');
       },
     );
   }
@@ -381,8 +383,8 @@ class UserStateController extends GetxController {
       try {
         _showSnackbar(title, message);
       } catch (e) {
-        print('⚠️ 显示 Snackbar 失败: $e');
-        print('   错误: $title - $message');
+        log('⚠️ 显示 Snackbar 失败: $e');
+        log('   错误: $title - $message');
       }
     }
   }

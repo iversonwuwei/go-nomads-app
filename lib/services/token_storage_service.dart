@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:df_admin_mobile/config/api_config.dart';
@@ -97,7 +99,7 @@ class TokenStorageService {
     try {
       return DateTime.parse(expiresAtString);
     } catch (e) {
-      print('⚠️ 解析 token 过期时间失败: $e');
+      log('⚠️ 解析 token 过期时间失败: $e');
       return null;
     }
   }

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/controllers/location_controller.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
@@ -213,16 +215,16 @@ class _MeetupsListPageState extends State<MeetupsListPage>
           break;
         case 3: // Cancelled - 当前用户取消的活动
           if (_currentUserId == null) {
-            print('⚠️ 用户未登录，无法加载已取消的活动');
+            log('⚠️ 用户未登录，无法加载已取消的活动');
             meetups = [];
           } else {
-            print('🔍 正在加载用户 $_currentUserId 取消的活动...');
+            log('🔍 正在加载用户 $_currentUserId 取消的活动...');
             meetups = await _meetupRepository.getCancelledMeetupsByUser(
               _currentUserId!,
               page: page,
               pageSize: 20,
             );
-            print('✅ 成功加载 ${meetups.length} 个已取消的活动');
+            log('✅ 成功加载 ${meetups.length} 个已取消的活动');
           }
           break;
       }
@@ -240,10 +242,10 @@ class _MeetupsListPageState extends State<MeetupsListPage>
         _tabPage[tabIndex] = page + 1;
       }
 
-      print('✅ Tab $tabIndex 加载了 ${meetups.length} 个活动 (页码: $page)');
+      log('✅ Tab $tabIndex 加载了 ${meetups.length} 个活动 (页码: $page)');
     } catch (e, stackTrace) {
-      print('❌ Tab $tabIndex 加载失败: $e');
-      print('Stack trace: $stackTrace');
+      log('❌ Tab $tabIndex 加载失败: $e');
+      log('Stack trace: $stackTrace');
       AppToast.error('加载活动失败');
     } finally {
       _tabLoading[tabIndex]!.value = false;
@@ -610,12 +612,12 @@ class _MeetupListCardState extends State<_MeetupListCard> {
     _currentAttendees = widget.meetup.capacity.currentAttendees;
     _maxAttendees = widget.meetup.capacity.maxAttendees;
 
-    print('🔍 MeetupListCard initState:');
-    print('   ID: ${widget.meetup.id}');
-    print('   Title: ${widget.meetup.title}');
-    print('   isJoined (from backend): $_isJoined');
-    print('   isOrganizer (from backend): $_isOrganizer');
-    print('   Attendees: $_currentAttendees / $_maxAttendees');
+    log('🔍 MeetupListCard initState:');
+    log('   ID: ${widget.meetup.id}');
+    log('   Title: ${widget.meetup.title}');
+    log('   isJoined (from backend): $_isJoined');
+    log('   isOrganizer (from backend): $_isOrganizer');
+    log('   Attendees: $_currentAttendees / $_maxAttendees');
   }
 
   @override
@@ -628,9 +630,9 @@ class _MeetupListCardState extends State<_MeetupListCard> {
       final newIsJoined = widget.meetup.isJoined;
       final newCurrentAttendees = widget.meetup.capacity.currentAttendees;
       if (_isJoined != newIsJoined || _currentAttendees != newCurrentAttendees) {
-        print('🔄 Meetup ${widget.meetup.title} 数据更新:');
-        print('   isJoined: $_isJoined -> $newIsJoined');
-        print('   Attendees: $_currentAttendees -> $newCurrentAttendees');
+        log('🔄 Meetup ${widget.meetup.title} 数据更新:');
+        log('   isJoined: $_isJoined -> $newIsJoined');
+        log('   Attendees: $_currentAttendees -> $newCurrentAttendees');
         setState(() {
           _isJoined = newIsJoined;
           _currentAttendees = newCurrentAttendees;
@@ -652,14 +654,14 @@ class _MeetupListCardState extends State<_MeetupListCard> {
       // 调用 Repository
       if (isJoining) {
         await meetupRepository.rsvpToMeetup(widget.meetup.id);
-        print('✅ 成功加入活动: ${widget.meetup.title}');
+        log('✅ 成功加入活动: ${widget.meetup.title}');
         // 更新 Controller 的 rsvpedMeetupIds
         if (!meetupController.rsvpedMeetupIds.contains(widget.meetup.id)) {
           meetupController.rsvpedMeetupIds.add(widget.meetup.id);
         }
       } else {
         await meetupRepository.cancelRsvp(widget.meetup.id);
-        print('✅ 成功退出活动: ${widget.meetup.title}');
+        log('✅ 成功退出活动: ${widget.meetup.title}');
         // 更新 Controller 的 rsvpedMeetupIds
         meetupController.rsvpedMeetupIds.remove(widget.meetup.id);
       }
@@ -688,12 +690,12 @@ class _MeetupListCardState extends State<_MeetupListCard> {
         );
       }
     } catch (e) {
-      print('❌ 加入/退出活动失败: $e');
+      log('❌ 加入/退出活动失败: $e');
 
       // 特殊处理:如果是"已经参加"的错误,说明状态不同步,需要纠正前端状态
       final errorMessage = e.toString();
       if (errorMessage.contains('已经参加') || errorMessage.contains('already joined')) {
-        print('⚠️ 检测到状态不同步:用户实际已加入,但前端状态为未加入,正在纠正...');
+        log('⚠️ 检测到状态不同步:用户实际已加入,但前端状态为未加入,正在纠正...');
         setState(() {
           _isJoined = true; // 纠正为已加入状态
         });
@@ -713,7 +715,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
       if (errorMessage.contains('未参加') ||
           errorMessage.contains('not joined') ||
           errorMessage.contains('not a participant')) {
-        print('⚠️ 检测到状态不同步:用户实际未加入,但前端状态为已加入,正在纠正...');
+        log('⚠️ 检测到状态不同步:用户实际未加入,但前端状态为已加入,正在纠正...');
         setState(() {
           _isJoined = false; // 纠正为未加入状态
         });
@@ -763,7 +765,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
 
     try {
       await meetupRepository.cancelMeetup(widget.meetup.id);
-      print('✅ 成功取消活动: ${widget.meetup.title}');
+      log('✅ 成功取消活动: ${widget.meetup.title}');
 
       // 显示成功消息
       AppToast.success(
@@ -776,7 +778,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
         await widget.onRefresh!();
       }
     } catch (e) {
-      print('❌ 取消活动失败: $e');
+      log('❌ 取消活动失败: $e');
       AppToast.error('取消活动失败');
     }
   }

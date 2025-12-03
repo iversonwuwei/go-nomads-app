@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
@@ -27,7 +29,7 @@ class CityModeratorRepository {
       }
       return [];
     } catch (e) {
-      print('❌ 获取版主列表失败: $e');
+      log('❌ 获取版主列表失败: $e');
       rethrow;
     }
   }
@@ -72,7 +74,7 @@ class CityModeratorRepository {
       }
       return false;
     } catch (e) {
-      print('❌ 添加版主失败: $e');
+      log('❌ 添加版主失败: $e');
       return false;
     }
   }
@@ -97,7 +99,7 @@ class CityModeratorRepository {
       }
       return false;
     } catch (e) {
-      print('❌ 删除版主失败: $e');
+      log('❌ 删除版主失败: $e');
       return false;
     }
   }
@@ -143,7 +145,7 @@ class CityModeratorRepository {
       }
       return false;
     } catch (e) {
-      print('❌ 更新版主权限失败: $e');
+      log('❌ 更新版主权限失败: $e');
       return false;
     }
   }
@@ -182,7 +184,7 @@ class CityModeratorRepository {
       }
       return [];
     } catch (e) {
-      print('❌ 搜索用户失败: $e');
+      log('❌ 搜索用户失败: $e');
       return [];
     }
   }

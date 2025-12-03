@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/city/presentation/controllers/city_rating_controller.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
@@ -34,7 +36,7 @@ class _ManageCityRatingsPageState extends State<ManageCityRatingsPage> {
   }
 
   Future<void> _loadData() async {
-    print('🔍 [ManageCityRatingsPage] 加载评分项数据: cityId=${widget.cityId}');
+    log('🔍 [ManageCityRatingsPage] 加载评分项数据: cityId=${widget.cityId}');
     await _controller.loadCityRatings(widget.cityId);
   }
 
@@ -188,10 +190,10 @@ class _ManageCityRatingsPageState extends State<ManageCityRatingsPage> {
           ],
         ),
         body: Obx(() {
-          print('📊 [ManageCityRatingsPage] 渲染UI:');
-          print('  - isLoading: ${_controller.isLoading.value}');
-          print('  - categories: ${_controller.categories.length} 项');
-          print('  - statistics: ${_controller.statistics.length} 项');
+          log('📊 [ManageCityRatingsPage] 渲染UI:');
+          log('  - isLoading: ${_controller.isLoading.value}');
+          log('  - categories: ${_controller.categories.length} 项');
+          log('  - statistics: ${_controller.statistics.length} 项');
 
           if (_controller.isLoading.value) {
             return const Center(child: CircularProgressIndicator());

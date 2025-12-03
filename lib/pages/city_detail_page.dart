@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'dart:async';
 
 import 'package:df_admin_mobile/config/app_colors.dart';
@@ -181,15 +183,15 @@ class _CityDetailPageState extends State<CityDetailPage>
       final isModerator = city.isCurrentUserModerator;
 
       // 调试日志
-      print('🔍 [版主管理] hasModerator: $hasModerator');
-      print('🔍 [版主管理] isAdmin: $isAdmin');
-      print('🔍 [版主管理] isModerator: $isModerator');
-      print('🔍 [版主管理] moderatorId: ${city.moderatorId}');
-      print('🔍 [版主管理] moderator: ${city.moderator?.name}');
+      log('🔍 [版主管理] hasModerator: $hasModerator');
+      log('🔍 [版主管理] isAdmin: $isAdmin');
+      log('🔍 [版主管理] isModerator: $isModerator');
+      log('🔍 [版主管理] moderatorId: ${city.moderatorId}');
+      log('🔍 [版主管理] moderator: ${city.moderator?.name}');
 
       // 如果已有版主且当前用户不是管理员也不是该城市版主，只显示版主信息
       if (hasModerator && !isAdmin && !isModerator) {
-        print('✅ [版主管理] 显示只读版主信息');
+        log('✅ [版主管理] 显示只读版主信息');
         // 安全检查：如果 moderator 对象为空，显示加载中
         if (city.moderator == null) {
           return const SizedBox.shrink();
@@ -199,7 +201,7 @@ class _CityDetailPageState extends State<CityDetailPage>
 
       // 如果已有版主且当前用户是管理员或该城市版主，显示版主信息+更换按钮
       if (hasModerator && (isAdmin || isModerator)) {
-        print('✅ [版主管理] 显示版主信息+管理按钮');
+        log('✅ [版主管理] 显示版主信息+管理按钮');
         // 安全检查：如果 moderator 对象为空，显示加载中
         if (city.moderator == null) {
           return const SizedBox.shrink();
@@ -209,10 +211,10 @@ class _CityDetailPageState extends State<CityDetailPage>
 
       // 如果没有版主，根据用户角色显示不同按钮
       if (isAdmin) {
-        print('✅ [版主管理] 显示指定版主按钮（管理员）');
+        log('✅ [版主管理] 显示指定版主按钮（管理员）');
         return _buildAssignModeratorButton();
       } else {
-        print('✅ [版主管理] 显示申请成为版主按钮（普通用户）');
+        log('✅ [版主管理] 显示申请成为版主按钮（普通用户）');
         return _buildApplyModeratorButton();
       }
     });
@@ -571,7 +573,7 @@ class _CityDetailPageState extends State<CityDetailPage>
 
     // 如果指定成功,只需要刷新城市基本信息(更新ModeratorId字段)
     if (result == true) {
-      print('✅ [CityDetail] 版主指定成功，强制刷新城市基本信息');
+      log('✅ [CityDetail] 版主指定成功，强制刷新城市基本信息');
       final cityDetailController = Get.find<CityDetailStateController>();
       await cityDetailController.loadCityDetail(cityId, forceRefresh: true);
     }
@@ -805,7 +807,7 @@ class _CityDetailPageState extends State<CityDetailPage>
           // 只有在城市ID不同或数据为空时才重新加载
           if (coworkingController.currentCityId.value != cityId) {
             coworkingController.loadCoworkingSpacesByCity(cityId);
-            print('🔄 [TabSwitch] 切换到 Coworking tab，加载新城市数据');
+            log('🔄 [TabSwitch] 切换到 Coworking tab，加载新城市数据');
           }
         }
       }
@@ -847,14 +849,14 @@ class _CityDetailPageState extends State<CityDetailPage>
         prosConsController.loadCityProsCons(cityId);
       } else {
         // 未登录用户:仅加载基本信息,跳过需要认证的内容
-        print('⚠️ [CityDetail] 用户未登录,跳过加载用户生成内容');
+        log('⚠️ [CityDetail] 用户未登录,跳过加载用户生成内容');
       }
     });
   }
 
   /// 当页面重新可见时重新加载数据
   Future<void> reloadCityData() async {
-    print('🔄 [CityDetail] 重新加载城市数据: $cityId');
+    log('🔄 [CityDetail] 重新加载城市数据: $cityId');
 
     final cityDetailController = Get.find<CityDetailStateController>();
     final userContentController = Get.find<UserCityContentStateController>();
@@ -876,7 +878,7 @@ class _CityDetailPageState extends State<CityDetailPage>
       userContentController.loadCityCostSummary(cityId);
       prosConsController.loadCityProsCons(cityId);
     } else {
-      print('⚠️ [CityDetail] 用户未登录,跳过加载用户生成内容');
+      log('⚠️ [CityDetail] 用户未登录,跳过加载用户生成内容');
     }
   }
 
@@ -887,53 +889,53 @@ class _CityDetailPageState extends State<CityDetailPage>
 
   /// 检查用户是否有权限生成指南（管理员或当前城市版主）
   Future<bool> _checkGeneratePermission() async {
-    print('🔐 [权限检查] 开始检查生成权限...');
+    log('🔐 [权限检查] 开始检查生成权限...');
 
     try {
       final cityDetailController = Get.find<CityDetailStateController>();
       final city = cityDetailController.currentCity.value;
 
       if (city != null) {
-        print('🔐 [权限检查] 城市信息:');
-        print('   cityId: ${city.id}');
-        print('   cityName: ${city.name}');
-        print('   isCurrentUserAdmin: ${city.isCurrentUserAdmin}');
-        print('   isCurrentUserModerator: ${city.isCurrentUserModerator}');
-        print('   moderatorId: ${city.moderatorId}');
+        log('🔐 [权限检查] 城市信息:');
+        log('   cityId: ${city.id}');
+        log('   cityName: ${city.name}');
+        log('   isCurrentUserAdmin: ${city.isCurrentUserAdmin}');
+        log('   isCurrentUserModerator: ${city.isCurrentUserModerator}');
+        log('   moderatorId: ${city.moderatorId}');
 
         // 检查是否是管理员或该城市的版主
         if (city.isCurrentUserAdmin) {
-          print('✅ [权限检查] 当前用户是管理员，允许生成');
+          log('✅ [权限检查] 当前用户是管理员，允许生成');
           return true;
         }
 
         if (city.isCurrentUserModerator) {
-          print('✅ [权限检查] 当前用户是该城市版主，允许生成');
+          log('✅ [权限检查] 当前用户是该城市版主，允许生成');
           return true;
         }
 
-        print('❌ [权限检查] 当前用户既不是管理员也不是该城市版主');
+        log('❌ [权限检查] 当前用户既不是管理员也不是该城市版主');
         _showNoPermissionDialog();
         return false;
       } else {
-        print('⚠️ [权限检查] 城市信息为空');
+        log('⚠️ [权限检查] 城市信息为空');
       }
     } catch (e) {
-      print('❌ [权限检查] 获取城市信息异常: $e');
+      log('❌ [权限检查] 获取城市信息异常: $e');
     }
 
     // 如果无法获取城市信息，从 token 获取角色（仅检查 admin）
-    print('🔐 [权限检查] 从 token 获取角色信息...');
+    log('🔐 [权限检查] 从 token 获取角色信息...');
     final tokenService = TokenStorageService();
     final role = await tokenService.getUserRole();
-    print('   用户角色: $role');
+    log('   用户角色: $role');
 
     if (role == 'admin') {
-      print('✅ [权限检查] 用户是管理员，允许生成');
+      log('✅ [权限检查] 用户是管理员，允许生成');
       return true;
     }
 
-    print('❌ [权限检查] 用户无权限生成指南');
+    log('❌ [权限检查] 用户无权限生成指南');
     _showNoPermissionDialog();
     return false;
   }
@@ -1033,8 +1035,8 @@ class _CityDetailPageState extends State<CityDetailPage>
       return;
     }
 
-    print('🎬 [ProgressDialog] 准备显示对话框');
-    print('   当前状态: isGenerating=${controller.isGeneratingGuide}, progress=${controller.guideGenerationProgress}%');
+    log('🎬 [ProgressDialog] 准备显示对话框');
+    log('   当前状态: isGenerating=${controller.isGeneratingGuide}, progress=${controller.guideGenerationProgress}%');
 
     // 在显示对话框之前设置监听器
     Worker? statusWorker;
@@ -1047,23 +1049,23 @@ class _CityDetailPageState extends State<CityDetailPage>
         // 🎯 在对话框显示后立即设置监听器
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (statusWorker == null) {
-            print('🔧 [ProgressDialog] 设置 ever 监听器');
-            print('   当前 isGuideCompleted 值: ${controller.isGuideCompleted}');
+            log('🔧 [ProgressDialog] 设置 ever 监听器');
+            log('   当前 isGuideCompleted 值: ${controller.isGuideCompleted}');
 
             statusWorker = ever(
               controller.isGuideCompletedRx,
               (completed) {
-                print('🔔 [ProgressDialog] ever 回调被触发！completed=$completed');
+                log('🔔 [ProgressDialog] ever 回调被触发！completed=$completed');
 
                 if (completed) {
-                  print('🎉 [ProgressDialog] 任务已完成，800ms后关闭对话框');
+                  log('🎉 [ProgressDialog] 任务已完成，800ms后关闭对话框');
 
                   Future.delayed(const Duration(milliseconds: 800), () {
-                    print('🚪 [ProgressDialog] 执行关闭操作');
+                    log('🚪 [ProgressDialog] 执行关闭操作');
 
                     if (Navigator.of(dialogContext).canPop()) {
                       Navigator.of(dialogContext).pop();
-                      print('✅ [ProgressDialog] 对话框已关闭');
+                      log('✅ [ProgressDialog] 对话框已关闭');
 
                       // 清理监听器
                       statusWorker?.dispose();
@@ -1071,7 +1073,7 @@ class _CityDetailPageState extends State<CityDetailPage>
 
                       // 延迟500ms加载最新guide数据
                       Future.delayed(const Duration(milliseconds: 500), () {
-                        print('🔄 [ProgressDialog] 重新加载 guide 数据');
+                        log('🔄 [ProgressDialog] 重新加载 guide 数据');
                         controller.loadCityGuide(
                           cityId: cityId,
                           cityName: cityName,
@@ -1084,7 +1086,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                         }
                       });
                     } else {
-                      print('❌ [ProgressDialog] 无法关闭 - canPop=false');
+                      log('❌ [ProgressDialog] 无法关闭 - canPop=false');
                     }
                   });
                 }
@@ -1094,7 +1096,7 @@ class _CityDetailPageState extends State<CityDetailPage>
         });
 
         return Obx(() {
-          print(
+          log(
               '🔄 [ProgressDialog] Obx rebuild - progress=${controller.guideGenerationProgress}%, completed=${controller.isGuideCompleted}');
 
           return AlertDialog(
@@ -1155,7 +1157,7 @@ class _CityDetailPageState extends State<CityDetailPage>
               if (controller.isGeneratingGuide)
                 TextButton(
                   onPressed: () {
-                    print('❌ [ProgressDialog] 用户取消');
+                    log('❌ [ProgressDialog] 用户取消');
                     statusWorker?.dispose();
                     Navigator.of(dialogContext).pop();
                   },
@@ -1168,7 +1170,7 @@ class _CityDetailPageState extends State<CityDetailPage>
     );
 
     // 启动异步生成任务
-    print('🚀 [ProgressDialog] 启动生成任务');
+    log('🚀 [ProgressDialog] 启动生成任务');
     controller.generateDigitalNomadGuideStream(
       cityId: cityId,
       cityName: cityName,
@@ -1266,9 +1268,9 @@ class _CityDetailPageState extends State<CityDetailPage>
     try {
       final aiController = Get.find<AiStateController>();
       aiController.resetGuideState();
-      print('🧹 [CityDetailPage] 页面销毁,已清空指南状态');
+      log('🧹 [CityDetailPage] 页面销毁,已清空指南状态');
     } catch (e) {
-      print('⚠️ [CityDetailPage] 清空指南状态失败: $e');
+      log('⚠️ [CityDetailPage] 清空指南状态失败: $e');
     }
 
     // 🔥 清空评分数据,防止跳转到其他城市时显示旧数据
@@ -1277,9 +1279,9 @@ class _CityDetailPageState extends State<CityDetailPage>
       ratingController.statistics.clear();
       ratingController.categories.clear();
       ratingController.overallScore.value = 0.0;
-      print('🧹 [CityDetailPage] 页面销毁,已清空评分数据');
+      log('🧹 [CityDetailPage] 页面销毁,已清空评分数据');
     } catch (e) {
-      print('⚠️ [CityDetailPage] 清空评分数据失败: $e');
+      log('⚠️ [CityDetailPage] 清空评分数据失败: $e');
     }
 
     super.dispose();
@@ -1991,7 +1993,7 @@ class _CityDetailPageState extends State<CityDetailPage>
 
         // 如果是不同城市,先清空旧数据
         if (currentGuide != null && currentGuide.cityId != cityId) {
-          print('🔄 [GuideTab] 城市切换: ${currentGuide.cityId} → $cityId, 清空旧数据');
+          log('🔄 [GuideTab] 城市切换: ${currentGuide.cityId} → $cityId, 清空旧数据');
           controller.resetGuideState();
         }
 
@@ -1999,7 +2001,7 @@ class _CityDetailPageState extends State<CityDetailPage>
         if (!controller.isGeneratingGuide && !controller.isLoadingGuide) {
           final shouldLoad = currentGuide == null || currentGuide.cityId != cityId;
           if (shouldLoad) {
-            print('📖 [GuideTab] 加载城市指南: $cityName (ID: $cityId)');
+            log('📖 [GuideTab] 加载城市指南: $cityName (ID: $cityId)');
             controller.loadCityGuide(
               cityId: cityId,
               cityName: cityName,
@@ -2014,13 +2016,13 @@ class _CityDetailPageState extends State<CityDetailPage>
     }
 
     return Obx(() {
-      print(
+      log(
           '🔍 [GuideTab] Rebuilding... cityId=$cityId, isLoading=${controller.isLoadingGuide}, isGenerating=${controller.isGeneratingGuide}, guide=${controller.currentGuide != null}, guideCity=${controller.currentGuide?.cityId}');
 
       // 优先显示指南内容(如果有且是当前城市的)
       final guide = controller.currentGuide;
       if (guide != null && guide.cityId == cityId) {
-        print('✅ [GuideTab] Showing guide content for $cityName');
+        log('✅ [GuideTab] Showing guide content for $cityName');
         return _buildGuideContent(context, guide, controller);
       }
 
@@ -2059,7 +2061,7 @@ class _CityDetailPageState extends State<CityDetailPage>
       }
 
       // 只有在确实没有数据且不在加载中时，才显示空状态
-      print('⚠️ [GuideTab] Guide is null and not loading, showing empty state');
+      log('⚠️ [GuideTab] Guide is null and not loading, showing empty state');
       // 显示空状态,带有"AI 生成"按钮
       return Center(
         child: SingleChildScrollView(
@@ -4181,7 +4183,7 @@ class _CityDetailPageState extends State<CityDetailPage>
   // Hotels Tab - 显示城市的酒店列表
   Widget _buildHotelsTab(CityDetailStateController controller) {
     final parsedCityId = int.tryParse(cityId);
-    print('🏨 Hotels Tab - cityId: $cityId, parsed: $parsedCityId, cityName: $cityName');
+    log('🏨 Hotels Tab - cityId: $cityId, parsed: $parsedCityId, cityName: $cityName');
 
     return HotelListPage(
       cityId: parsedCityId,
@@ -4456,11 +4458,11 @@ class _CityDetailPageState extends State<CityDetailPage>
     final cityDetailController = Get.find<CityDetailStateController>();
     final city = cityDetailController.currentCity.value;
 
-    print('🔍 [_showAddCoworkingPage] 城市数据检查:');
-    print('   currentCity: ${city != null ? "已加载" : "null"}');
-    print('   city.name: ${city?.name}');
-    print('   city.country: ${city?.country}');
-    print('   city.region: ${city?.region}');
+    log('🔍 [_showAddCoworkingPage] 城市数据检查:');
+    log('   currentCity: ${city != null ? "已加载" : "null"}');
+    log('   city.name: ${city?.name}');
+    log('   city.country: ${city?.country}');
+    log('   city.region: ${city?.region}');
 
     final result = await Get.to(() => AddCoworkingPage(
           cityName: cityName,
@@ -4471,7 +4473,7 @@ class _CityDetailPageState extends State<CityDetailPage>
     // 无论是否成功，返回时都重新加载数据
     final coworkingController = Get.find<CoworkingStateController>();
     coworkingController.loadCoworkingSpacesByCity(cityId);
-    print('🔄 [AddCoworking] 返回页面，重新加载 coworking 数据');
+    log('🔄 [AddCoworking] 返回页面，重新加载 coworking 数据');
 
     if (result != null && result == true) {
       AppToast.success(
@@ -4538,11 +4540,11 @@ class _CityDetailPageState extends State<CityDetailPage>
     final cityDetailController = Get.find<CityDetailStateController>();
     final city = cityDetailController.currentCity.value;
 
-    print('🔍 [showAddCoworkingPage] 城市数据检查:');
-    print('   currentCity: ${city != null ? "已加载" : "null"}');
-    print('   city.name: ${city?.name}');
-    print('   city.country: ${city?.country}');
-    print('   city.region: ${city?.region}');
+    log('🔍 [showAddCoworkingPage] 城市数据检查:');
+    log('   currentCity: ${city != null ? "已加载" : "null"}');
+    log('   city.name: ${city?.name}');
+    log('   city.country: ${city?.country}');
+    log('   city.region: ${city?.region}');
 
     final result = await Get.to(() => AddCoworkingPage(
           cityName: cityName,

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/config/api_config.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/notification/domain/entities/app_notification.dart';
@@ -17,11 +19,11 @@ class NotificationRepository implements INotificationRepository {
     try {
       final userController = Get.find<UserStateController>();
       final userId = userController.currentUser.value?.id;
-      print('📋 NotificationRepository._currentUserId: $userId');
-      print('📋 currentUser 对象: ${userController.currentUser.value}');
+      log('📋 NotificationRepository._currentUserId: $userId');
+      log('📋 currentUser 对象: ${userController.currentUser.value}');
       return userId;
     } catch (e) {
-      print('❌ 获取当前用户ID失败: $e');
+      log('❌ 获取当前用户ID失败: $e');
       return null;
     }
   }
@@ -55,12 +57,12 @@ class NotificationRepository implements INotificationRepository {
         queryParameters: params,
       );
 
-      print('📦 Repository 收到响应: statusCode=${response.statusCode}');
-      print('📦 response.data: ${response.data}');
+      log('📦 Repository 收到响应: statusCode=${response.statusCode}');
+      log('📦 response.data: ${response.data}');
 
       if (response.statusCode == 200) {
         if (response.data == null) {
-          print('❌ response.data 为 null');
+          log('❌ response.data 为 null');
           return Result.failure(const NetworkException('响应数据为空'));
         }
 
@@ -71,7 +73,7 @@ class NotificationRepository implements INotificationRepository {
         final unreadCount = response.data['unreadCount'] as int? ?? 0;
 
         if (notificationsList == null || notificationsList is! List) {
-          print('⚠️ notificationsList 为空或不是 List 类型');
+          log('⚠️ notificationsList 为空或不是 List 类型');
           return Result.success(NotificationDataResponse(
             notifications: [],
             totalCount: 0,
@@ -81,19 +83,19 @@ class NotificationRepository implements INotificationRepository {
 
         final notifications = notificationsList.map((json) => _mapFromJson(json)).toList();
 
-        print('✅ 成功解析 ${notifications.length} 条通知, 未读: $unreadCount');
+        log('✅ 成功解析 ${notifications.length} 条通知, 未读: $unreadCount');
         return Result.success(NotificationDataResponse(
           notifications: notifications,
           totalCount: totalCount,
           unreadCount: unreadCount,
         ));
       } else {
-        print('❌ HTTP 状态码非 200: ${response.statusCode}');
+        log('❌ HTTP 状态码非 200: ${response.statusCode}');
         return Result.failure(NetworkException(response.data?['message'] ?? '获取通知列表失败'));
       }
     } catch (e, stackTrace) {
-      print('❌ Repository 异常: $e');
-      print('❌ 堆栈: $stackTrace');
+      log('❌ Repository 异常: $e');
+      log('❌ 堆栈: $stackTrace');
       return Result.failure(NetworkException('获取通知列表失败: $e'));
     }
   }
@@ -245,7 +247,7 @@ class NotificationRepository implements INotificationRepository {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      print('📤 发送通知给管理员: title=$title, type=${_typeToString(type)}');
+      log('📤 发送通知给管理员: title=$title, type=${_typeToString(type)}');
       
       final response = await _httpService.post(
         '${ApiConfig.apiBaseUrl}/notifications/admins',
@@ -258,34 +260,34 @@ class NotificationRepository implements INotificationRepository {
         },
       );
 
-      print('📤 SendToAdmins 响应: statusCode=${response.statusCode}');
-      print('📤 response.data 类型: ${response.data?.runtimeType}');
-      print('📤 response.data: ${response.data}');
+      log('📤 SendToAdmins 响应: statusCode=${response.statusCode}');
+      log('📤 response.data 类型: ${response.data?.runtimeType}');
+      log('📤 response.data: ${response.data}');
 
       if (response.statusCode == 200) {
         // HttpService 已经解包了响应，response.data 直接是数据数组
         if (response.data == null) {
-          print('⚠️ response.data 为 null，返回空列表');
+          log('⚠️ response.data 为 null，返回空列表');
           return Result.success([]);
         }
 
         if (response.data is! List) {
-          print('❌ response.data 不是 List 类型: ${response.data.runtimeType}');
+          log('❌ response.data 不是 List 类型: ${response.data.runtimeType}');
           return Result.failure(const NetworkException('响应数据格式错误'));
         }
 
         final notifications =
             (response.data as List).map((json) => _mapFromJson(json as Map<String, dynamic>)).toList();
         
-        print('✅ 成功发送通知给 ${notifications.length} 位管理员');
+        log('✅ 成功发送通知给 ${notifications.length} 位管理员');
         return Result.success(notifications);
       } else {
-        print('❌ 发送失败: statusCode=${response.statusCode}');
+        log('❌ 发送失败: statusCode=${response.statusCode}');
         return Result.failure(NetworkException(response.data?['message'] ?? '发送通知给管理员失败'));
       }
     } catch (e, stackTrace) {
-      print('❌ 发送通知给管理员异常: $e');
-      print('❌ 堆栈: $stackTrace');
+      log('❌ 发送通知给管理员异常: $e');
+      log('❌ 堆栈: $stackTrace');
       return Result.failure(NetworkException('发送通知给管理员失败: $e'));
     }
   }

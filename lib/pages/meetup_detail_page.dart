@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
 import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
@@ -55,8 +57,8 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     // 直接使用实体中的 isOrganizer 字段
     final result = _meetup.value.isOrganizer;
 
-    print('🔍 组织者判断 - meetup.isOrganizer: $result');
-    print('🔍 组织者判断 - 活动组织者ID: ${_meetup.value.organizer.id}');
+    log('🔍 组织者判断 - meetup.isOrganizer: $result');
+    log('🔍 组织者判断 - 活动组织者ID: ${_meetup.value.organizer.id}');
 
     return result;
   }
@@ -89,7 +91,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
       if (data['participants'] != null) {
         final participantsList = data['participants'] as List<dynamic>;
         _participants.value = participantsList.map((p) => p as Map<String, dynamic>).toList();
-        print('✅ 成功加载 ${_participants.length} 位参与者');
+        log('✅ 成功加载 ${_participants.length} 位参与者');
       }
 
       // 映射为 Meetup 实体
@@ -97,9 +99,9 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
       final meetup = dto.toDomain();
 
       _meetup.value = meetup;
-      print('✅ 成功加载活动详情: ${meetup.title}');
+      log('✅ 成功加载活动详情: ${meetup.title}');
     } catch (e) {
-      print('❌ 加载活动详情失败: $e');
+      log('❌ 加载活动详情失败: $e');
       AppToast.error('加载活动详情失败');
     } finally {
       _isLoading.value = false;
@@ -596,9 +598,9 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     final l10n = AppLocalizations.of(context)!;
 
     // 添加调试输出
-    print('🎨 构建底部按钮栏 - _isOrganizer: $_isOrganizer');
-    print('🎨 构建底部按钮栏 - _isJoined: $_isJoined');
-    print('🎨 构建底部按钮栏 - meetup status: ${_meetup.value.status}');
+    log('🎨 构建底部按钮栏 - _isOrganizer: $_isOrganizer');
+    log('🎨 构建底部按钮栏 - _isJoined: $_isJoined');
+    log('🎨 构建底部按钮栏 - meetup status: ${_meetup.value.status}');
 
     return Obx(() => Container(
           padding: EdgeInsets.all(20.w),
@@ -833,14 +835,14 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
       // 调用 Repository
       if (isJoining) {
         await _meetupRepository.rsvpToMeetup(_meetup.value.id);
-        print('✅ 成功加入活动: ${_meetup.value.title}');
+        log('✅ 成功加入活动: ${_meetup.value.title}');
         // 更新 Controller 的 rsvpedMeetupIds
         if (!_meetupController.rsvpedMeetupIds.contains(_meetup.value.id)) {
           _meetupController.rsvpedMeetupIds.add(_meetup.value.id);
         }
       } else {
         await _meetupRepository.cancelRsvp(_meetup.value.id);
-        print('✅ 成功退出活动: ${_meetup.value.title}');
+        log('✅ 成功退出活动: ${_meetup.value.title}');
         // 更新 Controller 的 rsvpedMeetupIds
         _meetupController.rsvpedMeetupIds.remove(_meetup.value.id);
       }
@@ -861,7 +863,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
         );
       }
     } catch (e) {
-      print('❌ 加入/退出活动失败: $e');
+      log('❌ 加入/退出活动失败: $e');
       AppToast.error(
         _isJoined ? '退出活动失败' : '加入活动失败',
       );
@@ -897,7 +899,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
 
     try {
       await meetupRepository.cancelMeetup(_meetup.value.id);
-      print('✅ 成功取消活动: ${_meetup.value.title}');
+      log('✅ 成功取消活动: ${_meetup.value.title}');
 
       // 显示成功消息
       AppToast.success(
@@ -908,7 +910,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
       // 如果成功,重新加载活动详情以更新 UI
       await _loadEventDetails();
     } catch (e) {
-      print('❌ 取消活动失败: $e');
+      log('❌ 取消活动失败: $e');
       AppToast.error('取消活动失败');
     }
   }

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/coworking/application/use_cases/coworking_use_cases.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
@@ -72,7 +74,7 @@ class CoworkingStateController extends GetxController {
   }) async {
     // 防止重复加载
     if (isLoadingSpaces.value) {
-      print('⏸️ Coworking加载中,跳过重复请求');
+      log('⏸️ Coworking加载中,跳过重复请求');
       return;
     }
 
@@ -80,7 +82,7 @@ class CoworkingStateController extends GetxController {
     if (!refresh &&
         currentCityId.value == cityId &&
         coworkingSpaces.isNotEmpty) {
-      print('✅ 使用Coworking缓存数据,跳过请求');
+      log('✅ 使用Coworking缓存数据,跳过请求');
       return;
     }
 
@@ -97,10 +99,10 @@ class CoworkingStateController extends GetxController {
 
     currentCityId.value = cityId;
 
-    print('🏢 开始加载 Coworking 列表:');
-    print('   城市ID: $cityId');
-    print('   页码: ${currentPage.value}');
-    print('   页大小: $pageSize');
+    log('🏢 开始加载 Coworking 列表:');
+    log('   城市ID: $cityId');
+    log('   页码: ${currentPage.value}');
+    log('   页大小: $pageSize');
 
     errorMessage.value = '';
 
@@ -115,10 +117,10 @@ class CoworkingStateController extends GetxController {
 
       result.fold(
         onSuccess: (spaces) {
-          print('✅ 成功加载 ${spaces.length} 个 Coworking 空间');
+          log('✅ 成功加载 ${spaces.length} 个 Coworking 空间');
           // 调试：检查 creatorName 字段
           for (var space in spaces) {
-            print(
+            log(
                 '   空间: ${space.name}, CreatorName: ${space.creatorName ?? "NULL"}');
           }
 
@@ -154,9 +156,9 @@ class CoworkingStateController extends GetxController {
       return;
     }
 
-    print('📄 加载更多 Coworking:');
-    print('   当前页: ${currentPage.value}');
-    print('   下一页: ${currentPage.value + 1}');
+    log('📄 加载更多 Coworking:');
+    log('   当前页: ${currentPage.value}');
+    log('   下一页: ${currentPage.value + 1}');
 
     isLoadingMore.value = true;
 
@@ -173,12 +175,12 @@ class CoworkingStateController extends GetxController {
 
       result.fold(
         onSuccess: (spaces) {
-          print('✅ 加载更多成功: ${spaces.length} 个空间');
+          log('✅ 加载更多成功: ${spaces.length} 个空间');
 
           // 判断是否还有更多数据
           if (spaces.length < pageSize) {
             hasMore.value = false;
-            print('📭 没有更多数据了');
+            log('📭 没有更多数据了');
           }
 
           // 追加新数据
@@ -189,14 +191,14 @@ class CoworkingStateController extends GetxController {
           // 加载失败，页码回退
           currentPage.value--;
           errorMessage.value = exception.message;
-          print('❌ 加载更多失败: ${exception.message}');
+          log('❌ 加载更多失败: ${exception.message}');
         },
       );
     } catch (e) {
       // 异常，页码回退
       currentPage.value--;
       errorMessage.value = '加载更多失败: $e';
-      print('❌ 加载更多异常: $e');
+      log('❌ 加载更多异常: $e');
     } finally {
       isLoadingMore.value = false;
     }
@@ -219,16 +221,16 @@ class CoworkingStateController extends GetxController {
       result.fold(
         onSuccess: (space) {
           currentCoworking.value = space;
-          // print('✅ 成功加载 Coworking 详情: ${space.name}');
+          // log('✅ 成功加载 Coworking 详情: ${space.name}');
         },
         onFailure: (exception) {
           errorMessage.value = exception.message;
-          // print('❌ 加载 Coworking 详情失败: ${exception.message}');
+          // log('❌ 加载 Coworking 详情失败: ${exception.message}');
         },
       );
     } catch (e) {
       errorMessage.value = '加载详情失败: $e';
-      // print('❌ 加载 Coworking 详情异常: $e');
+      // log('❌ 加载 Coworking 详情异常: $e');
     } finally {
       isLoadingDetail.value = false;
     }
@@ -250,16 +252,16 @@ class CoworkingStateController extends GetxController {
       result.fold(
         onSuccess: (count) {
           coworkingCount.value = count;
-          // print('✅ 城市 Coworking 数量: $count');
+          // log('✅ 城市 Coworking 数量: $count');
         },
         onFailure: (exception) {
           coworkingCount.value = 0;
-          // print('❌ 获取 Coworking 数量失败: ${exception.message}');
+          // log('❌ 获取 Coworking 数量失败: ${exception.message}');
         },
       );
     } catch (e) {
       coworkingCount.value = 0;
-      // print('❌ 获取 Coworking 数量异常: $e');
+      // log('❌ 获取 Coworking 数量异常: $e');
     } finally {
       isLoadingCount.value = false;
     }

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_review.dart' as review_entity;
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
@@ -63,7 +65,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
         _isLoadingComments = false;
       });
     } catch (e) {
-      print('加载评论失败: $e');
+      log('加载评论失败: $e');
       setState(() {
         _isLoadingComments = false;
       });

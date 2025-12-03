@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/features/moderator/domain/entities/moderator_application.dart';
 import 'package:df_admin_mobile/features/moderator/domain/repositories/i_moderator_application_repository.dart';
 import 'package:get/get.dart';
@@ -57,7 +59,7 @@ class ModeratorApplicationController extends GetxController {
       final applications = await _repository.getMyApplications();
       myApplications.value = applications;
     } catch (e) {
-      print('❌ 加载我的申请失败: $e');
+      log('❌ 加载我的申请失败: $e');
     } finally {
       isLoading.value = false;
     }
@@ -73,7 +75,7 @@ class ModeratorApplicationController extends GetxController {
       );
       pendingApplications.value = applications;
     } catch (e) {
-      print('❌ 加载待处理申请失败: $e');
+      log('❌ 加载待处理申请失败: $e');
     } finally {
       isLoading.value = false;
     }
@@ -107,7 +109,7 @@ class ModeratorApplicationController extends GetxController {
       final stats = await _repository.getStatistics();
       statistics.value = stats;
     } catch (e) {
-      print('❌ 加载统计数据失败: $e');
+      log('❌ 加载统计数据失败: $e');
     }
   }
 }

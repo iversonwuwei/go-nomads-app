@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -131,7 +133,7 @@ class _EditInterestsPageState extends State<EditInterestsPage> {
         });
       }
     } catch (e) {
-      print('加载兴趣失败: $e');
+      log('加载兴趣失败: $e');
       if (mounted) {
         setState(() {
           _loading = false;
@@ -163,7 +165,7 @@ class _EditInterestsPageState extends State<EditInterestsPage> {
         AppToast.success('已添加兴趣');
       }
     } catch (e) {
-      print('操作兴趣失败: $e');
+      log('操作兴趣失败: $e');
       AppToast.error('操作失败，请重试');
     }
   }
@@ -193,7 +195,7 @@ class _EditInterestsPageState extends State<EditInterestsPage> {
       });
       AppToast.success('已添加自定义兴趣');
     } catch (e) {
-      print('添加自定义兴趣失败: $e');
+      log('添加自定义兴趣失败: $e');
       AppToast.error('添加失败，请重试');
     }
   }

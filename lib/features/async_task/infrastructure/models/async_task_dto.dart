@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'dart:convert';
 
 import 'package:df_admin_mobile/features/async_task/domain/entities/async_task.dart';
@@ -48,7 +50,7 @@ class AsyncTaskDto {
         try {
           result = jsonDecode(rawResult) as Map<String, dynamic>;
         } catch (e) {
-          print('⚠️ 解析 result JSON 字符串失败: $e');
+          log('⚠️ 解析 result JSON 字符串失败: $e');
           result = null;
         }
       }

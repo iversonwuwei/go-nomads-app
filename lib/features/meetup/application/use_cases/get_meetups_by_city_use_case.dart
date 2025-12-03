@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
 import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
 
@@ -15,8 +17,8 @@ class GetMeetupsByCityUseCase {
     int pageSize = 20,
   }) async {
     try {
-      print('🎯 执行 GetMeetupsByCityUseCase...');
-      print('   城市ID: $cityId, 状态: $status');
+      log('🎯 执行 GetMeetupsByCityUseCase...');
+      log('   城市ID: $cityId, 状态: $status');
 
       final meetups = await _repository.getMeetups(
         status: status ?? 'upcoming',
@@ -29,10 +31,10 @@ class GetMeetupsByCityUseCase {
       meetups
           .sort((a, b) => a.schedule.startTime.compareTo(b.schedule.startTime));
 
-      print('✅ 获取到 ${meetups.length} 个活动');
+      log('✅ 获取到 ${meetups.length} 个活动');
       return meetups;
     } catch (e) {
-      print('❌ GetMeetupsByCityUseCase 执行失败: $e');
+      log('❌ GetMeetupsByCityUseCase 执行失败: $e');
       rethrow;
     }
   }
@@ -45,7 +47,7 @@ class GetMeetupsByCityUseCase {
     int pageSize = 20,
   }) async {
     try {
-      print('🎯 按城市名称获取活动: $cityName');
+      log('🎯 按城市名称获取活动: $cityName');
 
       // 获取所有活动并过滤
       final allMeetups = await _repository.getMeetups(
@@ -64,10 +66,10 @@ class GetMeetupsByCityUseCase {
       filtered
           .sort((a, b) => a.schedule.startTime.compareTo(b.schedule.startTime));
 
-      print('✅ 找到 ${filtered.length} 个活动');
+      log('✅ 找到 ${filtered.length} 个活动');
       return filtered;
     } catch (e) {
-      print('❌ GetMeetupsByCityUseCase.executeByName 失败: $e');
+      log('❌ GetMeetupsByCityUseCase.executeByName 失败: $e');
       rethrow;
     }
   }

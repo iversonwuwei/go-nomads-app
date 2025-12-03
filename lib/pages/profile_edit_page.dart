@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/config/supabase_config.dart';
 import 'package:df_admin_mobile/controllers/locale_controller.dart';
@@ -1011,9 +1013,9 @@ class _ProfileEditPageState extends State<ProfileEditPage>
     }
 
     final currentSkills = currentUser.skills;
-    print('📋 打开技能 Drawer: currentSkills = ${currentSkills.length} 个');
+    log('📋 打开技能 Drawer: currentSkills = ${currentSkills.length} 个');
     for (var skill in currentSkills) {
-      print('  - id=${skill.id}, name=${skill.name}, level=${skill.level}');
+      log('  - id=${skill.id}, name=${skill.name}, level=${skill.level}');
     }
 
     showModalBottomSheet(
@@ -1053,7 +1055,7 @@ class _ProfileEditPageState extends State<ProfileEditPage>
                 AppToast.error('保存失败，请稍后重试');
               }
             } catch (e) {
-              print('❌ 保存技能失败: $e');
+              log('❌ 保存技能失败: $e');
               AppToast.error('保存失败，请稍后重试');
             }
           }
@@ -1074,9 +1076,9 @@ class _ProfileEditPageState extends State<ProfileEditPage>
     }
 
     final currentInterests = currentUser.interests;
-    print('📋 打开兴趣 Drawer: currentInterests = ${currentInterests.length} 个');
+    log('📋 打开兴趣 Drawer: currentInterests = ${currentInterests.length} 个');
     for (var interest in currentInterests) {
-      print('  - id=${interest.id}, name=${interest.name}');
+      log('  - id=${interest.id}, name=${interest.name}');
     }
 
     showModalBottomSheet(
@@ -1115,7 +1117,7 @@ class _ProfileEditPageState extends State<ProfileEditPage>
                 AppToast.error('保存失败，请稍后重试');
               }
             } catch (e) {
-              print('❌ 保存兴趣失败: $e');
+              log('❌ 保存兴趣失败: $e');
               AppToast.error('保存失败，请稍后重试');
             }
           }
@@ -1537,7 +1539,7 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
         }
       });
     } catch (e) {
-      print('❌ 加载技能失败: $e');
+      log('❌ 加载技能失败: $e');
       if (!mounted) return;
       setState(() => _isLoading = false);
       AppToast.error('无法加载技能列表: $e');
@@ -1563,9 +1565,9 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
 
   void _preselectCurrentSkills() {
     // 预填充用户已有的技能
-    print('🔍 预选技能开始: currentSkills = ${widget.currentSkills.length} 个');
+    log('🔍 预选技能开始: currentSkills = ${widget.currentSkills.length} 个');
     for (var userSkill in widget.currentSkills) {
-      print('  - 查找技能: id=${userSkill.id}, name=${userSkill.name}');
+      log('  - 查找技能: id=${userSkill.id}, name=${userSkill.name}');
       for (var category in _skillsByCategory) {
         final skill = category.skills.firstWhere(
           (s) => s.id == userSkill.id,
@@ -1579,7 +1581,7 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
 
         if (skill.id.isNotEmpty &&
             !_selectedSkills.any((s) => s.skillId == skill.id)) {
-          print('  ✅ 找到并添加技能: ${skill.name}');
+          log('  ✅ 找到并添加技能: ${skill.name}');
           _selectedSkills.add(UserSkill(
             id: DateTime.now().millisecondsSinceEpoch.toString(),
             userId: '',
@@ -1592,11 +1594,11 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
             createdAt: DateTime.now(),
           ));
         } else if (skill.id.isEmpty) {
-          print('  ❌ 未找到技能: ${userSkill.name}');
+          log('  ❌ 未找到技能: ${userSkill.name}');
         }
       }
     }
-    print('🔍 预选完成: _selectedSkills = ${_selectedSkills.length} 个');
+    log('🔍 预选完成: _selectedSkills = ${_selectedSkills.length} 个');
   }
 
   void _toggleSkill(Skill skill) {
@@ -1843,7 +1845,7 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
             final isSelected =
                 _selectedSkills.any((s) => s.skillId == skill.id);
             if (isSelected) {
-              print('🎯 技能 ${skill.name} (id=${skill.id}) 被标记为选中');
+              log('🎯 技能 ${skill.name} (id=${skill.id}) 被标记为选中');
             }
             return FilterChip(
               avatar: Text(skill.icon ?? '💼'),
@@ -1938,7 +1940,7 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
         }
       });
     } catch (e) {
-      print('❌ 加载兴趣失败: $e');
+      log('❌ 加载兴趣失败: $e');
       if (!mounted) return;
       setState(() => _isLoading = false);
       AppToast.error('无法加载兴趣列表: $e');
@@ -1965,9 +1967,9 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
 
   void _preselectCurrentInterests() {
     // 预填充用户已有的兴趣
-    print('🔍 预选兴趣开始: currentInterests = ${widget.currentInterests.length} 个');
+    log('🔍 预选兴趣开始: currentInterests = ${widget.currentInterests.length} 个');
     for (var userInterest in widget.currentInterests) {
-      print('  - 查找兴趣: id=${userInterest.id}, name=${userInterest.name}');
+      log('  - 查找兴趣: id=${userInterest.id}, name=${userInterest.name}');
       for (var category in _interestsByCategory) {
         final interest = category.interests.firstWhere(
           (i) => i.id == userInterest.id,
@@ -1981,7 +1983,7 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
 
         if (interest.id.isNotEmpty &&
             !_selectedInterests.any((i) => i.interestId == interest.id)) {
-          print('  ✅ 找到并添加兴趣: ${interest.name}');
+          log('  ✅ 找到并添加兴趣: ${interest.name}');
           _selectedInterests.add(UserInterest(
             id: DateTime.now().millisecondsSinceEpoch.toString(),
             userId: '',
@@ -1993,11 +1995,11 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
             createdAt: DateTime.now(),
           ));
         } else if (interest.id.isEmpty) {
-          print('  ❌ 未找到兴趣: ${userInterest.name}');
+          log('  ❌ 未找到兴趣: ${userInterest.name}');
         }
       }
     }
-    print('🔍 预选完成: _selectedInterests = ${_selectedInterests.length} 个');
+    log('🔍 预选完成: _selectedInterests = ${_selectedInterests.length} 个');
   }
 
   void _toggleInterest(Interest interest) {
@@ -2244,7 +2246,7 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
             final isSelected =
                 _selectedInterests.any((i) => i.interestId == interest.id);
             if (isSelected) {
-              print('🎯 兴趣 ${interest.name} (id=${interest.id}) 被标记为选中');
+              log('🎯 兴趣 ${interest.name} (id=${interest.id}) 被标记为选中');
             }
             return FilterChip(
               avatar: Text(interest.icon ?? '❤️'),

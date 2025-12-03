@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'dart:async';
 
 import 'package:df_admin_mobile/core/core.dart';
@@ -97,13 +99,13 @@ class CityStateController extends GetxController {
 
     // 监听城市图片更新事件
     _cityImageUpdatedSubscription = signalRService.cityImageUpdatedStream.listen((data) {
-      print('🖼️ [CityStateController] 收到城市图片更新通知: $data');
+      log('🖼️ [CityStateController] 收到城市图片更新通知: $data');
 
       final cityId = data['cityId'] as String?;
       final success = data['success'] as bool? ?? false;
 
       if (cityId == null) {
-        print('⚠️ [CityStateController] 城市ID为空，忽略通知');
+        log('⚠️ [CityStateController] 城市ID为空，忽略通知');
         return;
       }
 
@@ -112,7 +114,7 @@ class CityStateController extends GetxController {
 
       if (!success) {
         final errorMessage = data['errorMessage'] as String? ?? '图片生成失败';
-        print('❌ [CityStateController] 城市图片生成失败: $errorMessage');
+        log('❌ [CityStateController] 城市图片生成失败: $errorMessage');
         AppToast.error(errorMessage, title: '图片生成失败');
         return;
       }
@@ -140,7 +142,7 @@ class CityStateController extends GetxController {
       AppToast.success('$cityName 的图片已更新', title: '图片生成完成');
     });
 
-    print('✅ [CityStateController] SignalR 城市图片更新监听已设置');
+    log('✅ [CityStateController] SignalR 城市图片更新监听已设置');
   }
 
   @override
@@ -186,13 +188,13 @@ class CityStateController extends GetxController {
   Future<void> loadInitialCities({bool refresh = true}) async {
     // 如果不是强制刷新，且已有数据，跳过加载
     if (!refresh && cities.isNotEmpty) {
-      print('🔄 CityController: 已有缓存数据，跳过加载');
+      log('🔄 CityController: 已有缓存数据，跳过加载');
       return;
     }
 
     // 防止重复请求
     if (isLoading.value) {
-      print('⚠️ CityController: 正在加载中，跳过重复请求');
+      log('⚠️ CityController: 正在加载中，跳过重复请求');
       return;
     }
 
@@ -203,7 +205,7 @@ class CityStateController extends GetxController {
     _hasMoreData = true;
     cities.clear();
 
-    // print('?? ??????????...');
+    // log('?? ??????????...');
 
     final result = await _getCitiesUseCase.execute(
       GetCitiesParams(
@@ -216,13 +218,13 @@ class CityStateController extends GetxController {
 
     result.fold(
       onSuccess: (data) {
-        // print('? ???? ${data.length} ???');
+        // log('? ???? ${data.length} ???');
         cities.value = data;
         _hasMoreData = data.length >= _pageSize;
         isLoading.value = false;
       },
       onFailure: (exception) {
-        // print('? ??????: ${exception.message}');
+        // log('? ??????: ${exception.message}');
         hasError.value = true;
         errorMessage.value = exception.message;
         isLoading.value = false;
@@ -232,7 +234,7 @@ class CityStateController extends GetxController {
         if (exception is! UnauthorizedException) {
           AppToast.error(exception.message, title: '????');
         } else {
-          print('?? ??????: Token ?????');
+          log('?? ??????: Token ?????');
         }
       },
     );
@@ -241,14 +243,14 @@ class CityStateController extends GetxController {
   /// ?????? (???)
   Future<void> loadMoreCities() async {
     if (isLoadingMore.value || !_hasMoreData) {
-      // print('?? ?????????????');
+      // log('?? ?????????????');
       return;
     }
 
     isLoadingMore.value = true;
     _currentPage++;
 
-    // print('?? ??? $_currentPage ?...');
+    // log('?? ??? $_currentPage ?...');
 
     final result = await _getCitiesUseCase.execute(
       GetCitiesParams(
@@ -261,13 +263,13 @@ class CityStateController extends GetxController {
 
     result.fold(
       onSuccess: (data) {
-        // print('? ???? ${data.length} ???');
+        // log('? ???? ${data.length} ???');
         cities.addAll(data);
         _hasMoreData = data.length >= _pageSize;
         isLoadingMore.value = false;
       },
       onFailure: (exception) {
-        // print('? ??????: ${exception.message}');
+        // log('? ??????: ${exception.message}');
         _currentPage--; // ????
         isLoadingMore.value = false;
         AppToast.error(exception.message, title: '????');
@@ -289,7 +291,7 @@ class CityStateController extends GetxController {
     errorMessage.value = null;
     cities.clear();
 
-    // print('?? ????: $query');
+    // log('?? ????: $query');
 
     final result = await _searchCitiesUseCase.execute(
       SearchCitiesParams(keyword: query, pageSize: _pageSize),
@@ -297,12 +299,12 @@ class CityStateController extends GetxController {
 
     result.fold(
       onSuccess: (data) {
-        // print('? ??? ${data.length} ???');
+        // log('? ??? ${data.length} ???');
         cities.value = data;
         isLoading.value = false;
       },
       onFailure: (exception) {
-        // print('? ????: ${exception.message}');
+        // log('? ????: ${exception.message}');
         hasError.value = true;
         errorMessage.value = exception.message;
         isLoading.value = false;
@@ -396,7 +398,7 @@ class CityStateController extends GetxController {
 
   /// ??????
   Future<void> loadRecommendedCities({String? countryId, int limit = 10}) async {
-    // print('?? ??????...');
+    // log('?? ??????...');
 
     final result = await _getRecommendedCitiesUseCase.execute(
       GetRecommendedCitiesParams(countryId: countryId, limit: limit),
@@ -404,11 +406,11 @@ class CityStateController extends GetxController {
 
     result.fold(
       onSuccess: (data) {
-        // print('? ???? ${data.length} ?????');
+        // log('? ???? ${data.length} ?????');
         recommendedCities.value = data;
       },
       onFailure: (exception) {
-        // print('? ????????: ${exception.message}');
+        // log('? ????????: ${exception.message}');
         AppToast.error(exception.message, title: '????');
       },
     );
@@ -416,7 +418,7 @@ class CityStateController extends GetxController {
 
   /// ??????
   Future<void> loadPopularCities({int limit = 10}) async {
-    // print('?? ??????...');
+    // log('?? ??????...');
 
     final result = await _getPopularCitiesUseCase.execute(
       GetPopularCitiesParams(limit: limit),
@@ -424,11 +426,11 @@ class CityStateController extends GetxController {
 
     result.fold(
       onSuccess: (data) {
-        // print('? ???? ${data.length} ?????');
+        // log('? ???? ${data.length} ?????');
         popularCities.value = data;
       },
       onFailure: (exception) {
-        // print('? ????????: ${exception.message}');
+        // log('? ????????: ${exception.message}');
         AppToast.error(exception.message, title: '????');
       },
     );
@@ -436,7 +438,7 @@ class CityStateController extends GetxController {
 
   /// ????????
   Future<void> toggleFavorite(String cityId) async {
-    // print('?? ??????: $cityId');
+    // log('?? ??????: $cityId');
 
     final result = await _toggleCityFavoriteUseCase.execute(
       ToggleCityFavoriteParams(cityId: cityId),
@@ -444,7 +446,7 @@ class CityStateController extends GetxController {
 
     result.fold(
       onSuccess: (isFavorited) {
-        // print('? ???????: $isFavorited');
+        // log('? ???????: $isFavorited');
 
         // ????????????
         final index = cities.indexWhere((city) => city.id == cityId);
@@ -459,7 +461,7 @@ class CityStateController extends GetxController {
         );
       },
       onFailure: (exception) {
-        // print('? ??????: ${exception.message}');
+        // log('? ??????: ${exception.message}');
         AppToast.error(exception.message, title: '????');
       },
     );
@@ -467,17 +469,17 @@ class CityStateController extends GetxController {
 
   /// ????????
   Future<void> loadFavoriteCities() async {
-    // print('?? ??????...');
+    // log('?? ??????...');
 
     final result = await _getFavoriteCitiesUseCase.execute(const NoParams());
 
     result.fold(
       onSuccess: (data) {
-        // print('? ???? ${data.length} ?????');
+        // log('? ???? ${data.length} ?????');
         favoriteCities.value = data;
       },
       onFailure: (exception) {
-        // print('? ????????: ${exception.message}');
+        // log('? ????????: ${exception.message}');
         AppToast.error(exception.message, title: '????');
       },
     );
@@ -485,7 +487,7 @@ class CityStateController extends GetxController {
 
   /// ???????? (? city_list_page ??)
   Future<Result<void>> toggleCityFavorite(String cityId) async {
-    // print('?? ??????: $cityId');
+    // log('?? ??????: $cityId');
 
     final result = await _toggleCityFavoriteUseCase.execute(
       ToggleCityFavoriteParams(cityId: cityId),
@@ -493,7 +495,7 @@ class CityStateController extends GetxController {
 
     return result.fold(
       onSuccess: (isFavorited) {
-        // print('? ???????: $isFavorited');
+        // log('? ???????: $isFavorited');
 
         // ????????????
         final index = cities.indexWhere((city) => city.id == cityId);
@@ -505,7 +507,7 @@ class CityStateController extends GetxController {
         return const Success(null);
       },
       onFailure: (exception) {
-        // print('? ??????: ${exception.message}');
+        // log('? ??????: ${exception.message}');
         return Failure(exception);
       },
     );
@@ -513,17 +515,17 @@ class CityStateController extends GetxController {
 
   /// ?????????ID?? (? city_list_page ??)
   Future<Result<List<String>>> loadUserFavoriteCityIds() async {
-    // print('?? ??????ID??...');
+    // log('?? ??????ID??...');
 
     final result = await _getUserFavoriteCityIdsUseCase.execute(const NoParams());
 
     return result.fold(
       onSuccess: (ids) {
-        // print('? ???? ${ids.length} ?????ID');
+        // log('? ???? ${ids.length} ?????ID');
         return Success(ids);
       },
       onFailure: (exception) {
-        // print('? ??????ID??: ${exception.message}');
+        // log('? ??????ID??: ${exception.message}');
         return Failure(exception);
       },
     );
@@ -588,7 +590,7 @@ class CityStateController extends GetxController {
   /// [cityId] 城市ID
   /// 返回生成结果
   Future<Result<Map<String, dynamic>>> generateCityImages(String cityId) async {
-    print('🖼️ [CityStateController] 开始生成城市图片: $cityId');
+    log('🖼️ [CityStateController] 开始生成城市图片: $cityId');
 
     // 标记为正在生成
     generatingImageCityIds.add(cityId);
@@ -598,19 +600,19 @@ class CityStateController extends GetxController {
 
       return result.fold(
         onSuccess: (data) {
-          print('✅ [CityStateController] 图片生成任务已创建，等待 SignalR 通知');
+          log('✅ [CityStateController] 图片生成任务已创建，等待 SignalR 通知');
           // 注意：这里不移除 cityId，等待 SignalR 通知时再移除
           return Success(data);
         },
         onFailure: (exception) {
-          print('❌ [CityStateController] 图片生成失败: ${exception.message}');
+          log('❌ [CityStateController] 图片生成失败: ${exception.message}');
           // 失败时移除
           generatingImageCityIds.remove(cityId);
           return Failure(exception);
         },
       );
     } catch (e) {
-      print('💥 [CityStateController] 生成图片异常: $e');
+      log('💥 [CityStateController] 生成图片异常: $e');
       // 异常时移除
       generatingImageCityIds.remove(cityId);
       return Failure(UnknownException('生成图片失败: $e'));
@@ -622,23 +624,23 @@ class CityStateController extends GetxController {
   /// [cityId] 城市ID
   /// 更新本地城市列表中的对应城市数据
   Future<void> refreshSingleCity(String cityId) async {
-    print('🔄 [CityStateController] 刷新单个城市数据: $cityId');
+    log('🔄 [CityStateController] 刷新单个城市数据: $cityId');
 
     final result = await _cityRepository.getCityById(cityId);
 
     result.fold(
       onSuccess: (city) {
-        print('✅ [CityStateController] 获取城市数据成功');
+        log('✅ [CityStateController] 获取城市数据成功');
         // 更新列表中的城市数据
         final index = cities.indexWhere((c) => c.id == cityId);
         if (index != -1) {
           cities[index] = city;
           cities.refresh();
-          print('🔄 [CityStateController] 城市列表已更新');
+          log('🔄 [CityStateController] 城市列表已更新');
         }
       },
       onFailure: (exception) {
-        print('❌ [CityStateController] 刷新城市数据失败: ${exception.message}');
+        log('❌ [CityStateController] 刷新城市数据失败: ${exception.message}');
       },
     );
   }
@@ -648,12 +650,12 @@ class CityStateController extends GetxController {
   /// [cityId] 城市ID
   /// [imageData] 图片生成结果数据
   void updateCityImages(String cityId, Map<String, dynamic> imageData) {
-    print('🖼️ [CityStateController] 更新城市图片: $cityId');
-    print('🖼️ [CityStateController] 原始数据: $imageData');
+    log('🖼️ [CityStateController] 更新城市图片: $cityId');
+    log('🖼️ [CityStateController] 原始数据: $imageData');
 
     final index = cities.indexWhere((c) => c.id == cityId);
     if (index == -1) {
-      print('⚠️ [CityStateController] 未找到城市: $cityId');
+      log('⚠️ [CityStateController] 未找到城市: $cityId');
       return;
     }
 
@@ -670,10 +672,10 @@ class CityStateController extends GetxController {
       data = imageData;
     }
 
-    print('🖼️ [CityStateController] 解析后的 data: $data');
+    log('🖼️ [CityStateController] 解析后的 data: $data');
 
     if (data == null) {
-      print('⚠️ [CityStateController] 图片数据为空，尝试直接使用 imageData');
+      log('⚠️ [CityStateController] 图片数据为空，尝试直接使用 imageData');
       data = imageData;
     }
 
@@ -683,7 +685,7 @@ class CityStateController extends GetxController {
     if (portraitImage is Map<String, dynamic>) {
       portraitUrl = portraitImage['url'] as String?;
     }
-    print('🖼️ [CityStateController] 竖屏图片: $portraitUrl');
+    log('🖼️ [CityStateController] 竖屏图片: $portraitUrl');
 
     // 提取横屏图片 URL 列表
     List<String>? landscapeUrls;
@@ -694,11 +696,11 @@ class CityStateController extends GetxController {
           .map((img) => (img as Map<String, dynamic>)['url'] as String)
           .toList();
     }
-    print('🖼️ [CityStateController] 横屏图片数量: ${landscapeUrls?.length ?? 0}');
+    log('🖼️ [CityStateController] 横屏图片数量: ${landscapeUrls?.length ?? 0}');
 
     // 如果没有解析到任何图片，不更新
     if (portraitUrl == null && (landscapeUrls == null || landscapeUrls.isEmpty)) {
-      print('⚠️ [CityStateController] 未解析到图片URL，跳过更新');
+      log('⚠️ [CityStateController] 未解析到图片URL，跳过更新');
       return;
     }
 
@@ -712,6 +714,6 @@ class CityStateController extends GetxController {
 
     cities[index] = updatedCity;
     cities.refresh();
-    print('✅ [CityStateController] 城市图片已更新: portrait=$portraitUrl, landscape=${landscapeUrls?.length ?? 0}张');
+    log('✅ [CityStateController] 城市图片已更新: portrait=$portraitUrl, landscape=${landscapeUrls?.length ?? 0}张');
   }
 }

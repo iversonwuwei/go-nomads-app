@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/core/core.dart';
 import 'package:df_admin_mobile/features/city/application/use_cases/city_use_cases.dart';
@@ -142,10 +144,10 @@ class _CoworkingHomePageState extends State<CoworkingHomePage>
     // 页面恢复时不自动刷新，避免并发请求
     // 只在数据为空时才加载
     if (_cities.isEmpty) {
-      print('🔄 CoworkingHome: 数据为空，重新加载');
+      log('🔄 CoworkingHome: 数据为空，重新加载');
       await _refreshData();
     } else {
-      print('✅ CoworkingHome: 使用缓存数据，跳过刷新');
+      log('✅ CoworkingHome: 使用缓存数据，跳过刷新');
     }
   }
 
@@ -180,17 +182,17 @@ class _CoworkingHomePageState extends State<CoworkingHomePage>
             _hasMoreData = items.length >= _pageSize;
             _isLoading = false;
           });
-          print('✅ 首次加载 ${processedCities.length} 个城市');
+          log('✅ 首次加载 ${processedCities.length} 个城市');
 
         case Failure(:final exception):
-          print('❌ 加载城市数据失败: ${exception.message}');
+          log('❌ 加载城市数据失败: ${exception.message}');
           setState(() {
             _isLoading = false;
           });
           AppToast.error('加载失败: ${exception.message}');
       }
     } catch (e) {
-      print('❌ 加载城市数据异常: $e');
+      log('❌ 加载城市数据异常: $e');
       if (!mounted) return;
       setState(() {
         _isLoading = false;
@@ -231,17 +233,17 @@ class _CoworkingHomePageState extends State<CoworkingHomePage>
             _hasMoreData = items.length >= _pageSize;
             _isLoadingMore = false;
           });
-          print('✅ 加载更多: 第 $nextPage 页, ${processedCities.length} 个城市');
+          log('✅ 加载更多: 第 $nextPage 页, ${processedCities.length} 个城市');
 
         case Failure(:final exception):
-          print('❌ 加载更多失败: ${exception.message}');
+          log('❌ 加载更多失败: ${exception.message}');
           setState(() {
             _isLoadingMore = false;
           });
           AppToast.error('加载更多失败');
       }
     } catch (e) {
-      print('❌ 加载更多异常: $e');
+      log('❌ 加载更多异常: $e');
       if (!mounted) return;
       setState(() {
         _isLoadingMore = false;
@@ -479,10 +481,10 @@ class _CoworkingHomePageState extends State<CoworkingHomePage>
         borderRadius: BorderRadius.circular(12),
         onTap: () async {
           // 添加调试日志
-          print('🏙️ 点击城市卡片:');
-          print('   城市ID: ${city['id']}');
-          print('   城市名称: ${city['name']}');
-          print('   Coworking数量: ${city['spaces']}');
+          log('🏙️ 点击城市卡片:');
+          log('   城市ID: ${city['id']}');
+          log('   城市名称: ${city['name']}');
+          log('   Coworking数量: ${city['spaces']}');
 
           // 等待列表页返回,如果返回 true 则刷新城市列表
           final result = await Navigator.push(

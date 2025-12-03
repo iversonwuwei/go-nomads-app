@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'dart:io';
 
 import 'package:flutter/services.dart';
@@ -40,7 +42,7 @@ class AmapService {
       );
       return result?.cast<String, dynamic>();
     } on PlatformException catch (e) {
-      print('❌ openMapPicker error: ${e.message}');
+      log('❌ openMapPicker error: ${e.message}');
       return null;
     }
   }
@@ -51,7 +53,7 @@ class AmapService {
       final result = await _channel.invokeMethod<Map<dynamic, dynamic>>('getCurrentLocation');
       return result?.cast<String, dynamic>();
     } on PlatformException catch (e) {
-      print('❌ getCurrentLocation error: ${e.message}');
+      log('❌ getCurrentLocation error: ${e.message}');
       return null;
     }
   }

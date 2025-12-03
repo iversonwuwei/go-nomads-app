@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart'
     as entity;
@@ -19,9 +21,9 @@ class CoworkingRepository implements ICoworkingRepository {
     int pageSize = 20,
   }) async {
     try {
-      print('📡 Repository 调用 API:');
-      print('   路径: /coworking');
-      print('   参数: cityId=$cityId, page=$page, pageSize=$pageSize');
+      log('📡 Repository 调用 API:');
+      log('   路径: /coworking');
+      log('   参数: cityId=$cityId, page=$page, pageSize=$pageSize');
 
       final response = await _httpService.get(
         '/coworking',
@@ -35,7 +37,7 @@ class CoworkingRepository implements ICoworkingRepository {
       final data = response.data as Map<String, dynamic>;
       final items = data['items'] as List<dynamic>? ?? [];
 
-      print('✅ API 返回 ${items.length} 个 Coworking 空间');
+      log('✅ API 返回 ${items.length} 个 Coworking 空间');
 
       final spaces = items
           .map((item) =>
@@ -45,7 +47,7 @@ class CoworkingRepository implements ICoworkingRepository {
 
       return Result.success(spaces);
     } catch (e, stackTrace) {
-      print('❌ Repository 错误: $e');
+      log('❌ Repository 错误: $e');
       return Result.failure(
         UnknownException(
           '获取城市 Coworking 列表失败: ${e.toString()}',
@@ -180,7 +182,7 @@ class CoworkingRepository implements ICoworkingRepository {
       final dto = _convertEntityToDto(space);
       final requestData = dto.toJson();
 
-      print('Creating coworking space with data: $requestData');
+      log('Creating coworking space with data: $requestData');
 
       final response = await _httpService.post(
         '/coworking',

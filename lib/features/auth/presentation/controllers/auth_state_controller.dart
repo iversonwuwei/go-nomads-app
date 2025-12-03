@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/core/application/use_case.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/auth/application/use_cases/auth_database_use_cases.dart';
@@ -68,11 +70,11 @@ class AuthStateController extends GetxController {
     result.fold(
       onSuccess: (token) {
         currentToken.value = token;
-        print('📥 Token 已加载到内存: expiresAt=${token?.expiresAt}');
+        log('📥 Token 已加载到内存: expiresAt=${token?.expiresAt}');
       },
       onFailure: (_) {
         currentToken.value = null;
-        print('⚠️ 加载 Token 失败');
+        log('⚠️ 加载 Token 失败');
       },
     );
   }
@@ -154,7 +156,7 @@ class AuthStateController extends GetxController {
       final authRepository = Get.find<IAuthRepository>();
       final isAuth = await authRepository.isAuthenticated();
 
-      print('🔍 Token 验证结果: $isAuth');
+      log('🔍 Token 验证结果: $isAuth');
 
       if (!isAuth) {
         // Token 无效或过期，清除认证状态
@@ -166,7 +168,7 @@ class AuthStateController extends GetxController {
 
       return true;
     } catch (e) {
-      print('❌ Token 验证异常: $e');
+      log('❌ Token 验证异常: $e');
       return false;
     }
   }
@@ -227,12 +229,12 @@ class AuthStateController extends GetxController {
       final signalRService = SignalRService();
       if (signalRService.isConnected) {
         await signalRService.joinUserGroup(userId);
-        print('✅ 登录成功后已加入 SignalR 用户通知组: user-$userId');
+        log('✅ 登录成功后已加入 SignalR 用户通知组: user-$userId');
       } else {
-        print('⚠️ SignalR 未连接，稍后将在连接时加入用户组');
+        log('⚠️ SignalR 未连接，稍后将在连接时加入用户组');
       }
     } catch (e) {
-      print('❌ 加入 SignalR 用户通知组失败: $e');
+      log('❌ 加入 SignalR 用户通知组失败: $e');
     }
   }
 

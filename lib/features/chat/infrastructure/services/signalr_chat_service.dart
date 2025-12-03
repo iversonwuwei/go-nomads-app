@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'dart:async';
 
 import 'package:df_admin_mobile/config/api_config.dart';
@@ -49,7 +51,7 @@ class SignalRChatService extends GetxService {
     try {
       // 使用 MessageService 直连地址（SignalR 需要直连，不经过 Gateway）
       final hubUrl = '${ApiConfig.messageServiceBaseUrl}/hubs/chat';
-      print('🔌 正在连接 SignalR ChatHub: $hubUrl');
+      log('🔌 正在连接 SignalR ChatHub: $hubUrl');
 
       _hubConnection = HubConnectionBuilder().withUrl(hubUrl).withAutomaticReconnect().build();
 
@@ -59,14 +61,14 @@ class SignalRChatService extends GetxService {
       // 建立连接
       await _hubConnection!.start();
       _isConnected.value = true;
-      print('✅ SignalR ChatHub 连接成功');
+      log('✅ SignalR ChatHub 连接成功');
 
       // 认证用户
       await _authenticate();
 
       return true;
     } catch (e) {
-      print('❌ SignalR 连接失败: $e');
+      log('❌ SignalR 连接失败: $e');
       _errorController.add('连接失败: $e');
       return false;
     } finally {
@@ -84,7 +86,7 @@ class SignalRChatService extends GetxService {
 
       await _hubConnection!.stop();
       _isConnected.value = false;
-      print('🔌 SignalR ChatHub 已断开');
+      log('🔌 SignalR ChatHub 已断开');
     }
   }
 
@@ -92,24 +94,24 @@ class SignalRChatService extends GetxService {
   void _registerEventHandlers() {
     // 认证成功
     _hubConnection!.on('Authenticated', (arguments) {
-      print('✅ SignalR 认证成功: $arguments');
+      log('✅ SignalR 认证成功: $arguments');
     });
 
     // 认证失败
     _hubConnection!.on('AuthenticateFailed', (arguments) {
       final error = arguments?.firstOrNull?.toString() ?? '认证失败';
-      print('❌ SignalR 认证失败: $error');
+      log('❌ SignalR 认证失败: $error');
       _errorController.add(error);
     });
 
     // 加入聊天室成功
     _hubConnection!.on('JoinedRoom', (arguments) {
-      print('✅ 加入聊天室成功: $arguments');
+      log('✅ 加入聊天室成功: $arguments');
     });
 
     // 离开聊天室成功
     _hubConnection!.on('LeftRoom', (arguments) {
-      print('✅ 离开聊天室: $arguments');
+      log('✅ 离开聊天室: $arguments');
     });
 
     // 收到新消息
@@ -119,9 +121,9 @@ class SignalRChatService extends GetxService {
           final data = arguments.first as Map<String, dynamic>;
           final message = _parseMessage(data);
           _messageController.add(message);
-          print('📩 收到新消息: ${message.message}');
+          log('📩 收到新消息: ${message.message}');
         } catch (e) {
-          print('❌ 解析消息失败: $e');
+          log('❌ 解析消息失败: $e');
         }
       }
     });
@@ -131,7 +133,7 @@ class SignalRChatService extends GetxService {
       if (arguments != null && arguments.isNotEmpty) {
         final data = arguments.first as Map<String, dynamic>;
         _userJoinedController.add(data);
-        print('👤 用户加入: ${data['userName']}');
+        log('👤 用户加入: ${data['userName']}');
       }
     });
 
@@ -140,7 +142,7 @@ class SignalRChatService extends GetxService {
       if (arguments != null && arguments.isNotEmpty) {
         final data = arguments.first as Map<String, dynamic>;
         _userLeftController.add(data);
-        print('👤 用户离开: ${data['userName']}');
+        log('👤 用户离开: ${data['userName']}');
       }
     });
 
@@ -157,7 +159,7 @@ class SignalRChatService extends GetxService {
       if (arguments != null && arguments.isNotEmpty) {
         final data = arguments.first as Map<String, dynamic>;
         _messageDeletedController.add(data);
-        print('🗑️ 消息被删除: ${data['messageId']}');
+        log('🗑️ 消息被删除: ${data['messageId']}');
       }
     });
 
@@ -166,30 +168,30 @@ class SignalRChatService extends GetxService {
       if (arguments != null && arguments.isNotEmpty) {
         final data = arguments.first as Map<String, dynamic>;
         _onlineStatusController.add(data);
-        print('👥 在线状态更新: RoomId=${data['roomId']}, OnlineCount=${data['onlineCount']}');
+        log('👥 在线状态更新: RoomId=${data['roomId']}, OnlineCount=${data['onlineCount']}');
       }
     });
 
     // 错误
     _hubConnection!.on('Error', (arguments) {
       final error = arguments?.firstOrNull?.toString() ?? '未知错误';
-      print('❌ SignalR 错误: $error');
+      log('❌ SignalR 错误: $error');
       _errorController.add(error);
     });
 
     // 连接状态变化
     _hubConnection!.onclose(({error}) {
       _isConnected.value = false;
-      print('🔌 SignalR 连接关闭: $error');
+      log('🔌 SignalR 连接关闭: $error');
     });
 
     _hubConnection!.onreconnecting(({error}) {
-      print('🔄 SignalR 正在重连: $error');
+      log('🔄 SignalR 正在重连: $error');
     });
 
     _hubConnection!.onreconnected(({connectionId}) {
       _isConnected.value = true;
-      print('✅ SignalR 重连成功: $connectionId');
+      log('✅ SignalR 重连成功: $connectionId');
 
       // 重新认证并加入之前的聊天室
       _authenticate().then((_) {
@@ -223,9 +225,9 @@ class SignalRChatService extends GetxService {
     try {
       await _hubConnection!.invoke('JoinRoom', args: [roomId]);
       _currentRoomId.value = roomId;
-      print('🚪 请求加入聊天室: $roomId');
+      log('🚪 请求加入聊天室: $roomId');
     } catch (e) {
-      print('❌ 加入聊天室失败: $e');
+      log('❌ 加入聊天室失败: $e');
       _errorController.add('加入聊天室失败');
     }
   }
@@ -239,9 +241,9 @@ class SignalRChatService extends GetxService {
       if (_currentRoomId.value == roomId) {
         _currentRoomId.value = null;
       }
-      print('🚪 离开聊天室: $roomId');
+      log('🚪 离开聊天室: $roomId');
     } catch (e) {
-      print('❌ 离开聊天室失败: $e');
+      log('❌ 离开聊天室失败: $e');
     }
   }
 
@@ -271,7 +273,7 @@ class SignalRChatService extends GetxService {
         }
       ]);
     } catch (e) {
-      print('❌ 发送消息失败: $e');
+      log('❌ 发送消息失败: $e');
       _errorController.add('发送消息失败');
     }
   }
@@ -294,7 +296,7 @@ class SignalRChatService extends GetxService {
     try {
       await _hubConnection!.invoke('DeleteMessage', args: [roomId, messageId]);
     } catch (e) {
-      print('❌ 删除消息失败: $e');
+      log('❌ 删除消息失败: $e');
       _errorController.add('删除消息失败');
     }
   }

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/core/core.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
@@ -73,7 +75,7 @@ class _DataServicePageState extends State<DataServicePage>
     // 首页不验证 token，直接加载数据
     // 如果有 token 会自动带上，没有就匿名访问
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      print('🏠 首页初始化，只加载城市数据（不加载活动）');
+      log('🏠 首页初始化，只加载城市数据（不加载活动）');
       // 只加载城市数据，活动数据按需加载
       _loadHomeCities();
     });
@@ -100,7 +102,7 @@ class _DataServicePageState extends State<DataServicePage>
         });
       }
     } catch (e) {
-      print('⚠️ 城市数据加载失败，使用缓存数据: $e');
+      log('⚠️ 城市数据加载失败，使用缓存数据: $e');
     }
   }
 
@@ -117,21 +119,21 @@ class _DataServicePageState extends State<DataServicePage>
   /// 当从其他页面返回时，重新加载数据
   @override
   Future<void> onRouteResume() async {
-    print('🔄 DataServicePage: 从其他页面返回，重新加载数据');
+    log('🔄 DataServicePage: 从其他页面返回，重新加载数据');
     _clearSearchOnReturn();
     await _loadHomeCities();
   }
 
   /// 清除搜索状态（从 detail 页面返回时调用）
   void _clearSearchOnReturn() {
-    print('🔍 DataServicePage: 清除搜索状态，当前 _localSearchQuery=$_localSearchQuery');
+    log('🔍 DataServicePage: 清除搜索状态，当前 _localSearchQuery=$_localSearchQuery');
     if (mounted) {
       setState(() {
         _localSearchQuery = '';
         _isLocalSearching = false;
       });
       _searchController.clear();
-      print('🔍 DataServicePage: 本地搜索状态已清除');
+      log('🔍 DataServicePage: 本地搜索状态已清除');
     }
   }
 
@@ -142,13 +144,13 @@ class _DataServicePageState extends State<DataServicePage>
     // 当应用回到前台时，仅在城市数据为空时刷新
     if (state == AppLifecycleState.resumed) {
       if (_cityController.cities.isEmpty) {
-        print('📱 应用回到前台，城市数据为空，刷新数据');
+        log('📱 应用回到前台，城市数据为空，刷新数据');
         _cityController.loadInitialCities(refresh: true).catchError((e) {
-          print('⚠️ 城市数据加载失败: $e');
+          log('⚠️ 城市数据加载失败: $e');
           return null;
         });
       } else {
-        print('📱 应用回到前台，已有缓存数据，不刷新');
+        log('📱 应用回到前台，已有缓存数据，不刷新');
       }
     }
   }
@@ -166,7 +168,7 @@ class _DataServicePageState extends State<DataServicePage>
       WidgetsBinding.instance.addPostFrameCallback((_) {
         // 检查是否已有数据，使用缓存模式避免重复刷新
         if (_cityController.cities.isNotEmpty) {
-          print('🔄 页面回到前台，使用缓存数据，不刷新');
+          log('🔄 页面回到前台，使用缓存数据，不刷新');
           // 不刷新，避免并发请求
         }
       });
@@ -178,11 +180,11 @@ class _DataServicePageState extends State<DataServicePage>
   bool _checkLoginAndNavigate(VoidCallback onLoggedIn) {
     final authController = Get.find<AuthStateController>();
 
-    print('🔒 [严格验证] 检查登录状态...');
+    log('🔒 [严格验证] 检查登录状态...');
 
     // 1️⃣ 检查登录状态
     if (!authController.isAuthenticated.value) {
-      print('❌ 用户未登录');
+      log('❌ 用户未登录');
       AppToast.warning(
         'Please login to access this feature',
         title: 'Login Required',
@@ -194,7 +196,7 @@ class _DataServicePageState extends State<DataServicePage>
     // 2️⃣ 检查 Token 是否存在
     final token = authController.currentToken.value;
     if (token == null) {
-      print('❌ Token 为空，清除登录状态');
+      log('❌ Token 为空，清除登录状态');
       authController.isAuthenticated.value = false;
       authController.currentUser.value = null;
 
@@ -208,9 +210,9 @@ class _DataServicePageState extends State<DataServicePage>
 
     // 3️⃣ 检查 Token 是否过期 (关键检查！)
     if (token.isExpired) {
-      print('❌ Token 已过期');
-      print('   ExpiresAt: ${token.expiresAt}');
-      print('   Current: ${DateTime.now()}');
+      log('❌ Token 已过期');
+      log('   ExpiresAt: ${token.expiresAt}');
+      log('   Current: ${DateTime.now()}');
 
       // 立即清除过期状态
       authController.isAuthenticated.value = false;
@@ -229,9 +231,9 @@ class _DataServicePageState extends State<DataServicePage>
     }
 
     // ✅ 所有检查通过，执行操作
-    print('✅ Token 验证通过，允许操作');
-    print('   ExpiresAt: ${token.expiresAt}');
-    print('   Remaining: ${token.expiresAt!.difference(DateTime.now()).inMinutes} minutes');
+    log('✅ Token 验证通过，允许操作');
+    log('   ExpiresAt: ${token.expiresAt}');
+    log('   Remaining: ${token.expiresAt!.difference(DateTime.now()).inMinutes} minutes');
 
     onLoggedIn();
     return true;
@@ -239,7 +241,7 @@ class _DataServicePageState extends State<DataServicePage>
 
   /// 执行城市搜索（本页面独立搜索，不影响 CityListPage）
   Future<void> _performSearch(String query) async {
-    print('🔍 [首页] 开始搜索城市: $query');
+    log('🔍 [首页] 开始搜索城市: $query');
 
     setState(() {
       _localSearchQuery = query;
@@ -276,7 +278,7 @@ class _DataServicePageState extends State<DataServicePage>
   Future<void> _clearSearch() async {
     _searchController.clear();
 
-    print('🧹 [首页] 清除搜索，重新加载全部城市');
+    log('🧹 [首页] 清除搜索，重新加载全部城市');
 
     setState(() {
       _localSearchQuery = '';
@@ -1342,7 +1344,7 @@ class _DataServicePageState extends State<DataServicePage>
                     if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent * 0.8 &&
                         !_meetupController.isLoadingMore.value &&
                         _meetupController.hasMoreData.value) {
-                      print('📜 接近滚动末尾，触发加载更多活动');
+                      log('📜 接近滚动末尾，触发加载更多活动');
                       _meetupController.loadMoreMeetups();
                     }
                     return false;
@@ -1651,8 +1653,8 @@ class _DataCardState extends State<_DataCard> {
     return GestureDetector(
       onTap: () {
         // 单击跳转到城市详情页面
-        print('🏙️ [DEBUG] City card tapped: ${widget.data}');
-        print('🏙️ [DEBUG] cityId will be: ${widget.data.id}');
+        log('🏙️ [DEBUG] City card tapped: ${widget.data}');
+        log('🏙️ [DEBUG] cityId will be: ${widget.data.id}');
 
         // 检查登录状态
         final authController = Get.find<AuthStateController>();
@@ -1677,7 +1679,7 @@ class _DataCardState extends State<_DataCard> {
           ),
         ).then((_) {
           // 从 detail 页面返回时，通知父组件清除搜索
-          print('🔙 [DEBUG] 从 CityDetailPage 返回，调用清除搜索回调');
+          log('🔙 [DEBUG] 从 CityDetailPage 返回，调用清除搜索回调');
           onReturnCallback?.call();
         });
       },
@@ -2122,7 +2124,7 @@ class _DataListItem extends StatelessWidget {
           ),
         ).then((_) {
           // 从 detail 页面返回时，通知父组件清除搜索
-          print('🔙 [DEBUG] 从 CityDetailPage 返回 (列表视图)，调用清除搜索回调');
+          log('🔙 [DEBUG] 从 CityDetailPage 返回 (列表视图)，调用清除搜索回调');
           onReturnCallback?.call();
         });
       },
@@ -2245,12 +2247,12 @@ class _MeetupCardState extends State<_MeetupCard> {
     _maxAttendees = widget.meetup.capacity.maxAttendees;
 
     // 调试：打印 meetup 数据
-    print('🔍 MeetupCard initState:');
-    print('   ID: ${widget.meetup.id}');
-    print('   Title: ${widget.meetup.title}');
-    print('   isJoined (from backend): $_isJoined');
-    print('   isOrganizer (from backend): $_isOrganizer');
-    print('   Attendees: $_currentAttendees / $_maxAttendees');
+    log('🔍 MeetupCard initState:');
+    log('   ID: ${widget.meetup.id}');
+    log('   Title: ${widget.meetup.title}');
+    log('   isJoined (from backend): $_isJoined');
+    log('   isOrganizer (from backend): $_isOrganizer');
+    log('   Attendees: $_currentAttendees / $_maxAttendees');
   }
 
   @override
@@ -2263,9 +2265,9 @@ class _MeetupCardState extends State<_MeetupCard> {
       final newIsJoined = widget.meetup.isJoined;
       final newCurrentAttendees = widget.meetup.capacity.currentAttendees;
       if (_isJoined != newIsJoined || _currentAttendees != newCurrentAttendees) {
-        print('🔄 Meetup ${widget.meetup.title} 数据更新:');
-        print('   isJoined: $_isJoined -> $newIsJoined');
-        print('   Attendees: $_currentAttendees -> $newCurrentAttendees');
+        log('🔄 Meetup ${widget.meetup.title} 数据更新:');
+        log('   isJoined: $_isJoined -> $newIsJoined');
+        log('   Attendees: $_currentAttendees -> $newCurrentAttendees');
         setState(() {
           _isJoined = newIsJoined;
           _currentAttendees = newCurrentAttendees;
@@ -2308,12 +2310,12 @@ class _MeetupCardState extends State<_MeetupCard> {
 
       // API 调用成功后，直接更新 Controller 的 rsvpedMeetupIds（避免重复调用 API）
       if (isJoining) {
-        print('✅ 成功加入活动: ${widget.meetup.title}');
+        log('✅ 成功加入活动: ${widget.meetup.title}');
         if (!_meetupController.rsvpedMeetupIds.contains(widget.meetup.id)) {
           _meetupController.rsvpedMeetupIds.add(widget.meetup.id);
         }
       } else {
-        print('✅ 成功退出活动: ${widget.meetup.title}');
+        log('✅ 成功退出活动: ${widget.meetup.title}');
         _meetupController.rsvpedMeetupIds.remove(widget.meetup.id);
       }
 
@@ -2339,12 +2341,12 @@ class _MeetupCardState extends State<_MeetupCard> {
       // 刷新聚会列表
       _meetupController.refreshMeetups();
     } catch (e) {
-      print('❌ API 调用失败: $e');
+      log('❌ API 调用失败: $e');
 
       // 特殊处理:如果是"已经参加"的错误,说明状态不同步,需要纠正前端状态
       final errorMessage = e.toString();
       if (errorMessage.contains('已经参加') || errorMessage.contains('already joined')) {
-        print('⚠️ 检测到状态不同步:用户实际已加入,但前端状态为未加入,正在纠正...');
+        log('⚠️ 检测到状态不同步:用户实际已加入,但前端状态为未加入,正在纠正...');
         setState(() {
           _isJoined = true; // 纠正为已加入状态
         });
@@ -2360,7 +2362,7 @@ class _MeetupCardState extends State<_MeetupCard> {
       if (errorMessage.contains('未参加') ||
           errorMessage.contains('not joined') ||
           errorMessage.contains('not a participant')) {
-        print('⚠️ 检测到状态不同步:用户实际未加入,但前端状态为已加入,正在纠正...');
+        log('⚠️ 检测到状态不同步:用户实际未加入,但前端状态为已加入,正在纠正...');
         setState(() {
           _isJoined = false; // 纠正为未加入状态
         });
@@ -2407,7 +2409,7 @@ class _MeetupCardState extends State<_MeetupCard> {
 
     try {
       await meetupRepository.cancelMeetup(widget.meetup.id);
-      print('✅ 成功取消活动: ${widget.meetup.title}');
+      log('✅ 成功取消活动: ${widget.meetup.title}');
 
       // 显示成功消息
       AppToast.success(
@@ -2418,7 +2420,7 @@ class _MeetupCardState extends State<_MeetupCard> {
       // 刷新聚会列表
       _meetupController.refreshMeetups();
     } catch (e) {
-      print('❌ 取消活动失败: $e');
+      log('❌ 取消活动失败: $e');
       AppToast.error('取消活动失败');
     }
   }
@@ -3050,7 +3052,7 @@ class _GenerateImageButton extends StatelessWidget {
         // 不需要在这里更新图片，SignalR 会推送更新
         final taskData = data['data'] as Map<String, dynamic>?;
         final taskId = taskData?['taskId'] as String? ?? '';
-        print('🖼️ Image generation task created: taskId=$taskId');
+        log('🖼️ Image generation task created: taskId=$taskId');
         // 加载状态由 controller 管理，等待 SignalR 通知时自动结束
       },
       onFailure: (exception) {

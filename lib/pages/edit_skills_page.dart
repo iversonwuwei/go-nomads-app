@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -92,7 +94,7 @@ class _EditSkillsPageState extends State<EditSkillsPage> {
         });
       }
     } catch (e) {
-      print('加载技能失败: $e');
+      log('加载技能失败: $e');
       if (mounted) {
         setState(() {
           _loading = false;
@@ -124,7 +126,7 @@ class _EditSkillsPageState extends State<EditSkillsPage> {
         AppToast.success('已添加技能');
       }
     } catch (e) {
-      print('操作技能失败: $e');
+      log('操作技能失败: $e');
       AppToast.error('操作失败，请重试');
     }
   }
@@ -154,7 +156,7 @@ class _EditSkillsPageState extends State<EditSkillsPage> {
       });
       AppToast.success('已添加自定义技能');
     } catch (e) {
-      print('添加自定义技能失败: $e');
+      log('添加自定义技能失败: $e');
       AppToast.error('添加失败，请重试');
     }
   }

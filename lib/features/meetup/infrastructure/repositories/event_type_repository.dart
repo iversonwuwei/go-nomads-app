@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/features/meetup/domain/entities/event_type.dart';
 import 'package:df_admin_mobile/features/meetup/domain/repositories/i_event_type_repository.dart';
 import 'package:df_admin_mobile/features/meetup/infrastructure/models/event_type_dto.dart';
@@ -24,7 +26,7 @@ class EventTypeRepository implements IEventTypeRepository {
           ? (responseData['data'] as List<dynamic>)
           : (responseData as List<dynamic>);
 
-      print('✅ 收到 ${dataList.length} 个事件类型');
+      log('✅ 收到 ${dataList.length} 个事件类型');
 
       // 转换为领域实体列表
       final eventTypes = dataList
@@ -38,8 +40,8 @@ class EventTypeRepository implements IEventTypeRepository {
 
       return eventTypes;
     } catch (e, stackTrace) {
-      print('❌ 获取事件类型失败: $e');
-      print('堆栈跟踪: $stackTrace');
+      log('❌ 获取事件类型失败: $e');
+      log('堆栈跟踪: $stackTrace');
       rethrow;
     }
   }
@@ -58,7 +60,7 @@ class EventTypeRepository implements IEventTypeRepository {
       final dto = EventTypeDto.fromJson(data);
       return dto.toDomain();
     } catch (e) {
-      print('❌ 获取事件类型详情失败 (ID: $id): $e');
+      log('❌ 获取事件类型详情失败 (ID: $id): $e');
       return null;
     }
   }

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'dart:async';
 
 import 'package:df_admin_mobile/features/notification/presentation/controllers/notification_state_controller.dart';
@@ -49,14 +51,14 @@ class BottomNavController extends GetxController {
         final notificationController = Get.find<NotificationStateController>();
         // 监听 NotificationStateController 的 unreadCount 变化
         _unreadCountWorker = ever(notificationController.unreadCount, (count) {
-          print('🔔 BottomNav: 未读数量更新为 $count');
+          log('🔔 BottomNav: 未读数量更新为 $count');
           unreadCount.value = count;
         });
         // 同步当前值
         unreadCount.value = notificationController.unreadCount.value;
       }
     } catch (e) {
-      print('⚠️ BottomNav: 设置未读数量监听器失败: $e');
+      log('⚠️ BottomNav: 设置未读数量监听器失败: $e');
     }
   }
 
@@ -66,13 +68,13 @@ class BottomNavController extends GetxController {
       final signalRService = SignalRService();
       _notificationSubscription = signalRService.notificationReceivedStream.listen(
         (notification) {
-          print('🔔 BottomNav: 收到 SignalR 实时通知!');
-          print('   Title: ${notification['title']}');
-          print('   Type: ${notification['type']}');
+          log('🔔 BottomNav: 收到 SignalR 实时通知!');
+          log('   Title: ${notification['title']}');
+          log('   Type: ${notification['type']}');
 
           // 收到新通知时，增加未读数量
           unreadCount.value++;
-          print('🔔 BottomNav: 未读数量 +1, 现在是 ${unreadCount.value}');
+          log('🔔 BottomNav: 未读数量 +1, 现在是 ${unreadCount.value}');
 
           // 同时刷新 NotificationStateController 以保持同步
           if (Get.isRegistered<NotificationStateController>()) {
@@ -81,12 +83,12 @@ class BottomNavController extends GetxController {
           }
         },
         onError: (error) {
-          print('❌ BottomNav: SignalR 通知监听错误: $error');
+          log('❌ BottomNav: SignalR 通知监听错误: $error');
         },
       );
-      print('✅ BottomNav: SignalR 通知监听器已设置');
+      log('✅ BottomNav: SignalR 通知监听器已设置');
     } catch (e) {
-      print('⚠️ BottomNav: 设置 SignalR 通知监听器失败: $e');
+      log('⚠️ BottomNav: 设置 SignalR 通知监听器失败: $e');
     }
   }
 
@@ -107,7 +109,7 @@ class BottomNavController extends GetxController {
         await notificationController.refreshUnreadCount();
       }
     } catch (e) {
-      print('⚠️ BottomNav: 刷新未读数量失败: $e');
+      log('⚠️ BottomNav: 刷新未读数量失败: $e');
     }
   }
 

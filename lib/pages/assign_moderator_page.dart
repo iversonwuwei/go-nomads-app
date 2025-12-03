@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
@@ -43,7 +45,7 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
   @override
   void initState() {
     super.initState();
-    print('🎬 [AssignModerator] initState - cityId: ${widget.cityId}, cityName: ${widget.cityName}');
+    log('🎬 [AssignModerator] initState - cityId: ${widget.cityId}, cityName: ${widget.cityName}');
     _loadUsers();
 
     // 监听搜索框变化，实时过滤
@@ -61,29 +63,29 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
 
   /// 加载所有用户
   Future<void> _loadUsers() async {
-    print('📡 [AssignModerator] 开始加载用户列表...');
+    log('📡 [AssignModerator] 开始加载用户列表...');
     _isLoading.value = true;
     try {
       final userManagementRepo = Get.find<IUserManagementRepository>();
-      print('📡 [AssignModerator] 调用 userManagementRepo.getUsers(page: 1, pageSize: 100)');
+      log('📡 [AssignModerator] 调用 userManagementRepo.getUsers(page: 1, pageSize: 100)');
 
       final result = await userManagementRepo.getUsers(
         page: 1,
         pageSize: 100, // 加载更多用户
       );
 
-      print('📡 [AssignModerator] API 返回结果: isSuccess=${result.isSuccess}');
+      log('📡 [AssignModerator] API 返回结果: isSuccess=${result.isSuccess}');
 
       if (result.isSuccess) {
         final users = result.dataOrNull ?? [];
-        print('📡 [AssignModerator] 获取到 ${users.length} 个用户');
+        log('📡 [AssignModerator] 获取到 ${users.length} 个用户');
 
         if (users.isEmpty) {
-          print('⚠️ [AssignModerator] 用户列表为空！');
+          log('⚠️ [AssignModerator] 用户列表为空！');
         } else {
-          print('📋 [AssignModerator] 前3个用户:');
+          log('📋 [AssignModerator] 前3个用户:');
           for (var i = 0; i < users.length && i < 3; i++) {
-            print('   [$i] id=${users[i].id}, name=${users[i].name}, email=${users[i].email}');
+            log('   [$i] id=${users[i].id}, name=${users[i].name}, email=${users[i].email}');
           }
         }
 
@@ -96,37 +98,37 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
           };
         }).toList();
 
-        print('📋 [AssignModerator] _allUsers 已更新: ${_allUsers.length} 个');
+        log('📋 [AssignModerator] _allUsers 已更新: ${_allUsers.length} 个');
         _filteredUsers.value = _allUsers;
-        print('📋 [AssignModerator] _filteredUsers 已更新: ${_filteredUsers.length} 个');
+        log('📋 [AssignModerator] _filteredUsers 已更新: ${_filteredUsers.length} 个');
       } else {
         final errorMsg = result.exceptionOrNull?.message ?? "未知错误";
-        print('❌ [AssignModerator] 加载失败: $errorMsg');
+        log('❌ [AssignModerator] 加载失败: $errorMsg');
         // 延迟显示错误，避免在 build 期间调用
         WidgetsBinding.instance.addPostFrameCallback((_) {
           AppToast.error('加载用户失败: $errorMsg');
         });
       }
     } catch (e, stackTrace) {
-      print('❌ [AssignModerator] 加载异常: $e');
-      print('❌ [AssignModerator] 堆栈: $stackTrace');
+      log('❌ [AssignModerator] 加载异常: $e');
+      log('❌ [AssignModerator] 堆栈: $stackTrace');
       // 延迟显示错误，避免在 build 期间调用
       WidgetsBinding.instance.addPostFrameCallback((_) {
         AppToast.error('加载用户失败: $e');
       });
     } finally {
       _isLoading.value = false;
-      print('📡 [AssignModerator] 加载完成，isLoading=false');
+      log('📡 [AssignModerator] 加载完成，isLoading=false');
     }
   }
 
   /// 过滤用户列表
   void _filterUsers(String query) {
-    print('🔍 [AssignModerator] 过滤用户: query="$query", _allUsers.length=${_allUsers.length}');
+    log('🔍 [AssignModerator] 过滤用户: query="$query", _allUsers.length=${_allUsers.length}');
 
     if (query.trim().isEmpty) {
       _filteredUsers.value = _allUsers;
-      print('🔍 [AssignModerator] 清空搜索，显示全部 ${_filteredUsers.length} 个用户');
+      log('🔍 [AssignModerator] 清空搜索，显示全部 ${_filteredUsers.length} 个用户');
       return;
     }
 
@@ -137,17 +139,17 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
       return name.contains(lowercaseQuery) || email.contains(lowercaseQuery);
     }).toList();
 
-    print('🔍 [AssignModerator] 过滤后: ${_filteredUsers.length} 个用户');
+    log('🔍 [AssignModerator] 过滤后: ${_filteredUsers.length} 个用户');
   }
 
   /// 切换用户选中状态
   void _toggleUserSelection(String userId) {
     if (_selectedUserIds.contains(userId)) {
       _selectedUserIds.remove(userId);
-      print('✅ [AssignModerator] 取消选择用户: $userId, 当前选中: ${_selectedUserIds.length}');
+      log('✅ [AssignModerator] 取消选择用户: $userId, 当前选中: ${_selectedUserIds.length}');
     } else {
       _selectedUserIds.add(userId);
-      print('✅ [AssignModerator] 选择用户: $userId, 当前选中: ${_selectedUserIds.length}');
+      log('✅ [AssignModerator] 选择用户: $userId, 当前选中: ${_selectedUserIds.length}');
     }
   }
 
@@ -165,15 +167,15 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
 
   /// 提交指定版主（批量）
   Future<void> _submitAssignModerator() async {
-    print('🚀 [AssignModerator] 开始提交指定版主');
+    log('🚀 [AssignModerator] 开始提交指定版主');
 
     if (_selectedUserIds.isEmpty) {
-      print('❌ [AssignModerator] 没有选择任何用户');
+      log('❌ [AssignModerator] 没有选择任何用户');
       AppToast.error('请至少选择一个用户');
       return;
     }
 
-    print('📋 [AssignModerator] 选中的用户: ${_selectedUserIds.join(", ")}');
+    log('📋 [AssignModerator] 选中的用户: ${_selectedUserIds.join(", ")}');
 
     // 确认对话框
     final confirmed = await Get.dialog<bool>(
@@ -201,11 +203,11 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
     );
 
     if (confirmed != true) {
-      print('🚫 [AssignModerator] 用户取消了操作');
+      log('🚫 [AssignModerator] 用户取消了操作');
       return;
     }
 
-    print('✅ [AssignModerator] 用户确认，开始指定版主');
+    log('✅ [AssignModerator] 用户确认，开始指定版主');
     _isSubmitting.value = true;
 
     try {
@@ -218,7 +220,7 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
       // 逐个调用后端 API 添加版主
       for (var userId in _selectedUserIds) {
         try {
-          print('🔄 [AssignModerator] 正在指定版主: userId=$userId, cityId=${widget.cityId}');
+          log('🔄 [AssignModerator] 正在指定版主: userId=$userId, cityId=${widget.cityId}');
 
           final result = await cityRepository.assignModerator(
             widget.cityId,
@@ -226,42 +228,42 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
           );
 
           if (result.isSuccess) {
-            print('✅ [AssignModerator] 指定成功: userId=$userId');
+            log('✅ [AssignModerator] 指定成功: userId=$userId');
             successCount++;
           } else {
             final errorMsg = result.exceptionOrNull?.message ?? '未知错误';
-            print('❌ [AssignModerator] 指定失败: userId=$userId, error=$errorMsg');
+            log('❌ [AssignModerator] 指定失败: userId=$userId, error=$errorMsg');
             failCount++;
             errorMessages.add('用户 $userId: $errorMsg');
           }
         } catch (e, stackTrace) {
-          print('💥 [AssignModerator] 指定异常: userId=$userId, error=$e');
-          print('📚 [AssignModerator] StackTrace: $stackTrace');
+          log('💥 [AssignModerator] 指定异常: userId=$userId, error=$e');
+          log('📚 [AssignModerator] StackTrace: $stackTrace');
           failCount++;
           errorMessages.add('用户 $userId: $e');
         }
       }
 
-      print('📊 [AssignModerator] 完成统计: 成功=$successCount, 失败=$failCount');
+      log('📊 [AssignModerator] 完成统计: 成功=$successCount, 失败=$failCount');
 
       if (successCount > 0) {
         AppToast.success('成功指定 $successCount 个版主！');
         if (failCount > 0) {
-          print('⚠️ [AssignModerator] 部分失败详情: ${errorMessages.join("; ")}');
+          log('⚠️ [AssignModerator] 部分失败详情: ${errorMessages.join("; ")}');
           AppToast.warning('$failCount 个用户指定失败，请查看日志');
         }
         Get.back(result: true); // 返回,通知调用方刷新
       } else {
-        print('❌ [AssignModerator] 所有用户指定失败: ${errorMessages.join("; ")}');
+        log('❌ [AssignModerator] 所有用户指定失败: ${errorMessages.join("; ")}');
         AppToast.error('所有用户指定失败: ${errorMessages.isNotEmpty ? errorMessages.first : "请重试"}');
       }
     } catch (e, stackTrace) {
-      print('💥 [AssignModerator] 外层捕获异常: $e');
-      print('📚 [AssignModerator] StackTrace: $stackTrace');
+      log('💥 [AssignModerator] 外层捕获异常: $e');
+      log('📚 [AssignModerator] StackTrace: $stackTrace');
       AppToast.error('指定失败: $e');
     } finally {
       _isSubmitting.value = false;
-      print('🏁 [AssignModerator] 提交流程结束');
+      log('🏁 [AssignModerator] 提交流程结束');
     }
   }
 
@@ -344,7 +346,7 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
           // 用户列表
           Expanded(
             child: Obx(() {
-              print(
+              log(
                   '🎨 [AssignModerator] build Obx - isLoading=${_isLoading.value}, filteredUsers=${_filteredUsers.length}, selectedCount=${_selectedUserIds.length}');
 
               if (_isLoading.value) {
@@ -354,7 +356,7 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
               }
 
               if (_filteredUsers.isEmpty) {
-                print('⚠️ [AssignModerator] 显示空状态 UI');
+                log('⚠️ [AssignModerator] 显示空状态 UI');
                 return Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -377,7 +379,7 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
                 );
               }
 
-              print('📋 [AssignModerator] 开始渲染 ListView: ${_filteredUsers.length} 个用户');
+              log('📋 [AssignModerator] 开始渲染 ListView: ${_filteredUsers.length} 个用户');
               return ListView.separated(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 itemCount: _filteredUsers.length,
@@ -391,7 +393,7 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
                   final userId = user['id'];
 
                   if (index == 0) {
-                    print('📋 [AssignModerator] 渲染第一个用户: id=$userId, name=${user['name']}, email=${user['email']}');
+                    log('📋 [AssignModerator] 渲染第一个用户: id=$userId, name=${user['name']}, email=${user['email']}');
                   }
 
                   return Obx(() {

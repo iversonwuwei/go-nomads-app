@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/services/http_service.dart';
 import 'package:df_admin_mobile/features/user_management/domain/entities/simple_user.dart';
@@ -16,7 +18,7 @@ class UserManagementRepository implements IUserManagementRepository {
     required int pageSize,
   }) async {
     try {
-      print(
+      log(
           '📡 [UserManagementRepo] getUsers 调用开始: page=$page, pageSize=$pageSize');
       
       final response = await _httpService.get(
@@ -27,48 +29,48 @@ class UserManagementRepository implements IUserManagementRepository {
         },
       );
 
-      print(
+      log(
           '📡 [UserManagementRepo] HTTP 响应: statusCode=${response.statusCode}');
-      print(
+      log(
           '📡 [UserManagementRepo] response.data type: ${response.data?.runtimeType}');
       
       if (response.statusCode == 200 && response.data != null) {
-        print(
+        log(
             '📡 [UserManagementRepo] response.data keys: ${response.data is Map ? (response.data as Map).keys.toList() : 'not a map'}');
 
         final dataMap = response.data as Map<String, dynamic>?;
         if (dataMap != null && dataMap['items'] != null) {
           final itemsList = dataMap['items'] as List?;
-          print(
+          log(
               '📡 [UserManagementRepo] items count: ${itemsList?.length ?? 0}');
 
           if (itemsList != null && itemsList.isNotEmpty) {
-            print('📡 [UserManagementRepo] 第一个用户原始数据: ${itemsList[0]}');
+            log('📡 [UserManagementRepo] 第一个用户原始数据: ${itemsList[0]}');
           }
 
           final items = itemsList?.map((json) {
                 try {
                   final dto = SimpleUserDto.fromJson(json);
-                  print(
+                  log(
                       '📡 [UserManagementRepo] DTO解析成功: id=${dto.id}, name=${dto.name}, role=${dto.roleName}');
                   return dto.toEntity();
                 } catch (e) {
-                  print('❌ [UserManagementRepo] DTO解析失败: $e, json=$json');
+                  log('❌ [UserManagementRepo] DTO解析失败: $e, json=$json');
                   rethrow;
                 }
               }).toList() ??
               [];
 
-          print('✅ [UserManagementRepo] 最终返回 ${items.length} 个用户');
+          log('✅ [UserManagementRepo] 最终返回 ${items.length} 个用户');
           return Result.success(items);
         }
       }
 
-      print('❌ [UserManagementRepo] 获取用户列表失败');
+      log('❌ [UserManagementRepo] 获取用户列表失败');
       return Result.failure(const ServerException('获取用户列表失败'));
     } catch (e, stackTrace) {
-      print('❌ [UserManagementRepo] 异常: $e');
-      print('❌ [UserManagementRepo] 堆栈: $stackTrace');
+      log('❌ [UserManagementRepo] 异常: $e');
+      log('❌ [UserManagementRepo] 堆栈: $stackTrace');
       return Result.failure(ServerException('获取用户列表失败: $e'));
     }
   }

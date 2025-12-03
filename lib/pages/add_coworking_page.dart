@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'dart:ui' as ui;
 
 import 'package:df_admin_mobile/config/app_colors.dart';
@@ -173,7 +175,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
 
     // 如果是编辑模式，填充现有数据
     if (widget.isEditMode) {
-      print('✏️ [AddCoworking] 编辑模式 - 填充现有数据');
+      log('✏️ [AddCoworking] 编辑模式 - 填充现有数据');
       _fillFormWithExistingData(widget.editingSpace!);
 
       // 异步加载国家和城市选项
@@ -186,14 +188,14 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
       }
     } else if (paramCityId != null) {
       // 仅当参数中包含 cityId 时才进行国家和城市的初始化
-      print('🏙️ [AddCoworking] 从参数中读取 cityId: $paramCityId');
+      log('🏙️ [AddCoworking] 从参数中读取 cityId: $paramCityId');
       _initializeFromCityId(
         paramCityId,
         fallbackCityName: paramCityName,
         fallbackCountryName: paramCountryName,
       );
     } else {
-      print('📝 [AddCoworking] 未提供 cityId，跳过国家/城市预填充');
+      log('📝 [AddCoworking] 未提供 cityId，跳过国家/城市预填充');
     }
   }
 
@@ -268,19 +270,19 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
     String? fallbackCountryName,
   }) async {
     try {
-      print('🔍 [AddCoworking] _initializeFromCityId 开始');
-      print('   cityId: $cityId');
+      log('🔍 [AddCoworking] _initializeFromCityId 开始');
+      log('   cityId: $cityId');
 
       // 1. 加载所有国家（如果还没有加载）
       if (_locationController.countries.isEmpty) {
-        print('📥 [AddCoworking] 加载国家列表...');
+        log('📥 [AddCoworking] 加载国家列表...');
         await _locationController.loadCountries();
       }
 
       final localeCode = _resolveLocaleCode();
 
       // 2. 直接通过 cityId 获取城市信息（包含 countryId）
-      print('🔍 [AddCoworking] 通过 API 获取城市信息（包含 countryId）...');
+      log('🔍 [AddCoworking] 通过 API 获取城市信息（包含 countryId）...');
       final cityResult = await _locationController.getCityById(cityId);
 
       String? foundCountryId;
@@ -291,20 +293,20 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
         foundCountryId = foundCity?.countryId;
 
         if (foundCity != null && foundCountryId != null) {
-          print('✅ [AddCoworking] 获取到城市: ${foundCity.name}');
-          print('✅ [AddCoworking] 获取到 countryId: $foundCountryId');
+          log('✅ [AddCoworking] 获取到城市: ${foundCity.name}');
+          log('✅ [AddCoworking] 获取到 countryId: $foundCountryId');
 
           // 加载该国家的城市列表（为了下拉框能正常工作）
           await _locationController.loadCitiesByCountry(foundCountryId);
         }
       } else {
-        print('❌ [AddCoworking] 获取城市信息失败: ${cityResult.exceptionOrNull?.message}');
+        log('❌ [AddCoworking] 获取城市信息失败: ${cityResult.exceptionOrNull?.message}');
       }
 
       // 3. 如果通过 API 没获取到 countryId，则使用传入的 countryName 来查找（fallback）
       if (foundCountryId == null && fallbackCountryName != null && fallbackCountryName.isNotEmpty) {
         final trimmedCountryName = fallbackCountryName.trim();
-        print('🔍 [AddCoworking] fallback: 使用传入的 countryName: "$trimmedCountryName"');
+        log('🔍 [AddCoworking] fallback: 使用传入的 countryName: "$trimmedCountryName"');
 
         // 根据 countryName 查找对应的国家
         final country = _locationController.countries.firstWhereOrNull((c) {
@@ -330,7 +332,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
 
         if (country != null) {
           foundCountryId = country.id;
-          print('✅ [AddCoworking] 通过 countryName 找到匹配的国家: ${country.name} (ID: ${country.id})');
+          log('✅ [AddCoworking] 通过 countryName 找到匹配的国家: ${country.name} (ID: ${country.id})');
 
           // 加载该国家的城市列表
           await _locationController.loadCitiesByCountry(country.id);
@@ -340,10 +342,10 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
           foundCity = cities.firstWhereOrNull((c) => c.id == cityId);
 
           if (foundCity != null) {
-            print('✅ [AddCoworking] 在 ${country.name} 中找到城市: ${foundCity.name}');
+            log('✅ [AddCoworking] 在 ${country.name} 中找到城市: ${foundCity.name}');
           }
         } else {
-          print('⚠️ [AddCoworking] 未找到匹配的国家: "$trimmedCountryName"');
+          log('⚠️ [AddCoworking] 未找到匹配的国家: "$trimmedCountryName"');
         }
       }
 
@@ -351,14 +353,14 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
 
       if (fallbackCountryName != null && fallbackCountryName.isNotEmpty) {
         final trimmedCountryName = fallbackCountryName.trim();
-        print('🔍 [AddCoworking] 使用传入的 countryName: "$trimmedCountryName"');
-        print('🔍 [AddCoworking] countryName长度: ${trimmedCountryName.length}, 编码: ${trimmedCountryName.codeUnits}');
+        log('🔍 [AddCoworking] 使用传入的 countryName: "$trimmedCountryName"');
+        log('🔍 [AddCoworking] countryName长度: ${trimmedCountryName.length}, 编码: ${trimmedCountryName.codeUnits}');
 
         // 打印所有国家名称用于调试
-        print('📋 [AddCoworking] 可用的国家列表 (前10个):');
+        log('📋 [AddCoworking] 可用的国家列表 (前10个):');
         for (var c in _locationController.countries.take(10)) {
           final displayName = c.displayName(localeCode);
-          print('   - ${c.name} / ${c.nameZh} / $displayName');
+          log('   - ${c.name} / ${c.nameZh} / $displayName');
         }
 
         // 根据 countryName 查找对应的国家
@@ -381,7 +383,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
           }
 
           if (match) {
-            print('✅ [AddCoworking] 找到匹配: ${c.name} (${c.nameZh}) - displayName: $displayName');
+            log('✅ [AddCoworking] 找到匹配: ${c.name} (${c.nameZh}) - displayName: $displayName');
           }
 
           return match;
@@ -389,7 +391,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
 
         if (country != null) {
           foundCountryId = country.id;
-          print('✅ [AddCoworking] 找到匹配的国家: ${country.name} (ID: ${country.id})');
+          log('✅ [AddCoworking] 找到匹配的国家: ${country.name} (ID: ${country.id})');
 
           // 加载该国家的城市列表
           await _locationController.loadCitiesByCountry(country.id);
@@ -399,24 +401,24 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
           foundCity = cities.firstWhereOrNull((c) => c.id == cityId);
 
           if (foundCity != null) {
-            print('✅ [AddCoworking] 在 ${country.name} 中找到城市: ${foundCity.name}');
+            log('✅ [AddCoworking] 在 ${country.name} 中找到城市: ${foundCity.name}');
           } else {
-            print('⚠️ [AddCoworking] 在 ${country.name} 中未找到 cityId=$cityId');
+            log('⚠️ [AddCoworking] 在 ${country.name} 中未找到 cityId=$cityId');
           }
         } else {
-          print('⚠️ [AddCoworking] 未找到匹配的国家: "$fallbackCountryName"');
-          print('⚠️ [AddCoworking] 尝试过的匹配方式: displayName, name, nameZh');
-          print('⚠️ [AddCoworking] 将fallback到遍历所有国家');
+          log('⚠️ [AddCoworking] 未找到匹配的国家: "$fallbackCountryName"');
+          log('⚠️ [AddCoworking] 尝试过的匹配方式: displayName, name, nameZh');
+          log('⚠️ [AddCoworking] 将fallback到遍历所有国家');
         }
       }
 
       // 3. 如果通过 countryName 没找到，则遍历所有国家查找（兜底方案）
       if (foundCountryId == null || foundCity == null) {
-        print('🔍 [AddCoworking] 遍历所有国家查找 cityId=$cityId...');
-        print('📋 [AddCoworking] 国家总数: ${_locationController.countries.length}');
+        log('🔍 [AddCoworking] 遍历所有国家查找 cityId=$cityId...');
+        log('📋 [AddCoworking] 国家总数: ${_locationController.countries.length}');
 
         for (final country in _locationController.countries) {
-          print('   检查国家: ${country.name} (${country.nameZh})...');
+          log('   检查国家: ${country.name} (${country.nameZh})...');
 
           // 加载该国家的城市列表
           await _locationController.loadCitiesByCountry(country.id);
@@ -428,13 +430,13 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
           if (city != null) {
             foundCountryId = country.id;
             foundCity = city;
-            print('✅ [AddCoworking] 找到城市: ${city.name}, 国家: ${country.name}');
+            log('✅ [AddCoworking] 找到城市: ${city.name}, 国家: ${country.name}');
             break;
           }
         }
 
         if (foundCity == null) {
-          print('❌ [AddCoworking] 遍历所有国家后仍未找到 cityId=$cityId');
+          log('❌ [AddCoworking] 遍历所有国家后仍未找到 cityId=$cityId');
         }
       }
 
@@ -450,10 +452,10 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
             _selectedCity = foundCity.name;
           });
 
-          print('🎯 [AddCoworking] 初始化完成: $_selectedCountry > $_selectedCity');
+          log('🎯 [AddCoworking] 初始化完成: $_selectedCountry > $_selectedCity');
         }
       } else {
-        print('⚠️ [AddCoworking] 未找到 cityId=$cityId 对应的城市');
+        log('⚠️ [AddCoworking] 未找到 cityId=$cityId 对应的城市');
 
         // 如果传入了 cityName 和 countryName，直接使用（即使在列表中找不到）
         if (fallbackCityName != null && fallbackCountryName != null && mounted) {
@@ -481,11 +483,11 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
             _locationController.loadCitiesByCountry(country.id);
           }
 
-          print('📝 [AddCoworking] 直接使用传入的参数: $fallbackCountryName > $fallbackCityName, countryId: ${country?.id}');
+          log('📝 [AddCoworking] 直接使用传入的参数: $fallbackCountryName > $fallbackCityName, countryId: ${country?.id}');
         }
       }
     } catch (e) {
-      print('❌ [AddCoworking] 初始化失败: $e');
+      log('❌ [AddCoworking] 初始化失败: $e');
 
       // 降级处理：使用传入的参数
       if (fallbackCityName != null && fallbackCountryName != null && mounted) {
@@ -513,7 +515,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
           _locationController.loadCitiesByCountry(country.id);
         }
 
-        print('🔄 [AddCoworking] 降级处理，使用传入参数: $fallbackCountryName > $fallbackCityName, countryId: ${country?.id}');
+        log('🔄 [AddCoworking] 降级处理，使用传入参数: $fallbackCountryName > $fallbackCityName, countryId: ${country?.id}');
       }
     }
   }
@@ -957,10 +959,10 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
           // 获取当前地址字段的内容作为搜索关键词
           final addressQuery = _addressController.text.trim();
 
-          print('🗺️ [AddCoworking] 打开地图选择器');
-          print('   地址参数: "$addressQuery"');
-          print('   当前经纬度: $_latitude, $_longitude');
-          print('   国家: $_selectedCountry, 城市: $_selectedCity');
+          log('🗺️ [AddCoworking] 打开地图选择器');
+          log('   地址参数: "$addressQuery"');
+          log('   当前经纬度: $_latitude, $_longitude');
+          log('   国家: $_selectedCountry, 城市: $_selectedCity');
 
           final result = await Get.to(() => FlutterMapPickerPage(
                 initialLatitude: _latitude != 0 ? _latitude : null,
@@ -1260,7 +1262,7 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
         bucket: _imageUploadBucket,
       );
     } catch (e) {
-      print('Failed to delete image: $e');
+      log('Failed to delete image: $e');
     }
   }
 

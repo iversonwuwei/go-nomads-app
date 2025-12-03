@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -69,7 +71,7 @@ class _EditBasicInfoPageState extends State<EditBasicInfoPage> {
         });
       }
     } catch (e) {
-      print('加载基本信息失败: $e');
+      log('加载基本信息失败: $e');
       if (mounted) {
         setState(() {
           _loading = false;
@@ -123,7 +125,7 @@ class _EditBasicInfoPageState extends State<EditBasicInfoPage> {
         Navigator.pop(context, true);
       }
     } catch (e) {
-      print('保存基本信息失败: $e');
+      log('保存基本信息失败: $e');
       if (mounted) {
         AppToast.error('保存失败，请重试', title: '错误');
       }

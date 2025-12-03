@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/community/domain/entities/trip_report.dart';
 import 'package:df_admin_mobile/features/community/domain/repositories/i_community_repository.dart';
@@ -117,7 +119,7 @@ class CommunityStateController extends GetxController {
         return true;
       },
       onFailure: (error) {
-        print('加载旅行报告失败: ${error.message}');
+        log('加载旅行报告失败: ${error.message}');
         return false;
       },
     );
@@ -135,7 +137,7 @@ class CommunityStateController extends GetxController {
         return true;
       },
       onFailure: (error) {
-        print('加载推荐失败: ${error.message}');
+        log('加载推荐失败: ${error.message}');
         return false;
       },
     );
@@ -153,7 +155,7 @@ class CommunityStateController extends GetxController {
         return true;
       },
       onFailure: (error) {
-        print('加载问题失败: ${error.message}');
+        log('加载问题失败: ${error.message}');
         return false;
       },
     );
@@ -173,7 +175,7 @@ class CommunityStateController extends GetxController {
         answers[questionId] = answerList;
       },
       onFailure: (error) {
-        print('加载答案失败: ${error.message}');
+        log('加载答案失败: ${error.message}');
         AppToast.error('加载答案失败: ${error.message}');
       },
     );

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
 import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
@@ -48,10 +50,10 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
       final needsLoad = controller.currentCityId.value != widget.cityId || controller.coworkingSpaces.isEmpty;
 
       if (needsLoad) {
-        print('🔄 CoworkingList: 首次加载或cityId变化,开始加载数据');
+        log('🔄 CoworkingList: 首次加载或cityId变化,开始加载数据');
         controller.loadCoworkingsByCity(widget.cityId, refresh: true);
       } else {
-        print('✅ CoworkingList: 使用缓存数据,跳过加载');
+        log('✅ CoworkingList: 使用缓存数据,跳过加载');
       }
     });
   }
@@ -76,7 +78,7 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
   Future<void> onRouteResume() async {
     // 页面恢复时不刷新，避免并发请求
     // 数据已通过 initState 或上次加载获取
-    print('🔙 CoworkingList: 页面恢复,使用缓存数据');
+    log('🔙 CoworkingList: 页面恢复,使用缓存数据');
   }
 
   @override
