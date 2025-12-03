@@ -1,3 +1,4 @@
+import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/features/chat/domain/entities/chat.dart';
 import 'package:df_admin_mobile/features/chat/presentation/controllers/chat_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
@@ -300,6 +301,43 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
   final _textController = TextEditingController();
   final _scrollController = ScrollController();
 
+  // 获取当前用户 ID
+  String? get _currentUserId {
+    try {
+      final authController = Get.find<AuthStateController>();
+      return authController.currentUser.value?.id;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // 用户颜色缓存（用于群聊中区分不同用户）
+  final Map<String, Color> _userColors = {};
+
+  // 预定义的群聊用户颜色列表
+  static const List<Color> _bubbleColors = [
+    Color(0xFFE3F2FD), // 浅蓝色
+    Color(0xFFFCE4EC), // 浅粉色
+    Color(0xFFF3E5F5), // 浅紫色
+    Color(0xFFFFF3E0), // 浅橙色
+    Color(0xFFE8F5E9), // 浅绿色
+    Color(0xFFFFFDE7), // 浅黄色
+    Color(0xFFE0F7FA), // 浅青色
+    Color(0xFFFBE9E7), // 浅珊瑚色
+    Color(0xFFF1F8E9), // 浅草绿
+    Color(0xFFEDE7F6), // 浅薰衣草
+  ];
+
+  /// 根据用户 ID 获取固定的颜色
+  Color _getUserBubbleColor(String userId) {
+    if (!_userColors.containsKey(userId)) {
+      // 使用 userId 的 hashCode 来保证同一用户始终获得相同颜色
+      final colorIndex = userId.hashCode.abs() % _bubbleColors.length;
+      _userColors[userId] = _bubbleColors[colorIndex];
+    }
+    return _userColors[userId]!;
+  }
+
   @override
   void dispose() {
     _textController.dispose();
@@ -391,6 +429,8 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
   }
 
   Widget _buildMessagesList() {
+    final currentUserId = _currentUserId;
+
     return ListView.builder(
       controller: _scrollController,
       reverse: true,
@@ -398,10 +438,13 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
       itemCount: widget.controller.messages.length,
       itemBuilder: (context, index) {
         final message = widget.controller.messages[index];
-        final isMe = message.author.userId == 'currentUserId'; // TODO: 实际用户ID
+        final isMe = currentUserId != null && message.author.userId == currentUserId;
+        final bubbleColor = isMe ? null : _getUserBubbleColor(message.author.userId);
+
         return _MessageBubble(
           message: message,
           isMe: isMe,
+          bubbleColor: bubbleColor,
           onLongPress: () {
             if (!isMe) widget.controller.setReplyTo(message);
           },
@@ -1099,13 +1142,23 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
 class _MessageBubble extends StatelessWidget {
   final ChatMessage message;
   final bool isMe;
+  final Color? bubbleColor;
   final VoidCallback? onLongPress;
 
   const _MessageBubble({
     required this.message,
     required this.isMe,
+    this.bubbleColor,
     this.onLongPress,
   });
+
+  /// 获取气泡背景色
+  Color get _bubbleBackgroundColor {
+    if (isMe) {
+      return const Color(0xFF95EC69); // 微信绿色
+    }
+    return bubbleColor ?? Colors.white;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1117,50 +1170,139 @@ class _MessageBubble extends StatelessWidget {
           mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // 非本人消息显示头像在左侧
             if (!isMe) ...[
-              CircleAvatar(
-                radius: 18,
-                backgroundImage: (message.author.userAvatar != null && message.author.userAvatar!.isNotEmpty)
-                    ? NetworkImage(message.author.userAvatar!)
-                    : null,
-                child: (message.author.userAvatar == null || message.author.userAvatar!.isEmpty)
-                    ? const Icon(FontAwesomeIcons.user, size: 20)
-                    : null,
-              ),
+              _buildAvatar(),
               const SizedBox(width: 8),
             ],
             Flexible(
               child: Column(
                 crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                 children: [
+                  // 非本人消息显示用户名
                   if (!isMe)
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 4),
+                      padding: const EdgeInsets.only(bottom: 4, left: 4),
                       child: Text(
                         message.author.userName,
-                        style: const TextStyle(fontSize: 12, color: Color(0xFF999999)),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: _getNameColor(),
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                   _buildMessageContent(context),
+                  // 显示时间
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      _formatTime(message.timestamp),
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF999999),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
+            // 本人消息显示头像在右侧
             if (isMe) ...[
               const SizedBox(width: 8),
-              CircleAvatar(
-                radius: 18,
-                backgroundImage: (message.author.userAvatar != null && message.author.userAvatar!.isNotEmpty)
-                    ? NetworkImage(message.author.userAvatar!)
-                    : null,
-                child: (message.author.userAvatar == null || message.author.userAvatar!.isEmpty)
-                    ? const Icon(FontAwesomeIcons.user, size: 20)
-                    : null,
-              ),
+              _buildAvatar(),
             ],
           ],
         ),
       ),
     );
+  }
+
+  /// 构建头像
+  Widget _buildAvatar() {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(6),
+        color: isMe ? const Color(0xFF07C160) : _getAvatarBackgroundColor(),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: (message.author.userAvatar != null && message.author.userAvatar!.isNotEmpty)
+          ? Image.network(
+              message.author.userAvatar!,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => _buildAvatarPlaceholder(),
+            )
+          : _buildAvatarPlaceholder(),
+    );
+  }
+
+  /// 头像占位符
+  Widget _buildAvatarPlaceholder() {
+    final initial = message.author.userName.isNotEmpty ? message.author.userName[0].toUpperCase() : '?';
+    return Center(
+      child: Text(
+        initial,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  /// 根据用户 ID 获取头像背景色
+  Color _getAvatarBackgroundColor() {
+    final colors = [
+      const Color(0xFF5B8FF9),
+      const Color(0xFF5AD8A6),
+      const Color(0xFF5D7092),
+      const Color(0xFFF6BD16),
+      const Color(0xFFE8684A),
+      const Color(0xFF6DC8EC),
+      const Color(0xFF9270CA),
+      const Color(0xFFFF9D4D),
+    ];
+    final index = message.author.userId.hashCode.abs() % colors.length;
+    return colors[index];
+  }
+
+  /// 根据用户 ID 获取名称颜色
+  Color _getNameColor() {
+    final colors = [
+      const Color(0xFF5B8FF9),
+      const Color(0xFF5AD8A6),
+      const Color(0xFF5D7092),
+      const Color(0xFFF6BD16),
+      const Color(0xFFE8684A),
+      const Color(0xFF6DC8EC),
+      const Color(0xFF9270CA),
+      const Color(0xFFFF9D4D),
+    ];
+    final index = message.author.userId.hashCode.abs() % colors.length;
+    return colors[index];
+  }
+
+  /// 格式化时间
+  String _formatTime(DateTime time) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final messageDate = DateTime(time.year, time.month, time.day);
+
+    final timeStr = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+
+    if (messageDate == today) {
+      return timeStr;
+    } else if (messageDate == today.subtract(const Duration(days: 1))) {
+      return '昨天 $timeStr';
+    } else if (now.difference(time).inDays < 7) {
+      final weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+      return '${weekdays[time.weekday % 7]} $timeStr';
+    } else {
+      return '${time.month}/${time.day} $timeStr';
+    }
   }
 
   /// 根据消息类型构建不同的内容
@@ -1185,18 +1327,30 @@ class _MessageBubble extends StatelessWidget {
   Widget _buildTextMessage() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      constraints: const BoxConstraints(maxWidth: 260),
       decoration: BoxDecoration(
-        color: isMe ? const Color(0xFF95EC69) : Colors.white,
+        color: _bubbleBackgroundColor,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(isMe ? 18 : 4),
-          topRight: Radius.circular(isMe ? 4 : 18),
-          bottomLeft: const Radius.circular(18),
-          bottomRight: const Radius.circular(18),
+          topLeft: Radius.circular(isMe ? 16 : 4),
+          topRight: Radius.circular(isMe ? 4 : 16),
+          bottomLeft: const Radius.circular(16),
+          bottomRight: const Radius.circular(16),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Text(
         message.message,
-        style: const TextStyle(fontSize: 16, color: Colors.black),
+        style: TextStyle(
+          fontSize: 16,
+          color: isMe ? Colors.black : const Color(0xFF333333),
+          height: 1.4,
+        ),
       ),
     );
   }
@@ -1208,51 +1362,62 @@ class _MessageBubble extends StatelessWidget {
 
     return ClipRRect(
       borderRadius: BorderRadius.only(
-        topLeft: Radius.circular(isMe ? 18 : 4),
-        topRight: Radius.circular(isMe ? 4 : 18),
-        bottomLeft: const Radius.circular(18),
-        bottomRight: const Radius.circular(18),
+        topLeft: Radius.circular(isMe ? 16 : 4),
+        topRight: Radius.circular(isMe ? 4 : 16),
+        bottomLeft: const Radius.circular(16),
+        bottomRight: const Radius.circular(16),
       ),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          maxWidth: 200,
-          maxHeight: 300,
+      child: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
-        child: Image.network(
-          attachment.url,
-          fit: BoxFit.cover,
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-            return Container(
-              width: 200,
-              height: 150,
-              color: Colors.grey[200],
-              child: Center(
-                child: CircularProgressIndicator(
-                  value: loadingProgress.expectedTotalBytes != null
-                      ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                      : null,
-                  strokeWidth: 2,
-                  color: const Color(0xFF07C160),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: 200,
+            maxHeight: 300,
+          ),
+          child: Image.network(
+            attachment.url,
+            fit: BoxFit.cover,
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              return Container(
+                width: 200,
+                height: 150,
+                color: Colors.grey[200],
+                child: Center(
+                  child: CircularProgressIndicator(
+                    value: loadingProgress.expectedTotalBytes != null
+                        ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                        : null,
+                    strokeWidth: 2,
+                    color: const Color(0xFF07C160),
+                  ),
                 ),
-              ),
-            );
-          },
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              width: 200,
-              height: 150,
-              color: Colors.grey[200],
-              child: const Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(FontAwesomeIcons.image, color: Colors.grey, size: 40),
-                  SizedBox(height: 8),
-                  Text('加载失败', style: TextStyle(color: Colors.grey)),
-                ],
-              ),
-            );
-          },
+              );
+            },
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                width: 200,
+                height: 150,
+                color: Colors.grey[200],
+                child: const Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(FontAwesomeIcons.image, color: Colors.grey, size: 40),
+                    SizedBox(height: 8),
+                    Text('加载失败', style: TextStyle(color: Colors.grey)),
+                  ],
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
@@ -1267,13 +1432,20 @@ class _MessageBubble extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       constraints: const BoxConstraints(maxWidth: 240),
       decoration: BoxDecoration(
-        color: isMe ? const Color(0xFF95EC69) : Colors.white,
+        color: _bubbleBackgroundColor,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(isMe ? 18 : 4),
-          topRight: Radius.circular(isMe ? 4 : 18),
-          bottomLeft: const Radius.circular(18),
-          bottomRight: const Radius.circular(18),
+          topLeft: Radius.circular(isMe ? 16 : 4),
+          topRight: Radius.circular(isMe ? 4 : 16),
+          bottomLeft: const Radius.circular(16),
+          bottomRight: const Radius.circular(16),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1333,13 +1505,20 @@ class _MessageBubble extends StatelessWidget {
     return Container(
       constraints: const BoxConstraints(maxWidth: 220),
       decoration: BoxDecoration(
-        color: isMe ? const Color(0xFF95EC69) : Colors.white,
+        color: _bubbleBackgroundColor,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(isMe ? 18 : 4),
-          topRight: Radius.circular(isMe ? 4 : 18),
-          bottomLeft: const Radius.circular(18),
-          bottomRight: const Radius.circular(18),
+          topLeft: Radius.circular(isMe ? 16 : 4),
+          topRight: Radius.circular(isMe ? 4 : 16),
+          bottomLeft: const Radius.circular(16),
+          bottomRight: const Radius.circular(16),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1348,8 +1527,8 @@ class _MessageBubble extends StatelessWidget {
           // 地图预览区域
           ClipRRect(
             borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(isMe ? 18 : 4),
-              topRight: Radius.circular(isMe ? 4 : 18),
+              topLeft: Radius.circular(isMe ? 16 : 4),
+              topRight: Radius.circular(isMe ? 4 : 16),
             ),
             child: Container(
               width: 220,
@@ -1429,13 +1608,20 @@ class _MessageBubble extends StatelessWidget {
       width: width,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: isMe ? const Color(0xFF95EC69) : Colors.white,
+        color: _bubbleBackgroundColor,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(isMe ? 18 : 4),
-          topRight: Radius.circular(isMe ? 4 : 18),
-          bottomLeft: const Radius.circular(18),
-          bottomRight: const Radius.circular(18),
+          topLeft: Radius.circular(isMe ? 16 : 4),
+          topRight: Radius.circular(isMe ? 4 : 16),
+          bottomLeft: const Radius.circular(16),
+          bottomRight: const Radius.circular(16),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1483,82 +1669,93 @@ class _MessageBubble extends StatelessWidget {
 
     return ClipRRect(
       borderRadius: BorderRadius.only(
-        topLeft: Radius.circular(isMe ? 18 : 4),
-        topRight: Radius.circular(isMe ? 4 : 18),
-        bottomLeft: const Radius.circular(18),
-        bottomRight: const Radius.circular(18),
+        topLeft: Radius.circular(isMe ? 16 : 4),
+        topRight: Radius.circular(isMe ? 4 : 16),
+        bottomLeft: const Radius.circular(16),
+        bottomRight: const Radius.circular(16),
       ),
-      child: Stack(
-        children: [
-          // 视频缩略图
-          Container(
-            width: 200,
-            height: 150,
-            color: Colors.black87,
-            child: attachment.url.isNotEmpty
-                ? Image.network(
-                    attachment.url,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.grey[800],
-                        child: const Center(
-                          child: Icon(
-                            FontAwesomeIcons.video,
-                            color: Colors.white54,
-                            size: 40,
+      child: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            // 视频缩略图
+            Container(
+              width: 200,
+              height: 150,
+              color: Colors.black87,
+              child: attachment.url.isNotEmpty
+                  ? Image.network(
+                      attachment.url,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.grey[800],
+                          child: const Center(
+                            child: Icon(
+                              FontAwesomeIcons.video,
+                              color: Colors.white54,
+                              size: 40,
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                  )
-                : const Center(
-                    child: Icon(
-                      FontAwesomeIcons.video,
-                      color: Colors.white54,
-                      size: 40,
+                        );
+                      },
+                    )
+                  : const Center(
+                      child: Icon(
+                        FontAwesomeIcons.video,
+                        color: Colors.white54,
+                        size: 40,
+                      ),
+                    ),
+            ),
+            // 播放按钮
+            Positioned.fill(
+              child: Center(
+                child: Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    FontAwesomeIcons.play,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+              ),
+            ),
+            // 视频时长
+            if (attachment.duration != null)
+              Positioned(
+                right: 8,
+                bottom: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.6),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    _formatDuration(attachment.duration!),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
                     ),
                   ),
-          ),
-          // 播放按钮
-          Positioned.fill(
-            child: Center(
-              child: Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.5),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  FontAwesomeIcons.play,
-                  color: Colors.white,
-                  size: 22,
                 ),
               ),
-            ),
-          ),
-          // 视频时长
-          if (attachment.duration != null)
-            Positioned(
-              right: 8,
-              bottom: 8,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  _formatDuration(attachment.duration!),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
