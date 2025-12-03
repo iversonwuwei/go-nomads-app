@@ -32,6 +32,7 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
 
   // 用户位置
   LatLng? _userLocation;
+  // ignore: unused_field - 留待后续实现位置加载状态
   bool _isLoadingLocation = true;
   String? _currentCityName;
 

@@ -80,6 +80,10 @@ import 'package:df_admin_mobile/features/meetup/application/use_cases/update_mee
 import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
 import 'package:df_admin_mobile/features/meetup/infrastructure/repositories/meetup_repository.dart';
 import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
+// Membership Domain
+import 'package:df_admin_mobile/features/membership/domain/repositories/membership_repository.dart';
+import 'package:df_admin_mobile/features/membership/infrastructure/repositories/membership_repository_impl.dart';
+import 'package:df_admin_mobile/features/membership/presentation/controllers/membership_state_controller.dart';
 // Moderator Domain
 import 'package:df_admin_mobile/features/moderator/domain/repositories/i_moderator_application_repository.dart';
 import 'package:df_admin_mobile/features/moderator/infrastructure/repositories/moderator_application_repository.dart';
@@ -182,6 +186,9 @@ class DependencyInjection {
 
     // Moderator 领域
     _registerModeratorDomain();
+
+    // Membership 领域
+    _registerMembershipDomain();
 
     // 其他领域...
 
@@ -946,6 +953,19 @@ class DependencyInjection {
     // Controller
     Get.lazyPut(
       () => ModeratorApplicationController(Get.find<IModeratorApplicationRepository>()),
+    );
+  }
+
+  /// 注册会员领域依赖
+  static void _registerMembershipDomain() {
+    // Repository - 使用 TokenStorageService 获取用户 ID
+    Get.lazyPut<MembershipRepository>(
+      () => MembershipRepositoryImpl(Get.find<TokenStorageService>()),
+    );
+
+    // Controller
+    Get.lazyPut(
+      () => MembershipStateController(Get.find<MembershipRepository>()),
     );
   }
 }

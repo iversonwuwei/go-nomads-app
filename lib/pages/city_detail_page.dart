@@ -1,6 +1,5 @@
-import 'dart:developer';
-
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
@@ -16,6 +15,7 @@ import 'package:df_admin_mobile/features/city/presentation/controllers/city_rati
 import 'package:df_admin_mobile/features/city/presentation/widgets/city_ratings_card.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart' as coworking;
 import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
+import 'package:df_admin_mobile/features/membership/presentation/controllers/membership_state_controller.dart';
 import 'package:df_admin_mobile/features/user_city_content/domain/entities/user_city_content.dart';
 import 'package:df_admin_mobile/features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
 import 'package:df_admin_mobile/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
@@ -501,7 +501,22 @@ class _CityDetailPageState extends State<CityDetailPage>
   }
 
   /// 申请成为版主对话框
-  void _showApplyModeratorDialog() {
+  void _showApplyModeratorDialog() async {
+    // 检查会员权限
+    try {
+      final membershipController = Get.find<MembershipStateController>();
+      final accessCheck = membershipController.checkModeratorAccess();
+
+      if (accessCheck != null) {
+        log('❌ [版主申请] 会员权限不足: $accessCheck');
+        _showModeratorMembershipRequiredDialog(accessCheck);
+        return;
+      }
+    } catch (e) {
+      log('⚠️ [版主申请] 会员检查异常: $e');
+      // 如果会员控制器未注册，暂时跳过会员检查
+    }
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -578,6 +593,138 @@ class _CityDetailPageState extends State<CityDetailPage>
       await cityDetailController.loadCityDetail(cityId, forceRefresh: true);
     }
     // 用户点击返回按钮,不需要刷新(没有任何更改)
+  }
+
+  /// 显示版主申请需要升级会员对话框
+  void _showModeratorMembershipRequiredDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(
+                FontAwesomeIcons.crown,
+                color: Colors.amber[700],
+                size: 28,
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                '会员专属权益',
+                style: TextStyle(fontSize: 18),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                message,
+                style: const TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.purple.withValues(alpha: 0.1),
+                      Colors.indigo.withValues(alpha: 0.1),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          FontAwesomeIcons.userShield,
+                          color: Colors.purple[700],
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '成为版主的好处',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.purple[800],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '• 管理城市内容和评论\n• 组织线下活动和 Meetup\n• 获得专属徽章和荣誉',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey[700],
+                        height: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      FontAwesomeIcons.circleInfo,
+                      color: Colors.orange[700],
+                      size: 16,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '成为版主需要缴纳保证金，退出时全额退还',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.orange[800],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('稍后再说'),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Get.toNamed(AppRoutes.membershipPlan);
+              },
+              icon: const Icon(FontAwesomeIcons.crown, size: 16),
+              label: const Text('升级到 Pro'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.purple[600],
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget _buildPermissionItem(String text) {
@@ -887,10 +1034,27 @@ class _CityDetailPageState extends State<CityDetailPage>
     await reloadCityData();
   }
 
-  /// 检查用户是否有权限生成指南（管理员或当前城市版主）
+  /// 检查用户是否有权限生成指南（会员 + 管理员或当前城市版主）
   Future<bool> _checkGeneratePermission() async {
     log('🔐 [权限检查] 开始检查生成权限...');
 
+    // 1. 首先检查会员权限
+    try {
+      final membershipController = Get.find<MembershipStateController>();
+      final accessCheck = membershipController.checkAIAccess();
+
+      if (accessCheck != null) {
+        log('❌ [权限检查] 会员权限不足: $accessCheck');
+        _showMembershipRequiredDialog(accessCheck);
+        return false;
+      }
+      log('✅ [权限检查] 会员权限检查通过');
+    } catch (e) {
+      log('⚠️ [权限检查] 会员检查异常: $e');
+      // 如果会员控制器未注册，暂时跳过会员检查
+    }
+
+    // 2. 然后检查是否是管理员或版主
     try {
       final cityDetailController = Get.find<CityDetailStateController>();
       final city = cityDetailController.currentCity.value;
@@ -938,6 +1102,98 @@ class _CityDetailPageState extends State<CityDetailPage>
     log('❌ [权限检查] 用户无权限生成指南');
     _showNoPermissionDialog();
     return false;
+  }
+
+  /// 显示需要升级会员对话框
+  void _showMembershipRequiredDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(
+                FontAwesomeIcons.crown,
+                color: Colors.amber[700],
+                size: 28,
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                '会员专属功能',
+                style: TextStyle(fontSize: 18),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                message,
+                style: const TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.amber.withValues(alpha: 0.1),
+                      Colors.orange.withValues(alpha: 0.1),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      FontAwesomeIcons.star,
+                      color: Colors.amber[700],
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '升级会员解锁 AI 旅行规划、智能推荐等专属功能！',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.orange[800],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('稍后再说'),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Get.toNamed(AppRoutes.membershipPlan);
+              },
+              icon: const Icon(FontAwesomeIcons.crown, size: 16),
+              label: const Text('立即升级'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.amber[700],
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   /// 显示无权限对话框
@@ -1886,7 +2142,21 @@ class _CityDetailPageState extends State<CityDetailPage>
                 shadowColor: const Color(0xFFFF4458).withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(28),
                 child: InkWell(
-                  onTap: () {
+                  onTap: () async {
+                    // 检查会员权限
+                    try {
+                      final membershipController = Get.find<MembershipStateController>();
+                      final accessCheck = membershipController.checkAIAccess();
+
+                      if (accessCheck != null) {
+                        _showMembershipRequiredDialog(accessCheck);
+                        return;
+                      }
+                    } catch (e) {
+                      log('⚠️ 会员检查异常: $e');
+                      // 如果会员控制器未注册，暂时跳过会员检查
+                    }
+                    
                     // 跳转到创建旅行计划页面
                     Get.to(
                       () => CreateTravelPlanPage(

@@ -1,3 +1,4 @@
+import 'package:df_admin_mobile/features/membership/presentation/pages/membership_plan_page.dart';
 import 'package:df_admin_mobile/features/moderator/presentation/pages/moderator_application_detail_page.dart';
 import 'package:df_admin_mobile/layouts/bottom_nav_layout.dart';
 import 'package:df_admin_mobile/middlewares/auth_middleware.dart';
@@ -113,6 +114,11 @@ class AppRoutes {
   static const String editSkills = '/edit-skills';
   static const String editInterests = '/edit-interests';
   static const String editSocialLinks = '/edit-social-links';
+
+  // ============================================================================
+  // 会员相关路由
+  // ============================================================================
+  static const String membershipPlan = '/membership-plan';
 
   // ============================================================================
   // AI 和聊天相关路由
@@ -421,6 +427,15 @@ class AppRoutes {
     GetPage(
       name: editSocialLinks,
       page: () => EditSocialLinksPage(accountId: Get.arguments),
+      middlewares: [AuthMiddleware()],
+    ),
+
+    // ============================================================================
+    // 🔒 会员相关路由 - 需要认证
+    // ============================================================================
+    GetPage(
+      name: membershipPlan,
+      page: () => const MembershipPlanPage(),
       middlewares: [AuthMiddleware()],
     ),
 
