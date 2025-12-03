@@ -1,9 +1,11 @@
 import 'package:df_admin_mobile/features/chat/domain/entities/chat.dart';
 import 'package:df_admin_mobile/features/chat/presentation/controllers/chat_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/pages/flutter_map_picker_page.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -17,12 +19,52 @@ import 'package:image_picker/image_picker.dart';
 /// - 绿色作为主题色(WeChat 风格)
 /// - 流畅的动画和过渡效果
 /// - 支持长按回复、滑动删除等交互
-class CityChatPage extends StatelessWidget {
+class CityChatPage extends StatefulWidget {
   const CityChatPage({super.key});
 
   @override
+  State<CityChatPage> createState() => _CityChatPageState();
+}
+
+class _CityChatPageState extends State<CityChatPage> {
+  late ChatStateController controller;
+  bool _initialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.find<ChatStateController>();
+    _initializeChat();
+  }
+
+  Future<void> _initializeChat() async {
+    final args = Get.arguments as Map<String, dynamic>?;
+
+    if (args != null && args['isMeetupChat'] == true) {
+      // 从 Meetup 进入的聊天
+      final meetupId = args['meetupId'] as String?;
+      final meetupTitle = args['city'] as String? ?? 'Meetup Chat';
+      final meetupType = args['country'] as String?;
+
+      if (meetupId != null) {
+        await controller.joinMeetupRoom(
+          meetupId: meetupId,
+          meetupTitle: meetupTitle,
+          meetupType: meetupType,
+        );
+      }
+    }
+
+    setState(() {
+      _initialized = true;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final controller = Get.find<ChatStateController>();
+    if (!_initialized) {
+      return const ChatListSkeleton();
+    }
 
     return Obx(() {
       if (controller.isLoading && controller.currentRoom == null) {
@@ -634,38 +676,22 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                     _buildMoreOption(
                       icon: FontAwesomeIcons.images,
                       label: '相册',
-                      onTap: () async {
-                        Get.back();
-                        final ImagePicker picker = ImagePicker();
-                        final XFile? image = await picker.pickImage(
-                          source: ImageSource.gallery,
-                        );
-                        if (image != null) {
-                          AppToast.success('已选择图片');
-                        }
-                      },
+                      onTap: () => _pickImage(ImageSource.gallery),
                     ),
                     _buildMoreOption(
                       icon: FontAwesomeIcons.camera,
                       label: '拍摄',
-                      onTap: () async {
-                        Get.back();
-                        final ImagePicker picker = ImagePicker();
-                        final XFile? image = await picker.pickImage(
-                          source: ImageSource.camera,
-                        );
-                        if (image != null) {
-                          AppToast.success('已拍摄照片');
-                        }
-                      },
+                      onTap: () => _pickImage(ImageSource.camera),
                     ),
                     _buildMoreOption(
                       icon: FontAwesomeIcons.locationDot,
                       label: '位置',
-                      onTap: () {
-                        Get.back();
-                        AppToast.info('位置分享功能即将推出');
-                      },
+                      onTap: () => _pickLocation(),
+                    ),
+                    _buildMoreOption(
+                      icon: FontAwesomeIcons.folder,
+                      label: '文件',
+                      onTap: () => _pickFile(),
                     ),
                     _buildMoreOption(
                       icon: FontAwesomeIcons.microphone,
@@ -678,10 +704,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                     _buildMoreOption(
                       icon: FontAwesomeIcons.video,
                       label: '视频',
-                      onTap: () {
-                        Get.back();
-                        AppToast.info('视频功能即将推出');
-                      },
+                      onTap: () => _pickVideo(),
                     ),
                     _buildMoreOption(
                       icon: FontAwesomeIcons.userPlus,
@@ -689,14 +712,6 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                       onTap: () {
                         Get.back();
                         AppToast.info('名片分享功能即将推出');
-                      },
-                    ),
-                    _buildMoreOption(
-                      icon: FontAwesomeIcons.folder,
-                      label: '文件',
-                      onTap: () {
-                        Get.back();
-                        AppToast.info('文件功能即将推出');
                       },
                     ),
                     _buildMoreOption(
@@ -715,6 +730,93 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
         ),
       ),
     );
+  }
+
+  /// 选择图片（相册/相机）
+  Future<void> _pickImage(ImageSource source) async {
+    Get.back(); // 关闭底部菜单
+    try {
+      final picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: source,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
+      );
+      if (image != null) {
+        _sendImage(image);
+      }
+    } catch (e) {
+      AppToast.error('选择图片失败: $e');
+    }
+  }
+
+  /// 发送图片消息
+  Future<void> _sendImage(XFile image) async {
+    // TODO: 上传图片到服务器并获取 URL，然后发送图片消息
+    AppToast.info('图片发送功能即将完善');
+    debugPrint('选择的图片: ${image.path}');
+  }
+
+  /// 选择视频
+  Future<void> _pickVideo() async {
+    Get.back(); // 关闭底部菜单
+    try {
+      final picker = ImagePicker();
+      final XFile? video = await picker.pickVideo(
+        source: ImageSource.gallery,
+        maxDuration: const Duration(minutes: 3),
+      );
+      if (video != null) {
+        // TODO: 上传视频到服务器并获取 URL，然后发送视频消息
+        AppToast.info('视频发送功能即将完善');
+        debugPrint('选择的视频: ${video.path}');
+      }
+    } catch (e) {
+      AppToast.error('选择视频失败: $e');
+    }
+  }
+
+  /// 选择文件
+  Future<void> _pickFile() async {
+    Get.back(); // 关闭底部菜单
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.any,
+        allowMultiple: false,
+      );
+      if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+        // TODO: 上传文件到服务器并获取 URL，然后发送文件消息
+        AppToast.info('文件发送功能即将完善');
+        debugPrint('选择的文件: ${file.name}, 大小: ${file.size}');
+      }
+    } catch (e) {
+      AppToast.error('选择文件失败: $e');
+    }
+  }
+
+  /// 选择位置
+  Future<void> _pickLocation() async {
+    Get.back(); // 关闭底部菜单
+    try {
+      // 跳转到地图选择页面
+      final result = await Get.to<Map<String, dynamic>>(
+        () => const FlutterMapPickerPage(),
+      );
+      if (result != null) {
+        final lat = result['latitude'] as double?;
+        final lng = result['longitude'] as double?;
+        final address = result['address'] as String?;
+        if (lat != null && lng != null) {
+          // TODO: 发送位置消息
+          AppToast.info('位置发送功能即将完善');
+          debugPrint('选择的位置: $address ($lat, $lng)');
+        }
+      }
+    } catch (e) {
+      AppToast.error('选择位置失败: $e');
+    }
   }
 
   Widget _buildMoreOption({
@@ -808,23 +910,7 @@ class _MessageBubble extends StatelessWidget {
                             fontSize: 12, color: Color(0xFF999999)),
                       ),
                     ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: isMe ? const Color(0xFF95EC69) : Colors.white,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(isMe ? 18 : 4),
-                        topRight: Radius.circular(isMe ? 4 : 18),
-                        bottomLeft: const Radius.circular(18),
-                        bottomRight: const Radius.circular(18),
-                      ),
-                    ),
-                    child: Text(
-                      message.message,
-                      style: const TextStyle(fontSize: 16, color: Colors.black),
-                    ),
-                  ),
+                  _buildMessageContent(context),
                 ],
               ),
             ),
@@ -832,12 +918,10 @@ class _MessageBubble extends StatelessWidget {
               const SizedBox(width: 8),
               CircleAvatar(
                 radius: 18,
-                backgroundImage: (message.author.userAvatar != null &&
-                        message.author.userAvatar!.isNotEmpty)
+                backgroundImage: (message.author.userAvatar != null && message.author.userAvatar!.isNotEmpty)
                     ? NetworkImage(message.author.userAvatar!)
                     : null,
-                child: (message.author.userAvatar == null ||
-                        message.author.userAvatar!.isEmpty)
+                child: (message.author.userAvatar == null || message.author.userAvatar!.isEmpty)
                     ? const Icon(FontAwesomeIcons.user, size: 20)
                     : null,
               ),
@@ -846,5 +930,413 @@ class _MessageBubble extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// 根据消息类型构建不同的内容
+  Widget _buildMessageContent(BuildContext context) {
+    switch (message.type) {
+      case MessageType.image:
+        return _buildImageMessage();
+      case MessageType.file:
+        return _buildFileMessage();
+      case MessageType.location:
+        return _buildLocationMessage();
+      case MessageType.voice:
+        return _buildVoiceMessage();
+      case MessageType.video:
+        return _buildVideoMessage();
+      case MessageType.text:
+      default:
+        return _buildTextMessage();
+    }
+  }
+
+  /// 文本消息
+  Widget _buildTextMessage() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: isMe ? const Color(0xFF95EC69) : Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(isMe ? 18 : 4),
+          topRight: Radius.circular(isMe ? 4 : 18),
+          bottomLeft: const Radius.circular(18),
+          bottomRight: const Radius.circular(18),
+        ),
+      ),
+      child: Text(
+        message.message,
+        style: const TextStyle(fontSize: 16, color: Colors.black),
+      ),
+    );
+  }
+
+  /// 图片消息
+  Widget _buildImageMessage() {
+    final attachment = message.attachment;
+    if (attachment == null) return _buildTextMessage();
+
+    return ClipRRect(
+      borderRadius: BorderRadius.only(
+        topLeft: Radius.circular(isMe ? 18 : 4),
+        topRight: Radius.circular(isMe ? 4 : 18),
+        bottomLeft: const Radius.circular(18),
+        bottomRight: const Radius.circular(18),
+      ),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxWidth: 200,
+          maxHeight: 300,
+        ),
+        child: Image.network(
+          attachment.url,
+          fit: BoxFit.cover,
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return Container(
+              width: 200,
+              height: 150,
+              color: Colors.grey[200],
+              child: Center(
+                child: CircularProgressIndicator(
+                  value: loadingProgress.expectedTotalBytes != null
+                      ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                      : null,
+                  strokeWidth: 2,
+                  color: const Color(0xFF07C160),
+                ),
+              ),
+            );
+          },
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              width: 200,
+              height: 150,
+              color: Colors.grey[200],
+              child: const Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(FontAwesomeIcons.image, color: Colors.grey, size: 40),
+                  SizedBox(height: 8),
+                  Text('加载失败', style: TextStyle(color: Colors.grey)),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  /// 文件消息
+  Widget _buildFileMessage() {
+    final attachment = message.attachment;
+    if (attachment == null) return _buildTextMessage();
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      constraints: const BoxConstraints(maxWidth: 240),
+      decoration: BoxDecoration(
+        color: isMe ? const Color(0xFF95EC69) : Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(isMe ? 18 : 4),
+          topRight: Radius.circular(isMe ? 4 : 18),
+          bottomLeft: const Radius.circular(18),
+          bottomRight: const Radius.circular(18),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: const Color(0xFF4A90E2).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              FontAwesomeIcons.file,
+              color: Color(0xFF4A90E2),
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  attachment.fileName ?? '未知文件',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  attachment.formattedFileSize,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 位置消息
+  Widget _buildLocationMessage() {
+    final attachment = message.attachment;
+    if (attachment == null || !attachment.isLocation) {
+      return _buildTextMessage();
+    }
+
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 220),
+      decoration: BoxDecoration(
+        color: isMe ? const Color(0xFF95EC69) : Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(isMe ? 18 : 4),
+          topRight: Radius.circular(isMe ? 4 : 18),
+          bottomLeft: const Radius.circular(18),
+          bottomRight: const Radius.circular(18),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 地图预览区域
+          ClipRRect(
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(isMe ? 18 : 4),
+              topRight: Radius.circular(isMe ? 4 : 18),
+            ),
+            child: Container(
+              width: 220,
+              height: 120,
+              color: const Color(0xFFE8F5E9),
+              child: Stack(
+                children: [
+                  // 静态地图图片（使用 OpenStreetMap 静态图）
+                  Image.network(
+                    'https://staticmap.openstreetmap.de/staticmap.php?center=${attachment.latitude},${attachment.longitude}&zoom=15&size=220x120&markers=${attachment.latitude},${attachment.longitude},red-pushpin',
+                    fit: BoxFit.cover,
+                    width: 220,
+                    height: 120,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: const Color(0xFFE8F5E9),
+                        child: const Center(
+                          child: Icon(
+                            FontAwesomeIcons.mapLocationDot,
+                            color: Color(0xFF4CAF50),
+                            size: 40,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  // 中心标记点
+                  const Center(
+                    child: Icon(
+                      FontAwesomeIcons.locationDot,
+                      color: Color(0xFFE53935),
+                      size: 32,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // 位置名称
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: Row(
+              children: [
+                const Icon(
+                  FontAwesomeIcons.locationDot,
+                  color: Color(0xFF666666),
+                  size: 14,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    attachment.locationName ?? '位置',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.black87,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 语音消息
+  Widget _buildVoiceMessage() {
+    final attachment = message.attachment;
+    final duration = attachment?.duration ?? 0;
+    // 根据时长计算宽度，最小100，最大200
+    final width = (100 + duration * 3).clamp(100, 200).toDouble();
+
+    return Container(
+      width: width,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: isMe ? const Color(0xFF95EC69) : Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(isMe ? 18 : 4),
+          topRight: Radius.circular(isMe ? 4 : 18),
+          bottomLeft: const Radius.circular(18),
+          bottomRight: const Radius.circular(18),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            FontAwesomeIcons.microphone,
+            color: isMe ? Colors.black54 : const Color(0xFF07C160),
+            size: 18,
+          ),
+          const SizedBox(width: 8),
+          // 声波动画指示器
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: List.generate(
+                6,
+                (index) => Container(
+                  width: 3,
+                  height: [8, 14, 10, 16, 12, 8][index].toDouble(),
+                  decoration: BoxDecoration(
+                    color: isMe ? Colors.black38 : const Color(0xFF07C160),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '${duration}″',
+            style: TextStyle(
+              fontSize: 14,
+              color: isMe ? Colors.black54 : Colors.grey[600],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 视频消息
+  Widget _buildVideoMessage() {
+    final attachment = message.attachment;
+    if (attachment == null) return _buildTextMessage();
+
+    return ClipRRect(
+      borderRadius: BorderRadius.only(
+        topLeft: Radius.circular(isMe ? 18 : 4),
+        topRight: Radius.circular(isMe ? 4 : 18),
+        bottomLeft: const Radius.circular(18),
+        bottomRight: const Radius.circular(18),
+      ),
+      child: Stack(
+        children: [
+          // 视频缩略图
+          Container(
+            width: 200,
+            height: 150,
+            color: Colors.black87,
+            child: attachment.url.isNotEmpty
+                ? Image.network(
+                    attachment.url,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Colors.grey[800],
+                        child: const Center(
+                          child: Icon(
+                            FontAwesomeIcons.video,
+                            color: Colors.white54,
+                            size: 40,
+                          ),
+                        ),
+                      );
+                    },
+                  )
+                : const Center(
+                    child: Icon(
+                      FontAwesomeIcons.video,
+                      color: Colors.white54,
+                      size: 40,
+                    ),
+                  ),
+          ),
+          // 播放按钮
+          Positioned.fill(
+            child: Center(
+              child: Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.5),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  FontAwesomeIcons.play,
+                  color: Colors.white,
+                  size: 22,
+                ),
+              ),
+            ),
+          ),
+          // 视频时长
+          if (attachment.duration != null)
+            Positioned(
+              right: 8,
+              bottom: 8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  _formatDuration(attachment.duration!),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// 格式化时长
+  String _formatDuration(int seconds) {
+    final minutes = seconds ~/ 60;
+    final secs = seconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
   }
 }
