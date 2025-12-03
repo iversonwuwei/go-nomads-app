@@ -677,6 +677,7 @@ class _MyMeetupsPageState extends State<MyMeetupsPage> {
       return;
     }
 
+    // 跳转到群聊页面
     Get.toNamed(
       AppRoutes.cityChat,
       arguments: {
