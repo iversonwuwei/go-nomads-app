@@ -29,6 +29,7 @@ class CityChatPage extends StatefulWidget {
 class _CityChatPageState extends State<CityChatPage> {
   late ChatStateController controller;
   bool _initialized = false;
+  bool _isMeetupChat = false;
 
   @override
   void initState() {
@@ -42,6 +43,7 @@ class _CityChatPageState extends State<CityChatPage> {
 
     if (args != null && args['isMeetupChat'] == true) {
       // 从 Meetup 进入的聊天
+      _isMeetupChat = true;
       final meetupId = args['meetupId'] as String?;
       final meetupTitle = args['city'] as String? ?? 'Meetup Chat';
       final meetupType = args['country'] as String?;
@@ -72,10 +74,20 @@ class _CityChatPageState extends State<CityChatPage> {
       }
 
       if (controller.currentRoom == null) {
+        // 如果是从 Meetup 进入但聊天室已被清空，说明已经退出，返回上一页
+        if (_isMeetupChat) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Get.back();
+          });
+          return const SizedBox.shrink();
+        }
         return _ChatRoomsListView(controller: controller);
       }
 
-      return _ChatRoomView(controller: controller);
+      return _ChatRoomView(
+        controller: controller,
+        isMeetupChat: _isMeetupChat,
+      );
     });
   }
 }
@@ -208,9 +220,7 @@ class _ChatRoomItem extends StatelessWidget {
               ),
               constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
               child: Text(
-                room.stats.onlineUsers > 99
-                    ? '99+'
-                    : '${room.stats.onlineUsers}',
+                room.stats.onlineUsers > 99 ? '99+' : '${room.stats.onlineUsers}',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 10,
@@ -275,8 +285,12 @@ class _ChatRoomItem extends StatelessWidget {
 /// 聊天室详情视图
 class _ChatRoomView extends StatefulWidget {
   final ChatStateController controller;
+  final bool isMeetupChat;
 
-  const _ChatRoomView({required this.controller});
+  const _ChatRoomView({
+    required this.controller,
+    this.isMeetupChat = false,
+  });
 
   @override
   State<_ChatRoomView> createState() => _ChatRoomViewState();
@@ -301,9 +315,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
       body: Column(
         children: [
           Expanded(
-            child: Obx(() => widget.controller.messages.isEmpty
-                ? _buildEmptyMessages()
-                : _buildMessagesList()),
+            child: Obx(() => widget.controller.messages.isEmpty ? _buildEmptyMessages() : _buildMessagesList()),
           ),
           Obx(() {
             if (widget.controller.replyTo != null) {
@@ -317,6 +329,15 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
     );
   }
 
+  /// 退出聊天室并返回上一页
+  Future<void> _leaveAndGoBack() async {
+    await widget.controller.leaveRoom();
+    // 如果是从 Meetup 进入，直接返回上一页
+    if (widget.isMeetupChat) {
+      Get.back();
+    }
+  }
+
   PreferredSizeWidget _buildAppBar() {
     final room = widget.controller.currentRoom!;
     return AppBar(
@@ -325,7 +346,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
       systemOverlayStyle: SystemUiOverlayStyle.dark,
       leading: AppBackButton(
         color: Colors.black,
-        onPressed: () => widget.controller.leaveRoom(),
+        onPressed: _leaveAndGoBack,
       ),
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -338,10 +359,10 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
               fontWeight: FontWeight.w600,
             ),
           ),
-          Text(
-            '${room.stats.onlineUsers}人在线',
-            style: const TextStyle(color: Color(0xFF999999), fontSize: 12),
-          ),
+          Obx(() => Text(
+                '${widget.controller.onlineCount > 0 ? widget.controller.onlineCount : room.stats.onlineUsers}人在线',
+                style: const TextStyle(color: Color(0xFF999999), fontSize: 12),
+              )),
         ],
       ),
       actions: [
@@ -422,8 +443,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                   replyTo.message,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style:
-                      const TextStyle(fontSize: 13, color: Color(0xFF666666)),
+                  style: const TextStyle(fontSize: 13, color: Color(0xFF666666)),
                 ),
               ],
             ),
@@ -460,8 +480,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
             Container(
               margin: const EdgeInsets.only(bottom: 6),
               child: IconButton(
-                icon: const Icon(FontAwesomeIcons.microphone,
-                    color: Color(0xFF666666), size: 26),
+                icon: const Icon(FontAwesomeIcons.microphone, color: Color(0xFF666666), size: 26),
                 onPressed: () => _showMoreOptions(),
               ),
             ),
@@ -469,8 +488,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
             Expanded(
               child: Container(
                 constraints: const BoxConstraints(maxHeight: 120),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF7F7F7),
                   borderRadius: BorderRadius.circular(8),
@@ -479,8 +497,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                   controller: _textController,
                   decoration: const InputDecoration(
                     hintText: '说点什么...',
-                    hintStyle:
-                        TextStyle(color: Color(0xFFBBBBBB), fontSize: 16),
+                    hintStyle: TextStyle(color: Color(0xFFBBBBBB), fontSize: 16),
                     border: InputBorder.none,
                     isDense: true,
                     contentPadding: EdgeInsets.symmetric(vertical: 8),
@@ -500,13 +517,11 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                 child: Row(
                   children: [
                     IconButton(
-                      icon: const Icon(FontAwesomeIcons.faceSmile,
-                          color: Color(0xFF666666), size: 26),
+                      icon: const Icon(FontAwesomeIcons.faceSmile, color: Color(0xFF666666), size: 26),
                       onPressed: () => AppToast.info('表情功能即将推出'),
                     ),
                     IconButton(
-                      icon: const Icon(FontAwesomeIcons.circlePlus,
-                          color: Color(0xFF666666), size: 26),
+                      icon: const Icon(FontAwesomeIcons.circlePlus, color: Color(0xFF666666), size: 26),
                       onPressed: () => _showMoreOptions(),
                     ),
                   ],
@@ -569,7 +584,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                 title: '查看成员',
                 onTap: () {
                   Get.back();
-                  AppToast.info('成员列表功能即将推出');
+                  _showMembersList();
                 },
               ),
               _buildMenuOption(
@@ -603,8 +618,8 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                 titleColor: Colors.red,
                 iconColor: Colors.red,
                 onTap: () {
-                  Get.back();
-                  widget.controller.leaveRoom();
+                  Get.back(); // 关闭底部菜单
+                  _leaveAndGoBack();
                 },
               ),
               const SizedBox(height: 8),
@@ -643,6 +658,226 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
     );
   }
 
+  /// 显示成员列表弹窗
+  void _showMembersList() async {
+    final room = widget.controller.currentRoom;
+    if (room == null) return;
+
+    // 保存屏幕高度（在 await 之前获取）
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    // 加载成员列表
+    await widget.controller.loadRoomMembers(room.id);
+
+    // 检查 widget 是否还挂载
+    if (!mounted) return;
+
+    // 获取成员列表并排序（创建者置顶）
+    final members = widget.controller.roomMembers;
+    final sortedMembers = _sortMembersWithOwnerFirst(members);
+
+    Get.bottomSheet(
+      Container(
+        height: screenHeight * 0.7,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            // 顶部拖动条和标题
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              decoration: const BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(color: Color(0xFFEEEEEE)),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE0E0E0),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    '群成员 (${sortedMembers.length})',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF333333),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // 成员列表
+            Expanded(
+              child: sortedMembers.isEmpty
+                  ? _buildEmptyMembersList()
+                  : ListView.separated(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      itemCount: sortedMembers.length,
+                      separatorBuilder: (_, __) => const Divider(
+                        height: 1,
+                        indent: 72,
+                        color: Color(0xFFF0F0F0),
+                      ),
+                      itemBuilder: (context, index) {
+                        final member = sortedMembers[index];
+                        return _buildMemberItem(member);
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
+    );
+  }
+
+  /// 对成员列表进行排序，创建者置顶
+  List<OnlineUser> _sortMembersWithOwnerFirst(List<OnlineUser> members) {
+    final sorted = List<OnlineUser>.from(members);
+    sorted.sort((a, b) {
+      // 创建者置顶
+      if (a.isOwner && !b.isOwner) return -1;
+      if (!a.isOwner && b.isOwner) return 1;
+      // 管理员其次
+      if (a.isAdmin && !b.isAdmin) return -1;
+      if (!a.isAdmin && b.isAdmin) return 1;
+      // 在线用户优先
+      if (a.isOnline && !b.isOnline) return -1;
+      if (!a.isOnline && b.isOnline) return 1;
+      // 按名称排序
+      return a.name.compareTo(b.name);
+    });
+    return sorted;
+  }
+
+  /// 空成员列表
+  Widget _buildEmptyMembersList() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            FontAwesomeIcons.users,
+            size: 64,
+            color: Colors.grey[300],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '暂无成员',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[500],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 构建成员列表项
+  Widget _buildMemberItem(OnlineUser member) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Stack(
+        children: [
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: const Color(0xFF07C160),
+            backgroundImage: member.hasAvatar ? NetworkImage(member.avatar!) : null,
+            child: !member.hasAvatar
+                ? Text(
+                    member.name.isNotEmpty ? member.name[0].toUpperCase() : '?',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  )
+                : null,
+          ),
+          // 在线状态指示器
+          Positioned(
+            right: 0,
+            bottom: 0,
+            child: Container(
+              width: 14,
+              height: 14,
+              decoration: BoxDecoration(
+                color: member.isOnline ? const Color(0xFF07C160) : Colors.grey,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+            ),
+          ),
+        ],
+      ),
+      title: Row(
+        children: [
+          Flexible(
+            child: Text(
+              member.name,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF333333),
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 8),
+          // 角色标签
+          if (member.isOwner)
+            _buildRoleTag('群主', const Color(0xFFFF9800))
+          else if (member.isAdmin)
+            _buildRoleTag('管理员', const Color(0xFF2196F3)),
+        ],
+      ),
+      subtitle: Text(
+        member.isOnline ? '在线' : member.statusText,
+        style: TextStyle(
+          fontSize: 13,
+          color: member.isOnline ? const Color(0xFF07C160) : Colors.grey[500],
+        ),
+      ),
+      trailing: member.isOwner
+          ? const Icon(
+              FontAwesomeIcons.crown,
+              color: Color(0xFFFF9800),
+              size: 18,
+            )
+          : null,
+    );
+  }
+
+  /// 构建角色标签
+  Widget _buildRoleTag(String text, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 10,
+          color: color,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
   void _showMoreOptions() {
     Get.bottomSheet(
       Container(
@@ -672,6 +907,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                   crossAxisCount: 4,
                   mainAxisSpacing: 16,
                   crossAxisSpacing: 16,
+                  childAspectRatio: 0.85,
                   children: [
                     _buildMoreOption(
                       icon: FontAwesomeIcons.images,
@@ -878,19 +1114,16 @@ class _MessageBubble extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.only(bottom: 16),
         child: Row(
-          mainAxisAlignment:
-              isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+          mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (!isMe) ...[
               CircleAvatar(
                 radius: 18,
-                backgroundImage: (message.author.userAvatar != null &&
-                        message.author.userAvatar!.isNotEmpty)
+                backgroundImage: (message.author.userAvatar != null && message.author.userAvatar!.isNotEmpty)
                     ? NetworkImage(message.author.userAvatar!)
                     : null,
-                child: (message.author.userAvatar == null ||
-                        message.author.userAvatar!.isEmpty)
+                child: (message.author.userAvatar == null || message.author.userAvatar!.isEmpty)
                     ? const Icon(FontAwesomeIcons.user, size: 20)
                     : null,
               ),
@@ -898,16 +1131,14 @@ class _MessageBubble extends StatelessWidget {
             ],
             Flexible(
               child: Column(
-                crossAxisAlignment:
-                    isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                 children: [
                   if (!isMe)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 4),
                       child: Text(
                         message.author.userName,
-                        style: const TextStyle(
-                            fontSize: 12, color: Color(0xFF999999)),
+                        style: const TextStyle(fontSize: 12, color: Color(0xFF999999)),
                       ),
                     ),
                   _buildMessageContent(context),
@@ -946,7 +1177,6 @@ class _MessageBubble extends StatelessWidget {
       case MessageType.video:
         return _buildVideoMessage();
       case MessageType.text:
-      default:
         return _buildTextMessage();
     }
   }
@@ -1235,7 +1465,7 @@ class _MessageBubble extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Text(
-            '${duration}″',
+            '$duration″',
             style: TextStyle(
               fontSize: 14,
               color: isMe ? Colors.black54 : Colors.grey[600],

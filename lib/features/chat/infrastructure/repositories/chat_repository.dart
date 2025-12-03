@@ -1,10 +1,9 @@
 import 'package:df_admin_mobile/config/api_config.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/services/http_service.dart';
-
 import 'package:df_admin_mobile/features/chat/domain/entities/chat.dart';
 import 'package:df_admin_mobile/features/chat/domain/repositories/i_chat_repository.dart';
 import 'package:df_admin_mobile/features/chat/infrastructure/models/chat_dto.dart';
+import 'package:df_admin_mobile/services/http_service.dart';
 
 /// Chat Repository 实现
 ///
@@ -48,8 +47,7 @@ class ChatRepository implements IChatRepository {
       );
 
       final List<dynamic> data = response.data;
-      final rooms =
-          data.map((json) => ChatRoomDto.fromJson(json).toDomain()).toList();
+      final rooms = data.map((json) => ChatRoomDto.fromJson(json).toDomain()).toList();
 
       return Success(rooms);
     } on HttpException catch (e) {
@@ -108,6 +106,31 @@ class ChatRepository implements IChatRepository {
     }
   }
 
+  @override
+  Future<Result<ChatRoom>> getOrCreateMeetupChatRoom({
+    required String meetupId,
+    required String meetupTitle,
+    String? meetupType,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        ApiConfig.chatMeetupEndpoint,
+        data: {
+          'meetupId': meetupId,
+          'meetupTitle': meetupTitle,
+          if (meetupType != null) 'meetupType': meetupType,
+        },
+      );
+
+      final room = ChatRoomDto.fromJson(response.data).toDomain();
+      return Success(room);
+    } on HttpException catch (e) {
+      return Failure(_convertHttpException(e));
+    } catch (e) {
+      return Failure(UnknownException('创建 Meetup 聊天室异常: $e'));
+    }
+  }
+
   // ==================== 消息管理 ====================
 
   @override
@@ -117,8 +140,7 @@ class ChatRepository implements IChatRepository {
     int pageSize = 20,
   }) async {
     try {
-      final endpoint =
-          ApiConfig.chatMessagesEndpoint.replaceAll('{id}', roomId);
+      final endpoint = ApiConfig.chatMessagesEndpoint.replaceAll('{id}', roomId);
       final response = await _httpService.get(
         endpoint,
         queryParameters: {
@@ -128,8 +150,7 @@ class ChatRepository implements IChatRepository {
       );
 
       final List<dynamic> data = response.data;
-      final messages =
-          data.map((json) => ChatMessageDto.fromJson(json).toDomain()).toList();
+      final messages = data.map((json) => ChatMessageDto.fromJson(json).toDomain()).toList();
 
       return Success(messages);
     } on HttpException catch (e) {
@@ -147,8 +168,7 @@ class ChatRepository implements IChatRepository {
     List<String>? mentions,
   }) async {
     try {
-      final endpoint =
-          ApiConfig.chatSendMessageEndpoint.replaceAll('{id}', roomId);
+      final endpoint = ApiConfig.chatSendMessageEndpoint.replaceAll('{id}', roomId);
       final response = await _httpService.post(
         endpoint,
         data: {
@@ -173,8 +193,7 @@ class ChatRepository implements IChatRepository {
     required String messageId,
   }) async {
     try {
-      final endpoint =
-          '${ApiConfig.chatMessagesEndpoint.replaceAll('{id}', roomId)}/$messageId';
+      final endpoint = '${ApiConfig.chatMessagesEndpoint.replaceAll('{id}', roomId)}/$messageId';
       await _httpService.delete(endpoint);
 
       return Success(null);
@@ -190,16 +209,14 @@ class ChatRepository implements IChatRepository {
   @override
   Future<Result<List<OnlineUser>>> getOnlineUsers(String roomId) async {
     try {
-      final endpoint =
-          ApiConfig.chatParticipantsEndpoint.replaceAll('{id}', roomId);
+      final endpoint = ApiConfig.chatParticipantsEndpoint.replaceAll('{id}', roomId);
       final response = await _httpService.get(
         endpoint,
         queryParameters: {'onlineOnly': true},
       );
 
       final List<dynamic> data = response.data;
-      final users =
-          data.map((json) => OnlineUserDto.fromJson(json).toDomain()).toList();
+      final users = data.map((json) => OnlineUserDto.fromJson(json).toDomain()).toList();
 
       return Success(users);
     } on HttpException catch (e) {
@@ -216,8 +233,7 @@ class ChatRepository implements IChatRepository {
     int pageSize = 20,
   }) async {
     try {
-      final endpoint =
-          ApiConfig.chatParticipantsEndpoint.replaceAll('{id}', roomId);
+      final endpoint = ApiConfig.chatParticipantsEndpoint.replaceAll('{id}', roomId);
       final response = await _httpService.get(
         endpoint,
         queryParameters: {
@@ -227,8 +243,7 @@ class ChatRepository implements IChatRepository {
       );
 
       final List<dynamic> data = response.data;
-      final users =
-          data.map((json) => OnlineUserDto.fromJson(json).toDomain()).toList();
+      final users = data.map((json) => OnlineUserDto.fromJson(json).toDomain()).toList();
 
       return Success(users);
     } on HttpException catch (e) {

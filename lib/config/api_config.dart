@@ -52,7 +52,7 @@ class ApiConfig {
   /// 是否使用真机测试地址(手动切换)
   /// ⚠️ 雷电模拟器用户请设置为 true
   /// ⚠️ Android 官方模拟器用户请设置为 false
-  static const bool usePhysicalDevice = false;
+  static const bool usePhysicalDevice = true;
 
   // ============================================================
   // URL 组装
@@ -244,6 +244,7 @@ class ApiConfig {
   static const String chatMessagesEndpoint = '/chats/{id}/messages';
   static const String chatSendMessageEndpoint = '/chats/{id}/messages';
   static const String chatParticipantsEndpoint = '/chats/{id}/participants';
+  static const String chatMeetupEndpoint = '/chats/meetup';
 
   // ============================================================
   // Notification Endpoints - /api/v1/notifications
