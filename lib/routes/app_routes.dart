@@ -192,7 +192,9 @@ class AppRoutes {
     ),
     GetPage(
       name: cityChat,
-      page: () => const BottomNavLayout(child: CityChatPage()),
+      page: () => const CityChatPage(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 200),
       middlewares: [AuthMiddleware()],
     ),
     GetPage(

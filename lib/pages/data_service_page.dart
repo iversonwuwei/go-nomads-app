@@ -2846,13 +2846,14 @@ class _MeetupCardState extends State<_MeetupCard> {
                         return;
                       }
 
+                      // 跳转到群聊页面
                       Get.toNamed(
                         AppRoutes.cityChat,
                         arguments: {
-                          'city': widget.meetup.location.city,
-                          'country': widget.meetup.location.country,
+                          'city': widget.meetup.title,
+                          'country': '${widget.meetup.type} Meetup',
                           'meetupId': widget.meetup.id,
-                          'meetupTitle': widget.meetup.title,
+                          'isMeetupChat': true,
                         },
                       );
                     }

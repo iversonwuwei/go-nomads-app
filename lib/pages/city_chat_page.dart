@@ -5,7 +5,6 @@ import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/pages/flutter_map_picker_page.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
-import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -65,32 +64,331 @@ class _CityChatPageState extends State<CityChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_initialized) {
-      return const ChatListSkeleton();
+    // 如果是 Meetup 聊天，显示加载状态或聊天室
+    if (_isMeetupChat) {
+      return Obx(() {
+        // 先访问可观察变量，确保 Obx 正常工作
+        final room = controller.currentRoom;
+        // ignore: unused_local_variable
+        final isLoading = controller.isLoading;
+
+        // 显示加载状态
+        if (!_initialized || room == null) {
+          return _ChatLoadingView(
+            roomName: (Get.arguments as Map<String, dynamic>?)?['city'] as String? ?? '聊天室',
+            onBack: () async {
+              await controller.leaveRoom();
+              Get.back();
+            },
+          );
+        }
+        
+        // 显示聊天视图
+        return _ChatRoomView(
+          controller: controller,
+          isMeetupChat: true,
+        );
+      });
     }
 
+    // 非 Meetup 聊天的原有逻辑
     return Obx(() {
-      if (controller.isLoading && controller.currentRoom == null) {
-        return const ChatListSkeleton();
-      }
-
       if (controller.currentRoom == null) {
-        // 如果是从 Meetup 进入但聊天室已被清空，说明已经退出，返回上一页
-        if (_isMeetupChat) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            Get.back();
-          });
-          return const SizedBox.shrink();
-        }
         return _ChatRoomsListView(controller: controller);
       }
 
       return _ChatRoomView(
         controller: controller,
-        isMeetupChat: _isMeetupChat,
+        isMeetupChat: false,
       );
     });
   }
+}
+
+/// 聊天室加载动画视图
+class _ChatLoadingView extends StatefulWidget {
+  final String roomName;
+  final Future<void> Function() onBack;
+
+  const _ChatLoadingView({
+    required this.roomName,
+    required this.onBack,
+  });
+
+  @override
+  State<_ChatLoadingView> createState() => _ChatLoadingViewState();
+}
+
+class _ChatLoadingViewState extends State<_ChatLoadingView> with TickerProviderStateMixin {
+  late AnimationController _pulseController;
+  late AnimationController _bubbleController;
+  late Animation<double> _pulseAnimation;
+  late Animation<double> _rotationAnimation;
+
+  // 漂浮气泡数据
+  final List<_FloatingBubble> _bubbles = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _initAnimations();
+    _generateBubbles();
+  }
+
+  void _initAnimations() {
+    // 脉冲动画
+    _pulseController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _pulseAnimation = Tween<double>(begin: 0.8, end: 1.2).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+
+    // 气泡漂浮动画
+    _bubbleController = AnimationController(
+      duration: const Duration(seconds: 3),
+      vsync: this,
+    )..repeat();
+
+    _rotationAnimation = Tween<double>(begin: 0, end: 2 * 3.14159).animate(
+      CurvedAnimation(parent: _bubbleController, curve: Curves.linear),
+    );
+  }
+
+  void _generateBubbles() {
+    final random = DateTime.now().millisecondsSinceEpoch;
+    for (int i = 0; i < 8; i++) {
+      _bubbles.add(_FloatingBubble(
+        x: ((random + i * 137) % 100) / 100,
+        y: ((random + i * 251) % 100) / 100,
+        size: 20 + ((random + i * 73) % 30).toDouble(),
+        speed: 0.3 + ((random + i * 41) % 50) / 100,
+        icon: _chatIcons[i % _chatIcons.length],
+      ));
+    }
+  }
+
+  static const List<IconData> _chatIcons = [
+    FontAwesomeIcons.message,
+    FontAwesomeIcons.comments,
+    FontAwesomeIcons.faceSmile,
+    FontAwesomeIcons.heart,
+    FontAwesomeIcons.star,
+    FontAwesomeIcons.bolt,
+    FontAwesomeIcons.fire,
+    FontAwesomeIcons.handPeace,
+  ];
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    _bubbleController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF07C160),
+              Color(0xFF059C4C),
+              Color(0xFF048A42),
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Stack(
+            children: [
+              // 漂浮气泡背景
+              ..._buildFloatingBubbles(),
+
+              // 返回按钮
+              Positioned(
+                top: 8,
+                left: 8,
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                  onPressed: widget.onBack,
+                ),
+              ),
+
+              // 中心加载动画
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // 脉冲圆环动画
+                    AnimatedBuilder(
+                      animation: _pulseController,
+                      builder: (context, child) {
+                        return Transform.scale(
+                          scale: _pulseAnimation.value,
+                          child: Container(
+                            width: 120,
+                            height: 120,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.3),
+                                width: 3,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.white.withValues(alpha: 0.2),
+                                  blurRadius: 20,
+                                  spreadRadius: 5,
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: AnimatedBuilder(
+                                animation: _rotationAnimation,
+                                builder: (context, child) {
+                                  return Transform.rotate(
+                                    angle: _rotationAnimation.value,
+                                    child: Container(
+                                      width: 80,
+                                      height: 80,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        gradient: SweepGradient(
+                                          colors: [
+                                            Colors.white.withValues(alpha: 0.8),
+                                            Colors.white.withValues(alpha: 0.1),
+                                            Colors.white.withValues(alpha: 0.8),
+                                          ],
+                                        ),
+                                      ),
+                                      child: const Center(
+                                        child: Icon(
+                                          FontAwesomeIcons.comments,
+                                          color: Colors.white,
+                                          size: 32,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // 聊天室名称
+                    Text(
+                      widget.roomName,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black26,
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // 加载文字动画
+                    _buildLoadingText(),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildFloatingBubbles() {
+    return _bubbles.map((bubble) {
+      return AnimatedBuilder(
+        animation: _bubbleController,
+        builder: (context, child) {
+          final progress = (_bubbleController.value + bubble.speed) % 1.0;
+          final yOffset = progress * 200 - 100;
+          final xWave = 20 * (0.5 - (progress - 0.5).abs());
+
+          return Positioned(
+            left: bubble.x * MediaQuery.of(context).size.width + xWave,
+            top: bubble.y * MediaQuery.of(context).size.height + yOffset,
+            child: Opacity(
+              opacity: 0.3 + 0.3 * (1 - (progress - 0.5).abs() * 2),
+              child: Icon(
+                bubble.icon,
+                color: Colors.white,
+                size: bubble.size,
+              ),
+            ),
+          );
+        },
+      );
+    }).toList();
+  }
+
+  Widget _buildLoadingText() {
+    return AnimatedBuilder(
+      animation: _pulseController,
+      builder: (context, child) {
+        final dotCount = (_pulseController.value * 3).floor() + 1;
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              '正在连接',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 16,
+              ),
+            ),
+            SizedBox(
+              width: 30,
+              child: Text(
+                '.' * dotCount,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// 漂浮气泡数据类
+class _FloatingBubble {
+  final double x;
+  final double y;
+  final double size;
+  final double speed;
+  final IconData icon;
+
+  _FloatingBubble({
+    required this.x,
+    required this.y,
+    required this.size,
+    required this.speed,
+    required this.icon,
+  });
 }
 
 /// 聊天室列表视图
@@ -353,7 +651,9 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
       body: Column(
         children: [
           Expanded(
-            child: Obx(() => widget.controller.messages.isEmpty ? _buildEmptyMessages() : _buildMessagesList()),
+            child: Obx(() {
+              return widget.controller.messages.isEmpty ? _buildEmptyMessages() : _buildMessagesList();
+            }),
           ),
           Obx(() {
             if (widget.controller.replyTo != null) {
@@ -377,7 +677,9 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
   }
 
   PreferredSizeWidget _buildAppBar() {
-    final room = widget.controller.currentRoom!;
+    final room = widget.controller.currentRoom;
+    final roomName = room?.displayName ?? '聊天室';
+    
     return AppBar(
       backgroundColor: const Color(0xFFEDEDED),
       elevation: 0,
@@ -390,17 +692,21 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            room.displayName,
+            roomName,
             style: const TextStyle(
               color: Colors.black,
               fontSize: 17,
               fontWeight: FontWeight.w600,
             ),
           ),
-          Obx(() => Text(
-                '${widget.controller.onlineCount > 0 ? widget.controller.onlineCount : room.stats.onlineUsers}人在线',
-                style: const TextStyle(color: Color(0xFF999999), fontSize: 12),
-              )),
+          Obx(() {
+            final onlineCount =
+                widget.controller.onlineCount > 0 ? widget.controller.onlineCount : (room?.stats.onlineUsers ?? 0);
+            return Text(
+              '$onlineCount人在线',
+              style: const TextStyle(color: Color(0xFF999999), fontSize: 12),
+            );
+          }),
         ],
       ),
       actions: [
