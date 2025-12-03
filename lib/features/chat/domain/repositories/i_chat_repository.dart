@@ -1,5 +1,4 @@
 import 'package:df_admin_mobile/core/domain/result.dart';
-
 import 'package:df_admin_mobile/features/chat/domain/entities/chat.dart';
 
 /// Chat Repository 接口
@@ -40,6 +39,21 @@ abstract class IChatRepository {
   ///
   /// 返回: Result<void>
   Future<Result<void>> leaveChatRoom(String roomId);
+
+  /// 获取或创建 Meetup 聊天室
+  ///
+  /// 参数:
+  /// - [meetupId]: Meetup ID
+  /// - [meetupTitle]: Meetup 标题
+  /// - [meetupType]: Meetup 类型（可选）
+  ///
+  /// 返回: Result<ChatRoom>
+  /// 说明: 创建聊天室时会自动将当前用户加入群聊
+  Future<Result<ChatRoom>> getOrCreateMeetupChatRoom({
+    required String meetupId,
+    required String meetupTitle,
+    String? meetupType,
+  });
 
   // ==================== 消息管理 ====================
 

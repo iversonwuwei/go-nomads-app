@@ -915,7 +915,8 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
 
   void _openChat() {
     final l10n = AppLocalizations.of(context)!;
-    if (!_isJoined) {
+    // 组织者或已加入的成员都可以访问聊天室
+    if (!_isJoined && !_isOrganizer) {
       AppToast.warning(
         l10n.joinToAccessChat,
         title: l10n.joinRequired,

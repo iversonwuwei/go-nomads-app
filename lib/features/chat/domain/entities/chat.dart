@@ -39,9 +39,7 @@ class ChatMessage {
   /// 是否是今天的消息
   bool get isToday {
     final now = DateTime.now();
-    return timestamp.year == now.year &&
-        timestamp.month == now.month &&
-        timestamp.day == now.day;
+    return timestamp.year == now.year && timestamp.month == now.month && timestamp.day == now.day;
   }
 
   /// 获取格式化的时间戳
@@ -233,6 +231,7 @@ class OnlineUser {
   final String id;
   final String name;
   final String? avatar;
+  final String role; // 角色: owner, admin, member
   final bool isOnline;
   final DateTime? lastSeen;
 
@@ -240,11 +239,18 @@ class OnlineUser {
     required this.id,
     required this.name,
     this.avatar,
+    this.role = 'member',
     required this.isOnline,
     this.lastSeen,
   });
 
   // === 业务逻辑方法 ===
+
+  /// 是否是创建者/群主（兼容 owner 和 organizer 角色）
+  bool get isOwner => role == 'owner' || role == 'organizer';
+
+  /// 是否是管理员
+  bool get isAdmin => role == 'admin' || isOwner;
 
   /// 是否有头像
   bool get hasAvatar => avatar != null && avatar!.isNotEmpty;

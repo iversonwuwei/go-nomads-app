@@ -136,8 +136,7 @@ class _MyMeetupsPageState extends State<MyMeetupsPage> {
       map[meetup.id] = meetup;
     }
 
-    final merged = map.values.toList()
-      ..sort((a, b) => a.schedule.startTime.compareTo(b.schedule.startTime));
+    final merged = map.values.toList()..sort((a, b) => a.schedule.startTime.compareTo(b.schedule.startTime));
 
     _meetups.assignAll(merged);
   }
@@ -154,26 +153,26 @@ class _MyMeetupsPageState extends State<MyMeetupsPage> {
         backgroundColor: const Color(0xFF1a1a1a),
         elevation: 0,
         title: Obx(() => Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.myMeetups,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: isMobile ? 20 : 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              '${_meetups.length} ${l10n.meetups}',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.6),
-                fontSize: isMobile ? 12 : 14,
-                fontWeight: FontWeight.normal,
-              ),
-            ),
-          ],
-        )),
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.myMeetups,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: isMobile ? 20 : 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  '${_meetups.length} ${l10n.meetups}',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.6),
+                    fontSize: isMobile ? 12 : 14,
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
+              ],
+            )),
         leading: const AppBackButton(color: AppColors.backButtonLight),
         actions: [
           IconButton(
@@ -672,7 +671,8 @@ class _MyMeetupsPageState extends State<MyMeetupsPage> {
   }
 
   void _openChat(Meetup meetup, AppLocalizations l10n) {
-    if (!meetup.isJoined) {
+    // 组织者或已加入的成员都可以访问聊天室
+    if (!meetup.isJoined && !meetup.isOrganizer) {
       AppToast.warning(l10n.joinToAccessChat, title: l10n.chat);
       return;
     }

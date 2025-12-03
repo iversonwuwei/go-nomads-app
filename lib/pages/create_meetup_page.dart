@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:add_2_calendar/add_2_calendar.dart';
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/config/supabase_config.dart';
+import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/chat/domain/repositories/i_chat_repository.dart';
 import 'package:df_admin_mobile/features/location/presentation/controllers/location_state_controller.dart';
 import 'package:df_admin_mobile/features/meetup/domain/entities/event_type.dart';
 import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
@@ -702,6 +704,13 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
           return;
         }
 
+        // 🔧 创建 Meetup 聊天室并自动将创建者加入
+        await _createMeetupChatRoom(
+          meetupId: createdMeetup.id,
+          meetupTitle: createdMeetup.title,
+          meetupType: meetupType.value,
+        );
+
         final l10n = AppLocalizations.of(context)!;
         AppToast.success(
           l10n.meetupCreatedSuccess,
@@ -726,6 +735,33 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
           _isSubmitting = false;
         });
       }
+    }
+  }
+
+  /// 创建 Meetup 聊天室（创建者自动加入群聊）
+  Future<void> _createMeetupChatRoom({
+    required String meetupId,
+    required String meetupTitle,
+    String? meetupType,
+  }) async {
+    try {
+      final chatRepository = Get.find<IChatRepository>();
+      final result = await chatRepository.getOrCreateMeetupChatRoom(
+        meetupId: meetupId,
+        meetupTitle: meetupTitle,
+        meetupType: meetupType,
+      );
+
+      switch (result) {
+        case Success(:final data):
+          print('✅ Meetup 聊天室创建成功: ${data.id}');
+        case Failure(:final exception):
+          print('⚠️ 创建 Meetup 聊天室失败: $exception');
+        // 不阻止 Meetup 创建流程，只记录错误
+      }
+    } catch (e) {
+      print('⚠️ 创建 Meetup 聊天室异常: $e');
+      // 不阻止 Meetup 创建流程
     }
   }
 

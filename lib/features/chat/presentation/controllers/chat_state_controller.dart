@@ -78,6 +78,9 @@ class ChatStateController extends GetxController {
   final _onlineUsers = <OnlineUser>[].obs;
   List<OnlineUser> get onlineUsers => _onlineUsers;
 
+  final _onlineCount = 0.obs;
+  int get onlineCount => _onlineCount.value;
+
   final _roomMembers = <OnlineUser>[].obs;
   List<OnlineUser> get roomMembers => _roomMembers;
 
@@ -136,6 +139,10 @@ class ChatStateController extends GetxController {
 
     _subscriptions.add(
       _signalRService.onMessageDeleted.listen(_handleMessageDeleted),
+    );
+
+    _subscriptions.add(
+      _signalRService.onOnlineStatusUpdated.listen(_handleOnlineStatusUpdated),
     );
 
     _subscriptions.add(
@@ -208,6 +215,40 @@ class ChatStateController extends GetxController {
     if (messageId != null) {
       _messages.removeWhere((m) => m.id == messageId);
     }
+  }
+
+  /// 处理在线状态更新（来自 RabbitMQ）
+  void _handleOnlineStatusUpdated(Map<String, dynamic> data) {
+    final roomId = data['roomId']?.toString();
+    final eventType = data['eventType']?.toString();
+    final onlineCount = data['onlineCount'] as int?;
+    final onlineUsersList = data['onlineUsers'] as List<dynamic>?;
+
+    // 检查是否是当前聊天室的更新
+    if (roomId != _currentRoomId.value) {
+      return;
+    }
+
+    // 更新在线人数
+    if (onlineCount != null) {
+      _onlineCount.value = onlineCount;
+    }
+
+    // 更新在线用户列表
+    if (onlineUsersList != null) {
+      _onlineUsers.value = onlineUsersList.map((u) {
+        final user = u as Map<String, dynamic>;
+        return OnlineUser(
+          id: user['userId']?.toString() ?? '',
+          name: user['userName']?.toString() ?? '',
+          avatar: user['userAvatar']?.toString(),
+          role: user['role']?.toString() ?? 'member',
+          isOnline: user['isOnline'] as bool? ?? true,
+        );
+      }).toList();
+    }
+
+    print('👥 在线状态已更新: RoomId=$roomId, EventType=$eventType, OnlineCount=$onlineCount');
   }
 
   /// 处理错误
@@ -314,6 +355,9 @@ class ChatStateController extends GetxController {
     _currentRoom.value = room;
     _currentRoomId.value = room.id;
 
+    // 初始化在线人数
+    _onlineCount.value = room.stats.onlineUsers;
+
     // 调用加入聊天室 API
     final joinResult = await _joinChatRoomUseCase(JoinChatRoomParams(room.id));
 
@@ -357,10 +401,10 @@ class ChatStateController extends GetxController {
     if (_currentRoomId.value == null) return;
 
     final roomId = _currentRoomId.value!;
-    
+
     // 先从 SignalR 离开
     await _signalRService.leaveRoom(roomId);
-    
+
     final result = await _leaveChatRoomUseCase(LeaveChatRoomParams(roomId));
 
     result.fold(
@@ -370,6 +414,7 @@ class ChatStateController extends GetxController {
         _currentRoomId.value = null;
         _messages.clear();
         _onlineUsers.clear();
+        _onlineCount.value = 0;
         _typingUsers.clear();
         _replyTo.value = null;
         _currentPage.value = 1;
@@ -623,7 +668,7 @@ class ChatStateController extends GetxController {
     if (_currentRoomId.value != null) {
       leaveRoom();
     }
-    
+
     // 清空所有响应式变量
     _chatRooms.clear();
     _currentRoom.value = null;
@@ -633,20 +678,20 @@ class ChatStateController extends GetxController {
     _onlineUsers.clear();
     _roomMembers.clear();
     _typingUsers.clear();
-    
+
     // 重置加载状态
     _isLoading.value = false;
     _isSendingMessage.value = false;
     _isLoadingMessages.value = false;
     _isConnected.value = false;
-    
+
     // 重置分页状态
     _currentPage.value = 1;
     _hasMoreMessages.value = true;
-    
+
     // 清空错误信息
     _errorMessage.value = null;
-    
+
     super.onClose();
   }
 }

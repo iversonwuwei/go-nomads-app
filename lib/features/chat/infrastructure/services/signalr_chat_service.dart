@@ -12,7 +12,7 @@ class SignalRChatService extends GetxService {
   HubConnection? _hubConnection;
   final _isConnected = false.obs;
   final _isConnecting = false.obs;
-  
+
   bool get isConnected => _isConnected.value;
   bool get isConnecting => _isConnecting.value;
 
@@ -22,6 +22,7 @@ class SignalRChatService extends GetxService {
   final _userLeftController = StreamController<Map<String, dynamic>>.broadcast();
   final _typingController = StreamController<Map<String, dynamic>>.broadcast();
   final _messageDeletedController = StreamController<Map<String, dynamic>>.broadcast();
+  final _onlineStatusController = StreamController<Map<String, dynamic>>.broadcast();
   final _errorController = StreamController<String>.broadcast();
 
   // 公开的事件流
@@ -30,6 +31,7 @@ class SignalRChatService extends GetxService {
   Stream<Map<String, dynamic>> get onUserLeft => _userLeftController.stream;
   Stream<Map<String, dynamic>> get onUserTyping => _typingController.stream;
   Stream<Map<String, dynamic>> get onMessageDeleted => _messageDeletedController.stream;
+  Stream<Map<String, dynamic>> get onOnlineStatusUpdated => _onlineStatusController.stream;
   Stream<String> get onError => _errorController.stream;
 
   // 当前加入的聊天室
@@ -49,10 +51,7 @@ class SignalRChatService extends GetxService {
       final hubUrl = '${ApiConfig.messageServiceBaseUrl}/hubs/chat';
       print('🔌 正在连接 SignalR ChatHub: $hubUrl');
 
-      _hubConnection = HubConnectionBuilder()
-          .withUrl(hubUrl)
-          .withAutomaticReconnect()
-          .build();
+      _hubConnection = HubConnectionBuilder().withUrl(hubUrl).withAutomaticReconnect().build();
 
       // 注册事件处理器
       _registerEventHandlers();
@@ -162,6 +161,15 @@ class SignalRChatService extends GetxService {
       }
     });
 
+    // 在线状态更新（来自 RabbitMQ）
+    _hubConnection!.on('OnlineStatusUpdated', (arguments) {
+      if (arguments != null && arguments.isNotEmpty) {
+        final data = arguments.first as Map<String, dynamic>;
+        _onlineStatusController.add(data);
+        print('👥 在线状态更新: RoomId=${data['roomId']}, OnlineCount=${data['onlineCount']}');
+      }
+    });
+
     // 错误
     _hubConnection!.on('Error', (arguments) {
       final error = arguments?.firstOrNull?.toString() ?? '未知错误';
@@ -182,7 +190,7 @@ class SignalRChatService extends GetxService {
     _hubConnection!.onreconnected(({connectionId}) {
       _isConnected.value = true;
       print('✅ SignalR 重连成功: $connectionId');
-      
+
       // 重新认证并加入之前的聊天室
       _authenticate().then((_) {
         if (_currentRoomId.value != null) {
@@ -362,6 +370,7 @@ class SignalRChatService extends GetxService {
     _userLeftController.close();
     _typingController.close();
     _messageDeletedController.close();
+    _onlineStatusController.close();
     _errorController.close();
     super.onClose();
   }

@@ -19,6 +19,11 @@ class SignalRService {
   bool _isNotificationHubConnected = false;
   String? _currentUserId;
 
+  // 重连控制
+  int _reconnectAttempts = 0;
+  static const int _maxReconnectAttempts = 5;
+  DateTime? _lastReconnectTime;
+
   // 事件流控制器
   final _taskProgressController = StreamController<AsyncTask>.broadcast();
   final _taskCompletedController = StreamController<AsyncTask>.broadcast();
@@ -40,13 +45,25 @@ class SignalRService {
   /// [baseUrl] AI Service 基础 URL,例如 'http://localhost:8009'
   /// [userId] 当前登录用户的 ID（可选，用于加入用户组）
   Future<void> connect(String baseUrl, {String? userId}) async {
-    if (_isConnected) {
+    // 如果已经有连接且处于连接状态，直接返回
+    if (_isConnected && _hubConnection != null) {
       print('📡 SignalR 已连接,跳过重复连接');
       // 如果已连接但用户ID变化，重新加入用户组
       if (userId != null && userId != _currentUserId) {
         await joinUserGroup(userId);
       }
       return;
+    }
+
+    // 如果已经有连接但没有 connected，先停止旧连接
+    if (_hubConnection != null) {
+      print('🔄 停止旧的 SignalR 连接...');
+      try {
+        await _hubConnection?.stop();
+      } catch (e) {
+        print('⚠️ 停止旧连接时出错: $e');
+      }
+      _hubConnection = null;
     }
 
     try {
@@ -82,27 +99,48 @@ class SignalRService {
       });
 
       _hubConnection?.onreconnecting(({error}) {
-        print('🔄 SignalR 正在重新连接: $error');
+        _reconnectAttempts++;
+        final now = DateTime.now();
+
+        // 检查是否在短时间内重连过多次
+        if (_lastReconnectTime != null &&
+            now.difference(_lastReconnectTime!).inSeconds < 10 &&
+            _reconnectAttempts > _maxReconnectAttempts) {
+          print('⚠️ SignalR 重连次数过多 ($_reconnectAttempts 次)，暂停重连');
+          _hubConnection?.stop();
+          return;
+        }
+
+        _lastReconnectTime = now;
+        print('🔄 SignalR 正在重新连接 (第 $_reconnectAttempts 次): $error');
         _isConnected = false;
       });
 
-      _hubConnection?.onreconnected(({connectionId}) async {
+      _hubConnection?.onreconnected(({connectionId}) {
         print('✅ SignalR 重新连接成功: $connectionId');
         _isConnected = true;
-        // 重连后重新加入用户组
+        _reconnectAttempts = 0; // 重置重连计数
+
+        // 重连后延迟重新加入用户组，确保连接稳定
         if (_currentUserId != null) {
-          await joinUserGroup(_currentUserId!);
+          Future.delayed(const Duration(milliseconds: 1000), () {
+            if (_isConnected && _currentUserId != null) {
+              _joinUserGroupSafe(_currentUserId!);
+            }
+          });
         }
       });
 
       // 启动连接
       await _hubConnection?.start();
       _isConnected = true;
+      _reconnectAttempts = 0; // 初始连接成功，重置计数
 
       print('✅ SignalR AI-Progress 连接成功! ConnectionId: ${_hubConnection?.connectionId}');
 
-      // 连接成功后加入用户组
+      // 连接成功后延迟加入用户组，确保连接完全就绪
       if (userId != null) {
+        await Future.delayed(const Duration(milliseconds: 500));
         await joinUserGroup(userId);
       }
 
@@ -117,9 +155,21 @@ class SignalRService {
 
   /// 连接到 NotificationHub (使用 MessageService URL)
   Future<void> _connectNotificationHub(String baseUrl, {String? userId}) async {
-    if (_isNotificationHubConnected) {
+    // 如果已经有连接且处于连接状态，直接返回
+    if (_isNotificationHubConnected && _notificationHubConnection != null) {
       print('📡 NotificationHub 已连接,跳过重复连接');
       return;
+    }
+
+    // 如果已经有连接但没有 connected，先停止旧连接
+    if (_notificationHubConnection != null) {
+      print('🔄 停止旧的 NotificationHub 连接...');
+      try {
+        await _notificationHubConnection?.stop();
+      } catch (e) {
+        print('⚠️ 停止旧 NotificationHub 连接时出错: $e');
+      }
+      _notificationHubConnection = null;
     }
 
     try {
@@ -227,6 +277,28 @@ class SignalRService {
     });
 
     print('✅ NotificationHub 事件处理器注册完成');
+  }
+
+  /// 安全地加入用户组（带重试逻辑，用于重连后）
+  Future<void> _joinUserGroupSafe(String userId, {int retryCount = 0}) async {
+    if (!_isConnected || retryCount >= 3) {
+      if (retryCount >= 3) {
+        print('⚠️ 加入 AI-Progress 用户组重试次数已达上限');
+      }
+      return;
+    }
+
+    try {
+      await _hubConnection?.invoke('JoinUserGroup', args: [userId]);
+      print('✅ 已加入 AI-Progress 用户组: user-$userId');
+    } catch (e) {
+      print('⚠️ 加入 AI-Progress 用户组失败 (尝试 ${retryCount + 1}/3): $e');
+      // 如果失败且连接仍然有效，延迟后重试
+      if (_isConnected && retryCount < 2) {
+        await Future.delayed(Duration(milliseconds: 1000 * (retryCount + 1)));
+        await _joinUserGroupSafe(userId, retryCount: retryCount + 1);
+      }
+    }
   }
 
   /// 加入用户组（用于接收用户相关通知）

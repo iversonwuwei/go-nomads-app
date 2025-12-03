@@ -1285,26 +1285,6 @@ class _CityDetailPageState extends State<CityDetailPage>
     super.dispose();
   }
 
-  /// 检查用户是否有权限管理内容（admin 或当前城市的版主）
-  Future<bool> _canUserManageContent() async {
-    final tokenService = TokenStorageService();
-    final role = await tokenService.getUserRole();
-
-    // 1. 检查是否为全局管理员
-    if (role == 'admin') {
-      return true;
-    }
-
-    // 2. 检查是否为当前城市的版主
-    final cityDetailController = Get.find<CityDetailStateController>();
-    final city = cityDetailController.currentCity.value;
-    if (city != null && city.isCurrentUserModerator) {
-      return true;
-    }
-
-    return false;
-  }
-
   /// 检查用户是否为管理员或版主（用于区分跳转行为）
   Future<bool> _isAdminOrModerator() async {
     try {
