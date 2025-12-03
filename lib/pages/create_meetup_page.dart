@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'dart:io';
 
 import 'package:add_2_calendar/add_2_calendar.dart';
@@ -91,7 +93,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
 
   /// 编辑模式：用现有数据填充表单
   void _fillFormWithExistingData(Meetup meetup) {
-    print('✏️ [CreateMeetup] 编辑模式 - 填充现有数据');
+    log('✏️ [CreateMeetup] 编辑模式 - 填充现有数据');
 
     _titleController.text = meetup.title;
     _descriptionController.text = meetup.description;
@@ -133,9 +135,9 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
         _meetupTypes = _eventTypeController.eventTypes;
       });
 
-      print('✅ 成功加载 ${_meetupTypes.length} 个事件类型');
+      log('✅ 成功加载 ${_meetupTypes.length} 个事件类型');
     } catch (e) {
-      print('❌ 加载聚会类型失败: $e');
+      log('❌ 加载聚会类型失败: $e');
       // EventTypeController 已有后备方案，直接使用
       setState(() {
         _meetupTypes = _eventTypeController.eventTypes;
@@ -209,7 +211,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
   }
 
   void _selectVenueFromMap() async {
-    print('🗺️ 打开地图选择器...');
+    log('🗺️ 打开地图选择器...');
     final result = await Get.to<Map<String, dynamic>>(
       () => VenueMapPickerPage(
         cityName: _selectedCity ?? 'Bangkok',
@@ -217,13 +219,13 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
     );
 
     if (result != null) {
-      print('✅ 选择了venue: ${result['name']}');
+      log('✅ 选择了venue: ${result['name']}');
       setState(() {
         _venueController.text = '${result['name']} - ${result['address']}';
         _venueErrorText = null;
       });
     } else {
-      print('⚠️ 用户取消了选择');
+      log('⚠️ 用户取消了选择');
     }
   }
 
@@ -641,7 +643,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
           // 使用 EventType 的 ID 和 enName
           eventTypeId = selectedEventType.id;
           meetupType = MeetupType.fromString(selectedEventType.enName.toLowerCase());
-          print('✅ 使用事件类型: ${selectedEventType.name} (ID: $eventTypeId)');
+          log('✅ 使用事件类型: ${selectedEventType.name} (ID: $eventTypeId)');
         } else {
           // 如果找不到（不应该发生），回退到文本
           meetupType =
@@ -728,7 +730,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
 
       Get.back(result: true);
     } catch (e) {
-      print('❌ 创建 meetup 失败: $e');
+      log('❌ 创建 meetup 失败: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -754,13 +756,13 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
 
       switch (result) {
         case Success(:final data):
-          print('✅ Meetup 聊天室创建成功: ${data.id}');
+          log('✅ Meetup 聊天室创建成功: ${data.id}');
         case Failure(:final exception):
-          print('⚠️ 创建 Meetup 聊天室失败: $exception');
+          log('⚠️ 创建 Meetup 聊天室失败: $exception');
         // 不阻止 Meetup 创建流程，只记录错误
       }
     } catch (e) {
-      print('⚠️ 创建 Meetup 聊天室异常: $e');
+      log('⚠️ 创建 Meetup 聊天室异常: $e');
       // 不阻止 Meetup 创建流程
     }
   }
@@ -1055,7 +1057,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
                                 _typeController.text = value;
                               });
                               field.didChange(value);
-                              print('✅ 选择类型: ${selectedEventType.name} (ID: ${selectedEventType.id})');
+                              log('✅ 选择类型: ${selectedEventType.name} (ID: ${selectedEventType.id})');
                             }
                           }
                         },

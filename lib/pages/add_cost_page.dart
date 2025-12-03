@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/user_city_content/domain/entities/user_city_content.dart';
@@ -261,7 +263,7 @@ class _AddCostPageState extends State<AddCostPage> {
         'Failed to submit expenses: $e',
         title: l10n.error,
       );
-      print('❌ 提交费用失败: $e');
+      log('❌ 提交费用失败: $e');
     }
   }
 

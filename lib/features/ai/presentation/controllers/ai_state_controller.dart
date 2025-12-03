@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'dart:async';
 
 import 'package:df_admin_mobile/core/domain/result.dart';
@@ -102,7 +104,7 @@ class AiStateController extends GetxController {
     int pageSize = 20,
   }) async {
     try {
-      print('📋 [loadUserTravelPlans] 加载用户旅行计划列表...');
+      log('📋 [loadUserTravelPlans] 加载用户旅行计划列表...');
       _isLoadingUserPlans.value = true;
       _userPlansError.value = null;
 
@@ -112,20 +114,20 @@ class AiStateController extends GetxController {
 
       return result.fold(
         onSuccess: (plans) {
-          print('✅ [loadUserTravelPlans] 获取到 ${plans.length} 个旅行计划');
+          log('✅ [loadUserTravelPlans] 获取到 ${plans.length} 个旅行计划');
           _userTravelPlans.assignAll(plans);
           _isLoadingUserPlans.value = false;
           return plans;
         },
         onFailure: (failure) {
-          print('❌ [loadUserTravelPlans] 加载失败: ${failure.message}');
+          log('❌ [loadUserTravelPlans] 加载失败: ${failure.message}');
           _userPlansError.value = failure.message;
           _isLoadingUserPlans.value = false;
           return [];
         },
       );
     } catch (e) {
-      print('❌ [loadUserTravelPlans] 异常: $e');
+      log('❌ [loadUserTravelPlans] 异常: $e');
       _userPlansError.value = e.toString();
       _isLoadingUserPlans.value = false;
       return [];
@@ -135,7 +137,7 @@ class AiStateController extends GetxController {
   /// 获取旅行计划详情（从数据库）
   Future<TravelPlan?> getTravelPlanDetail(String planId) async {
     try {
-      print('📋 [getTravelPlanDetail] 获取旅行计划详情: planId=$planId');
+      log('📋 [getTravelPlanDetail] 获取旅行计划详情: planId=$planId');
 
       final result = await _getTravelPlanDetailUseCase.execute(
         GetTravelPlanDetailParams(planId: planId),
@@ -143,18 +145,18 @@ class AiStateController extends GetxController {
 
       return result.fold(
         onSuccess: (plan) {
-          print('✅ [getTravelPlanDetail] 获取成功');
+          log('✅ [getTravelPlanDetail] 获取成功');
           _currentTravelPlan.value = plan;
           return plan;
         },
         onFailure: (failure) {
-          print('❌ [getTravelPlanDetail] 获取失败: ${failure.message}');
+          log('❌ [getTravelPlanDetail] 获取失败: ${failure.message}');
           _travelPlanError.value = failure.message;
           return null;
         },
       );
     } catch (e) {
-      print('❌ [getTravelPlanDetail] 异常: $e');
+      log('❌ [getTravelPlanDetail] 异常: $e');
       _travelPlanError.value = e.toString();
       return null;
     }
@@ -171,7 +173,7 @@ class AiStateController extends GetxController {
     required String cityName,
   }) async {
     try {
-      print('📖 [loadCityGuide] 从后端API加载: cityId=$cityId, cityName=$cityName');
+      log('📖 [loadCityGuide] 从后端API加载: cityId=$cityId, cityName=$cityName');
       _isLoadingGuide.value = true;
       _guideError.value = null;
 
@@ -181,19 +183,19 @@ class AiStateController extends GetxController {
       return result.fold(
         onSuccess: (guide) {
           if (guide != null) {
-            print('✅ [loadCityGuide] 从后端加载成功: $cityName');
+            log('✅ [loadCityGuide] 从后端加载成功: $cityName');
             _currentGuide.value = guide;
             _isLoadingGuide.value = false;
             return guide;
           } else {
-            print('📭 [loadCityGuide] 后端无数据,需要生成');
+            log('📭 [loadCityGuide] 后端无数据,需要生成');
             _currentGuide.value = null;
             _isLoadingGuide.value = false;
             return null;
           }
         },
         onFailure: (failure) {
-          print('⚠️ [loadCityGuide] 后端无数据或加载失败: ${failure.message}');
+          log('⚠️ [loadCityGuide] 后端无数据或加载失败: ${failure.message}');
           _guideError.value = failure.message;
           _currentGuide.value = null;
           _isLoadingGuide.value = false;
@@ -201,7 +203,7 @@ class AiStateController extends GetxController {
         },
       );
     } catch (e) {
-      print('❌ [loadCityGuide] 加载失败: $e');
+      log('❌ [loadCityGuide] 加载失败: $e');
       _guideError.value = e.toString();
       _currentGuide.value = null;
       _isLoadingGuide.value = false;
@@ -339,9 +341,9 @@ class AiStateController extends GetxController {
     required String cityId,
     required String cityName,
   }) async {
-    print('🎯 [Controller] generateDigitalNomadGuideStream 开始');
-    print('   cityId: $cityId');
-    print('   cityName: $cityName');
+    log('🎯 [Controller] generateDigitalNomadGuideStream 开始');
+    log('   cityId: $cityId');
+    log('   cityName: $cityName');
 
     _isGeneratingGuide.value = true;
     _guideGenerationProgress.value = 0;
@@ -350,7 +352,7 @@ class AiStateController extends GetxController {
 
     // 保留当前指南，只有当生成成功时才更新，失败时保持旧数据
 
-    print('✅ [Controller] 初始状态设置完成: isGenerating=true, progress=0');
+    log('✅ [Controller] 初始状态设置完成: isGenerating=true, progress=0');
 
     try {
       // 调用异步生成方法，该方法会等待任务完成才返回
@@ -362,15 +364,15 @@ class AiStateController extends GetxController {
             final message = task.progress.message ?? '处理中...';
             final progress = task.progress.percentage;
             final completed = task.progress.completed;
-            print(
+            log(
                 '📊 [Controller] 收到进度: $progress% - $message - completed: $completed');
             _guideGenerationMessage.value = message;
             _guideGenerationProgress.value = progress;
             _isGuideCompleted.value = completed; // ✅ 更新完成状态
           },
           onData: (guide) async {
-            print('✅ [Controller] 收到完成事件');
-            print('   guide.cityName: ${guide.cityName}');
+            log('✅ [Controller] 收到完成事件');
+            log('   guide.cityName: ${guide.cityName}');
 
             _currentGuide.value = guide;
             _guideGenerationProgress.value = 100;
@@ -380,26 +382,26 @@ class AiStateController extends GetxController {
             await Future.delayed(const Duration(milliseconds: 500));
             _isGeneratingGuide.value = false;
 
-            print('✅ [Controller] 城市指南生成成功: $cityName');
+            log('✅ [Controller] 城市指南生成成功: $cityName');
           },
           onError: (error) {
-            print('❌ [Controller] 收到错误: $error');
+            log('❌ [Controller] 收到错误: $error');
             _guideError.value = error;
             _isGeneratingGuide.value = false;
           },
         ),
       );
 
-      print('✅ [Controller] generateDigitalNomadGuideStream 执行完成');
+      log('✅ [Controller] generateDigitalNomadGuideStream 执行完成');
 
       // 方法返回后，如果状态还是 true，说明被中途取消或异常
       if (_isGeneratingGuide.value) {
-        print('⚠️ [Controller] 任务结束但状态异常，重置状态');
+        log('⚠️ [Controller] 任务结束但状态异常，重置状态');
         _isGeneratingGuide.value = false;
       }
     } catch (e, stackTrace) {
-      print('❌ [Controller] generateDigitalNomadGuideStream 异常: $e');
-      print('   StackTrace: $stackTrace');
+      log('❌ [Controller] generateDigitalNomadGuideStream 异常: $e');
+      log('   StackTrace: $stackTrace');
       _guideError.value = e.toString();
       _isGeneratingGuide.value = false;
     }

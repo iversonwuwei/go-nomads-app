@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city_detail.dart';
@@ -46,7 +48,7 @@ class ProsConsStateController extends GetxController {
   Future<void> loadCityProsCons(String cityId) async {
     // 如果用户未登录,跳过加载
     if (!_isUserLoggedIn()) {
-      print('⚠️ 用户未登录,跳过加载优缺点');
+      log('⚠️ 用户未登录,跳过加载优缺点');
       return;
     }
 
@@ -60,7 +62,7 @@ class ProsConsStateController extends GetxController {
   Future<void> loadPros(String cityId) async {
     // 如果用户未登录,跳过加载
     if (!_isUserLoggedIn()) {
-      print('⚠️ 用户未登录,跳过加载优点');
+      log('⚠️ 用户未登录,跳过加载优点');
       return;
     }
 
@@ -69,7 +71,7 @@ class ProsConsStateController extends GetxController {
     prosList.clear(); // 先清空旧数据
 
     try {
-      print('📡 加载城市优点: $cityId');
+      log('📡 加载城市优点: $cityId');
 
       final result = await _repository.getCityProsCons(
         cityId: cityId,
@@ -79,16 +81,16 @@ class ProsConsStateController extends GetxController {
       result.fold(
         onSuccess: (pros) {
           prosList.value = pros;
-          print('✅ 优点加载成功: ${pros.length} 条');
+          log('✅ 优点加载成功: ${pros.length} 条');
         },
         onFailure: (err) {
           error.value = err.message;
-          print('❌ 优点加载失败: ${err.message}');
+          log('❌ 优点加载失败: ${err.message}');
         },
       );
     } catch (e) {
       error.value = '加载优点失败: $e';
-      print('❌ 异常: $e');
+      log('❌ 异常: $e');
     } finally {
       isLoadingPros.value = false;
     }
@@ -98,7 +100,7 @@ class ProsConsStateController extends GetxController {
   Future<void> loadCons(String cityId) async {
     // 如果用户未登录,跳过加载
     if (!_isUserLoggedIn()) {
-      print('⚠️ 用户未登录,跳过加载缺点');
+      log('⚠️ 用户未登录,跳过加载缺点');
       return;
     }
 
@@ -107,7 +109,7 @@ class ProsConsStateController extends GetxController {
     consList.clear(); // 先清空旧数据
 
     try {
-      print('📡 加载城市缺点: $cityId');
+      log('📡 加载城市缺点: $cityId');
 
       final result = await _repository.getCityProsCons(
         cityId: cityId,
@@ -117,16 +119,16 @@ class ProsConsStateController extends GetxController {
       result.fold(
         onSuccess: (cons) {
           consList.value = cons;
-          print('✅ 缺点加载成功: ${cons.length} 条');
+          log('✅ 缺点加载成功: ${cons.length} 条');
         },
         onFailure: (err) {
           error.value = err.message;
-          print('❌ 缺点加载失败: ${err.message}');
+          log('❌ 缺点加载失败: ${err.message}');
         },
       );
     } catch (e) {
       error.value = '加载缺点失败: $e';
-      print('❌ 异常: $e');
+      log('❌ 异常: $e');
     } finally {
       isLoadingCons.value = false;
     }
@@ -171,7 +173,7 @@ class ProsConsStateController extends GetxController {
     error.value = null;
 
     try {
-      print('📡 添加${isPro ? '优点' : '缺点'}: $text');
+      log('📡 添加${isPro ? '优点' : '缺点'}: $text');
 
       final result = await _repository.addProsCons(
         cityId: cityId,
@@ -187,18 +189,18 @@ class ProsConsStateController extends GetxController {
           } else {
             consList.insert(0, newItem);
           }
-          print('✅ 添加成功');
+          log('✅ 添加成功');
           return true;
         },
         onFailure: (err) {
           error.value = err.message;
-          print('❌ 添加失败: ${err.message}');
+          log('❌ 添加失败: ${err.message}');
           return false;
         },
       );
     } catch (e) {
       error.value = '添加失败: $e';
-      print('❌ 异常: $e');
+      log('❌ 异常: $e');
       return false;
     } finally {
       isAdding.value = false;
@@ -225,7 +227,7 @@ class ProsConsStateController extends GetxController {
     error.value = null;
 
     try {
-      print('📡 ${isUpvote ? '点赞' : '点踩'}: $id');
+      log('📡 ${isUpvote ? '点赞' : '点踩'}: $id');
 
       final result = await _repository.voteProsCons(
         id: id,
@@ -237,18 +239,18 @@ class ProsConsStateController extends GetxController {
           // 投票成功，不在本地更新数据
           // 因为后端投票逻辑是切换：有投票则删除，无投票则新增
           // 前端无法判断是新增还是删除，所以由调用方重新加载数据
-          print('✅ 投票成功');
+          log('✅ 投票成功');
           return true;
         },
         onFailure: (err) {
           error.value = err.message;
-          print('❌ 投票失败: ${err.message}');
+          log('❌ 投票失败: ${err.message}');
           return false;
         },
       );
     } catch (e) {
       error.value = '投票失败: $e';
-      print('❌ 异常: $e');
+      log('❌ 异常: $e');
       return false;
     } finally {
       isVoting.value = false;
@@ -275,7 +277,7 @@ class ProsConsStateController extends GetxController {
     error.value = null;
 
     try {
-      print('📡 删除${isPro ? '优点' : '缺点'}: $id');
+      log('📡 删除${isPro ? '优点' : '缺点'}: $id');
 
       final result = await _repository.deleteProsCons(cityId, id);
 
@@ -287,18 +289,18 @@ class ProsConsStateController extends GetxController {
           } else {
             consList.removeWhere((item) => item.id == id);
           }
-          print('✅ 删除成功');
+          log('✅ 删除成功');
           return true;
         },
         onFailure: (err) {
           error.value = err.message;
-          print('❌ 删除失败: ${err.message}');
+          log('❌ 删除失败: ${err.message}');
           return false;
         },
       );
     } catch (e) {
       error.value = '删除失败: $e';
-      print('❌ 异常: $e');
+      log('❌ 异常: $e');
       return false;
     } finally {
       isAdding.value = false;

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'dart:io';
 
 import 'package:df_admin_mobile/config/app_colors.dart';
@@ -109,10 +111,10 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
     _isSubmitting.value = true;
 
     try {
-      print('📝 开始提交评论...');
-      print('   coworkingId: ${widget.coworkingId}');
-      print('   rating: ${_rating.value}');
-      print('   title: ${_titleController.text.trim()}');
+      log('📝 开始提交评论...');
+      log('   coworkingId: ${widget.coworkingId}');
+      log('   rating: ${_rating.value}');
+      log('   title: ${_titleController.text.trim()}');
       
       final repository = Get.find<ICoworkingReviewRepository>();
 
@@ -129,7 +131,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
         photoUrls: photoUrls.isNotEmpty ? photoUrls : null,
       );
 
-      print('✅ 评论提交成功: ${result.id}');
+      log('✅ 评论提交成功: ${result.id}');
 
       // 显示成功提示
       if (mounted) {
@@ -137,13 +139,13 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
         AppToast.success(l10n.coworkingReviewSubmitSuccess);
       }
 
-      print('🔙 准备跳转...');
+      log('🔙 准备跳转...');
 
       // 立即返回，不要等待
       if (mounted) {
-        print('✅ Widget mounted, calling Navigator.pop()');
+        log('✅ Widget mounted, calling Navigator.pop()');
         Navigator.of(context).pop(true);
-        print('✅ Navigator.pop() called');
+        log('✅ Navigator.pop() called');
       }
       
       // 重置按钮状态
@@ -151,7 +153,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
       
     } catch (e) {
       final l10n = AppLocalizations.of(context)!;
-      print('❌ 提交评论失败: $e');
+      log('❌ 提交评论失败: $e');
       AppToast.error(l10n.submitFailed('$e'));
       _isSubmitting.value = false;
     }

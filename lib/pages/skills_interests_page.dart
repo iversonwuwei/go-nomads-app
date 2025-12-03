@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/features/interest/domain/entities/interest.dart';
 import 'package:df_admin_mobile/features/interest/presentation/controllers/interest_state_controller.dart';
 import 'package:df_admin_mobile/features/skill/domain/entities/skill.dart';
@@ -122,7 +124,7 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage>
         AppToast.warning(failureMessages.join(' · '));
       }
     } catch (e) {
-      print('❌ 保存失败: $e');
+      log('❌ 保存失败: $e');
       AppToast.error('无法保存您的选择，请稍后重试');
     } finally {
       setState(() => _isSaving = false);

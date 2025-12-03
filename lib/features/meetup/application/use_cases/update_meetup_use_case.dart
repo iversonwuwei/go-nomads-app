@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
 import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
 
@@ -26,8 +28,8 @@ class UpdateMeetupUseCase {
     double? longitude,
   }) async {
     try {
-      print('🎯 执行 UpdateMeetupUseCase...');
-      print('   活动ID: $meetupId');
+      log('🎯 执行 UpdateMeetupUseCase...');
+      log('   活动ID: $meetupId');
 
       // 构建更新数据
       final Map<String, dynamic> updates = {};
@@ -47,15 +49,15 @@ class UpdateMeetupUseCase {
       if (latitude != null) updates['latitude'] = latitude;
       if (longitude != null) updates['longitude'] = longitude;
 
-      print('   更新字段: ${updates.keys.toList()}');
+      log('   更新字段: ${updates.keys.toList()}');
 
       // 调用 Repository 更新活动
       final meetup = await _repository.updateMeetup(meetupId, updates);
 
-      print('✅ 活动更新成功: ${meetup.id}');
+      log('✅ 活动更新成功: ${meetup.id}');
       return meetup;
     } catch (e) {
-      print('❌ UpdateMeetupUseCase 执行失败: $e');
+      log('❌ UpdateMeetupUseCase 执行失败: $e');
       rethrow;
     }
   }

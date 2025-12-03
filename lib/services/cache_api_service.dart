@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
 
 import 'package:df_admin_mobile/config/api_config.dart';
@@ -28,7 +30,7 @@ class CacheApiService {
     _dio.interceptors.add(LogInterceptor(
       requestBody: true,
       responseBody: true,
-      logPrint: (obj) => print('🔵 [CacheService via Gateway] $obj'),
+      logPrint: (obj) => log('🔵 [CacheService via Gateway] $obj'),
     ));
   }
 
@@ -38,7 +40,7 @@ class CacheApiService {
       final response = await _dio.get('/v1/cache/scores/city/$cityId');
       return CityScoreResponse.fromJson(response.data);
     } catch (e) {
-      print('❌ 获取城市评分失败: $e');
+      log('❌ 获取城市评分失败: $e');
       rethrow;
     }
   }
@@ -46,7 +48,7 @@ class CacheApiService {
   /// 批量获取城市评分
   Future<BatchCityScoreResponse> getCityScoresBatch(List<String> cityIds) async {
     try {
-      print('📊 批量获取城市评分: ${cityIds.length} 个城市');
+      log('📊 批量获取城市评分: ${cityIds.length} 个城市');
       
       final response = await _dio.post(
         '/v1/cache/scores/city/batch',
@@ -55,7 +57,7 @@ class CacheApiService {
 
       return BatchCityScoreResponse.fromJson(response.data);
     } catch (e) {
-      print('❌ 批量获取城市评分失败: $e');
+      log('❌ 批量获取城市评分失败: $e');
       rethrow;
     }
   }
@@ -66,7 +68,7 @@ class CacheApiService {
       final response = await _dio.get('/v1/cache/scores/coworking/$coworkingId');
       return CityScoreResponse.fromJson(response.data);
     } catch (e) {
-      print('❌ 获取共享空间评分失败: $e');
+      log('❌ 获取共享空间评分失败: $e');
       rethrow;
     }
   }
@@ -82,7 +84,7 @@ class CacheApiService {
 
       return BatchCityScoreResponse.fromJson(response.data);
     } catch (e) {
-      print('❌ 批量获取共享空间评分失败: $e');
+      log('❌ 批量获取共享空间评分失败: $e');
       rethrow;
     }
   }
@@ -91,9 +93,9 @@ class CacheApiService {
   Future<void> invalidateCityScore(String cityId) async {
     try {
       await _dio.delete('/v1/cache/scores/city/$cityId');
-      print('✅ 城市评分缓存已失效: $cityId');
+      log('✅ 城市评分缓存已失效: $cityId');
     } catch (e) {
-      print('❌ 使城市评分缓存失效失败: $e');
+      log('❌ 使城市评分缓存失效失败: $e');
       rethrow;
     }
   }
@@ -102,9 +104,9 @@ class CacheApiService {
   Future<void> invalidateCoworkingScore(String coworkingId) async {
     try {
       await _dio.delete('/v1/cache/scores/coworking/$coworkingId');
-      print('✅ 共享空间评分缓存已失效: $coworkingId');
+      log('✅ 共享空间评分缓存已失效: $coworkingId');
     } catch (e) {
-      print('❌ 使共享空间评分缓存失效失败: $e');
+      log('❌ 使共享空间评分缓存失效失败: $e');
       rethrow;
     }
   }

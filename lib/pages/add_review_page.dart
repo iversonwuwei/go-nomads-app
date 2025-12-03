@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'dart:io';
 
 import 'package:df_admin_mobile/config/app_colors.dart';
@@ -774,9 +776,9 @@ class _AddReviewPageState extends State<AddReviewPage> {
       // 实际的 API 调用
       final apiService = Get.find<IUserCityContentRepository>();
 
-      print('🔄 Submitting review for city: ${widget.cityId}');
-      print('   Rating: ${_rating.value.round()}');
-      print('   Title: ${_titleController.text.trim()}');
+      log('🔄 Submitting review for city: ${widget.cityId}');
+      log('   Rating: ${_rating.value.round()}');
+      log('   Title: ${_titleController.text.trim()}');
       
       final result = await apiService.upsertCityReview(
         cityId: widget.cityId,
@@ -786,11 +788,11 @@ class _AddReviewPageState extends State<AddReviewPage> {
         // visitDate: 可以添加一个日期选择器
       );
 
-      print('✅ API Response: ${result.runtimeType}');
+      log('✅ API Response: ${result.runtimeType}');
 
       switch (result) {
         case Success(:final data):
-          print('✅ Success! Review data: $data');
+          log('✅ Success! Review data: $data');
 
           // 先重置按钮状态,让用户看到提交完成
           _isSubmitting.value = false;
@@ -803,26 +805,26 @@ class _AddReviewPageState extends State<AddReviewPage> {
             );
           }
 
-          print('🔙 等待 Toast 显示后跳转...');
+          log('🔙 等待 Toast 显示后跳转...');
 
           // 等待 Toast 显示
           await Future.delayed(const Duration(milliseconds: 800));
 
           // 返回上一页并传递结果
           if (mounted) {
-            print('✅ Widget mounted, calling Get.back()');
+            log('✅ Widget mounted, calling Get.back()');
             Get.back(result: {
               'success': true,
               'review': data,
             });
-            print('✅ Get.back() called');
+            log('✅ Get.back() called');
           } else {
-            print('❌ Widget not mounted, cannot navigate');
+            log('❌ Widget not mounted, cannot navigate');
           }
           return;
           
         case Failure(:final exception):
-          print('❌ Failure: $exception');
+          log('❌ Failure: $exception');
           AppToast.error(
             l10n.failedToSubmitReview(exception.toString()),
             title: l10n.error,
@@ -830,8 +832,8 @@ class _AddReviewPageState extends State<AddReviewPage> {
           _isSubmitting.value = false;
       }
     } catch (e, stackTrace) {
-      print('❌ Exception caught: $e');
-      print('Stack trace: $stackTrace');
+      log('❌ Exception caught: $e');
+      log('Stack trace: $stackTrace');
       AppToast.error(
         l10n.failedToSubmitReview('$e'),
         title: l10n.error,

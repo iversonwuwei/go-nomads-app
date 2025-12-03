@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
@@ -47,8 +49,8 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
       );
 
       try {
-        print('🔐 开始登录验证..');
-        print('   邮箱: ${_emailController.text.trim()}');
+        log('🔐 开始登录验证..');
+        log('   邮箱: ${_emailController.text.trim()}');
 
         // 调用 AuthStateController 登录
         final authController = Get.find<AuthStateController>();
@@ -68,7 +70,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
 
           if (user == null) {
             // 用户数据为空
-            print('❌ 登录失败: 用户数据为空');
+            log('❌ 登录失败: 用户数据为空');
             AppToast.error(
               'Failed to load user data',
               title: 'Login Failed',
@@ -76,14 +78,14 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
             return;
           }
 
-          print('🎉 登录成功');
-          print('   用户ID: ${user.id}');
-          print('   用户名: ${user.name}');
-          print('   邮箱: ${user.email}');
+          log('🎉 登录成功');
+          log('   用户ID: ${user.id}');
+          log('   用户名: ${user.name}');
+          log('   邮箱: ${user.email}');
 
           // TODO: 需要通过 AuthStateController 处理登录状态
           // UserStateController 没有 login 方法，应该使用 AuthStateController
-          print('✅ 用户登录成功，待集成状态管理');
+          log('✅ 用户登录成功，待集成状态管理');
 
           AppToast.success(
             'Welcome back, ${user.name}!',
@@ -94,11 +96,11 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
           await Future.delayed(const Duration(milliseconds: 300));
 
           // 登录成功后跳转到主页
-          print('🚀 准备跳转到主页..');
+          log('🚀 准备跳转到主页..');
           Get.offAllNamed('/');
         } else {
           // 登录失败
-          print('❌ 登录失败');
+          log('❌ 登录失败');
           AppToast.error(
             'Invalid email or password',
             title: 'Login Failed',
@@ -110,7 +112,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
           Navigator.pop(context);
         }
 
-        print('❌ HTTP 错误: ${e.message}');
+        log('❌ HTTP 错误: ${e.message}');
         AppToast.error(
           e.message,
           title: 'Network Error',
@@ -121,7 +123,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
           Navigator.pop(context);
         }
 
-        print('❌ 登录错误: $e');
+        log('❌ 登录错误: $e');
         AppToast.error(
           'An error occurred. Please try again.',
           title: 'Error',

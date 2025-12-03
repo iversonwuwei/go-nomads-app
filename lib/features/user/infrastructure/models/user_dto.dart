@@ -1,4 +1,6 @@
 // import 'package:df_admin_mobile/models/user_model.dart' as legacy; // Legacy model removed
+import 'dart:developer';
+
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart'
     as entity;
 
@@ -178,7 +180,7 @@ class UserSkillInfoDto {
   });
 
   factory UserSkillInfoDto.fromJson(Map<String, dynamic> json) {
-    print('🔍 解析 UserSkillInfo: $json');
+    log('🔍 解析 UserSkillInfo: $json');
     // 优先使用 skillId（技能本身的ID），而不是 id（UserSkill关联记录的ID）
     final id =
         (json['skillId'] ?? json['SkillId'] ?? json['id']) as String? ?? '';
@@ -190,7 +192,7 @@ class UserSkillInfoDto {
             json['ProficiencyLevel']) as String? ??
         '';
     final icon = (json['icon'] ?? json['Icon']) as String?;
-    print('   ✅ 解析结果: id=$id, name=$name, level=$level, icon=$icon');
+    log('   ✅ 解析结果: id=$id, name=$name, level=$level, icon=$icon');
     return UserSkillInfoDto(
       id: id,
       name: name,
@@ -230,7 +232,7 @@ class UserInterestInfoDto {
   });
 
   factory UserInterestInfoDto.fromJson(Map<String, dynamic> json) {
-    print('🔍 解析 UserInterestInfo: $json');
+    log('🔍 解析 UserInterestInfo: $json');
     // 优先使用 interestId（兴趣本身的ID），而不是 id（UserInterest关联记录的ID）
     final id =
         (json['interestId'] ?? json['InterestId'] ?? json['id']) as String? ??
@@ -239,7 +241,7 @@ class UserInterestInfoDto {
             as String? ??
         '';
     final icon = (json['icon'] ?? json['Icon']) as String?;
-    print('   ✅ 解析结果: id=$id, name=$name, icon=$icon');
+    log('   ✅ 解析结果: id=$id, name=$name, icon=$icon');
     return UserInterestInfoDto(
       id: id,
       name: name,

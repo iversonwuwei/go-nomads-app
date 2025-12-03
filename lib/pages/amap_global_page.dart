@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'dart:io';
 
 import 'package:df_admin_mobile/config/app_colors.dart';
@@ -180,7 +182,7 @@ class _AmapGlobalPageState extends State<AmapGlobalPage> {
   }
 
   void _onPlatformViewCreated(int viewId) {
-    print('🗺️ AMap Platform View created with id: $viewId');
+    log('🗺️ AMap Platform View created with id: $viewId');
   }
 
   Widget _buildTopPanel(AppLocalizations l10n) {
@@ -490,16 +492,16 @@ class _AmapGlobalPageState extends State<AmapGlobalPage> {
 
   void _centerToUserLocation() {
     // TODO: 实现定位到用户位置
-    print('📍 Center to user location');
+    log('📍 Center to user location');
   }
 
   void _changeZoom(int delta) {
     // TODO: 通过 MethodChannel 调用原生缩放
-    print('🔍 Change zoom: $delta');
+    log('🔍 Change zoom: $delta');
   }
 
   void _resetToWorld() {
     // TODO: 通过 MethodChannel 重置视图
-    print('🌍 Reset to world view');
+    log('🌍 Reset to world view');
   }
 }

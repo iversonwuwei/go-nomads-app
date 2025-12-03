@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'dart:async';
 
 import 'package:df_admin_mobile/config/api_config.dart';
@@ -47,7 +49,7 @@ class SignalRService {
   Future<void> connect(String baseUrl, {String? userId}) async {
     // 如果已经有连接且处于连接状态，直接返回
     if (_isConnected && _hubConnection != null) {
-      print('📡 SignalR 已连接,跳过重复连接');
+      log('📡 SignalR 已连接,跳过重复连接');
       // 如果已连接但用户ID变化，重新加入用户组
       if (userId != null && userId != _currentUserId) {
         await joinUserGroup(userId);
@@ -57,11 +59,11 @@ class SignalRService {
 
     // 如果已经有连接但没有 connected，先停止旧连接
     if (_hubConnection != null) {
-      print('🔄 停止旧的 SignalR 连接...');
+      log('🔄 停止旧的 SignalR 连接...');
       try {
         await _hubConnection?.stop();
       } catch (e) {
-        print('⚠️ 停止旧连接时出错: $e');
+        log('⚠️ 停止旧连接时出错: $e');
       }
       _hubConnection = null;
     }
@@ -73,7 +75,7 @@ class SignalRService {
 
       // 构建 Hub URL - 使用 ai-progress hub
       final hubUrl = '$baseUrl/hubs/ai-progress';
-      print('🔌 正在连接 SignalR Hub: $hubUrl');
+      log('🔌 正在连接 SignalR Hub: $hubUrl');
 
       // 创建连接（带认证）
       _hubConnection = HubConnectionBuilder()
@@ -93,7 +95,7 @@ class SignalRService {
 
       // 连接状态监听
       _hubConnection?.onclose(({error}) {
-        print('❌ SignalR 连接关闭: $error');
+        log('❌ SignalR 连接关闭: $error');
         _isConnected = false;
         _currentUserId = null;
       });
@@ -106,18 +108,18 @@ class SignalRService {
         if (_lastReconnectTime != null &&
             now.difference(_lastReconnectTime!).inSeconds < 10 &&
             _reconnectAttempts > _maxReconnectAttempts) {
-          print('⚠️ SignalR 重连次数过多 ($_reconnectAttempts 次)，暂停重连');
+          log('⚠️ SignalR 重连次数过多 ($_reconnectAttempts 次)，暂停重连');
           _hubConnection?.stop();
           return;
         }
 
         _lastReconnectTime = now;
-        print('🔄 SignalR 正在重新连接 (第 $_reconnectAttempts 次): $error');
+        log('🔄 SignalR 正在重新连接 (第 $_reconnectAttempts 次): $error');
         _isConnected = false;
       });
 
       _hubConnection?.onreconnected(({connectionId}) {
-        print('✅ SignalR 重新连接成功: $connectionId');
+        log('✅ SignalR 重新连接成功: $connectionId');
         _isConnected = true;
         _reconnectAttempts = 0; // 重置重连计数
 
@@ -136,7 +138,7 @@ class SignalRService {
       _isConnected = true;
       _reconnectAttempts = 0; // 初始连接成功，重置计数
 
-      print('✅ SignalR AI-Progress 连接成功! ConnectionId: ${_hubConnection?.connectionId}');
+      log('✅ SignalR AI-Progress 连接成功! ConnectionId: ${_hubConnection?.connectionId}');
 
       // 连接成功后延迟加入用户组，确保连接完全就绪
       if (userId != null) {
@@ -147,7 +149,7 @@ class SignalRService {
       // 同时连接 NotificationHub
       await _connectNotificationHub(baseUrl, userId: userId);
     } catch (e) {
-      print('❌ SignalR 连接失败: $e');
+      log('❌ SignalR 连接失败: $e');
       _isConnected = false;
       rethrow;
     }
@@ -157,17 +159,17 @@ class SignalRService {
   Future<void> _connectNotificationHub(String baseUrl, {String? userId}) async {
     // 如果已经有连接且处于连接状态，直接返回
     if (_isNotificationHubConnected && _notificationHubConnection != null) {
-      print('📡 NotificationHub 已连接,跳过重复连接');
+      log('📡 NotificationHub 已连接,跳过重复连接');
       return;
     }
 
     // 如果已经有连接但没有 connected，先停止旧连接
     if (_notificationHubConnection != null) {
-      print('🔄 停止旧的 NotificationHub 连接...');
+      log('🔄 停止旧的 NotificationHub 连接...');
       try {
         await _notificationHubConnection?.stop();
       } catch (e) {
-        print('⚠️ 停止旧 NotificationHub 连接时出错: $e');
+        log('⚠️ 停止旧 NotificationHub 连接时出错: $e');
       }
       _notificationHubConnection = null;
     }
@@ -181,7 +183,7 @@ class SignalRService {
       // NotificationHub 部署在 MessageService 上
       final messageServiceUrl = ApiConfig.messageServiceBaseUrl;
       final hubUrl = '$messageServiceUrl/hubs/notifications';
-      print('🔌 正在连接 NotificationHub: $hubUrl');
+      log('🔌 正在连接 NotificationHub: $hubUrl');
 
       // 创建连接（带认证）
       _notificationHubConnection = HubConnectionBuilder()
@@ -201,12 +203,12 @@ class SignalRService {
 
       // 连接状态监听
       _notificationHubConnection?.onclose(({error}) {
-        print('❌ NotificationHub 连接关闭: $error');
+        log('❌ NotificationHub 连接关闭: $error');
         _isNotificationHubConnected = false;
       });
 
       _notificationHubConnection?.onreconnected(({connectionId}) {
-        print('✅ NotificationHub 重新连接成功: $connectionId');
+        log('✅ NotificationHub 重新连接成功: $connectionId');
         _isNotificationHubConnected = true;
       });
 
@@ -214,14 +216,14 @@ class SignalRService {
       await _notificationHubConnection?.start();
       _isNotificationHubConnected = true;
 
-      print('✅ NotificationHub 连接成功! ConnectionId: ${_notificationHubConnection?.connectionId}');
+      log('✅ NotificationHub 连接成功! ConnectionId: ${_notificationHubConnection?.connectionId}');
 
       // 连接成功后加入用户组（因为后端使用 AllowAnonymous，需要手动加入用户组）
       if (userId != null) {
         await _joinNotificationUserGroup(userId);
       }
     } catch (e) {
-      print('❌ NotificationHub 连接失败: $e');
+      log('❌ NotificationHub 连接失败: $e');
       _isNotificationHubConnected = false;
       // 不抛出异常，NotificationHub 连接失败不影响主要功能
     }
@@ -235,32 +237,32 @@ class SignalRService {
 
     try {
       await _notificationHubConnection?.invoke('JoinUserGroup', args: [userId]);
-      print('✅ 已加入 NotificationHub 用户组: user-$userId');
+      log('✅ 已加入 NotificationHub 用户组: user-$userId');
     } catch (e) {
-      print('❌ 加入 NotificationHub 用户组失败: $e');
+      log('❌ 加入 NotificationHub 用户组失败: $e');
     }
   }
 
   /// 注册通知事件处理器
   void _registerNotificationEventHandlers() {
-    print('🔧 注册 NotificationHub 事件处理器...');
+    log('🔧 注册 NotificationHub 事件处理器...');
 
     // ReceiveNotification: 接收实时通知
     _notificationHubConnection?.on('ReceiveNotification', (arguments) {
-      print('🔔 收到 ReceiveNotification 事件！');
-      print('   参数数量: ${arguments?.length ?? 0}');
+      log('🔔 收到 ReceiveNotification 事件！');
+      log('   参数数量: ${arguments?.length ?? 0}');
 
       if (arguments == null || arguments.isEmpty) {
-        print('❌ ReceiveNotification 参数为空');
+        log('❌ ReceiveNotification 参数为空');
         return;
       }
 
       try {
         final data = arguments[0] as Map<String, dynamic>;
-        print('📬 收到实时通知:');
-        print('   Type: ${data['Type'] ?? data['type']}');
-        print('   Title: ${data['Title'] ?? data['title']}');
-        print('   Content: ${data['Content'] ?? data['content']}');
+        log('📬 收到实时通知:');
+        log('   Type: ${data['Type'] ?? data['type']}');
+        log('   Title: ${data['Title'] ?? data['title']}');
+        log('   Content: ${data['Content'] ?? data['content']}');
 
         // 转换为小写 key 的 map
         final normalizedData = <String, dynamic>{};
@@ -271,28 +273,28 @@ class SignalRService {
 
         _notificationReceivedController.add(normalizedData);
       } catch (e) {
-        print('❌ 解析 ReceiveNotification 失败: $e');
-        print('   原始数据: ${arguments[0]}');
+        log('❌ 解析 ReceiveNotification 失败: $e');
+        log('   原始数据: ${arguments[0]}');
       }
     });
 
-    print('✅ NotificationHub 事件处理器注册完成');
+    log('✅ NotificationHub 事件处理器注册完成');
   }
 
   /// 安全地加入用户组（带重试逻辑，用于重连后）
   Future<void> _joinUserGroupSafe(String userId, {int retryCount = 0}) async {
     if (!_isConnected || retryCount >= 3) {
       if (retryCount >= 3) {
-        print('⚠️ 加入 AI-Progress 用户组重试次数已达上限');
+        log('⚠️ 加入 AI-Progress 用户组重试次数已达上限');
       }
       return;
     }
 
     try {
       await _hubConnection?.invoke('JoinUserGroup', args: [userId]);
-      print('✅ 已加入 AI-Progress 用户组: user-$userId');
+      log('✅ 已加入 AI-Progress 用户组: user-$userId');
     } catch (e) {
-      print('⚠️ 加入 AI-Progress 用户组失败 (尝试 ${retryCount + 1}/3): $e');
+      log('⚠️ 加入 AI-Progress 用户组失败 (尝试 ${retryCount + 1}/3): $e');
       // 如果失败且连接仍然有效，延迟后重试
       if (_isConnected && retryCount < 2) {
         await Future.delayed(Duration(milliseconds: 1000 * (retryCount + 1)));
@@ -309,9 +311,9 @@ class SignalRService {
     if (_isConnected) {
       try {
         await _hubConnection?.invoke('JoinUserGroup', args: [userId]);
-        print('✅ 已加入 AI-Progress 用户组: user-$userId');
+        log('✅ 已加入 AI-Progress 用户组: user-$userId');
       } catch (e) {
-        print('❌ 加入 AI-Progress 用户组失败: $e');
+        log('❌ 加入 AI-Progress 用户组失败: $e');
       }
     }
 
@@ -332,126 +334,126 @@ class SignalRService {
       if (_currentUserId == userId) {
         _currentUserId = null;
       }
-      print('✅ 已离开用户组: user-$userId');
+      log('✅ 已离开用户组: user-$userId');
     } catch (e) {
-      print('❌ 离开用户组失败: $e');
+      log('❌ 离开用户组失败: $e');
     }
   }
 
   /// 注册 SignalR 事件处理器
   void _registerEventHandlers() {
-    print('🔧 注册 SignalR 事件处理器...');
+    log('🔧 注册 SignalR 事件处理器...');
 
     // TaskProgress: 任务进度更新
     _hubConnection?.on('TaskProgress', (arguments) {
-      print('🎯 收到 TaskProgress 事件！');
-      print('   参数数量: ${arguments?.length ?? 0}');
+      log('🎯 收到 TaskProgress 事件！');
+      log('   参数数量: ${arguments?.length ?? 0}');
 
       if (arguments == null || arguments.isEmpty) {
-        print('❌ TaskProgress 参数为空');
+        log('❌ TaskProgress 参数为空');
         return;
       }
 
       try {
         final data = arguments[0] as Map<String, dynamic>;
-        print('📊 原始 TaskProgress JSON数据:');
-        print('   完整JSON: $data');
-        print('   progress: ${data['progress'] ?? data['Progress']}');
-        print('   completed (小写): ${data['completed']}');
-        print('   Completed (大写): ${data['Completed']}');
+        log('📊 原始 TaskProgress JSON数据:');
+        log('   完整JSON: $data');
+        log('   progress: ${data['progress'] ?? data['Progress']}');
+        log('   completed (小写): ${data['completed']}');
+        log('   Completed (大写): ${data['Completed']}');
 
         final taskDto = AsyncTaskDto.fromJson(data);
         final task = taskDto.toDomain();
 
-        print('📊 收到任务进度: ${task.taskId} - ${task.progress.percentage}%');
-        print('   消息: ${task.progress.message}');
-        print('   ✅ completed字段: ${task.progress.completed}');
+        log('📊 收到任务进度: ${task.taskId} - ${task.progress.percentage}%');
+        log('   消息: ${task.progress.message}');
+        log('   ✅ completed字段: ${task.progress.completed}');
         _taskProgressController.add(task);
       } catch (e) {
-        print('❌ 解析 TaskProgress 失败: $e');
-        print('   原始数据: ${arguments[0]}');
+        log('❌ 解析 TaskProgress 失败: $e');
+        log('   原始数据: ${arguments[0]}');
       }
     });
 
     // TaskCompleted: 任务完成
     _hubConnection?.on('TaskCompleted', (arguments) {
-      print('🎯 收到 TaskCompleted 事件！');
-      print('   参数数量: ${arguments?.length ?? 0}');
+      log('🎯 收到 TaskCompleted 事件！');
+      log('   参数数量: ${arguments?.length ?? 0}');
 
       if (arguments == null || arguments.isEmpty) {
-        print('❌ TaskCompleted 参数为空');
+        log('❌ TaskCompleted 参数为空');
         return;
       }
 
       try {
-        print('📦 收到 TaskCompleted 事件，原始数据:');
-        print('   arguments 长度: ${arguments.length}');
+        log('📦 收到 TaskCompleted 事件，原始数据:');
+        log('   arguments 长度: ${arguments.length}');
         if (arguments.isNotEmpty) {
           final data = arguments[0] as Map<String, dynamic>;
-          print('   原始 JSON keys: ${data.keys.toList()}');
-          print(
+          log('   原始 JSON keys: ${data.keys.toList()}');
+          log(
               '   完整数据: ${data.toString().substring(0, data.toString().length > 500 ? 500 : data.toString().length)}...');
 
           final taskDto = AsyncTaskDto.fromJson(data);
           final task = taskDto.toDomain();
 
-          print('✅ 收到任务完成通知: ${task.taskId}');
-          print('   - planId: ${task.result?.planId}');
-          print('   - guideId: ${task.result?.guideId}');
-          print('   - hasRawData: ${task.result?.hasRawData}');
+          log('✅ 收到任务完成通知: ${task.taskId}');
+          log('   - planId: ${task.result?.planId}');
+          log('   - guideId: ${task.result?.guideId}');
+          log('   - hasRawData: ${task.result?.hasRawData}');
           if (task.result?.rawData != null) {
-            print('   - rawData keys: ${task.result!.rawData!.keys.toList()}');
+            log('   - rawData keys: ${task.result!.rawData!.keys.toList()}');
           }
 
           _taskCompletedController.add(task);
         }
       } catch (e, stackTrace) {
-        print('❌ 解析 TaskCompleted 失败: $e');
-        print('   StackTrace: $stackTrace');
-        print('   原始数据: ${arguments[0]}');
+        log('❌ 解析 TaskCompleted 失败: $e');
+        log('   StackTrace: $stackTrace');
+        log('   原始数据: ${arguments[0]}');
       }
     });
 
     // TaskFailed: 任务失败
     _hubConnection?.on('TaskFailed', (arguments) {
-      print('🎯 收到 TaskFailed 事件！');
-      print('   参数数量: ${arguments?.length ?? 0}');
+      log('🎯 收到 TaskFailed 事件！');
+      log('   参数数量: ${arguments?.length ?? 0}');
 
       if (arguments == null || arguments.isEmpty) {
-        print('❌ TaskFailed 参数为空');
+        log('❌ TaskFailed 参数为空');
         return;
       }
 
       try {
-        print('❌ 原始 TaskFailed 数据: ${arguments[0]}');
+        log('❌ 原始 TaskFailed 数据: ${arguments[0]}');
         final data = arguments[0] as Map<String, dynamic>;
         final taskDto = AsyncTaskDto.fromJson(data);
         final task = taskDto.toDomain();
 
-        print('❌ 收到任务失败通知: ${task.taskId} - ${task.error}');
+        log('❌ 收到任务失败通知: ${task.taskId} - ${task.error}');
         _taskFailedController.add(task);
       } catch (e) {
-        print('❌ 解析 TaskFailed 失败: $e');
-        print('   原始数据: ${arguments[0]}');
+        log('❌ 解析 TaskFailed 失败: $e');
+        log('   原始数据: ${arguments[0]}');
       }
     });
 
     // CityImageUpdated: 城市图片更新完成
     _hubConnection?.on('CityImageUpdated', (arguments) {
-      print('🎯 收到 CityImageUpdated 事件！');
-      print('   参数数量: ${arguments?.length ?? 0}');
+      log('🎯 收到 CityImageUpdated 事件！');
+      log('   参数数量: ${arguments?.length ?? 0}');
 
       if (arguments == null || arguments.isEmpty) {
-        print('❌ CityImageUpdated 参数为空');
+        log('❌ CityImageUpdated 参数为空');
         return;
       }
 
       try {
         final data = arguments[0] as Map<String, dynamic>;
-        print('🖼️ 收到城市图片更新通知:');
-        print('   CityId: ${data['CityId'] ?? data['cityId']}');
-        print('   CityName: ${data['CityName'] ?? data['cityName']}');
-        print('   Success: ${data['Success'] ?? data['success']}');
+        log('🖼️ 收到城市图片更新通知:');
+        log('   CityId: ${data['CityId'] ?? data['cityId']}');
+        log('   CityName: ${data['CityName'] ?? data['cityName']}');
+        log('   Success: ${data['Success'] ?? data['success']}');
 
         // 转换为小写 key 的 map
         final normalizedData = <String, dynamic>{};
@@ -463,12 +465,12 @@ class SignalRService {
 
         _cityImageUpdatedController.add(normalizedData);
       } catch (e) {
-        print('❌ 解析 CityImageUpdated 失败: $e');
-        print('   原始数据: ${arguments[0]}');
+        log('❌ 解析 CityImageUpdated 失败: $e');
+        log('   原始数据: ${arguments[0]}');
       }
     });
 
-    print('✅ SignalR 事件处理器注册完成');
+    log('✅ SignalR 事件处理器注册完成');
   }
 
   /// 订阅任务通知
@@ -476,15 +478,15 @@ class SignalRService {
   /// [taskId] 任务 ID
   Future<void> subscribeToTask(String taskId) async {
     if (!_isConnected) {
-      print('❌ SignalR 未连接,无法订阅任务: $taskId');
+      log('❌ SignalR 未连接,无法订阅任务: $taskId');
       return;
     }
 
     try {
       await _hubConnection?.invoke('SubscribeToTask', args: [taskId]);
-      print('✅ 已订阅任务通知: $taskId');
+      log('✅ 已订阅任务通知: $taskId');
     } catch (e) {
-      print('❌ 订阅任务失败: $taskId, 错误: $e');
+      log('❌ 订阅任务失败: $taskId, 错误: $e');
       rethrow;
     }
   }
@@ -494,15 +496,15 @@ class SignalRService {
   /// [taskId] 任务 ID
   Future<void> unsubscribeFromTask(String taskId) async {
     if (!_isConnected) {
-      print('📡 SignalR 未连接,跳过取消订阅: $taskId');
+      log('📡 SignalR 未连接,跳过取消订阅: $taskId');
       return;
     }
 
     try {
       await _hubConnection?.invoke('UnsubscribeFromTask', args: [taskId]);
-      print('✅ 已取消订阅任务通知: $taskId');
+      log('✅ 已取消订阅任务通知: $taskId');
     } catch (e) {
-      print('❌ 取消订阅任务失败: $taskId, 错误: $e');
+      log('❌ 取消订阅任务失败: $taskId, 错误: $e');
     }
   }
 
@@ -513,9 +515,9 @@ class SignalRService {
       try {
         await _hubConnection?.stop();
         _isConnected = false;
-        print('✅ AI-Progress Hub 已断开');
+        log('✅ AI-Progress Hub 已断开');
       } catch (e) {
-        print('❌ AI-Progress Hub 断开失败: $e');
+        log('❌ AI-Progress Hub 断开失败: $e');
       }
     }
 
@@ -524,9 +526,9 @@ class SignalRService {
       try {
         await _notificationHubConnection?.stop();
         _isNotificationHubConnected = false;
-        print('✅ NotificationHub 已断开');
+        log('✅ NotificationHub 已断开');
       } catch (e) {
-        print('❌ NotificationHub 断开失败: $e');
+        log('❌ NotificationHub 断开失败: $e');
       }
     }
   }

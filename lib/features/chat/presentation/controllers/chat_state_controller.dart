@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'dart:async';
 
 import 'package:df_admin_mobile/core/application/use_case.dart';
@@ -248,7 +250,7 @@ class ChatStateController extends GetxController {
       }).toList();
     }
 
-    print('👥 在线状态已更新: RoomId=$roomId, EventType=$eventType, OnlineCount=$onlineCount');
+    log('👥 在线状态已更新: RoomId=$roomId, EventType=$eventType, OnlineCount=$onlineCount');
   }
 
   /// 处理错误

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:get/get.dart';
 
 import 'package:df_admin_mobile/core/domain/result.dart';
@@ -41,12 +43,12 @@ class UserManagementStateController extends GetxController {
       } else {
         // 静默处理角色加载失败，不影响用户列表显示
         roles.value = [];
-        print('⚠️ 角色列表加载失败: ${result.exceptionOrNull?.message}');
+        log('⚠️ 角色列表加载失败: ${result.exceptionOrNull?.message}');
       }
     } catch (e) {
       // 静默处理异常，不影响用户列表显示
       roles.value = [];
-      print('⚠️ 角色列表加载异常: $e');
+      log('⚠️ 角色列表加载异常: $e');
     }
   }
 

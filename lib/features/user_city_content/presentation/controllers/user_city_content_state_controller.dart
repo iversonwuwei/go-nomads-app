@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/core/application/use_case.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
@@ -106,7 +108,7 @@ class UserCityContentStateController extends GetxController {
         await _hydrateUploaderNamesFromPhotos(data);
       },
       onFailure: (exception) async {
-        // print('Failed to load photos: ${exception.message}');
+        // log('Failed to load photos: ${exception.message}');
       },
     );
 
@@ -137,7 +139,7 @@ class UserCityContentStateController extends GetxController {
         return true;
       },
       onFailure: (exception) async {
-        // print('Failed to add photo: ${exception.message}');
+        // log('Failed to add photo: ${exception.message}');
         return false;
       },
     );
@@ -191,7 +193,7 @@ class UserCityContentStateController extends GetxController {
         return true;
       },
       onFailure: (exception) {
-        // print('Failed to delete photo: ${exception.message}');
+        // log('Failed to delete photo: ${exception.message}');
         return false;
       },
     );
@@ -208,7 +210,7 @@ class UserCityContentStateController extends GetxController {
         await _hydrateUploaderNamesFromPhotos(data);
       },
       onFailure: (exception) async {
-        // print('Failed to load my photos: ${exception.message}');
+        // log('Failed to load my photos: ${exception.message}');
       },
     );
 
@@ -281,7 +283,7 @@ class UserCityContentStateController extends GetxController {
         expenses.value = data;
       },
       onFailure: (exception) {
-        // print('Failed to load expenses: ${exception.message}');
+        // log('Failed to load expenses: ${exception.message}');
       },
     );
 
@@ -313,7 +315,7 @@ class UserCityContentStateController extends GetxController {
         return true;
       },
       onFailure: (exception) {
-        // print('Failed to add expense: ${exception.message}');
+        // log('Failed to add expense: ${exception.message}');
         return false;
       },
     );
@@ -330,7 +332,7 @@ class UserCityContentStateController extends GetxController {
         return true;
       },
       onFailure: (exception) {
-        // print('Failed to delete expense: ${exception.message}');
+        // log('Failed to delete expense: ${exception.message}');
         return false;
       },
     );
@@ -346,7 +348,7 @@ class UserCityContentStateController extends GetxController {
         expenses.value = data;
       },
       onFailure: (exception) {
-        // print('Failed to load my expenses: ${exception.message}');
+        // log('Failed to load my expenses: ${exception.message}');
       },
     );
 
@@ -358,7 +360,7 @@ class UserCityContentStateController extends GetxController {
   Future<void> loadCityReviews(String cityId) async {
     // 如果用户未登录,跳过加载
     if (!_isUserLoggedIn()) {
-      print('⚠️ 用户未登录,跳过加载城市评论');
+      log('⚠️ 用户未登录,跳过加载城市评论');
       return;
     }
 
@@ -373,7 +375,7 @@ class UserCityContentStateController extends GetxController {
         reviews.value = data;
       },
       onFailure: (exception) {
-        // print('Failed to load reviews: ${exception.message}');
+        // log('Failed to load reviews: ${exception.message}');
       },
     );
 
@@ -390,7 +392,7 @@ class UserCityContentStateController extends GetxController {
         myReview.value = review;
       },
       onFailure: (exception) {
-        // print('Failed to load my review: ${exception.message}');
+        // log('Failed to load my review: ${exception.message}');
       },
     );
   }
@@ -437,7 +439,7 @@ class UserCityContentStateController extends GetxController {
         return true;
       },
       onFailure: (exception) {
-        // print('Failed to upsert review: ${exception.message}');
+        // log('Failed to upsert review: ${exception.message}');
         return false;
       },
     );
@@ -458,7 +460,7 @@ class UserCityContentStateController extends GetxController {
         return true;
       },
       onFailure: (exception) {
-        // print('Failed to delete my review: ${exception.message}');
+        // log('Failed to delete my review: ${exception.message}');
         return false;
       },
     );
@@ -478,7 +480,7 @@ class UserCityContentStateController extends GetxController {
         stats.value = data;
       },
       onFailure: (exception) {
-        // print('Failed to load city stats: ${exception.message}');
+        // log('Failed to load city stats: ${exception.message}');
       },
     );
 
@@ -488,7 +490,7 @@ class UserCityContentStateController extends GetxController {
   Future<void> loadCityCostSummary(String cityId) async {
     // 如果用户未登录,跳过加载
     if (!_isUserLoggedIn()) {
-      print('⚠️ 用户未登录,跳过加载城市费用汇总');
+      log('⚠️ 用户未登录,跳过加载城市费用汇总');
       return;
     }
 
@@ -503,7 +505,7 @@ class UserCityContentStateController extends GetxController {
         costSummary.value = data;
       },
       onFailure: (exception) {
-        // print('Failed to load cost summary: ${exception.message}');
+        // log('Failed to load cost summary: ${exception.message}');
       },
     );
 

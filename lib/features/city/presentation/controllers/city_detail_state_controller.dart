@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/core/core.dart';
 import 'package:df_admin_mobile/features/city/application/use_cases/city_use_cases.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
@@ -45,7 +47,7 @@ class CityDetailStateController extends GetxController {
 
   /// ??????? (? cityId ?????)
   Future<void> initCity(String cityId, String cityName) async {
-    // print('??? ?????: $cityName ($cityId)');
+    // log('??? ?????: $cityName ($cityId)');
 
     // ??????
     await loadCityDetail(cityId);
@@ -54,24 +56,24 @@ class CityDetailStateController extends GetxController {
   /// ??????
   Future<void> loadCityDetail(String cityId, {bool forceRefresh = false}) async {
     if (cityId.isEmpty) {
-      // print('?? ??ID??');
+      // log('?? ??ID??');
       return;
     }
 
     // 如果不是强制刷新且是相同城市且已有数据，跳过加载
     if (!forceRefresh && cityId == _lastLoadedCityId && currentCity.value != null) {
-      // print('?? 使用缓存数据: $cityId');
+      // log('?? 使用缓存数据: $cityId');
       return;
     }
 
-    // print('?? 从服务器加载城市详情: $cityId');
+    // log('?? 从服务器加载城市详情: $cityId');
     _lastLoadedCityId = cityId;
 
     isLoading.value = true;
     hasError.value = false;
     errorMessage.value = null;
 
-    // print('?? ??????: $cityId');
+    // log('?? ??????: $cityId');
 
     final result = await _getCityByIdUseCase.execute(
       GetCityByIdParams(cityId: cityId),
@@ -79,13 +81,13 @@ class CityDetailStateController extends GetxController {
 
     result.fold(
       onSuccess: (city) {
-        // print('? ????????: ${city.nameEn}');
+        // log('? ????????: ${city.nameEn}');
         currentCity.value = city;
         isFavorited.value = city.isFavorite;
         isLoading.value = false;
       },
       onFailure: (exception) {
-        // print('? ????????: ${exception.message}');
+        // log('? ????????: ${exception.message}');
         hasError.value = true;
         errorMessage.value = exception.message;
         isLoading.value = false;
@@ -97,14 +99,14 @@ class CityDetailStateController extends GetxController {
   /// ??????
   Future<void> toggleFavorite() async {
     if (currentCity.value == null) {
-      // print('?? ??????,????????');
+      // log('?? ??????,????????');
       return;
     }
 
     final cityId = currentCity.value!.id;
 
     if (isTogglingFavorite.value) {
-      // print('?? ?????????,???');
+      // log('?? ?????????,???');
       return;
     }
 
@@ -114,7 +116,7 @@ class CityDetailStateController extends GetxController {
     // ???? UI
     isFavorited.value = !previousState;
 
-    // print('?? ??????: $cityId, ????: ${isFavorited.value}');
+    // log('?? ??????: $cityId, ????: ${isFavorited.value}');
 
     final result = await _toggleCityFavoriteUseCase.execute(
       ToggleCityFavoriteParams(cityId: cityId),
@@ -122,7 +124,7 @@ class CityDetailStateController extends GetxController {
 
     result.fold(
       onSuccess: (newState) {
-        // print('? ???????: $newState');
+        // log('? ???????: $newState');
         isFavorited.value = newState;
 
         // ?? currentCity ?????
@@ -137,7 +139,7 @@ class CityDetailStateController extends GetxController {
         isTogglingFavorite.value = false;
       },
       onFailure: (exception) {
-        // print('? ??????: ${exception.message}');
+        // log('? ??????: ${exception.message}');
 
         // ????,???????
         isFavorited.value = previousState;
@@ -151,7 +153,7 @@ class CityDetailStateController extends GetxController {
   /// ?? Tab
   void changeTab(int index) {
     currentTabIndex.value = index;
-    // print('?? ??? Tab: $index');
+    // log('?? ??? Tab: $index');
   }
 
   /// ????????
@@ -179,7 +181,7 @@ class CityDetailStateController extends GetxController {
 
   @override
   void onClose() {
-    // print('??? CityDetailStateController ??? - ??????');
+    // log('??? CityDetailStateController ??? - ??????');
 
     // ?????????
     currentCity.value = null;

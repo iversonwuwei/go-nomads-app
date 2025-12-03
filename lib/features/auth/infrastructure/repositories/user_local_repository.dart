@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/features/auth/domain/entities/auth_user.dart';
 import 'package:df_admin_mobile/services/database_service.dart';
 import 'package:df_admin_mobile/services/token_storage_service.dart';
@@ -51,9 +53,9 @@ class UserLocalRepository {
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
 
-      print('✅ 用户信息已保存 (SharedPreferences + SQLite): ${user.id}');
+      log('✅ 用户信息已保存 (SharedPreferences + SQLite): ${user.id}');
     } catch (e) {
-      print('❌ 保存用户信息失败: $e');
+      log('❌ 保存用户信息失败: $e');
       rethrow;
     }
   }
@@ -88,7 +90,7 @@ class UserLocalRepository {
       );
 
       if (results.isEmpty) {
-        print('⚠️ SQLite 中未找到用户: $userId');
+        log('⚠️ SQLite 中未找到用户: $userId');
         
         // 尝试从 SharedPreferences 恢复基本信息
         final name = await _tokenStorage.getUserName();
@@ -117,7 +119,7 @@ class UserLocalRepository {
         role: await _tokenStorage.getUserRole() ?? 'user', // role 从 SharedPreferences 读取
       );
     } catch (e) {
-      print('❌ 获取当前用户失败: $e');
+      log('❌ 获取当前用户失败: $e');
       return null;
     }
   }
@@ -147,9 +149,9 @@ class UserLocalRepository {
         userRole: user.role,
       );
 
-      print('✅ 用户资料已更新: ${user.id}');
+      log('✅ 用户资料已更新: ${user.id}');
     } catch (e) {
-      print('❌ 更新用户资料失败: $e');
+      log('❌ 更新用户资料失败: $e');
       rethrow;
     }
   }
@@ -164,15 +166,15 @@ class UserLocalRepository {
       if (userId != null) {
         final database = await _db.database;
         await database.delete('users', where: 'id = ?', whereArgs: [userId]);
-        print('✅ SQLite 用户数据已清除: $userId');
+        log('✅ SQLite 用户数据已清除: $userId');
       }
 
       // 3. 清除 SharedPreferences（token + 用户信息）
       await _tokenStorage.clearTokens();
 
-      print('✅ 用户数据已完全清除');
+      log('✅ 用户数据已完全清除');
     } catch (e) {
-      print('❌ 清除用户数据失败: $e');
+      log('❌ 清除用户数据失败: $e');
       // 确保即使出错也尝试清除 token
       try {
         await _tokenStorage.clearTokens();
@@ -209,9 +211,9 @@ class UserLocalRepository {
       }
 
       await batch.commit(noResult: true);
-      print('✅ 批量保存 ${users.length} 个用户');
+      log('✅ 批量保存 ${users.length} 个用户');
     } catch (e) {
-      print('❌ 批量保存用户失败: $e');
+      log('❌ 批量保存用户失败: $e');
     }
   }
 
@@ -238,7 +240,7 @@ class UserLocalRepository {
         role: 'user', // 其他用户默认为 user
       );
     } catch (e) {
-      print('❌ 获取用户失败: $e');
+      log('❌ 获取用户失败: $e');
       return null;
     }
   }
@@ -263,7 +265,7 @@ class UserLocalRepository {
         role: 'user',
       )).toList();
     } catch (e) {
-      print('❌ 搜索用户失败: $e');
+      log('❌ 搜索用户失败: $e');
       return [];
     }
   }

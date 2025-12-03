@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -51,7 +53,7 @@ class _EditSocialLinksPageState extends State<EditSocialLinksPage> {
         });
       }
     } catch (e) {
-      print('加载社交链接失败: $e');
+      log('加载社交链接失败: $e');
       if (mounted) {
         setState(() {
           _loading = false;
@@ -143,7 +145,7 @@ class _EditSocialLinksPageState extends State<EditSocialLinksPage> {
       });
       AppToast.success('已保存社交链接');
     } catch (e) {
-      print('保存社交链接失败: $e');
+      log('保存社交链接失败: $e');
       AppToast.error('保存失败，请重试');
     }
   }
@@ -156,7 +158,7 @@ class _EditSocialLinksPageState extends State<EditSocialLinksPage> {
       });
       AppToast.success('已删除社交链接');
     } catch (e) {
-      print('删除社交链接失败: $e');
+      log('删除社交链接失败: $e');
       AppToast.error('删除失败，请重试');
     }
   }

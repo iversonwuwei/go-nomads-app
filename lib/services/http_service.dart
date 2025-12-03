@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'dart:convert';
 import 'dart:io';
 
@@ -72,7 +74,7 @@ class HttpService {
     // 防止重复跳转
     if (_isRedirectingToLogin) {
       if (kDebugMode) {
-        print('⏭️ 已在跳转登录页，跳过重复操作');
+        log('⏭️ 已在跳转登录页，跳过重复操作');
       }
       return;
     }
@@ -80,7 +82,7 @@ class HttpService {
     _isRedirectingToLogin = true;
 
     if (kDebugMode) {
-      print('🔥 处理 401 错误: ${reason ?? "Token 无效或已过期"}');
+      log('🔥 处理 401 错误: ${reason ?? "Token 无效或已过期"}');
     }
 
     // 清除所有认证信息
@@ -97,7 +99,7 @@ class HttpService {
       authController.currentToken.value = null;
     } catch (e) {
       if (kDebugMode) {
-        print('⚠️ 无法更新 AuthStateController: $e');
+        log('⚠️ 无法更新 AuthStateController: $e');
       }
     }
 
@@ -116,7 +118,7 @@ class HttpService {
         });
       } catch (e) {
         if (kDebugMode) {
-          print('❌ 跳转登录页失败: $e');
+          log('❌ 跳转登录页失败: $e');
         }
         _isRedirectingToLogin = false;
       }
@@ -147,13 +149,13 @@ class HttpService {
 
           // 打印请求日志 (仅开发环境)
           if (kDebugMode) {
-            print('🚀 REQUEST[${options.method}] => ${options.uri}');
-            print('Headers: ${options.headers}');
+            log('🚀 REQUEST[${options.method}] => ${options.uri}');
+            log('Headers: ${options.headers}');
             if (options.data != null) {
-              print('Data: ${options.data}');
+              log('Data: ${options.data}');
             }
             if (options.queryParameters.isNotEmpty) {
-              print('Query: ${options.queryParameters}');
+              log('Query: ${options.queryParameters}');
             }
           }
 
@@ -162,9 +164,9 @@ class HttpService {
         onResponse: (response, handler) {
           // 打印响应日志 (仅开发环境)
           if (kDebugMode) {
-            print(
+            log(
                 '✅ RESPONSE[${response.statusCode}] => ${response.requestOptions.uri}');
-            print('Data: ${response.data}');
+            log('Data: ${response.data}');
           }
 
           final disableUnwrap =
@@ -202,14 +204,14 @@ class HttpService {
         onError: (error, handler) async {
           // 打印错误日志
           if (kDebugMode) {
-            print(
+            log(
                 '❌ ERROR[${error.response?.statusCode}] => ${error.requestOptions.uri}');
-            print('Message: ${error.message}');
+            log('Message: ${error.message}');
             if (error.response?.data != null) {
               // 完整打印响应数据，包括错误详情
               final responseData = error.response!.data;
-              print('完整响应数据:');
-              print(jsonEncode(responseData));
+              log('完整响应数据:');
+              log(jsonEncode(responseData));
             }
           }
 
@@ -238,9 +240,9 @@ class HttpService {
           // 401 未授权 - token 过期或无效
           if (error.response?.statusCode == 401) {
             if (kDebugMode) {
-              print('⚠️ 401 Unauthorized - 认证失败');
-              print('完整响应数据:');
-              print(error.response?.data);
+              log('⚠️ 401 Unauthorized - 认证失败');
+              log('完整响应数据:');
+              log(error.response?.data);
             }
 
             // 检查是否有 refresh token
@@ -250,7 +252,7 @@ class HttpService {
             // 如果没有 refresh token，说明用户未登录，直接跳转登录页
             if (refreshToken == null || refreshToken.isEmpty) {
               if (kDebugMode) {
-                print('❌ 无 refresh token，跳转登录页面');
+                log('❌ 无 refresh token，跳转登录页面');
               }
               await _handleUnauthorized(reason: 'Please login to continue');
               return handler.next(error);
@@ -261,14 +263,14 @@ class HttpService {
               try {
                 _isRefreshing = true;
                 if (kDebugMode) {
-                  print('🔄 检测到 refresh token，尝试自动刷新...');
+                  log('🔄 检测到 refresh token，尝试自动刷新...');
                 }
 
                 final newToken = await _onTokenRefreshCallback!();
 
                 if (newToken != null && newToken.isNotEmpty) {
                   if (kDebugMode) {
-                    print('✅ Token 刷新成功，重试请求');
+                    log('✅ Token 刷新成功，重试请求');
                   }
 
                   // 更新请求头
@@ -293,7 +295,7 @@ class HttpService {
                   return handler.resolve(response);
                 } else {
                   if (kDebugMode) {
-                    print('❌ Token 刷新失败，清除认证信息并跳转登录页');
+                    log('❌ Token 刷新失败，清除认证信息并跳转登录页');
                   }
                   _isRefreshing = false;
                   await _handleUnauthorized(
@@ -302,7 +304,7 @@ class HttpService {
                 }
               } catch (refreshError) {
                 if (kDebugMode) {
-                  print('❌ Token 刷新异常: $refreshError');
+                  log('❌ Token 刷新异常: $refreshError');
                 }
                 _isRefreshing = false;
                 await _handleUnauthorized(
@@ -312,14 +314,14 @@ class HttpService {
             } else if (_onTokenRefreshCallback == null) {
               // 没有刷新回调，直接跳转登录
               if (kDebugMode) {
-                print('❌ 无 Token 刷新回调，跳转登录页面');
+                log('❌ 无 Token 刷新回调，跳转登录页面');
               }
               await _handleUnauthorized(reason: 'Please login to continue');
               return handler.next(error);
             } else if (_isRefreshing) {
               // 正在刷新中，等待刷新完成
               if (kDebugMode) {
-                print('⏳ Token 正在刷新中，等待完成...');
+                log('⏳ Token 正在刷新中，等待完成...');
               }
               return handler.next(error);
             }
@@ -460,7 +462,7 @@ class HttpService {
       final fullUri = uri.replace(queryParameters: queryParameters);
 
       if (kDebugMode) {
-        print('🔄 SSE REQUEST => $fullUri');
+        log('🔄 SSE REQUEST => $fullUri');
       }
 
       final client = HttpClient();
@@ -508,7 +510,7 @@ class HttpService {
       client.close();
     } catch (e) {
       if (kDebugMode) {
-        print('❌ SSE ERROR: $e');
+        log('❌ SSE ERROR: $e');
       }
       rethrow;
     }

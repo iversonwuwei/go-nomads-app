@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'dart:ui';
 
 import 'package:df_admin_mobile/controllers/bottom_nav_controller.dart';
@@ -51,44 +53,44 @@ class _BottomNavLayoutState extends State<BottomNavLayout> {
         return _ModernBottomNavBar(
           currentIndex: controller.currentIndex.value,
           onTap: (index) async {
-            print('🔘 Bottom Nav 点击: index=$index');
+            log('🔘 Bottom Nav 点击: index=$index');
 
             // 首页不需要验证，直接跳转
             if (index == 0) {
-              print('✅ 首页，无需验证');
+              log('✅ 首页，无需验证');
               controller.changeTab(index);
               Get.offAllNamed(AppRoutes.home);
               return;
             }
 
             // 🔒 其他所有页面都需要验证 token（索引 1, 2, 3）
-            print('🔒 检查 token...');
+            log('🔒 检查 token...');
             final tokenService = TokenStorageService();
             final accessToken = await tokenService.getAccessToken();
-            print('   Token: ${accessToken?.substring(0, 20)}...');
+            log('   Token: ${accessToken?.substring(0, 20)}...');
 
             if (accessToken == null || accessToken.isEmpty) {
-              print('❌ 无 token，跳转登录页');
+              log('❌ 无 token，跳转登录页');
               Get.toNamed(AppRoutes.login);
               return;
             }
 
             // Token 存在，允许跳转
-            print('✅ Token 有效，允许跳转');
+            log('✅ Token 有效，允许跳转');
             controller.changeTab(index);
 
             // 根据索引跳转到对应页面
             switch (index) {
               case 1: // Profile
-                print('   → Profile 页面');
+                log('   → Profile 页面');
                 Get.toNamed(AppRoutes.profile);
                 break;
               case 2: // 用户消息列表（系统消息、通知等）
-                print('   → 用户消息列表页面');
+                log('   → 用户消息列表页面');
                 Get.toNamed(AppRoutes.notifications);
                 break;
               case 3: // 编辑资料
-                print('   → 编辑资料页面');
+                log('   → 编辑资料页面');
                 Get.toNamed(AppRoutes.profileEdit);
                 break;
             }

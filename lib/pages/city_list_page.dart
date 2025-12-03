@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/core/core.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
@@ -40,7 +42,7 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
 
     // 页面初始化时，清空搜索条件并从后端重新加载数据
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      print('🏙️ CityListPage 初始化，清空搜索条件并加载最新城市数据');
+      log('🏙️ CityListPage 初始化，清空搜索条件并加载最新城市数据');
       // 清空搜索条件
       _searchQuery = '';
       _searchController.clear();
@@ -396,7 +398,7 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
   // 城市卡片
   Widget _buildCityCard(City city, bool isMobile) {
     // 调试日志
-    print(
+    log(
         '🏙️ City: ${city.name}, ReviewCount: ${city.reviewCount}, AverageCost: ${city.averageCost}, OverallScore: ${city.overallScore}');
 
     return Container(
@@ -826,7 +828,7 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
         onSuccess: (_) {
           final isNowFollowed = _followedCities[cityId] ?? false;
           AppToast.success(isNowFollowed ? '已关注该城市' : '已取消关注');
-          print('✅ 城市关注状态切换成功: cityId=$cityId, followed=$isNowFollowed');
+          log('✅ 城市关注状态切换成功: cityId=$cityId, followed=$isNowFollowed');
         },
         onFailure: (error) {
           // 操作失败,恢复之前的状态
@@ -834,11 +836,11 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
             _followedCities[cityId] = previousState;
           });
           AppToast.error('操作失败，请重试');
-          print('❌ 切换关注状态失败: $error');
+          log('❌ 切换关注状态失败: $error');
         },
       );
     } catch (e) {
-      print('❌ 切换关注状态失败: $e');
+      log('❌ 切换关注状态失败: $e');
       // 发生错误,恢复之前的状态
       setState(() {
         _followedCities[cityId] = previousState;
@@ -873,14 +875,14 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
               _followedCities[cityId] = true;
             }
           });
-          print('✅ 已加载 ${cityIds.length} 个关注的城市');
+          log('✅ 已加载 ${cityIds.length} 个关注的城市');
         },
         onFailure: (error) {
-          print('❌ 加载关注城市列表失败: $error');
+          log('❌ 加载关注城市列表失败: $error');
         },
       );
     } catch (e) {
-      print('❌ 加载关注城市列表失败: $e');
+      log('❌ 加载关注城市列表失败: $e');
     } finally {
       _isLoadingFollowedCities = false;
     }
@@ -1362,7 +1364,7 @@ class _GenerateImageButton extends StatelessWidget {
         // 不需要在这里更新图片，SignalR 会推送更新
         final taskData = data['data'] as Map<String, dynamic>?;
         final taskId = taskData?['taskId'] as String? ?? '';
-        print('🖼️ Image generation task created: taskId=$taskId');
+        log('🖼️ Image generation task created: taskId=$taskId');
         // 加载状态由 controller 管理，等待 SignalR 通知时自动结束
       },
       onFailure: (exception) {

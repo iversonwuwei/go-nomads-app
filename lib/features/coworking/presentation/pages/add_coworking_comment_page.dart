@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'dart:io';
 
 import 'package:df_admin_mobile/config/supabase_config.dart';
@@ -53,7 +55,7 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
         }
       });
     } catch (e) {
-      print('选择图片失败: $e');
+      log('选择图片失败: $e');
     }
   }
 

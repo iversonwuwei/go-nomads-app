@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -24,11 +26,11 @@ class AppInitService {
   /// 3. 如果有效则自动登录
   Future<void> initialize() async {
     if (_isInitialized) {
-      print('ℹ️ AppInitService 已经初始化过了');
+      log('ℹ️ AppInitService 已经初始化过了');
       return;
     }
 
-    print('🚀 开始初始化应用...');
+    log('🚀 开始初始化应用...');
 
     try {
       // AuthStateController 会在 onInit 中自动从 SQLite 恢复登录状态
@@ -38,19 +40,19 @@ class AppInitService {
         final isLoggedIn = authController.isAuthenticated.value;
 
         if (isLoggedIn) {
-          print('✅ 用户登录状态已恢复');
+          log('✅ 用户登录状态已恢复');
         } else {
-          print('ℹ️ 用户未登录或 token 已过期');
+          log('ℹ️ 用户未登录或 token 已过期');
         }
       } catch (e) {
-        print('⚠️ AuthStateController 未初始化: $e');
-        print('ℹ️ 登录状态将在 AuthStateController 初始化后恢复');
+        log('⚠️ AuthStateController 未初始化: $e');
+        log('ℹ️ 登录状态将在 AuthStateController 初始化后恢复');
       }
 
       _isInitialized = true;
-      print('✅ 应用初始化完成');
+      log('✅ 应用初始化完成');
     } catch (e) {
-      print('❌ 应用初始化失败: $e');
+      log('❌ 应用初始化失败: $e');
       _isInitialized = true; // 即使失败也标记为已初始化
     }
   }

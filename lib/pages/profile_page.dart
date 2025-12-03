@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/ai/presentation/controllers/ai_state_controller.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
@@ -38,7 +40,7 @@ class _ProfilePageState extends State<ProfilePage> with RouteAwareRefreshMixin<P
     // 先检查 Token 是否存在
     final authController = Get.find<AuthStateController>();
     if (!authController.isAuthenticated.value) {
-      print('⚠️ 用户未登录，跳转到登录页');
+      log('⚠️ 用户未登录，跳转到登录页');
       AppToast.info('Please login to view your profile', title: 'Login Required');
       Get.offAllNamed(AppRoutes.login);
       return;
@@ -52,7 +54,7 @@ class _ProfilePageState extends State<ProfilePage> with RouteAwareRefreshMixin<P
       if (!mounted) return;
 
       if (controller.currentUser.value == null && controller.errorMessage.value.isNotEmpty) {
-        print('⚠️ 加载用户数据失败，跳转到登录页');
+        log('⚠️ 加载用户数据失败，跳转到登录页');
         AppToast.info('Please login again', title: 'Session Expired');
         Get.offAllNamed(AppRoutes.login);
       }
@@ -71,7 +73,7 @@ class _ProfilePageState extends State<ProfilePage> with RouteAwareRefreshMixin<P
       final aiController = Get.find<AiStateController>();
       await aiController.loadUserTravelPlans(page: 1, pageSize: 1);
     } catch (e) {
-      print('⚠️ 加载用户旅行计划失败: $e');
+      log('⚠️ 加载用户旅行计划失败: $e');
     }
   }
 
@@ -107,15 +109,15 @@ class _ProfilePageState extends State<ProfilePage> with RouteAwareRefreshMixin<P
   /// 执行退出登录操作
   Future<void> _performLogout() async {
     try {
-      print('🚪 开始执行退出登录...');
+      log('🚪 开始执行退出登录...');
 
       // 获取控制器
       final authController = Get.find<AuthStateController>();
       final userStateController = Get.find<UserStateController>();
 
-      print('   当前登录状态: ${userStateController.isLoggedIn}');
-      print('   当前用户: ${userStateController.currentUser.value?.name ?? "Unknown"}');
-      print('   当前账户ID: ${userStateController.currentUser.value?.id ?? "0"}');
+      log('   当前登录状态: ${userStateController.isLoggedIn}');
+      log('   当前用户: ${userStateController.currentUser.value?.name ?? "Unknown"}');
+      log('   当前账户ID: ${userStateController.currentUser.value?.id ?? "0"}');
 
       // 调用 AuthStateController 的 logout 方法
       await authController.logout();
@@ -129,8 +131,8 @@ class _ProfilePageState extends State<ProfilePage> with RouteAwareRefreshMixin<P
         notificationController.clearNotifications();
       }
 
-      print('✅ 用户状态已清除');
-      print('   登录状态: ${userStateController.isLoggedIn}');
+      log('✅ 用户状态已清除');
+      log('   登录状态: ${userStateController.isLoggedIn}');
 
       // 显示退出成功提示
       AppToast.success(
@@ -141,7 +143,7 @@ class _ProfilePageState extends State<ProfilePage> with RouteAwareRefreshMixin<P
       // 跳转到登录页
       Get.offAllNamed(AppRoutes.login);
     } catch (e) {
-      print('❌ 退出登录失败: $e');
+      log('❌ 退出登录失败: $e');
       AppToast.error(
         'An error occurred during logout',
         title: 'Error',

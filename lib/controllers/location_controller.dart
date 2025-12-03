@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'dart:async';
 
 import 'package:geolocator/geolocator.dart';
@@ -129,13 +131,13 @@ class LocationController extends GetxController {
       final position = await _locationService.getCurrentLocation();
       if (position != null) {
         // 输出坐标到控制台
-        print('📍 位置更新 [${DateTime.now().toString().split('.')[0]}]:');
-        print('   纬度: ${position.latitude.toStringAsFixed(6)}');
-        print('   经度: ${position.longitude.toStringAsFixed(6)}');
-        print('   精度: ±${position.accuracy.toStringAsFixed(1)}m');
-        print('   海拔: ${position.altitude.toStringAsFixed(1)}m');
-        print('   速度: ${position.speed.toStringAsFixed(1)}m/s');
-        print('---');
+        log('📍 位置更新 [${DateTime.now().toString().split('.')[0]}]:');
+        log('   纬度: ${position.latitude.toStringAsFixed(6)}');
+        log('   经度: ${position.longitude.toStringAsFixed(6)}');
+        log('   精度: ±${position.accuracy.toStringAsFixed(1)}m');
+        log('   海拔: ${position.altitude.toStringAsFixed(1)}m');
+        log('   速度: ${position.speed.toStringAsFixed(1)}m/s');
+        log('---');
         
         // 更新城市信息
         await _getCityFromCoordinates(position.latitude, position.longitude);
@@ -150,6 +152,6 @@ class LocationController extends GetxController {
       _locationTimer = null;
     }
     isAutoUpdating.value = false;
-    print('⏸️ 位置自动更新已停止');
+    log('⏸️ 位置自动更新已停止');
   }
 }

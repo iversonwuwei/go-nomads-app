@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'dart:convert';
 import 'dart:io';
 
@@ -364,7 +366,7 @@ class DatabaseService {
     await db.execute(
         'CREATE INDEX idx_guides_city ON digital_nomad_guides(city_id)');
 
-    print('Database created successfully');
+    log('Database created successfully');
   }
 
   /// 升级数据库
@@ -380,17 +382,17 @@ class DatabaseService {
         if (!hasRegion) {
           // 添加 region 列
           await db.execute('ALTER TABLE cities ADD COLUMN region TEXT');
-          print('✅ 已添加 cities.region 字段');
+          log('✅ 已添加 cities.region 字段');
         }
       } catch (e) {
-        print('⚠️ 升级数据库时出错: $e');
+        log('⚠️ 升级数据库时出错: $e');
       }
     }
 
     if (oldVersion < 3 && newVersion >= 3) {
       // 版本 2 -> 3: 添加酒店相关表
       try {
-        print('🏨 开始添加酒店相关表...');
+        log('🏨 开始添加酒店相关表...');
 
         // 酒店表
         await db.execute('''
@@ -481,16 +483,16 @@ class DatabaseService {
         await db.execute(
             'CREATE INDEX IF NOT EXISTS idx_hotel_bookings_hotel_id ON hotel_bookings (hotel_id)');
 
-        print('✅ 酒店相关表创建完成');
+        log('✅ 酒店相关表创建完成');
       } catch (e) {
-        print('⚠️ 创建酒店表时出错: $e');
+        log('⚠️ 创建酒店表时出错: $e');
       }
     }
 
     if (oldVersion < 4 && newVersion >= 4) {
       // 版本 3 -> 4: 添加 tokens 表
       try {
-        print('🔑 开始添加 tokens 表...');
+        log('🔑 开始添加 tokens 表...');
 
         await db.execute('''
           CREATE TABLE IF NOT EXISTS tokens (
@@ -509,16 +511,16 @@ class DatabaseService {
         await db.execute(
             'CREATE INDEX IF NOT EXISTS idx_tokens_user ON tokens(user_id)');
 
-        print('✅ tokens 表创建完成');
+        log('✅ tokens 表创建完成');
       } catch (e) {
-        print('⚠️ 创建 tokens 表时出错: $e');
+        log('⚠️ 创建 tokens 表时出错: $e');
       }
     }
 
     if (oldVersion < 5 && newVersion >= 5) {
       // 版本 4 -> 5: 为 tokens 表添加用户信息字段
       try {
-        print('🔑 开始为 tokens 表添加用户信息字段...');
+        log('🔑 开始为 tokens 表添加用户信息字段...');
 
         // 检查字段是否已存在
         final result = await db.rawQuery("PRAGMA table_info(tokens)");
@@ -527,43 +529,43 @@ class DatabaseService {
 
         if (!hasUserName) {
           await db.execute('ALTER TABLE tokens ADD COLUMN user_name TEXT');
-          print('✅ 添加 user_name 字段');
+          log('✅ 添加 user_name 字段');
         }
 
         if (!hasUserEmail) {
           await db.execute('ALTER TABLE tokens ADD COLUMN user_email TEXT');
-          print('✅ 添加 user_email 字段');
+          log('✅ 添加 user_email 字段');
         }
 
-        print('✅ tokens 表字段升级完成');
+        log('✅ tokens 表字段升级完成');
       } catch (e) {
-        print('⚠️ 升级 tokens 表时出错: $e');
+        log('⚠️ 升级 tokens 表时出错: $e');
       }
     }
 
     if (oldVersion < 8 && newVersion >= 8) {
       // 版本 7 -> 8: 为 tokens 表添加 expires_at 字段
       try {
-        print('🔑 开始为 tokens 表添加 expires_at 字段...');
+        log('🔑 开始为 tokens 表添加 expires_at 字段...');
 
         final result = await db.rawQuery("PRAGMA table_info(tokens)");
         final hasExpiresAt = result.any((col) => col['name'] == 'expires_at');
 
         if (!hasExpiresAt) {
           await db.execute('ALTER TABLE tokens ADD COLUMN expires_at TEXT');
-          print('✅ 添加 expires_at 字段');
+          log('✅ 添加 expires_at 字段');
         }
 
-        print('✅ tokens 表 expires_at 字段检查完成');
+        log('✅ tokens 表 expires_at 字段检查完成');
       } catch (e) {
-        print('⚠️ 升级 tokens 表的 expires_at 字段时出错: $e');
+        log('⚠️ 升级 tokens 表的 expires_at 字段时出错: $e');
       }
     }
 
     if (oldVersion < 6 && newVersion >= 6) {
       // 版本 5 -> 6: 添加数字游民指南表
       try {
-        print('📖 开始添加数字游民指南表...');
+        log('📖 开始添加数字游民指南表...');
 
         await db.execute('''
           CREATE TABLE IF NOT EXISTS digital_nomad_guides (
@@ -585,16 +587,16 @@ class DatabaseService {
         await db.execute(
             'CREATE INDEX IF NOT EXISTS idx_guides_updated_at ON digital_nomad_guides(updated_at DESC)');
 
-        print('✅ 数字游民指南表创建完成');
+        log('✅ 数字游民指南表创建完成');
       } catch (e) {
-        print('⚠️ 创建数字游民指南表时出错: $e');
+        log('⚠️ 创建数字游民指南表时出错: $e');
       }
     }
 
     // 版本 6 -> 7: 添加后台任务表
     if (oldVersion < 7) {
       try {
-        print('📋 开始添加后台任务表...');
+        log('📋 开始添加后台任务表...');
 
         await db.execute('''
           CREATE TABLE IF NOT EXISTS background_tasks (
@@ -614,16 +616,16 @@ class DatabaseService {
         await db.execute(
             'CREATE INDEX IF NOT EXISTS idx_tasks_status ON background_tasks(status)');
 
-        print('✅ 后台任务表创建完成');
+        log('✅ 后台任务表创建完成');
       } catch (e) {
-        print('⚠️ 创建后台任务表时出错: $e');
+        log('⚠️ 创建后台任务表时出错: $e');
       }
     }
 
     if (oldVersion < 9 && newVersion >= 9) {
       // 版本 8 -> 9: 重建 users 表，将 id 从 INTEGER 改为 TEXT 以支持 UUID
       try {
-        print('👤 开始迁移 users 表...');
+        log('👤 开始迁移 users 表...');
 
         // 1. 备份现有数据
         final existingUsers = await db.query('users');
@@ -653,13 +655,13 @@ class DatabaseService {
 
         // 4. 如果有旧数据，尝试迁移（注意：INTEGER id 无法直接转换为 UUID）
         if (existingUsers.isNotEmpty) {
-          print('⚠️ 检测到 ${existingUsers.length} 个旧用户记录，但无法迁移（ID 类型不兼容）');
-          print('ℹ️ 用户需要重新登录以创建新的用户记录');
+          log('⚠️ 检测到 ${existingUsers.length} 个旧用户记录，但无法迁移（ID 类型不兼容）');
+          log('ℹ️ 用户需要重新登录以创建新的用户记录');
         }
 
-        print('✅ users 表迁移完成');
+        log('✅ users 表迁移完成');
       } catch (e) {
-        print('⚠️ 迁移 users 表时出错: $e');
+        log('⚠️ 迁移 users 表时出错: $e');
       }
     }
   }
@@ -685,7 +687,7 @@ class DatabaseService {
       await txn.delete('cities');
       await txn.delete('users');
     });
-    print('All data cleared');
+    log('All data cleared');
   }
 
   /// 删除数据库文件
@@ -694,7 +696,7 @@ class DatabaseService {
     String path = join(documentsDirectory.path, 'df_admin.db');
     await databaseFactory.deleteDatabase(path);
     _database = null;
-    print('Database deleted');
+    log('Database deleted');
   }
 
   // ==================== 数字游民指南相关方法 ====================
@@ -731,9 +733,9 @@ class DatabaseService {
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
 
-      print('✅ Guide 已保存到 SQLite: cityId=${guideData['city_id']}');
+      log('✅ Guide 已保存到 SQLite: cityId=${guideData['city_id']}');
     } catch (e) {
-      print('❌ 保存 Guide 失败: $e');
+      log('❌ 保存 Guide 失败: $e');
       rethrow;
     }
   }
@@ -751,7 +753,7 @@ class DatabaseService {
       );
 
       if (results.isEmpty) {
-        print('ℹ️ SQLite 中未找到 Guide: cityId=$cityId');
+        log('ℹ️ SQLite 中未找到 Guide: cityId=$cityId');
         return null;
       }
 
@@ -771,10 +773,10 @@ class DatabaseService {
             _deserializeStringMap(row['essential_info'] as String?),
       };
 
-      print('✅ 从 SQLite 加载 Guide: cityId=$cityId');
+      log('✅ 从 SQLite 加载 Guide: cityId=$cityId');
       return guideJson;
     } catch (e) {
-      print('❌ 加载 Guide 失败: $e');
+      log('❌ 加载 Guide 失败: $e');
       return null;
     }
   }
@@ -790,9 +792,9 @@ class DatabaseService {
         whereArgs: [cityId],
       );
 
-      print('✅ Guide 已删除: cityId=$cityId');
+      log('✅ Guide 已删除: cityId=$cityId');
     } catch (e) {
-      print('❌ 删除 Guide 失败: $e');
+      log('❌ 删除 Guide 失败: $e');
     }
   }
 
@@ -815,7 +817,7 @@ class DatabaseService {
     try {
       return jsonDecode(json) as List<dynamic>;
     } catch (e) {
-      print('❌ 反序列化 List 失败: $e');
+      log('❌ 反序列化 List 失败: $e');
       return [];
     }
   }
@@ -825,7 +827,7 @@ class DatabaseService {
     try {
       return jsonDecode(json) as Map<String, dynamic>;
     } catch (e) {
-      print('❌ 反序列化 Map 失败: $e');
+      log('❌ 反序列化 Map 失败: $e');
       return {};
     }
   }
@@ -836,7 +838,7 @@ class DatabaseService {
       final list = jsonDecode(json) as List<dynamic>;
       return list.map((e) => e.toString()).toList();
     } catch (e) {
-      print('❌ 反序列化 String List 失败: $e');
+      log('❌ 反序列化 String List 失败: $e');
       return [];
     }
   }
@@ -847,7 +849,7 @@ class DatabaseService {
       final map = jsonDecode(json) as Map<String, dynamic>;
       return map.map((k, v) => MapEntry(k, v.toString()));
     } catch (e) {
-      print('❌ 反序列化 String Map 失败: $e');
+      log('❌ 反序列化 String Map 失败: $e');
       return {};
     }
   }
@@ -872,9 +874,9 @@ class DatabaseService {
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
-      print('💾 后台任务已保存: ${taskData['id']}');
+      log('💾 后台任务已保存: ${taskData['id']}');
     } catch (e) {
-      print('❌ 保存后台任务失败: $e');
+      log('❌ 保存后台任务失败: $e');
     }
   }
 
@@ -889,9 +891,9 @@ class DatabaseService {
         where: 'id = ?',
         whereArgs: [taskId],
       );
-      print('✅ 后台任务已更新: $taskId');
+      log('✅ 后台任务已更新: $taskId');
     } catch (e) {
-      print('❌ 更新后台任务失败: $e');
+      log('❌ 更新后台任务失败: $e');
     }
   }
 
@@ -905,10 +907,10 @@ class DatabaseService {
         whereArgs: ['running'],
         orderBy: 'created_at DESC',
       );
-      print('📋 加载到 ${tasks.length} 个未完成的后台任务');
+      log('📋 加载到 ${tasks.length} 个未完成的后台任务');
       return tasks;
     } catch (e) {
-      print('❌ 加载后台任务失败: $e');
+      log('❌ 加载后台任务失败: $e');
       return [];
     }
   }
@@ -922,9 +924,9 @@ class DatabaseService {
         where: 'id = ?',
         whereArgs: [taskId],
       );
-      print('🗑️ 后台任务已删除: $taskId');
+      log('🗑️ 后台任务已删除: $taskId');
     } catch (e) {
-      print('❌ 删除后台任务失败: $e');
+      log('❌ 删除后台任务失败: $e');
     }
   }
 
@@ -939,9 +941,9 @@ class DatabaseService {
         where: 'status IN (?, ?) AND created_at < ?',
         whereArgs: ['completed', 'failed', sevenDaysAgo],
       );
-      print('🧹 旧的后台任务已清理');
+      log('🧹 旧的后台任务已清理');
     } catch (e) {
-      print('❌ 清理旧任务失败: $e');
+      log('❌ 清理旧任务失败: $e');
     }
   }
 }

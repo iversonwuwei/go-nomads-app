@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -52,24 +54,24 @@ class _HotelListPageState extends State<HotelListPage> {
   Future<void> _loadHotels() async {
     _isLoading.value = true;
     try {
-      print(
+      log(
           '🏨 HotelListPage - cityId: ${widget.cityId}, cityName: ${widget.cityName}');
 
       List<Hotel> hotels = [];
 
       // 如果有城市ID，加载该城市的酒店
       if (widget.cityId != null) {
-        print('🏨 正在加载城市 ID ${widget.cityId} 的酒店...');
+        log('🏨 正在加载城市 ID ${widget.cityId} 的酒店...');
         final result =
             await _hotelRepository.getHotelsByCity(widget.cityId.toString());
 
         result.fold(
           onSuccess: (data) {
             hotels = data;
-            print('🏨 找到 ${hotels.length} 个酒店');
+            log('🏨 找到 ${hotels.length} 个酒店');
           },
           onFailure: (exception) {
-            print('❌ 加载酒店失败: ${exception.message}');
+            log('❌ 加载酒店失败: ${exception.message}');
             AppToast.error('加载酒店失败');
           },
         );
@@ -80,10 +82,10 @@ class _HotelListPageState extends State<HotelListPage> {
         result.fold(
           onSuccess: (data) {
             hotels = data;
-            print('🏨 找到 ${hotels.length} 个酒店');
+            log('🏨 找到 ${hotels.length} 个酒店');
           },
           onFailure: (exception) {
-            print('❌ 加载酒店失败: ${exception.message}');
+            log('❌ 加载酒店失败: ${exception.message}');
             AppToast.error('加载酒店失败');
           },
         );
@@ -104,7 +106,7 @@ class _HotelListPageState extends State<HotelListPage> {
 
       _hotels.value = hotels;
     } catch (e) {
-      print('加载酒店失败: $e');
+      log('加载酒店失败: $e');
       AppToast.error('加载酒店失败: $e');
     } finally {
       _isLoading.value = false;

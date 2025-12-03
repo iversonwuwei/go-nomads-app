@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/notification/domain/entities/app_notification.dart';
 import 'package:df_admin_mobile/features/notification/presentation/controllers/notification_state_controller.dart';
@@ -37,7 +39,7 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_isInitialized) {
         _isInitialized = true;
-        print('📱 页面初始化完成，开始加载通知数据');
+        log('📱 页面初始化完成，开始加载通知数据');
         // 只调用一次，获取列表和未读数量
         _controller.loadNotifications();
       }
@@ -58,7 +60,7 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
 
   @override
   Widget build(BuildContext context) {
-    print('📱 NotificationsPage.build() 开始');
+    log('📱 NotificationsPage.build() 开始');
 
     final isMobile = MediaQuery.of(context).size.width < 768;
 
@@ -352,16 +354,16 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
   }
 
   void _handleNotificationTap(AppNotification notification) {
-    print('🔔 _handleNotificationTap: type=${notification.type}');
-    print('   relatedId: ${notification.relatedId}');
-    print('   metadata: ${notification.metadata}');
+    log('🔔 _handleNotificationTap: type=${notification.type}');
+    log('   relatedId: ${notification.relatedId}');
+    log('   metadata: ${notification.metadata}');
     
     switch (notification.type) {
       case NotificationType.moderatorApplication:
         // 管理员：跳转到申请详情页面
         // 优先使用 metadata 中的 applicationId，其次使用 relatedId
         final applicationId = notification.metadata?['applicationId'] ?? notification.relatedId;
-        print('   applicationId to use: $applicationId');
+        log('   applicationId to use: $applicationId');
 
         if (applicationId != null && applicationId.toString().isNotEmpty) {
           Get.toNamed(

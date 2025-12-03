@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
 import 'package:df_admin_mobile/features/meetup/infrastructure/models/event_type_dto.dart';
 
@@ -92,7 +94,7 @@ class MeetupDto {
       try {
         eventTypeDto = EventTypeDto.fromJson(json['eventType'] as Map<String, dynamic>);
       } catch (e) {
-        print('⚠️ 解析 eventType 失败: $e');
+        log('⚠️ 解析 eventType 失败: $e');
       }
     }
 
@@ -198,10 +200,10 @@ class MeetupDto {
   }
 
   void printDebugInfo() {
-    print('🔍 MeetupDto.fromJson:');
-    print('   title: $title');
-    print('   isJoined: $isJoined');
-    print('   isOrganizer: $isOrganizer');
-    print('   organizerId: $organizerId');
+    log('🔍 MeetupDto.fromJson:');
+    log('   title: $title');
+    log('   isJoined: $isJoined');
+    log('   isOrganizer: $isOrganizer');
+    log('   organizerId: $organizerId');
   }
 }

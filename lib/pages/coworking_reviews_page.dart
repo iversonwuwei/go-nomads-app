@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_review.dart';
 import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_review_repository.dart';
@@ -90,7 +92,7 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
       _reviews.assignAll(reviews);
       _hasMore.value = reviews.length >= _pageSize;
     } catch (e) {
-      print('❌ 加载评论失败: $e');
+      log('❌ 加载评论失败: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('加载评论失败: $e')),
@@ -119,7 +121,7 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
       _reviews.addAll(reviews);
       _hasMore.value = reviews.length >= _pageSize;
     } catch (e) {
-      print('❌ 加载更多评论失败: $e');
+      log('❌ 加载更多评论失败: $e');
       // 加载失败时回退页码
       _currentPage--;
     } finally {

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 
@@ -35,7 +37,7 @@ class CoworkingReviewRepository implements ICoworkingReviewRepository {
 
       return [];
     } catch (e) {
-      print('❌ 获取 Coworking 评论失败: $e');
+      log('❌ 获取 Coworking 评论失败: $e');
       rethrow;
     }
   }
@@ -65,7 +67,7 @@ class CoworkingReviewRepository implements ICoworkingReviewRepository {
       // response.data 直接就是 data 字段的内容
       return _fromJson(response.data);
     } catch (e) {
-      print('❌ 添加 Coworking 评论失败: $e');
+      log('❌ 添加 Coworking 评论失败: $e');
       rethrow;
     }
   }
@@ -93,7 +95,7 @@ class CoworkingReviewRepository implements ICoworkingReviewRepository {
 
       return _fromJson(response.data);
     } catch (e) {
-      print('❌ 更新 Coworking 评论失败: $e');
+      log('❌ 更新 Coworking 评论失败: $e');
       rethrow;
     }
   }
@@ -103,7 +105,7 @@ class CoworkingReviewRepository implements ICoworkingReviewRepository {
     try {
       await _httpService.delete(_buildUrl('/coworking/reviews/$reviewId'));
     } catch (e) {
-      print('❌ 删除 Coworking 评论失败: $e');
+      log('❌ 删除 Coworking 评论失败: $e');
       rethrow;
     }
   }
@@ -117,7 +119,7 @@ class CoworkingReviewRepository implements ICoworkingReviewRepository {
 
       return _fromJson(response.data);
     } catch (e) {
-      print('❌ 获取评论详情失败: $e');
+      log('❌ 获取评论详情失败: $e');
       return null;
     }
   }
@@ -134,7 +136,7 @@ class CoworkingReviewRepository implements ICoworkingReviewRepository {
       if (e is DioException && e.response?.statusCode == 404) {
         return null; // 用户还没有评论
       }
-      print('❌ 获取用户评论失败: $e');
+      log('❌ 获取用户评论失败: $e');
       rethrow;
     }
   }

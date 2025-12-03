@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/features/meetup/domain/entities/event_type.dart';
 import 'package:df_admin_mobile/features/meetup/domain/repositories/i_event_type_repository.dart';
 import 'package:df_admin_mobile/features/meetup/infrastructure/repositories/event_type_repository.dart';
@@ -29,7 +31,7 @@ class EventTypeController extends GetxController {
   Future<void> loadEventTypes({bool forceRefresh = false}) async {
     // 如果已经加载过且不强制刷新，直接返回
     if (_hasLoaded && !forceRefresh && eventTypes.isNotEmpty) {
-      print('✅ 使用缓存的事件类型列表 (${eventTypes.length} 项)');
+      log('✅ 使用缓存的事件类型列表 (${eventTypes.length} 项)');
       return;
     }
 
@@ -38,17 +40,17 @@ class EventTypeController extends GetxController {
       hasError.value = false;
       errorMessage.value = '';
 
-      print('🔄 正在从后端加载事件类型列表...');
+      log('🔄 正在从后端加载事件类型列表...');
       final types = await _repository.getEventTypes();
       
       eventTypes.value = types;
       _hasLoaded = true;
       
-      print('✅ 成功加载 ${types.length} 个事件类型');
+      log('✅ 成功加载 ${types.length} 个事件类型');
     } catch (e) {
       hasError.value = true;
       errorMessage.value = e.toString();
-      print('❌ 加载事件类型失败: $e');
+      log('❌ 加载事件类型失败: $e');
       
       // 失败时使用后备方案（最小默认集合）
       _loadFallbackTypes();
@@ -91,7 +93,7 @@ class EventTypeController extends GetxController {
 
   /// 加载后备类型（当 API 失败时使用）
   void _loadFallbackTypes() {
-    print('⚠️ 使用后备事件类型列表');
+    log('⚠️ 使用后备事件类型列表');
     
     // 创建最小的默认类型集合
     final fallbackTypes = [

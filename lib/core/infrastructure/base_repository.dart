@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'dart:async';
 
 import 'package:dio/dio.dart';
@@ -95,7 +97,7 @@ class ApiExceptionHandler {
     } on DomainException catch (e) {
       return Failure(e);
     } catch (e, stackTrace) {
-      print('Unexpected error: $e\n$stackTrace');
+      log('Unexpected error: $e\n$stackTrace');
       return Failure(UnknownException(
         '发生未知错误: $e',
         code: 'UNEXPECTED',
@@ -112,7 +114,7 @@ class ApiExceptionHandler {
     } on DomainException catch (e) {
       return Failure(e);
     } catch (e, stackTrace) {
-      print('Unexpected error: $e\n$stackTrace');
+      log('Unexpected error: $e\n$stackTrace');
       return Failure(UnknownException(
         '发生未知错误: $e',
         code: 'UNEXPECTED',

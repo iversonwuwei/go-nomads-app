@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -28,7 +30,7 @@ class AuthMiddleware extends GetMiddleware {
 
       // 1️⃣ 检查是否已登录
       if (!authController.isAuthenticated.value) {
-        print('⚠️ AuthMiddleware: 未登录，重定向到登录页面 (from: $route)');
+        log('⚠️ AuthMiddleware: 未登录，重定向到登录页面 (from: $route)');
         return const RouteSettings(name: AppRoutes.login);
       }
 
@@ -36,7 +38,7 @@ class AuthMiddleware extends GetMiddleware {
       final token = authController.currentToken.value;
 
       if (token == null) {
-        print('⚠️ AuthMiddleware: Token 为空，重定向到登录页面 (from: $route)');
+        log('⚠️ AuthMiddleware: Token 为空，重定向到登录页面 (from: $route)');
         // 清除无效的登录状态
         authController.isAuthenticated.value = false;
         authController.currentUser.value = null;
@@ -45,9 +47,9 @@ class AuthMiddleware extends GetMiddleware {
 
       // 3️⃣ 检查 Token 是否过期
       if (token.isExpired) {
-        print('⚠️ AuthMiddleware: Token 已过期，重定向到登录页面 (from: $route)');
-        print('   ExpiresAt: ${token.expiresAt}');
-        print('   Current: ${DateTime.now()}');
+        log('⚠️ AuthMiddleware: Token 已过期，重定向到登录页面 (from: $route)');
+        log('   ExpiresAt: ${token.expiresAt}');
+        log('   Current: ${DateTime.now()}');
 
         // 清除过期的认证状态
         authController.isAuthenticated.value = false;
@@ -61,12 +63,12 @@ class AuthMiddleware extends GetMiddleware {
       }
 
       // ✅ Token 有效，允许访问
-      print('✅ AuthMiddleware: Token 有效，允许访问 $route');
-      print('   ExpiresAt: ${token.expiresAt}');
+      log('✅ AuthMiddleware: Token 有效，允许访问 $route');
+      log('   ExpiresAt: ${token.expiresAt}');
       return null;
     } catch (e) {
       // AuthStateController 未就绪，重定向到登录页
-      print('⚠️ AuthMiddleware: 发生异常，重定向到登录页面 (error: $e)');
+      log('⚠️ AuthMiddleware: 发生异常，重定向到登录页面 (error: $e)');
       return const RouteSettings(name: AppRoutes.login);
     }
   }
