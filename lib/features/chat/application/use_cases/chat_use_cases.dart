@@ -1,6 +1,5 @@
 import 'package:df_admin_mobile/core/application/use_case.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
-
 import 'package:df_admin_mobile/features/chat/domain/entities/chat.dart';
 import 'package:df_admin_mobile/features/chat/domain/repositories/i_chat_repository.dart';
 
@@ -178,12 +177,16 @@ class SendMessageParams {
   final String message;
   final String? replyToId;
   final List<String>? mentions;
+  final String? messageType;
+  final Map<String, dynamic>? attachment;
 
   SendMessageParams({
     required this.roomId,
     required this.message,
     this.replyToId,
     this.mentions,
+    this.messageType,
+    this.attachment,
   });
 }
 
