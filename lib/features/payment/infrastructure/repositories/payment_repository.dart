@@ -30,7 +30,7 @@ class PaymentRepository implements IPaymentRepository {
       final token = await _tokenService.getAccessToken();
 
       final response = await _dio.post(
-        '${ApiConfig.currentApiBaseUrl}/api/v1/payments/orders',
+        '${ApiConfig.currentApiBaseUrl}/payments/orders',
         data: {
           'orderType': orderType,
           if (membershipLevel != null) 'membershipLevel': membershipLevel,
@@ -69,7 +69,7 @@ class PaymentRepository implements IPaymentRepository {
       final token = await _tokenService.getAccessToken();
 
       final response = await _dio.post(
-        '${ApiConfig.currentApiBaseUrl}/api/v1/payments/orders/$orderId/capture',
+        '${ApiConfig.currentApiBaseUrl}/payments/orders/$orderId/capture',
         data: {
           'payPalOrderId': paypalOrderId,
           if (payerId != null) 'payerId': payerId,
@@ -102,7 +102,7 @@ class PaymentRepository implements IPaymentRepository {
       final token = await _tokenService.getAccessToken();
 
       final response = await _dio.get(
-        '${ApiConfig.currentApiBaseUrl}/api/v1/payments/orders/$orderId',
+        '${ApiConfig.currentApiBaseUrl}/payments/orders/$orderId',
         options: Options(
           headers: {
             if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
@@ -129,7 +129,7 @@ class PaymentRepository implements IPaymentRepository {
       final token = await _tokenService.getAccessToken();
 
       final response = await _dio.get(
-        '${ApiConfig.currentApiBaseUrl}/api/v1/payments/orders',
+        '${ApiConfig.currentApiBaseUrl}/payments/orders',
         queryParameters: {
           'page': page,
           'pageSize': pageSize,
@@ -161,7 +161,7 @@ class PaymentRepository implements IPaymentRepository {
       final token = await _tokenService.getAccessToken();
 
       final response = await _dio.post(
-        '${ApiConfig.currentApiBaseUrl}/api/v1/payments/orders/$orderId/cancel',
+        '${ApiConfig.currentApiBaseUrl}/payments/orders/$orderId/cancel',
         options: Options(
           headers: {
             if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
