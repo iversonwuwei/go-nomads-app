@@ -93,7 +93,10 @@ import 'package:df_admin_mobile/features/notification/domain/repositories/i_noti
 import 'package:df_admin_mobile/features/notification/infrastructure/repositories/notification_repository.dart';
 import 'package:df_admin_mobile/features/notification/presentation/controllers/notification_state_controller.dart';
 // Payment Domain
+import 'package:df_admin_mobile/features/payment/application/services/alipay_service.dart';
 import 'package:df_admin_mobile/features/payment/application/services/payment_service.dart';
+import 'package:df_admin_mobile/features/payment/application/services/unified_payment_service.dart';
+import 'package:df_admin_mobile/features/payment/application/services/wechat_pay_service.dart';
 import 'package:df_admin_mobile/features/payment/domain/repositories/i_payment_repository.dart';
 import 'package:df_admin_mobile/features/payment/infrastructure/repositories/payment_repository.dart';
 import 'package:df_admin_mobile/features/payment/presentation/controllers/payment_state_controller.dart';
@@ -1011,6 +1014,24 @@ class DependencyInjection {
     // Service (GetxService) - 使用 fenix: true 确保可重复创建
     Get.lazyPut<PaymentService>(
       () => PaymentService(),
+      fenix: true,
+    );
+
+    // 微信支付服务
+    Get.lazyPut<WeChatPayService>(
+      () => WeChatPayService(),
+      fenix: true,
+    );
+
+    // 支付宝服务
+    Get.lazyPut<AlipayService>(
+      () => AlipayService(),
+      fenix: true,
+    );
+
+    // 统一支付服务
+    Get.lazyPut<UnifiedPaymentService>(
+      () => UnifiedPaymentService(),
       fenix: true,
     );
   }
