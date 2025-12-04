@@ -1,21 +1,27 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class NotificationService extends GetxService {
   static NotificationService get to => Get.find();
 
-  final FlutterLocalNotificationsPlugin _notifications =
-      FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
+
+  // 通知启用状态
+  final RxBool isEnabled = true.obs;
+  static const String _enabledKey = 'notifications_enabled';
 
   // 通知渠道配置
   static const String _channelId = 'guide_generation';
   static const String _channelName = 'Guide Generation';
-  static const String _channelDescription =
-      'Notifications for guide generation progress';
+  static const String _channelDescription = 'Notifications for guide generation progress';
   static const String _androidIcon = '@mipmap/go_nomads';
 
   /// 初始化通知服务
   Future<NotificationService> init() async {
+    // 加载通知启用状态
+    await _loadEnabledState();
+
     // Android 初始化配置
     const androidSettings = AndroidInitializationSettings(_androidIcon);
 
@@ -37,24 +43,46 @@ class NotificationService extends GetxService {
       onDidReceiveNotificationResponse: _onNotificationTapped,
     );
 
-    // 请求通知权限
-    await _requestPermissions();
+    // 如果通知已启用，请求权限
+    if (isEnabled.value) {
+      await _requestPermissions();
+    }
 
     return this;
+  }
+
+  /// 加载通知启用状态
+  Future<void> _loadEnabledState() async {
+    final prefs = await SharedPreferences.getInstance();
+    isEnabled.value = prefs.getBool(_enabledKey) ?? true;
+  }
+
+  /// 设置通知启用状态
+  Future<void> setEnabled(bool enabled) async {
+    isEnabled.value = enabled;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_enabledKey, enabled);
+
+    if (enabled) {
+      // 启用通知时请求权限
+      await _requestPermissions();
+    } else {
+      // 禁用通知时取消所有通知
+      await _notifications.cancelAll();
+    }
   }
 
   /// 请求通知权限
   Future<void> _requestPermissions() async {
     // Android 13+ 需要运行时权限
-    final androidPlugin = _notifications.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
+    final androidPlugin =
+        _notifications.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
     if (androidPlugin != null) {
       await androidPlugin.requestNotificationsPermission();
     }
 
     // iOS 权限请求
-    final iosPlugin = _notifications.resolvePlatformSpecificImplementation<
-        IOSFlutterLocalNotificationsPlugin>();
+    final iosPlugin = _notifications.resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
     if (iosPlugin != null) {
       await iosPlugin.requestPermissions(
         alert: true,
@@ -66,6 +94,9 @@ class NotificationService extends GetxService {
 
   /// 显示 Guide 生成进行中通知
   Future<void> showGuideGenerating(String cityName, {int progress = 0}) async {
+    // 如果通知已禁用，不显示
+    if (!isEnabled.value) return;
+
     final androidDetails = AndroidNotificationDetails(
       _channelId,
       _channelName,
@@ -104,6 +135,9 @@ class NotificationService extends GetxService {
     // 先取消进行中的通知
     await _notifications.cancel(cityName.hashCode);
 
+    // 如果通知已禁用，不显示
+    if (!isEnabled.value) return;
+
     final androidDetails = AndroidNotificationDetails(
       _channelId,
       _channelName,
@@ -140,6 +174,9 @@ class NotificationService extends GetxService {
   Future<void> showGuideFailed(String cityName, String error) async {
     // 先取消进行中的通知
     await _notifications.cancel(cityName.hashCode);
+
+    // 如果通知已禁用，不显示
+    if (!isEnabled.value) return;
 
     const androidDetails = AndroidNotificationDetails(
       _channelId,

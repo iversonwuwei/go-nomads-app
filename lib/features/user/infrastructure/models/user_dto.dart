@@ -1,8 +1,9 @@
 // import 'package:df_admin_mobile/models/user_model.dart' as legacy; // Legacy model removed
 import 'dart:developer';
 
-import 'package:df_admin_mobile/features/user/domain/entities/user.dart'
-    as entity;
+import 'package:df_admin_mobile/features/membership/domain/entities/membership_level.dart';
+import 'package:df_admin_mobile/features/membership/domain/entities/user_membership.dart';
+import 'package:df_admin_mobile/features/user/domain/entities/user.dart' as entity;
 
 /// User DTO - 基础设施层数据传输对象
 class UserDto {
@@ -23,6 +24,9 @@ class UserDto {
   final DateTime? joinedDate;
   final bool isVerified;
 
+  /// 用户会员信息
+  final UserMembershipDto? membership;
+
   UserDto({
     required this.id,
     this.name,
@@ -40,6 +44,7 @@ class UserDto {
     this.travelHistory = const [],
     this.joinedDate,
     this.isVerified = false,
+    this.membership,
   });
 
   factory UserDto.fromJson(Map<String, dynamic> json) {
@@ -57,28 +62,21 @@ class UserDto {
               .toList() ??
           [],
       interests: (json['interests'] as List<dynamic>?)
-              ?.map((e) =>
-                  UserInterestInfoDto.fromJson(e as Map<String, dynamic>))
+              ?.map((e) => UserInterestInfoDto.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
-      socialLinks: (json['socialLinks'] as Map<String, dynamic>?)
-              ?.map((k, v) => MapEntry(k, v.toString())) ??
-          {},
-      badges: (json['badges'] as List<dynamic>?)
-              ?.map((e) => BadgeDto.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          [],
-      stats: json['stats'] != null
-          ? TravelStatsDto.fromJson(json['stats'] as Map<String, dynamic>)
-          : null,
+      socialLinks: (json['socialLinks'] as Map<String, dynamic>?)?.map((k, v) => MapEntry(k, v.toString())) ?? {},
+      badges:
+          (json['badges'] as List<dynamic>?)?.map((e) => BadgeDto.fromJson(e as Map<String, dynamic>)).toList() ?? [],
+      stats: json['stats'] != null ? TravelStatsDto.fromJson(json['stats'] as Map<String, dynamic>) : null,
       travelHistory: (json['travelHistory'] as List<dynamic>?)
               ?.map((e) => TravelHistoryDto.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
-      joinedDate: json['joinedDate'] != null
-          ? DateTime.parse(json['joinedDate'] as String)
-          : null,
+      joinedDate: json['joinedDate'] != null ? DateTime.parse(json['joinedDate'] as String) : null,
       isVerified: json['isVerified'] as bool? ?? false,
+      membership:
+          json['membership'] != null ? UserMembershipDto.fromJson(json['membership'] as Map<String, dynamic>) : null,
     );
   }
 
@@ -100,6 +98,7 @@ class UserDto {
       'travelHistory': travelHistory.map((e) => e.toJson()).toList(),
       'joinedDate': joinedDate?.toIso8601String(),
       'isVerified': isVerified,
+      if (membership != null) 'membership': membership!.toJson(),
     };
   }
 
@@ -129,6 +128,7 @@ class UserDto {
       travelHistory: travelHistory.map((e) => e.toDomain()).toList(),
       joinedDate: joinedDate ?? DateTime.now(),
       isVerified: isVerified,
+      membership: membership?.toDomain(),
     );
   }
 
@@ -182,15 +182,9 @@ class UserSkillInfoDto {
   factory UserSkillInfoDto.fromJson(Map<String, dynamic> json) {
     log('🔍 解析 UserSkillInfo: $json');
     // 优先使用 skillId（技能本身的ID），而不是 id（UserSkill关联记录的ID）
-    final id =
-        (json['skillId'] ?? json['SkillId'] ?? json['id']) as String? ?? '';
-    final name =
-        (json['name'] ?? json['skillName'] ?? json['SkillName']) as String? ??
-            '';
-    final level = (json['level'] ??
-            json['proficiencyLevel'] ??
-            json['ProficiencyLevel']) as String? ??
-        '';
+    final id = (json['skillId'] ?? json['SkillId'] ?? json['id']) as String? ?? '';
+    final name = (json['name'] ?? json['skillName'] ?? json['SkillName']) as String? ?? '';
+    final level = (json['level'] ?? json['proficiencyLevel'] ?? json['ProficiencyLevel']) as String? ?? '';
     final icon = (json['icon'] ?? json['Icon']) as String?;
     log('   ✅ 解析结果: id=$id, name=$name, level=$level, icon=$icon');
     return UserSkillInfoDto(
@@ -234,12 +228,8 @@ class UserInterestInfoDto {
   factory UserInterestInfoDto.fromJson(Map<String, dynamic> json) {
     log('🔍 解析 UserInterestInfo: $json');
     // 优先使用 interestId（兴趣本身的ID），而不是 id（UserInterest关联记录的ID）
-    final id =
-        (json['interestId'] ?? json['InterestId'] ?? json['id']) as String? ??
-            '';
-    final name = (json['name'] ?? json['interestName'] ?? json['InterestName'])
-            as String? ??
-        '';
+    final id = (json['interestId'] ?? json['InterestId'] ?? json['id']) as String? ?? '';
+    final name = (json['name'] ?? json['interestName'] ?? json['InterestName']) as String? ?? '';
     final icon = (json['icon'] ?? json['Icon']) as String?;
     log('   ✅ 解析结果: id=$id, name=$name, icon=$icon');
     return UserInterestInfoDto(
@@ -284,9 +274,7 @@ class BadgeDto {
       id: json['id'] as String? ?? '',
       name: json['name'] as String? ?? '',
       icon: json['icon'] as String? ?? '',
-      earnedDate: json['earnedDate'] != null
-          ? DateTime.parse(json['earnedDate'] as String)
-          : DateTime.now(),
+      earnedDate: json['earnedDate'] != null ? DateTime.parse(json['earnedDate'] as String) : DateTime.now(),
     );
   }
 
@@ -371,12 +359,8 @@ class TravelHistoryDto {
     return TravelHistoryDto(
       city: json['city'] as String? ?? '',
       country: json['country'] as String? ?? '',
-      startDate: json['startDate'] != null
-          ? DateTime.parse(json['startDate'] as String)
-          : DateTime.now(),
-      endDate: json['endDate'] != null
-          ? DateTime.parse(json['endDate'] as String)
-          : null,
+      startDate: json['startDate'] != null ? DateTime.parse(json['startDate'] as String) : DateTime.now(),
+      endDate: json['endDate'] != null ? DateTime.parse(json['endDate'] as String) : null,
       notes: json['notes'] as String?,
     );
   }
@@ -398,6 +382,93 @@ class TravelHistoryDto {
       countryName: country, // DTO的country字段映射到countryName
       visitDate: startDate, // DTO的startDate映射到visitDate
       durationDays: endDate?.difference(startDate).inDays, // 计算持续天数
+    );
+  }
+}
+
+/// 用户会员信息 DTO
+/// 用于解析后端 /users/me 接口返回的嵌套会员信息
+class UserMembershipDto {
+  final int level;
+  final String levelName;
+  final DateTime? startDate;
+  final DateTime? expiryDate;
+  final bool autoRenew;
+  final int aiUsageThisMonth;
+  final int aiUsageLimit;
+  final double? moderatorDeposit;
+  final bool isActive;
+  final bool isExpired;
+  final int remainingDays;
+  final bool isExpiringSoon;
+  final bool canUseAI;
+  final bool canApplyModerator;
+
+  UserMembershipDto({
+    required this.level,
+    required this.levelName,
+    this.startDate,
+    this.expiryDate,
+    this.autoRenew = false,
+    this.aiUsageThisMonth = 0,
+    this.aiUsageLimit = 0,
+    this.moderatorDeposit,
+    this.isActive = false,
+    this.isExpired = false,
+    this.remainingDays = 0,
+    this.isExpiringSoon = false,
+    this.canUseAI = false,
+    this.canApplyModerator = false,
+  });
+
+  factory UserMembershipDto.fromJson(Map<String, dynamic> json) {
+    return UserMembershipDto(
+      level: json['level'] as int? ?? 0,
+      levelName: json['levelName'] as String? ?? 'Free',
+      startDate: json['startDate'] != null ? DateTime.tryParse(json['startDate'] as String) : null,
+      expiryDate: json['expiryDate'] != null ? DateTime.tryParse(json['expiryDate'] as String) : null,
+      autoRenew: json['autoRenew'] as bool? ?? false,
+      aiUsageThisMonth: json['aiUsageThisMonth'] as int? ?? 0,
+      aiUsageLimit: json['aiUsageLimit'] as int? ?? 0,
+      moderatorDeposit: (json['moderatorDeposit'] as num?)?.toDouble(),
+      isActive: json['isActive'] as bool? ?? false,
+      isExpired: json['isExpired'] as bool? ?? false,
+      remainingDays: json['remainingDays'] as int? ?? 0,
+      isExpiringSoon: json['isExpiringSoon'] as bool? ?? false,
+      canUseAI: json['canUseAI'] as bool? ?? false,
+      canApplyModerator: json['canApplyModerator'] as bool? ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'level': level,
+      'levelName': levelName,
+      'startDate': startDate?.toIso8601String(),
+      'expiryDate': expiryDate?.toIso8601String(),
+      'autoRenew': autoRenew,
+      'aiUsageThisMonth': aiUsageThisMonth,
+      'aiUsageLimit': aiUsageLimit,
+      'moderatorDeposit': moderatorDeposit,
+      'isActive': isActive,
+      'isExpired': isExpired,
+      'remainingDays': remainingDays,
+      'isExpiringSoon': isExpiringSoon,
+      'canUseAI': canUseAI,
+      'canApplyModerator': canApplyModerator,
+    };
+  }
+
+  /// 转换为领域实体
+  UserMembership toDomain() {
+    return UserMembership(
+      userId: '', // 会在上层填充
+      level: MembershipLevel.fromValue(level),
+      startDate: startDate,
+      expiryDate: expiryDate,
+      autoRenew: autoRenew,
+      aiUsageThisMonth: aiUsageThisMonth,
+      moderatorDeposit: moderatorDeposit,
     );
   }
 }

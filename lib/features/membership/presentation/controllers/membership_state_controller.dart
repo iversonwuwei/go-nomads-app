@@ -5,11 +5,14 @@ import 'package:df_admin_mobile/features/membership/domain/entities/membership_l
 import 'package:df_admin_mobile/features/membership/domain/entities/membership_plan.dart';
 import 'package:df_admin_mobile/features/membership/domain/entities/user_membership.dart';
 import 'package:df_admin_mobile/features/membership/domain/repositories/membership_repository.dart';
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:get/get.dart';
 
 /// 会员状态控制器
 ///
 /// 管理用户会员状态、权限检查、升级流程
+/// 优先从 UserStateController 获取会员信息（随用户信息一起返回）
+/// 如果用户信息中没有会员数据，则降级到独立 API 请求
 class MembershipStateController extends GetxController {
   final MembershipRepository _repository;
 
@@ -37,6 +40,9 @@ class MembershipStateController extends GetxController {
 
   /// 加载计划失败的错误信息
   final _plansError = Rx<String?>(null);
+
+  /// UserStateController 监听器
+  Worker? _userStateWorker;
 
   // ==================== Getters ====================
 
@@ -101,7 +107,51 @@ class MembershipStateController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    // 加载会员计划列表（独立请求，不依赖用户信息）
     loadPlans();
+
+    // 尝试从 UserStateController 获取会员信息
+    _syncFromUserState();
+
+    // 监听用户状态变化，自动同步会员信息
+    _setupUserStateListener();
+  }
+
+  @override
+  void onClose() {
+    _userStateWorker?.dispose();
+    super.onClose();
+  }
+
+  /// 设置用户状态监听器
+  void _setupUserStateListener() {
+    if (Get.isRegistered<UserStateController>()) {
+      final userController = Get.find<UserStateController>();
+      _userStateWorker = ever(userController.currentUser, (user) {
+        if (user != null && user.membership != null) {
+          // 用户信息中包含会员数据，直接使用
+          _membership.value = user.membership;
+          log('✅ 从用户信息同步会员状态: ${user.membership!.level.name}');
+        }
+      });
+    }
+  }
+
+  /// 从 UserStateController 同步会员信息
+  void _syncFromUserState() {
+    if (Get.isRegistered<UserStateController>()) {
+      final userController = Get.find<UserStateController>();
+      final user = userController.currentUser.value;
+
+      if (user != null && user.membership != null) {
+        _membership.value = user.membership;
+        log('✅ 从用户信息初始化会员状态: ${user.membership!.level.name}');
+        return;
+      }
+    }
+
+    // 如果用户信息中没有会员数据，降级到独立 API 请求
+    log('⚠️ 用户信息中无会员数据，使用独立 API 加载');
     loadMembership();
   }
 
@@ -187,24 +237,24 @@ class MembershipStateController extends GetxController {
   /// 返回 null 表示可以使用，否则返回提示信息
   String? checkAIAccess() {
     final membership = _membership.value;
-    
+
     if (membership == null) {
       return '请先登录';
     }
-    
+
     if (!membership.level.canUseAI) {
       return '升级到 Basic 会员即可使用 AI 功能';
     }
-    
+
     if (membership.isExpired) {
       return '您的会员已过期，请续费后使用';
     }
-    
+
     final limit = membership.level.aiUsageLimit;
     if (limit > 0 && membership.aiUsageThisMonth >= limit) {
       return '本月 AI 使用次数已达上限 ($limit 次)，升级会员可获得更多次数';
     }
-    
+
     return null; // 可以使用
   }
 
@@ -212,19 +262,19 @@ class MembershipStateController extends GetxController {
   /// 返回 null 表示可以申请，否则返回提示信息
   String? checkModeratorAccess() {
     final membership = _membership.value;
-    
+
     if (membership == null) {
       return '请先登录';
     }
-    
+
     if (!membership.level.canApplyModerator) {
       return '升级到 Pro 或 Premium 会员才能申请成为版主';
     }
-    
+
     if (membership.isExpired) {
       return '您的会员已过期，请续费后申请';
     }
-    
+
     return null; // 可以申请
   }
 

@@ -10,6 +10,7 @@ import 'config/supabase_config.dart';
 import 'controllers/bottom_nav_controller.dart';
 import 'controllers/locale_controller.dart';
 import 'core/di/dependency_injection.dart';
+import 'core/utils/deep_link_handler.dart';
 import 'generated/app_localizations.dart';
 import 'routes/app_routes.dart';
 import 'routes/route_refresh_observer.dart';
@@ -79,6 +80,15 @@ void main() async {
   log('🔑 开始恢复登录状态...');
   await AppInitService().initialize();
   log('✅ 登录状态恢复完成');
+
+  // 🔗 初始化 Deep Link 处理器（支付回调等）
+  log('🔗 初始化 Deep Link 处理器...');
+  try {
+    await DeepLinkHandler.init();
+    log('✅ Deep Link 处理器初始化成功');
+  } catch (e) {
+    log('❌ Deep Link 处理器初始化失败: $e');
+  }
 
   runApp(const MyApp());
 }

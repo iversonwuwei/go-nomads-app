@@ -1,3 +1,5 @@
+import 'package:df_admin_mobile/features/membership/domain/entities/user_membership.dart';
+
 /// User Domain Entity
 ///
 /// 纯粹的领域对象,不包含序列化逻辑
@@ -19,6 +21,9 @@ class User {
   final DateTime joinedDate;
   final bool isVerified;
 
+  /// 用户会员信息（从 /users/me 接口获取）
+  final UserMembership? membership;
+
   User({
     required this.id,
     required this.name,
@@ -36,11 +41,11 @@ class User {
     this.travelHistory = const [],
     required this.joinedDate,
     this.isVerified = false,
+    this.membership,
   });
 
   // 业务逻辑方法
-  bool get hasCompletedProfile =>
-      bio != null && avatarUrl != null && currentCity != null;
+  bool get hasCompletedProfile => bio != null && avatarUrl != null && currentCity != null;
 
   bool get isActiveNomad => stats.citiesVisited > 0;
 
@@ -67,7 +72,7 @@ class UserSkillInfo {
     required this.level,
     this.icon,
   });
-  
+
   bool get hasIcon => icon != null && icon!.isNotEmpty;
 }
 
@@ -82,7 +87,7 @@ class UserInterestInfo {
     required this.name,
     this.icon,
   });
-  
+
   bool get hasIcon => icon != null && icon!.isNotEmpty;
 }
 

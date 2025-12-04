@@ -92,6 +92,11 @@ import 'package:df_admin_mobile/features/moderator/presentation/controllers/mode
 import 'package:df_admin_mobile/features/notification/domain/repositories/i_notification_repository.dart';
 import 'package:df_admin_mobile/features/notification/infrastructure/repositories/notification_repository.dart';
 import 'package:df_admin_mobile/features/notification/presentation/controllers/notification_state_controller.dart';
+// Payment Domain
+import 'package:df_admin_mobile/features/payment/application/services/payment_service.dart';
+import 'package:df_admin_mobile/features/payment/domain/repositories/i_payment_repository.dart';
+import 'package:df_admin_mobile/features/payment/infrastructure/repositories/payment_repository.dart';
+import 'package:df_admin_mobile/features/payment/presentation/controllers/payment_state_controller.dart';
 // Skill Domain
 import 'package:df_admin_mobile/features/skill/application/use_cases/skill_use_cases.dart';
 import 'package:df_admin_mobile/features/skill/domain/repositories/i_skill_repository.dart';
@@ -99,8 +104,11 @@ import 'package:df_admin_mobile/features/skill/infrastructure/repositories/skill
 import 'package:df_admin_mobile/features/skill/presentation/controllers/skill_state_controller.dart';
 import 'package:df_admin_mobile/features/user/application/use_cases/favorite_city_use_cases.dart';
 import 'package:df_admin_mobile/features/user/application/use_cases/user_use_cases.dart' as user_use_cases;
+// User Preferences Domain
+import 'package:df_admin_mobile/features/user/domain/repositories/i_user_preferences_repository.dart';
 // User Domain
 import 'package:df_admin_mobile/features/user/domain/repositories/iuser_repository.dart';
+import 'package:df_admin_mobile/features/user/infrastructure/repositories/user_preferences_repository.dart';
 import 'package:df_admin_mobile/features/user/infrastructure/repositories/user_repository.dart';
 import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
 // User City Content Domain
@@ -190,6 +198,9 @@ class DependencyInjection {
     // Membership 领域
     _registerMembershipDomain();
 
+    // Payment 领域
+    _registerPaymentDomain();
+
     // 其他领域...
 
     // ⚠️ 强制初始化全局 Controllers，防止路由切换时被删除
@@ -211,6 +222,9 @@ class DependencyInjection {
     Get.find<InterestStateController>();
     Get.find<ChatStateController>();
     Get.find<LocationStateController>(); // 添加 LocationStateController 初始化
+
+    // 初始化会员控制器（需要在 UserStateController 之后，以便监听用户状态）
+    Get.find<MembershipStateController>();
 
     log('🚀 开始强制初始化 NotificationStateController');
     try {
@@ -255,6 +269,14 @@ class DependencyInjection {
     // Repository
     Get.lazyPut<IUserRepository>(
       () => UserRepository(
+        dio: Get.find<Dio>(),
+        tokenService: Get.find<TokenStorageService>(),
+      ),
+    );
+
+    // User Preferences Repository
+    Get.lazyPut<IUserPreferencesRepository>(
+      () => UserPreferencesRepository(
         dio: Get.find<Dio>(),
         tokenService: Get.find<TokenStorageService>(),
       ),
@@ -966,6 +988,29 @@ class DependencyInjection {
     // Controller
     Get.lazyPut(
       () => MembershipStateController(Get.find<MembershipRepository>()),
+    );
+  }
+
+  /// 注册支付领域依赖
+  static void _registerPaymentDomain() {
+    // Repository
+    Get.lazyPut<IPaymentRepository>(
+      () => PaymentRepository(
+        dio: Get.find<Dio>(),
+        tokenService: Get.find<TokenStorageService>(),
+      ),
+    );
+
+    // Controller
+    Get.lazyPut(
+      () => PaymentStateController(Get.find<IPaymentRepository>()),
+      fenix: true,
+    );
+
+    // Service (GetxService)
+    Get.lazyPut(
+      () => PaymentService(),
+      fenix: true,
     );
   }
 }

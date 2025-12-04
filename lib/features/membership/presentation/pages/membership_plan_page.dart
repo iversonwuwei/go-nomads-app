@@ -1,6 +1,7 @@
 import 'package:df_admin_mobile/features/membership/domain/entities/membership_level.dart';
 import 'package:df_admin_mobile/features/membership/domain/entities/membership_plan.dart';
 import 'package:df_admin_mobile/features/membership/presentation/controllers/membership_state_controller.dart';
+import 'package:df_admin_mobile/features/payment/application/services/payment_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:flutter/material.dart';
@@ -56,13 +57,13 @@ class MembershipPlanPage extends StatelessWidget {
               // 当前会员状态
               _buildCurrentStatus(controller),
               const SizedBox(height: 24),
-              
+
               // 动态生成会员计划卡片
               ...paidPlans.asMap().entries.map((entry) {
                 final index = entry.key;
                 final plan = entry.value;
                 final isPopular = plan.level == 2; // Pro 计划标记为热门
-                
+
                 return Padding(
                   padding: EdgeInsets.only(bottom: index < paidPlans.length - 1 ? 16 : 0),
                   child: _MembershipPlanCard(
@@ -74,9 +75,9 @@ class MembershipPlanPage extends StatelessWidget {
                   ),
                 );
               }),
-              
+
               const SizedBox(height: 32),
-              
+
               // 底部说明
               _buildFooterNote(),
             ],
@@ -256,7 +257,7 @@ class MembershipPlanPage extends StatelessWidget {
 
   void _handleUpgrade(MembershipStateController controller, MembershipPlan plan) async {
     final targetLevel = MembershipLevel.fromValue(plan.level);
-    
+
     if (controller.level.levelValue >= plan.level) {
       AppToast.info('You already have this or higher plan');
       return;
@@ -266,32 +267,124 @@ class MembershipPlanPage extends StatelessWidget {
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
         title: Text('Upgrade to ${plan.name}'),
-        content: Text(
-          'You will be charged \$${plan.priceYearly.toStringAsFixed(0)}/year. Continue?',
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'You will be charged \$${plan.priceYearly.toStringAsFixed(0)}/year.',
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Image.asset(
+                  'assets/images/paypal_logo.png',
+                  width: 80,
+                  height: 24,
+                  errorBuilder: (_, __, ___) => Row(
+                    children: [
+                      Icon(FontAwesomeIcons.paypal, color: Colors.blue.shade700, size: 20),
+                      const SizedBox(width: 4),
+                      Text('PayPal', style: TextStyle(color: Colors.blue.shade700, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Secure Payment',
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
         actions: [
           TextButton(
             onPressed: () => Get.back(result: false),
             child: const Text('Cancel'),
           ),
-          ElevatedButton(
+          ElevatedButton.icon(
             onPressed: () => Get.back(result: true),
+            icon: const Icon(FontAwesomeIcons.paypal, size: 16),
+            label: const Text('Pay with PayPal'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Color(targetLevel.colorValue),
+              backgroundColor: const Color(0xFF0070BA), // PayPal blue
+              foregroundColor: Colors.white,
             ),
-            child: const Text('Upgrade', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
     );
 
     if (confirmed == true) {
+      // 使用 PayPal 支付
+      await _processPayPalPayment(controller, plan, targetLevel);
+    }
+  }
+
+  /// 处理 PayPal 支付
+  Future<void> _processPayPalPayment(
+    MembershipStateController controller,
+    MembershipPlan plan,
+    MembershipLevel targetLevel,
+  ) async {
+    // 获取支付服务
+    PaymentService? paymentService;
+    try {
+      paymentService = Get.find<PaymentService>();
+    } catch (e) {
+      // 如果服务未注册，使用临时模拟升级
+      AppToast.warning('Payment service not available, using demo mode');
       final success = await controller.upgradeMembership(targetLevel);
       if (success) {
         AppToast.success('Upgraded to ${plan.name} successfully!');
       } else {
         AppToast.error(controller.errorMessage ?? 'Upgrade failed');
       }
+      return;
+    }
+
+    // 显示加载对话框
+    Get.dialog(
+      const AlertDialog(
+        content: Row(
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(width: 16),
+            Text('Creating payment order...'),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+
+    try {
+      // 判断是升级还是续费
+      final isRenewal = controller.membership?.isActive == true && controller.level.levelValue == plan.level;
+
+      // 发起支付
+      final success = await paymentService.startMembershipPayment(
+        membershipLevel: plan.level,
+        durationDays: 365, // 年度订阅
+        isRenewal: isRenewal,
+      );
+
+      // 关闭加载对话框
+      Get.back();
+
+      if (success) {
+        AppToast.info('Opening PayPal for payment...');
+        // 支付页面已在外部浏览器中打开
+        // 用户完成支付后会通过 deep link 返回
+      } else {
+        AppToast.error('Failed to create payment order');
+      }
+    } catch (e) {
+      Get.back(); // 关闭加载对话框
+      AppToast.error('Payment error: $e');
     }
   }
 }
@@ -429,43 +522,41 @@ class _MembershipPlanCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 16),
                 const Divider(),
                 const SizedBox(height: 12),
-                
+
                 // 功能列表
                 ...plan.features.map((feature) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Row(
-                    children: [
-                      Icon(
-                        FontAwesomeIcons.circleCheck,
-                        size: 14,
-                        color: planColor,
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Row(
+                        children: [
+                          Icon(
+                            FontAwesomeIcons.circleCheck,
+                            size: 14,
+                            color: planColor,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              feature,
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          feature,
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                      ),
-                    ],
-                  ),
-                )),
-                
+                    )),
+
                 const SizedBox(height: 16),
-                
+
                 // 选择按钮
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: isCurrentPlan || isLoading ? null : onSelect,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isCurrentPlan
-                          ? Colors.grey.shade300
-                          : planColor,
+                      backgroundColor: isCurrentPlan ? Colors.grey.shade300 : planColor,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
@@ -494,7 +585,7 @@ class _MembershipPlanCard extends StatelessWidget {
             ),
           ),
         ),
-        
+
         // Popular 标签
         if (isPopular)
           Positioned(
