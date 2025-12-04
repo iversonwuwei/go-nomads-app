@@ -219,12 +219,8 @@ class MembershipResponse {
       userId: json['userId'] as String? ?? '',
       level: json['level'] as int? ?? 0,
       levelName: json['levelName'] as String? ?? 'Free',
-      startDate: json['startDate'] != null 
-          ? DateTime.tryParse(json['startDate'] as String) 
-          : null,
-      expiryDate: json['expiryDate'] != null 
-          ? DateTime.tryParse(json['expiryDate'] as String) 
-          : null,
+      startDate: json['startDate'] != null ? DateTime.tryParse(json['startDate'] as String) : null,
+      expiryDate: json['expiryDate'] != null ? DateTime.tryParse(json['expiryDate'] as String) : null,
       autoRenew: json['autoRenew'] as bool? ?? false,
       aiUsageThisMonth: json['aiUsageThisMonth'] as int? ?? 0,
       aiUsageLimit: json['aiUsageLimit'] as int? ?? 0,
@@ -305,9 +301,7 @@ class MembershipPlanResponse {
       currency: json['currency'] as String? ?? 'USD',
       icon: json['icon'] as String?,
       color: json['color'] as String?,
-      features: (json['features'] as List<dynamic>?)
-              ?.map((e) => e as String)
-              .toList() ?? [],
+      features: (json['features'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
       aiUsageLimit: json['aiUsageLimit'] as int? ?? 0,
       canUseAI: json['canUseAI'] as bool? ?? false,
       canApplyModerator: json['canApplyModerator'] as bool? ?? false,

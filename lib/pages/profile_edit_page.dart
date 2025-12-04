@@ -8,11 +8,13 @@ import 'package:df_admin_mobile/features/interest/presentation/controllers/inter
 import 'package:df_admin_mobile/features/skill/domain/entities/skill.dart';
 import 'package:df_admin_mobile/features/skill/presentation/controllers/skill_state_controller.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
+import 'package:df_admin_mobile/features/user/domain/repositories/i_user_preferences_repository.dart';
 import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:df_admin_mobile/features/user_management/domain/repositories/iuser_management_repository.dart';
 import 'package:df_admin_mobile/features/user_management/presentation/controllers/user_management_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
+import 'package:df_admin_mobile/services/notification_service.dart';
 import 'package:df_admin_mobile/services/token_storage_service.dart';
 import 'package:df_admin_mobile/utils/image_upload_helper.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
@@ -28,8 +30,7 @@ class ProfileEditPage extends StatefulWidget {
   State<ProfileEditPage> createState() => _ProfileEditPageState();
 }
 
-class _ProfileEditPageState extends State<ProfileEditPage>
-    with RouteAwareRefreshMixin<ProfileEditPage> {
+class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefreshMixin<ProfileEditPage> {
   // 用户偏好设置
   bool _notifications = true;
   bool _travelHistoryVisible = true;
@@ -53,14 +54,148 @@ class _ProfileEditPageState extends State<ProfileEditPage>
   bool _isAdmin = false;
   UserManagementStateController? _userManagementController;
 
+  // 用户偏好设置仓库
+  IUserPreferencesRepository? _preferencesRepository;
+
+  // 是否正在加载或保存偏好设置
+  bool _isLoadingPreferences = false;
+  bool _isSavingPreferences = false;
+
   @override
   void initState() {
     super.initState();
+    // 初始化通知状态
+    _initNotificationState();
+    // 初始化偏好设置仓库
+    _initPreferencesRepository();
     // 延迟到下一帧执行，避免在 build 过程中触发状态更新
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadUserProfile();
+      _loadUserPreferences();
       _checkAdminRole();
     });
+  }
+
+  // 初始化偏好设置仓库
+  void _initPreferencesRepository() {
+    if (Get.isRegistered<IUserPreferencesRepository>()) {
+      _preferencesRepository = Get.find<IUserPreferencesRepository>();
+    }
+  }
+
+  // 从数据库加载用户偏好设置
+  Future<void> _loadUserPreferences() async {
+    if (_preferencesRepository == null) {
+      debugPrint('⚠️ UserPreferencesRepository 未注册，使用本地默认值');
+      return;
+    }
+
+    setState(() => _isLoadingPreferences = true);
+
+    try {
+      final preferences = await _preferencesRepository!.getCurrentUserPreferences();
+      if (mounted) {
+        setState(() {
+          _notifications = preferences.notificationsEnabled;
+          _travelHistoryVisible = preferences.travelHistoryVisible;
+          _profilePublic = preferences.profilePublic;
+          _currency = preferences.currency;
+          _temperatureUnit = preferences.temperatureUnit;
+        });
+
+        // 同步通知状态到 NotificationService
+        if (Get.isRegistered<NotificationService>()) {
+          final notificationService = Get.find<NotificationService>();
+          await notificationService.setEnabled(preferences.notificationsEnabled);
+        }
+
+        debugPrint('✅ 用户偏好设置加载成功');
+      }
+    } catch (e) {
+      debugPrint('❌ 加载用户偏好设置失败: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingPreferences = false);
+      }
+    }
+  }
+
+  // 保存用户偏好设置到数据库
+  Future<void> _saveUserPreferences() async {
+    if (_preferencesRepository == null) {
+      debugPrint('⚠️ UserPreferencesRepository 未注册，无法保存到数据库');
+      return;
+    }
+
+    setState(() => _isSavingPreferences = true);
+
+    try {
+      await _preferencesRepository!.updatePreferences(
+        notificationsEnabled: _notifications,
+        travelHistoryVisible: _travelHistoryVisible,
+        profilePublic: _profilePublic,
+        currency: _currency,
+        temperatureUnit: _temperatureUnit,
+      );
+
+      debugPrint('✅ 用户偏好设置保存成功');
+    } catch (e) {
+      debugPrint('❌ 保存用户偏好设置失败: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isSavingPreferences = false);
+      }
+    }
+  }
+
+  // 初始化通知状态
+  void _initNotificationState() {
+    if (Get.isRegistered<NotificationService>()) {
+      final notificationService = Get.find<NotificationService>();
+      _notifications = notificationService.isEnabled.value;
+    }
+  }
+
+  // 处理通知开关变化
+  Future<void> _handleNotificationToggle(bool value) async {
+    setState(() => _notifications = value);
+
+    // 同步到 NotificationService (本地)
+    if (Get.isRegistered<NotificationService>()) {
+      final notificationService = Get.find<NotificationService>();
+      await notificationService.setEnabled(value);
+    }
+
+    // 保存到数据库
+    await _saveUserPreferences();
+  }
+
+  // 处理旅行历史可见性变化
+  Future<void> _handleTravelHistoryVisibleToggle(bool value) async {
+    setState(() => _travelHistoryVisible = value);
+    await _saveUserPreferences();
+  }
+
+  // 处理个人资料公开变化
+  Future<void> _handleProfilePublicToggle(bool value) async {
+    setState(() => _profilePublic = value);
+    await _saveUserPreferences();
+  }
+
+  // 处理货币变化
+  Future<void> _handleCurrencyChange(String? value) async {
+    if (value != null) {
+      setState(() => _currency = value);
+      await _saveUserPreferences();
+    }
+  }
+
+  // 处理温度单位变化
+  Future<void> _handleTemperatureUnitChange(String? value) async {
+    if (value != null) {
+      setState(() => _temperatureUnit = value);
+      await _saveUserPreferences();
+    }
   }
 
   @override
@@ -86,13 +221,11 @@ class _ProfileEditPageState extends State<ProfileEditPage>
           // 安全地获取或初始化用户管理 controller
           try {
             if (Get.isRegistered<UserManagementStateController>()) {
-              _userManagementController =
-                  Get.find<UserManagementStateController>();
+              _userManagementController = Get.find<UserManagementStateController>();
             } else {
               // 如果未注册，强制创建实例
               _userManagementController = Get.put(
-                UserManagementStateController(
-                    Get.find<IUserManagementRepository>()),
+                UserManagementStateController(Get.find<IUserManagementRepository>()),
               );
             }
             debugPrint('✅ UserManagementStateController 初始化成功');
@@ -111,12 +244,8 @@ class _ProfileEditPageState extends State<ProfileEditPage>
     final profileController = Get.find<UserStateController>();
 
     // 安全地获取或初始化 controller
-    final skillController = Get.isRegistered<SkillStateController>()
-        ? Get.find<SkillStateController>()
-        : null;
-    final interestController = Get.isRegistered<InterestStateController>()
-        ? Get.find<InterestStateController>()
-        : null;
+    final skillController = Get.isRegistered<SkillStateController>() ? Get.find<SkillStateController>() : null;
+    final interestController = Get.isRegistered<InterestStateController>() ? Get.find<InterestStateController>() : null;
 
     // 并行加载所有数据：用户信息、技能选项、兴趣选项
     final futures = <Future>[
@@ -186,8 +315,7 @@ class _ProfileEditPageState extends State<ProfileEditPage>
       });
 
       final profileController = Get.find<UserStateController>();
-      final updateSuccess =
-          await profileController.updateUser({'avatarUrl': avatarUrl});
+      final updateSuccess = await profileController.updateUser({'avatarUrl': avatarUrl});
 
       if (updateSuccess) {
         AppToast.success(
@@ -377,15 +505,12 @@ class _ProfileEditPageState extends State<ProfileEditPage>
                     child: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color:
-                            _uploadingAvatar ? Colors.grey : AppColors.accent,
+                        color: _uploadingAvatar ? Colors.grey : AppColors.accent,
                         shape: BoxShape.circle,
                         border: Border.all(color: Colors.white, width: 2),
                       ),
                       child: Icon(
-                        _uploadingAvatar
-                            ? FontAwesomeIcons.hourglass
-                            : FontAwesomeIcons.camera,
+                        _uploadingAvatar ? FontAwesomeIcons.hourglass : FontAwesomeIcons.camera,
                         color: Colors.white,
                         size: 20,
                       ),
@@ -482,14 +607,11 @@ class _ProfileEditPageState extends State<ProfileEditPage>
     }); // 关闭 Obx
   }
 
-  Widget _buildSkillsSection(
-      bool isMobile, UserStateController profileController) {
+  Widget _buildSkillsSection(bool isMobile, UserStateController profileController) {
     final l10n = AppLocalizations.of(Get.context!)!;
 
     // 安全地获取 controller，如果不存在则不显示加载状态
-    final skillController = Get.isRegistered<SkillStateController>()
-        ? Get.find<SkillStateController>()
-        : null;
+    final skillController = Get.isRegistered<SkillStateController>() ? Get.find<SkillStateController>() : null;
 
     return Obx(() {
       final user = profileController.currentUser.value;
@@ -540,15 +662,12 @@ class _ProfileEditPageState extends State<ProfileEditPage>
                   ],
                 ),
                 TextButton.icon(
-                  icon: Icon(FontAwesomeIcons.pen,
-                      color: AppColors.accent, size: 20),
+                  icon: Icon(FontAwesomeIcons.pen, color: AppColors.accent, size: 20),
                   label: Text(
                     '编辑',
                     style: TextStyle(color: AppColors.accent),
                   ),
-                  onPressed: isLoading
-                      ? null
-                      : () => _showSkillsBottomSheet(profileController),
+                  onPressed: isLoading ? null : () => _showSkillsBottomSheet(profileController),
                 ),
               ],
             ),
@@ -587,17 +706,14 @@ class _ProfileEditPageState extends State<ProfileEditPage>
                         : null,
                     label: Text(skill.name),
                     deleteIcon: const Icon(FontAwesomeIcons.xmark, size: 18),
-                    onDeleted: isLoading
-                        ? null
-                        : () => profileController.removeSkill(skill.id),
+                    onDeleted: isLoading ? null : () => profileController.removeSkill(skill.id),
                     backgroundColor: AppColors.accent.withValues(alpha: 0.1),
                     labelStyle: TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 14,
                     ),
                     deleteIconColor: AppColors.textSecondary,
-                    side: BorderSide(
-                        color: AppColors.accent.withValues(alpha: 0.3)),
+                    side: BorderSide(color: AppColors.accent.withValues(alpha: 0.3)),
                   );
                 }).toList(),
               ),
@@ -607,14 +723,11 @@ class _ProfileEditPageState extends State<ProfileEditPage>
     });
   }
 
-  Widget _buildInterestsSection(
-      bool isMobile, UserStateController profileController) {
+  Widget _buildInterestsSection(bool isMobile, UserStateController profileController) {
     final l10n = AppLocalizations.of(Get.context!)!;
 
     // 安全地获取 controller，如果不存在则不显示加载状态
-    final interestController = Get.isRegistered<InterestStateController>()
-        ? Get.find<InterestStateController>()
-        : null;
+    final interestController = Get.isRegistered<InterestStateController>() ? Get.find<InterestStateController>() : null;
 
     return Obx(() {
       final user = profileController.currentUser.value;
@@ -665,15 +778,12 @@ class _ProfileEditPageState extends State<ProfileEditPage>
                   ],
                 ),
                 TextButton.icon(
-                  icon: const Icon(FontAwesomeIcons.pen,
-                      color: Color(0xFFBA68C8), size: 20),
+                  icon: const Icon(FontAwesomeIcons.pen, color: Color(0xFFBA68C8), size: 20),
                   label: const Text(
                     '编辑',
                     style: TextStyle(color: Color(0xFFBA68C8)),
                   ),
-                  onPressed: isLoading
-                      ? null
-                      : () => _showInterestsBottomSheet(profileController),
+                  onPressed: isLoading ? null : () => _showInterestsBottomSheet(profileController),
                 ),
               ],
             ),
@@ -712,11 +822,8 @@ class _ProfileEditPageState extends State<ProfileEditPage>
                         : null,
                     label: Text(interest.name),
                     deleteIcon: const Icon(FontAwesomeIcons.xmark, size: 18),
-                    onDeleted: isLoading
-                        ? null
-                        : () => profileController.removeInterest(interest.id),
-                    backgroundColor:
-                        const Color(0xFFBA68C8).withValues(alpha: 0.1),
+                    onDeleted: isLoading ? null : () => profileController.removeInterest(interest.id),
+                    backgroundColor: const Color(0xFFBA68C8).withValues(alpha: 0.1),
                     labelStyle: TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 14,
@@ -747,13 +854,30 @@ class _ProfileEditPageState extends State<ProfileEditPage>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            l10n.preferences,
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: isMobile ? 18 : 22,
-              fontWeight: FontWeight.bold,
-            ),
+          Row(
+            children: [
+              Text(
+                l10n.preferences,
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: isMobile ? 18 : 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              if (_isLoadingPreferences || _isSavingPreferences) ...[
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      AppColors.accent,
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
           SizedBox(height: isMobile ? 12 : 16),
           _buildLanguageTile(isMobile),
@@ -762,35 +886,35 @@ class _ProfileEditPageState extends State<ProfileEditPage>
             l10n.notificationsPreference,
             l10n.receiveUpdatesAndAlerts,
             _notifications,
-            (value) => setState(() => _notifications = value),
+            _handleNotificationToggle,
           ),
           Divider(color: AppColors.divider),
           _buildSwitchTile(
             l10n.travelHistoryVisible,
             l10n.showTravelHistoryToOthers,
             _travelHistoryVisible,
-            (value) => setState(() => _travelHistoryVisible = value),
+            _handleTravelHistoryVisibleToggle,
           ),
           Divider(color: AppColors.divider),
           _buildSwitchTile(
             l10n.publicProfile,
             l10n.makeProfileVisibleToEveryone,
             _profilePublic,
-            (value) => setState(() => _profilePublic = value),
+            _handleProfilePublicToggle,
           ),
           Divider(color: AppColors.divider),
           _buildDropdownTile(
             l10n.currency,
             _currency,
             _currencies,
-            (value) => setState(() => _currency = value ?? 'USD'),
+            _handleCurrencyChange,
           ),
           Divider(color: AppColors.divider),
           _buildDropdownTile(
             l10n.temperature,
             _temperatureUnit,
             _temperatureUnits,
-            (value) => setState(() => _temperatureUnit = value ?? 'Celsius'),
+            _handleTemperatureUnitChange,
           ),
         ],
       ),
@@ -810,9 +934,7 @@ class _ProfileEditPageState extends State<ProfileEditPage>
         ),
       ),
       subtitle: Obx(() => Text(
-            localeController.locale.value.languageCode == 'en'
-                ? 'English'
-                : '中文',
+            localeController.locale.value.languageCode == 'en' ? 'English' : '中文',
             style: TextStyle(
               color: AppColors.textSecondary,
               fontSize: 14,
@@ -829,13 +951,11 @@ class _ProfileEditPageState extends State<ProfileEditPage>
             items: [
               DropdownMenuItem(
                 value: 'en',
-                child: Text('English',
-                    style: TextStyle(color: AppColors.textPrimary)),
+                child: Text('English', style: TextStyle(color: AppColors.textPrimary)),
               ),
               DropdownMenuItem(
                 value: 'zh',
-                child:
-                    Text('中文', style: TextStyle(color: AppColors.textPrimary)),
+                child: Text('中文', style: TextStyle(color: AppColors.textPrimary)),
               ),
             ],
             onChanged: (languageCode) {
@@ -1003,8 +1123,7 @@ class _ProfileEditPageState extends State<ProfileEditPage>
 
   // 显示技能选择底部抽屉
   void _showSkillsBottomSheet(UserStateController profileController) {
-    final SkillStateController skillController =
-        Get.find<SkillStateController>();
+    final SkillStateController skillController = Get.find<SkillStateController>();
     final currentUser = profileController.currentUser.value;
 
     if (currentUser == null) {
@@ -1066,8 +1185,7 @@ class _ProfileEditPageState extends State<ProfileEditPage>
 
   // 显示兴趣选择底部抽屉
   void _showInterestsBottomSheet(UserStateController profileController) {
-    final InterestStateController interestController =
-        Get.find<InterestStateController>();
+    final InterestStateController interestController = Get.find<InterestStateController>();
     final currentUser = profileController.currentUser.value;
 
     if (currentUser == null) {
@@ -1171,13 +1289,11 @@ class _ProfileEditPageState extends State<ProfileEditPage>
                 decoration: BoxDecoration(
                   color: Colors.orange.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border:
-                      Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                  border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
-                    Icon(FontAwesomeIcons.triangleExclamation,
-                        color: Colors.orange, size: 20),
+                    Icon(FontAwesomeIcons.triangleExclamation, color: Colors.orange, size: 20),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -1244,8 +1360,7 @@ class _ProfileEditPageState extends State<ProfileEditPage>
               const SizedBox(width: 12),
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () =>
-                      _userManagementController!.loadUsers(refresh: true),
+                  onPressed: () => _userManagementController!.loadUsers(refresh: true),
                   icon: const Icon(FontAwesomeIcons.arrowsRotate, size: 18),
                   label: const Text('刷新'),
                   style: OutlinedButton.styleFrom(
@@ -1267,8 +1382,7 @@ class _ProfileEditPageState extends State<ProfileEditPage>
               borderRadius: BorderRadius.circular(8),
             ),
             child: Obx(() {
-              if (_userManagementController!.isLoading.value &&
-                  _userManagementController!.users.isEmpty) {
+              if (_userManagementController!.isLoading.value && _userManagementController!.users.isEmpty) {
                 return const Center(child: CircularProgressIndicator());
               }
 
@@ -1287,15 +1401,14 @@ class _ProfileEditPageState extends State<ProfileEditPage>
 
               return NotificationListener<ScrollNotification>(
                 onNotification: (ScrollNotification scrollInfo) {
-                  if (scrollInfo.metrics.pixels ==
-                      scrollInfo.metrics.maxScrollExtent) {
+                  if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {
                     _userManagementController!.loadUsers();
                   }
                   return false;
                 },
                 child: ListView.builder(
-                  itemCount: _userManagementController!.users.length +
-                      (_userManagementController!.hasMoreData.value ? 1 : 0),
+                  itemCount:
+                      _userManagementController!.users.length + (_userManagementController!.hasMoreData.value ? 1 : 0),
                   itemBuilder: (context, index) {
                     if (index == _userManagementController!.users.length) {
                       return const Center(
@@ -1307,9 +1420,7 @@ class _ProfileEditPageState extends State<ProfileEditPage>
                     }
 
                     final user = _userManagementController!.users[index];
-                    final isSelected = _userManagementController!
-                        .selectedUserIds
-                        .contains(user.id);
+                    final isSelected = _userManagementController!.selectedUserIds.contains(user.id);
 
                     return CheckboxListTile(
                       value: isSelected,
@@ -1320,12 +1431,8 @@ class _ProfileEditPageState extends State<ProfileEditPage>
                         children: [
                           CircleAvatar(
                             radius: 16,
-                            backgroundImage: user.avatarUrl != null
-                                ? NetworkImage(user.avatarUrl!)
-                                : null,
-                            child: user.avatarUrl == null
-                                ? Text(user.name.substring(0, 1).toUpperCase())
-                                : null,
+                            backgroundImage: user.avatarUrl != null ? NetworkImage(user.avatarUrl!) : null,
+                            child: user.avatarUrl == null ? Text(user.name.substring(0, 1).toUpperCase()) : null,
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -1579,8 +1686,7 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
           ),
         );
 
-        if (skill.id.isNotEmpty &&
-            !_selectedSkills.any((s) => s.skillId == skill.id)) {
+        if (skill.id.isNotEmpty && !_selectedSkills.any((s) => s.skillId == skill.id)) {
           log('  ✅ 找到并添加技能: ${skill.name}');
           _selectedSkills.add(UserSkill(
             id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -1749,9 +1855,8 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
 
               // 技能列表
               Expanded(
-                child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _buildSkillsList(scrollController),
+                child:
+                    _isLoading ? const Center(child: CircularProgressIndicator()) : _buildSkillsList(scrollController),
               ),
 
               // 底部按钮
@@ -1842,8 +1947,7 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
           spacing: 8,
           runSpacing: 8,
           children: filteredSkills.map((skill) {
-            final isSelected =
-                _selectedSkills.any((s) => s.skillId == skill.id);
+            final isSelected = _selectedSkills.any((s) => s.skillId == skill.id);
             if (isSelected) {
               log('🎯 技能 ${skill.name} (id=${skill.id}) 被标记为选中');
             }
@@ -1919,8 +2023,7 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
       await widget.interestController.getInterests();
       if (!mounted) return;
 
-      final interests =
-          List<Interest>.from(widget.interestController.interests);
+      final interests = List<Interest>.from(widget.interestController.interests);
 
       // 先设置数据，再调用预选方法
       _interestsByCategory = _groupInterestsByCategory(interests);
@@ -1947,8 +2050,7 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
     }
   }
 
-  List<InterestsByCategory> _groupInterestsByCategory(
-      List<Interest> interests) {
+  List<InterestsByCategory> _groupInterestsByCategory(List<Interest> interests) {
     final Map<String, List<Interest>> grouped = {};
     for (final interest in interests) {
       grouped.putIfAbsent(interest.category, () => []).add(interest);
@@ -1981,8 +2083,7 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
           ),
         );
 
-        if (interest.id.isNotEmpty &&
-            !_selectedInterests.any((i) => i.interestId == interest.id)) {
+        if (interest.id.isNotEmpty && !_selectedInterests.any((i) => i.interestId == interest.id)) {
           log('  ✅ 找到并添加兴趣: ${interest.name}');
           _selectedInterests.add(UserInterest(
             id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -2003,8 +2104,7 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
   }
 
   void _toggleInterest(Interest interest) {
-    final isSelected =
-        _selectedInterests.any((i) => i.interestId == interest.id);
+    final isSelected = _selectedInterests.any((i) => i.interestId == interest.id);
 
     setState(() {
       if (isSelected) {
@@ -2243,8 +2343,7 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
           spacing: 8,
           runSpacing: 8,
           children: filteredInterests.map((interest) {
-            final isSelected =
-                _selectedInterests.any((i) => i.interestId == interest.id);
+            final isSelected = _selectedInterests.any((i) => i.interestId == interest.id);
             if (isSelected) {
               log('🎯 兴趣 ${interest.name} (id=${interest.id}) 被标记为选中');
             }

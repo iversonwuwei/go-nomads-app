@@ -681,8 +681,8 @@ class _MyMeetupsPageState extends State<MyMeetupsPage> {
     Get.toNamed(
       AppRoutes.cityChat,
       arguments: {
-        'city': meetup.location.cityName ?? meetup.location.city,
-        'country': meetup.location.country,
+        'city': meetup.title,
+        'country': '${meetup.type} Meetup',
         'meetupId': meetup.id,
         'isMeetupChat': true,
       },
