@@ -8,6 +8,60 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
+/// 支付方式枚举
+enum PaymentMethod {
+  paypal,
+  wechat,
+  alipay,
+}
+
+/// 支付方式扩展
+extension PaymentMethodExtension on PaymentMethod {
+  String get name {
+    switch (this) {
+      case PaymentMethod.paypal:
+        return 'PayPal';
+      case PaymentMethod.wechat:
+        return 'WeChat Pay';
+      case PaymentMethod.alipay:
+        return 'Alipay';
+    }
+  }
+
+  String get icon {
+    switch (this) {
+      case PaymentMethod.paypal:
+        return 'paypal';
+      case PaymentMethod.wechat:
+        return 'wechat';
+      case PaymentMethod.alipay:
+        return 'alipay';
+    }
+  }
+
+  Color get color {
+    switch (this) {
+      case PaymentMethod.paypal:
+        return const Color(0xFF0070BA);
+      case PaymentMethod.wechat:
+        return const Color(0xFF07C160);
+      case PaymentMethod.alipay:
+        return const Color(0xFF1677FF);
+    }
+  }
+
+  IconData get iconData {
+    switch (this) {
+      case PaymentMethod.paypal:
+        return FontAwesomeIcons.paypal;
+      case PaymentMethod.wechat:
+        return FontAwesomeIcons.weixin;
+      case PaymentMethod.alipay:
+        return FontAwesomeIcons.alipay;
+    }
+  }
+}
+
 /// 会员计划页面
 class MembershipPlanPage extends StatelessWidget {
   const MembershipPlanPage({super.key});
@@ -263,65 +317,170 @@ class MembershipPlanPage extends StatelessWidget {
       return;
     }
 
-    // 显示确认对话框
-    final confirmed = await Get.dialog<bool>(
-      AlertDialog(
-        title: Text('Upgrade to ${plan.name}'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'You will be charged \$${plan.priceYearly.toStringAsFixed(0)}/year.',
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Image.asset(
-                  'assets/images/paypal_logo.png',
-                  width: 80,
-                  height: 24,
-                  errorBuilder: (_, __, ___) => Row(
-                    children: [
-                      Icon(FontAwesomeIcons.paypal, color: Colors.blue.shade700, size: 20),
-                      const SizedBox(width: 4),
-                      Text('PayPal', style: TextStyle(color: Colors.blue.shade700, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Secure Payment',
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(result: false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton.icon(
-            onPressed: () => Get.back(result: true),
-            icon: const Icon(FontAwesomeIcons.paypal, size: 16),
-            label: const Text('Pay with PayPal'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0070BA), // PayPal blue
-              foregroundColor: Colors.white,
-            ),
-          ),
-        ],
-      ),
-    );
+    // 显示支付方式选择底部弹窗
+    final selectedMethod = await _showPaymentMethodSheet(plan);
 
-    if (confirmed == true) {
-      // 使用 PayPal 支付
-      await _processPayPalPayment(controller, plan, targetLevel);
+    if (selectedMethod != null) {
+      await _processPayment(controller, plan, targetLevel, selectedMethod);
+    }
+  }
+
+  /// 显示支付方式选择底部弹窗
+  Future<PaymentMethod?> _showPaymentMethodSheet(MembershipPlan plan) {
+    return Get.bottomSheet<PaymentMethod>(
+      Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 拖动指示器
+              Container(
+                margin: const EdgeInsets.only(top: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+
+              // 标题
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    Text(
+                      'Select Payment Method',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey.shade800,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Upgrade to ${plan.name} - \$${plan.priceYearly.toStringAsFixed(0)}/year',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              const Divider(height: 1),
+
+              // 支付方式列表
+              _buildPaymentMethodTile(
+                PaymentMethod.paypal,
+                'Fast & Secure international payment',
+              ),
+              _buildPaymentMethodTile(
+                PaymentMethod.wechat,
+                'Pay with WeChat (微信支付)',
+              ),
+              _buildPaymentMethodTile(
+                PaymentMethod.alipay,
+                'Pay with Alipay (支付宝)',
+              ),
+
+              const SizedBox(height: 8),
+
+              // 安全提示
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      FontAwesomeIcons.shieldHalved,
+                      size: 14,
+                      color: Colors.green.shade600,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'All payments are secure and encrypted',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+    );
+  }
+
+  /// 构建支付方式选项
+  Widget _buildPaymentMethodTile(PaymentMethod method, String subtitle) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      leading: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: method.color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(
+          method.iconData,
+          color: method.color,
+          size: 24,
+        ),
+      ),
+      title: Text(
+        method.name,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: TextStyle(
+          fontSize: 12,
+          color: Colors.grey.shade600,
+        ),
+      ),
+      trailing: Icon(
+        FontAwesomeIcons.chevronRight,
+        size: 14,
+        color: Colors.grey.shade400,
+      ),
+      onTap: () => Get.back(result: method),
+    );
+  }
+
+  /// 处理支付
+  Future<void> _processPayment(
+    MembershipStateController controller,
+    MembershipPlan plan,
+    MembershipLevel targetLevel,
+    PaymentMethod method,
+  ) async {
+    switch (method) {
+      case PaymentMethod.paypal:
+        await _processPayPalPayment(controller, plan, targetLevel);
+        break;
+      case PaymentMethod.wechat:
+        await _processWeChatPayment(controller, plan, targetLevel);
+        break;
+      case PaymentMethod.alipay:
+        await _processAlipayPayment(controller, plan, targetLevel);
+        break;
     }
   }
 
@@ -349,12 +508,23 @@ class MembershipPlanPage extends StatelessWidget {
 
     // 显示加载对话框
     Get.dialog(
-      const AlertDialog(
+      AlertDialog(
         content: Row(
           children: [
-            CircularProgressIndicator(),
-            SizedBox(width: 16),
-            Text('Creating payment order...'),
+            const CircularProgressIndicator(),
+            const SizedBox(width: 16),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Creating PayPal order...'),
+                const SizedBox(height: 4),
+                Text(
+                  '\$${plan.priceYearly.toStringAsFixed(0)} for ${plan.name}',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -386,6 +556,84 @@ class MembershipPlanPage extends StatelessWidget {
       Get.back(); // 关闭加载对话框
       AppToast.error('Payment error: $e');
     }
+  }
+
+  /// 处理微信支付
+  Future<void> _processWeChatPayment(
+    MembershipStateController controller,
+    MembershipPlan plan,
+    MembershipLevel targetLevel,
+  ) async {
+    // 显示加载对话框
+    Get.dialog(
+      AlertDialog(
+        content: Row(
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(width: 16),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Creating WeChat Pay order...'),
+                const SizedBox(height: 4),
+                Text(
+                  '¥${(plan.priceYearly * 7.2).toStringAsFixed(0)} for ${plan.name}',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+
+    // TODO: 实现微信支付逻辑
+    await Future.delayed(const Duration(seconds: 1));
+    Get.back();
+
+    // 暂时显示提示
+    AppToast.info('WeChat Pay is coming soon!');
+  }
+
+  /// 处理支付宝支付
+  Future<void> _processAlipayPayment(
+    MembershipStateController controller,
+    MembershipPlan plan,
+    MembershipLevel targetLevel,
+  ) async {
+    // 显示加载对话框
+    Get.dialog(
+      AlertDialog(
+        content: Row(
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(width: 16),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Creating Alipay order...'),
+                const SizedBox(height: 4),
+                Text(
+                  '¥${(plan.priceYearly * 7.2).toStringAsFixed(0)} for ${plan.name}',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+
+    // TODO: 实现支付宝支付逻辑
+    await Future.delayed(const Duration(seconds: 1));
+    Get.back();
+
+    // 暂时显示提示
+    AppToast.info('Alipay is coming soon!');
   }
 }
 
