@@ -993,22 +993,23 @@ class DependencyInjection {
 
   /// 注册支付领域依赖
   static void _registerPaymentDomain() {
-    // Repository
+    // Repository - 使用 fenix: true 确保可重复创建
     Get.lazyPut<IPaymentRepository>(
       () => PaymentRepository(
         dio: Get.find<Dio>(),
         tokenService: Get.find<TokenStorageService>(),
       ),
+      fenix: true,
     );
 
-    // Controller
-    Get.lazyPut(
+    // Controller - 使用 fenix: true 确保可重复创建
+    Get.lazyPut<PaymentStateController>(
       () => PaymentStateController(Get.find<IPaymentRepository>()),
       fenix: true,
     );
 
-    // Service (GetxService)
-    Get.lazyPut(
+    // Service (GetxService) - 使用 fenix: true 确保可重复创建
+    Get.lazyPut<PaymentService>(
       () => PaymentService(),
       fenix: true,
     );
