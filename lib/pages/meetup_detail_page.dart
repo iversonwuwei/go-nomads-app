@@ -617,8 +617,33 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
           child: SafeArea(
             child: Row(
               children: [
-                // 如果是组织者，显示取消活动按钮
+                // 如果是组织者，显示聊天按钮 + 取消活动按钮
                 if (_isOrganizer) ...[
+                  // Chat Button - 组织者始终可用
+                  OutlinedButton.icon(
+                    onPressed: _openChat,
+                    icon: Icon(FontAwesomeIcons.message, size: 20.sp),
+                    label: Text(
+                      l10n.chat,
+                      style: TextStyle(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.blue,
+                      side: BorderSide(
+                        color: Colors.blue,
+                        width: 1.5.w,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  // 取消活动按钮
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: _meetup.value.status == 'cancelled' || _meetup.value.isEnded ? null : _cancelMeetup,
