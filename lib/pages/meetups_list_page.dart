@@ -974,9 +974,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
                           ),
                         ),
                       ),
-                      _buildJoinButton(l10n),
-                      SizedBox(width: 8.w),
-                      // 编辑按钮 - 只有组织者可见
+                      // 编辑按钮 - 只有组织者可见，放在所有小按钮之前
                       if (_isOrganizer)
                         AppEditButton(
                           onPressed: () {
@@ -985,8 +983,14 @@ class _MeetupListCardState extends State<_MeetupListCard> {
                           size: 14.r,
                           mini: true,
                         ),
-                      if (_isOrganizer) SizedBox(width: 4.w),
-                      _buildChatButton(),
+                      if (_isOrganizer) SizedBox(width: 8.w),
+                      // 聊天按钮 - 只有已加入或组织者可见
+                      if (_isJoined || _isOrganizer) _buildChatButton(),
+                      if (_isJoined || _isOrganizer) SizedBox(width: 8.w),
+                      // 加入按钮 - 只有非组织者可见
+                      if (!_isOrganizer) _buildJoinButton(l10n),
+                      // 取消按钮 - 只有组织者可见
+                      if (_isOrganizer) _buildCancelButton(l10n),
                     ],
                   ),
                 ],
@@ -1107,32 +1111,6 @@ class _MeetupListCardState extends State<_MeetupListCard> {
   }
 
   Widget _buildJoinButton(AppLocalizations l10n) {
-    // 如果是组织者，显示取消按钮
-    if (_isOrganizer) {
-      return GestureDetector(
-        onTap: _handleCancelMeetup,
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
-          decoration: BoxDecoration(
-            color: Colors.red.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(20.r),
-            border: Border.all(
-              color: Colors.red,
-              width: 1,
-            ),
-          ),
-          child: Text(
-            '取消',
-            style: TextStyle(
-              fontSize: 12.sp,
-              color: Colors.red,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      );
-    }
-
     // 如果活动已结束
     if (widget.meetup.isEnded) {
       return Container(
@@ -1175,18 +1153,17 @@ class _MeetupListCardState extends State<_MeetupListCard> {
     return GestureDetector(
       onTap: _handleToggleJoin,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+        padding: EdgeInsets.all(8.w),
         decoration: BoxDecoration(
-          color: _isJoined ? const Color(0xFFFF4458).withValues(alpha: 0.1) : const Color(0xFFFF4458),
-          borderRadius: BorderRadius.circular(20.r),
+          color: _isJoined
+              ? const Color(0xFFFF4458).withValues(alpha: 0.15)
+              : const Color(0xFFFF4458).withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(10.r),
         ),
-        child: Text(
-          _isJoined ? l10n.joined : l10n.join,
-          style: TextStyle(
-            fontSize: 12.sp,
-            color: _isJoined ? const Color(0xFFFF4458) : Colors.white,
-            fontWeight: FontWeight.w600,
-          ),
+        child: FaIcon(
+          _isJoined ? FontAwesomeIcons.userCheck : FontAwesomeIcons.userPlus,
+          size: 14.sp,
+          color: _isJoined ? const Color(0xFFFF4458) : const Color(0xFFFF4458),
         ),
       ),
     );
@@ -1206,6 +1183,24 @@ class _MeetupListCardState extends State<_MeetupListCard> {
           FontAwesomeIcons.message,
           size: 14.sp,
           color: Colors.blue,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCancelButton(AppLocalizations l10n) {
+    return GestureDetector(
+      onTap: _handleCancelMeetup,
+      child: Container(
+        padding: EdgeInsets.all(8.w),
+        decoration: BoxDecoration(
+          color: Colors.red.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(10.r),
+        ),
+        child: FaIcon(
+          FontAwesomeIcons.ban,
+          size: 14.sp,
+          color: Colors.red,
         ),
       ),
     );

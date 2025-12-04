@@ -2722,35 +2722,104 @@ class _MeetupCardState extends State<_MeetupCard> {
         );
       }
 
-      // 进行中或即将开始的活动 - 显示取消按钮
-      return SizedBox(
-        width: double.infinity,
-        height: 32,
-        child: ElevatedButton(
-          onPressed: () => _handleCancelMeetup(context),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
-            foregroundColor: Colors.white,
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(6),
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(FontAwesomeIcons.ban, size: 14),
-              SizedBox(width: 4),
-              Text(
-                '取消活动',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
+      // 进行中或即将开始的活动 - 显示聊天按钮 + 取消按钮
+      return Row(
+        children: [
+          // Chat 按钮 - 组织者始终可用
+          Expanded(
+            child: SizedBox(
+              height: 32,
+              child: OutlinedButton(
+                onPressed: () {
+                  final authController = Get.find<AuthStateController>();
+                  if (!authController.isAuthenticated.value) {
+                    AppToast.warning(
+                      l10n.pleaseLoginToCreateMeetup,
+                      title: l10n.loginRequired,
+                    );
+                    Get.toNamed(AppRoutes.login);
+                    return;
+                  }
+
+                  // 跳转到群聊页面
+                  Get.toNamed(
+                    AppRoutes.cityChat,
+                    arguments: {
+                      'city': widget.meetup.title,
+                      'country': '${widget.meetup.type} Meetup',
+                      'meetupId': widget.meetup.id,
+                      'isMeetupChat': true,
+                    },
+                  );
+                },
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.blue,
+                  side: const BorderSide(
+                    color: Colors.blue,
+                    width: 1.5,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(FontAwesomeIcons.message, size: 14),
+                    SizedBox(width: 3),
+                    Flexible(
+                      child: Text(
+                        'Chat',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+          const SizedBox(width: 6),
+          // 取消活动按钮
+          Expanded(
+            child: SizedBox(
+              height: 32,
+              child: ElevatedButton(
+                onPressed: () => _handleCancelMeetup(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(FontAwesomeIcons.ban, size: 14),
+                    SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        '取消活动',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       );
     }
 
