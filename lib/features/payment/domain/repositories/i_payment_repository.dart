@@ -25,4 +25,20 @@ abstract class IPaymentRepository {
 
   /// 取消订单
   Future<bool> cancelOrder(String orderId);
+
+  /// 创建微信支付订单
+  Future<Map<String, dynamic>> createWeChatPayOrder({
+    required String orderType,
+    int? membershipLevel,
+    int? durationDays,
+    double? depositAmount,
+  });
+
+  /// 创建支付宝订单
+  Future<Map<String, dynamic>> createAlipayOrder({
+    required String orderType,
+    int? membershipLevel,
+    int? durationDays,
+    double? depositAmount,
+  });
 }

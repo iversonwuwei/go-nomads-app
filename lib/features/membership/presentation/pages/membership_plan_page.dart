@@ -2,6 +2,9 @@ import 'package:df_admin_mobile/features/membership/domain/entities/membership_l
 import 'package:df_admin_mobile/features/membership/domain/entities/membership_plan.dart';
 import 'package:df_admin_mobile/features/membership/presentation/controllers/membership_state_controller.dart';
 import 'package:df_admin_mobile/features/payment/application/services/payment_service.dart';
+import 'package:df_admin_mobile/features/payment/application/services/unified_payment_service.dart';
+import 'package:df_admin_mobile/features/payment/application/services/wechat_pay_service.dart';
+import 'package:df_admin_mobile/features/payment/domain/entities/payment_method.dart' as payment_entities;
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:flutter/material.dart';
@@ -564,6 +567,23 @@ class MembershipPlanPage extends StatelessWidget {
     MembershipPlan plan,
     MembershipLevel targetLevel,
   ) async {
+    // 检查微信支付服务
+    UnifiedPaymentService? unifiedPaymentService;
+    WeChatPayService? wechatService;
+    try {
+      unifiedPaymentService = Get.find<UnifiedPaymentService>();
+      wechatService = Get.find<WeChatPayService>();
+    } catch (e) {
+      AppToast.warning('WeChat Pay service not available');
+      return;
+    }
+
+    // 检查微信是否已安装
+    if (!await wechatService.isWeChatInstalled) {
+      AppToast.error('Please install WeChat to use WeChat Pay');
+      return;
+    }
+
     // 显示加载对话框
     Get.dialog(
       AlertDialog(
@@ -589,12 +609,29 @@ class MembershipPlanPage extends StatelessWidget {
       barrierDismissible: false,
     );
 
-    // TODO: 实现微信支付逻辑
-    await Future.delayed(const Duration(seconds: 1));
-    Get.back();
+    try {
+      final isRenewal = controller.membership?.isActive == true && controller.level.levelValue == plan.level;
 
-    // 暂时显示提示
-    AppToast.info('WeChat Pay is coming soon!');
+      final result = await unifiedPaymentService.payForMembership(
+        method: payment_entities.PaymentMethod.wechat,
+        membershipLevel: plan.level,
+        durationDays: 365,
+        isRenewal: isRenewal,
+      );
+
+      Get.back(); // 关闭加载对话框
+
+      if (result.success) {
+        AppToast.success('Payment successful!');
+        // 刷新会员状态
+        await controller.loadMembership();
+      } else {
+        AppToast.error(result.errorMessage ?? 'WeChat Pay failed');
+      }
+    } catch (e) {
+      Get.back();
+      AppToast.error('WeChat Pay error: $e');
+    }
   }
 
   /// 处理支付宝支付
@@ -603,6 +640,15 @@ class MembershipPlanPage extends StatelessWidget {
     MembershipPlan plan,
     MembershipLevel targetLevel,
   ) async {
+    // 检查支付宝服务
+    UnifiedPaymentService? unifiedPaymentService;
+    try {
+      unifiedPaymentService = Get.find<UnifiedPaymentService>();
+    } catch (e) {
+      AppToast.warning('Alipay service not available');
+      return;
+    }
+
     // 显示加载对话框
     Get.dialog(
       AlertDialog(
@@ -628,12 +674,29 @@ class MembershipPlanPage extends StatelessWidget {
       barrierDismissible: false,
     );
 
-    // TODO: 实现支付宝支付逻辑
-    await Future.delayed(const Duration(seconds: 1));
-    Get.back();
+    try {
+      final isRenewal = controller.membership?.isActive == true && controller.level.levelValue == plan.level;
 
-    // 暂时显示提示
-    AppToast.info('Alipay is coming soon!');
+      final result = await unifiedPaymentService.payForMembership(
+        method: payment_entities.PaymentMethod.alipay,
+        membershipLevel: plan.level,
+        durationDays: 365,
+        isRenewal: isRenewal,
+      );
+
+      Get.back(); // 关闭加载对话框
+
+      if (result.success) {
+        AppToast.success('Payment successful!');
+        // 刷新会员状态
+        await controller.loadMembership();
+      } else {
+        AppToast.error(result.errorMessage ?? 'Alipay payment failed');
+      }
+    } catch (e) {
+      Get.back();
+      AppToast.error('Alipay error: $e');
+    }
   }
 }
 

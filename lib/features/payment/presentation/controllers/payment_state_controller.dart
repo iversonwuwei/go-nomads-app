@@ -162,4 +162,52 @@ class PaymentStateController extends GetxController {
     lastPaymentResult.value = null;
     errorMessage.value = '';
   }
+
+  /// 创建微信支付订单
+  Future<Map<String, dynamic>?> createWeChatPayOrder({
+    required int membershipLevel,
+    int durationDays = 365,
+    bool isRenewal = false,
+  }) async {
+    isLoading.value = true;
+    errorMessage.value = '';
+
+    try {
+      final result = await _paymentRepository.createWeChatPayOrder(
+        orderType: isRenewal ? 'membership_renew' : 'membership_upgrade',
+        membershipLevel: membershipLevel,
+        durationDays: durationDays,
+      );
+      return result;
+    } catch (e) {
+      errorMessage.value = '创建微信支付订单失败: $e';
+      return null;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// 创建支付宝订单
+  Future<Map<String, dynamic>?> createAlipayOrder({
+    required int membershipLevel,
+    int durationDays = 365,
+    bool isRenewal = false,
+  }) async {
+    isLoading.value = true;
+    errorMessage.value = '';
+
+    try {
+      final result = await _paymentRepository.createAlipayOrder(
+        orderType: isRenewal ? 'membership_renew' : 'membership_upgrade',
+        membershipLevel: membershipLevel,
+        durationDays: durationDays,
+      );
+      return result;
+    } catch (e) {
+      errorMessage.value = '创建支付宝订单失败: $e';
+      return null;
+    } finally {
+      isLoading.value = false;
+    }
+  }
 }

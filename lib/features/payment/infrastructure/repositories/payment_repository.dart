@@ -175,4 +175,84 @@ class PaymentRepository implements IPaymentRepository {
       return false;
     }
   }
+
+  @override
+  Future<Map<String, dynamic>> createWeChatPayOrder({
+    required String orderType,
+    int? membershipLevel,
+    int? durationDays,
+    double? depositAmount,
+  }) async {
+    log('📤 创建微信支付订单: orderType=$orderType, level=$membershipLevel');
+
+    try {
+      final token = await _tokenService.getAccessToken();
+
+      final response = await _dio.post(
+        '${ApiConfig.currentApiBaseUrl}/payments/orders/wechat',
+        data: {
+          'orderType': orderType,
+          if (membershipLevel != null) 'membershipLevel': membershipLevel,
+          if (durationDays != null) 'durationDays': durationDays,
+          if (depositAmount != null) 'depositAmount': depositAmount,
+        },
+        options: Options(
+          headers: {
+            if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      if (response.data['success'] == true && response.data['data'] != null) {
+        log('✅ 微信支付订单创建成功');
+        return response.data['data'] as Map<String, dynamic>;
+      }
+
+      throw Exception(response.data['message'] ?? '创建微信支付订单失败');
+    } catch (e) {
+      log('❌ 创建微信支付订单失败: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> createAlipayOrder({
+    required String orderType,
+    int? membershipLevel,
+    int? durationDays,
+    double? depositAmount,
+  }) async {
+    log('📤 创建支付宝订单: orderType=$orderType, level=$membershipLevel');
+
+    try {
+      final token = await _tokenService.getAccessToken();
+
+      final response = await _dio.post(
+        '${ApiConfig.currentApiBaseUrl}/payments/orders/alipay',
+        data: {
+          'orderType': orderType,
+          if (membershipLevel != null) 'membershipLevel': membershipLevel,
+          if (durationDays != null) 'durationDays': durationDays,
+          if (depositAmount != null) 'depositAmount': depositAmount,
+        },
+        options: Options(
+          headers: {
+            if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      if (response.data['success'] == true && response.data['data'] != null) {
+        final data = response.data['data'] as Map<String, dynamic>;
+        log('✅ 支付宝订单创建成功: $data');
+        log('📦 orderId: ${data['orderId']}, orderString长度: ${data['orderString']?.length ?? 0}');
+        return data;
+      }
+
+      throw Exception(response.data['message'] ?? '创建支付宝订单失败');
+    } catch (e) {
+      log('❌ 创建支付宝订单失败: $e');
+      rethrow;
+    }
+  }
 }

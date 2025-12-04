@@ -65,6 +65,10 @@ dependencies:
   timeago: ^3.7.0
   share_plus: ^10.1.2
   app_links: ^6.3.3
+  
+  # 支付相关
+  fluwx: ^5.7.5  # 微信 SDK
+  tobias: ^3.0.0  # 支付宝 SDK
 
 dev_dependencies:
   flutter_test:
@@ -148,3 +152,7 @@ flutter_launcher_icons:
   macos:
     generate: true
     image_path: "assets/icon/app_icon.png"
+
+# 支付宝 tobias 配置
+tobias:
+  url_scheme: "alipay2021006115624759"
