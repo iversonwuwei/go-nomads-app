@@ -49,9 +49,7 @@ class SafeNetworkImage extends StatelessWidget {
       color: Colors.grey[300],
       child: Icon(
         FontAwesomeIcons.image,
-        size: (width != null && height != null) 
-            ? (width! < height! ? width! * 0.5 : height! * 0.5)
-            : 48,
+        size: (width != null && height != null) ? (width! < height! ? width! * 0.5 : height! * 0.5) : 48,
         color: Colors.grey[400],
       ),
     );
@@ -64,6 +62,7 @@ class SafeCircleAvatar extends StatelessWidget {
   final double radius;
   final Widget? placeholder;
   final Widget? errorWidget;
+  final Color? backgroundColor;
 
   const SafeCircleAvatar({
     super.key,
@@ -71,26 +70,82 @@ class SafeCircleAvatar extends StatelessWidget {
     this.radius = 20,
     this.placeholder,
     this.errorWidget,
+    this.backgroundColor,
   });
 
   @override
   Widget build(BuildContext context) {
     // 检查 URL 是否有效
     if (imageUrl == null || imageUrl!.trim().isEmpty) {
-      return CircleAvatar(
-        radius: radius,
-        backgroundColor: Colors.grey[300],
-        child: errorWidget ?? Icon(FontAwesomeIcons.user, size: radius, color: Colors.grey[600]),
-      );
+      return _buildPlaceholder();
     }
 
-    return CircleAvatar(
-      radius: radius,
-      backgroundImage: NetworkImage(imageUrl!),
-      onBackgroundImageError: (exception, stackTrace) {
-        // 图片加载失败时的处理
-      },
-      child: Container(), // 占位,等待图片加载
+    return Container(
+      width: radius * 2,
+      height: radius * 2,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: backgroundColor ?? Colors.grey[200],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Image.network(
+        imageUrl!,
+        width: radius * 2,
+        height: radius * 2,
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Center(
+            child: SizedBox(
+              width: radius * 0.6,
+              height: radius * 0.6,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                    : null,
+              ),
+            ),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) {
+          return _buildErrorWidget();
+        },
+      ),
+    );
+  }
+
+  Widget _buildPlaceholder() {
+    return Container(
+      width: radius * 2,
+      height: radius * 2,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: backgroundColor ?? Colors.grey[200],
+      ),
+      child: placeholder ??
+          Icon(
+            FontAwesomeIcons.user,
+            size: radius * 0.8,
+            color: Colors.grey[500],
+          ),
+    );
+  }
+
+  Widget _buildErrorWidget() {
+    return Container(
+      width: radius * 2,
+      height: radius * 2,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: backgroundColor ?? Colors.grey[200],
+      ),
+      child: errorWidget ??
+          Icon(
+            FontAwesomeIcons.user,
+            size: radius * 0.8,
+            color: Colors.grey[500],
+          ),
     );
   }
 }

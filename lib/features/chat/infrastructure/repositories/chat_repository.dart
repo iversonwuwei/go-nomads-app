@@ -131,6 +131,31 @@ class ChatRepository implements IChatRepository {
     }
   }
 
+  @override
+  Future<Result<ChatRoom>> getOrCreateDirectChat({
+    required String targetUserId,
+    required String targetUserName,
+    String? targetUserAvatar,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '${ApiConfig.chatsEndpoint}/direct',
+        data: {
+          'targetUserId': targetUserId,
+          'targetUserName': targetUserName,
+          if (targetUserAvatar != null) 'targetUserAvatar': targetUserAvatar,
+        },
+      );
+
+      final room = ChatRoomDto.fromJson(response.data).toDomain();
+      return Success(room);
+    } on HttpException catch (e) {
+      return Failure(_convertHttpException(e));
+    } catch (e) {
+      return Failure(UnknownException('创建私聊异常: $e'));
+    }
+  }
+
   // ==================== 消息管理 ====================
 
   @override

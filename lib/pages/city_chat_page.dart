@@ -3,8 +3,10 @@ import 'package:df_admin_mobile/features/chat/domain/entities/chat.dart';
 import 'package:df_admin_mobile/features/chat/presentation/controllers/chat_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/pages/flutter_map_picker_page.dart';
+import 'package:df_admin_mobile/pages/member_detail_page.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
+import 'package:df_admin_mobile/widgets/safe_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -1138,20 +1140,26 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       leading: Stack(
         children: [
-          CircleAvatar(
+          SafeCircleAvatar(
+            imageUrl: member.avatar,
             radius: 24,
             backgroundColor: const Color(0xFF07C160),
-            backgroundImage: member.hasAvatar ? NetworkImage(member.avatar!) : null,
-            child: !member.hasAvatar
-                ? Text(
-                    member.name.isNotEmpty ? member.name[0].toUpperCase() : '?',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  )
-                : null,
+            placeholder: Text(
+              member.name.isNotEmpty ? member.name[0].toUpperCase() : '?',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            errorWidget: Text(
+              member.name.isNotEmpty ? member.name[0].toUpperCase() : '?',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
           // 在线状态指示器
           Positioned(
@@ -1526,21 +1534,29 @@ class _MessageBubble extends StatelessWidget {
 
   /// 构建头像
   Widget _buildAvatar() {
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(6),
-        color: isMe ? const Color(0xFF07C160) : _getAvatarBackgroundColor(),
+    return GestureDetector(
+      onTap: () {
+        // 点击头像跳转到用户详情页
+        if (!isMe) {
+          Get.to(() => MemberDetailPage(userId: message.author.userId));
+        }
+      },
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(6),
+          color: isMe ? const Color(0xFF07C160) : _getAvatarBackgroundColor(),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: (message.author.userAvatar != null && message.author.userAvatar!.isNotEmpty)
+            ? Image.network(
+                message.author.userAvatar!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _buildAvatarPlaceholder(),
+              )
+            : _buildAvatarPlaceholder(),
       ),
-      clipBehavior: Clip.antiAlias,
-      child: (message.author.userAvatar != null && message.author.userAvatar!.isNotEmpty)
-          ? Image.network(
-              message.author.userAvatar!,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => _buildAvatarPlaceholder(),
-            )
-          : _buildAvatarPlaceholder(),
     );
   }
 

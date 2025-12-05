@@ -1,11 +1,11 @@
 import 'dart:developer';
 
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-
 import 'package:df_admin_mobile/features/user_profile/infrastructure/models/user_profile_dto.dart';
 import 'package:df_admin_mobile/services/database/user_profile_dao.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/safe_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 /// 基本信息编辑页面示例
 class EditBasicInfoPage extends StatefulWidget {
@@ -176,14 +176,10 @@ class _EditBasicInfoPageState extends State<EditBasicInfoPage> {
                     Center(
                       child: Stack(
                         children: [
-                          CircleAvatar(
+                          SafeCircleAvatar(
+                            imageUrl: _avatarUrl,
                             radius: 60,
-                            backgroundImage: _avatarUrl != null
-                                ? NetworkImage(_avatarUrl!)
-                                : null,
-                            child: _avatarUrl == null
-                                ? const Icon(FontAwesomeIcons.user, size: 60)
-                                : null,
+                            errorWidget: const Icon(FontAwesomeIcons.user, size: 60),
                           ),
                           Positioned(
                             bottom: 0,

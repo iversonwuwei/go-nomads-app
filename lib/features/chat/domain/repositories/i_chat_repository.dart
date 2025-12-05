@@ -55,6 +55,21 @@ abstract class IChatRepository {
     String? meetupType,
   });
 
+  /// 获取或创建一对一私聊
+  ///
+  /// 参数:
+  /// - [targetUserId]: 目标用户ID
+  /// - [targetUserName]: 目标用户名称
+  /// - [targetUserAvatar]: 目标用户头像（可选）
+  ///
+  /// 返回: Result<ChatRoom>
+  /// 说明: 会自动将两个用户都加入聊天室
+  Future<Result<ChatRoom>> getOrCreateDirectChat({
+    required String targetUserId,
+    required String targetUserName,
+    String? targetUserAvatar,
+  });
+
   // ==================== 消息管理 ====================
 
   /// 获取聊天室消息列表

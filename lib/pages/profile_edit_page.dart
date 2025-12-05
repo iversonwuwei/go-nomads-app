@@ -18,6 +18,7 @@ import 'package:df_admin_mobile/services/notification_service.dart';
 import 'package:df_admin_mobile/services/token_storage_service.dart';
 import 'package:df_admin_mobile/utils/image_upload_helper.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/safe_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -478,12 +479,16 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
             // 头像编辑
             Stack(
               children: [
-                CircleAvatar(
-                  radius: isMobile ? 50 : 70,
-                  backgroundImage: NetworkImage(avatarUrl),
-                  backgroundColor: Colors.orange,
-                  child: _uploadingAvatar
-                      ? Container(
+                Stack(
+                  children: [
+                    SafeCircleAvatar(
+                      imageUrl: avatarUrl,
+                      radius: isMobile ? 50 : 70,
+                      backgroundColor: Colors.orange,
+                    ),
+                    if (_uploadingAvatar)
+                      Positioned.fill(
+                        child: Container(
                           decoration: BoxDecoration(
                             color: Colors.black54,
                             shape: BoxShape.circle,
@@ -494,8 +499,9 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
                               strokeWidth: 3,
                             ),
                           ),
-                        )
-                      : null,
+                        ),
+                      ),
+                  ],
                 ),
                 Positioned(
                   bottom: 0,
@@ -1429,10 +1435,11 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
                       },
                       title: Row(
                         children: [
-                          CircleAvatar(
+                          SafeCircleAvatar(
+                            imageUrl: user.avatarUrl,
                             radius: 16,
-                            backgroundImage: user.avatarUrl != null ? NetworkImage(user.avatarUrl!) : null,
-                            child: user.avatarUrl == null ? Text(user.name.substring(0, 1).toUpperCase()) : null,
+                            placeholder: Text(user.name.substring(0, 1).toUpperCase()),
+                            errorWidget: Text(user.name.substring(0, 1).toUpperCase()),
                           ),
                           const SizedBox(width: 12),
                           Expanded(

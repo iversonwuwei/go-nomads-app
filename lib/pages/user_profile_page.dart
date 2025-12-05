@@ -4,6 +4,7 @@ import 'package:df_admin_mobile/features/user/presentation/controllers/user_stat
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
+import 'package:df_admin_mobile/widgets/safe_network_image.dart';
 import 'package:flutter/material.dart' hide Badge;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -17,8 +18,7 @@ class UserProfilePage extends StatefulWidget {
 }
 
 class _UserProfilePageState extends State<UserProfilePage> {
-  final UserStateController _profileController =
-      Get.find<UserStateController>();
+  final UserStateController _profileController = Get.find<UserStateController>();
 
   // TODO: enable when server provides travel history data again.
   static const bool _travelHistoryEnabled = false;
@@ -31,8 +31,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     'memberSince': '2024-01-15',
     'favoritesCount': 12,
     'visitedCount': 8,
-    'avatar':
-        'https://ui-avatars.com/api/?name=Digital+Nomad&background=FF9800&color=fff&size=200',
+    'avatar': 'https://ui-avatars.com/api/?name=Digital+Nomad&background=FF9800&color=fff&size=200',
   };
 
   User? _routeUser;
@@ -140,8 +139,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(FontAwesomeIcons.circleExclamation,
-                  color: Colors.redAccent, size: 56),
+              const Icon(FontAwesomeIcons.circleExclamation, color: Colors.redAccent, size: 56),
               const SizedBox(height: 16),
               Text(
                 _remoteProfileError ?? '无法加载用户信息',
@@ -154,9 +152,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
               ),
               const SizedBox(height: 16),
               ElevatedButton.icon(
-                onPressed: _requestedUserId == null
-                    ? null
-                    : () => _fetchUserProfile(_requestedUserId!),
+                onPressed: _requestedUserId == null ? null : () => _fetchUserProfile(_requestedUserId!),
                 icon: const Icon(FontAwesomeIcons.arrowsRotate),
                 label: const Text('重新加载'),
                 style: ElevatedButton.styleFrom(
@@ -215,9 +211,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
       ),
       child: Column(
         children: [
-          CircleAvatar(
+          SafeCircleAvatar(
+            imageUrl: _userInfo['avatar'],
             radius: isMobile ? 50 : 70,
-            backgroundImage: NetworkImage(_userInfo['avatar']),
             backgroundColor: AppColors.containerBlueGrey,
           ),
           SizedBox(height: isMobile ? 16 : 24),
@@ -385,8 +381,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
         children: [
           Row(
             children: [
-              Icon(FontAwesomeIcons.trophy,
-                  color: AppColors.accent, size: isMobile ? 24 : 28),
+              Icon(FontAwesomeIcons.trophy, color: AppColors.accent, size: isMobile ? 24 : 28),
               const SizedBox(width: 8),
               Text(
                 'Achievements & Badges',
@@ -535,8 +530,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             children: [
               Row(
                 children: [
-                  Icon(FontAwesomeIcons.earthAmericas,
-                      color: AppColors.accent, size: isMobile ? 24 : 28),
+                  Icon(FontAwesomeIcons.earthAmericas, color: AppColors.accent, size: isMobile ? 24 : 28),
                   const SizedBox(width: 8),
                   Text(
                     'Travel History',
@@ -668,8 +662,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      _formatDateRange(
-                          travel.visitDate.toIso8601String(), null),
+                      _formatDateRange(travel.visitDate.toIso8601String(), null),
                       style: TextStyle(
                         color: AppColors.textTertiary,
                         fontSize: isMobile ? 11 : 13,
@@ -726,8 +719,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
-  Widget _buildStatItem(
-      IconData icon, String label, String value, Color color, bool isMobile) {
+  Widget _buildStatItem(IconData icon, String label, String value, Color color, bool isMobile) {
     return Container(
       padding: EdgeInsets.all(isMobile ? 16 : 20),
       decoration: BoxDecoration(
@@ -894,8 +886,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
               children: interests.map((interest) {
                 return Chip(
                   label: Text(interest.name),
-                  backgroundColor:
-                      AppColors.containerBlueGrey.withValues(alpha: 0.15),
+                  backgroundColor: AppColors.containerBlueGrey.withValues(alpha: 0.15),
                   labelStyle: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 14,
@@ -916,15 +907,12 @@ class _UserProfilePageState extends State<UserProfilePage> {
     _requestedUserId = _extractUserId(args);
     _routeUser = _parseRouteUser(args);
 
-    if (_requestedUserId != null &&
-        _routeUser != null &&
-        _routeUser!.id != _requestedUserId) {
+    if (_requestedUserId != null && _routeUser != null && _routeUser!.id != _requestedUserId) {
       // 忽略不匹配的数据，等待后端返回
       _routeUser = null;
     }
 
-    if (_requestedUserId != null &&
-        _profileController.currentUser.value?.id == _requestedUserId) {
+    if (_requestedUserId != null && _profileController.currentUser.value?.id == _requestedUserId) {
       _routeUser = _profileController.currentUser.value;
     }
 
@@ -1033,8 +1021,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
       'memberSince': '--',
       'favoritesCount': 0,
       'visitedCount': 0,
-      'avatar':
-          'https://ui-avatars.com/api/?name=User&background=374151&color=fff&size=200',
+      'avatar': 'https://ui-avatars.com/api/?name=User&background=374151&color=fff&size=200',
     };
   }
 
@@ -1072,8 +1059,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
         badges: const [],
         stats: _parseStats(statsArgument, args),
         travelHistory: const [],
-        joinedDate:
-            _parseDate(args['joinedDate']?.toString()) ?? DateTime.now(),
+        joinedDate: _parseDate(args['joinedDate']?.toString()) ?? DateTime.now(),
         isVerified: args['isVerified'] == true,
       );
     }
@@ -1155,8 +1141,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
       'memberSince': _formatMemberSince(user.joinedDate),
       'favoritesCount': user.stats.reviewsWritten,
       'visitedCount': user.stats.citiesVisited,
-      'avatar': user.avatarUrl ??
-          'https://ui-avatars.com/api/?name=${user.name}&background=FF9800&color=fff&size=200',
+      'avatar': user.avatarUrl ?? 'https://ui-avatars.com/api/?name=${user.name}&background=FF9800&color=fff&size=200',
     };
   }
 

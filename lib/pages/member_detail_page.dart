@@ -1,9 +1,11 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/features/user/domain/entities/user.dart'
-    as models;
+import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:df_admin_mobile/features/user/domain/entities/user.dart' as models;
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
+import 'package:df_admin_mobile/widgets/safe_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -11,13 +13,141 @@ import 'package:get/get.dart';
 import 'direct_chat_page.dart';
 import 'invite_to_meetup_page.dart';
 
-class MemberDetailPage extends StatelessWidget {
-  final models.User user;
+class MemberDetailPage extends StatefulWidget {
+  /// 用户对象（可能包含部分信息）
+  final models.User? user;
 
-  const MemberDetailPage({super.key, required this.user});
+  /// 用户ID（用于从后端获取完整信息）
+  final String? userId;
+
+  const MemberDetailPage({
+    super.key,
+    this.user,
+    this.userId,
+  }) : assert(user != null || userId != null, 'Either user or userId must be provided');
+
+  @override
+  State<MemberDetailPage> createState() => _MemberDetailPageState();
+}
+
+class _MemberDetailPageState extends State<MemberDetailPage> {
+  late final UserStateController _userController;
+  late final AuthStateController _authController;
+  models.User? _user;
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  /// 判断当前显示的是否是登录用户自己
+  bool get _isCurrentUser {
+    final currentUserId = _authController.currentUser.value?.id;
+    final displayUserId = _user?.id ?? widget.userId;
+    return currentUserId != null && displayUserId != null && currentUserId == displayUserId;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _userController = Get.find<UserStateController>();
+    _authController = Get.find<AuthStateController>();
+    _user = widget.user;
+    _loadUserDetails();
+  }
+
+  /// 从后端获取完整的用户信息
+  Future<void> _loadUserDetails() async {
+    final userId = widget.userId ?? widget.user?.id;
+    if (userId == null) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = '无法获取用户信息';
+      });
+      return;
+    }
+
+    try {
+      final user = await _userController.getUserById(userId);
+      if (mounted) {
+        setState(() {
+          if (user != null) {
+            _user = user;
+          }
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = '加载用户信息失败';
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    // 显示加载状态
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: const AppBackButton(),
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    // 显示错误状态
+    if (_user == null) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: const AppBackButton(),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                FontAwesomeIcons.circleExclamation,
+                size: 48,
+                color: Colors.grey,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                _errorMessage ?? '用户信息不存在',
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _isLoading = true;
+                    _errorMessage = null;
+                  });
+                  _loadUserDetails();
+                },
+                child: const Text('重试'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return _buildContent(context, _user!);
+  }
+
+  Widget _buildContent(BuildContext context, models.User user) {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: CustomScrollView(
@@ -65,16 +195,11 @@ class MemberDetailPage extends StatelessWidget {
                               ),
                             ],
                           ),
-                          child: CircleAvatar(
+                          child: SafeCircleAvatar(
+                            imageUrl: user.avatarUrl,
                             radius: 73,
-                            backgroundImage: (user.avatarUrl != null &&
-                                    user.avatarUrl!.isNotEmpty)
-                                ? NetworkImage(user.avatarUrl!)
-                                : null,
-                            child: (user.avatarUrl == null ||
-                                    user.avatarUrl!.isEmpty)
-                                ? const Icon(FontAwesomeIcons.user, size: 40)
-                                : null,
+                            backgroundColor: Colors.grey[200],
+                            errorWidget: const Icon(FontAwesomeIcons.user, size: 40, color: Colors.grey),
                           ),
                         ),
                       ),
@@ -261,79 +386,77 @@ class MemberDetailPage extends StatelessWidget {
 
                   const SizedBox(height: 24),
 
-                  // Action Buttons
-                  Builder(
-                    builder: (context) {
-                      final l10n = AppLocalizations.of(context)!;
-                      return Row(
-                        children: [
-                          // Invite 按钮
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: () =>
-                                  Get.to(() => InviteToMeetupPage(user: user)),
-                              icon: const Icon(FontAwesomeIcons.calendarDays),
-                              label: Text(l10n.inviteToMeetup),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF10B981),
-                                foregroundColor: Colors.white,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                  // Action Buttons - 只有查看其他用户时才显示
+                  if (!_isCurrentUser)
+                    Builder(
+                      builder: (context) {
+                        final l10n = AppLocalizations.of(context)!;
+                        return Row(
+                          children: [
+                            // Invite 按钮
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () => Get.to(() => InviteToMeetupPage(user: user)),
+                                icon: const Icon(FontAwesomeIcons.calendarDays),
+                                label: Text(l10n.inviteToMeetup),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF10B981),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  elevation: 0,
                                 ),
-                                elevation: 0,
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          // Message 按钮
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: () {
-                                // 跳转到一对一聊天页面
-                                Get.to(() => DirectChatPage(user: user));
-                              },
-                              icon: const Icon(FontAwesomeIcons.message),
-                              label: Text(l10n.sendMessage),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFFF4458),
-                                foregroundColor: Colors.white,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                            const SizedBox(width: 12),
+                            // Message 按钮
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  // 跳转到一对一聊天页面
+                                  Get.to(() => DirectChatPage(user: user));
+                                },
+                                icon: const Icon(FontAwesomeIcons.message),
+                                label: Text(l10n.sendMessage),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFFF4458),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  elevation: 0,
                                 ),
-                                elevation: 0,
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: const Color(0xFFE5E7EB),
+                            const SizedBox(width: 12),
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: const Color(0xFFE5E7EB),
+                                ),
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: IconButton(
-                              onPressed: () {
-                                // TODO: Add to favorites
-                                AppToast.success(
-                                  l10n.favoriteAdded,
-                                  title: l10n.favorites,
-                                );
-                              },
-                              icon: const Icon(
-                                FontAwesomeIcons.heart,
-                                color: Color(0xFFFF4458),
+                              child: IconButton(
+                                onPressed: () {
+                                  // TODO: Add to favorites
+                                  AppToast.success(
+                                    l10n.favoriteAdded,
+                                    title: l10n.favorites,
+                                  );
+                                },
+                                icon: const Icon(
+                                  FontAwesomeIcons.heart,
+                                  color: Color(0xFFFF4458),
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
+                          ],
+                        );
+                      },
+                    ),
 
                   const SizedBox(height: 40),
                 ],
@@ -455,7 +578,7 @@ class MemberDetailPage extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              user.badges.isEmpty
+              _user!.badges.isEmpty
                   ? Center(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 20),
@@ -463,8 +586,7 @@ class MemberDetailPage extends StatelessWidget {
                           AppLocalizations.of(context)!.noBadgesYet,
                           style: TextStyle(
                             fontSize: 14,
-                            color:
-                                const Color(0xFFFF6F00).withValues(alpha: 0.6),
+                            color: const Color(0xFFFF6F00).withValues(alpha: 0.6),
                             fontStyle: FontStyle.italic,
                           ),
                         ),
@@ -479,9 +601,9 @@ class MemberDetailPage extends StatelessWidget {
                         mainAxisSpacing: 12,
                         childAspectRatio: 1,
                       ),
-                      itemCount: user.badges.length,
+                      itemCount: _user!.badges.length,
                       itemBuilder: (context, index) {
-                        return _buildBadgeCard(user.badges[index]);
+                        return _buildBadgeCard(_user!.badges[index]);
                       },
                     ),
             ],
@@ -493,8 +615,8 @@ class MemberDetailPage extends StatelessWidget {
 
   Widget _buildTravelHistorySection(BuildContext context) {
     // 显示最多 5 条记录
-    final displayedHistory = user.travelHistory.take(5).toList();
-    final hasMore = user.travelHistory.length > 5;
+    final displayedHistory = _user!.travelHistory.take(5).toList();
+    final hasMore = _user!.travelHistory.length > 5;
 
     return Container(
       width: double.infinity,
@@ -543,7 +665,7 @@ class MemberDetailPage extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          user.travelHistory.isEmpty
+          _user!.travelHistory.isEmpty
               ? Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 20),
@@ -563,11 +685,9 @@ class MemberDetailPage extends StatelessWidget {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: displayedHistory.length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(height: 12),
+                      separatorBuilder: (context, index) => const SizedBox(height: 12),
                       itemBuilder: (context, index) {
-                        return _buildTravelHistoryCard(
-                            displayedHistory[index], context);
+                        return _buildTravelHistoryCard(displayedHistory[index], context);
                       },
                     ),
                     if (hasMore) ...[
@@ -605,8 +725,7 @@ class MemberDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTravelHistoryCard(
-      models.TravelHistory travel, BuildContext context) {
+  Widget _buildTravelHistoryCard(models.TravelHistory travel, BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -743,28 +862,14 @@ class MemberDetailPage extends StatelessWidget {
   }
 
   String _formatDate(DateTime date) {
-    final months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec'
-    ];
+    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
     final month = months[date.month - 1];
     final year = date.year;
     return '$month $year';
   }
 
-  Widget _buildStatCard(
-      String label, String value, IconData icon, Color color) {
+  Widget _buildStatCard(String label, String value, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -851,7 +956,7 @@ class MemberDetailPage extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          user.interests.isEmpty
+          _user!.interests.isEmpty
               ? Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 20),
@@ -868,10 +973,9 @@ class MemberDetailPage extends StatelessWidget {
               : Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: user.interests.map((interest) {
+                  children: _user!.interests.map((interest) {
                     return Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
@@ -884,8 +988,7 @@ class MemberDetailPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color:
-                                const Color(0xFFFF4458).withValues(alpha: 0.3),
+                            color: const Color(0xFFFF4458).withValues(alpha: 0.3),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
@@ -960,7 +1063,7 @@ class MemberDetailPage extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          user.skills.isEmpty
+          _user!.skills.isEmpty
               ? Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 20),
@@ -977,10 +1080,9 @@ class MemberDetailPage extends StatelessWidget {
               : Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: user.skills.map((skill) {
+                  children: _user!.skills.map((skill) {
                     return Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
@@ -993,8 +1095,7 @@ class MemberDetailPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color:
-                                const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                            color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
