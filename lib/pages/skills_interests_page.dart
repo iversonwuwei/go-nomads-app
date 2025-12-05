@@ -21,8 +21,7 @@ class SkillsInterestsPage extends StatefulWidget {
   State<SkillsInterestsPage> createState() => _SkillsInterestsPageState();
 }
 
-class _SkillsInterestsPageState extends State<SkillsInterestsPage>
-    with SingleTickerProviderStateMixin {
+class _SkillsInterestsPageState extends State<SkillsInterestsPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late final SkillStateController _skillController;
   late final InterestStateController _interestController;
@@ -99,11 +98,8 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage>
         }
       }
 
-      final hasSkillFailure = skillSuccessCount != _selectedSkills.length &&
-          _selectedSkills.isNotEmpty;
-      final hasInterestFailure =
-          interestSuccessCount != _selectedInterests.length &&
-              _selectedInterests.isNotEmpty;
+      final hasSkillFailure = skillSuccessCount != _selectedSkills.length && _selectedSkills.isNotEmpty;
+      final hasInterestFailure = interestSuccessCount != _selectedInterests.length && _selectedInterests.isNotEmpty;
 
       if (!hasSkillFailure && !hasInterestFailure) {
         AppToast.error('已保存 $skillSuccessCount 个技能和 $interestSuccessCount 个兴趣');
@@ -113,12 +109,11 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage>
       } else {
         final failureMessages = <String>[];
         if (hasSkillFailure) {
-          failureMessages.add(
-              '技能保存失败 ${_selectedSkills.length - skillSuccessCount}/${_selectedSkills.length}');
+          failureMessages.add('技能保存失败 ${_selectedSkills.length - skillSuccessCount}/${_selectedSkills.length}');
         }
         if (hasInterestFailure) {
-          failureMessages.add(
-              '兴趣保存失败 ${_selectedInterests.length - interestSuccessCount}/${_selectedInterests.length}');
+          failureMessages
+              .add('兴趣保存失败 ${_selectedInterests.length - interestSuccessCount}/${_selectedInterests.length}');
         }
 
         AppToast.warning(failureMessages.join(' · '));
@@ -178,8 +173,7 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage>
 
           // 兴趣选择器
           InterestsSelector(
-            selectedInterestIds:
-                _selectedInterests.map((i) => i.interestId).toList(),
+            selectedInterestIds: _selectedInterests.map((i) => i.interestId).toList(),
             onChanged: (interests) {
               setState(() => _selectedInterests = interests);
             },
@@ -225,14 +219,11 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage>
                 ],
               ),
               ElevatedButton(
-                onPressed:
-                    (_selectedSkills.isEmpty && _selectedInterests.isEmpty) ||
-                            _isSaving
-                        ? null
-                        : _saveSkillsAndInterests,
+                onPressed: (_selectedSkills.isEmpty && _selectedInterests.isEmpty) || _isSaving
+                    ? null
+                    : _saveSkillsAndInterests,
                 style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                 ),
                 child: _isSaving
                     ? const SizedBox(

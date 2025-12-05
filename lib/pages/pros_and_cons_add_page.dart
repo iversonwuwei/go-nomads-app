@@ -23,8 +23,7 @@ class ProsAndConsAddPage extends StatefulWidget {
   State<ProsAndConsAddPage> createState() => _ProsAndConsAddPageState();
 }
 
-class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
-    with SingleTickerProviderStateMixin {
+class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late final ProsConsStateController _prosConsController;
 
@@ -129,8 +128,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
     if (confirmed != true) return;
 
     try {
-      final success =
-          await _prosConsController.deleteProsCons(widget.cityId, id, true);
+      final success = await _prosConsController.deleteProsCons(widget.cityId, id, true);
 
       if (success) {
         AppToast.success('优点已删除');
@@ -167,8 +165,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
     if (confirmed != true) return;
 
     try {
-      final success =
-          await _prosConsController.deleteProsCons(widget.cityId, id, false);
+      final success = await _prosConsController.deleteProsCons(widget.cityId, id, false);
 
       if (success) {
         AppToast.success('挑战已删除');
@@ -216,9 +213,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
             color: isActive ? const Color(0xFFFFEEF2) : Colors.grey[100],
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isActive
-                  ? activeColor.withValues(alpha: 0.4)
-                  : inactiveColor.withValues(alpha: 0.2),
+              color: isActive ? activeColor.withValues(alpha: 0.4) : inactiveColor.withValues(alpha: 0.2),
             ),
           ),
           child: Column(
@@ -401,8 +396,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           ),
                         ),
@@ -424,8 +418,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
-                                  color:
-                                      const Color(0xFFFF4458).withValues(alpha: 0.3),
+                                  color: const Color(0xFFFF4458).withValues(alpha: 0.3),
                                   blurRadius: 8,
                                   offset: const Offset(0, 3),
                                 ),
@@ -452,13 +445,11 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(FontAwesomeIcons.circleCheck,
-                                size: 64, color: Colors.grey[300]),
+                            Icon(FontAwesomeIcons.circleCheck, size: 64, color: Colors.grey[300]),
                             const SizedBox(height: 16),
                             Text(
                               '暂无优点',
-                              style: TextStyle(
-                                  fontSize: 16, color: Colors.grey[600]),
+                              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                             ),
                           ],
                         ),
@@ -489,16 +480,13 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                                   ),
                                   _buildVoteChip(
                                     count: item.upvotes,
-                                    onTap: itemId.isEmpty
-                                        ? null
-                                        : () => _handleVote(itemId, true),
+                                    onTap: itemId.isEmpty ? null : () => _handleVote(itemId, true),
                                     currentUserVoted: item.currentUserVoted,
                                   ),
                                   if (canDelete.value) const SizedBox(width: 8),
                                   if (canDelete.value)
                                     IconButton(
-                                      icon: const Icon(FontAwesomeIcons.trash,
-                                          color: Colors.red, size: 20),
+                                      icon: const Icon(FontAwesomeIcons.trash, color: Colors.red, size: 20),
                                       onPressed: () => deletePros(item.id),
                                       padding: EdgeInsets.zero,
                                       constraints: const BoxConstraints(),
@@ -583,8 +571,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           ),
                         ),
@@ -606,8 +593,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
-                                  color:
-                                      const Color(0xFFFF4458).withValues(alpha: 0.3),
+                                  color: const Color(0xFFFF4458).withValues(alpha: 0.3),
                                   blurRadius: 8,
                                   offset: const Offset(0, 3),
                                 ),
@@ -634,13 +620,11 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(FontAwesomeIcons.ban,
-                                size: 64, color: Colors.grey[300]),
+                            Icon(FontAwesomeIcons.ban, size: 64, color: Colors.grey[300]),
                             const SizedBox(height: 16),
                             Text(
                               '暂无挑战',
-                              style: TextStyle(
-                                  fontSize: 16, color: Colors.grey[600]),
+                              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                             ),
                           ],
                         ),
@@ -671,16 +655,13 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                                   ),
                                   _buildVoteChip(
                                     count: item.upvotes,
-                                    onTap: itemId.isEmpty
-                                        ? null
-                                        : () => _handleVote(itemId, false),
+                                    onTap: itemId.isEmpty ? null : () => _handleVote(itemId, false),
                                     currentUserVoted: item.currentUserVoted,
                                   ),
                                   if (canDelete.value) const SizedBox(width: 8),
                                   if (canDelete.value)
                                     IconButton(
-                                      icon: const Icon(FontAwesomeIcons.trash,
-                                          color: Colors.red, size: 20),
+                                      icon: const Icon(FontAwesomeIcons.trash, color: Colors.red, size: 20),
                                       onPressed: () => deleteCons(item.id),
                                       padding: EdgeInsets.zero,
                                       constraints: const BoxConstraints(),
