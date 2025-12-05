@@ -95,6 +95,7 @@ import 'package:df_admin_mobile/features/notification/presentation/controllers/n
 // Payment Domain
 import 'package:df_admin_mobile/features/payment/application/services/alipay_service.dart';
 import 'package:df_admin_mobile/features/payment/application/services/payment_service.dart';
+import 'package:df_admin_mobile/features/payment/application/services/paypal_service.dart';
 import 'package:df_admin_mobile/features/payment/application/services/unified_payment_service.dart';
 import 'package:df_admin_mobile/features/payment/application/services/wechat_pay_service.dart';
 import 'package:df_admin_mobile/features/payment/domain/repositories/i_payment_repository.dart';
@@ -1026,6 +1027,12 @@ class DependencyInjection {
     // 支付宝服务
     Get.lazyPut<AlipayService>(
       () => AlipayService(),
+      fenix: true,
+    );
+
+    // PayPal 服务
+    Get.lazyPut<PayPalService>(
+      () => PayPalService(),
       fenix: true,
     );
 

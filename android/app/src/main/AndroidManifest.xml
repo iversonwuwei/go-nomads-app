@@ -82,5 +82,12 @@
         </intent>
         <!-- 支付宝包查询权限 -->
         <package android:name="com.eg.android.AlipayGphone" />
+        <!-- PayPal 包查询权限 -->
+        <package android:name="com.paypal.android.p2pmobile" />
+        <!-- PayPal URL Scheme 查询 -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="paypal" />
+        </intent>
     </queries>
 </manifest>
