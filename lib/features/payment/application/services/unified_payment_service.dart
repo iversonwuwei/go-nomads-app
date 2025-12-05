@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:df_admin_mobile/features/payment/application/services/alipay_service.dart';
+import 'package:df_admin_mobile/features/payment/application/services/paypal_service.dart';
 import 'package:df_admin_mobile/features/payment/application/services/wechat_pay_service.dart';
 import 'package:df_admin_mobile/features/payment/domain/entities/payment_method.dart';
 import 'package:df_admin_mobile/features/payment/presentation/controllers/payment_state_controller.dart';
@@ -35,6 +36,13 @@ class UnifiedPaymentService extends GetxService {
   AlipayService? get _alipayService {
     if (Get.isRegistered<AlipayService>()) {
       return Get.find<AlipayService>();
+    }
+    return null;
+  }
+
+  PayPalService? get _paypalService {
+    if (Get.isRegistered<PayPalService>()) {
+      return Get.find<PayPalService>();
     }
     return null;
   }
@@ -109,11 +117,32 @@ class UnifiedPaymentService extends GetxService {
         );
       }
 
+      // 使用 PayPalService 智能启动支付
+      final paypalService = _paypalService;
+      if (paypalService != null) {
+        final result = await paypalService.smartLaunchPayPal(order.approvalUrl!);
+        if (result.success) {
+          log('✅ PayPal 支付启动成功: ${result.usedApp ? "App" : "网页"}');
+          return UnifiedPaymentResult(
+            success: true,
+            method: PaymentMethod.paypal,
+            orderId: order.id,
+          );
+        } else {
+          return UnifiedPaymentResult(
+            success: false,
+            method: PaymentMethod.paypal,
+            errorMessage: result.message,
+          );
+        }
+      }
+
+      // 回退：直接使用 url_launcher
       final uri = Uri.parse(order.approvalUrl!);
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
         return UnifiedPaymentResult(
-          success: true, // 跳转成功，实际结果通过回调处理
+          success: true,
           method: PaymentMethod.paypal,
           orderId: order.id,
         );
@@ -286,7 +315,7 @@ class UnifiedPaymentService extends GetxService {
   Future<bool> isPaymentMethodAvailable(PaymentMethod method) async {
     switch (method) {
       case PaymentMethod.paypal:
-        return true; // PayPal 使用网页，始终可用
+        return true; // PayPal 支持 App 和网页，始终可用
       case PaymentMethod.wechat:
         final wechatService = _wechatService;
         if (wechatService == null) return false;
