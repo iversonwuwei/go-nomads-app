@@ -516,7 +516,7 @@ class _CityDetailPageState extends State<CityDetailPage>
       log('⚠️ [版主申请] 会员检查异常: $e');
       // 如果会员控制器未注册，暂时跳过会员检查
     }
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -1352,8 +1352,7 @@ class _CityDetailPageState extends State<CityDetailPage>
         });
 
         return Obx(() {
-          log(
-              '🔄 [ProgressDialog] Obx rebuild - progress=${controller.guideGenerationProgress}%, completed=${controller.isGuideCompleted}');
+          log('🔄 [ProgressDialog] Obx rebuild - progress=${controller.guideGenerationProgress}%, completed=${controller.isGuideCompleted}');
 
           return AlertDialog(
             shape: RoundedRectangleBorder(
@@ -2156,7 +2155,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                       log('⚠️ 会员检查异常: $e');
                       // 如果会员控制器未注册，暂时跳过会员检查
                     }
-                    
+
                     // 跳转到创建旅行计划页面
                     Get.to(
                       () => CreateTravelPlanPage(
@@ -2286,8 +2285,7 @@ class _CityDetailPageState extends State<CityDetailPage>
     }
 
     return Obx(() {
-      log(
-          '🔍 [GuideTab] Rebuilding... cityId=$cityId, isLoading=${controller.isLoadingGuide}, isGenerating=${controller.isGeneratingGuide}, guide=${controller.currentGuide != null}, guideCity=${controller.currentGuide?.cityId}');
+      log('🔍 [GuideTab] Rebuilding... cityId=$cityId, isLoading=${controller.isLoadingGuide}, isGenerating=${controller.isGeneratingGuide}, guide=${controller.currentGuide != null}, guideCity=${controller.currentGuide?.cityId}');
 
       // 优先显示指南内容(如果有且是当前城市的)
       final guide = controller.currentGuide;

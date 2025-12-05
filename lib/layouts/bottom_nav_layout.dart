@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'dart:ui';
 
 import 'package:df_admin_mobile/controllers/bottom_nav_controller.dart';
@@ -216,10 +215,8 @@ class _ModernBottomNavBar extends StatelessWidget {
                         child: InkWell(
                           onTap: () => onTap(index),
                           borderRadius: BorderRadius.circular(28 * scaleFactor),
-                          splashColor:
-                              const Color(0xFF2196F3).withValues(alpha: 0.10),
-                          highlightColor:
-                              const Color(0xFF2196F3).withValues(alpha: 0.05),
+                          splashColor: const Color(0xFF2196F3).withValues(alpha: 0.10),
+                          highlightColor: const Color(0xFF2196F3).withValues(alpha: 0.05),
                           child: Center(
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 200),
@@ -229,8 +226,7 @@ class _ModernBottomNavBar extends StatelessWidget {
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
                                 color: Colors.transparent, // 去掉背景色
-                                borderRadius:
-                                    BorderRadius.circular(18 * scaleFactor),
+                                borderRadius: BorderRadius.circular(18 * scaleFactor),
                                 // 去掉阴影
                               ),
                               child: Stack(

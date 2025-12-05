@@ -5,7 +5,7 @@ import 'package:latlong2/latlong.dart';
 
 /// 使用 flutter_map 显示基础全球地图页面
 class GlobalMapPage extends StatefulWidget {
-  const GlobalMapPage({Key? key}) : super(key: key);
+  const GlobalMapPage({super.key});
 
   @override
   State<GlobalMapPage> createState() => _GlobalMapPageState();
@@ -28,7 +28,8 @@ class _GlobalMapPageState extends State<GlobalMapPage> {
     },
     'tianditu-vec': {
       'name': '天地图矢量',
-      'url': 'https://t0.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=vec&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=YOUR_KEY',
+      'url':
+          'https://t0.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=vec&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=YOUR_KEY',
     },
     'osm-standard': {
       'name': 'OpenStreetMap',
@@ -92,9 +93,7 @@ class _GlobalMapPageState extends State<GlobalMapPage> {
                       color: isSelected ? const Color(0xFFFF4458) : null,
                     ),
                   ),
-                  trailing: isSelected
-                      ? const Icon(Icons.check_circle, color: Color(0xFFFF4458))
-                      : null,
+                  trailing: isSelected ? const Icon(Icons.check_circle, color: Color(0xFFFF4458)) : null,
                   onTap: () {
                     setState(() {
                       _selectedTileSource = entry.key;
