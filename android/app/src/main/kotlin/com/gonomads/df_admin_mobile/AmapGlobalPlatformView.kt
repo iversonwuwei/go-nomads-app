@@ -1,4 +1,4 @@
-package com.example.df_admin_mobile
+package com.gonomads.df_admin_mobile
 
 import android.content.Context
 import android.graphics.BitmapFactory

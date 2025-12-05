@@ -160,7 +160,7 @@ class _GlobalMapPageState extends State<GlobalMapPage> {
           // 加载指示器
           if (_isLoading)
             Container(
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
               child: const Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -184,7 +184,7 @@ class _GlobalMapPageState extends State<GlobalMapPage> {
           // 错误提示
           if (_errorMessage != null)
             Container(
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withValues(alpha: 0.9),
               child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -259,7 +259,7 @@ class _GlobalMapPageState extends State<GlobalMapPage> {
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),

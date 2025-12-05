@@ -174,13 +174,13 @@ class _ModernBottomNavBar extends StatelessWidget {
         boxShadow: [
           // 更强更立体的阴影
           BoxShadow(
-            color: Colors.black.withOpacity(0.18),
+            color: Colors.black.withValues(alpha: 0.18),
             blurRadius: 48,
             offset: const Offset(0, 12),
             spreadRadius: 2,
           ),
           BoxShadow(
-            color: Colors.white.withOpacity(0.10),
+            color: Colors.white.withValues(alpha: 0.10),
             blurRadius: 0,
             offset: const Offset(0, -1),
             spreadRadius: 0,
@@ -193,10 +193,10 @@ class _ModernBottomNavBar extends StatelessWidget {
           filter: ImageFilter.blur(sigmaX: 56, sigmaY: 56), // 更强毛玻璃
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.36), // 更透明
+              color: Colors.white.withValues(alpha: 0.36), // 更透明
               borderRadius: BorderRadius.circular(borderRadius),
               border: Border.all(
-                color: Colors.white.withOpacity(0.5),
+                color: Colors.white.withValues(alpha: 0.5),
                 width: 0.5,
               ),
             ),
@@ -217,9 +217,9 @@ class _ModernBottomNavBar extends StatelessWidget {
                           onTap: () => onTap(index),
                           borderRadius: BorderRadius.circular(28 * scaleFactor),
                           splashColor:
-                              const Color(0xFF2196F3).withOpacity(0.10),
+                              const Color(0xFF2196F3).withValues(alpha: 0.10),
                           highlightColor:
-                              const Color(0xFF2196F3).withOpacity(0.05),
+                              const Color(0xFF2196F3).withValues(alpha: 0.05),
                           child: Center(
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 200),

@@ -368,7 +368,7 @@ class _LocationPickerFieldState extends State<LocationPickerField> {
                                     return ListTile(
                                       dense: true,
                                       selected: isSelected,
-                                      selectedTileColor: const Color(0xFFFF4458).withOpacity(0.1),
+                                      selectedTileColor: const Color(0xFFFF4458).withValues(alpha: 0.1),
                                       title: Text(
                                         displayName,
                                         style: TextStyle(
@@ -469,7 +469,7 @@ class _LocationPickerFieldState extends State<LocationPickerField> {
                                   return ListTile(
                                     dense: true,
                                     selected: isSelected,
-                                    selectedTileColor: const Color(0xFFFF4458).withOpacity(0.1),
+                                    selectedTileColor: const Color(0xFFFF4458).withValues(alpha: 0.1),
                                     title: Text(
                                       city.name,
                                       style: TextStyle(

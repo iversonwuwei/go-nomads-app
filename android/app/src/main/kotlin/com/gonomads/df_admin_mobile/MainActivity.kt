@@ -1,4 +1,4 @@
-package com.example.df_admin_mobile
+package com.gonomads.df_admin_mobile
 
 import android.os.Bundle
 import com.amap.api.maps.MapsInitializer
@@ -9,7 +9,7 @@ import io.flutter.plugins.GeneratedPluginRegistrant
 
 class MainActivity : FlutterActivity() {
     
-    private val CHANNEL_NAME = "com.example.df_admin_mobile/amap"
+    private val CHANNEL_NAME = "com.gonomads.df_admin_mobile/amap"
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

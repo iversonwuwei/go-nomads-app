@@ -2740,9 +2740,9 @@ class _CityDetailPageState extends State<CityDetailPage>
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: hasVoted ? Colors.grey.withOpacity(0.12) : const Color(0xFFFFEEF2),
+            color: hasVoted ? Colors.grey.withValues(alpha: 0.12) : const Color(0xFFFFEEF2),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: color.withOpacity(0.35)),
+            border: Border.all(color: color.withValues(alpha: 0.35)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
