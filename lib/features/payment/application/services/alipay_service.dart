@@ -11,7 +11,10 @@ class AlipayService extends GetxService {
   /// 检查支付宝是否已安装
   Future<bool> get isAlipayInstalled async {
     try {
-      return await _tobias.isAliPayInstalled;
+      log('🔍 正在检查支付宝是否安装...');
+      final installed = await _tobias.isAliPayInstalled;
+      log('📱 支付宝安装状态: $installed');
+      return installed;
     } catch (e) {
       log('❌ 检查支付宝安装状态失败: $e');
       return false;
@@ -23,6 +26,8 @@ class AlipayService extends GetxService {
   Future<AlipayResult> pay(String orderInfo) async {
     try {
       log('📱 调起支付宝支付...');
+      log('📦 orderInfo 长度: ${orderInfo.length}');
+      log('📦 orderInfo 前100字符: ${orderInfo.substring(0, orderInfo.length > 100 ? 100 : orderInfo.length)}...');
 
       final result = await _tobias.pay(orderInfo);
 
@@ -116,6 +121,5 @@ class AlipayResult {
   }
 
   @override
-  String toString() =>
-      'AlipayResult(success: $success, resultStatus: $resultStatus, memo: $memo)';
+  String toString() => 'AlipayResult(success: $success, resultStatus: $resultStatus, memo: $memo)';
 }

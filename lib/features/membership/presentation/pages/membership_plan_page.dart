@@ -1,6 +1,7 @@
 import 'package:df_admin_mobile/features/membership/domain/entities/membership_level.dart';
 import 'package:df_admin_mobile/features/membership/domain/entities/membership_plan.dart';
 import 'package:df_admin_mobile/features/membership/presentation/controllers/membership_state_controller.dart';
+import 'package:df_admin_mobile/features/payment/application/services/alipay_service.dart';
 import 'package:df_admin_mobile/features/payment/application/services/payment_service.dart';
 import 'package:df_admin_mobile/features/payment/application/services/unified_payment_service.dart';
 import 'package:df_admin_mobile/features/payment/application/services/wechat_pay_service.dart';
@@ -375,7 +376,7 @@ class MembershipPlanPage extends StatelessWidget {
                   ],
                 ),
               ),
-              
+
               const Divider(height: 1),
 
               // 支付方式列表
@@ -498,14 +499,9 @@ class MembershipPlanPage extends StatelessWidget {
     try {
       paymentService = Get.find<PaymentService>();
     } catch (e) {
-      // 如果服务未注册，使用临时模拟升级
-      AppToast.warning('Payment service not available, using demo mode');
-      final success = await controller.upgradeMembership(targetLevel);
-      if (success) {
-        AppToast.success('Upgraded to ${plan.name} successfully!');
-      } else {
-        AppToast.error(controller.errorMessage ?? 'Upgrade failed');
-      }
+      // 如果服务未注册，提示并重新选择支付方式
+      AppToast.warning('Payment service not available');
+      _retryPaymentMethodSelection(controller, plan, targetLevel);
       return;
     }
 
@@ -554,10 +550,14 @@ class MembershipPlanPage extends StatelessWidget {
         // 用户完成支付后会通过 deep link 返回
       } else {
         AppToast.error('Failed to create payment order');
+        // 支付失败，重新显示支付方式选择
+        _retryPaymentMethodSelection(controller, plan, targetLevel);
       }
     } catch (e) {
       Get.back(); // 关闭加载对话框
       AppToast.error('Payment error: $e');
+      // 发生异常，重新显示支付方式选择
+      _retryPaymentMethodSelection(controller, plan, targetLevel);
     }
   }
 
@@ -575,12 +575,14 @@ class MembershipPlanPage extends StatelessWidget {
       wechatService = Get.find<WeChatPayService>();
     } catch (e) {
       AppToast.warning('WeChat Pay service not available');
+      _retryPaymentMethodSelection(controller, plan, targetLevel);
       return;
     }
 
     // 检查微信是否已安装
     if (!await wechatService.isWeChatInstalled) {
       AppToast.error('Please install WeChat to use WeChat Pay');
+      _retryPaymentMethodSelection(controller, plan, targetLevel);
       return;
     }
 
@@ -627,10 +629,14 @@ class MembershipPlanPage extends StatelessWidget {
         await controller.loadMembership();
       } else {
         AppToast.error(result.errorMessage ?? 'WeChat Pay failed');
+        // 支付失败，重新显示支付方式选择
+        _retryPaymentMethodSelection(controller, plan, targetLevel);
       }
     } catch (e) {
-      Get.back();
+      Get.back(); // 关闭加载对话框
       AppToast.error('WeChat Pay error: $e');
+      // 发生异常，重新显示支付方式选择
+      _retryPaymentMethodSelection(controller, plan, targetLevel);
     }
   }
 
@@ -642,10 +648,22 @@ class MembershipPlanPage extends StatelessWidget {
   ) async {
     // 检查支付宝服务
     UnifiedPaymentService? unifiedPaymentService;
+    AlipayService? alipayService;
     try {
       unifiedPaymentService = Get.find<UnifiedPaymentService>();
+      alipayService = Get.find<AlipayService>();
     } catch (e) {
       AppToast.warning('Alipay service not available');
+      // 重新显示支付方式选择
+      _retryPaymentMethodSelection(controller, plan, targetLevel);
+      return;
+    }
+
+    // 检查支付宝是否已安装
+    if (!await alipayService.isAlipayInstalled) {
+      AppToast.error('Please install Alipay to use Alipay Pay');
+      // 重新显示支付方式选择
+      _retryPaymentMethodSelection(controller, plan, targetLevel);
       return;
     }
 
@@ -677,11 +695,23 @@ class MembershipPlanPage extends StatelessWidget {
     try {
       final isRenewal = controller.membership?.isActive == true && controller.level.levelValue == plan.level;
 
-      final result = await unifiedPaymentService.payForMembership(
+      // 添加超时处理，防止无限等待
+      final result = await unifiedPaymentService
+          .payForMembership(
         method: payment_entities.PaymentMethod.alipay,
         membershipLevel: plan.level,
         durationDays: 365,
         isRenewal: isRenewal,
+      )
+          .timeout(
+        const Duration(seconds: 60),
+        onTimeout: () {
+          return UnifiedPaymentResult(
+            success: false,
+            method: payment_entities.PaymentMethod.alipay,
+            errorMessage: 'Request timeout, please try again',
+          );
+        },
       );
 
       Get.back(); // 关闭加载对话框
@@ -692,10 +722,30 @@ class MembershipPlanPage extends StatelessWidget {
         await controller.loadMembership();
       } else {
         AppToast.error(result.errorMessage ?? 'Alipay payment failed');
+        // 支付失败，重新显示支付方式选择
+        _retryPaymentMethodSelection(controller, plan, targetLevel);
       }
     } catch (e) {
-      Get.back();
+      Get.back(); // 关闭加载对话框
       AppToast.error('Alipay error: $e');
+      // 发生异常，重新显示支付方式选择
+      _retryPaymentMethodSelection(controller, plan, targetLevel);
+    }
+  }
+
+  /// 重新显示支付方式选择
+  void _retryPaymentMethodSelection(
+    MembershipStateController controller,
+    MembershipPlan plan,
+    MembershipLevel targetLevel,
+  ) async {
+    // 稍微延迟一下，让用户看清错误提示
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    // 重新显示支付方式选择底部弹窗
+    final selectedMethod = await _showPaymentMethodSheet(plan);
+    if (selectedMethod != null) {
+      await _processPayment(controller, plan, targetLevel, selectedMethod);
     }
   }
 }

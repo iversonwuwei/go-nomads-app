@@ -218,8 +218,18 @@ class UnifiedPaymentService extends GetxService {
       );
     }
 
+    // 检查支付宝是否已安装
+    if (!await alipayService.isAlipayInstalled) {
+      return UnifiedPaymentResult(
+        success: false,
+        method: PaymentMethod.alipay,
+        errorMessage: '请先安装支付宝 App',
+      );
+    }
+
     try {
       // 1. 创建支付宝订单（调用后端接口获取签名后的订单信息）
+      log('📤 正在创建支付宝订单...');
       final orderInfo = await controller.createAlipayOrder(
         membershipLevel: membershipLevel,
         durationDays: durationDays,
@@ -227,6 +237,7 @@ class UnifiedPaymentService extends GetxService {
       );
 
       if (orderInfo == null) {
+        log('❌ 创建支付宝订单失败: orderInfo 为 null');
         return UnifiedPaymentResult(
           success: false,
           method: PaymentMethod.alipay,
@@ -234,13 +245,31 @@ class UnifiedPaymentService extends GetxService {
         );
       }
 
+      // 检查 orderString 是否有效
+      final orderString = orderInfo['orderString'] as String?;
+      final orderId = orderInfo['orderId'] as String?;
+
+      log('📦 订单信息: orderId=$orderId, orderString长度=${orderString?.length ?? 0}');
+
+      if (orderString == null || orderString.isEmpty) {
+        log('❌ orderString 为空');
+        return UnifiedPaymentResult(
+          success: false,
+          method: PaymentMethod.alipay,
+          errorMessage: '订单签名信息无效',
+        );
+      }
+
       // 2. 调用支付宝 SDK 发起支付
-      final result = await alipayService.pay(orderInfo['orderString']);
+      log('📱 正在调起支付宝...');
+      final result = await alipayService.pay(orderString);
+
+      log('💰 支付宝返回: success=${result.success}, status=${result.resultStatus}, memo=${result.memo}');
 
       return UnifiedPaymentResult(
         success: result.success,
         method: PaymentMethod.alipay,
-        orderId: orderInfo['orderId'],
+        orderId: orderId,
         errorMessage: result.success ? null : result.displayMessage,
       );
     } catch (e) {
@@ -290,9 +319,7 @@ class UnifiedPaymentService extends GetxService {
           ],
         ),
         content: Text(
-          result.success
-              ? '您的会员已激活！'
-              : (result.errorMessage ?? '支付未完成，请重试。'),
+          result.success ? '您的会员已激活！' : (result.errorMessage ?? '支付未完成，请重试。'),
         ),
         actions: [
           TextButton(

@@ -9,7 +9,7 @@ import CoreLocation
 @objc class AppDelegate: FlutterAppDelegate {
   
   // Platform Channel 名称
-  private let CHANNEL_NAME = "com.example.df_admin_mobile/amap"
+  private let CHANNEL_NAME = "com.gonomads.df_admin_mobile/amap"
 
   // Amap API Key (iOS)
   private let AMAP_API_KEY = "6b053c71911726f46271e4b54124d35f"

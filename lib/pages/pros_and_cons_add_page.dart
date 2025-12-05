@@ -217,8 +217,8 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isActive
-                  ? activeColor.withOpacity(0.4)
-                  : inactiveColor.withOpacity(0.2),
+                  ? activeColor.withValues(alpha: 0.4)
+                  : inactiveColor.withValues(alpha: 0.2),
             ),
           ),
           child: Column(
@@ -347,7 +347,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
+                  color: Colors.black.withValues(alpha: 0.08),
                   blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),
@@ -425,7 +425,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                               boxShadow: [
                                 BoxShadow(
                                   color:
-                                      const Color(0xFFFF4458).withOpacity(0.3),
+                                      const Color(0xFFFF4458).withValues(alpha: 0.3),
                                   blurRadius: 8,
                                   offset: const Offset(0, 3),
                                 ),
@@ -529,7 +529,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
+                  color: Colors.black.withValues(alpha: 0.08),
                   blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),
@@ -607,7 +607,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                               boxShadow: [
                                 BoxShadow(
                                   color:
-                                      const Color(0xFFFF4458).withOpacity(0.3),
+                                      const Color(0xFFFF4458).withValues(alpha: 0.3),
                                   blurRadius: 8,
                                   offset: const Offset(0, 3),
                                 ),
