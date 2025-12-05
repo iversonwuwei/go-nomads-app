@@ -7,6 +7,7 @@ import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/services/token_storage_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
+import 'package:df_admin_mobile/widgets/safe_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -444,31 +445,26 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
                 Row(
                   children: [
                     // 用户头像
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF2F2F7),
-                        shape: BoxShape.circle,
-                        image: review.userAvatar != null && review.userAvatar!.isNotEmpty
-                            ? DecorationImage(
-                                image: NetworkImage(review.userAvatar!),
-                                fit: BoxFit.cover,
-                              )
-                            : null,
+                    SafeCircleAvatar(
+                      imageUrl: review.userAvatar,
+                      radius: 20,
+                      backgroundColor: const Color(0xFFF2F2F7),
+                      placeholder: Text(
+                        review.username.isNotEmpty ? review.username.substring(0, 1).toUpperCase() : '?',
+                        style: const TextStyle(
+                          color: Color(0xFF8E8E93),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                      child: review.userAvatar == null || review.userAvatar!.isEmpty
-                          ? Center(
-                              child: Text(
-                                review.username.isNotEmpty ? review.username.substring(0, 1).toUpperCase() : '?',
-                                style: const TextStyle(
-                                  color: Color(0xFF8E8E93),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            )
-                          : null,
+                      errorWidget: Text(
+                        review.username.isNotEmpty ? review.username.substring(0, 1).toUpperCase() : '?',
+                        style: const TextStyle(
+                          color: Color(0xFF8E8E93),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 12),
                     // 用户名和访问日期

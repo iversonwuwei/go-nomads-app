@@ -12,6 +12,7 @@ import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/edit_button.dart';
+import 'package:df_admin_mobile/widgets/safe_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -954,15 +955,9 @@ class _MeetupListCardState extends State<_MeetupListCard> {
                   // 组织者和操作按钮
                   Row(
                     children: [
-                      CircleAvatar(
+                      SafeCircleAvatar(
+                        imageUrl: widget.meetup.organizer.avatarUrl,
                         radius: 16.r,
-                        backgroundImage:
-                            (widget.meetup.organizer.avatarUrl != null && widget.meetup.organizer.avatarUrl!.isNotEmpty)
-                                ? NetworkImage(widget.meetup.organizer.avatarUrl!)
-                                : null,
-                        child: (widget.meetup.organizer.avatarUrl == null || widget.meetup.organizer.avatarUrl!.isEmpty)
-                            ? Icon(FontAwesomeIcons.user, size: 16.r)
-                            : null,
                       ),
                       SizedBox(width: 8.w),
                       Expanded(

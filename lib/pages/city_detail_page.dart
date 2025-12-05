@@ -29,6 +29,7 @@ import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/coworking_verification_badge.dart';
 import 'package:df_admin_mobile/widgets/edit_button.dart';
 import 'package:df_admin_mobile/widgets/rating_item_dialog.dart';
+import 'package:df_admin_mobile/widgets/safe_network_image.dart';
 import 'package:df_admin_mobile/widgets/share_bottom_sheet.dart';
 import 'package:df_admin_mobile/widgets/share_button.dart';
 import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
@@ -2830,17 +2831,18 @@ class _CityDetailPageState extends State<CityDetailPage>
                     Row(
                       children: [
                         // ✅ 有头像显示头像,没有头像显示用户名首字母
-                        CircleAvatar(
+                        SafeCircleAvatar(
+                          imageUrl: review.userAvatar,
+                          radius: 20,
                           backgroundColor: const Color(0xFFFF4458),
-                          backgroundImage: review.userAvatar != null && review.userAvatar!.isNotEmpty
-                              ? NetworkImage(review.userAvatar!)
-                              : null,
-                          child: review.userAvatar == null || review.userAvatar!.isEmpty
-                              ? Text(
-                                  review.username.isNotEmpty ? review.username.substring(0, 1).toUpperCase() : '?',
-                                  style: const TextStyle(color: Colors.white),
-                                )
-                              : null,
+                          placeholder: Text(
+                            review.username.isNotEmpty ? review.username.substring(0, 1).toUpperCase() : '?',
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          errorWidget: Text(
+                            review.username.isNotEmpty ? review.username.substring(0, 1).toUpperCase() : '?',
+                            style: const TextStyle(color: Colors.white),
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(

@@ -1,10 +1,10 @@
+import 'package:df_admin_mobile/features/community/domain/entities/trip_report.dart';
+import 'package:df_admin_mobile/features/community/presentation/controllers/community_state_controller.dart';
+import 'package:df_admin_mobile/widgets/safe_network_image.dart';
+import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import 'package:df_admin_mobile/features/community/domain/entities/trip_report.dart';
-import 'package:df_admin_mobile/features/community/presentation/controllers/community_state_controller.dart';
-import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 
 class CommunityPage extends StatelessWidget {
   const CommunityPage({super.key});
@@ -102,16 +102,9 @@ class CommunityPage extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                CircleAvatar(
+                SafeCircleAvatar(
+                  imageUrl: report.userAvatar,
                   radius: 20,
-                  backgroundImage: (report.userAvatar != null &&
-                          report.userAvatar!.isNotEmpty)
-                      ? NetworkImage(report.userAvatar!)
-                      : null,
-                  child:
-                      (report.userAvatar == null || report.userAvatar!.isEmpty)
-                          ? const Icon(FontAwesomeIcons.user, size: 24)
-                          : null,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -643,16 +636,9 @@ class CommunityPage extends StatelessWidget {
           // Header
           Row(
             children: [
-              CircleAvatar(
+              SafeCircleAvatar(
+                imageUrl: question.userAvatar,
                 radius: 16,
-                backgroundImage: (question.userAvatar != null &&
-                        question.userAvatar!.isNotEmpty)
-                    ? NetworkImage(question.userAvatar!)
-                    : null,
-                child: (question.userAvatar == null ||
-                        question.userAvatar!.isEmpty)
-                    ? const Icon(FontAwesomeIcons.user, size: 18)
-                    : null,
               ),
               const SizedBox(width: 10),
               Expanded(

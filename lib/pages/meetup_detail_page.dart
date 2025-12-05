@@ -13,6 +13,7 @@ import 'package:df_admin_mobile/services/http_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/edit_button.dart';
+import 'package:df_admin_mobile/widgets/safe_network_image.dart';
 import 'package:df_admin_mobile/widgets/share_bottom_sheet.dart';
 import 'package:df_admin_mobile/widgets/share_button.dart';
 import 'package:flutter/material.dart';
@@ -92,6 +93,11 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
         final participantsList = data['participants'] as List<dynamic>;
         _participants.value = participantsList.map((p) => p as Map<String, dynamic>).toList();
         log('✅ 成功加载 ${_participants.length} 位参与者');
+        // 调试：打印参与者数据结构
+        for (var p in _participants) {
+          final userInfo = p['user'] as Map<String, dynamic>?;
+          log('👤 参与者: ${userInfo?['name']}, 头像: ${userInfo?['avatar']}');
+        }
       }
 
       // 映射为 Meetup 实体
@@ -439,12 +445,9 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                   );
                   Get.to(() => MemberDetailPage(user: organizerUser));
                 },
-                child: CircleAvatar(
+                child: SafeCircleAvatar(
+                  imageUrl: _meetup.value.organizer.avatarUrl,
                   radius: 30.r,
-                  backgroundImage:
-                      (_meetup.value.organizer.avatarUrl != null && _meetup.value.organizer.avatarUrl!.isNotEmpty)
-                          ? NetworkImage(_meetup.value.organizer.avatarUrl!)
-                          : null,
                 ),
               ),
               SizedBox(width: 16.w),
@@ -574,13 +577,9 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                       },
                       child: Tooltip(
                         message: userName,
-                        child: CircleAvatar(
+                        child: SafeCircleAvatar(
+                          imageUrl: userAvatar,
                           radius: 20.r,
-                          backgroundImage:
-                              (userAvatar != null && userAvatar.isNotEmpty) ? NetworkImage(userAvatar) : null,
-                          child: (userAvatar == null || userAvatar.isEmpty)
-                              ? Icon(FontAwesomeIcons.user, size: 20.r)
-                              : null,
                         ),
                       ),
                     ),
@@ -1057,9 +1056,9 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                     Get.back(); // 关闭对话框
                     Get.to(() => MemberDetailPage(user: participantUser));
                   },
-                  leading: CircleAvatar(
-                    backgroundImage: (userAvatar != null && userAvatar.isNotEmpty) ? NetworkImage(userAvatar) : null,
-                    child: (userAvatar == null || userAvatar.isEmpty) ? const Icon(FontAwesomeIcons.user) : null,
+                  leading: SafeCircleAvatar(
+                    imageUrl: userAvatar,
+                    radius: 20,
                   ),
                   title: Text(userName, style: TextStyle(fontSize: 14.sp)),
                   subtitle: Text(

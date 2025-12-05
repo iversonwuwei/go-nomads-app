@@ -1,11 +1,11 @@
-import 'dart:developer';
-
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:df_admin_mobile/core/application/use_case.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/chat/application/use_cases/chat_use_cases.dart';
 import 'package:df_admin_mobile/features/chat/domain/entities/chat.dart';
+import 'package:df_admin_mobile/features/chat/domain/repositories/i_chat_repository.dart';
 import 'package:df_admin_mobile/features/chat/infrastructure/services/signalr_chat_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:get/get.dart';
@@ -344,6 +344,86 @@ class ChatStateController extends GetxController {
         AppToast.error('加入聊天室失败: ${exception.message}');
       },
     );
+
+    _isLoading.value = false;
+  }
+
+  /// 加入私聊 (Direct Chat)
+  ///
+  /// 根据目标用户创建或获取私聊房间，然后加入该房间
+  Future<void> joinDirectChat({
+    required String targetUserId,
+    required String targetUserName,
+    String? targetUserAvatar,
+  }) async {
+    _isLoading.value = true;
+    _errorMessage.value = null;
+
+    try {
+      // 获取 Repository 并创建/获取私聊房间
+      final chatRepository = Get.find<IChatRepository>();
+      final result = await chatRepository.getOrCreateDirectChat(
+        targetUserId: targetUserId,
+        targetUserName: targetUserName,
+        targetUserAvatar: targetUserAvatar,
+      );
+
+      await result.fold(
+        onSuccess: (room) async {
+          // 设置当前聊天室
+          _currentRoom.value = room;
+          _currentRoomId.value = room.id;
+
+          // 初始化在线人数
+          _onlineCount.value = room.stats.onlineUsers;
+
+          // 调用加入聊天室 API
+          final joinResult = await _joinChatRoomUseCase(JoinChatRoomParams(room.id));
+
+          await joinResult.fold(
+            onSuccess: (_) async {
+              // 连接 SignalR 并加入聊天室
+              await _signalRService.joinRoom(room.id);
+              _isConnected.value = _signalRService.isConnected;
+
+              // 加载聊天室详情
+              final detailResult = await _getChatRoomByIdUseCase(
+                GetChatRoomByIdParams(room.id),
+              );
+
+              detailResult.fold(
+                onSuccess: (Object? roomDetail) {
+                  if (roomDetail != null) {
+                    _currentRoom.value = roomDetail as ChatRoom;
+                  }
+                },
+                onFailure: (exception) {
+                  // 详情加载失败，使用已有对象
+                  log('加载聊天室详情失败: ${exception.message}');
+                },
+              );
+
+              // 加载消息和在线用户
+              await Future.wait([
+                loadMessages(room.id),
+                loadOnlineUsers(room.id),
+              ]);
+            },
+            onFailure: (exception) {
+              _errorMessage.value = exception.message;
+              AppToast.error('加入私聊失败: ${exception.message}');
+            },
+          );
+        },
+        onFailure: (exception) {
+          _errorMessage.value = exception.message;
+          AppToast.error('创建私聊失败: ${exception.message}');
+        },
+      );
+    } catch (e) {
+      _errorMessage.value = e.toString();
+      AppToast.error('私聊初始化失败: $e');
+    }
 
     _isLoading.value = false;
   }

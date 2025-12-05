@@ -8,6 +8,7 @@ import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/coworking_verification_badge.dart';
 import 'package:df_admin_mobile/widgets/edit_button.dart';
+import 'package:df_admin_mobile/widgets/safe_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -1179,20 +1180,24 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                       children: [
                         Row(
                           children: [
-                            CircleAvatar(
+                            SafeCircleAvatar(
+                              imageUrl: comment.userAvatar,
+                              radius: 20,
                               backgroundColor: Colors.blue[100],
-                              backgroundImage: (comment.userAvatar != null && comment.userAvatar!.isNotEmpty)
-                                  ? NetworkImage(comment.userAvatar!)
-                                  : null,
-                              child: (comment.userAvatar == null || comment.userAvatar!.isEmpty)
-                                  ? Text(
-                                      comment.username.substring(0, 1).toUpperCase(),
-                                      style: TextStyle(
-                                        color: Colors.blue[700],
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    )
-                                  : null,
+                              placeholder: Text(
+                                comment.username.substring(0, 1).toUpperCase(),
+                                style: TextStyle(
+                                  color: Colors.blue[700],
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              errorWidget: Text(
+                                comment.username.substring(0, 1).toUpperCase(),
+                                style: TextStyle(
+                                  color: Colors.blue[700],
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(

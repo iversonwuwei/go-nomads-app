@@ -1,16 +1,17 @@
 import 'dart:developer';
 
+import 'package:df_admin_mobile/features/user_profile/infrastructure/models/user_profile_dto.dart';
+import 'package:df_admin_mobile/services/database/user_profile_dao.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/safe_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import 'package:df_admin_mobile/features/user_profile/infrastructure/models/user_profile_dto.dart';
-import 'package:df_admin_mobile/services/database/user_profile_dao.dart';
 import 'edit_basic_info_page.dart';
 import 'edit_interests_page.dart';
 import 'edit_skills_page.dart';
 import 'edit_social_links_page.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
 
 /// 模块化用户资料页面 - 整合所有8个模块
 class ModularUserProfilePage extends StatefulWidget {
@@ -168,14 +169,10 @@ class _ModularUserProfilePageState extends State<ModularUserProfilePage> {
                   Center(
                     child: Column(
                       children: [
-                        CircleAvatar(
+                        SafeCircleAvatar(
+                          imageUrl: _basicInfo?.avatarUrl,
                           radius: 50,
-                          backgroundImage: _basicInfo?.avatarUrl != null
-                              ? NetworkImage(_basicInfo!.avatarUrl!)
-                              : null,
-                          child: _basicInfo?.avatarUrl == null
-                              ? const Icon(FontAwesomeIcons.user, size: 50)
-                              : null,
+                          errorWidget: const Icon(FontAwesomeIcons.user, size: 50),
                         ),
                         const SizedBox(height: 12),
                         Text(
