@@ -474,24 +474,26 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                   ],
                 ),
               ),
-              OutlinedButton(
-                onPressed: _contactOrganizer,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFFFF4458),
-                  side: BorderSide(color: const Color(0xFFFF4458), width: 1.5.w),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20.r),
+              // 如果当前用户是组织者，不显示消息按钮（不能给自己发消息）
+              if (!_isOrganizer)
+                OutlinedButton(
+                  onPressed: _contactOrganizer,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFFFF4458),
+                    side: BorderSide(color: const Color(0xFFFF4458), width: 1.5.w),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20.r),
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                   ),
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                ),
-                child: Text(
-                  l10n.message,
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w600,
+                  child: Text(
+                    l10n.message,
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
         ],

@@ -61,15 +61,15 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
     super.dispose();
   }
 
-  /// 加载所有用户
+  /// 加载版主候选人（Pro及以上会员或Admin用户）
   Future<void> _loadUsers() async {
-    log('📡 [AssignModerator] 开始加载用户列表...');
+    log('📡 [AssignModerator] 开始加载版主候选人列表...');
     _isLoading.value = true;
     try {
       final userManagementRepo = Get.find<IUserManagementRepository>();
-      log('📡 [AssignModerator] 调用 userManagementRepo.getUsers(page: 1, pageSize: 100)');
+      log('📡 [AssignModerator] 调用 userManagementRepo.getModeratorCandidates(page: 1, pageSize: 100)');
 
-      final result = await userManagementRepo.getUsers(
+      final result = await userManagementRepo.getModeratorCandidates(
         page: 1,
         pageSize: 100, // 加载更多用户
       );
@@ -78,14 +78,14 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
 
       if (result.isSuccess) {
         final users = result.dataOrNull ?? [];
-        log('📡 [AssignModerator] 获取到 ${users.length} 个用户');
+        log('📡 [AssignModerator] 获取到 ${users.length} 个版主候选人');
 
         if (users.isEmpty) {
-          log('⚠️ [AssignModerator] 用户列表为空！');
+          log('⚠️ [AssignModerator] 版主候选人列表为空！');
         } else {
-          log('📋 [AssignModerator] 前3个用户:');
+          log('📋 [AssignModerator] 前3个候选人:');
           for (var i = 0; i < users.length && i < 3; i++) {
-            log('   [$i] id=${users[i].id}, name=${users[i].name}, email=${users[i].email}');
+            log('   [$i] id=${users[i].id}, name=${users[i].name}, email=${users[i].email}, level=${users[i].membershipLevelName}');
           }
         }
 
@@ -95,6 +95,10 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
             'name': user.name,
             'email': user.email,
             'role': user.role,
+            'membershipLevel': user.membershipLevel,
+            'membershipLevelName': user.membershipLevelName,
+            'displayBadge': user.displayBadge,
+            'isAdmin': user.isAdmin,
           };
         }).toList();
 
@@ -106,7 +110,7 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
         log('❌ [AssignModerator] 加载失败: $errorMsg');
         // 延迟显示错误，避免在 build 期间调用
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          AppToast.error('加载用户失败: $errorMsg');
+          AppToast.error('加载版主候选人失败: $errorMsg');
         });
       }
     } catch (e, stackTrace) {
@@ -114,7 +118,7 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
       log('❌ [AssignModerator] 堆栈: $stackTrace');
       // 延迟显示错误，避免在 build 期间调用
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        AppToast.error('加载用户失败: $e');
+        AppToast.error('加载版主候选人失败: $e');
       });
     } finally {
       _isLoading.value = false;
@@ -393,11 +397,13 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
                   final userId = user['id'];
 
                   if (index == 0) {
-                    log('📋 [AssignModerator] 渲染第一个用户: id=$userId, name=${user['name']}, email=${user['email']}');
+                    log('📋 [AssignModerator] 渲染第一个用户: id=$userId, name=${user['name']}, email=${user['email']}, badge=${user['displayBadge']}');
                   }
 
                   return Obx(() {
                     final isSelected = _selectedUserIds.contains(userId);
+                    final displayBadge = user['displayBadge'] as String? ?? '';
+                    final isAdmin = user['isAdmin'] as bool? ?? false;
 
                     return ListTile(
                       leading: Stack(
@@ -431,41 +437,45 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
                             ),
                         ],
                       ),
-                      title: Text(
-                        user['name'],
-                        style: TextStyle(
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                        ),
-                      ),
-                      subtitle: Text(user['email']),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
+                      title: Row(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: _getRoleColor(user['role']).withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
+                          Expanded(
                             child: Text(
-                              _getRoleLabel(user['role']),
+                              user['name'],
                               style: TextStyle(
-                                color: _getRoleColor(user['role']),
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
+                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                               ),
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          Checkbox(
-                            value: isSelected,
-                            activeColor: AppColors.accent,
-                            onChanged: (value) => _toggleUserSelection(userId),
+                          // 会员等级/Admin标签
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _getBadgeColor(displayBadge, isAdmin).withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(
+                                color: _getBadgeColor(displayBadge, isAdmin).withValues(alpha: 0.3),
+                              ),
+                            ),
+                            child: Text(
+                              displayBadge,
+                              style: TextStyle(
+                                color: _getBadgeColor(displayBadge, isAdmin),
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
                         ],
+                      ),
+                      subtitle: Text(user['email']),
+                      trailing: Checkbox(
+                        value: isSelected,
+                        activeColor: AppColors.accent,
+                        onChanged: (value) => _toggleUserSelection(userId),
                       ),
                       onTap: () => _toggleUserSelection(userId),
                       selected: isSelected,
@@ -577,25 +587,18 @@ class _AssignModeratorPageState extends State<AssignModeratorPage> {
         ));
   }
 
-  Color _getRoleColor(String role) {
-    switch (role.toLowerCase()) {
-      case 'admin':
-        return Colors.red;
-      case 'moderator':
+  /// 获取会员等级/Admin标签颜色
+  Color _getBadgeColor(String badge, bool isAdmin) {
+    if (isAdmin) return Colors.red;
+    switch (badge.toLowerCase()) {
+      case 'premium':
+        return Colors.purple;
+      case 'pro':
         return Colors.orange;
-      default:
+      case 'basic':
         return Colors.blue;
-    }
-  }
-
-  String _getRoleLabel(String role) {
-    switch (role.toLowerCase()) {
-      case 'admin':
-        return '管理员';
-      case 'moderator':
-        return '版主';
       default:
-        return '普通用户';
+        return Colors.grey;
     }
   }
 }
