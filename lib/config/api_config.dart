@@ -18,6 +18,9 @@ class ApiConfig {
   /// Message Service 端口 (SignalR Hub 需要直连)
   static const int messageServicePort = 5005;
 
+  /// Coworking Service 端口 (SignalR Hub 需要直连)
+  static const int coworkingServicePort = 5006;
+
   // ============================================================
   // 主机地址配置
   // ============================================================
@@ -97,6 +100,16 @@ class ApiConfig {
     }
     final host = usePhysicalDevice ? physicalDeviceHost : developmentHost;
     return 'http://$host:$messageServicePort';
+  }
+
+  /// Coworking Service 地址 (SignalR Hub 需要直连,不经过 Gateway)
+  /// SignalR WebSocket 连接需要保持长连接,因此直连 CoworkingService
+  static String get coworkingServiceBaseUrl {
+    if (kIsProduction) {
+      return productionUrl; // 生产环境通过专用域名
+    }
+    final host = usePhysicalDevice ? physicalDeviceHost : developmentHost;
+    return 'http://$host:$coworkingServicePort';
   }
 
   // API 版本

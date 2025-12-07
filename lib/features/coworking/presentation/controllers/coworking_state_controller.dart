@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/coworking/application/use_cases/coworking_use_cases.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/verification_eligibility.dart';
+import 'package:df_admin_mobile/features/coworking/infrastructure/services/signalr_coworking_service.dart';
 import 'package:get/get.dart';
 
 /// Coworking State Controller
@@ -28,6 +30,10 @@ class CoworkingStateController extends GetxController {
         _submitCoworkingVerificationUseCase =
             submitCoworkingVerificationUseCase,
         _checkVerificationEligibilityUseCase = checkVerificationEligibilityUseCase;
+
+  // === SignalR 服务 ===
+  SignalRCoworkingService? _signalRService;
+  StreamSubscription<VerificationVotesUpdate>? _votesSubscription;
 
   // === 状态管理 ===
 
@@ -65,7 +71,92 @@ class CoworkingStateController extends GetxController {
   final RxString currentCityId = ''.obs;
   final RxSet<String> verifyingCoworkingIds = <String>{}.obs;
 
+  /// 实时验证人数缓存（用于在列表/详情页显示实时更新的验证人数）
+  final RxMap<String, int> realtimeVerificationVotes = <String, int>{}.obs;
+
+  /// 获取 Coworking 的实时验证人数（优先使用实时数据，否则使用原始数据）
+  int getVerificationVotes(CoworkingSpace space) {
+    return realtimeVerificationVotes[space.id] ?? space.verificationVotes;
+  }
+
   // === 业务方法 ===
+
+  /// 初始化 SignalR 连接
+  Future<void> initSignalR() async {
+    if (_signalRService != null) return;
+
+    try {
+      _signalRService = Get.put(SignalRCoworkingService());
+      await _signalRService!.connect();
+
+      // 监听验证人数更新
+      _votesSubscription = _signalRService!.onVerificationVotesUpdated.listen(_handleVotesUpdate);
+
+      log('✅ Coworking SignalR 初始化成功');
+    } catch (e) {
+      log('❌ Coworking SignalR 初始化失败: $e');
+    }
+  }
+
+  /// 处理验证人数更新
+  void _handleVotesUpdate(VerificationVotesUpdate update) {
+    log('📊 收到验证人数更新: ${update.coworkingId} -> ${update.verificationVotes}');
+
+    // 更新实时缓存
+    realtimeVerificationVotes[update.coworkingId] = update.verificationVotes;
+
+    // 更新列表中的数据
+    final listIndex = coworkingSpaces.indexWhere((s) => s.id == update.coworkingId);
+    if (listIndex != -1) {
+      final space = coworkingSpaces[listIndex];
+      coworkingSpaces[listIndex] = space.copyWith(
+        verificationVotes: update.verificationVotes,
+        isVerified: update.isVerified,
+      );
+    }
+
+    // 更新筛选列表中的数据
+    final filteredIndex = filteredSpaces.indexWhere((s) => s.id == update.coworkingId);
+    if (filteredIndex != -1) {
+      final space = filteredSpaces[filteredIndex];
+      filteredSpaces[filteredIndex] = space.copyWith(
+        verificationVotes: update.verificationVotes,
+        isVerified: update.isVerified,
+      );
+    }
+
+    // 更新当前详情页的数据
+    if (currentCoworking.value?.id == update.coworkingId) {
+      currentCoworking.value = currentCoworking.value!.copyWith(
+        verificationVotes: update.verificationVotes,
+        isVerified: update.isVerified,
+      );
+    }
+  }
+
+  /// 订阅 Coworking 列表的验证人数更新
+  Future<void> subscribeCoworkingList(List<CoworkingSpace> spaces) async {
+    if (_signalRService == null) {
+      await initSignalR();
+    }
+
+    final ids = spaces.map((s) => s.id).toList();
+    await _signalRService?.subscribeCoworkings(ids);
+  }
+
+  /// 订阅单个 Coworking 的验证人数更新
+  Future<void> subscribeCoworking(String coworkingId) async {
+    if (_signalRService == null) {
+      await initSignalR();
+    }
+
+    await _signalRService?.subscribeCoworking(coworkingId);
+  }
+
+  /// 取消所有订阅
+  Future<void> unsubscribeAll() async {
+    await _signalRService?.unsubscribeAll();
+  }
 
   /// 加载城市的 Coworking 空间列表
   Future<void> loadCoworkingSpacesByCity(
@@ -446,10 +537,15 @@ class CoworkingStateController extends GetxController {
     coworkingCount.value = 0;
     errorMessage.value = '';
     verifyingCoworkingIds.clear();
+    realtimeVerificationVotes.clear();
   }
 
   @override
   void onClose() {
+    // 取消 SignalR 订阅
+    _votesSubscription?.cancel();
+    _signalRService?.disconnect();
+
     // 清空所有响应式变量
     coworkingSpaces.clear();
     filteredSpaces.clear();
@@ -457,6 +553,7 @@ class CoworkingStateController extends GetxController {
     currentCoworking.value = null;
     coworkingCount.value = 0;
     errorMessage.value = '';
+    realtimeVerificationVotes.clear();
 
     // 重置加载状态
     isLoadingSpaces.value = false;

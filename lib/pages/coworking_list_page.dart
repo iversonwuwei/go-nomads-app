@@ -56,6 +56,29 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
         log('✅ CoworkingList: 使用缓存数据,跳过加载');
       }
     });
+
+    // 初始化 SignalR 连接
+    _initSignalRSubscription();
+  }
+
+  /// 初始化 SignalR 订阅
+  Future<void> _initSignalRSubscription() async {
+    // 延迟等待数据加载完成后再订阅
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (!mounted) return;
+
+      // 订阅当前列表中所有 Coworking 的验证人数更新
+      if (controller.coworkingSpaces.isNotEmpty) {
+        controller.subscribeCoworkingList(controller.coworkingSpaces);
+      }
+    });
+
+    // 监听列表变化，自动订阅新加载的数据
+    ever(controller.coworkingSpaces, (List<CoworkingSpace> spaces) {
+      if (spaces.isNotEmpty && mounted) {
+        controller.subscribeCoworkingList(spaces);
+      }
+    });
   }
 
   /// 监听滚动，实现无限滚动加载
