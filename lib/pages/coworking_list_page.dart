@@ -46,15 +46,9 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
     Future.delayed(const Duration(milliseconds: 100), () {
       if (!mounted) return;
 
-      // 检查是否需要加载数据
-      final needsLoad = controller.currentCityId.value != widget.cityId || controller.coworkingSpaces.isEmpty;
-
-      if (needsLoad) {
-        log('🔄 CoworkingList: 首次加载或cityId变化,开始加载数据');
-        controller.loadCoworkingsByCity(widget.cityId, refresh: true);
-      } else {
-        log('✅ CoworkingList: 使用缓存数据,跳过加载');
-      }
+      // 每次进入页面都刷新数据，确保数据最新
+      log('🔄 CoworkingList: 加载数据 cityId=${widget.cityId}');
+      controller.loadCoworkingsByCity(widget.cityId, refresh: true);
     });
 
     // 初始化 SignalR 连接

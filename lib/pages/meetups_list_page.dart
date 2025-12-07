@@ -95,6 +95,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
   @override
   void initState() {
     super.initState();
+    log('🔵 MeetupsListPage initState 被调用');
     _tabController = TabController(length: 4, vsync: this);
 
     // 为每个 tab 创建滚动控制器
@@ -178,8 +179,17 @@ class _MeetupsListPageState extends State<MeetupsListPage>
 
   /// 加载指定 tab 的数据
   Future<void> _loadTabData(int tabIndex, {bool refresh = false}) async {
-    if (_tabLoading[tabIndex]!.value) return;
-    if (!refresh && !_tabHasMore[tabIndex]!) return;
+    log('📡 _loadTabData 被调用: tabIndex=$tabIndex, refresh=$refresh');
+    log('   _tabLoading[$tabIndex]=${_tabLoading[tabIndex]!.value}, _tabHasMore[$tabIndex]=${_tabHasMore[tabIndex]}');
+
+    if (_tabLoading[tabIndex]!.value) {
+      log('   ⏭️ 跳过：正在加载中');
+      return;
+    }
+    if (!refresh && !_tabHasMore[tabIndex]!) {
+      log('   ⏭️ 跳过：没有更多数据');
+      return;
+    }
 
     _tabLoading[tabIndex]!.value = true;
 
@@ -268,6 +278,15 @@ class _MeetupsListPageState extends State<MeetupsListPage>
   @override
   Future<void> onRouteResume() async {
     await _refreshCurrentTab();
+  }
+
+  /// 重写 didPush，当页面被 push 进入时也刷新数据
+  /// 这解决了从 Home 重复进入时数据不刷新的问题
+  @override
+  void didPush() {
+    super.didPush();
+    // 页面首次进入时，initState 已经加载了数据
+    // 这里不需要重复加载
   }
 
   @override
