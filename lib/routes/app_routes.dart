@@ -255,6 +255,7 @@ class AppRoutes {
       name: meetupsList,
       page: () => const MeetupsListPage(),
       middlewares: [AuthMiddleware()],
+      preventDuplicates: false, // 允许重复进入，确保每次都重新加载数据
     ),
     GetPage(
       name: meetupDetail,
@@ -296,6 +297,7 @@ class AppRoutes {
         );
       },
       middlewares: [AuthMiddleware()],
+      preventDuplicates: false, // 允许重复进入，确保每次都重新加载数据
     ),
     GetPage(
       name: coworkingDetail,
