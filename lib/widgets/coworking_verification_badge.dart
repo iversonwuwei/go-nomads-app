@@ -151,6 +151,9 @@ class CoworkingVerificationBadge extends StatelessWidget {
       // 未验证的空间允许点击（包括创建者，点击时会显示提示）
       final bool canTap = !space.isVerified && !isVerifying;
 
+      // 获取实时验证人数（优先使用实时数据）
+      final int verificationVotes = _coworkingController.getVerificationVotes(space);
+
       final Color backgroundColor =
           space.isVerified ? Colors.blue : Colors.grey;
       final IconData iconData = space.isVerified
@@ -187,6 +190,25 @@ class CoworkingVerificationBadge extends StatelessWidget {
                 fontWeight: FontWeight.w500,
               ),
             ),
+            // 显示验证人数（未验证时显示）
+            if (!space.isVerified) ...[
+              const SizedBox(width: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '$verificationVotes',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       );

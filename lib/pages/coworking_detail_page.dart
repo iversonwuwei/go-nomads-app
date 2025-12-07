@@ -4,6 +4,7 @@ import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_review.dart' as review_entity;
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
 import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_review_repository.dart';
+import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/coworking_verification_badge.dart';
@@ -46,6 +47,20 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
     _space = widget.space;
     // 异步加载评论,不阻塞页面显示
     Future.microtask(() => _loadComments());
+
+    // 订阅当前 Coworking 的验证人数实时更新
+    _subscribeVerificationUpdates();
+  }
+
+  /// 订阅验证人数实时更新
+  Future<void> _subscribeVerificationUpdates() async {
+    try {
+      final controller = Get.find<CoworkingStateController>();
+      await controller.subscribeCoworking(_space.id);
+      log('✅ 已订阅 Coworking ${_space.id} 的验证人数更新');
+    } catch (e) {
+      log('❌ 订阅验证人数更新失败: $e');
+    }
   }
 
   Future<void> _loadComments() async {
