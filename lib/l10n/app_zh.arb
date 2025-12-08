@@ -479,6 +479,7 @@
   "photos": "照片",
   "weather": "天气",
   "neighborhoods": "附近",
+  "noNearbyCities": "暂无附近城市",
   "coworking": "共享办公",
   "loadingGuide": "加载指南...",
   "startRating": "开始评分",

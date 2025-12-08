@@ -2660,6 +2660,12 @@ abstract class AppLocalizations {
   /// **'附近'**
   String get neighborhoods;
 
+  /// No description provided for @noNearbyCities.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无附近城市'**
+  String get noNearbyCities;
+
   /// No description provided for @loadingGuide.
   ///
   /// In zh, this message translates to:

@@ -690,6 +690,18 @@ class DependencyInjection {
       ),
       fenix: true,
     );
+    Get.lazyPut(
+      () => GetNearbyCitiesUseCase(
+        Get.find<IAiRepository>(),
+      ),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => GenerateNearbyCitiesStreamUseCase(
+        Get.find<IAiRepository>(),
+      ),
+      fenix: true,
+    );
 
     // Controller
     Get.lazyPut(
@@ -701,6 +713,8 @@ class DependencyInjection {
         Get.find<GetDigitalNomadGuideUseCase>(),
         Get.find<GetUserTravelPlansUseCase>(),
         Get.find<GetTravelPlanDetailUseCase>(),
+        Get.find<GetNearbyCitiesUseCase>(),
+        Get.find<GenerateNearbyCitiesStreamUseCase>(),
       ),
       fenix: true, // 确保控制器在被销毁后可以重新创建
     );

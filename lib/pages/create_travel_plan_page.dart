@@ -50,12 +50,17 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
 
     try {
       final locationService = Get.find<LocationService>();
-      final position = await locationService.getCurrentLocation();
+      
+      // 添加超时机制，防止无限等待
+      final position =
+          await locationService.getCurrentLocation().timeout(const Duration(seconds: 10), onTimeout: () => null);
+
+      if (!mounted) return;
 
       if (position == null) {
-        debugPrint('❌ 无法获取位置，使用默认值');
+        debugPrint('❌ 无法获取位置或超时，使用默认值');
         setState(() {
-          departureLocation = '北京';
+          departureLocation = '';
           _isLoadingLocation = false;
         });
         return;
@@ -63,11 +68,14 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
 
       debugPrint('📍 获取到位置: ${position.latitude}, ${position.longitude}');
 
-      // 使用高德逆地理编码获取地址
+      // 使用高德逆地理编码获取地址，同样添加超时
       final geoResult = await AmapPoiService.instance.reverseGeocode(
         latitude: position.latitude,
         longitude: position.longitude,
-      );
+          )
+          .timeout(const Duration(seconds: 5), onTimeout: () => null);
+
+      if (!mounted) return;
 
       if (geoResult != null) {
         setState(() {
@@ -78,17 +86,19 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
         debugPrint('✅ 逆地理编码成功: $departureLocation');
       } else {
         setState(() {
-          departureLocation = '北京';
+          departureLocation = '';
           _isLoadingLocation = false;
         });
-        debugPrint('❌ 逆地理编码失败，使用默认值');
+        debugPrint('❌ 逆地理编码失败或超时');
       }
     } catch (e) {
       debugPrint('❌ 获取位置异常: $e');
-      setState(() {
-        departureLocation = '北京';
-        _isLoadingLocation = false;
-      });
+      if (mounted) {
+        setState(() {
+          departureLocation = '';
+          _isLoadingLocation = false;
+        });
+      }
     }
   }
 
@@ -363,6 +373,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                                     final address = result['address'] as String? ?? '';
                                     setState(() {
                                       departureLocation = address;
+                                      _isLoadingLocation = false; // 用户手动选择后停止加载状态
                                     });
                                   }
                                 } catch (e) {

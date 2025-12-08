@@ -1303,7 +1303,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cons => 'Cons';
 
   @override
-  String get neighborhoods => 'Neighborhoods';
+  String get neighborhoods => 'Nearby';
+
+  @override
+  String get noNearbyCities => 'No nearby cities available';
 
   @override
   String get loadingGuide => 'Loading guide...';

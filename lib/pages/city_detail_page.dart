@@ -10,6 +10,7 @@ import 'package:df_admin_mobile/features/city/domain/entities/city_detail.dart' 
 import 'package:df_admin_mobile/features/city/domain/entities/city_rating_item.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/digital_nomad_guide.dart';
 import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
+import 'package:df_admin_mobile/features/city/infrastructure/models/city_detail_dto.dart' hide ProsCons, BestArea;
 import 'package:df_admin_mobile/features/city/presentation/controllers/city_detail_state_controller.dart';
 import 'package:df_admin_mobile/features/city/presentation/controllers/city_rating_controller.dart';
 import 'package:df_admin_mobile/features/city/presentation/widgets/city_ratings_card.dart';
@@ -91,6 +92,10 @@ class _CityDetailPageState extends State<CityDetailPage>
   // Guide Tab 初始化标志，防止滚动时重复请求
   bool _hasInitializedGuide = false;
   String? _lastGuideLoadedCityId;
+
+  // Nearby Cities Tab 初始化标志，防止滚动时重复请求
+  bool _hasInitializedNearbyCities = false;
+  String? _lastNearbyCitiesLoadedCityId;
 
   // 从 Get.arguments 或构造函数获取参数
   late final String cityId;
@@ -1035,11 +1040,45 @@ class _CityDetailPageState extends State<CityDetailPage>
     await reloadCityData();
   }
 
-  /// 检查用户是否有权限生成指南（会员 + 管理员或当前城市版主）
+  /// 检查用户是否有权限生成指南（管理员无会员限制，版主需要会员权限）
   Future<bool> _checkGeneratePermission() async {
     log('🔐 [权限检查] 开始检查生成权限...');
 
-    // 1. 首先检查会员权限
+    // 1. 首先检查是否是管理员（管理员无会员限制，直接放行）
+    try {
+      final cityDetailController = Get.find<CityDetailStateController>();
+      final city = cityDetailController.currentCity.value;
+
+      if (city != null) {
+        log('🔐 [权限检查] 城市信息:');
+        log('   cityId: ${city.id}');
+        log('   cityName: ${city.name}');
+        log('   isCurrentUserAdmin: ${city.isCurrentUserAdmin}');
+        log('   isCurrentUserModerator: ${city.isCurrentUserModerator}');
+        log('   moderatorId: ${city.moderatorId}');
+
+        // 检查是否是管理员（管理员直接跳过会员检查）
+        if (city.isCurrentUserAdmin) {
+          log('✅ [权限检查] 当前用户是管理员，无需会员权限，允许生成');
+          return true;
+        }
+      }
+    } catch (e) {
+      log('⚠️ [权限检查] 获取城市信息异常: $e');
+    }
+
+    // 从 token 获取角色（仅检查 admin，管理员直接放行）
+    log('🔐 [权限检查] 从 token 获取角色信息...');
+    final tokenService = TokenStorageService();
+    final role = await tokenService.getUserRole();
+    log('   用户角色: $role');
+
+    if (role == 'admin') {
+      log('✅ [权限检查] 用户是管理员，无需会员权限，允许生成');
+      return true;
+    }
+
+    // 2. 非管理员用户需要检查会员权限
     try {
       final membershipController = Get.find<MembershipStateController>();
       final accessCheck = membershipController.checkAIAccess();
@@ -1055,31 +1094,18 @@ class _CityDetailPageState extends State<CityDetailPage>
       // 如果会员控制器未注册，暂时跳过会员检查
     }
 
-    // 2. 然后检查是否是管理员或版主
+    // 3. 然后检查是否是版主
     try {
       final cityDetailController = Get.find<CityDetailStateController>();
       final city = cityDetailController.currentCity.value;
 
       if (city != null) {
-        log('🔐 [权限检查] 城市信息:');
-        log('   cityId: ${city.id}');
-        log('   cityName: ${city.name}');
-        log('   isCurrentUserAdmin: ${city.isCurrentUserAdmin}');
-        log('   isCurrentUserModerator: ${city.isCurrentUserModerator}');
-        log('   moderatorId: ${city.moderatorId}');
-
-        // 检查是否是管理员或该城市的版主
-        if (city.isCurrentUserAdmin) {
-          log('✅ [权限检查] 当前用户是管理员，允许生成');
-          return true;
-        }
-
         if (city.isCurrentUserModerator) {
           log('✅ [权限检查] 当前用户是该城市版主，允许生成');
           return true;
         }
 
-        log('❌ [权限检查] 当前用户既不是管理员也不是该城市版主');
+        log('❌ [权限检查] 当前用户不是该城市版主');
         _showNoPermissionDialog();
         return false;
       } else {
@@ -1087,17 +1113,6 @@ class _CityDetailPageState extends State<CityDetailPage>
       }
     } catch (e) {
       log('❌ [权限检查] 获取城市信息异常: $e');
-    }
-
-    // 如果无法获取城市信息，从 token 获取角色（仅检查 admin）
-    log('🔐 [权限检查] 从 token 获取角色信息...');
-    final tokenService = TokenStorageService();
-    final role = await tokenService.getUserRole();
-    log('   用户角色: $role');
-
-    if (role == 'admin') {
-      log('✅ [权限检查] 用户是管理员，允许生成');
-      return true;
     }
 
     log('❌ [权限检查] 用户无权限生成指南');
@@ -1430,6 +1445,179 @@ class _CityDetailPageState extends State<CityDetailPage>
     controller.generateDigitalNomadGuideStream(
       cityId: cityId,
       cityName: cityName,
+    );
+  }
+
+  /// 显示附近城市 AI 生成进度对话框
+  void _showNearbyCitiesGenerateProgressDialog(AiStateController controller) async {
+    log('🎬 [NearbyCitiesProgressDialog] 准备显示对话框');
+    log('   当前状态: isGenerating=${controller.isGeneratingNearbyCities}, progress=${controller.nearbyCitiesGenerationProgress}%');
+
+    // 在显示对话框之前设置监听器
+    Worker? statusWorker;
+
+    // 显示对话框
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        // 🎯 在对话框显示后立即设置监听器
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (statusWorker == null) {
+            log('🔧 [NearbyCitiesProgressDialog] 设置 ever 监听器');
+
+            statusWorker = ever(
+              controller.isNearbyCitiesCompletedRx,
+              (completed) {
+                log('🔔 [NearbyCitiesProgressDialog] ever 回调被触发！completed=$completed');
+
+                if (completed) {
+                  log('🎉 [NearbyCitiesProgressDialog] 任务已完成，800ms后关闭对话框');
+
+                  Future.delayed(const Duration(milliseconds: 800), () {
+                    log('🚪 [NearbyCitiesProgressDialog] 执行关闭操作');
+
+                    if (Navigator.of(dialogContext).canPop()) {
+                      Navigator.of(dialogContext).pop();
+                      log('✅ [NearbyCitiesProgressDialog] 对话框已关闭');
+
+                      // 清理监听器
+                      statusWorker?.dispose();
+                      statusWorker = null;
+
+                      // 延迟500ms加载最新数据
+                      Future.delayed(const Duration(milliseconds: 500), () {
+                        log('🔄 [NearbyCitiesProgressDialog] 重新加载附近城市数据');
+                        controller.loadNearbyCities(cityId: cityId);
+
+                        if (controller.nearbyCities.isNotEmpty) {
+                          AppToast.success('附近城市生成成功!');
+                        } else if (controller.nearbyCitiesError != null) {
+                          AppToast.error('生成失败: ${controller.nearbyCitiesError}');
+                        }
+                      });
+                    } else {
+                      log('❌ [NearbyCitiesProgressDialog] 无法关闭 - canPop=false');
+                    }
+                  });
+                }
+              },
+            );
+          }
+        });
+
+        return Obx(() {
+          log('🔄 [NearbyCitiesProgressDialog] Obx rebuild - progress=${controller.nearbyCitiesGenerationProgress}%, completed=${controller.isNearbyCitiesCompleted}');
+
+          final message = controller.nearbyCitiesGenerationMessage;
+          final isImagePhase = message.contains('图片') || message.contains('🖼️');
+          final isSuccess = message.contains('✅');
+          final isFailed = message.contains('⚠️') || message.contains('❌');
+
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: Row(
+              children: [
+                Icon(
+                  isImagePhase ? FontAwesomeIcons.image : FontAwesomeIcons.mapLocationDot,
+                  color: const Color(0xFFFF4458),
+                  size: 28,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    isImagePhase ? 'AI 正在生成城市图片' : 'AI 正在生成附近城市',
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                ),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 16),
+                LinearProgressIndicator(
+                  value: controller.nearbyCitiesGenerationProgress / 100,
+                  backgroundColor: Colors.grey[200],
+                  valueColor: const AlwaysStoppedAnimation<Color>(
+                    Color(0xFFFF4458),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // 进度百分比
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(
+                      '${controller.nearbyCitiesGenerationProgress}%',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Color(0xFFFF4458),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                // 状态消息
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isSuccess
+                        ? Colors.green.withValues(alpha: 0.1)
+                        : isFailed
+                            ? Colors.orange.withValues(alpha: 0.1)
+                            : Colors.grey.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    message.isEmpty ? '准备开始生成...' : message,
+                    style: TextStyle(
+                      color: isSuccess
+                          ? Colors.green[700]
+                          : isFailed
+                              ? Colors.orange[700]
+                              : Colors.grey[700],
+                      fontSize: 14,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              // 后端运行按钮 - 只在生成中时显示
+              if (controller.isGeneratingNearbyCities)
+                TextButton(
+                  onPressed: () {
+                    log('❌ [NearbyCitiesProgressDialog] 用户取消');
+                    statusWorker?.dispose();
+                    Navigator.of(dialogContext).pop();
+                  },
+                  child: const Text('后端运行'),
+                ),
+            ],
+          );
+        });
+      },
+    );
+
+    // 启动异步生成任务
+    log('🚀 [NearbyCitiesProgressDialog] 启动生成任务');
+
+    // 获取城市国家信息
+    final cityController = Get.find<CityDetailStateController>();
+    final city = cityController.currentCity.value;
+
+    controller.generateNearbyCitiesStream(
+      cityId: cityId,
+      cityName: cityName,
+      country: city?.country,
+      radiusKm: 100,
+      count: 4,
     );
   }
 
@@ -2127,7 +2315,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                   _buildPhotosTab(userContentController),
                   _buildWeatherTab(weatherController),
                   _buildHotelsTab(cityDetailController),
-                  _buildNeighborhoodsTab(cityDetailController),
+                  _buildNearbyCitiesTab(aiController, cityDetailController),
                   _buildCoworkingTab(coworkingController),
                 ],
               ),
@@ -2535,6 +2723,322 @@ class _CityDetailPageState extends State<CityDetailPage>
             )),
       ],
     );
+  }
+
+  /// 附近城市内容显示
+  Widget _buildNearbyCitiesContent(BuildContext context, List<NearbyCityDto> cities, AiStateController controller) {
+    // ignore: unused_local_variable
+    final l10n = AppLocalizations.of(context)!;
+    return RefreshIndicator(
+      onRefresh: () async {
+        await controller.loadNearbyCities(cityId: cityId);
+      },
+      child: ListView(
+        padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
+        children: [
+          // 操作栏
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.green.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  FontAwesomeIcons.cloudArrowUp,
+                  color: Colors.green,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '☁️ 从后端加载',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.green[800],
+                    ),
+                  ),
+                ),
+                Row(
+                  children: [
+                    TextButton.icon(
+                      onPressed: controller.isGeneratingNearbyCities || controller.isLoadingNearbyCities
+                          ? null
+                          : () {
+                              controller.loadNearbyCities(cityId: cityId);
+                            },
+                      icon: const Icon(FontAwesomeIcons.arrowsRotate, size: 18),
+                      label: const Text('刷新'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: const Color(0xFFFF4458),
+                        disabledForegroundColor: Colors.grey[400],
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    TextButton.icon(
+                      onPressed: controller.isGeneratingNearbyCities || controller.isLoadingNearbyCities
+                          ? null
+                          : () async {
+                              if (!await _checkGeneratePermission()) {
+                                return;
+                              }
+                              _showNearbyCitiesGenerateProgressDialog(controller);
+                            },
+                      icon: const Icon(FontAwesomeIcons.wandMagicSparkles, size: 18),
+                      label: const Text('AI 生成'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: const Color(0xFFFF4458),
+                        disabledForegroundColor: Colors.grey[400],
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          // 附近城市列表
+          ...cities.map((city) => _buildNearbyCityCard(city)),
+        ],
+      ),
+    );
+  }
+
+  /// 附近城市卡片
+  Widget _buildNearbyCityCard(NearbyCityDto city) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: InkWell(
+        onTap: () {
+          // 如果有 targetCityId，可以跳转到城市详情
+          if (city.targetCityId != null && city.targetCityId!.isNotEmpty) {
+            Get.toNamed(
+              AppRoutes.cityDetail,
+              arguments: {
+                'cityId': city.targetCityId,
+                'cityName': city.name,
+                'cityImage': city.imageUrl ?? '',
+              },
+            );
+          }
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 城市图片（始终显示图片区域）
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              child: city.imageUrl != null && city.imageUrl!.isNotEmpty
+                  ? SafeNetworkImage(
+                      imageUrl: city.imageUrl!,
+                      height: 140,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    )
+                  : Container(
+                      height: 140,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Colors.grey[300]!,
+                            Colors.grey[200]!,
+                          ],
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            FontAwesomeIcons.city,
+                            size: 40,
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            city.name,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[500],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 城市名称和国家
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              city.name,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              city.country,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // 距离和交通
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFF4458).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              _getTransportIcon(city.transportation),
+                              size: 14,
+                              color: const Color(0xFFFF4458),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              '${city.distance.toStringAsFixed(0)} km',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFFFF4458),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  // 旅行时间
+                  Row(
+                    children: [
+                      const Icon(FontAwesomeIcons.clock, size: 14, color: Colors.grey),
+                      const SizedBox(width: 6),
+                      Text(
+                        _formatTravelTime(city.travelTimeMinutes),
+                        style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
+                  // 亮点
+                  if (city.highlights.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: city.highlights.take(3).map((highlight) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            highlight,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.blue[700],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                  // 游民特色
+                  if (city.nomadFeatures != null) ...[
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        if (city.nomadFeatures!.internetSpeedMbps != null) ...[
+                          const Icon(FontAwesomeIcons.wifi, size: 12, color: Colors.green),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${city.nomadFeatures!.internetSpeedMbps} Mbps',
+                            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                          ),
+                          const SizedBox(width: 16),
+                        ],
+                        if (city.nomadFeatures!.monthlyCostUsd != null) ...[
+                          const Icon(FontAwesomeIcons.dollarSign, size: 12, color: Colors.orange),
+                          const SizedBox(width: 4),
+                          Text(
+                            '\$${city.nomadFeatures!.monthlyCostUsd!.toStringAsFixed(0)}/mo',
+                            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 获取交通方式图标
+  IconData _getTransportIcon(String transportation) {
+    switch (transportation.toLowerCase()) {
+      case 'car':
+      case 'driving':
+        return FontAwesomeIcons.car;
+      case 'train':
+      case 'rail':
+        return FontAwesomeIcons.train;
+      case 'bus':
+        return FontAwesomeIcons.bus;
+      case 'plane':
+      case 'flight':
+        return FontAwesomeIcons.plane;
+      case 'ferry':
+      case 'boat':
+        return FontAwesomeIcons.ferry;
+      default:
+        return FontAwesomeIcons.route;
+    }
+  }
+
+  /// 格式化旅行时间
+  String _formatTravelTime(int minutes) {
+    if (minutes < 60) {
+      return '$minutes 分钟';
+    }
+    final hours = minutes ~/ 60;
+    final mins = minutes % 60;
+    if (mins == 0) {
+      return '$hours 小时';
+    }
+    return '$hours 小时 $mins 分钟';
   }
 
   // Pros & Cons 标签
@@ -4042,78 +4546,128 @@ class _CityDetailPageState extends State<CityDetailPage>
     });
   }
 
-  // Neighborhoods 标签
-  Widget _buildNeighborhoodsTab(CityDetailStateController controller) {
+  // 附近城市标签 (Nearby Cities Tab)
+  Widget _buildNearbyCitiesTab(AiStateController controller, CityDetailStateController cityController) {
+    // 🔥 只在首次加载或城市变化时请求数据，防止滚动时重复请求
+    if (!_hasInitializedNearbyCities || _lastNearbyCitiesLoadedCityId != cityId) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final currentCities = controller.nearbyCities;
+
+        // 如果是不同城市,先清空旧数据
+        if (currentCities.isNotEmpty && currentCities.first.sourceCityId != cityId) {
+          log('🔄 [NearbyCitiesTab] 城市切换，清空旧数据');
+          controller.resetNearbyCitiesState();
+        }
+
+        // 只在未加载过且控制器空闲时才加载
+        if (!controller.isGeneratingNearbyCities && !controller.isLoadingNearbyCities) {
+          final shouldLoad = currentCities.isEmpty || currentCities.first.sourceCityId != cityId;
+          if (shouldLoad) {
+            log('📍 [NearbyCitiesTab] 加载附近城市: $cityName (ID: $cityId)');
+            controller.loadNearbyCities(cityId: cityId);
+          }
+        }
+
+        // 标记已初始化
+        _hasInitializedNearbyCities = true;
+        _lastNearbyCitiesLoadedCityId = cityId;
+      });
+    }
+
     return Obx(() {
-      // 显示加载状态
-      if (controller.isLoading.value) {
-        return const Center(child: CircularProgressIndicator());
+      log('🔍 [NearbyCitiesTab] Rebuilding... cityId=$cityId, isLoading=${controller.isLoadingNearbyCities}, isGenerating=${controller.isGeneratingNearbyCities}, cities=${controller.nearbyCities.length}');
+
+      // 优先显示附近城市内容(如果有且是当前城市的)
+      final cities = controller.nearbyCities;
+      if (cities.isNotEmpty && cities.first.sourceCityId == cityId) {
+        log('✅ [NearbyCitiesTab] Showing nearby cities content for $cityName');
+        return _buildNearbyCitiesContent(context, cities, controller);
       }
 
-      // TODO: City 实体暂时没有 neighborhoods/bestAreas，先显示空状态
-      final neighborhoods = <dynamic>[];
-      if (neighborhoods.isEmpty) {
-        return const Center(child: Text('No neighborhoods available'));
-      }
-
-      return ListView.builder(
-        padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
-        itemCount: neighborhoods.length,
-        itemBuilder: (context, index) {
-          final neighborhood = neighborhoods[index];
-          return Card(
-            margin: const EdgeInsets.only(bottom: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                  child: Image.network(
-                    neighborhood.imageUrl,
-                    height: 150,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
+      // 显示加载或生成状态
+      if (controller.isLoadingNearbyCities || controller.isGeneratingNearbyCities) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              Text(
+                controller.isGeneratingNearbyCities ? '🤖 AI 正在生成附近城市...' : '📍 正在加载附近城市...',
+                style: const TextStyle(fontSize: 16, color: Colors.grey),
+              ),
+              if (controller.isGeneratingNearbyCities) ...[
+                const SizedBox(height: 12),
+                Text(
+                  controller.nearbyCitiesGenerationMessage,
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  textAlign: TextAlign.center,
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        neighborhood.name,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        neighborhood.description,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[700],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          const Icon(FontAwesomeIcons.shieldHalved, size: 16, color: Color(0xFFFF4458)),
-                          const SizedBox(width: 4),
-                          Text('${AppLocalizations.of(context)!.safety}: ${neighborhood.safetyScore}'),
-                          const SizedBox(width: 16),
-                          const Icon(FontAwesomeIcons.dollarSign, size: 16, color: Color(0xFFFF4458)),
-                          const SizedBox(width: 4),
-                          Text('\$${neighborhood.rentPrice.toStringAsFixed(0)}/mo'),
-                        ],
-                      ),
-                    ],
+                const SizedBox(height: 8),
+                Text(
+                  '${controller.nearbyCitiesGenerationProgress}%',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFFF4458),
                   ),
                 ),
               ],
-            ),
-          );
-        },
+            ],
+          ),
+        );
+      }
+
+      // 显示空状态,带有"AI 生成"按钮
+      log('⚠️ [NearbyCitiesTab] No nearby cities, showing empty state');
+      return Center(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                FontAwesomeIcons.mapLocationDot,
+                size: 60,
+                color: Colors.grey,
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                '暂无附近城市',
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '发现 100 公里内的 4 个相邻城市',
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: controller.isGeneratingNearbyCities
+                    ? null
+                    : () async {
+                        // 先检查权限
+                        if (!await _checkGeneratePermission()) {
+                          return;
+                        }
+                        _showNearbyCitiesGenerateProgressDialog(controller);
+                      },
+                icon: const Icon(FontAwesomeIcons.wandMagicSparkles),
+                label: const Text('AI 生成附近城市'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFF4458),
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: Colors.grey[300],
+                  disabledForegroundColor: Colors.grey[500],
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       );
     });
   }
