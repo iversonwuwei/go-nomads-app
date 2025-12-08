@@ -1,10 +1,10 @@
-import 'dart:developer';
-
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/ai/application/use_cases/ai_use_cases.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/digital_nomad_guide.dart';
+import 'package:df_admin_mobile/features/city/infrastructure/models/city_detail_dto.dart';
 import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan.dart';
 import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan_summary.dart';
 import 'package:get/get.dart';
@@ -16,6 +16,7 @@ import 'package:get/get.dart';
 /// - 数字游民指南生成 (标准和流式)
 /// - 数字游民指南从后端加载
 /// - 旅行计划检索
+/// - 附近城市生成和加载
 /// - SignalR 实时更新订阅
 class AiStateController extends GetxController {
   // Use Cases
@@ -27,6 +28,8 @@ class AiStateController extends GetxController {
   final GetDigitalNomadGuideUseCase _getDigitalNomadGuideUseCase;
   final GetUserTravelPlansUseCase _getUserTravelPlansUseCase;
   final GetTravelPlanDetailUseCase _getTravelPlanDetailUseCase;
+  final GetNearbyCitiesUseCase _getNearbyCitiesUseCase;
+  final GenerateNearbyCitiesStreamUseCase _generateNearbyCitiesStreamUseCase;
 
   AiStateController(
     this._generateTravelPlanUseCase,
@@ -36,6 +39,8 @@ class AiStateController extends GetxController {
     this._getDigitalNomadGuideUseCase,
     this._getUserTravelPlansUseCase,
     this._getTravelPlanDetailUseCase,
+    this._getNearbyCitiesUseCase,
+    this._generateNearbyCitiesStreamUseCase,
   );
 
   // ==================== 可观察状态 ====================
@@ -60,6 +65,15 @@ class AiStateController extends GetxController {
   final _userTravelPlans = <TravelPlanSummary>[].obs;
   final _isLoadingUserPlans = false.obs;
   final _userPlansError = Rx<String?>(null);
+
+  // 附近城市状态
+  final _nearbyCities = <NearbyCityDto>[].obs;
+  final _isLoadingNearbyCities = false.obs;
+  final _isGeneratingNearbyCities = false.obs;
+  final _nearbyCitiesGenerationProgress = 0.obs;
+  final _nearbyCitiesGenerationMessage = ''.obs;
+  final _isNearbyCitiesCompleted = false.obs;
+  final _nearbyCitiesError = Rx<String?>(null);
 
   // ==================== Getters ====================
 
@@ -95,6 +109,20 @@ class AiStateController extends GetxController {
   RxBool get isLoadingUserPlansRx => _isLoadingUserPlans;
   String? get userPlansError => _userPlansError.value;
   TravelPlanSummary? get latestTravelPlan => _userTravelPlans.isNotEmpty ? _userTravelPlans.first : null;
+
+  // 附近城市
+  List<NearbyCityDto> get nearbyCities => _nearbyCities;
+  RxList<NearbyCityDto> get nearbyCitiesRx => _nearbyCities;
+  bool get isLoadingNearbyCities => _isLoadingNearbyCities.value;
+  RxBool get isLoadingNearbyCitiesRx => _isLoadingNearbyCities;
+  bool get isGeneratingNearbyCities => _isGeneratingNearbyCities.value;
+  RxBool get isGeneratingNearbyCitiesRx => _isGeneratingNearbyCities;
+  int get nearbyCitiesGenerationProgress => _nearbyCitiesGenerationProgress.value;
+  RxInt get nearbyCitiesGenerationProgressRx => _nearbyCitiesGenerationProgress;
+  String get nearbyCitiesGenerationMessage => _nearbyCitiesGenerationMessage.value;
+  bool get isNearbyCitiesCompleted => _isNearbyCitiesCompleted.value;
+  RxBool get isNearbyCitiesCompletedRx => _isNearbyCitiesCompleted;
+  String? get nearbyCitiesError => _nearbyCitiesError.value;
 
   // ==================== 业务方法 ====================
 
@@ -407,6 +435,118 @@ class AiStateController extends GetxController {
     }
   }
 
+  // ==================== 附近城市方法 ====================
+
+  /// 加载附近城市 (从后端API获取)
+  Future<List<NearbyCityDto>> loadNearbyCities({
+    required String cityId,
+  }) async {
+    try {
+      log('📍 [loadNearbyCities] 从后端API加载: cityId=$cityId');
+      _isLoadingNearbyCities.value = true;
+      _nearbyCitiesError.value = null;
+
+      final result = await _getNearbyCitiesUseCase.execute(cityId);
+
+      return result.fold(
+        onSuccess: (cities) {
+          log('✅ [loadNearbyCities] 从后端加载成功: ${cities.length} 个城市');
+          _nearbyCities.assignAll(cities);
+          _isLoadingNearbyCities.value = false;
+          return cities;
+        },
+        onFailure: (failure) {
+          log('⚠️ [loadNearbyCities] 后端无数据或加载失败: ${failure.message}');
+          _nearbyCitiesError.value = failure.message;
+          _nearbyCities.clear();
+          _isLoadingNearbyCities.value = false;
+          return [];
+        },
+      );
+    } catch (e) {
+      log('❌ [loadNearbyCities] 加载失败: $e');
+      _nearbyCitiesError.value = e.toString();
+      _nearbyCities.clear();
+      _isLoadingNearbyCities.value = false;
+      return [];
+    }
+  }
+
+  /// 生成附近城市 (流式方式)
+  Future<void> generateNearbyCitiesStream({
+    required String cityId,
+    required String cityName,
+    String? country,
+    int radiusKm = 100,
+    int count = 4,
+  }) async {
+    log('🎯 [Controller] generateNearbyCitiesStream 开始');
+    log('   cityId: $cityId');
+    log('   cityName: $cityName');
+    log('   radiusKm: $radiusKm');
+    log('   count: $count');
+
+    _isGeneratingNearbyCities.value = true;
+    _nearbyCitiesGenerationProgress.value = 0;
+    _nearbyCitiesGenerationMessage.value = '';
+    _nearbyCitiesError.value = null;
+
+    log('✅ [Controller] 初始状态设置完成: isGenerating=true, progress=0');
+
+    try {
+      await _generateNearbyCitiesStreamUseCase.execute(
+        GenerateNearbyCitiesStreamParams(
+          cityId: cityId,
+          cityName: cityName,
+          country: country,
+          radiusKm: radiusKm,
+          count: count,
+          onProgress: (task) {
+            final message = task.progress.message ?? '处理中...';
+            final progress = task.progress.percentage;
+            final completed = task.progress.completed;
+            log('📊 [Controller] 收到进度: $progress% - $message - completed: $completed');
+            _nearbyCitiesGenerationMessage.value = message;
+            _nearbyCitiesGenerationProgress.value = progress;
+            _isNearbyCitiesCompleted.value = completed;
+          },
+          onData: (cities) async {
+            log('✅ [Controller] 收到附近城市生成完成事件');
+            log('   cities count: ${cities.length}');
+
+            _nearbyCities.assignAll(cities);
+            _nearbyCitiesGenerationProgress.value = 100;
+            _nearbyCitiesGenerationMessage.value = '生成完成！';
+
+            // 延迟一下再设置 false，确保 UI 能看到 100%
+            await Future.delayed(const Duration(milliseconds: 500));
+            _isGeneratingNearbyCities.value = false;
+
+            log('✅ [Controller] 附近城市生成成功: $cityName');
+          },
+          onError: (error) {
+            log('❌ [Controller] 收到错误: $error');
+            _nearbyCitiesError.value = error;
+            _isGeneratingNearbyCities.value = false;
+          },
+        ),
+      );
+
+      log('✅ [Controller] generateNearbyCitiesStream 执行完成');
+
+      // 方法返回后，如果状态还是 true，说明被中途取消或异常
+      if (_isGeneratingNearbyCities.value) {
+        log('⚠️ [Controller] 任务结束但状态异常，重置状态');
+        _isGeneratingNearbyCities.value = false;
+      }
+    } catch (e, stackTrace) {
+      log('❌ [Controller] generateNearbyCitiesStream 异常: $e');
+      log('   StackTrace: $stackTrace');
+      _nearbyCitiesError.value = e.toString();
+      _isGeneratingNearbyCities.value = false;
+    }
+  }
+
   /// 重置旅行计划状态
   void resetTravelPlanState() {
     _isGeneratingTravelPlan.value = false;
@@ -426,6 +566,17 @@ class AiStateController extends GetxController {
     _isLoadingGuide.value = false;
   }
 
+  /// 重置附近城市状态
+  void resetNearbyCitiesState() {
+    _isGeneratingNearbyCities.value = false;
+    _nearbyCitiesGenerationProgress.value = 0;
+    _nearbyCitiesGenerationMessage.value = '';
+    _nearbyCities.clear();
+    _nearbyCitiesError.value = null;
+    _isLoadingNearbyCities.value = false;
+    _isNearbyCitiesCompleted.value = false;
+  }
+
   @override
   void onClose() {
     // 清空所有响应式变量 - 旅行计划
@@ -442,6 +593,15 @@ class AiStateController extends GetxController {
     _currentGuide.value = null;
     _guideError.value = null;
     _isLoadingGuide.value = false;
+
+    // 清空所有响应式变量 - 附近城市
+    _isGeneratingNearbyCities.value = false;
+    _nearbyCitiesGenerationProgress.value = 0;
+    _nearbyCitiesGenerationMessage.value = '';
+    _nearbyCities.clear();
+    _nearbyCitiesError.value = null;
+    _isLoadingNearbyCities.value = false;
+    _isNearbyCitiesCompleted.value = false;
 
     super.onClose();
   }

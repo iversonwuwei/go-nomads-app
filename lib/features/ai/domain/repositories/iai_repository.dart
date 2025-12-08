@@ -1,6 +1,7 @@
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/async_task/domain/entities/async_task.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/digital_nomad_guide.dart';
+import 'package:df_admin_mobile/features/city/infrastructure/models/city_detail_dto.dart';
 import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan.dart';
 import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan_summary.dart';
 
@@ -144,6 +145,40 @@ abstract class IAiRepository {
     required String cityName,
     required Function(AsyncTask task) onProgress,
     required Function(DigitalNomadGuide guide) onData,
+    required Function(String error) onError,
+  });
+
+  // ==================== 附近城市 ====================
+
+  /// 从后端获取附近城市列表
+  ///
+  /// 参数:
+  /// - [cityId]: 源城市ID
+  ///
+  /// 返回: Result<List<NearbyCityDto>> - 附近城市列表
+  Future<Result<List<NearbyCityDto>>> getNearbyCitiesFromBackend(String cityId);
+
+  /// 生成附近城市信息 (流式方式)
+  ///
+  /// 使用Server-Sent Events实时推送生成进度
+  ///
+  /// 参数:
+  /// - [cityId]: 城市ID
+  /// - [cityName]: 城市名称
+  /// - [country]: 城市所在国家 (可选)
+  /// - [radiusKm]: 搜索半径（公里），默认100
+  /// - [count]: 返回城市数量，默认4
+  /// - [onProgress]: 进度回调
+  /// - [onData]: 成功回调 (附近城市列表)
+  /// - [onError]: 错误回调 (错误消息)
+  Future<Result<void>> generateNearbyCitiesStream({
+    required String cityId,
+    required String cityName,
+    String? country,
+    int radiusKm = 100,
+    int count = 4,
+    required Function(AsyncTask task) onProgress,
+    required Function(List<NearbyCityDto> cities) onData,
     required Function(String error) onError,
   });
 }

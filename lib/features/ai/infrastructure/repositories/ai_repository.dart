@@ -1,12 +1,12 @@
-import 'dart:developer';
-
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:df_admin_mobile/config/api_config.dart';
 import 'package:df_admin_mobile/core/core.dart';
 import 'package:df_admin_mobile/features/ai/domain/repositories/iai_repository.dart';
 import 'package:df_admin_mobile/features/async_task/domain/entities/async_task.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/digital_nomad_guide.dart';
+import 'package:df_admin_mobile/features/city/infrastructure/models/city_detail_dto.dart';
 import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan.dart' as entity;
 import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan_summary.dart';
 import 'package:df_admin_mobile/features/travel_plan/infrastructure/models/travel_plan_dto.dart';
@@ -598,6 +598,213 @@ class AiRepository implements IAiRepository {
       return Result.failure(
         UnknownException('获取失败: ${e.toString()}'),
       );
+    }
+  }
+
+  // ==================== 附近城市 ====================
+
+  @override
+  Future<Result<List<NearbyCityDto>>> getNearbyCitiesFromBackend(String cityId) async {
+    try {
+      log('🌍 从后端获取附近城市: cityId=$cityId');
+
+      final response = await _httpService.get(
+        '/cities/$cityId/nearby',
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+
+        if (data != null && data is List) {
+          final cities = data.map((e) => NearbyCityDto.fromJson(e as Map<String, dynamic>)).toList();
+          log('✅ 获取到 ${cities.length} 个附近城市');
+          return Result.success(cities);
+        } else {
+          log('ℹ️ 附近城市数据为空');
+          return Result.success([]);
+        }
+      }
+
+      return Result.failure(
+        ServerException('获取附近城市失败'),
+      );
+    } on DioException catch (e) {
+      log('❌ 获取附近城市网络错误: ${e.message}');
+      return Result.failure(
+        NetworkException('网络连接失败: ${e.message}'),
+      );
+    } catch (e) {
+      log('❌ 获取附近城市失败: $e');
+      return Result.failure(
+        UnknownException('获取失败: ${e.toString()}'),
+      );
+    }
+  }
+
+  @override
+  Future<Result<void>> generateNearbyCitiesStream({
+    required String cityId,
+    required String cityName,
+    String? country,
+    int radiusKm = 100,
+    int count = 4,
+    required Function(AsyncTask task) onProgress,
+    required Function(List<NearbyCityDto> cities) onData,
+    required Function(String error) onError,
+  }) async {
+    try {
+      log('🌍 开始生成附近城市 (异步任务模式)');
+      log('   城市: $cityName (ID: $cityId)');
+      log('   半径: ${radiusKm}km, 数量: $count');
+
+      // 1. 先设置 SignalR 连接和监听器
+      final signalRService = SignalRService();
+
+      // SignalR Hub 连接到 MessageService 的 ai-progress hub (端口 5005)
+      final host = ApiConfig.usePhysicalDevice ? ApiConfig.physicalDeviceHost : ApiConfig.developmentHost;
+      final messageServiceUrl = 'http://$host:5005';
+      log('🔌 连接到 MessageService SignalR Hub: $messageServiceUrl/hubs/ai-progress');
+
+      if (!signalRService.isConnected) {
+        await signalRService.connect(messageServiceUrl);
+        log('✅ SignalR 连接已建立');
+      }
+
+      // 等待连接稳定
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      // 2. 创建异步任务
+      log('📤 发送请求到: ${ApiConfig.currentApiBaseUrl}/ai/nearby-cities/async');
+
+      final response = await _httpService.post(
+        '/ai/nearby-cities/async',
+        data: {
+          'cityId': cityId,
+          'cityName': cityName,
+          if (country != null) 'country': country,
+          'radiusKm': radiusKm,
+          'count': count,
+        },
+      );
+
+      log('✅ API 响应成功！');
+      log('   Response data: ${response.data}');
+
+      final taskId = response.data['taskId'] as String?;
+      if (taskId == null) {
+        onError('创建附近城市生成任务失败: 未返回任务ID');
+        return Result.failure(ServerException('未返回任务ID'));
+      }
+
+      log('✅ 附近城市任务已创建: taskId=$taskId');
+
+      // 3. 订阅任务通知
+      await signalRService.subscribeToTask(taskId);
+      log('📢 客户端订阅任务: $taskId');
+
+      // 4. 监听任务事件
+      final completer = Completer<void>();
+      late StreamSubscription<AsyncTask> progressSub;
+      late StreamSubscription<AsyncTask> completedSub;
+      late StreamSubscription<AsyncTask> failedSub;
+
+      log('📡 开始监听 SignalR 事件流...');
+
+      progressSub = signalRService.taskProgressStream.listen((task) {
+        if (task.taskId == taskId) {
+          final message = task.progress.message ?? '处理中...';
+          final percent = task.progress.percentage;
+          final status = task.progress.status;
+          log('📊 附近城市任务进度: $percent% - $message - status: $status');
+          onProgress(task);
+        }
+      });
+
+      completedSub = signalRService.taskCompletedStream.listen((task) async {
+        if (task.taskId == taskId) {
+          log('✅ 附近城市任务完成！');
+
+          try {
+            // 从 CityService 获取保存的结果
+            final cities = await _fetchNearbyCitiesResult(cityId);
+            log('📦 获取到 ${cities.length} 个附近城市');
+            onData(cities);
+          } catch (e, stackTrace) {
+            log('❌ 获取附近城市数据失败: $e');
+            log('   StackTrace: $stackTrace');
+            onError('获取附近城市数据失败: ${e.toString()}');
+          } finally {
+            log('🧹 清理资源...');
+            await progressSub.cancel();
+            await completedSub.cancel();
+            await failedSub.cancel();
+            await signalRService.unsubscribeFromTask(taskId);
+
+            if (!completer.isCompleted) {
+              completer.complete();
+            }
+          }
+        }
+      });
+
+      failedSub = signalRService.taskFailedStream.listen((task) async {
+        if (task.taskId == taskId) {
+          log('❌ 附近城市任务失败: ${task.error}');
+          onError(task.error ?? '生成失败');
+
+          log('🧹 清理资源（失败）...');
+          await progressSub.cancel();
+          await completedSub.cancel();
+          await failedSub.cancel();
+          await signalRService.unsubscribeFromTask(taskId);
+
+          if (!completer.isCompleted) {
+            completer.complete();
+          }
+        }
+      });
+
+      log('⏳ 等待附近城市任务完成（最长 5 分钟）...');
+
+      // 等待任务完成，最多 5 分钟
+      await completer.future.timeout(
+        const Duration(minutes: 5),
+        onTimeout: () {
+          log('⏱️ 附近城市任务超时！');
+          onError('任务超时，请稍后重试');
+          progressSub.cancel();
+          completedSub.cancel();
+          failedSub.cancel();
+          signalRService.unsubscribeFromTask(taskId);
+        },
+      );
+
+      log('✅ generateNearbyCitiesStream 执行完成');
+      return Result.success(null);
+    } on DioException catch (e) {
+      log('❌ 生成附近城市网络错误: ${e.message}');
+      onError('网络连接失败: ${e.message}');
+      return Result.failure(NetworkException('网络连接失败'));
+    } catch (e, stackTrace) {
+      log('❌ 生成附近城市失败: $e');
+      log('   StackTrace: $stackTrace');
+      onError('生成失败: ${e.toString()}');
+      return Result.failure(UnknownException('生成失败'));
+    }
+  }
+
+  /// 从 CityService 获取附近城市结果
+  Future<List<NearbyCityDto>> _fetchNearbyCitiesResult(String cityId) async {
+    try {
+      final response = await _httpService.get('/cities/$cityId/nearby');
+
+      if (response.statusCode == 200 && response.data is List) {
+        return (response.data as List).map((e) => NearbyCityDto.fromJson(e as Map<String, dynamic>)).toList();
+      }
+      return [];
+    } catch (e) {
+      log('❌ 获取附近城市结果失败: $e');
+      return [];
     }
   }
 }

@@ -1300,6 +1300,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get neighborhoods => '附近';
 
   @override
+  String get noNearbyCities => '暂无附近城市';
+
+  @override
   String get loadingGuide => '加载指南...';
 
   @override

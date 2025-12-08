@@ -3,6 +3,7 @@ import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/ai/domain/repositories/iai_repository.dart';
 import 'package:df_admin_mobile/features/async_task/domain/entities/async_task.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/digital_nomad_guide.dart';
+import 'package:df_admin_mobile/features/city/infrastructure/models/city_detail_dto.dart';
 import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan.dart';
 import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan_summary.dart';
 
@@ -92,6 +93,38 @@ class GenerateDigitalNomadGuideStreamParams {
   const GenerateDigitalNomadGuideStreamParams({
     required this.cityId,
     required this.cityName,
+    required this.onProgress,
+    required this.onData,
+    required this.onError,
+  });
+}
+
+/// 获取附近城市参数
+class GetNearbyCitiesParams {
+  final String cityId;
+
+  const GetNearbyCitiesParams({
+    required this.cityId,
+  });
+}
+
+/// 生成附近城市流式参数
+class GenerateNearbyCitiesStreamParams {
+  final String cityId;
+  final String cityName;
+  final String? country;
+  final int radiusKm;
+  final int count;
+  final Function(AsyncTask task) onProgress;
+  final Function(List<NearbyCityDto> cities) onData;
+  final Function(String error) onError;
+
+  const GenerateNearbyCitiesStreamParams({
+    required this.cityId,
+    required this.cityName,
+    this.country,
+    this.radiusKm = 100,
+    this.count = 4,
     required this.onProgress,
     required this.onData,
     required this.onError,
@@ -246,5 +279,41 @@ class GetTravelPlanDetailUseCase extends UseCase<TravelPlan, GetTravelPlanDetail
   @override
   Future<Result<TravelPlan>> execute(GetTravelPlanDetailParams params) async {
     return await _repository.getTravelPlanDetail(params.planId);
+  }
+}
+
+/// 从后端获取附近城市列表
+class GetNearbyCitiesUseCase extends UseCase<List<NearbyCityDto>, String> {
+  final IAiRepository _repository;
+
+  GetNearbyCitiesUseCase(this._repository);
+
+  @override
+  Future<Result<List<NearbyCityDto>>> execute(String cityId) async {
+    return await _repository.getNearbyCitiesFromBackend(cityId);
+  }
+}
+
+/// 生成附近城市 (流式方式)
+///
+/// 注意: 这个Use Case返回Result<void>
+/// 实际数据通过params中的回调函数返回
+class GenerateNearbyCitiesStreamUseCase extends UseCase<void, GenerateNearbyCitiesStreamParams> {
+  final IAiRepository _repository;
+
+  GenerateNearbyCitiesStreamUseCase(this._repository);
+
+  @override
+  Future<Result<void>> execute(GenerateNearbyCitiesStreamParams params) async {
+    return await _repository.generateNearbyCitiesStream(
+      cityId: params.cityId,
+      cityName: params.cityName,
+      country: params.country,
+      radiusKm: params.radiusKm,
+      count: params.count,
+      onProgress: params.onProgress,
+      onData: params.onData,
+      onError: params.onError,
+    );
   }
 }
