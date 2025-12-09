@@ -85,6 +85,7 @@ class CoworkingSpaceDto {
       // 扁平化 pricing 字段
       'pricePerHour': pricing.hourlyRate,
       'pricePerDay': pricing.dailyRate,
+      'pricePerWeek': pricing.weeklyRate,
       'pricePerMonth': pricing.monthlyRate,
       'currency': pricing.currency,
       // 扁平化 amenities 字段 - 后端期望 string[]
@@ -96,6 +97,8 @@ class CoworkingSpaceDto {
       // 扁平化 specs 字段
       'wifiSpeed': specs.wifiSpeed,
       'capacity': specs.capacity,
+      'desks': specs.numberOfDesks,
+      'meetingRooms': specs.numberOfMeetingRooms,
       // openingHours
       'openingHours': openingHours.isNotEmpty ? openingHours.join('; ') : null,
       // contact info - 空字符串转为 null 避免后端验证失败
@@ -142,6 +145,7 @@ class CoworkingSpaceDto {
       pricing: CoworkingPricingDto.fromJson({
         'hourlyRate': json['pricePerHour'],
         'dailyRate': json['pricePerDay'],
+        'weeklyRate': json['pricePerWeek'],
         'monthlyRate': json['pricePerMonth'],
         'currency': json['currency'] ?? 'CNY',
       }),
@@ -166,9 +170,9 @@ class CoworkingSpaceDto {
       // 适配后端扁平化的 specs 字段
       specs: CoworkingSpecsDto.fromJson({
         'capacity': json['capacity'],
-        'desks': json['desks'],
+        'numberOfDesks': json['desks'],
         'privateRooms': json['privateRooms'],
-        'meetingRooms': json['meetingRooms'],
+        'numberOfMeetingRooms': json['meetingRooms'],
         'wifiSpeed': json['wifiSpeed'],
       }),
       openingHours:
