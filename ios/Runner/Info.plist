@@ -58,6 +58,21 @@
 <string>我们需要访问您的位置以提供更好的服务体验</string>
 <key>NSLocationAlwaysUsageDescription</key>
 <string>我们需要访问您的位置以提供持续的位置服务</string>
+
+<!-- 支持 canLaunchUrl 检测第三方App -->
+<key>LSApplicationQueriesSchemes</key>
+<array>
+	<string>fb</string>
+	<string>twitter</string>
+	<string>whatsapp</string>
+	<string>tg</string>
+	<string>linkedin</string>
+	<string>mqq</string>
+	<string>mqqzone</string>
+	<string>weixin</string>
+	<string>sinaweibo</string>
+	<string>dingtalk</string>
+</array>
 <!-- 日历权限描述 -->
 <key>NSCalendarsUsageDescription</key>
 <string>We need access to your calendar to add meetup events</string>
@@ -85,6 +100,16 @@
 	<key>CFBundleURLSchemes</key>
 	<array>
 		<string>alipay2021006115624759</string>
+	</array>
+</dict>
+<dict>
+	<key>CFBundleTypeRole</key>
+	<string>Editor</string>
+	<key>CFBundleURLName</key>
+	<string>gonomads-share</string>
+	<key>CFBundleURLSchemes</key>
+	<array>
+		<string>gonomads</string>
 	</array>
 </dict>
 </array>

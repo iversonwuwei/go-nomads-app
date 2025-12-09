@@ -16,6 +16,82 @@
 <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 <uses-permission android:name="android.permission.VIBRATE" />
 <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+<!-- Android 11+ 需要声明 queries 才能检测其他App -->
+<queries>
+    <!-- Facebook -->
+    <package android:name="com.facebook.katana" />
+    <!-- Twitter/X -->
+    <package android:name="com.twitter.android" />
+    <!-- WhatsApp -->
+    <package android:name="com.whatsapp" />
+    <!-- Telegram -->
+    <package android:name="org.telegram.messenger" />
+    <!-- LinkedIn -->
+    <package android:name="com.linkedin.android" />
+    <!-- QQ -->
+    <package android:name="com.tencent.mobileqq" />
+    <!-- 微信 -->
+    <package android:name="com.tencent.mm" />
+    <!-- 微博 -->
+    <package android:name="com.sina.weibo" />
+    <!-- 钉钉 -->
+    <package android:name="com.alibaba.android.rimet" />
+    
+    <!-- 允许查询 URL scheme -->
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="https" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="fb" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="twitter" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="whatsapp" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="tg" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="linkedin" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="mqq" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="mqqzone" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="weixin" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="sinaweibo" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="dingtalk" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.SENDTO" />
+        <data android:scheme="smsto" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.SENDTO" />
+        <data android:scheme="mailto" />
+    </intent>
+</queries>
     
     <application
         android:label="行途"
@@ -53,6 +129,22 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="gonomads" android:host="payment" />
+            </intent-filter>
+            
+            <!-- 行途 App 通用深链 (gonomads://) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="gonomads" />
+            </intent-filter>
+            
+            <!-- Universal Link / App Link (https://gonomads.app) -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="gonomads.app" />
             </intent-filter>
             
             <!-- Alipay URL Scheme for payment callback -->

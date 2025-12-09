@@ -21,14 +21,12 @@ class CoworkingStateController extends GetxController {
     required GetCoworkingSpacesByCityUseCase getCoworkingSpacesByCityUseCase,
     required GetCoworkingByIdUseCase getCoworkingByIdUseCase,
     required GetCityCoworkingCountUseCase getCityCoworkingCountUseCase,
-    required SubmitCoworkingVerificationUseCase
-        submitCoworkingVerificationUseCase,
+    required SubmitCoworkingVerificationUseCase submitCoworkingVerificationUseCase,
     required CheckVerificationEligibilityUseCase checkVerificationEligibilityUseCase,
   })  : _getCoworkingSpacesByCityUseCase = getCoworkingSpacesByCityUseCase,
         _getCoworkingByIdUseCase = getCoworkingByIdUseCase,
         _getCityCoworkingCountUseCase = getCityCoworkingCountUseCase,
-        _submitCoworkingVerificationUseCase =
-            submitCoworkingVerificationUseCase,
+        _submitCoworkingVerificationUseCase = submitCoworkingVerificationUseCase,
         _checkVerificationEligibilityUseCase = checkVerificationEligibilityUseCase;
 
   // === SignalR 服务 ===
@@ -158,6 +156,28 @@ class CoworkingStateController extends GetxController {
     await _signalRService?.unsubscribeAll();
   }
 
+  /// 更新列表中的单个 Coworking（用于缓存同步）
+  void updateCoworkingInList(CoworkingSpace updatedSpace) {
+    log('🔄 更新 Coworking 缓存: ${updatedSpace.id}');
+
+    // 更新主列表
+    final listIndex = coworkingSpaces.indexWhere((s) => s.id == updatedSpace.id);
+    if (listIndex != -1) {
+      coworkingSpaces[listIndex] = updatedSpace;
+    }
+
+    // 更新筛选列表
+    final filteredIndex = filteredSpaces.indexWhere((s) => s.id == updatedSpace.id);
+    if (filteredIndex != -1) {
+      filteredSpaces[filteredIndex] = updatedSpace;
+    }
+
+    // 更新当前详情
+    if (currentCoworking.value?.id == updatedSpace.id) {
+      currentCoworking.value = updatedSpace;
+    }
+  }
+
   /// 加载城市的 Coworking 空间列表
   Future<void> loadCoworkingSpacesByCity(
     String cityId, {
@@ -170,9 +190,7 @@ class CoworkingStateController extends GetxController {
     }
 
     // 如果不是刷新模式,且已有该城市的数据,直接返回缓存
-    if (!refresh &&
-        currentCityId.value == cityId &&
-        coworkingSpaces.isNotEmpty) {
+    if (!refresh && currentCityId.value == cityId && coworkingSpaces.isNotEmpty) {
       log('✅ 使用Coworking缓存数据,跳过请求');
       return;
     }
@@ -211,8 +229,7 @@ class CoworkingStateController extends GetxController {
           log('✅ 成功加载 ${spaces.length} 个 Coworking 空间');
           // 调试：检查 creatorName 字段
           for (var space in spaces) {
-            log(
-                '   空间: ${space.name}, CreatorName: ${space.creatorName ?? "NULL"}');
+            log('   空间: ${space.name}, CreatorName: ${space.creatorName ?? "NULL"}');
           }
 
           // 判断是否还有更多数据

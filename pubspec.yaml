@@ -66,6 +66,10 @@ dependencies:
   share_plus: ^10.1.2
   app_links: ^6.3.3
   
+  # 分享相关
+  screenshot: ^3.0.0  # Widget 转图片
+  # QQ 和微博使用网页分享，无需 SDK
+  
   # 支付相关
   fluwx: ^5.7.5  # 微信 SDK
   tobias: ^3.0.0  # 支付宝 SDK

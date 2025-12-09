@@ -67,8 +67,73 @@ class DeepLinkHandler {
       case 'payment':
         await _handlePaymentCallback(uri);
         break;
+      case 'city':
+        await _handleCityDeepLink(uri);
+        break;
+      case 'meetup':
+        await _handleMeetupDeepLink(uri);
+        break;
+      case 'coworking':
+        await _handleCoworkingDeepLink(uri);
+        break;
       default:
-        log('⚠️ 未知的 deep link host: ${uri.host}');
+        // 处理路径格式的深链 (如 gonomads:///city/detail?id=123)
+        await _handlePathBasedDeepLink(uri);
+    }
+  }
+
+  /// 处理城市详情深链
+  static Future<void> _handleCityDeepLink(Uri uri) async {
+    log('🏙️ 处理城市深链: ${uri.path}');
+    final queryParams = uri.queryParameters;
+    final cityId = queryParams['id'];
+    if (cityId != null) {
+      Get.toNamed('/city/detail', arguments: {'cityId': int.tryParse(cityId)});
+    }
+  }
+
+  /// 处理 Meetup 详情深链
+  static Future<void> _handleMeetupDeepLink(Uri uri) async {
+    log('🤝 处理 Meetup 深链: ${uri.path}');
+    final queryParams = uri.queryParameters;
+    final meetupId = queryParams['id'];
+    if (meetupId != null) {
+      Get.toNamed('/meetup/detail', arguments: {'meetupId': int.tryParse(meetupId)});
+    }
+  }
+
+  /// 处理 Coworking 详情深链
+  static Future<void> _handleCoworkingDeepLink(Uri uri) async {
+    log('💼 处理 Coworking 深链: ${uri.path}');
+    final queryParams = uri.queryParameters;
+    final coworkingId = queryParams['id'];
+    if (coworkingId != null) {
+      Get.toNamed('/coworking/detail', arguments: {'coworkingId': int.tryParse(coworkingId)});
+    }
+  }
+
+  /// 处理路径格式的深链 (如 gonomads:///city/detail?id=123)
+  static Future<void> _handlePathBasedDeepLink(Uri uri) async {
+    final path = uri.path;
+    final queryParams = uri.queryParameters;
+    
+    if (path.startsWith('/city/detail')) {
+      final cityId = queryParams['id'];
+      if (cityId != null) {
+        Get.toNamed('/city/detail', arguments: {'cityId': int.tryParse(cityId)});
+      }
+    } else if (path.startsWith('/meetup/detail')) {
+      final meetupId = queryParams['id'];
+      if (meetupId != null) {
+        Get.toNamed('/meetup/detail', arguments: {'meetupId': int.tryParse(meetupId)});
+      }
+    } else if (path.startsWith('/coworking/detail')) {
+      final coworkingId = queryParams['id'];
+      if (coworkingId != null) {
+        Get.toNamed('/coworking/detail', arguments: {'coworkingId': int.tryParse(coworkingId)});
+      }
+    } else {
+      log('⚠️ 未知的 deep link 路径: $path');
     }
   }
 
