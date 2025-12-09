@@ -1,8 +1,10 @@
 import 'dart:developer';
 
 import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_review.dart' as review_entity;
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
+import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_repository.dart';
 import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_review_repository.dart';
 import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
@@ -91,6 +93,30 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
     }
   }
 
+  /// 重新加载 Coworking 详情数据
+  Future<void> _reloadCoworkingDetail() async {
+    try {
+      final repository = Get.find<ICoworkingRepository>();
+      final result = await repository.getCoworkingById(_space.id);
+
+      result.fold(
+        onSuccess: (updatedSpace) {
+          if (mounted) {
+            setState(() {
+              _space = updatedSpace;
+            });
+            log('✅ [CoworkingDetail] 重新加载详情成功');
+          }
+        },
+        onFailure: (exception) {
+          log('❌ [CoworkingDetail] 重新加载详情失败: ${exception.message}');
+        },
+      );
+    } catch (e) {
+      log('❌ [CoworkingDetail] 重新加载详情异常: $e');
+    }
+  }
+
   Future<void> _navigateToAddComment() async {
     final result = await Get.to<bool>(
       () => AddCoworkingReviewPage(
@@ -163,8 +189,8 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                       if (result == true && mounted) {
                         // 标记数据已变更，下次返回时通知列表页面
                         _hasDataChanged = true;
-                        // 重新加载数据以更新 UI
-                        // TODO: 重新加载 coworking 详情
+                        // 重新加载 coworking 详情
+                        await _reloadCoworkingDetail();
                       }
                     },
                     size: 18,
