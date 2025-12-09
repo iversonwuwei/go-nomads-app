@@ -113,6 +113,14 @@ class CoworkingSpaceDto {
   }
 
   factory CoworkingSpaceDto.fromJson(Map<String, dynamic> json) {
+    // 解析 amenities 数组（不区分大小写匹配）
+    final amenitiesList = json['amenities'] as List<dynamic>? ?? [];
+    final amenitiesLower = amenitiesList.map((e) => e.toString().toLowerCase()).toList();
+
+    bool hasAmenity(List<String> keywords) {
+      return amenitiesLower.any((a) => keywords.any((k) => a.contains(k)));
+    }
+
     // 适配后端实际返回的扁平化数据结构
     return CoworkingSpaceDto(
       id: json['id'] ?? '',
@@ -137,13 +145,23 @@ class CoworkingSpaceDto {
         'monthlyRate': json['pricePerMonth'],
         'currency': json['currency'] ?? 'CNY',
       }),
-      // 适配后端扁平化的 amenities 字段
+      // 适配后端扁平化的 amenities 字段 - 完整解析所有设施
       amenities: CoworkingAmenitiesDto.fromJson({
-        'hasWifi': json['amenities']?.contains('wifi') ?? false,
-        'hasMeetingRoom': json['hasMeetingRoom'] ?? json['amenities']?.contains('meeting_room') ?? false,
-        'hasCoffee': json['hasCoffee'] ?? json['amenities']?.contains('coffee') ?? false,
-        'hasParking': json['hasParking'] ?? json['amenities']?.contains('parking') ?? false,
-        'has24HourAccess': json['has247Access'] ?? json['amenities']?.contains('24_hour') ?? false,
+        'hasWifi': hasAmenity(['wifi']),
+        'hasCoffee': json['hasCoffee'] ?? hasAmenity(['coffee', 'tea', 'drinks']),
+        'hasPrinter': hasAmenity(['printer', 'print']),
+        'hasMeetingRoom': json['hasMeetingRoom'] ?? hasAmenity(['meeting', 'conference']),
+        'hasPhoneBooth': hasAmenity(['phone booth', 'phonebooth', 'call']),
+        'hasKitchen': hasAmenity(['kitchen', 'pantry']),
+        'hasParking': json['hasParking'] ?? hasAmenity(['parking']),
+        'hasLocker': hasAmenity(['locker', 'storage']),
+        'has24HourAccess': json['has247Access'] ?? hasAmenity(['24', '7', 'access']),
+        'hasAirConditioning': hasAmenity(['a/c', 'ac', 'air conditioning', 'airconditioning']),
+        'hasStandingDesk': hasAmenity(['standing desk', 'standingdesk']),
+        'hasShower': hasAmenity(['shower']),
+        'hasBike': hasAmenity(['bike', 'bicycle']),
+        'hasEventSpace': hasAmenity(['event', 'space']),
+        'hasPetFriendly': hasAmenity(['pet']),
       }),
       // 适配后端扁平化的 specs 字段
       specs: CoworkingSpecsDto.fromJson({
