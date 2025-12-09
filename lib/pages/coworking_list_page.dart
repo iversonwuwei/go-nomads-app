@@ -280,7 +280,7 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () async {
-          // 等待详情页返回,如果返回 true 则刷新数据
+          // 等待详情页返回
           final result = await Navigator.push(
             context,
             MaterialPageRoute(
@@ -288,8 +288,12 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
             ),
           );
 
-          // 如果详情页有数据变化(编辑/删除),刷新列表
-          if (result == true && mounted) {
+          // 如果返回了更新后的 CoworkingSpace 对象，直接更新缓存
+          if (result is CoworkingSpace && mounted) {
+            final controller = Get.find<CoworkingStateController>();
+            controller.updateCoworkingInList(result);
+          } else if (result == true && mounted) {
+            // 向后兼容：如果返回 true，刷新整个列表
             await _refreshData();
           }
         },

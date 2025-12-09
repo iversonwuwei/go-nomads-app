@@ -45,6 +45,9 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
   final RxBool _isLoading = true.obs;
   final RxList<Map<String, dynamic>> _participants = <Map<String, dynamic>>[].obs;
 
+  // 数据变更标记 - 用于返回时通知列表页面更新缓存
+  bool _hasDataChanged = false;
+
   // 图片轮播相关
   final PageController _imagePageController = PageController();
   final RxInt _currentImageIndex = 0.obs;
@@ -114,170 +117,186 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     }
   }
 
+  /// 统一处理返回逻辑
+  void _handleBack() {
+    Get.back(result: _hasDataChanged ? _meetup.value : null);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: CustomScrollView(
-        slivers: [
-          // 顶部图片和AppBar
-          SliverAppBar(
-            expandedHeight: 300.h,
-            pinned: true,
-            backgroundColor: Colors.white,
-            leading: const SliverBackButton(),
-            actions: [
-              // 编辑按钮 - 只有组织者可见
-              if (_isOrganizer)
-                SliverEditButton(
-                  onPressed: () async {
-                    final result = await Get.to(() => CreateMeetupPage(editingMeetup: _meetup.value));
-                    if (result == true) {
-                      // 编辑成功，刷新数据
-                      await _loadEventDetails();
-                    }
-                  },
-                  size: 18,
-                ),
-              SliverShareButton(onPressed: _shareMeetup),
-              SizedBox(width: 8.w),
-            ],
-            flexibleSpace: FlexibleSpaceBar(
-              background: Obx(() => _meetup.value.images.isNotEmpty
-                  ? Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        // 图片轮播
-                        PageView.builder(
-                          controller: _imagePageController,
-                          itemCount: _meetup.value.images.length,
-                          onPageChanged: (index) {
-                            _currentImageIndex.value = index;
-                          },
-                          itemBuilder: (context, index) {
-                            return Image.network(
-                              _meetup.value.images[index],
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  color: AppColors.borderLight,
-                                  child: Icon(
-                                    FontAwesomeIcons.imagePortrait,
-                                    size: 64.sp,
-                                    color: AppColors.textTertiary,
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                        ),
-                        // 图片指示器 - 只有多张图片时显示
-                        if (_meetup.value.images.length > 1)
-                          Positioned(
-                            bottom: 16.h,
-                            left: 0,
-                            right: 0,
-                            child: Obx(() => Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: List.generate(
-                                    _meetup.value.images.length,
-                                    (index) => Container(
-                                      width: _currentImageIndex.value == index ? 24.w : 8.w,
-                                      height: 8.h,
-                                      margin: EdgeInsets.symmetric(horizontal: 4.w),
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(4.r),
-                                        color: _currentImageIndex.value == index
-                                            ? Colors.white
-                                            : Colors.white.withValues(alpha: 0.5),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          _handleBack();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        body: CustomScrollView(
+          slivers: [
+            // 顶部图片和AppBar
+            SliverAppBar(
+              expandedHeight: 300.h,
+              pinned: true,
+              backgroundColor: Colors.white,
+              leading: SliverBackButton(
+                onPressed: _handleBack,
+              ),
+              actions: [
+                // 编辑按钮 - 只有组织者可见
+                if (_isOrganizer)
+                  SliverEditButton(
+                    onPressed: () async {
+                      final result = await Get.to(() => CreateMeetupPage(editingMeetup: _meetup.value));
+                      if (result == true) {
+                        // 编辑成功，刷新数据并标记变更
+                        await _loadEventDetails();
+                        _hasDataChanged = true;
+                      }
+                    },
+                    size: 18,
+                  ),
+                SliverShareButton(onPressed: _shareMeetup),
+                SizedBox(width: 8.w),
+              ],
+              flexibleSpace: FlexibleSpaceBar(
+                background: Obx(() => _meetup.value.images.isNotEmpty
+                    ? Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          // 图片轮播
+                          PageView.builder(
+                            controller: _imagePageController,
+                            itemCount: _meetup.value.images.length,
+                            onPageChanged: (index) {
+                              _currentImageIndex.value = index;
+                            },
+                            itemBuilder: (context, index) {
+                              return Image.network(
+                                _meetup.value.images[index],
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    color: AppColors.borderLight,
+                                    child: Icon(
+                                      FontAwesomeIcons.imagePortrait,
+                                      size: 64.sp,
+                                      color: AppColors.textTertiary,
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                          // 图片指示器 - 只有多张图片时显示
+                          if (_meetup.value.images.length > 1)
+                            Positioned(
+                              bottom: 16.h,
+                              left: 0,
+                              right: 0,
+                              child: Obx(() => Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: List.generate(
+                                      _meetup.value.images.length,
+                                      (index) => Container(
+                                        width: _currentImageIndex.value == index ? 24.w : 8.w,
+                                        height: 8.h,
+                                        margin: EdgeInsets.symmetric(horizontal: 4.w),
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(4.r),
+                                          color: _currentImageIndex.value == index
+                                              ? Colors.white
+                                              : Colors.white.withValues(alpha: 0.5),
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                )),
-                          ),
-                        // 图片计数器
-                        if (_meetup.value.images.length > 1)
-                          Positioned(
-                            top: 100.h,
-                            right: 16.w,
-                            child: Obx(() => Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withValues(alpha: 0.5),
-                                    borderRadius: BorderRadius.circular(12.r),
-                                  ),
-                                  child: Text(
-                                    '${_currentImageIndex.value + 1} / ${_meetup.value.images.length}',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 12.sp,
-                                      fontWeight: FontWeight.w500,
+                                  )),
+                            ),
+                          // 图片计数器
+                          if (_meetup.value.images.length > 1)
+                            Positioned(
+                              top: 100.h,
+                              right: 16.w,
+                              child: Obx(() => Container(
+                                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withValues(alpha: 0.5),
+                                      borderRadius: BorderRadius.circular(12.r),
                                     ),
-                                  ),
-                                )),
-                          ),
-                      ],
-                    )
-                  : Container(
-                      color: AppColors.borderLight,
-                      child: Icon(
-                        FontAwesomeIcons.calendarDays,
-                        size: 64.sp,
-                        color: AppColors.textTertiary,
-                      ),
-                    )),
+                                    child: Text(
+                                      '${_currentImageIndex.value + 1} / ${_meetup.value.images.length}',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12.sp,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  )),
+                            ),
+                        ],
+                      )
+                    : Container(
+                        color: AppColors.borderLight,
+                        child: Icon(
+                          FontAwesomeIcons.calendarDays,
+                          size: 64.sp,
+                          color: AppColors.textTertiary,
+                        ),
+                      )),
+              ),
             ),
-          ),
 
-          // 内容区域
-          SliverToBoxAdapter(
-            child: Obx(() {
-              // 显示加载指示器
-              if (_isLoading.value) {
-                return Container(
-                  padding: EdgeInsets.all(40.w),
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      color: const Color(0xFFFF4458),
+            // 内容区域
+            SliverToBoxAdapter(
+              child: Obx(() {
+                // 显示加载指示器
+                if (_isLoading.value) {
+                  return Container(
+                    padding: EdgeInsets.all(40.w),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: const Color(0xFFFF4458),
+                      ),
                     ),
-                  ),
+                  );
+                }
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 基本信息
+                    _buildBasicInfo(),
+
+                    SizedBox(height: 16.h),
+
+                    // 时间地点
+                    _buildTimeLocationInfo(),
+
+                    SizedBox(height: 16.h),
+
+                    // 描述
+                    _buildDescription(),
+
+                    SizedBox(height: 16.h),
+
+                    // 组织者信息
+                    _buildOrganizerInfo(),
+
+                    SizedBox(height: 16.h),
+
+                    // 参与者列表
+                    _buildAttendeesList(),
+
+                    SizedBox(height: 100.h),
+                  ],
                 );
-              }
-
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 基本信息
-                  _buildBasicInfo(),
-
-                  SizedBox(height: 16.h),
-
-                  // 时间地点
-                  _buildTimeLocationInfo(),
-
-                  SizedBox(height: 16.h),
-
-                  // 描述
-                  _buildDescription(),
-
-                  SizedBox(height: 16.h),
-
-                  // 组织者信息
-                  _buildOrganizerInfo(),
-
-                  SizedBox(height: 16.h),
-
-                  // 参与者列表
-                  _buildAttendeesList(),
-
-                  SizedBox(height: 100.h),
-                ],
-              );
-            }),
-          ),
-        ],
+              }),
+            ),
+          ],
+        ),
+        bottomNavigationBar: _buildBottomBar(),
       ),
-      bottomNavigationBar: _buildBottomBar(),
     );
   }
 
@@ -876,6 +895,9 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
       // API 调用成功后，重新加载活动详情以获取最新数据
       await _loadEventDetails();
 
+      // 标记数据已变更，返回时通知列表页面更新缓存
+      _hasDataChanged = true;
+
       // 显示成功消息
       if (isJoining) {
         AppToast.success(
@@ -935,6 +957,9 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
 
       // 如果成功,重新加载活动详情以更新 UI
       await _loadEventDetails();
+
+      // 标记数据已变更，返回时通知列表页面更新缓存
+      _hasDataChanged = true;
     } catch (e) {
       log('❌ 取消活动失败: $e');
       AppToast.error('取消活动失败');

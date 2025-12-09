@@ -835,8 +835,21 @@ class _MeetupListCardState extends State<_MeetupListCard> {
     final l10n = AppLocalizations.of(context)!;
 
     return GestureDetector(
-      onTap: () {
-        Get.to(() => MeetupDetailPage(meetup: widget.meetup));
+      onTap: () async {
+        // 等待 detail 页面返回结果
+        final result = await Get.to(() => MeetupDetailPage(meetup: widget.meetup));
+        if (result is Meetup) {
+          // 如果返回了更新后的 meetup，直接更新缓存
+          widget.onUpdated(result);
+          // 同步更新本地状态
+          if (mounted) {
+            setState(() {
+              _isJoined = result.isJoined;
+              _currentAttendees = result.capacity.currentAttendees;
+              _maxAttendees = result.capacity.maxAttendees;
+            });
+          }
+        }
       },
       child: Container(
         margin: EdgeInsets.only(bottom: 16.h),
@@ -991,8 +1004,12 @@ class _MeetupListCardState extends State<_MeetupListCard> {
                       // 编辑按钮 - 只有组织者可见，放在所有小按钮之前
                       if (_isOrganizer)
                         AppEditButton(
-                          onPressed: () {
-                            Get.to(() => CreateMeetupPage(editingMeetup: widget.meetup));
+                          onPressed: () async {
+                            final result = await Get.to(() => CreateMeetupPage(editingMeetup: widget.meetup));
+                            if (result == true) {
+                              // 编辑成功，刷新整个列表
+                              widget.onRefresh?.call();
+                            }
                           },
                           size: 14.r,
                           mini: true,

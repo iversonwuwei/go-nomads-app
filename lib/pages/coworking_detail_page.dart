@@ -41,6 +41,9 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
   List<review_entity.CoworkingReview> _comments = [];
   bool _isLoadingComments = false;
 
+  // 数据变更标记 - 用于返回时通知列表页面更新缓存
+  bool _hasDataChanged = false;
+
   @override
   void initState() {
     super.initState();
@@ -116,378 +119,393 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
     return images;
   }
 
+  /// 统一处理返回逻辑
+  void _handleBack() {
+    Navigator.pop(context, _hasDataChanged ? _space : null);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final allImages = _allImages;
     final hasMultipleImages = allImages.length > 1;
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: CustomScrollView(
-        slivers: [
-          // App Bar with Image
-          SliverAppBar(
-            expandedHeight: 300,
-            pinned: true,
-            backgroundColor: Colors.white,
-            iconTheme: const IconThemeData(color: Colors.black87),
-            leading: const SliverBackButton(),
-            actions: [
-              // 编辑按钮（仅创建者可见）
-              if (_space.isOwner)
-                SliverEditButton(
-                  onPressed: () async {
-                    final result = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AddCoworkingPage(
-                          editingSpace: _space,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          _handleBack();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        body: CustomScrollView(
+          slivers: [
+            // App Bar with Image
+            SliverAppBar(
+              expandedHeight: 300,
+              pinned: true,
+              backgroundColor: Colors.white,
+              iconTheme: const IconThemeData(color: Colors.black87),
+              leading: SliverBackButton(onPressed: _handleBack),
+              actions: [
+                // 编辑按钮（仅创建者可见）
+                if (_space.isOwner)
+                  SliverEditButton(
+                    onPressed: () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AddCoworkingPage(
+                            editingSpace: _space,
+                          ),
                         ),
-                      ),
-                    );
-                    if (result == true && mounted) {
-                      // 返回 true 表示数据已更新，通知上级页面刷新
-                      Navigator.pop(context, true);
-                    }
-                  },
-                  size: 18,
-                ),
-              // 图片计数器 - 与返回按钮同一水平线
-              if (hasMultipleImages)
-                Container(
-                  margin: const EdgeInsets.only(right: 16),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
+                      );
+                      if (result == true && mounted) {
+                        // 标记数据已变更，下次返回时通知列表页面
+                        _hasDataChanged = true;
+                        // 重新加载数据以更新 UI
+                        // TODO: 重新加载 coworking 详情
+                      }
+                    },
+                    size: 18,
                   ),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withAlpha(128),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '${_currentImageIndex + 1}/${allImages.length}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 12,
+                // 图片计数器 - 与返回按钮同一水平线
+                if (hasMultipleImages)
+                  Container(
+                    margin: const EdgeInsets.only(right: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
                     ),
-                  ),
-                ),
-            ],
-            flexibleSpace: FlexibleSpaceBar(
-              title: Text(
-                _space.name,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black54,
-                      blurRadius: 8,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withAlpha(128),
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                  ],
-                ),
-              ),
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  // 图片轮播
-                  hasMultipleImages
-                      ? PageView.builder(
-                          controller: _pageController,
-                          onPageChanged: (index) {
-                            setState(() {
-                              _currentImageIndex = index;
-                            });
-                          },
-                          itemCount: allImages.length,
-                          itemBuilder: (context, index) {
-                            return Image.network(
-                              allImages[index],
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  color: Colors.grey[300],
-                                  child: const Icon(FontAwesomeIcons.building, size: 100),
-                                );
-                              },
-                            );
-                          },
-                        )
-                      : Image.network(
-                          _space.spaceInfo.imageUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: Colors.grey[300],
-                              child: const Icon(FontAwesomeIcons.building, size: 100),
-                            );
-                          },
-                        ),
-                  // 渐变遮罩 (忽略手势，避免阻挡图片滑动)
-                  IgnorePointer(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.black.withAlpha(128),
-                          ],
-                        ),
+                    child: Text(
+                      '${_currentImageIndex + 1}/${allImages.length}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
                       ),
                     ),
                   ),
-                  // 图片指示器
-                  if (hasMultipleImages)
-                    Positioned(
-                      bottom: 80,
-                      left: 0,
-                      right: 0,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(
-                          allImages.length,
-                          (index) => Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: _currentImageIndex == index ? Colors.white : Colors.white.withAlpha(128),
+              ],
+              flexibleSpace: FlexibleSpaceBar(
+                title: Text(
+                  _space.name,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black54,
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
+                ),
+                background: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    // 图片轮播
+                    hasMultipleImages
+                        ? PageView.builder(
+                            controller: _pageController,
+                            onPageChanged: (index) {
+                              setState(() {
+                                _currentImageIndex = index;
+                              });
+                            },
+                            itemCount: allImages.length,
+                            itemBuilder: (context, index) {
+                              return Image.network(
+                                allImages[index],
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    color: Colors.grey[300],
+                                    child: const Icon(FontAwesomeIcons.building, size: 100),
+                                  );
+                                },
+                              );
+                            },
+                          )
+                        : Image.network(
+                            _space.spaceInfo.imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: Colors.grey[300],
+                                child: const Icon(FontAwesomeIcons.building, size: 100),
+                              );
+                            },
+                          ),
+                    // 渐变遮罩 (忽略手势，避免阻挡图片滑动)
+                    IgnorePointer(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.black.withAlpha(128),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    // 图片指示器
+                    if (hasMultipleImages)
+                      Positioned(
+                        bottom: 80,
+                        left: 0,
+                        right: 0,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(
+                            allImages.length,
+                            (index) => Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 4),
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: _currentImageIndex == index ? Colors.white : Colors.white.withAlpha(128),
+                              ),
                             ),
                           ),
                         ),
                       ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Content
+            SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Rating & Verified Badge
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Wrap(
+                      spacing: 12,
+                      runSpacing: 8,
+                      children: [
+                        // Rating - 可点击跳转到评论列表
+                        InkWell(
+                          onTap: () {
+                            Get.to(() => CoworkingReviewsPage(
+                                  coworkingId: _space.id,
+                                  coworkingName: _space.name,
+                                ))?.then((_) => _loadComments());
+                          },
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.amber[50],
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(FontAwesomeIcons.star, size: 18, color: Colors.amber),
+                                const SizedBox(width: 4),
+                                Text(
+                                  _space.spaceInfo.rating.toStringAsFixed(1),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                Text(
+                                  ' (${_space.spaceInfo.reviewCount} ${l10n.reviews})',
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Icon(FontAwesomeIcons.chevronRight, size: 16, color: Colors.grey[600]),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        CoworkingVerificationBadge(
+                          space: _space,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          onVerified: (updatedSpace) {
+                            setState(() {
+                              _space = updatedSpace;
+                            });
+                          },
+                        ),
+
+                        // Last Updated Badge
+                        if (_space.lastUpdated != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(FontAwesomeIcons.arrowsRotate, size: 18, color: Colors.grey),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Updated ${_formatDate(_space.lastUpdated!)}',
+                                  style: TextStyle(
+                                    color: Colors.grey[700],
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
                     ),
+                  ),
+
+                  const Divider(),
+
+                  // Address
+                  ListTile(
+                    leading: const Icon(FontAwesomeIcons.locationDot, color: Colors.red),
+                    title: Text(_space.location.address),
+                    subtitle: Text('${_space.location.city}, ${_space.location.country}'),
+                  ),
+
+                  // Creator Info
+                  if (_space.creatorName != null && _space.creatorName!.isNotEmpty)
+                    ListTile(
+                      leading: const Icon(FontAwesomeIcons.user, color: Colors.blue),
+                      title: Text(l10n.createdBy),
+                      subtitle: Text(_space.creatorName!),
+                    ),
+
+                  const Divider(),
+
+                  // Description
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.about,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _space.spaceInfo.description,
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: Colors.grey[700],
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const Divider(),
+
+                  // Pricing
+                  _buildPricingSection(context),
+
+                  const Divider(),
+
+                  // Specs
+                  _buildSpecsSection(context),
+
+                  const Divider(),
+
+                  // Amenities
+                  _buildAmenitiesSection(context),
+
+                  const Divider(),
+
+                  // Opening Hours
+                  if (_space.operationHours.hasHours) _buildOpeningHoursSection(context),
+
+                  if (_space.operationHours.hasHours) const Divider(),
+
+                  // Contact
+                  _buildContactSection(context),
+
+                  const Divider(),
+
+                  // Comments
+                  _buildCommentsSection(context),
+
+                  const SizedBox(height: 100),
                 ],
               ),
             ),
-          ),
-
-          // Content
-          SliverToBoxAdapter(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Rating & Verified Badge
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Wrap(
-                    spacing: 12,
-                    runSpacing: 8,
-                    children: [
-                      // Rating - 可点击跳转到评论列表
-                      InkWell(
-                        onTap: () {
-                          Get.to(() => CoworkingReviewsPage(
-                                coworkingId: _space.id,
-                                coworkingName: _space.name,
-                              ))?.then((_) => _loadComments());
-                        },
-                        borderRadius: BorderRadius.circular(20),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.amber[50],
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(FontAwesomeIcons.star, size: 18, color: Colors.amber),
-                              const SizedBox(width: 4),
-                              Text(
-                                _space.spaceInfo.rating.toStringAsFixed(1),
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              Text(
-                                ' (${_space.spaceInfo.reviewCount} ${l10n.reviews})',
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Icon(FontAwesomeIcons.chevronRight, size: 16, color: Colors.grey[600]),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      CoworkingVerificationBadge(
-                        space: _space,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        onVerified: (updatedSpace) {
-                          setState(() {
-                            _space = updatedSpace;
-                          });
-                        },
-                      ),
-
-                      // Last Updated Badge
-                      if (_space.lastUpdated != null)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(FontAwesomeIcons.arrowsRotate, size: 18, color: Colors.grey),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Updated ${_formatDate(_space.lastUpdated!)}',
-                                style: TextStyle(
-                                  color: Colors.grey[700],
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-
-                const Divider(),
-
-                // Address
-                ListTile(
-                  leading: const Icon(FontAwesomeIcons.locationDot, color: Colors.red),
-                  title: Text(_space.location.address),
-                  subtitle: Text('${_space.location.city}, ${_space.location.country}'),
-                ),
-
-                // Creator Info
-                if (_space.creatorName != null && _space.creatorName!.isNotEmpty)
-                  ListTile(
-                    leading: const Icon(FontAwesomeIcons.user, color: Colors.blue),
-                    title: Text(l10n.createdBy),
-                    subtitle: Text(_space.creatorName!),
-                  ),
-
-                const Divider(),
-
-                // Description
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.about,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        _space.spaceInfo.description,
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.grey[700],
-                          height: 1.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const Divider(),
-
-                // Pricing
-                _buildPricingSection(context),
-
-                const Divider(),
-
-                // Specs
-                _buildSpecsSection(context),
-
-                const Divider(),
-
-                // Amenities
-                _buildAmenitiesSection(context),
-
-                const Divider(),
-
-                // Opening Hours
-                if (_space.operationHours.hasHours) _buildOpeningHoursSection(context),
-
-                if (_space.operationHours.hasHours) const Divider(),
-
-                // Contact
-                _buildContactSection(context),
-
-                const Divider(),
-
-                // Comments
-                _buildCommentsSection(context),
-
-                const SizedBox(height: 100),
-              ],
-            ),
-          ),
-        ],
-      ),
-
-      // Bottom Action Bar
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(13),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
           ],
         ),
-        child: Row(
-          children: [
-            Expanded(
-              child: OutlinedButton.icon(
-                icon: const Icon(FontAwesomeIcons.diamondTurnRight),
-                label: Text(l10n.directions),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                onPressed: () {
-                  // 跳转到 OSM Navigation 页面进行导航
-                  Get.to(() => OSMNavigationPage(coworkingSpace: _space));
-                },
+
+        // Bottom Action Bar
+        bottomNavigationBar: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(13),
+                blurRadius: 10,
+                offset: const Offset(0, -2),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: ElevatedButton.icon(
-                icon: const Icon(FontAwesomeIcons.globe),
-                label: Text(l10n.visitWebsite),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+            ],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  icon: const Icon(FontAwesomeIcons.diamondTurnRight),
+                  label: Text(l10n.directions),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  onPressed: () {
+                    // 跳转到 OSM Navigation 页面进行导航
+                    Get.to(() => OSMNavigationPage(coworkingSpace: _space));
+                  },
                 ),
-                onPressed: _space.contactInfo.hasWebsite ? () => _launchURL(_space.contactInfo.website) : null,
               ),
-            ),
-          ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton.icon(
+                  icon: const Icon(FontAwesomeIcons.globe),
+                  label: Text(l10n.visitWebsite),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  onPressed: _space.contactInfo.hasWebsite ? () => _launchURL(_space.contactInfo.website) : null,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

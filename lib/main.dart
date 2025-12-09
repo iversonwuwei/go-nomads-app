@@ -20,6 +20,7 @@ import 'services/image_upload_service.dart';
 import 'services/location_service.dart';
 import 'services/notification_service.dart';
 import 'services/signalr_service.dart';
+import 'services/social_sdk_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -88,6 +89,15 @@ void main() async {
     log('✅ Deep Link 处理器初始化成功');
   } catch (e) {
     log('❌ Deep Link 处理器初始化失败: $e');
+  }
+
+  // 📱 初始化社交 SDK（微信、QQ、微博）
+  log('📱 初始化社交 SDK...');
+  try {
+    await SocialSdkService.init();
+    log('✅ 社交 SDK 初始化完成');
+  } catch (e) {
+    log('❌ 社交 SDK 初始化失败: $e');
   }
 
   runApp(const MyApp());

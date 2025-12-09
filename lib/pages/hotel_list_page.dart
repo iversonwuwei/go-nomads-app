@@ -128,17 +128,26 @@ class _HotelListPageState extends State<HotelListPage> {
             }
 
             if (_hotels.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(FontAwesomeIcons.hotel, size: 48.w, color: Colors.grey),
-                    SizedBox(height: 12.h),
-                    Text(
-                      'No hotels found',
-                      style: TextStyle(fontSize: 14.sp, color: Colors.grey),
+              return SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Container(
+                  constraints: BoxConstraints(
+                    minHeight: MediaQuery.of(context).size.height * 0.4,
+                  ),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(FontAwesomeIcons.hotel, size: 48.w, color: Colors.grey),
+                        SizedBox(height: 12.h),
+                        Text(
+                          'No hotels found',
+                          style: TextStyle(fontSize: 14.sp, color: Colors.grey),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               );
             }
