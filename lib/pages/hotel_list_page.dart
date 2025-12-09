@@ -1,15 +1,15 @@
 import 'dart:developer';
 
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
-
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/hotel/domain/entities/hotel.dart';
 import 'package:df_admin_mobile/features/hotel/infrastructure/repositories/hotel_repository.dart';
 import 'package:df_admin_mobile/services/http_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
+
 import 'room_type_list_page.dart';
 
 /// 酒店列表页面（简化版，用于城市详情页的Hotels标签）
@@ -54,16 +54,14 @@ class _HotelListPageState extends State<HotelListPage> {
   Future<void> _loadHotels() async {
     _isLoading.value = true;
     try {
-      log(
-          '🏨 HotelListPage - cityId: ${widget.cityId}, cityName: ${widget.cityName}');
+      log('🏨 HotelListPage - cityId: ${widget.cityId}, cityName: ${widget.cityName}');
 
       List<Hotel> hotels = [];
 
       // 如果有城市ID，加载该城市的酒店
       if (widget.cityId != null) {
         log('🏨 正在加载城市 ID ${widget.cityId} 的酒店...');
-        final result =
-            await _hotelRepository.getHotelsByCity(widget.cityId.toString());
+        final result = await _hotelRepository.getHotelsByCity(widget.cityId.toString());
 
         result.fold(
           onSuccess: (data) {
@@ -242,8 +240,7 @@ class _HotelListPageState extends State<HotelListPage> {
                     top: 12.h,
                     left: 12.w,
                     child: Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                       decoration: BoxDecoration(
                         color: Colors.amber,
                         borderRadius: BorderRadius.circular(20.r),
@@ -301,8 +298,7 @@ class _HotelListPageState extends State<HotelListPage> {
                     children: [
                       // 评分
                       Container(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 8.w, vertical: 4.h),
+                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                         decoration: BoxDecoration(
                           color: Colors.blue,
                           borderRadius: BorderRadius.circular(6.r),
@@ -336,8 +332,7 @@ class _HotelListPageState extends State<HotelListPage> {
 
                       // 类别
                       Container(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 8.w, vertical: 4.h),
+                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                         decoration: BoxDecoration(
                           color: Colors.grey[200],
                           borderRadius: BorderRadius.circular(6.r),
