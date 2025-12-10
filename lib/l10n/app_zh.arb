@@ -1468,6 +1468,7 @@
   "recenter": "回到中心",
   "startNavigation": "开始导航",
   "noMapAppAvailable": "未找到可用的地图应用",
+  "selectMapApp": "选择地图应用",
   "selectMapSource": "选择地图源",
   "switchedToMapSource": "已切换到 {mapSource}",
   "@switchedToMapSource": {

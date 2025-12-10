@@ -1484,6 +1484,7 @@
   "recenter": "Recenter",
   "startNavigation": "Start Navigation",
   "noMapAppAvailable": "No map app available",
+  "selectMapApp": "Select Map App",
   "selectMapSource": "Select Map Source",
   "switchedToMapSource": "Switched to {mapSource}",
   "@switchedToMapSource": {

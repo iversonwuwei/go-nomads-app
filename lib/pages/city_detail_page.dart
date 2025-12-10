@@ -3098,7 +3098,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                         _buildProsConsVoteBadge(
                           hasVoted: hasVoted,
                           count: item.upvotes,
-                          onTap: hasVoted ? null : () => _handleProsConsVote(item),
+                          onTap: () => _handleProsConsVote(item),
                         ),
                       ],
                     ),
@@ -3148,7 +3148,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                         _buildProsConsVoteBadge(
                           hasVoted: hasVoted,
                           count: item.upvotes,
-                          onTap: hasVoted ? null : () => _handleProsConsVote(item),
+                          onTap: () => _handleProsConsVote(item),
                         ),
                       ],
                     ),
@@ -3233,24 +3233,29 @@ class _CityDetailPageState extends State<CityDetailPage>
     required VoidCallback? onTap,
   }) {
     const accent = Color(0xFFFF4458);
-    final Color color = hasVoted ? Colors.grey : accent;
+    // 已投票用绿色，未投票用主题色
+    final Color color = hasVoted ? Colors.green : accent;
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: hasVoted ? null : onTap,
+        onTap: onTap, // 始终可点击（toggle 机制）
         borderRadius: BorderRadius.circular(12),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: hasVoted ? Colors.grey.withValues(alpha: 0.12) : const Color(0xFFFFEEF2),
+            color: hasVoted ? Colors.green.withValues(alpha: 0.12) : const Color(0xFFFFEEF2),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: color.withValues(alpha: 0.35)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(FontAwesomeIcons.thumbsUp, size: 18, color: color),
+              Icon(
+                hasVoted ? FontAwesomeIcons.solidThumbsUp : FontAwesomeIcons.thumbsUp,
+                size: 18,
+                color: color,
+              ),
               const SizedBox(height: 4),
               Text(
                 '$count',
@@ -3261,7 +3266,7 @@ class _CityDetailPageState extends State<CityDetailPage>
                 ),
               ),
               Text(
-                hasVoted ? '已投' : '投票',
+                hasVoted ? '取消' : '投票',
                 style: TextStyle(fontSize: 10, color: color),
               ),
             ],
@@ -5061,14 +5066,15 @@ class _CityDetailPageState extends State<CityDetailPage>
 
   Future<void> _handleProsConsVote(ProsCons item) async {
     final controller = Get.find<ProsConsStateController>();
-    if (controller.hasUserVoted(item.id)) {
-      AppToast.info('你已经为该条目投过票啦');
-      return;
-    }
+    final wasVoted = controller.hasUserVoted(item.id);
 
     final success = await controller.upvote(item.id, item.isPro);
     if (success) {
-      AppToast.success('感谢你的投票！');
+      if (wasVoted) {
+        AppToast.success('已取消投票');
+      } else {
+        AppToast.success('感谢你的投票！');
+      }
     } else {
       final message = controller.error.value ?? '投票失败，请稍后再试';
       AppToast.error(message);
@@ -5240,12 +5246,21 @@ class _CityDetailPageState extends State<CityDetailPage>
             // 星级评分
             ...List.generate(5, (index) {
               final starValue = index + 1;
-              final isFilled = starValue <= score;
-              return Icon(
-                isFilled ? FontAwesomeIcons.star : FontAwesomeIcons.star,
-                size: 16,
-                color: color,
-              );
+              IconData iconData;
+              Color starColor;
+
+              if (score >= starValue) {
+                iconData = FontAwesomeIcons.solidStar;
+                starColor = color;
+              } else if (score > starValue - 1 && score < starValue) {
+                iconData = FontAwesomeIcons.starHalfStroke;
+                starColor = color;
+              } else {
+                iconData = FontAwesomeIcons.star;
+                starColor = color.withValues(alpha: 0.3);
+              }
+
+              return Icon(iconData, size: 16, color: starColor);
             }),
             const SizedBox(width: 6),
             Text(

@@ -114,6 +114,79 @@ class AmapPoiService {
     }
   }
 
+  /// 正向地理编码：将地址转换为坐标
+  /// [address] 地址字符串
+  /// [city] 可选的城市名称，会与地址组合成完整地址
+  /// 返回坐标和地址信息，失败返回 null
+  Future<GeocodingResult?> geocode({
+    required String address,
+    String? city,
+  }) async {
+    if (address.trim().isEmpty) {
+      return null;
+    }
+
+    // 将城市和地址组合成完整地址
+    final fullAddress = (city != null && city.isNotEmpty) ? '$city$address' : address;
+
+    // 使用完整地址进行地理编码
+    final result = await _doGeocode(fullAddress);
+    if (result != null && result.hasValidLocation) {
+      return result;
+    }
+
+    // 如果完整地址搜索失败，且有城市信息，尝试只用原始地址
+    if (city != null && city.isNotEmpty) {
+      debugPrint('📍 完整地址搜索失败，尝试只用原始地址');
+      return _doGeocode(address);
+    }
+
+    return null;
+  }
+
+  /// 执行正向地理编码请求
+  Future<GeocodingResult?> _doGeocode(String address) async {
+    try {
+      final params = <String, String>{
+        'key': _apiKey,
+        'address': address.trim(),
+        'output': 'json',
+      };
+
+      final uri = Uri.https('restapi.amap.com', '/v3/geocode/geo', params);
+
+      debugPrint('📍 正向地理编码: $address');
+
+      final response = await http.get(uri).timeout(
+            const Duration(seconds: 10),
+          );
+
+      if (response.statusCode != 200) {
+        debugPrint('❌ 正向地理编码请求失败: ${response.statusCode}');
+        return null;
+      }
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (data['status'] != '1') {
+        debugPrint('❌ 正向地理编码失败: ${data['info']}');
+        return null;
+      }
+
+      final geocodes = data['geocodes'] as List<dynamic>?;
+      if (geocodes == null || geocodes.isEmpty) {
+        debugPrint('❌ 未找到地址对应的坐标');
+        return null;
+      }
+
+      final first = geocodes.first as Map<String, dynamic>;
+      return GeocodingResult.fromAmapJson(first);
+    } catch (e) {
+      debugPrint('❌ 正向地理编码异常: $e');
+      return null;
+    }
+  }
+
   /// 逆地理编码：将坐标转换为地址
   /// [latitude] 纬度
   /// [longitude] 经度
@@ -356,4 +429,61 @@ class ReverseGeoResult {
     if (province != null && province!.isNotEmpty) return province!;
     return '';
   }
+}
+
+/// 正向地理编码结果
+class GeocodingResult {
+  final double latitude;
+  final double longitude;
+  final String formattedAddress; // 完整地址
+  final String? province; // 省
+  final String? city; // 市
+  final String? district; // 区
+  final String? street; // 街道名
+  final String? streetNumber; // 门牌号
+  final String level; // 匹配级别
+
+  const GeocodingResult({
+    required this.latitude,
+    required this.longitude,
+    required this.formattedAddress,
+    this.province,
+    this.city,
+    this.district,
+    this.street,
+    this.streetNumber,
+    this.level = '',
+  });
+
+  /// 从高德 API 响应解析
+  factory GeocodingResult.fromAmapJson(Map<String, dynamic> json) {
+    // 解析坐标字符串 "经度,纬度"
+    final locationStr = json['location'] as String? ?? '';
+    final parts = locationStr.split(',');
+    final longitude = parts.isNotEmpty ? double.tryParse(parts[0]) ?? 0.0 : 0.0;
+    final latitude = parts.length > 1 ? double.tryParse(parts[1]) ?? 0.0 : 0.0;
+
+    // 安全获取字符串值
+    String? safeString(dynamic value) {
+      if (value == null) return null;
+      if (value is String) return value.isEmpty ? null : value;
+      if (value is List) return null;
+      return value.toString();
+    }
+
+    return GeocodingResult(
+      latitude: latitude,
+      longitude: longitude,
+      formattedAddress: safeString(json['formatted_address']) ?? '',
+      province: safeString(json['province']),
+      city: safeString(json['city']),
+      district: safeString(json['district']),
+      street: safeString(json['street']),
+      streetNumber: safeString(json['number']),
+      level: safeString(json['level']) ?? '',
+    );
+  }
+
+  /// 是否有有效坐标
+  bool get hasValidLocation => latitude != 0.0 && longitude != 0.0;
 }

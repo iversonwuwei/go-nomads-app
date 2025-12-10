@@ -77,8 +77,14 @@ class CoworkingSpace {
   /// 是否24/7可用
   bool get is24HourAccess => amenities.has24HourAccess;
 
-  /// 获取完整地址
-  String get fullAddress => '${location.address}, ${location.city}, ${location.country}';
+  /// 获取完整地址（详细地址 + 城市 + 国家）
+  String get fullAddress {
+    final parts = <String>[];
+    if (location.address.isNotEmpty) parts.add(location.address);
+    if (location.city.isNotEmpty) parts.add(location.city);
+    if (location.country.isNotEmpty) parts.add(location.country);
+    return parts.join(', ');
+  }
 
   /// 获取地图链接
   String get googleMapsUrl => 'https://www.google.com/maps?q=${location.latitude},${location.longitude}';

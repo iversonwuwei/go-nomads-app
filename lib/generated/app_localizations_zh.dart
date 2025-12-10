@@ -3161,6 +3161,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get noMapAppAvailable => '未找到可用的地图应用';
 
   @override
+  String get selectMapApp => '选择地图应用';
+
+  @override
   String get selectMapSource => '选择地图源';
 
   @override

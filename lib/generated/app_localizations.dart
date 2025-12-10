@@ -6296,6 +6296,12 @@ abstract class AppLocalizations {
   /// **'未找到可用的地图应用'**
   String get noMapAppAvailable;
 
+  /// No description provided for @selectMapApp.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择地图应用'**
+  String get selectMapApp;
+
   /// No description provided for @selectMapSource.
   ///
   /// In zh, this message translates to:

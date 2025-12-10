@@ -199,13 +199,67 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage> with Single
       await _reverseGeocode(_markerPosition);
     }
 
-    // 如果有搜索查询，执行搜索
+    // 如果有搜索查询（地址），使用高德地图 API 进行正向地理编码
     if ((widget.searchQuery ?? '').trim().isNotEmpty) {
       final query = widget.searchQuery!.trim();
       _searchController.text = query;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _searchPlaces(query, autoSelectFirst: true);
+
+      // 使用高德地图 API 进行正向地理编码（对中国地址更准确）
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await _geocodeAddress(query);
       });
+    }
+  }
+
+  /// 使用高德地图 API 进行正向地理编码（地址 -> 坐标）
+  Future<void> _geocodeAddress(String address) async {
+    if (!mounted) return;
+
+    setState(() {
+      _isSearching = true;
+    });
+
+    try {
+      // 首先尝试使用高德地图 API 进行地理编码
+      final result = await AmapPoiService.instance.geocode(
+        address: address,
+        city: widget.city,
+      );
+
+      if (!mounted) return;
+
+      if (result != null) {
+        final target = LatLng(result.latitude, result.longitude);
+
+        setState(() {
+          _currentCenter = target;
+          _markerPosition = target;
+          _currentAddress = result.formattedAddress;
+          _currentName = result.formattedAddress;
+          _searchResults = const [];
+        });
+
+        _mapController.move(target, 15.0);
+
+        // 播放弹跳动画
+        _bounceController?.forward(from: 0.0);
+
+        debugPrint('📍 高德地理编码成功: ${result.formattedAddress} -> ${result.latitude}, ${result.longitude}');
+      } else {
+        // 高德 API 失败时，回退到 Nominatim 搜索
+        debugPrint('📍 高德地理编码失败，回退到 Nominatim 搜索');
+        await _searchPlaces(address, autoSelectFirst: true);
+      }
+    } catch (e) {
+      debugPrint('地理编码失败: $e');
+      // 失败时回退到 Nominatim 搜索
+      await _searchPlaces(address, autoSelectFirst: true);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSearching = false;
+        });
+      }
     }
   }
 
