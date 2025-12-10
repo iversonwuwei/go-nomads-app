@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'dart:ui' as ui;
 
 import 'package:df_admin_mobile/config/app_colors.dart';
@@ -67,7 +66,6 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
   // Location
   double _latitude = 0.0;
   double _longitude = 0.0;
-  String? _selectedLocationAddress; // 从地图选择的地址
 
   // Contact
   final _phoneController = TextEditingController();
@@ -942,18 +940,13 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
       ),
       child: ListTile(
         leading: const Icon(FontAwesomeIcons.map, color: Color(0xFFFF4458)),
-        title: _selectedLocationAddress != null && _selectedLocationAddress!.isNotEmpty
-            ? Text(
-                _selectedLocationAddress!,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              )
-            : _latitude != 0 && _longitude != 0
-                ? Text(l10n.locationCoordinates(
-                    _latitude.toStringAsFixed(6),
-                    _longitude.toStringAsFixed(6),
-                  ))
-                : Text(l10n.pickLocationOnMap),
+        // 只显示坐标，不显示详细地址
+        title: _latitude != 0 && _longitude != 0
+            ? Text(l10n.locationCoordinates(
+                _latitude.toStringAsFixed(6),
+                _longitude.toStringAsFixed(6),
+              ))
+            : Text(l10n.pickLocationOnMap),
         trailing: const Icon(FontAwesomeIcons.arrowRight, size: 16),
         onTap: () async {
           // 获取当前地址字段的内容作为搜索关键词
@@ -974,24 +967,9 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
 
           if (result != null && result is Map<String, dynamic>) {
             setState(() {
-              // 更新经纬度
+              // 只更新经纬度，不修改其他任何数据
               _latitude = result['latitude'] ?? 0.0;
               _longitude = result['longitude'] ?? 0.0;
-
-              // 更新地址显示
-              final address = result['address'] as String?;
-              if (address != null && address.isNotEmpty) {
-                _selectedLocationAddress = address;
-                // 同时更新地址输入框
-                if (_addressController.text.isEmpty) {
-                  _addressController.text = address;
-                }
-              }
-
-              // 只更新名称字段（如果有POI名称的话）
-              if (result['name'] != null && result['name'].toString().isNotEmpty) {
-                _nameController.text = result['name'];
-              }
             });
           }
         },

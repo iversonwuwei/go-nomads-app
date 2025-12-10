@@ -3194,6 +3194,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noMapAppAvailable => 'No map app available';
 
   @override
+  String get selectMapApp => 'Select Map App';
+
+  @override
   String get selectMapSource => 'Select Map Source';
 
   @override

@@ -38,13 +38,11 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
   final Map<String, Map<String, String>> _tileSources = {
     'amap-road': {
       'name': '高德标准地图',
-      'url':
-          'https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
+      'url': 'https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
     },
     'amap-satellite': {
       'name': '高德卫星图',
-      'url':
-          'https://webst01.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}',
+      'url': 'https://webst01.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}',
     },
     'osm-standard': {
       'name': 'OSM 标准地图',
@@ -56,8 +54,7 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
     },
     'cartodb-voyager': {
       'name': 'CartoDB 航海版',
-      'url':
-          'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+      'url': 'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
     },
     'cartodb-positron': {
       'name': 'CartoDB 简洁版',
@@ -133,35 +130,263 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
     ];
   }
 
-  // 打开系统地图应用
-  Future<void> _openSystemMap() async {
+  // 地图应用配置
+  List<MapAppInfo> _getAvailableMapApps() {
     final lat = widget.coworkingSpace.location.latitude;
     final lon = widget.coworkingSpace.location.longitude;
     final name = Uri.encodeComponent(widget.coworkingSpace.name);
 
-    // 尝试多个地图应用
-    final urls = [
-      // Apple Maps (iOS)
-      'http://maps.apple.com/?q=$name&ll=$lat,$lon',
-      // Google Maps (通用)
-      'https://www.google.com/maps/search/?api=1&query=$lat,$lon',
-      // 高德地图 (Android)
-      'androidamap://viewMap?sourceApplication=appname&lat=$lat&lon=$lon&dev=0',
-    ];
-
-    final l10n = AppLocalizations.of(context)!;
-
-    for (final urlString in urls) {
-      final uri = Uri.parse(urlString);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-        return;
-      }
+    // 根据平台返回不同的地图应用列表
+    if (GetPlatform.isIOS) {
+      return [
+        MapAppInfo(
+          name: 'Apple 地图',
+          icon: FontAwesomeIcons.apple,
+          color: const Color(0xFF000000),
+          url: 'http://maps.apple.com/?daddr=$lat,$lon&dirflg=d',
+          scheme: 'maps://',
+        ),
+        MapAppInfo(
+          name: 'Google 地图',
+          icon: FontAwesomeIcons.google,
+          color: const Color(0xFF4285F4),
+          url: 'comgooglemaps://?daddr=$lat,$lon&directionsmode=driving',
+          scheme: 'comgooglemaps://',
+          webFallback: 'https://www.google.com/maps/dir/?api=1&destination=$lat,$lon',
+        ),
+        MapAppInfo(
+          name: '高德地图',
+          icon: FontAwesomeIcons.mapLocationDot,
+          color: const Color(0xFF0078FF),
+          url: 'iosamap://path?sourceApplication=appname&dlat=$lat&dlon=$lon&dname=$name&dev=0&t=0',
+          scheme: 'iosamap://',
+        ),
+        MapAppInfo(
+          name: '百度地图',
+          icon: FontAwesomeIcons.mapPin,
+          color: const Color(0xFF3385FF),
+          url: 'baidumap://map/direction?destination=latlng:$lat,$lon|name:$name&mode=driving&coord_type=wgs84',
+          scheme: 'baidumap://',
+        ),
+        MapAppInfo(
+          name: '腾讯地图',
+          icon: FontAwesomeIcons.locationDot,
+          color: const Color(0xFF12B7F5),
+          url: 'qqmap://map/routeplan?type=drive&tocoord=$lat,$lon&to=$name',
+          scheme: 'qqmap://',
+        ),
+      ];
+    } else {
+      // Android
+      return [
+        MapAppInfo(
+          name: 'Google 地图',
+          icon: FontAwesomeIcons.google,
+          color: const Color(0xFF4285F4),
+          url: 'google.navigation:q=$lat,$lon&mode=d',
+          scheme: 'google.navigation:',
+          webFallback: 'https://www.google.com/maps/dir/?api=1&destination=$lat,$lon',
+        ),
+        MapAppInfo(
+          name: '高德地图',
+          icon: FontAwesomeIcons.mapLocationDot,
+          color: const Color(0xFF0078FF),
+          url: 'androidamap://route?sourceApplication=appname&dlat=$lat&dlon=$lon&dname=$name&dev=0&t=0',
+          scheme: 'androidamap://',
+        ),
+        MapAppInfo(
+          name: '百度地图',
+          icon: FontAwesomeIcons.mapPin,
+          color: const Color(0xFF3385FF),
+          url: 'baidumap://map/direction?destination=latlng:$lat,$lon|name:$name&mode=driving&coord_type=wgs84',
+          scheme: 'baidumap://',
+        ),
+        MapAppInfo(
+          name: '腾讯地图',
+          icon: FontAwesomeIcons.locationDot,
+          color: const Color(0xFF12B7F5),
+          url: 'qqmap://map/routeplan?type=drive&tocoord=$lat,$lon&to=$name&referer=appname',
+          scheme: 'qqmap://',
+        ),
+      ];
     }
+  }
 
-    // 如果都无法打开，显示提示
-    if (mounted) {
-      AppToast.error(l10n.noMapAppAvailable);
+  // 显示地图选择器
+  Future<void> _openSystemMap() async {
+    final l10n = AppLocalizations.of(context)!;
+    final mapApps = _getAvailableMapApps();
+
+    // 直接显示所有地图应用列表，让用户选择
+    // 点击时再尝试打开，如果打不开就使用 web 备选或显示错误
+    if (!mounted) return;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.6,
+          ),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+          ),
+          child: SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 拖拽指示器
+                Container(
+                  margin: const EdgeInsets.only(top: 12),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                // 标题
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      const FaIcon(
+                        FontAwesomeIcons.diamondTurnRight,
+                        color: Color(0xFFFF4458),
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        l10n.selectMapApp,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                // 地图应用列表（可滚动）
+                Flexible(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: mapApps.length,
+                    itemBuilder: (context, index) {
+                      final app = mapApps[index];
+                      return ListTile(
+                        leading: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: app.color.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Center(
+                            child: FaIcon(
+                              app.icon,
+                              color: app.color,
+                              size: 22,
+                            ),
+                          ),
+                        ),
+                        title: Text(
+                          app.name,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        trailing: const FaIcon(
+                          FontAwesomeIcons.chevronRight,
+                          size: 14,
+                          color: Colors.grey,
+                        ),
+                        onTap: () {
+                          Navigator.pop(context);
+                          _launchMapApp(app);
+                        },
+                      );
+                    },
+                  ),
+                ),
+                // 取消按钮
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        backgroundColor: Colors.grey.shade100,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        l10n.cancel,
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // 启动地图应用
+  Future<void> _launchMapApp(MapAppInfo app) async {
+    final uri = Uri.parse(app.url);
+
+    try {
+      // 直接尝试打开，不预先检测
+      // 因为 canLaunchUrl 在某些情况下不可靠
+      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+
+      if (!launched) {
+        // 如果打开失败，尝试 web 备选
+        if (app.webFallback != null) {
+          final webUri = Uri.parse(app.webFallback!);
+          final webLaunched = await launchUrl(webUri, mode: LaunchMode.externalApplication);
+          if (!webLaunched && mounted) {
+            AppToast.error('无法打开 ${app.name}，请确保已安装该应用');
+          }
+        } else {
+          if (mounted) {
+            AppToast.error('无法打开 ${app.name}，请确保已安装该应用');
+          }
+        }
+      }
+    } catch (e) {
+      // 捕获异常，尝试 web 备选
+      if (app.webFallback != null) {
+        try {
+          final webUri = Uri.parse(app.webFallback!);
+          await launchUrl(webUri, mode: LaunchMode.externalApplication);
+        } catch (_) {
+          if (mounted) {
+            AppToast.error('无法打开 ${app.name}，请确保已安装该应用');
+          }
+        }
+      } else {
+        if (mounted) {
+          AppToast.error('无法打开 ${app.name}，请确保已安装该应用');
+        }
+      }
     }
   }
 
@@ -225,19 +450,14 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
                         return ListTile(
                           leading: FaIcon(
                             FontAwesomeIcons.map,
-                            color: isSelected
-                                ? const Color(0xFF1976D2)
-                                : Colors.grey.shade600,
+                            color: isSelected ? const Color(0xFF1976D2) : Colors.grey.shade600,
                             size: 20,
                           ),
                           title: Text(
                             entry.value['name']!,
                             style: TextStyle(
-                              fontWeight: isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                              color:
-                                  isSelected ? const Color(0xFF1976D2) : null,
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              color: isSelected ? const Color(0xFF1976D2) : null,
                             ),
                           ),
                           trailing: isSelected
@@ -887,8 +1107,7 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color:
-                                  _getPOIColor(poi.type).withValues(alpha: 0.1),
+                              color: _getPOIColor(poi.type).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Icon(
@@ -1030,8 +1249,7 @@ class _OSMNavigationPageState extends State<OSMNavigationPage> {
                           // 可以添加导航到这个POI的功能
                           _focusOnLocation(poi.position);
                         },
-                        icon: const Icon(FontAwesomeIcons.locationCrosshairs,
-                            size: 20),
+                        icon: const Icon(FontAwesomeIcons.locationCrosshairs, size: 20),
                         label: Text(
                           l10n.viewOnMap,
                           style: const TextStyle(
@@ -1142,4 +1360,23 @@ enum POIType {
   transit, // 交通
   accommodation, // 住宿
   restaurant, // 餐饮
+}
+
+// 地图应用信息
+class MapAppInfo {
+  final String name;
+  final IconData icon;
+  final Color color;
+  final String url;
+  final String? scheme;
+  final String? webFallback;
+
+  MapAppInfo({
+    required this.name,
+    required this.icon,
+    required this.color,
+    required this.url,
+    this.scheme,
+    this.webFallback,
+  });
 }

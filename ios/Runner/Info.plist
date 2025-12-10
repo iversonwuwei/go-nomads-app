@@ -72,6 +72,11 @@
 	<string>weixin</string>
 	<string>sinaweibo</string>
 	<string>dingtalk</string>
+	<!-- 地图应用 -->
+	<string>comgooglemaps</string>
+	<string>iosamap</string>
+	<string>baidumap</string>
+	<string>qqmap</string>
 </array>
 <!-- 日历权限描述 -->
 <key>NSCalendarsUsageDescription</key>

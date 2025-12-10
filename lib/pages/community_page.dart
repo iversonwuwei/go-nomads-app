@@ -62,8 +62,7 @@ class CommunityPage extends StatelessWidget {
   }
 
   // Trip Reports Tab
-  Widget _buildTripReportsTab(
-      CommunityStateController controller, bool isMobile) {
+  Widget _buildTripReportsTab(CommunityStateController controller, bool isMobile) {
     return Obx(() => ListView.builder(
           padding: EdgeInsets.fromLTRB(
             isMobile ? 16 : 24,
@@ -79,8 +78,7 @@ class CommunityPage extends StatelessWidget {
         ));
   }
 
-  Widget _buildTripReportCard(
-      TripReport report, CommunityStateController controller, bool isMobile) {
+  Widget _buildTripReportCard(TripReport report, CommunityStateController controller, bool isMobile) {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
@@ -131,16 +129,14 @@ class CommunityPage extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFEF3C7),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Row(
                     children: [
-                      const Icon(FontAwesomeIcons.star,
-                          size: 14, color: Color(0xFFF59E0B)),
+                      const Icon(FontAwesomeIcons.star, size: 14, color: Color(0xFFF59E0B)),
                       const SizedBox(width: 4),
                       Text(
                         report.overallRating.toStringAsFixed(1),
@@ -218,8 +214,7 @@ class CommunityPage extends StatelessWidget {
               runSpacing: 8,
               children: report.ratings.entries.map((entry) {
                 return Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF3F4F6),
                     borderRadius: BorderRadius.circular(6),
@@ -237,13 +232,25 @@ class CommunityPage extends StatelessWidget {
                       const SizedBox(width: 6),
                       ...List.generate(
                         5,
-                        (i) => Icon(
-                          i < entry.value.round()
-                              ? FontAwesomeIcons.star
-                              : FontAwesomeIcons.star,
-                          size: 12,
-                          color: const Color(0xFFF59E0B),
-                        ),
+                        (i) {
+                          final starValue = i + 1;
+                          final rating = entry.value;
+                          IconData iconData;
+                          Color starColor;
+
+                          if (rating >= starValue) {
+                            iconData = FontAwesomeIcons.solidStar;
+                            starColor = const Color(0xFFF59E0B);
+                          } else if (rating > starValue - 1 && rating < starValue) {
+                            iconData = FontAwesomeIcons.starHalfStroke;
+                            starColor = const Color(0xFFF59E0B);
+                          } else {
+                            iconData = FontAwesomeIcons.star;
+                            starColor = const Color(0xFFF59E0B).withValues(alpha: 0.3);
+                          }
+
+                          return Icon(iconData, size: 12, color: starColor);
+                        },
                       ),
                     ],
                   ),
@@ -262,8 +269,7 @@ class CommunityPage extends StatelessWidget {
                     _buildProConSection('Pros', report.pros, Colors.green),
                     if (report.cons.isNotEmpty) const SizedBox(height: 12),
                   ],
-                  if (report.cons.isNotEmpty)
-                    _buildProConSection('Cons', report.cons, Colors.red),
+                  if (report.cons.isNotEmpty) _buildProConSection('Cons', report.cons, Colors.red),
                 ],
               ),
             ),
@@ -280,9 +286,7 @@ class CommunityPage extends StatelessWidget {
                       Icon(
                         report.isLiked ? FontAwesomeIcons.heart : FontAwesomeIcons.heart,
                         size: 20,
-                        color: report.isLiked
-                            ? const Color(0xFFFF4458)
-                            : const Color(0xFF6b7280),
+                        color: report.isLiked ? const Color(0xFFFF4458) : const Color(0xFF6b7280),
                       ),
                       const SizedBox(width: 6),
                       Text(
@@ -298,8 +302,7 @@ class CommunityPage extends StatelessWidget {
                 const SizedBox(width: 24),
                 Row(
                   children: [
-                    const Icon(FontAwesomeIcons.comment,
-                        size: 20, color: Color(0xFF6b7280)),
+                    const Icon(FontAwesomeIcons.comment, size: 20, color: Color(0xFF6b7280)),
                     const SizedBox(width: 6),
                     Text(
                       '${report.comments}',
@@ -365,8 +368,7 @@ class CommunityPage extends StatelessWidget {
   }
 
   // Recommendations Tab
-  Widget _buildRecommendationsTab(
-      CommunityStateController controller, bool isMobile) {
+  Widget _buildRecommendationsTab(CommunityStateController controller, bool isMobile) {
     return Column(
       children: [
         // Category Filter
@@ -377,8 +379,7 @@ class CommunityPage extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: controller.categories.map((category) {
-                    final isSelected =
-                        controller.selectedCategory.value == category;
+                    final isSelected = controller.selectedCategory.value == category;
                     return Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: ChoiceChip(
@@ -392,9 +393,7 @@ class CommunityPage extends StatelessWidget {
                         selectedColor: const Color(0xFFFF4458),
                         backgroundColor: const Color(0xFFF3F4F6),
                         labelStyle: TextStyle(
-                          color: isSelected
-                              ? Colors.white
-                              : const Color(0xFF6b7280),
+                          color: isSelected ? Colors.white : const Color(0xFF6b7280),
                           fontWeight: FontWeight.w600,
                           fontSize: 13,
                         ),
@@ -443,8 +442,7 @@ class CommunityPage extends StatelessWidget {
           // Image
           if (rec.photos.isNotEmpty)
             ClipRRect(
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(12)),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
               child: Image.network(
                 rec.photos.first,
                 width: double.infinity,
@@ -460,11 +458,9 @@ class CommunityPage extends StatelessWidget {
               children: [
                 // Category Badge
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color:
-                        _getCategoryColor(rec.category).withValues(alpha: 0.1),
+                    color: _getCategoryColor(rec.category).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
@@ -494,8 +490,7 @@ class CommunityPage extends StatelessWidget {
                     ),
                     Row(
                       children: [
-                        const Icon(FontAwesomeIcons.star,
-                            size: 16, color: Color(0xFFF59E0B)),
+                        const Icon(FontAwesomeIcons.star, size: 16, color: Color(0xFFF59E0B)),
                         const SizedBox(width: 4),
                         Text(
                           rec.rating.toStringAsFixed(1),
@@ -547,12 +542,11 @@ class CommunityPage extends StatelessWidget {
                       ),
                       const SizedBox(width: 12),
                     ],
-                    const Icon(FontAwesomeIcons.locationDot,
-                        size: 14, color: Color(0xFF6b7280)),
+                    const Icon(FontAwesomeIcons.locationDot, size: 14, color: Color(0xFF6b7280)),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
-                        rec.address ?? rec.city,
+                        rec.fullAddress,
                         style: const TextStyle(
                           fontSize: 12,
                           color: Color(0xFF6b7280),
@@ -572,8 +566,7 @@ class CommunityPage extends StatelessWidget {
                     runSpacing: 6,
                     children: rec.tags.map((tag) {
                       return Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: const Color(0xFFF3F4F6),
                           borderRadius: BorderRadius.circular(4),
@@ -614,8 +607,7 @@ class CommunityPage extends StatelessWidget {
         ));
   }
 
-  Widget _buildQuestionCard(
-      Question question, CommunityStateController controller, bool isMobile) {
+  Widget _buildQuestionCard(Question question, CommunityStateController controller, bool isMobile) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -665,16 +657,14 @@ class CommunityPage extends StatelessWidget {
               ),
               if (question.hasAcceptedAnswer)
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: const Color(0xFF10B981).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: const Row(
                     children: [
-                      Icon(FontAwesomeIcons.circleCheck,
-                          size: 12, color: Color(0xFF10B981)),
+                      Icon(FontAwesomeIcons.circleCheck, size: 12, color: Color(0xFF10B981)),
                       SizedBox(width: 4),
                       Text(
                         'Solved',
@@ -724,8 +714,7 @@ class CommunityPage extends StatelessWidget {
               spacing: 6,
               children: question.tags.map((tag) {
                 return Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFF4458).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(4),
@@ -752,13 +741,9 @@ class CommunityPage extends StatelessWidget {
                 child: Row(
                   children: [
                     Icon(
-                      question.isUpvoted
-                          ? FontAwesomeIcons.arrowUp
-                          : FontAwesomeIcons.arrowUp,
+                      question.isUpvoted ? FontAwesomeIcons.arrowUp : FontAwesomeIcons.arrowUp,
                       size: 18,
-                      color: question.isUpvoted
-                          ? const Color(0xFFFF4458)
-                          : const Color(0xFF6b7280),
+                      color: question.isUpvoted ? const Color(0xFFFF4458) : const Color(0xFF6b7280),
                     ),
                     const SizedBox(width: 4),
                     Text(
@@ -773,8 +758,7 @@ class CommunityPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 20),
-              const Icon(FontAwesomeIcons.comment,
-                  size: 16, color: Color(0xFF6b7280)),
+              const Icon(FontAwesomeIcons.comment, size: 16, color: Color(0xFF6b7280)),
               const SizedBox(width: 4),
               Text(
                 '${question.answerCount} answers',

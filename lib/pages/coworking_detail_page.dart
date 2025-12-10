@@ -414,8 +414,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                   // Address
                   ListTile(
                     leading: const Icon(FontAwesomeIcons.locationDot, color: Colors.red),
-                    title: Text(_space.location.address),
-                    subtitle: Text('${_space.location.city}, ${_space.location.country}'),
+                    title: Text(_space.fullAddress),
                   ),
 
                   // Creator Info
@@ -1288,13 +1287,39 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                           Padding(
                             padding: const EdgeInsets.only(bottom: 8),
                             child: Row(
-                              children: List.generate(5, (index) {
-                                return Icon(
-                                  index < comment.rating.toInt() ? FontAwesomeIcons.star : FontAwesomeIcons.star,
-                                  color: Colors.amber,
-                                  size: 18,
-                                );
-                              }),
+                              children: [
+                                ...List.generate(5, (index) {
+                                  final starValue = index + 1;
+                                  final rating = comment.rating;
+                                  IconData iconData;
+                                  Color color;
+
+                                  if (rating >= starValue) {
+                                    // 完整的星星
+                                    iconData = FontAwesomeIcons.solidStar;
+                                    color = Colors.amber;
+                                  } else if (rating > starValue - 1 && rating < starValue) {
+                                    // 半星
+                                    iconData = FontAwesomeIcons.starHalfStroke;
+                                    color = Colors.amber;
+                                  } else {
+                                    // 空星
+                                    iconData = FontAwesomeIcons.star;
+                                    color = Colors.grey.shade300;
+                                  }
+
+                                  return Icon(iconData, color: color, size: 16);
+                                }),
+                                const SizedBox(width: 8),
+                                Text(
+                                  comment.rating.toStringAsFixed(1),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey.shade700,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         if (comment.title.isNotEmpty)

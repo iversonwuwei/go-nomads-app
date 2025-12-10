@@ -91,6 +91,30 @@
         <action android:name="android.intent.action.SENDTO" />
         <data android:scheme="mailto" />
     </intent>
+    
+    <!-- 地图应用 -->
+    <package android:name="com.google.android.apps.maps" />
+    <package android:name="com.autonavi.minimap" />
+    <package android:name="com.baidu.BaiduMap" />
+    <package android:name="com.tencent.map" />
+    
+    <!-- 地图应用 URL scheme -->
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="google.navigation" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="androidamap" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="baidumap" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="qqmap" />
+    </intent>
 </queries>
     
     <application

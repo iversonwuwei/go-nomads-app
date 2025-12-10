@@ -29,10 +29,31 @@ class ProsConsStateController extends GetxController {
   // 错误信息
   final RxnString error = RxnString();
 
-  // 记录当前会话用户已投票的条目,避免重复触发
+  // 记录当前会话用户已投票的条目（仅用于会话内跟踪新投票）
   final RxSet<String> votedItemIds = <String>{}.obs;
 
-  bool hasUserVoted(String id) => votedItemIds.contains(id);
+  /// 检查用户是否已投票（优先使用后端返回的状态，其次使用会话状态）
+  bool hasUserVoted(String id) {
+    // 先检查会话内状态
+    if (votedItemIds.contains(id)) return true;
+
+    // 再检查后端返回的状态
+    final item = _findItemById(id);
+    return item?.currentUserVoted == true;
+  }
+
+  /// 根据 ID 查找条目
+  ProsCons? _findItemById(String id) {
+    try {
+      return prosList.firstWhere((item) => item.id == id);
+    } catch (_) {
+      try {
+        return consList.firstWhere((item) => item.id == id);
+      } catch (_) {
+        return null;
+      }
+    }
+  }
 
   /// 检查用户是否已登录
   bool _isUserLoggedIn() {
@@ -207,7 +228,7 @@ class ProsConsStateController extends GetxController {
     }
   }
 
-  /// 点赞
+  /// 点赞（toggle 机制：已投票则取消，未投票则新增）
   Future<bool> upvote(String id, bool isPro) async {
     return await _vote(id: id, isUpvote: true, isPro: isPro);
   }
@@ -217,7 +238,7 @@ class ProsConsStateController extends GetxController {
     return await _vote(id: id, isUpvote: false, isPro: isPro);
   }
 
-  /// 内部方法: 投票
+  /// 内部方法: 投票（toggle 机制）
   Future<bool> _vote({
     required String id,
     required bool isUpvote,
@@ -226,8 +247,11 @@ class ProsConsStateController extends GetxController {
     isVoting.value = true;
     error.value = null;
 
+    // 判断是投票还是取消投票
+    final wasVoted = hasUserVoted(id);
+
     try {
-      log('📡 ${isUpvote ? '点赞' : '点踩'}: $id');
+      log('📡 ${wasVoted ? '取消投票' : (isUpvote ? '点赞' : '点踩')}: $id');
 
       final result = await _repository.voteProsCons(
         id: id,
@@ -236,10 +260,9 @@ class ProsConsStateController extends GetxController {
 
       return result.fold(
         onSuccess: (_) {
-          // 投票成功，不在本地更新数据
-          // 因为后端投票逻辑是切换：有投票则删除，无投票则新增
-          // 前端无法判断是新增还是删除，所以由调用方重新加载数据
-          log('✅ 投票成功');
+          // 投票成功，更新本地状态
+          _updateLocalVoteState(id: id, isPro: isPro, wasVoted: wasVoted, isUpvote: isUpvote);
+          log('✅ ${wasVoted ? '取消投票' : '投票'}成功');
           return true;
         },
         onFailure: (err) {
@@ -255,6 +278,64 @@ class ProsConsStateController extends GetxController {
     } finally {
       isVoting.value = false;
     }
+  }
+
+  /// 更新本地投票状态（乐观更新）
+  void _updateLocalVoteState({
+    required String id,
+    required bool isPro,
+    required bool wasVoted,
+    required bool isUpvote,
+  }) {
+    final list = isPro ? prosList : consList;
+    final index = list.indexWhere((item) => item.id == id);
+
+    if (index == -1) return;
+
+    final oldItem = list[index];
+
+    if (wasVoted) {
+      // 取消投票：减少投票数，从 votedItemIds 移除
+      votedItemIds.remove(id);
+      final newUpvotes = isUpvote ? (oldItem.upvotes - 1).clamp(0, 999999) : oldItem.upvotes;
+      final newDownvotes = !isUpvote ? (oldItem.downvotes - 1).clamp(0, 999999) : oldItem.downvotes;
+
+      final updatedItem = ProsCons(
+        id: oldItem.id,
+        userId: oldItem.userId,
+        cityId: oldItem.cityId,
+        text: oldItem.text,
+        upvotes: newUpvotes,
+        downvotes: newDownvotes,
+        isPro: oldItem.isPro,
+        createdAt: oldItem.createdAt,
+        updatedAt: oldItem.updatedAt,
+        currentUserVoted: null, // 取消投票后设为 null
+      );
+      list[index] = updatedItem;
+    } else {
+      // 新增投票：增加投票数，添加到 votedItemIds
+      votedItemIds.add(id);
+      final newUpvotes = isUpvote ? oldItem.upvotes + 1 : oldItem.upvotes;
+      final newDownvotes = !isUpvote ? oldItem.downvotes + 1 : oldItem.downvotes;
+
+      final updatedItem = ProsCons(
+        id: oldItem.id,
+        userId: oldItem.userId,
+        cityId: oldItem.cityId,
+        text: oldItem.text,
+        upvotes: newUpvotes,
+        downvotes: newDownvotes,
+        isPro: oldItem.isPro,
+        createdAt: oldItem.createdAt,
+        updatedAt: oldItem.updatedAt,
+        currentUserVoted: isUpvote, // 设置投票状态
+      );
+      list[index] = updatedItem;
+    }
+
+    // 触发响应式更新
+    list.refresh();
   }
 
   /// 获取热门优点 (按投票数排序)
