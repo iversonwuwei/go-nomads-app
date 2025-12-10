@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_review_repository.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/services/image_upload_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -118,9 +119,30 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
       
       final repository = Get.find<ICoworkingReviewRepository>();
 
-      // TODO: 上传图片到服务器获取 URLs
-      // 这里暂时传递空数组，实际应该先上传图片
-      final photoUrls = <String>[];
+      // 上传图片到 Supabase Storage
+      List<String> photoUrls = [];
+      if (_selectedImages.isNotEmpty) {
+        log('📷 开始上传 ${_selectedImages.length} 张图片...');
+        try {
+          final imageUploadService = ImageUploadService();
+          final imageFiles = _selectedImages.map((xFile) => File(xFile.path)).toList();
+          
+          photoUrls = await imageUploadService.uploadMultipleImages(
+            imageFiles: imageFiles,
+            bucket: 'user-uploads',
+            folder: 'coworking-reviews/${widget.coworkingId}',
+            compress: true,
+            quality: 85,
+            onProgress: (current, total) {
+              log('📷 图片上传进度: $current/$total');
+            },
+          );
+          log('✅ 图片上传完成，共 ${photoUrls.length} 张');
+        } catch (e) {
+          log('⚠️ 图片上传失败: $e');
+          // 图片上传失败不阻止评论提交，继续提交无图片的评论
+        }
+      }
 
       final result = await repository.addReview(
         coworkingId: widget.coworkingId,
