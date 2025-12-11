@@ -1,13 +1,14 @@
 import 'package:df_admin_mobile/config/api_config.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/core/infrastructure/base_repository.dart';
-import 'package:df_admin_mobile/services/http_service.dart';
-import 'package:df_admin_mobile/services/token_storage_service.dart';
 import 'package:df_admin_mobile/features/auth/domain/entities/auth_token.dart';
 import 'package:df_admin_mobile/features/auth/domain/entities/auth_user.dart';
 import 'package:df_admin_mobile/features/auth/domain/repositories/iauth_repository.dart';
 import 'package:df_admin_mobile/features/auth/infrastructure/models/auth_token_dto.dart';
 import 'package:df_admin_mobile/features/auth/infrastructure/models/auth_user_dto.dart';
+import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:df_admin_mobile/services/token_storage_service.dart';
+
 import 'user_local_repository.dart';
 
 /// 认证仓储实现
@@ -294,5 +295,60 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
       onSuccess: (token) => token != null && !token.isExpired,
       onFailure: (_) => false,
     );
+  }
+
+  @override
+  Future<Result<AuthToken>> socialLogin({
+    required SocialAuthProvider provider,
+    String? code,
+    String? accessToken,
+    String? openId,
+  }) async {
+    return execute(() async {
+      // 构建请求数据
+      final requestData = <String, dynamic>{
+        'provider': provider.name, // wechat, alipay, qq, apple, google
+      };
+
+      if (code != null) requestData['code'] = code;
+      if (accessToken != null) requestData['accessToken'] = accessToken;
+      if (openId != null) requestData['openId'] = openId;
+
+      final response = await _httpService.post(
+        ApiConfig.socialLoginEndpoint,
+        data: requestData,
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data as Map<String, dynamic>;
+        final tokenDto = AuthTokenDto.fromJson(data);
+        final token = tokenDto.toDomain();
+
+        // 自动设置HTTP服务的token
+        _httpService.setAuthToken(token.accessToken);
+
+        // 自动持久化token
+        await persistToken(token);
+
+        // 保存用户完整信息
+        final userData = data['data']?['user'];
+        if (userData != null) {
+          final user = AuthUser(
+            id: userData['id'] as String,
+            name: userData['name'] as String,
+            email: userData['email'] as String? ?? '',
+            phone: userData['phone'] as String?,
+            avatar: userData['avatar'] as String?,
+            role: userData['role'] as String? ?? 'user',
+          );
+
+          await _userLocalRepo.saveUser(user);
+        }
+
+        return token;
+      } else {
+        throw ServerException('社交登录失败');
+      }
+    });
   }
 }

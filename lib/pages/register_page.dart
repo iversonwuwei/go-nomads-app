@@ -140,8 +140,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           width: 80,
                           height: 80,
                           decoration: BoxDecoration(
-                            color:
-                                RegisterPage.nomadsRed.withValues(alpha: 0.1),
+                            color: RegisterPage.nomadsRed.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -260,9 +259,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       prefixIcon: const Icon(FontAwesomeIcons.lock),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscurePassword
-                              ? FontAwesomeIcons.eye
-                              : FontAwesomeIcons.eyeSlash,
+                          _obscurePassword ? FontAwesomeIcons.eye : FontAwesomeIcons.eyeSlash,
                         ),
                         onPressed: () {
                           setState(() {
@@ -308,9 +305,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       prefixIcon: const Icon(FontAwesomeIcons.lock),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscureConfirmPassword
-                              ? FontAwesomeIcons.eye
-                              : FontAwesomeIcons.eyeSlash,
+                          _obscureConfirmPassword ? FontAwesomeIcons.eye : FontAwesomeIcons.eyeSlash,
                         ),
                         onPressed: () {
                           setState(() {
@@ -421,8 +416,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             width: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           )
                         : Text(
@@ -432,125 +426,6 @@ class _RegisterPageState extends State<RegisterPage> {
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // 分隔线
-                  Row(
-                    children: [
-                      Expanded(child: Divider(color: Colors.grey.shade300)),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          l10n.orContinueWith,
-                          style: TextStyle(
-                            color: Colors.grey.shade600,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
-                      Expanded(child: Divider(color: Colors.grey.shade300)),
-                    ],
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // 社交登录按钮 - 第一行
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildSocialLoginButton(
-                        onPressed: () {
-                          AppToast.info(
-                            l10n.googleAuthComingSoon,
-                            title: l10n.googleSignIn,
-                          );
-                        },
-                        icon: FontAwesomeIcons.google,
-                        color: const Color(0xFFDB4437), // Google Red
-                        label: 'Google',
-                      ),
-                      _buildSocialLoginButton(
-                        onPressed: () {
-                          AppToast.info(
-                            l10n.appleAuthComingSoon,
-                            title: l10n.appleSignIn,
-                          );
-                        },
-                        icon: FontAwesomeIcons.apple,
-                        color: Colors.black,
-                        label: 'Apple',
-                      ),
-                      _buildSocialLoginButton(
-                        onPressed: () {
-                          AppToast.info('WeChat Sign In', title: 'WeChat');
-                        },
-                        icon: FontAwesomeIcons.weixin, // WeChat icon
-                        color: const Color(0xFF09BB07), // WeChat Green
-                        label: 'WeChat',
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // 社交登录按钮 - 第二行
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildSocialLoginButton(
-                        onPressed: () {
-                          AppToast.info('Twitter Sign In', title: 'Twitter');
-                        },
-                        icon: FontAwesomeIcons.xTwitter, // X/Twitter icon
-                        color: Colors.black,
-                        label: 'Twitter',
-                      ),
-                      _buildSocialLoginButton(
-                        onPressed: () {
-                          AppToast.info('Alipay Sign In', title: 'Alipay');
-                        },
-                        icon: FontAwesomeIcons.alipay,
-                        color: const Color(0xFF1677FF), // Alipay Blue
-                        label: 'Alipay',
-                      ),
-                      _buildSocialLoginButton(
-                        onPressed: () {
-                          AppToast.info('QQ Sign In', title: 'QQ');
-                        },
-                        icon: FontAwesomeIcons.qq,
-                        color: const Color(0xFF12B7F5), // QQ Blue
-                        label: 'QQ',
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // 社交登录按钮 - 第三行
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildSocialLoginButton(
-                        onPressed: () {
-                          AppToast.info('TikTok Sign In', title: 'TikTok');
-                        },
-                        icon: FontAwesomeIcons.tiktok,
-                        color: Colors.black,
-                        label: 'TikTok',
-                      ),
-                      _buildSocialLoginButton(
-                        onPressed: () {
-                          AppToast.info('Phone Sign In', title: 'Phone');
-                        },
-                        icon: FontAwesomeIcons.mobile,
-                        color: const Color(0xFF4CAF50), // Green for phone
-                        label: 'Phone',
-                      ),
-                      // 占位,保持对齐
-                      const SizedBox(width: 100),
-                    ],
                   ),
 
                   const SizedBox(height: 32),
@@ -687,46 +562,6 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildSocialLoginButton({
-    required VoidCallback onPressed,
-    required IconData icon,
-    required Color color,
-    required String label,
-  }) {
-    return InkWell(
-      onTap: onPressed,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        width: 100,
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            FaIcon(
-              icon,
-              size: 28,
-              color: color,
-            ),
-            const SizedBox(height: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade700,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

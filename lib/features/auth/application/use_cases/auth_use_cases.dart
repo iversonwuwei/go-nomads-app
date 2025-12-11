@@ -104,8 +104,7 @@ class GetCurrentUserUseCase extends UseCase<AuthUser, NoParams> {
 }
 
 /// 更新用户资料用例
-class UpdateUserProfileUseCase
-    extends UseCase<AuthUser, UpdateUserProfileParams> {
+class UpdateUserProfileUseCase extends UseCase<AuthUser, UpdateUserProfileParams> {
   final IAuthRepository _repository;
 
   UpdateUserProfileUseCase(this._repository);
@@ -168,4 +167,35 @@ class AutoRefreshTokenUseCase extends UseCase<AuthToken?, NoParams> {
       onFailure: (error) => Failure(error),
     );
   }
+}
+
+/// 社交登录用例
+class SocialLoginUseCase extends UseCase<AuthToken, SocialLoginParams> {
+  final IAuthRepository _repository;
+
+  SocialLoginUseCase(this._repository);
+
+  @override
+  Future<Result<AuthToken>> execute(SocialLoginParams params) async {
+    return await _repository.socialLogin(
+      provider: params.provider,
+      code: params.code,
+      accessToken: params.accessToken,
+      openId: params.openId,
+    );
+  }
+}
+
+class SocialLoginParams {
+  final SocialAuthProvider provider;
+  final String? code;
+  final String? accessToken;
+  final String? openId;
+
+  SocialLoginParams({
+    required this.provider,
+    this.code,
+    this.accessToken,
+    this.openId,
+  });
 }

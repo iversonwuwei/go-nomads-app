@@ -10,6 +10,7 @@ import 'package:df_admin_mobile/features/auth/domain/repositories/iauth_database
 import 'package:df_admin_mobile/features/auth/domain/repositories/iauth_repository.dart';
 import 'package:df_admin_mobile/services/http_service.dart';
 import 'package:df_admin_mobile/services/signalr_service.dart';
+import 'package:df_admin_mobile/services/social_login_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:get/get.dart';
 
@@ -21,11 +22,14 @@ class AuthStateController extends GetxController {
   final GetCurrentUserUseCase _getCurrentUserUseCase;
   final UpdateUserProfileUseCase _updateUserProfileUseCase;
   final AutoRefreshTokenUseCase _autoRefreshTokenUseCase;
+  final SocialLoginUseCase _socialLoginUseCase;
 
   // 数据库相关 Use Cases
   final SaveTokenToDatabaseUseCase _saveTokenToDatabaseUseCase;
-  final CheckLoginStatusWithDatabaseUseCase
-      _checkLoginStatusWithDatabaseUseCase;
+  final CheckLoginStatusWithDatabaseUseCase _checkLoginStatusWithDatabaseUseCase;
+
+  // 社交登录服务
+  final SocialLoginService _socialLoginService;
 
   AuthStateController({
     required LoginUseCase loginUseCase,
@@ -34,18 +38,20 @@ class AuthStateController extends GetxController {
     required GetCurrentUserUseCase getCurrentUserUseCase,
     required UpdateUserProfileUseCase updateUserProfileUseCase,
     required AutoRefreshTokenUseCase autoRefreshTokenUseCase,
+    required SocialLoginUseCase socialLoginUseCase,
     required SaveTokenToDatabaseUseCase saveTokenToDatabaseUseCase,
-    required CheckLoginStatusWithDatabaseUseCase
-        checkLoginStatusWithDatabaseUseCase,
+    required CheckLoginStatusWithDatabaseUseCase checkLoginStatusWithDatabaseUseCase,
+    required SocialLoginService socialLoginService,
   })  : _loginUseCase = loginUseCase,
         _registerUseCase = registerUseCase,
         _logoutUseCase = logoutUseCase,
         _getCurrentUserUseCase = getCurrentUserUseCase,
         _updateUserProfileUseCase = updateUserProfileUseCase,
         _autoRefreshTokenUseCase = autoRefreshTokenUseCase,
+        _socialLoginUseCase = socialLoginUseCase,
         _saveTokenToDatabaseUseCase = saveTokenToDatabaseUseCase,
-        _checkLoginStatusWithDatabaseUseCase =
-            checkLoginStatusWithDatabaseUseCase;
+        _checkLoginStatusWithDatabaseUseCase = checkLoginStatusWithDatabaseUseCase,
+        _socialLoginService = socialLoginService;
 
   // 状态
   final Rx<AuthUser?> currentUser = Rx<AuthUser?>(null);
@@ -81,8 +87,7 @@ class AuthStateController extends GetxController {
 
   /// 检查登录状态 (优先从数据库)
   Future<void> _checkLoginStatusWithDatabase() async {
-    final result =
-        await _checkLoginStatusWithDatabaseUseCase.execute(NoParams());
+    final result = await _checkLoginStatusWithDatabaseUseCase.execute(NoParams());
     result.fold(
       onSuccess: (isAuth) async {
         isAuthenticated.value = isAuth;
@@ -295,6 +300,97 @@ class AuthStateController extends GetxController {
         return false;
       },
     );
+  }
+
+  /// 社交登录 (微信、支付宝、QQ 等)
+  /// [type] 社交平台类型
+  Future<bool> socialLogin(SocialLoginType type) async {
+    isLoading.value = true;
+
+    try {
+      // 1. 调用 SDK 获取授权码
+      final sdkResult = await _socialLoginService.login(type);
+
+      if (!sdkResult.success) {
+        isLoading.value = false;
+        if (sdkResult.errorMessage != null) {
+          AppToast.error(sdkResult.errorMessage!);
+        }
+        return false;
+      }
+
+      // 2. 将授权信息发送给后端换取 token
+      final provider = _mapSocialLoginTypeToProvider(type);
+      final result = await _socialLoginUseCase.execute(
+        SocialLoginParams(
+          provider: provider,
+          code: sdkResult.code,
+          accessToken: sdkResult.accessToken,
+          openId: sdkResult.openId,
+        ),
+      );
+
+      isLoading.value = false;
+
+      return result.fold(
+        onSuccess: (token) async {
+          currentToken.value = token;
+          isAuthenticated.value = true;
+
+          // 设置 HttpService 的认证 token
+          final httpService = Get.find<HttpService>();
+          httpService.setAuthToken(token.accessToken);
+
+          // 加载当前用户
+          await _loadCurrentUser();
+
+          // 保存到数据库 (如果用户已加载)
+          if (currentUser.value != null) {
+            await _saveTokenToDatabaseUseCase.execute(
+              SaveTokenToDatabaseParams(
+                token: token,
+                user: currentUser.value!,
+              ),
+            );
+
+            // 设置用户ID到 HttpService
+            httpService.setUserId(currentUser.value!.id);
+
+            // 加入 SignalR 用户通知组
+            await _joinSignalRUserGroup(currentUser.value!.id);
+          }
+
+          log('✅ 社交登录成功: $type');
+          return true;
+        },
+        onFailure: (error) {
+          log('❌ 社交登录失败: ${error.message}');
+          AppToast.error(error.message);
+          return false;
+        },
+      );
+    } catch (e) {
+      isLoading.value = false;
+      log('❌ 社交登录异常: $e');
+      AppToast.error('社交登录失败: $e');
+      return false;
+    }
+  }
+
+  /// 将 SocialLoginType 映射为 SocialAuthProvider
+  SocialAuthProvider _mapSocialLoginTypeToProvider(SocialLoginType type) {
+    switch (type) {
+      case SocialLoginType.wechat:
+        return SocialAuthProvider.wechat;
+      case SocialLoginType.alipay:
+        return SocialAuthProvider.alipay;
+      case SocialLoginType.qq:
+        return SocialAuthProvider.qq;
+      case SocialLoginType.apple:
+        return SocialAuthProvider.apple;
+      case SocialLoginType.google:
+        return SocialAuthProvider.google;
+    }
   }
 
   /// 登出
