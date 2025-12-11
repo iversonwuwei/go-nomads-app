@@ -132,6 +132,8 @@ import 'package:df_admin_mobile/features/weather/presentation/controllers/weathe
 // Services
 import 'package:df_admin_mobile/services/database_service.dart';
 import 'package:df_admin_mobile/services/http_service.dart';
+// Social Login
+import 'package:df_admin_mobile/services/social_login_service.dart';
 import 'package:df_admin_mobile/services/token_storage_service.dart';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
@@ -364,6 +366,7 @@ class DependencyInjection {
     Get.lazyPut(() => auth_use_cases.GetCurrentUserUseCase(Get.find<IAuthRepository>()));
     Get.lazyPut(() => auth_use_cases.UpdateUserProfileUseCase(Get.find<IAuthRepository>()));
     Get.lazyPut(() => auth_use_cases.AutoRefreshTokenUseCase(Get.find<IAuthRepository>()));
+    Get.lazyPut(() => auth_use_cases.SocialLoginUseCase(Get.find<IAuthRepository>()));
 
     // Use Cases - 数据库认证
     Get.lazyPut(() => auth_db_use_cases.SaveTokenToDatabaseUseCase(
@@ -374,6 +377,9 @@ class DependencyInjection {
           Get.find<IAuthRepository>(),
         ));
 
+    // SocialLoginService
+    Get.lazyPut(() => SocialLoginService());
+
     // Controller
     Get.lazyPut(
       () => AuthStateController(
@@ -383,8 +389,10 @@ class DependencyInjection {
         getCurrentUserUseCase: Get.find<auth_use_cases.GetCurrentUserUseCase>(),
         updateUserProfileUseCase: Get.find<auth_use_cases.UpdateUserProfileUseCase>(),
         autoRefreshTokenUseCase: Get.find<auth_use_cases.AutoRefreshTokenUseCase>(),
+        socialLoginUseCase: Get.find<auth_use_cases.SocialLoginUseCase>(),
         saveTokenToDatabaseUseCase: Get.find<auth_db_use_cases.SaveTokenToDatabaseUseCase>(),
         checkLoginStatusWithDatabaseUseCase: Get.find<auth_db_use_cases.CheckLoginStatusWithDatabaseUseCase>(),
+        socialLoginService: Get.find<SocialLoginService>(),
       ),
     );
   }
