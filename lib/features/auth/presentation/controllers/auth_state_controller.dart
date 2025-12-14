@@ -377,6 +377,86 @@ class AuthStateController extends GetxController {
     }
   }
 
+  /// 手机号验证码登录
+  /// [phone] 手机号（含国际区号，如 +8613800138000）
+  /// [code] 验证码
+  Future<bool> loginWithPhone({
+    required String phone,
+    required String code,
+  }) async {
+    isLoading.value = true;
+
+    try {
+      log('📱 手机号登录: $phone');
+
+      final httpService = Get.find<HttpService>();
+      final response = await httpService.post(
+        '/auth/login/phone',
+        data: {
+          'phoneNumber': phone,
+          'code': code,
+        },
+      );
+
+      final data = response.data;
+      if (data['success'] != true) {
+        throw Exception(data['message'] ?? '登录失败');
+      }
+
+      final authData = data['data'];
+      final accessToken = authData['accessToken'];
+      final refreshToken = authData['refreshToken'];
+      final userData = authData['user'];
+
+      // 创建 AuthToken
+      final token = AuthToken(
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+        expiresAt: DateTime.now().add(const Duration(hours: 24)),
+      );
+
+      currentToken.value = token;
+      isAuthenticated.value = true;
+
+      // 设置 HttpService 的认证 token
+      httpService.setAuthToken(accessToken);
+
+      // 构建用户对象
+      final user = AuthUser(
+        id: userData['id'],
+        name: userData['name'] ?? '',
+        email: userData['email'] ?? '',
+        phone: userData['phone'],
+        avatar: userData['avatar'],
+        role: userData['role'] ?? 'user',
+      );
+
+      currentUser.value = user;
+
+      // 保存到数据库
+      await _saveTokenToDatabaseUseCase.execute(
+        SaveTokenToDatabaseParams(
+          token: token,
+          user: user,
+        ),
+      );
+
+      // 设置用户 ID
+      httpService.setUserId(user.id);
+
+      // 加入 SignalR 用户通知组
+      await _joinSignalRUserGroup(user.id);
+
+      isLoading.value = false;
+      log('✅ 手机号登录成功: ${user.name}');
+      return true;
+    } catch (e) {
+      isLoading.value = false;
+      log('❌ 手机号登录失败: $e');
+      rethrow;
+    }
+  }
+
   /// 将 SocialLoginType 映射为 SocialAuthProvider
   SocialAuthProvider _mapSocialLoginTypeToProvider(SocialLoginType type) {
     switch (type) {

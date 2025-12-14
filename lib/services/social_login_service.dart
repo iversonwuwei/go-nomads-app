@@ -177,9 +177,13 @@ class SocialLoginService {
   /// 使用 tobias 插件唤起支付宝授权
   Future<SocialLoginResult> loginWithAlipay() async {
     try {
-      // 检查支付宝是否已安装 (仅作为提示，不阻止调用)
+      // 检查支付宝是否已安装
       final isInstalled = await isAlipayInstalled();
       log('📱 [SocialLogin] 支付宝安装状态: $isInstalled');
+
+      if (!isInstalled) {
+        return const SocialLoginResult.failure('请先安装支付宝');
+      }
 
       log('📱 [SocialLogin] 开始支付宝登录...');
 
@@ -268,24 +272,18 @@ class SocialLoginService {
     try {
       log('📱 [SocialLogin] 开始 QQ 登录...');
 
-      // QQ 互联 OAuth 配置
-      // TODO: 替换为真实的 QQ 互联 AppID
-      const qqAppId = 'YOUR_QQ_APP_ID';
-      
-      if (qqAppId == 'YOUR_QQ_APP_ID') {
-        return const SocialLoginResult.failure('QQ 登录功能尚未配置 AppID');
-      }
-
       // 检查 QQ 是否安装
       final isInstalled = await isQQInstalled();
       
-      if (isInstalled) {
-        // 使用 QQ App 登录 (更好的用户体验)
-        return await _loginWithQQApp(qqAppId);
-      } else {
-        // 使用网页授权
-        return await _loginWithQQWeb(qqAppId);
+      if (!isInstalled) {
+        return const SocialLoginResult.failure('请先安装 QQ');
       }
+
+      // QQ 互联 OAuth 配置
+      const qqAppId = 'Ut68vSr2ye4FJ9j6';
+      
+      // 使用 QQ App 登录
+      return await _loginWithQQApp(qqAppId);
     } catch (e) {
       log('❌ [SocialLogin] QQ 登录异常: $e');
       return SocialLoginResult.failure('QQ 登录失败: $e');

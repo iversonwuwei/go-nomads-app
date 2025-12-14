@@ -68,25 +68,35 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
     }
 
     try {
-      // TODO: 调用后端发送验证码 API
-      // final httpService = Get.find<HttpService>();
-      // await httpService.post('/auth/send-sms-code', data: {'phone': phone});
+      // 调用后端发送验证码 API
+      final httpService = Get.find<HttpService>();
+      final response = await httpService.post(
+        '/auth/sms/send-code',
+        data: {
+          'phoneNumber': '+86$phone',
+          'purpose': 'login',
+        },
+      );
 
-      AppToast.success('验证码已发送', title: '成功');
+      if (response.data['success'] == true) {
+        AppToast.success('验证码已发送', title: '成功');
 
-      // 开始倒计时
-      setState(() {
-        _countdown = 60;
-      });
-
-      _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        // 开始倒计时
         setState(() {
-          _countdown--;
+          _countdown = 60;
         });
-        if (_countdown <= 0) {
-          timer.cancel();
-        }
-      });
+
+        _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+          setState(() {
+            _countdown--;
+          });
+          if (_countdown <= 0) {
+            timer.cancel();
+          }
+        });
+      } else {
+        AppToast.error(response.data['message'] ?? '发送失败', title: '错误');
+      }
     } catch (e) {
       log('❌ 发送验证码失败: $e');
       AppToast.error('发送验证码失败', title: '错误');
@@ -118,21 +128,32 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
       log('🔐 开始手机号登录..');
       log('   手机号: $phone');
 
-      // TODO: 调用后端手机号登录 API
-      // final authController = Get.find<AuthStateController>();
-      // final success = await authController.loginWithPhone(phone: phone, code: code);
+      // 调用后端手机号登录 API
+      final authController = Get.find<AuthStateController>();
+      final success = await authController.loginWithPhone(
+        phone: '+86$phone',
+        code: code,
+      );
 
-      // 暂时提示功能开发中
       if (mounted) {
         Navigator.pop(context);
       }
-      AppToast.info('手机号登录功能开发中', title: '提示');
+
+      if (success) {
+        final user = authController.currentUser.value;
+        log('✅ 手机号登录成功: ${user?.name}');
+
+        AppToast.success('欢迎回来！', title: '登录成功');
+
+        await Future.delayed(const Duration(milliseconds: 500));
+        Get.offAllNamed('/');
+      }
     } catch (e) {
       if (mounted) {
         Navigator.pop(context);
       }
       log('❌ 手机号登录失败: $e');
-      AppToast.error('登录失败', title: '错误');
+      AppToast.error('登录失败: $e', title: '错误');
     }
   }
 
