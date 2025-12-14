@@ -45,6 +45,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get email => '邮箱';
 
   @override
+  String get invalidEmailFormat => '邮箱格式不正确';
+
+  @override
+  String get emailAlreadyExists => '该邮箱已被使用';
+
+  @override
   String get password => '密码';
 
   @override

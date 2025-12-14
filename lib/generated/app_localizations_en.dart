@@ -45,6 +45,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get email => 'Email';
 
   @override
+  String get invalidEmailFormat => 'Invalid email format';
+
+  @override
+  String get emailAlreadyExists => 'This email is already in use';
+
+  @override
   String get password => 'Password';
 
   @override

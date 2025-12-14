@@ -84,6 +84,12 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
     }
   }
 
+  // 验证邮箱格式
+  bool _isValidEmail(String email) {
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,}$');
+    return emailRegex.hasMatch(email);
+  }
+
   // 从数据库加载用户偏好设置
   Future<void> _loadUserPreferences() async {
     if (_preferencesRepository == null) {
@@ -409,24 +415,56 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () async {
-                  // TODO: 保存所有更改到后端
-                  // 包括：name, bio, avatarUrl (_newAvatarUrl)
-
-                  if (_newAvatarUrl != null) {
-                    // 如果上传了新头像，这里应该调用 API 保存
-                    debugPrint('新头像 URL: $_newAvatarUrl');
-                    // await profileController.updateProfile(
-                    //   name: _nameController.text,
-                    //   bio: _bioController.text,
-                    //   avatarUrl: _newAvatarUrl,
-                    // );
+                  final profileController = Get.find<UserStateController>();
+                  
+                  // 验证邮箱格式
+                  final email = _emailController.text.trim();
+                  if (email.isNotEmpty && !_isValidEmail(email)) {
+                    AppToast.error(
+                      l10n.invalidEmailFormat,
+                      title: l10n.error,
+                    );
+                    return;
                   }
 
-                  AppToast.success(
-                    l10n.profileUpdatedSuccessfully,
-                    title: l10n.saved,
-                  );
-                  Get.back();
+                  // 构建更新数据
+                  final updates = <String, dynamic>{};
+                  
+                  final name = _nameController.text.trim();
+                  if (name.isNotEmpty) {
+                    updates['name'] = name;
+                  }
+                  
+                  if (email.isNotEmpty) {
+                    updates['email'] = email;
+                  }
+                  
+                  final bio = _bioController.text.trim();
+                  if (bio.isNotEmpty) {
+                    updates['bio'] = bio;
+                  }
+                  
+                  if (_newAvatarUrl != null) {
+                    updates['avatarUrl'] = _newAvatarUrl;
+                  }
+
+                  // 如果没有任何更新，直接返回
+                  if (updates.isEmpty) {
+                    Get.back();
+                    return;
+                  }
+
+                  // 调用更新 API
+                  final success = await profileController.updateUser(updates);
+                  
+                  if (success) {
+                    AppToast.success(
+                      l10n.profileUpdatedSuccessfully,
+                      title: l10n.saved,
+                    );
+                    Get.back();
+                  }
+                  // 失败的情况 updateUser 内部已经处理了错误提示
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.accent,
@@ -556,27 +594,31 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
 
             const SizedBox(height: 16),
 
-            // 邮箱(只读)
+            // 邮箱编辑
             TextField(
               controller: _emailController,
-              readOnly: true,
+              keyboardType: TextInputType.emailAddress,
               decoration: InputDecoration(
                 labelText: l10n.email,
                 labelStyle: TextStyle(color: AppColors.textSecondary),
                 hintText: 'nomad@example.com',
                 hintStyle: TextStyle(color: AppColors.textTertiary),
                 filled: true,
-                fillColor: AppColors.containerLight.withValues(alpha: 0.5),
+                fillColor: AppColors.containerLight,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: AppColors.borderLight),
+                  borderSide: BorderSide(color: AppColors.border),
                 ),
-                suffixIcon: Icon(
-                  FontAwesomeIcons.lock,
-                  color: AppColors.iconSecondary,
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.border),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.accent),
                 ),
               ),
-              style: TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: AppColors.textPrimary),
             ),
 
             const SizedBox(height: 16),

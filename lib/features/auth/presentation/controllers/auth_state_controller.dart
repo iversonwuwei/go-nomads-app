@@ -11,6 +11,7 @@ import 'package:df_admin_mobile/features/auth/domain/repositories/iauth_reposito
 import 'package:df_admin_mobile/services/http_service.dart';
 import 'package:df_admin_mobile/services/signalr_service.dart';
 import 'package:df_admin_mobile/services/social_login_service.dart';
+import 'package:df_admin_mobile/services/token_storage_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:get/get.dart';
 
@@ -346,6 +347,21 @@ class AuthStateController extends GetxController {
 
           // 保存到数据库 (如果用户已加载)
           if (currentUser.value != null) {
+            // 保存 token 到 SharedPreferences（HttpService 拦截器需要）
+            final tokenStorageService = TokenStorageService();
+            await tokenStorageService.saveTokens(
+              accessToken: token.accessToken,
+              refreshToken: token.refreshToken,
+              expiresAt: token.expiresAt,
+            );
+            await tokenStorageService.saveUserInfo(
+              userId: currentUser.value!.id,
+              userName: currentUser.value!.name,
+              userEmail: currentUser.value!.email,
+              userRole: currentUser.value!.role,
+            );
+            log('✅ Token 已保存到 SharedPreferences');
+
             await _saveTokenToDatabaseUseCase.execute(
               SaveTokenToDatabaseParams(
                 token: token,
@@ -398,15 +414,11 @@ class AuthStateController extends GetxController {
         },
       );
 
-      final data = response.data;
-      if (data['success'] != true) {
-        throw Exception(data['message'] ?? '登录失败');
-      }
-
-      final authData = data['data'];
+      // HttpService 拦截器已经解包了 API 响应，response.data 直接就是 data 字段的内容
+      final authData = response.data as Map<String, dynamic>;
       final accessToken = authData['accessToken'];
       final refreshToken = authData['refreshToken'];
-      final userData = authData['user'];
+      final userData = authData['user'] as Map<String, dynamic>;
 
       // 创建 AuthToken
       final token = AuthToken(
@@ -415,44 +427,80 @@ class AuthStateController extends GetxController {
         expiresAt: DateTime.now().add(const Duration(hours: 24)),
       );
 
-      currentToken.value = token;
-      isAuthenticated.value = true;
-
-      // 设置 HttpService 的认证 token
-      httpService.setAuthToken(accessToken);
-
       // 构建用户对象
       final user = AuthUser(
         id: userData['id'],
         name: userData['name'] ?? '',
         email: userData['email'] ?? '',
         phone: userData['phone'],
-        avatar: userData['avatar'],
+        avatar: userData['avatarUrl'] ?? userData['avatar'],
         role: userData['role'] ?? 'user',
       );
 
-      currentUser.value = user;
-
-      // 保存到数据库
-      await _saveTokenToDatabaseUseCase.execute(
-        SaveTokenToDatabaseParams(
-          token: token,
-          user: user,
-        ),
+      // ⚠️ 重要：先保存 token 到 SharedPreferences（HttpService 拦截器需要）
+      // 必须在设置 isAuthenticated.value = true 之前完成
+      // 因为 UserStateController 监听 isAuthenticated 变化，会立即尝试加载用户数据
+      final tokenStorageService = TokenStorageService();
+      log('📝 [步骤1] 保存 Token 到 SharedPreferences...');
+      log('   accessToken: ${accessToken.substring(0, 30)}...');
+      await tokenStorageService.saveTokens(
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+        expiresAt: token.expiresAt,
+      );
+      await tokenStorageService.saveUserInfo(
+        userId: user.id,
+        userName: user.name,
+        userEmail: user.email,
+        userRole: user.role,
       );
 
-      // 设置用户 ID
+      // 验证保存是否成功
+      final savedToken = await tokenStorageService.getAccessToken();
+      log('📝 验证保存结果: ${savedToken != null ? '成功' : '失败'}');
+      if (savedToken != null) {
+        log('   已保存的 token: ${savedToken.substring(0, 30)}...');
+      }
+      log('✅ Token 已保存到 SharedPreferences');
+
+      // 设置 HttpService 的认证 token
+      log('📝 [步骤2] 设置 HttpService 认证 token...');
+      httpService.setAuthToken(accessToken);
       httpService.setUserId(user.id);
 
-      // 加入 SignalR 用户通知组
-      await _joinSignalRUserGroup(user.id);
+      // 保存到数据库
+      log('📝 [步骤3] 保存 Token 到数据库...');
+      try {
+        await _saveTokenToDatabaseUseCase.execute(
+          SaveTokenToDatabaseParams(
+            token: token,
+            user: user,
+          ),
+        );
+      } catch (e) {
+        log('⚠️ 保存 token 到数据库失败（不影响登录）: $e');
+      }
+
+      // ⚠️ 最后才设置认证状态，触发 UserStateController 监听器
+      log('📝 [步骤4] 设置认证状态...');
+      currentToken.value = token;
+      currentUser.value = user;
+      isAuthenticated.value = true;
+
+      // 加入 SignalR 用户通知组（不阻塞登录流程）
+      try {
+        await _joinSignalRUserGroup(user.id);
+      } catch (e) {
+        log('⚠️ 加入 SignalR 组失败（不影响登录）: $e');
+      }
 
       isLoading.value = false;
       log('✅ 手机号登录成功: ${user.name}');
       return true;
-    } catch (e) {
+    } catch (e, stackTrace) {
       isLoading.value = false;
       log('❌ 手机号登录失败: $e');
+      log('❌ Stack trace: $stackTrace');
       rethrow;
     }
   }
