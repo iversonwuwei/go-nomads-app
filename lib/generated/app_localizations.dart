@@ -170,6 +170,18 @@ abstract class AppLocalizations {
   /// **'邮箱'**
   String get email;
 
+  /// No description provided for @invalidEmailFormat.
+  ///
+  /// In zh, this message translates to:
+  /// **'邮箱格式不正确'**
+  String get invalidEmailFormat;
+
+  /// No description provided for @emailAlreadyExists.
+  ///
+  /// In zh, this message translates to:
+  /// **'该邮箱已被使用'**
+  String get emailAlreadyExists;
+
   /// No description provided for @password.
   ///
   /// In zh, this message translates to:

@@ -1,10 +1,8 @@
+import 'dart:async';
 import 'dart:developer';
 
-import 'dart:async';
-
-import 'package:dio/dio.dart';
-
 import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:dio/dio.dart';
 
 /// API异常处理工具类
 class ApiExceptionHandler {
@@ -25,14 +23,16 @@ class ApiExceptionHandler {
         final data = e.response?.data;
 
         if (statusCode == 401) {
+          // 使用后端返回的 message（如"密码错误"）
           return UnauthorizedException(
-            '未授权访问',
+            data?['message'] ?? '未授权访问',
             code: 'UNAUTHORIZED',
             details: data,
           );
         } else if (statusCode == 404) {
+          // 使用后端返回的 message（如"该邮箱尚未注册，请先注册账号"）
           return NotFoundException(
-            '资源未找到',
+            data?['message'] ?? '资源未找到',
             code: 'NOT_FOUND',
             details: data,
           );

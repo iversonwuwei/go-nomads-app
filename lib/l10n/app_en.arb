@@ -15,6 +15,8 @@
   "logout": "Logout",
   "register": "Register",
   "email": "Email",
+  "invalidEmailFormat": "Invalid email format",
+  "emailAlreadyExists": "This email is already in use",
   "password": "Password",
   "confirmPassword": "Confirm Password",
   "username": "Username",

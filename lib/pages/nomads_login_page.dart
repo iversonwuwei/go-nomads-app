@@ -135,6 +135,8 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
         code: code,
       );
 
+      log('📝 loginWithPhone 返回值: $success');
+
       if (mounted) {
         Navigator.pop(context);
       }
@@ -146,7 +148,12 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
         AppToast.success('欢迎回来！', title: '登录成功');
 
         await Future.delayed(const Duration(milliseconds: 500));
+        log('🚀 准备跳转到主页...');
         Get.offAllNamed('/');
+        log('✅ 跳转命令已执行');
+      } else {
+        log('❌ 登录返回 false');
+        AppToast.error('登录失败，请重试', title: '错误');
       }
     } catch (e) {
       if (mounted) {
