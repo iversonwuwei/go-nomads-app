@@ -12,7 +12,7 @@ class SocialSdkService {
   static const String wechatUniversalLink = 'https://gonomads.app/wechat/';
 
   /// QQ AppId（从腾讯开放平台获取）
-  static const String qqAppId = 'YOUR_QQ_APP_ID';
+  static const String qqAppId = 'Ut68vSr2ye4FJ9j6';
 
   /// 微博 AppKey 和 UniversalLink（从微博开放平台获取）
   static const String weiboAppKey = 'YOUR_WEIBO_APP_KEY';
