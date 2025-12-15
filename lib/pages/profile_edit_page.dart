@@ -165,14 +165,12 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
 
   // 处理通知开关变化
   Future<void> _handleNotificationToggle(bool value) async {
-    final notificationService = Get.isRegistered<NotificationService>() 
-        ? Get.find<NotificationService>() 
-        : null;
+    final notificationService = Get.isRegistered<NotificationService>() ? Get.find<NotificationService>() : null;
 
     if (value && notificationService != null) {
       // 用户想要开启通知，检查系统权限
       final hasPermission = await notificationService.checkPermissionStatus();
-      
+
       if (!hasPermission) {
         // 没有系统权限，提示用户并引导到系统设置
         final shouldOpenSettings = await Get.dialog<bool>(
@@ -195,7 +193,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
         if (shouldOpenSettings == true) {
           await notificationService.openNotificationSettings();
         }
-        
+
         // 不改变开关状态，等用户从设置返回后重新操作
         return;
       }
@@ -442,7 +440,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
               child: ElevatedButton(
                 onPressed: () async {
                   final profileController = Get.find<UserStateController>();
-                  
+
                   // 验证邮箱格式
                   final email = _emailController.text.trim();
                   if (email.isNotEmpty && !_isValidEmail(email)) {
@@ -455,21 +453,21 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
 
                   // 构建更新数据
                   final updates = <String, dynamic>{};
-                  
+
                   final name = _nameController.text.trim();
                   if (name.isNotEmpty) {
                     updates['name'] = name;
                   }
-                  
+
                   if (email.isNotEmpty) {
                     updates['email'] = email;
                   }
-                  
+
                   final bio = _bioController.text.trim();
                   if (bio.isNotEmpty) {
                     updates['bio'] = bio;
                   }
-                  
+
                   if (_newAvatarUrl != null) {
                     updates['avatarUrl'] = _newAvatarUrl;
                   }
@@ -482,7 +480,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
 
                   // 调用更新 API
                   final success = await profileController.updateUser(updates);
-                  
+
                   if (success) {
                     AppToast.success(
                       l10n.profileUpdatedSuccessfully,
