@@ -28,6 +28,7 @@ class SocialLoginResult {
   final String? nickname; // 昵称
   final String? avatarUrl; // 头像
   final String? errorMessage;
+  final bool isCancelled; // 用户主动取消授权
 
   const SocialLoginResult({
     required this.success,
@@ -38,6 +39,7 @@ class SocialLoginResult {
     this.nickname,
     this.avatarUrl,
     this.errorMessage,
+    this.isCancelled = false,
   });
 
   const SocialLoginResult.success({
@@ -48,7 +50,8 @@ class SocialLoginResult {
     this.nickname,
     this.avatarUrl,
   })  : success = true,
-        errorMessage = null;
+        errorMessage = null,
+        isCancelled = false;
 
   const SocialLoginResult.failure(String message)
       : success = false,
@@ -58,7 +61,20 @@ class SocialLoginResult {
         accessToken = null,
         nickname = null,
         avatarUrl = null,
-        errorMessage = message;
+        errorMessage = message,
+        isCancelled = false;
+
+  /// 用户取消授权
+  const SocialLoginResult.cancelled()
+      : success = false,
+        code = null,
+        openId = null,
+        unionId = null,
+        accessToken = null,
+        nickname = null,
+        avatarUrl = null,
+        errorMessage = '用户取消授权',
+        isCancelled = true;
 }
 
 /// 社交登录服务
@@ -144,9 +160,11 @@ class SocialLoginService {
       log('✅ [SocialLogin] 微信登录成功, code=${authResponse.code}');
       _authCompleter!.complete(SocialLoginResult.success(code: authResponse.code));
     } else if (authResponse.errCode == -4) {
-      _authCompleter!.complete(const SocialLoginResult.failure('用户拒绝授权'));
+      // 用户拒绝授权
+      _authCompleter!.complete(const SocialLoginResult.cancelled());
     } else if (authResponse.errCode == -2) {
-      _authCompleter!.complete(const SocialLoginResult.failure('用户取消授权'));
+      // 用户取消授权
+      _authCompleter!.complete(const SocialLoginResult.cancelled());
     } else {
       _authCompleter!.complete(SocialLoginResult.failure(authResponse.errStr ?? '微信授权失败'));
     }
@@ -214,7 +232,8 @@ class SocialLoginService {
           return const SocialLoginResult.failure('解析支付宝授权码失败');
         }
       } else if (resultStatus == '6001') {
-        return const SocialLoginResult.failure('用户取消授权');
+        // 用户取消授权
+        return const SocialLoginResult.cancelled();
       } else if (resultStatus == '4000') {
         return SocialLoginResult.failure(result['memo']?.toString() ?? '支付宝授权失败');
       } else {
@@ -231,7 +250,7 @@ class SocialLoginService {
     try {
       final httpService = Get.find<HttpService>();
       final response = await httpService.get('/auth/alipay/auth-info');
-      
+
       if (response.statusCode == 200 && response.data != null) {
         final data = response.data as Map<String, dynamic>;
         return data['authInfo'] as String?;
@@ -267,71 +286,26 @@ class SocialLoginService {
   }
 
   /// QQ 登录
-  /// 使用 QQ 互联 OAuth 2.0 网页授权
+  /// 需要集成 tencent_kit 插件才能使用原生 QQ 登录
   Future<SocialLoginResult> loginWithQQ() async {
     try {
       log('📱 [SocialLogin] 开始 QQ 登录...');
 
       // 检查 QQ 是否安装
       final isInstalled = await isQQInstalled();
-      
+
       if (!isInstalled) {
         return const SocialLoginResult.failure('请先安装 QQ');
       }
 
-      // QQ 互联 OAuth 配置
-      const qqAppId = 'Ut68vSr2ye4FJ9j6';
-      
-      // 使用 QQ App 登录
-      return await _loginWithQQApp(qqAppId);
+      // QQ 原生 SDK 登录
+      // 目前暂未集成 tencent_kit 插件，无法使用原生登录
+      // TODO: 集成 tencent_kit 插件后启用原生 QQ 登录
+      log('📱 [SocialLogin] QQ SDK 暂未集成，无法完成登录');
+      return const SocialLoginResult.failure('QQ 登录功能暂未开放，请使用其他方式登录');
     } catch (e) {
       log('❌ [SocialLogin] QQ 登录异常: $e');
       return SocialLoginResult.failure('QQ 登录失败: $e');
-    }
-  }
-
-  /// QQ App 登录 (需要 tencent_kit 插件)
-  Future<SocialLoginResult> _loginWithQQApp(String appId) async {
-    // 由于没有 tencent_kit 插件，使用网页授权作为备选
-    log('📱 [SocialLogin] QQ App 登录 (暂未集成 SDK，使用网页授权)');
-    return await _loginWithQQWeb(appId);
-  }
-
-  /// QQ 网页授权登录
-  Future<SocialLoginResult> _loginWithQQWeb(String appId) async {
-    try {
-      // 生成 state 防止 CSRF
-      final state = 'gonomads_qq_${DateTime.now().millisecondsSinceEpoch}';
-      
-      // 回调地址 (需要在 QQ 互联后台配置)
-      const redirectUri = 'https://gonomads.app/auth/qq/callback';
-      
-      // 构建授权 URL
-      final authUrl = Uri.parse(
-        'https://graph.qq.com/oauth2.0/authorize'
-        '?response_type=code'
-        '&client_id=$appId'
-        '&redirect_uri=${Uri.encodeComponent(redirectUri)}'
-        '&state=$state'
-        '&scope=get_user_info',
-      );
-
-      log('📱 [SocialLogin] 打开 QQ 授权页面: $authUrl');
-
-      // 打开浏览器进行授权
-      if (await canLaunchUrl(authUrl)) {
-        await launchUrl(authUrl, mode: LaunchMode.externalApplication);
-        
-        // 注意：网页授权后会跳转到回调地址
-        // App 需要通过 Deep Link 接收回调
-        // 这里返回一个特殊状态，表示等待外部回调
-        return const SocialLoginResult.failure('请在浏览器中完成 QQ 授权');
-      } else {
-        return const SocialLoginResult.failure('无法打开 QQ 授权页面');
-      }
-    } catch (e) {
-      log('❌ [SocialLogin] QQ 网页授权异常: $e');
-      return SocialLoginResult.failure('QQ 网页授权失败: $e');
     }
   }
 

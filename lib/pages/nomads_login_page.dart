@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/controllers/locale_controller.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
@@ -42,6 +43,22 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
   // 验证码倒计时
   int _countdown = 0;
   Timer? _countdownTimer;
+
+  /// 判断是否为中国区用户
+  bool get _isChineseUser {
+    try {
+      final localeController = Get.find<LocaleController>();
+      final locale = localeController.locale.value;
+      return locale.languageCode == 'zh' ||
+          locale.countryCode == 'CN' ||
+          locale.countryCode == 'HK' ||
+          locale.countryCode == 'MO' ||
+          locale.countryCode == 'TW';
+    } catch (_) {
+      final systemLocale = Get.deviceLocale;
+      return systemLocale?.languageCode == 'zh';
+    }
+  }
 
   @override
   void dispose() {
@@ -674,101 +691,8 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
 
                   const SizedBox(height: 24),
 
-                  // 社交登录按钮 - 第一行
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildSocialLoginButton(
-                        onPressed: () {
-                          AppToast.info(
-                            'Google authentication coming soon',
-                            title: 'Google Sign In',
-                          );
-                        },
-                        icon: FontAwesomeIcons.google,
-                        color: const Color(0xFFDB4437), // Google Red
-                        label: 'Google',
-                      ),
-                      _buildSocialLoginButton(
-                        onPressed: () {
-                          AppToast.info('Apple Sign In', title: 'Apple');
-                        },
-                        icon: FontAwesomeIcons.apple,
-                        color: Colors.black,
-                        label: 'Apple',
-                      ),
-                      _buildSocialLoginButton(
-                        onPressed: () => _handleSocialLogin(SocialLoginType.wechat, 'WeChat'),
-                        icon: FontAwesomeIcons.weixin, // WeChat icon
-                        color: const Color(0xFF09BB07), // WeChat Green
-                        label: 'WeChat',
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // 社交登录按钮 - 第二行
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildSocialLoginButton(
-                        onPressed: () {
-                          AppToast.info('Twitter Sign In', title: 'Twitter');
-                        },
-                        icon: FontAwesomeIcons.xTwitter, // X/Twitter icon
-                        color: Colors.black,
-                        label: 'Twitter',
-                      ),
-                      _buildSocialLoginButton(
-                        onPressed: () => _handleSocialLogin(SocialLoginType.alipay, 'Alipay'),
-                        icon: FontAwesomeIcons.alipay,
-                        color: const Color(0xFF1677FF), // Alipay Blue
-                        label: 'Alipay',
-                      ),
-                      _buildSocialLoginButton(
-                        onPressed: () => _handleSocialLogin(SocialLoginType.qq, 'QQ'),
-                        icon: FontAwesomeIcons.qq,
-                        color: const Color(0xFF12B7F5), // QQ Blue
-                        label: 'QQ',
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // 社交登录按钮 - 第三行
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildSocialLoginButton(
-                        onPressed: () {
-                          AppToast.info('TikTok Sign In', title: 'TikTok');
-                        },
-                        icon: FontAwesomeIcons.tiktok,
-                        color: Colors.black,
-                        label: 'TikTok',
-                      ),
-                      _buildSocialLoginButton(
-                        onPressed: () {
-                          setState(() {
-                            _loginMode = LoginMode.phone;
-                          });
-                        },
-                        icon: FontAwesomeIcons.mobile,
-                        color: const Color(0xFF4CAF50), // Green for phone
-                        label: 'Phone',
-                      ),
-                      _buildSocialLoginButton(
-                        onPressed: () {
-                          AppToast.info('Xiaohongshu Sign In', title: 'Xiaohongshu');
-                        },
-                        icon: FontAwesomeIcons.book, // 使用书本图标代表小红书
-                        color: const Color(0xFFFF2442), // 小红书品牌红色
-                        label: '小红书',
-                      ),
-                    ],
-                  ),
+                  // 社交登录按钮 - 根据地区显示不同的按钮
+                  ..._buildSocialLoginButtons(),
 
                   const SizedBox(height: 32),
 
@@ -817,41 +741,179 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
     );
   }
 
+  /// 根据地区构建社交登录按钮列表
+  List<Widget> _buildSocialLoginButtons() {
+    final isChinese = _isChineseUser;
+
+    if (isChinese) {
+      // 国内用户：微信、支付宝、QQ、手机号
+      return [
+        // 第一行
+        Row(
+          children: [
+            _buildSocialLoginButton(
+              onPressed: () => _handleSocialLogin(SocialLoginType.wechat, '微信'),
+              icon: FontAwesomeIcons.weixin,
+              color: const Color(0xFF09BB07), // WeChat Green
+              label: '微信',
+            ),
+            _buildSocialLoginButton(
+              onPressed: () => _handleSocialLogin(SocialLoginType.alipay, '支付宝'),
+              icon: FontAwesomeIcons.alipay,
+              color: const Color(0xFF1677FF), // Alipay Blue
+              label: '支付宝',
+            ),
+            _buildSocialLoginButton(
+              onPressed: () => _handleSocialLogin(SocialLoginType.qq, 'QQ'),
+              icon: FontAwesomeIcons.qq,
+              color: const Color(0xFF12B7F5), // QQ Blue
+              label: 'QQ',
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        // 第二行
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildSocialLoginButton(
+              onPressed: () {
+                setState(() {
+                  _loginMode = LoginMode.phone;
+                });
+              },
+              icon: FontAwesomeIcons.mobile,
+              color: const Color(0xFF4CAF50),
+              label: '手机号',
+            ),
+            _buildSocialLoginButton(
+              onPressed: () {
+                AppToast.info('抖音登录即将上线', title: '抖音');
+              },
+              icon: FontAwesomeIcons.tiktok,
+              color: Colors.black,
+              label: '抖音',
+            ),
+            _buildSocialLoginButton(
+              onPressed: () {
+                AppToast.info('小红书登录即将上线', title: '小红书');
+              },
+              icon: FontAwesomeIcons.book,
+              color: const Color(0xFFFF2442),
+              label: '小红书',
+            ),
+          ],
+        ),
+      ];
+    } else {
+      // 国外用户：Google、Apple、Twitter、手机号
+      return [
+        // 第一行
+        Row(
+          children: [
+            _buildSocialLoginButton(
+              onPressed: () {
+                AppToast.info('Google Sign In coming soon', title: 'Google');
+              },
+              icon: FontAwesomeIcons.google,
+              color: const Color(0xFFDB4437), // Google Red
+              label: 'Google',
+            ),
+            _buildSocialLoginButton(
+              onPressed: () {
+                AppToast.info('Apple Sign In coming soon', title: 'Apple');
+              },
+              icon: FontAwesomeIcons.apple,
+              color: Colors.black,
+              label: 'Apple',
+            ),
+            _buildSocialLoginButton(
+              onPressed: () {
+                AppToast.info('Twitter Sign In coming soon', title: 'Twitter');
+              },
+              icon: FontAwesomeIcons.xTwitter,
+              color: Colors.black,
+              label: 'Twitter',
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        // 第二行
+        Row(
+          children: [
+            _buildSocialLoginButton(
+              onPressed: () {
+                setState(() {
+                  _loginMode = LoginMode.phone;
+                });
+              },
+              icon: FontAwesomeIcons.mobile,
+              color: const Color(0xFF4CAF50),
+              label: 'Phone',
+            ),
+            _buildSocialLoginButton(
+              onPressed: () {
+                AppToast.info('Facebook Sign In coming soon', title: 'Facebook');
+              },
+              icon: FontAwesomeIcons.facebook,
+              color: const Color(0xFF1877F2), // Facebook Blue
+              label: 'Facebook',
+            ),
+            _buildSocialLoginButton(
+              onPressed: () {
+                AppToast.info('TikTok Sign In coming soon', title: 'TikTok');
+              },
+              icon: FontAwesomeIcons.tiktok,
+              color: Colors.black,
+              label: 'TikTok',
+            ),
+          ],
+        ),
+      ];
+    }
+  }
+
   Widget _buildSocialLoginButton({
     required VoidCallback onPressed,
     required IconData icon,
     required Color color,
     required String label,
   }) {
-    return InkWell(
-      onTap: onPressed,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        width: 100,
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-        decoration: BoxDecoration(
-          color: Colors.white,
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6),
+        child: InkWell(
+          onTap: onPressed,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            FaIcon(
-              icon,
-              size: 28,
-              color: color,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade200),
             ),
-            const SizedBox(height: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade700,
-                fontWeight: FontWeight.w500,
-              ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FaIcon(
+                  icon,
+                  size: 28,
+                  color: color,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade700,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -924,26 +986,34 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
   Widget _buildFeatureBadge(String emoji, String text) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: Colors.grey.shade200),
         ),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               emoji,
               style: const TextStyle(fontSize: 20),
             ),
             const SizedBox(height: 4),
-            Text(
-              text,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 11,
-                color: Colors.grey.shade700,
-                fontWeight: FontWeight.w500,
+            SizedBox(
+              height: 30, // 固定文字区域高度，确保所有卡片一样高
+              child: Center(
+                child: Text(
+                  text,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey.shade700,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
             ),
           ],

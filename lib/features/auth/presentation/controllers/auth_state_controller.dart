@@ -314,7 +314,11 @@ class AuthStateController extends GetxController {
 
       if (!sdkResult.success) {
         isLoading.value = false;
-        if (sdkResult.errorMessage != null) {
+        if (sdkResult.isCancelled) {
+          // 用户取消授权，使用普通提示
+          AppToast.info('用户取消授权');
+        } else if (sdkResult.errorMessage != null) {
+          // 真正的错误，使用错误提示
           AppToast.error(sdkResult.errorMessage!);
         }
         return false;

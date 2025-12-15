@@ -165,11 +165,46 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
 
   // 处理通知开关变化
   Future<void> _handleNotificationToggle(bool value) async {
+    final notificationService = Get.isRegistered<NotificationService>() 
+        ? Get.find<NotificationService>() 
+        : null;
+
+    if (value && notificationService != null) {
+      // 用户想要开启通知，检查系统权限
+      final hasPermission = await notificationService.checkPermissionStatus();
+      
+      if (!hasPermission) {
+        // 没有系统权限，提示用户并引导到系统设置
+        final shouldOpenSettings = await Get.dialog<bool>(
+          AlertDialog(
+            title: const Text('需要通知权限'),
+            content: const Text('请在系统设置中开启通知权限，以便接收重要消息提醒。'),
+            actions: [
+              TextButton(
+                onPressed: () => Get.back(result: false),
+                child: const Text('取消'),
+              ),
+              TextButton(
+                onPressed: () => Get.back(result: true),
+                child: const Text('去设置'),
+              ),
+            ],
+          ),
+        );
+
+        if (shouldOpenSettings == true) {
+          await notificationService.openNotificationSettings();
+        }
+        
+        // 不改变开关状态，等用户从设置返回后重新操作
+        return;
+      }
+    }
+
     setState(() => _notifications = value);
 
     // 同步到 NotificationService (本地)
-    if (Get.isRegistered<NotificationService>()) {
-      final notificationService = Get.find<NotificationService>();
+    if (notificationService != null) {
       await notificationService.setEnabled(value);
     }
 
@@ -316,28 +351,19 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
         return;
       }
 
-      final previousAvatar = _newAvatarUrl;
+      // 更新本地头像显示
       setState(() {
         _newAvatarUrl = avatarUrl;
       });
 
+      // 只更新头像到后端，不刷新整个用户数据（避免丢失 skills/interests）
       final profileController = Get.find<UserStateController>();
-      final updateSuccess = await profileController.updateUser({'avatarUrl': avatarUrl});
+      await profileController.updateAvatarOnly(avatarUrl);
 
-      if (updateSuccess) {
-        AppToast.success(
-          l10n.profileUpdatedSuccessfully,
-          title: l10n.success,
-        );
-      } else {
-        setState(() {
-          _newAvatarUrl = previousAvatar;
-        });
-        AppToast.error(
-          '头像保存失败，请稍后重试',
-          title: l10n.error,
-        );
-      }
+      AppToast.success(
+        l10n.profileUpdatedSuccessfully,
+        title: l10n.success,
+      );
     } catch (e) {
       debugPrint('❌ 头像上传失败: $e');
       if (mounted) {
@@ -950,20 +976,21 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
             _profilePublic,
             _handleProfilePublicToggle,
           ),
-          Divider(color: AppColors.divider),
-          _buildDropdownTile(
-            l10n.currency,
-            _currency,
-            _currencies,
-            _handleCurrencyChange,
-          ),
-          Divider(color: AppColors.divider),
-          _buildDropdownTile(
-            l10n.temperature,
-            _temperatureUnit,
-            _temperatureUnits,
-            _handleTemperatureUnitChange,
-          ),
+          // TODO: 暂时隐藏货币和温度设置，后期启用
+          // Divider(color: AppColors.divider),
+          // _buildDropdownTile(
+          //   l10n.currency,
+          //   _currency,
+          //   _currencies,
+          //   _handleCurrencyChange,
+          // ),
+          // Divider(color: AppColors.divider),
+          // _buildDropdownTile(
+          //   l10n.temperature,
+          //   _temperatureUnit,
+          //   _temperatureUnits,
+          //   _handleTemperatureUnitChange,
+          // ),
         ],
       ),
     );
