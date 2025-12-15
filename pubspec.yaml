@@ -68,11 +68,11 @@ dependencies:
   
   # 分享相关
   screenshot: ^3.0.0  # Widget 转图片
-  # QQ 和微博使用网页分享，无需 SDK
   
-  # 支付相关
+  # 社交登录相关
   fluwx: ^5.7.5  # 微信 SDK
   tobias: ^3.0.0  # 支付宝 SDK
+  tencent_kit: ^6.0.3  # QQ SDK
   
   # 系统设置
   app_settings: ^5.1.1  # 打开系统设置页面
@@ -163,3 +163,7 @@ flutter_launcher_icons:
 # 支付宝 tobias 配置
 tobias:
   url_scheme: "alipay2021006115624759"
+
+# QQ tencent_kit 配置
+tencent_kit:
+  app_id: "102822014"

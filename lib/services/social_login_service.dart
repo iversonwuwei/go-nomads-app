@@ -4,10 +4,12 @@ import 'dart:io';
 
 import 'package:fluwx/fluwx.dart';
 import 'package:get/get.dart';
+import 'package:tencent_kit/tencent_kit.dart';
 import 'package:tobias/tobias.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'http_service.dart';
+import 'social_sdk_service.dart';
 
 /// 社交登录类型
 enum SocialLoginType {
@@ -85,6 +87,7 @@ class SocialLoginService {
   final Tobias _tobias = Tobias();
   Completer<SocialLoginResult>? _authCompleter;
   Function(WeChatResponse response)? _authListener;
+  StreamSubscription<TencentResp>? _qqLoginSubscription;
 
   /// 检查微信是否已安装
   Future<bool> isWechatInstalled() async {
@@ -277,35 +280,88 @@ class SocialLoginService {
   /// 检查 QQ 是否已安装
   Future<bool> isQQInstalled() async {
     try {
-      // 检查是否可以打开 QQ URL Scheme
-      final qqUri = Uri.parse('mqq://');
-      return await canLaunchUrl(qqUri);
+      if (!SocialSdkService.isQQInitialized) {
+        // 检查是否可以打开 QQ URL Scheme
+        final qqUri = Uri.parse('mqq://');
+        return await canLaunchUrl(qqUri);
+      }
+      return await TencentKitPlatform.instance.isQQInstalled();
     } catch (e) {
       return false;
     }
   }
 
   /// QQ 登录
-  /// 需要集成 tencent_kit 插件才能使用原生 QQ 登录
   Future<SocialLoginResult> loginWithQQ() async {
     try {
       log('📱 [SocialLogin] 开始 QQ 登录...');
 
+      // 检查 QQ SDK 是否初始化
+      if (!SocialSdkService.isQQInitialized) {
+        log('⚠️ [SocialLogin] QQ SDK 未初始化');
+        return const SocialLoginResult.failure('QQ SDK 未初始化，请稍后重试');
+      }
+
       // 检查 QQ 是否安装
       final isInstalled = await isQQInstalled();
-
       if (!isInstalled) {
         return const SocialLoginResult.failure('请先安装 QQ');
       }
 
-      // QQ 原生 SDK 登录
-      // 目前暂未集成 tencent_kit 插件，无法使用原生登录
-      // TODO: 集成 tencent_kit 插件后启用原生 QQ 登录
-      log('📱 [SocialLogin] QQ SDK 暂未集成，无法完成登录');
-      return const SocialLoginResult.failure('QQ 登录功能暂未开放，请使用其他方式登录');
+      // 创建 Completer 等待登录结果
+      _authCompleter = Completer<SocialLoginResult>();
+
+      // 监听登录回调
+      _qqLoginSubscription = TencentKitPlatform.instance.respStream().listen((resp) {
+        if (resp is TencentLoginResp) {
+          _onQQLoginResponse(resp);
+        }
+      });
+
+      // 发起 QQ 登录
+      await TencentKitPlatform.instance.login(scope: <String>[TencentScope.kGetSimpleUserInfo]);
+
+      // 等待结果，设置超时
+      final result = await _authCompleter!.future.timeout(
+        const Duration(minutes: 2),
+        onTimeout: () => const SocialLoginResult.failure('QQ 登录超时'),
+      );
+
+      // 清理监听器
+      await _qqLoginSubscription?.cancel();
+      _qqLoginSubscription = null;
+
+      return result;
     } catch (e) {
       log('❌ [SocialLogin] QQ 登录异常: $e');
+      await _qqLoginSubscription?.cancel();
+      _qqLoginSubscription = null;
       return SocialLoginResult.failure('QQ 登录失败: $e');
+    }
+  }
+
+  /// 处理 QQ 登录回调
+  void _onQQLoginResponse(TencentLoginResp resp) {
+    log('📱 [SocialLogin] QQ 登录回调: ret=${resp.ret}, msg=${resp.msg}');
+
+    if (_authCompleter == null || _authCompleter!.isCompleted) {
+      return;
+    }
+
+    // ret == 0 表示成功
+    if (resp.ret == 0) {
+      log('✅ [SocialLogin] QQ 登录成功: openid=${resp.openid}');
+      _authCompleter!.complete(SocialLoginResult.success(
+        openId: resp.openid,
+        accessToken: resp.accessToken,
+      ));
+    } else if (resp.ret == -2) {
+      // 用户取消
+      log('ℹ️ [SocialLogin] 用户取消 QQ 登录');
+      _authCompleter!.complete(const SocialLoginResult.cancelled());
+    } else {
+      log('❌ [SocialLogin] QQ 登录失败: ${resp.msg}');
+      _authCompleter!.complete(SocialLoginResult.failure(resp.msg ?? 'QQ 登录失败'));
     }
   }
 

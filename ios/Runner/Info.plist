@@ -117,6 +117,16 @@
 		<string>gonomads</string>
 	</array>
 </dict>
+<dict>
+	<key>CFBundleTypeRole</key>
+	<string>Editor</string>
+	<key>CFBundleURLName</key>
+	<string>tencent</string>
+	<key>CFBundleURLSchemes</key>
+	<array>
+		<string>tencent102822014</string>
+	</array>
+</dict>
 </array>
 <!-- 支付宝白名单 -->
 <key>LSApplicationQueriesSchemes</key>
