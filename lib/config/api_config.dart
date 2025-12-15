@@ -131,6 +131,10 @@ class ApiConfig {
   // 支付宝 AppId，用于唤起和鉴权
   static const String alipayAppId = '2021006115624759';
 
+  // QQ 互联配置
+  static const String qqAppId = '102822014';
+  static const String qqAppKey = 'Ut68vSr2ye4FJ9j6';
+
   // ============================================================
   // Authentication Endpoints - /api/v1/auth
   // ============================================================
