@@ -192,6 +192,21 @@ class UserStateController extends GetxController {
     isEditMode.value = !isEditMode.value;
   }
 
+  /// 只更新头像URL（不替换整个用户对象，保留 skills/interests 等数据）
+  Future<void> updateAvatarOnly(String avatarUrl) async {
+    final user = currentUser.value;
+    if (user == null) return;
+
+    // 调用后端更新头像
+    await _updateUserUseCase(user_use_cases.UpdateUserParams(
+      userId: user.id,
+      updates: {'avatarUrl': avatarUrl},
+    ));
+
+    // 只更新本地用户对象的头像字段，保留其他数据
+    currentUser.value = user.copyWith(avatarUrl: avatarUrl);
+  }
+
   /// 更新用户信息
   /// [updates] 可以只包含需要更新的字段（支持部分更新）
   Future<bool> updateUser(Map<String, dynamic> updates) async {

@@ -1,3 +1,4 @@
+import 'package:app_settings/app_settings.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -70,6 +71,25 @@ class NotificationService extends GetxService {
       // 禁用通知时取消所有通知
       await _notifications.cancelAll();
     }
+  }
+
+  /// 检查系统通知权限是否已授予
+  Future<bool> checkPermissionStatus() async {
+    // Android
+    final androidPlugin =
+        _notifications.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    if (androidPlugin != null) {
+      final granted = await androidPlugin.areNotificationsEnabled();
+      return granted ?? false;
+    }
+
+    // iOS - 默认返回 true，因为 iOS 会在首次请求时弹窗
+    return true;
+  }
+
+  /// 打开系统通知设置页面
+  Future<void> openNotificationSettings() async {
+    await AppSettings.openAppSettings(type: AppSettingsType.notification);
   }
 
   /// 请求通知权限

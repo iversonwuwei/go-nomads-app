@@ -73,6 +73,9 @@ dependencies:
   # 支付相关
   fluwx: ^5.7.5  # 微信 SDK
   tobias: ^3.0.0  # 支付宝 SDK
+  
+  # 系统设置
+  app_settings: ^5.1.1  # 打开系统设置页面
 
 dev_dependencies:
   flutter_test:

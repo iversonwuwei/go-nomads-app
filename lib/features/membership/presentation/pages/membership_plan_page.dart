@@ -512,17 +512,23 @@ class MembershipPlanPage extends StatelessWidget {
           children: [
             const CircularProgressIndicator(),
             const SizedBox(width: 16),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Creating PayPal order...'),
-                const SizedBox(height: 4),
-                Text(
-                  '\$${plan.priceYearly.toStringAsFixed(0)} for ${plan.name}',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                ),
-              ],
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Creating PayPal order...',
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '\$${plan.priceYearly.toStringAsFixed(0)} for ${plan.name}',
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -530,33 +536,41 @@ class MembershipPlanPage extends StatelessWidget {
       barrierDismissible: false,
     );
 
+    // 等待对话框完全显示
+    await Future.delayed(const Duration(milliseconds: 100));
+
+    bool success = false;
+    String? errorMessage;
+
     try {
       // 判断是升级还是续费
       final isRenewal = controller.membership?.isActive == true && controller.level.levelValue == plan.level;
 
       // 发起支付
-      final success = await paymentService.startMembershipPayment(
+      success = await paymentService.startMembershipPayment(
         membershipLevel: plan.level,
         durationDays: 365, // 年度订阅
         isRenewal: isRenewal,
       );
-
-      // 关闭加载对话框
-      Get.back();
-
-      if (success) {
-        AppToast.info('Opening PayPal for payment...');
-        // 支付页面已在外部浏览器中打开
-        // 用户完成支付后会通过 deep link 返回
-      } else {
-        AppToast.error('Failed to create payment order');
-        // 支付失败，重新显示支付方式选择
-        _retryPaymentMethodSelection(controller, plan, targetLevel);
-      }
     } catch (e) {
-      Get.back(); // 关闭加载对话框
-      AppToast.error('Payment error: $e');
-      // 发生异常，重新显示支付方式选择
+      errorMessage = e.toString();
+    } finally {
+      // 无论成功与否都关闭加载对话框
+      if (Get.isDialogOpen == true) {
+        Get.back();
+      }
+    }
+
+    // 处理结果
+    if (errorMessage != null) {
+      AppToast.error('Payment error: $errorMessage');
+      _retryPaymentMethodSelection(controller, plan, targetLevel);
+    } else if (success) {
+      AppToast.info('Opening PayPal for payment...');
+      // 支付页面已在外部浏览器中打开
+      // 用户完成支付后会通过 deep link 返回
+    } else {
+      AppToast.error('Failed to create payment order');
       _retryPaymentMethodSelection(controller, plan, targetLevel);
     }
   }
@@ -593,17 +607,23 @@ class MembershipPlanPage extends StatelessWidget {
           children: [
             const CircularProgressIndicator(),
             const SizedBox(width: 16),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Creating WeChat Pay order...'),
-                const SizedBox(height: 4),
-                Text(
-                  '¥${(plan.priceYearly * 7.2).toStringAsFixed(0)} for ${plan.name}',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                ),
-              ],
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Creating WeChat Pay order...',
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '¥${(plan.priceYearly * 7.2).toStringAsFixed(0)} for ${plan.name}',
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -611,32 +631,41 @@ class MembershipPlanPage extends StatelessWidget {
       barrierDismissible: false,
     );
 
+    // 等待对话框完全显示
+    await Future.delayed(const Duration(milliseconds: 100));
+
     try {
       final isRenewal = controller.membership?.isActive == true && controller.level.levelValue == plan.level;
 
-      final result = await unifiedPaymentService.payForMembership(
+      // 异步调用支付，不等待结果
+      unifiedPaymentService
+          .payForMembership(
         method: payment_entities.PaymentMethod.wechat,
         membershipLevel: plan.level,
         durationDays: 365,
         isRenewal: isRenewal,
-      );
+      )
+          .then((result) {
+        // 支付结果回调
+        if (result.success) {
+          AppToast.success('Payment successful!');
+          controller.loadMembership();
+        } else {
+          AppToast.error(result.errorMessage ?? 'WeChat Pay failed');
+        }
+      }).catchError((e) {
+        AppToast.error('WeChat Pay error: $e');
+      });
 
-      Get.back(); // 关闭加载对话框
-
-      if (result.success) {
-        AppToast.success('Payment successful!');
-        // 刷新会员状态
-        await controller.loadMembership();
-      } else {
-        AppToast.error(result.errorMessage ?? 'WeChat Pay failed');
-        // 支付失败，重新显示支付方式选择
-        _retryPaymentMethodSelection(controller, plan, targetLevel);
-      }
+      // 等待一下确保SDK已经开始调用
+      await Future.delayed(const Duration(milliseconds: 500));
     } catch (e) {
-      Get.back(); // 关闭加载对话框
       AppToast.error('WeChat Pay error: $e');
-      // 发生异常，重新显示支付方式选择
-      _retryPaymentMethodSelection(controller, plan, targetLevel);
+    } finally {
+      // 无论成功与否都关闭加载对话框
+      if (Get.isDialogOpen == true) {
+        Get.back();
+      }
     }
   }
 
@@ -674,17 +703,23 @@ class MembershipPlanPage extends StatelessWidget {
           children: [
             const CircularProgressIndicator(),
             const SizedBox(width: 16),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Creating Alipay order...'),
-                const SizedBox(height: 4),
-                Text(
-                  '¥${(plan.priceYearly * 7.2).toStringAsFixed(0)} for ${plan.name}',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                ),
-              ],
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Creating Alipay order...',
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '¥${(plan.priceYearly * 7.2).toStringAsFixed(0)} for ${plan.name}',
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -692,44 +727,41 @@ class MembershipPlanPage extends StatelessWidget {
       barrierDismissible: false,
     );
 
+    // 等待对话框完全显示
+    await Future.delayed(const Duration(milliseconds: 100));
+
     try {
       final isRenewal = controller.membership?.isActive == true && controller.level.levelValue == plan.level;
 
-      // 添加超时处理，防止无限等待
-      final result = await unifiedPaymentService
+      // 异步调用支付，不等待结果
+      unifiedPaymentService
           .payForMembership(
         method: payment_entities.PaymentMethod.alipay,
         membershipLevel: plan.level,
         durationDays: 365,
         isRenewal: isRenewal,
       )
-          .timeout(
-        const Duration(seconds: 60),
-        onTimeout: () {
-          return UnifiedPaymentResult(
-            success: false,
-            method: payment_entities.PaymentMethod.alipay,
-            errorMessage: 'Request timeout, please try again',
-          );
-        },
-      );
+          .then((result) {
+        // 支付结果回调
+        if (result.success) {
+          AppToast.success('Payment successful!');
+          controller.loadMembership();
+        } else {
+          AppToast.error(result.errorMessage ?? 'Alipay payment failed');
+        }
+      }).catchError((e) {
+        AppToast.error('Alipay error: $e');
+      });
 
-      Get.back(); // 关闭加载对话框
-
-      if (result.success) {
-        AppToast.success('Payment successful!');
-        // 刷新会员状态
-        await controller.loadMembership();
-      } else {
-        AppToast.error(result.errorMessage ?? 'Alipay payment failed');
-        // 支付失败，重新显示支付方式选择
-        _retryPaymentMethodSelection(controller, plan, targetLevel);
-      }
+      // 等待一下确保SDK已经开始调用
+      await Future.delayed(const Duration(milliseconds: 500));
     } catch (e) {
-      Get.back(); // 关闭加载对话框
       AppToast.error('Alipay error: $e');
-      // 发生异常，重新显示支付方式选择
-      _retryPaymentMethodSelection(controller, plan, targetLevel);
+    } finally {
+      // 无论成功与否都关闭加载对话框
+      if (Get.isDialogOpen == true) {
+        Get.back();
+      }
     }
   }
 

@@ -55,7 +55,7 @@ class ApiConfig {
   /// 是否使用真机测试地址(手动切换)
   /// ⚠️ 雷电模拟器用户请设置为 true
   /// ⚠️ Android 官方模拟器用户请设置为 false
-  static const bool usePhysicalDevice = false;
+  static const bool usePhysicalDevice = true;
 
   // ============================================================
   // URL 组装
@@ -126,6 +126,10 @@ class ApiConfig {
   // 认证相关
   static const String authTokenKey = 'auth_token';
   static const String refreshTokenKey = 'refresh_token';
+
+  // 第三方平台配置
+  // 支付宝 AppId，用于唤起和鉴权
+  static const String alipayAppId = '2021006115624759';
 
   // ============================================================
   // Authentication Endpoints - /api/v1/auth

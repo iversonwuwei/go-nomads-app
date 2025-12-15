@@ -37,6 +37,11 @@ migrate_working_dir/
 android/local.properties
 **/local.properties
 
+# Android signing configuration (security sensitive)
+**/key.properties
+**/*.jks
+**/*.keystore
+
 # Symbolication related
 app.*.symbols
 

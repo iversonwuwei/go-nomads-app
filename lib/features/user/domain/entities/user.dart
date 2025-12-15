@@ -57,6 +57,48 @@ class User {
     if (visited >= 5) return 2; // Beginner
     return 1; // Newbie
   }
+
+  /// 创建用户副本，支持部分字段更新
+  /// 保留原有的 skills、interests 等字段
+  User copyWith({
+    String? id,
+    String? name,
+    String? username,
+    String? email,
+    String? bio,
+    String? avatarUrl,
+    String? currentCity,
+    String? currentCountry,
+    List<UserSkillInfo>? skills,
+    List<UserInterestInfo>? interests,
+    Map<String, String>? socialLinks,
+    List<Badge>? badges,
+    TravelStats? stats,
+    List<TravelHistory>? travelHistory,
+    DateTime? joinedDate,
+    bool? isVerified,
+    UserMembership? membership,
+  }) {
+    return User(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      username: username ?? this.username,
+      email: email ?? this.email,
+      bio: bio ?? this.bio,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      currentCity: currentCity ?? this.currentCity,
+      currentCountry: currentCountry ?? this.currentCountry,
+      skills: skills ?? this.skills,
+      interests: interests ?? this.interests,
+      socialLinks: socialLinks ?? this.socialLinks,
+      badges: badges ?? this.badges,
+      stats: stats ?? this.stats,
+      travelHistory: travelHistory ?? this.travelHistory,
+      joinedDate: joinedDate ?? this.joinedDate,
+      isVerified: isVerified ?? this.isVerified,
+      membership: membership ?? this.membership,
+    );
+  }
 }
 
 /// User Skill Info Value Object
