@@ -39,9 +39,6 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
   String _currency = 'USD';
   String _temperatureUnit = 'Celsius';
 
-  final List<String> _currencies = ['USD', 'EUR', 'GBP', 'JPY', 'CNY'];
-  final List<String> _temperatureUnits = ['Celsius', 'Fahrenheit'];
-
   // TextEditingController 用于管理输入框
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -220,22 +217,6 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
   Future<void> _handleProfilePublicToggle(bool value) async {
     setState(() => _profilePublic = value);
     await _saveUserPreferences();
-  }
-
-  // 处理货币变化
-  Future<void> _handleCurrencyChange(String? value) async {
-    if (value != null) {
-      setState(() => _currency = value);
-      await _saveUserPreferences();
-    }
-  }
-
-  // 处理温度单位变化
-  Future<void> _handleTemperatureUnitChange(String? value) async {
-    if (value != null) {
-      setState(() => _temperatureUnit = value);
-      await _saveUserPreferences();
-    }
   }
 
   @override
@@ -1065,40 +1046,6 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
       value: value,
       onChanged: onChanged,
       activeThumbColor: AppColors.accent,
-    );
-  }
-
-  Widget _buildDropdownTile(
-    String title,
-    String value,
-    List<String> options,
-    Function(String?) onChanged,
-  ) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      title: Text(
-        title,
-        style: TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: 16,
-        ),
-      ),
-      trailing: DropdownButton<String>(
-        value: value,
-        dropdownColor: Colors.white,
-        underline: const SizedBox(),
-        icon: Icon(
-          FontAwesomeIcons.chevronDown,
-          color: AppColors.iconSecondary,
-        ),
-        items: options.map((option) {
-          return DropdownMenuItem(
-            value: option,
-            child: Text(option, style: TextStyle(color: AppColors.textPrimary)),
-          );
-        }).toList(),
-        onChanged: onChanged,
-      ),
     );
   }
 
