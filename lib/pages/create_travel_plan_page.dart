@@ -50,7 +50,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
 
     try {
       final locationService = Get.find<LocationService>();
-      
+
       // 添加超时机制，防止无限等待
       final position =
           await locationService.getCurrentLocation().timeout(const Duration(seconds: 10), onTimeout: () => null);
@@ -69,9 +69,10 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
       debugPrint('📍 获取到位置: ${position.latitude}, ${position.longitude}');
 
       // 使用高德逆地理编码获取地址，同样添加超时
-      final geoResult = await AmapPoiService.instance.reverseGeocode(
-        latitude: position.latitude,
-        longitude: position.longitude,
+      final geoResult = await AmapPoiService.instance
+          .reverseGeocode(
+            latitude: position.latitude,
+            longitude: position.longitude,
           )
           .timeout(const Duration(seconds: 5), onTimeout: () => null);
 

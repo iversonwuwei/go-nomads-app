@@ -134,13 +134,6 @@ class _ShareChannelSheet extends StatelessWidget {
         color: const Color(0xFFE6162D),
         onTap: () => _share(ShareChannel.weibo),
       ),
-      const SizedBox(width: 16),
-      _ShareButton(
-        icon: Icons.work,
-        label: '钉钉',
-        color: const Color(0xFF0089FF),
-        onTap: () => _share(ShareChannel.dingtalk),
-      ),
     ];
   }
 
@@ -199,13 +192,6 @@ class _ShareChannelSheet extends StatelessWidget {
         label: '邮件'.tr,
         color: Colors.orange,
         onTap: () => _share(ShareChannel.email),
-      ),
-      const SizedBox(width: 16),
-      _ShareButton(
-        icon: Icons.sms,
-        label: '短信'.tr,
-        color: Colors.green,
-        onTap: () => _share(ShareChannel.sms),
       ),
       const SizedBox(width: 16),
       _ShareButton(

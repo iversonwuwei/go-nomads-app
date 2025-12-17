@@ -8,6 +8,7 @@ import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/services/http_service.dart';
 import 'package:df_admin_mobile/services/social_login_service.dart';
+import 'package:df_admin_mobile/services/token_storage_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -36,6 +37,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
   final _passwordController = TextEditingController();
   final _phoneController = TextEditingController();
   final _smsCodeController = TextEditingController();
+  final _tokenStorageService = TokenStorageService();
 
   bool _obscurePassword = true;
   bool _rememberMe = false;
@@ -44,6 +46,28 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
   // 验证码倒计时
   int _countdown = 0;
   Timer? _countdownTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRememberMe();
+  }
+
+  /// 加载「记住我」数据
+  Future<void> _loadRememberMe() async {
+    final rememberMe = await _tokenStorageService.getRememberMe();
+    final savedEmail = await _tokenStorageService.getSavedEmail();
+
+    if (mounted) {
+      setState(() {
+        _rememberMe = rememberMe;
+        if (rememberMe && savedEmail != null && savedEmail.isNotEmpty) {
+          _emailController.text = savedEmail;
+          log('📥 已恢复保存的邮箱: $savedEmail');
+        }
+      });
+    }
+  }
 
   /// 判断是否为中国区用户
   bool get _isChineseUser {
@@ -274,9 +298,12 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
           log('   用户名: ${user.name}');
           log('   邮箱: ${user.email}');
 
-          // TODO: 需要通过 AuthStateController 处理登录状态
-          // UserStateController 没有 login 方法，应该使用 AuthStateController
-          log('✅ 用户登录成功，待集成状态管理');
+          // 保存「记住我」状态
+          await _tokenStorageService.saveRememberMe(
+            rememberMe: _rememberMe,
+            email: _emailController.text.trim(),
+          );
+          log('✅ 用户登录成功，记住我: $_rememberMe');
 
           AppToast.success(
             'Welcome back, ${user.name}!',
