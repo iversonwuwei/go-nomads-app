@@ -48,6 +48,73 @@ class AmapPoiService {
     'attraction': 'Attractions',
   };
 
+  /// 关键字搜索 POI（分页）
+  /// [keyword] 搜索关键字（地址或地点名）
+  /// [city] 可选城市，用于优先返回该城市的结果
+  /// [page] 页码，从 1 开始
+  /// [pageSize] 每页数量，默认 20
+  Future<PagedPoiResult> searchByKeyword({
+    required String keyword,
+    String? city,
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    if (keyword.trim().isEmpty) {
+      return PagedPoiResult.empty(page: page, pageSize: pageSize);
+    }
+
+    try {
+      final params = <String, String>{
+        'key': _apiKey,
+        'keywords': keyword.trim(),
+        'offset': pageSize.toString(),
+        'page': page.toString(),
+        'extensions': 'all',
+        'output': 'json',
+      };
+
+      if (city != null && city.isNotEmpty) {
+        params['city'] = city;
+        params['citylimit'] = 'true'; // 只返回该城市结果
+      }
+
+      final uri = Uri.https('restapi.amap.com', '/v3/place/text', params);
+      debugPrint('🔍 关键字搜索: $keyword, city=$city, page=$page, size=$pageSize');
+      debugPrint('🌐 请求 URL: $uri');
+
+      final response = await http.get(uri).timeout(const Duration(seconds: 10));
+      debugPrint('📥 响应状态码: ${response.statusCode}');
+
+      if (response.statusCode != 200) {
+        debugPrint('❌ 关键字搜索请求失败: ${response.statusCode}');
+        debugPrint('❌ 响应内容: ${response.body}');
+        return PagedPoiResult.empty(page: page, pageSize: pageSize);
+      }
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      if (data['status'] != '1') {
+        debugPrint('❌ 关键字搜索失败: ${data['info']} (infocode: ${data['infocode']})');
+        return PagedPoiResult.empty(page: page, pageSize: pageSize);
+      }
+
+      final total = int.tryParse(data['count']?.toString() ?? '') ?? 0;
+      final pois = (data['pois'] as List<dynamic>? ?? [])
+          .map((poi) => PoiResult.fromAmapJson(poi as Map<String, dynamic>, ''))
+          .toList();
+
+      debugPrint('✅ 找到 ${pois.length} 条 (total=$total)');
+      return PagedPoiResult(
+        items: pois,
+        totalCount: total,
+        page: page,
+        pageSize: pageSize,
+      );
+    } catch (e) {
+      debugPrint('❌ 关键字搜索异常: $e');
+      return PagedPoiResult.empty(page: page, pageSize: pageSize);
+    }
+  }
+
   /// 搜索周边 POI
   /// [latitude] 纬度
   /// [longitude] 经度
@@ -343,7 +410,7 @@ class PoiResult {
       id: safeString(json['id']) ?? '',
       name: safeString(json['name']) ?? '',
       type: poiType,
-      typeName: AmapPoiService.poiTypeName[poiType] ?? poiType,
+      typeName: AmapPoiService.poiTypeName[poiType] ?? 'POI',
       address: safeString(json['address']) ?? '',
       latitude: latitude,
       longitude: longitude,
@@ -365,6 +432,27 @@ class PoiResult {
     } else {
       return '${(meters / 1000).toStringAsFixed(1)}km';
     }
+  }
+}
+
+/// 分页 POI 搜索结果
+class PagedPoiResult {
+  final List<PoiResult> items;
+  final int totalCount;
+  final int page;
+  final int pageSize;
+
+  const PagedPoiResult({
+    required this.items,
+    required this.totalCount,
+    required this.page,
+    required this.pageSize,
+  });
+
+  bool get hasMore => items.length + ((page - 1) * pageSize) < totalCount;
+
+  factory PagedPoiResult.empty({required int page, required int pageSize}) {
+    return PagedPoiResult(items: const [], totalCount: 0, page: page, pageSize: pageSize);
   }
 }
 

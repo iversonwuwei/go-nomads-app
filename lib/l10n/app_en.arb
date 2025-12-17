@@ -1904,7 +1904,111 @@
   "privacySettingsComingSoon": "Privacy settings coming soon",
   "deleteAccount": "Delete Account",
   "deleteAccountConfirmation": "Are you sure you want to delete your account? This action cannot be undone.",
-  "accountDeletionCancelled": "Account deletion cancelled"
+  "accountDeletionCancelled": "Account deletion cancelled",
+
+  "membershipPlans": "Membership Plans",
+  "currentPlan": "Current: {planName}",
+  "@currentPlan": {
+    "placeholders": {
+      "planName": {
+        "type": "String"
+      }
+    }
+  },
+  "daysRemaining": "{days} days remaining",
+  "@daysRemaining": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "upgradeToUnlock": "Upgrade to unlock more features",
+  "selectPaymentMethod": "Select Payment Method",
+  "upgradeTo": "Upgrade to {planName} - ${price}/year",
+  "@upgradeTo": {
+    "placeholders": {
+      "planName": {
+        "type": "String"
+      },
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "paypalPayment": "PayPal",
+  "paypalDescription": "Fast & Secure international payment",
+  "wechatPayment": "WeChat Pay",
+  "wechatDescription": "Pay with WeChat",
+  "alipayPayment": "Alipay",
+  "alipayDescription": "Pay with Alipay",
+  "securePayment": "Secure Payment",
+  "allPaymentsSecure": "All payments are processed securely. Cancel anytime.",
+  "allPaymentsEncrypted": "All payments are secure and encrypted",
+  "unableToLoadPlans": "Unable to load membership plans",
+  "checkNetworkConnection": "Please check your network connection",
+  "currentPlanLabel": "Current Plan",
+  "selectPlanLabel": "Select Plan",
+  "popular": "POPULAR",
+  "perYear": "/year",
+  "alreadyHavePlan": "You already have this or higher plan",
+  "creatingPaypalOrder": "Creating PayPal order...",
+  "creatingWechatOrder": "Creating WeChat Pay order...",
+  "creatingAlipayOrder": "Creating Alipay order...",
+  "priceForPlan": "${price} for {planName}",
+  "@priceForPlan": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      },
+      "planName": {
+        "type": "String"
+      }
+    }
+  },
+  "cnyPriceForPlan": "¥{price} for {planName}",
+  "@cnyPriceForPlan": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      },
+      "planName": {
+        "type": "String"
+      }
+    }
+  },
+  "paymentServiceNotAvailable": "Payment service not available",
+  "paymentError": "Payment error: {error}",
+  "@paymentError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "openingPaypal": "Opening PayPal for payment...",
+  "failedToCreateOrder": "Failed to create payment order",
+  "wechatNotInstalled": "Please install WeChat to use WeChat Pay",
+  "alipayNotInstalled": "Please install Alipay to use Alipay Pay",
+  "paymentSuccessful": "Payment successful!",
+  "wechatPayFailed": "WeChat Pay failed",
+  "alipayPayFailed": "Alipay payment failed",
+  "wechatPayError": "WeChat Pay error: {error}",
+  "@wechatPayError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "alipayError": "Alipay error: {error}",
+  "@alipayError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
 }
 
 

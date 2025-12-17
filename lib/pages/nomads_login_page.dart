@@ -9,6 +9,7 @@ import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/services/http_service.dart';
 import 'package:df_admin_mobile/services/social_login_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -177,7 +178,22 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
         Navigator.pop(context);
       }
       log('❌ 手机号登录失败: $e');
-      AppToast.error('登录失败: $e', title: '错误');
+
+      // 简化验证码相关的错误提示
+      String errorMessage = '登录失败，请重试';
+      if (e is DioException && e.error is HttpException) {
+        final httpError = e.error as HttpException;
+        // 验证码相关错误显示简洁提示
+        if (httpError.message.contains('验证码')) {
+          errorMessage = '验证码无效或已过期';
+        } else {
+          errorMessage = httpError.message;
+        }
+      } else if (e.toString().contains('验证码')) {
+        errorMessage = '验证码无效或已过期';
+      }
+
+      AppToast.error(errorMessage, title: '错误');
     }
   }
 

@@ -7465,6 +7465,228 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'已取消删除账户'**
   String get accountDeletionCancelled;
+
+  /// No description provided for @membershipPlans.
+  ///
+  /// In zh, this message translates to:
+  /// **'会员计划'**
+  String get membershipPlans;
+
+  /// No description provided for @currentPlan.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前：{planName}'**
+  String currentPlan(String planName);
+
+  /// No description provided for @daysRemaining.
+  ///
+  /// In zh, this message translates to:
+  /// **'剩余 {days} 天'**
+  String daysRemaining(int days);
+
+  /// No description provided for @upgradeToUnlock.
+  ///
+  /// In zh, this message translates to:
+  /// **'升级以解锁更多功能'**
+  String get upgradeToUnlock;
+
+  /// No description provided for @selectPaymentMethod.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择支付方式'**
+  String get selectPaymentMethod;
+
+  /// No description provided for @upgradeTo.
+  ///
+  /// In zh, this message translates to:
+  /// **'升级到 {planName} - \${price}/年'**
+  String upgradeTo(String planName, String price);
+
+  /// No description provided for @paypalPayment.
+  ///
+  /// In zh, this message translates to:
+  /// **'PayPal'**
+  String get paypalPayment;
+
+  /// No description provided for @paypalDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'快捷安全的国际支付'**
+  String get paypalDescription;
+
+  /// No description provided for @wechatPayment.
+  ///
+  /// In zh, this message translates to:
+  /// **'微信支付'**
+  String get wechatPayment;
+
+  /// No description provided for @wechatDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'使用微信支付'**
+  String get wechatDescription;
+
+  /// No description provided for @alipayPayment.
+  ///
+  /// In zh, this message translates to:
+  /// **'支付宝'**
+  String get alipayPayment;
+
+  /// No description provided for @alipayDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'使用支付宝支付'**
+  String get alipayDescription;
+
+  /// No description provided for @securePayment.
+  ///
+  /// In zh, this message translates to:
+  /// **'安全支付'**
+  String get securePayment;
+
+  /// No description provided for @allPaymentsSecure.
+  ///
+  /// In zh, this message translates to:
+  /// **'所有支付均安全处理，可随时取消。'**
+  String get allPaymentsSecure;
+
+  /// No description provided for @allPaymentsEncrypted.
+  ///
+  /// In zh, this message translates to:
+  /// **'所有支付均安全加密'**
+  String get allPaymentsEncrypted;
+
+  /// No description provided for @unableToLoadPlans.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法加载会员计划'**
+  String get unableToLoadPlans;
+
+  /// No description provided for @checkNetworkConnection.
+  ///
+  /// In zh, this message translates to:
+  /// **'请检查您的网络连接'**
+  String get checkNetworkConnection;
+
+  /// No description provided for @currentPlanLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前计划'**
+  String get currentPlanLabel;
+
+  /// No description provided for @selectPlanLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择计划'**
+  String get selectPlanLabel;
+
+  /// No description provided for @perYear.
+  ///
+  /// In zh, this message translates to:
+  /// **'/年'**
+  String get perYear;
+
+  /// No description provided for @alreadyHavePlan.
+  ///
+  /// In zh, this message translates to:
+  /// **'您已拥有此计划或更高级别的计划'**
+  String get alreadyHavePlan;
+
+  /// No description provided for @creatingPaypalOrder.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在创建 PayPal 订单...'**
+  String get creatingPaypalOrder;
+
+  /// No description provided for @creatingWechatOrder.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在创建微信支付订单...'**
+  String get creatingWechatOrder;
+
+  /// No description provided for @creatingAlipayOrder.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在创建支付宝订单...'**
+  String get creatingAlipayOrder;
+
+  /// No description provided for @priceForPlan.
+  ///
+  /// In zh, this message translates to:
+  /// **'\${price} - {planName}'**
+  String priceForPlan(String price, String planName);
+
+  /// No description provided for @cnyPriceForPlan.
+  ///
+  /// In zh, this message translates to:
+  /// **'¥{price} - {planName}'**
+  String cnyPriceForPlan(String price, String planName);
+
+  /// No description provided for @paymentServiceNotAvailable.
+  ///
+  /// In zh, this message translates to:
+  /// **'支付服务不可用'**
+  String get paymentServiceNotAvailable;
+
+  /// No description provided for @paymentError.
+  ///
+  /// In zh, this message translates to:
+  /// **'支付错误：{error}'**
+  String paymentError(String error);
+
+  /// No description provided for @openingPaypal.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在打开 PayPal 支付...'**
+  String get openingPaypal;
+
+  /// No description provided for @failedToCreateOrder.
+  ///
+  /// In zh, this message translates to:
+  /// **'创建支付订单失败'**
+  String get failedToCreateOrder;
+
+  /// No description provided for @wechatNotInstalled.
+  ///
+  /// In zh, this message translates to:
+  /// **'请安装微信以使用微信支付'**
+  String get wechatNotInstalled;
+
+  /// No description provided for @alipayNotInstalled.
+  ///
+  /// In zh, this message translates to:
+  /// **'请安装支付宝以使用支付宝支付'**
+  String get alipayNotInstalled;
+
+  /// No description provided for @paymentSuccessful.
+  ///
+  /// In zh, this message translates to:
+  /// **'支付成功！'**
+  String get paymentSuccessful;
+
+  /// No description provided for @wechatPayFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'微信支付失败'**
+  String get wechatPayFailed;
+
+  /// No description provided for @alipayPayFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'支付宝支付失败'**
+  String get alipayPayFailed;
+
+  /// No description provided for @wechatPayError.
+  ///
+  /// In zh, this message translates to:
+  /// **'微信支付错误：{error}'**
+  String wechatPayError(String error);
+
+  /// No description provided for @alipayError.
+  ///
+  /// In zh, this message translates to:
+  /// **'支付宝错误：{error}'**
+  String alipayError(String error);
 }
 
 class _AppLocalizationsDelegate

@@ -78,6 +78,11 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage> with Single
   String? _currentName;
 
   List<_SearchResult> _searchResults = const [];
+  final ScrollController _searchScrollController = ScrollController();
+  int _searchPage = 1;
+  bool _hasMoreResults = true;
+  bool _isLoadingMore = false;
+  String _lastQuery = '';
 
   // 瓦片源配置（使用高德地图）
   final String _tileUrl =
@@ -106,6 +111,13 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage> with Single
     ]).animate(_bounceController!);
 
     _initializeMap();
+    _searchScrollController.addListener(() {
+      if (_searchScrollController.position.pixels >= _searchScrollController.position.maxScrollExtent - 80 &&
+          !_isLoadingMore &&
+          _hasMoreResults) {
+        _loadMoreResults();
+      }
+    });
   }
 
   @override
@@ -113,6 +125,7 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage> with Single
     _bounceController?.dispose();
     _searchDebounce?.cancel();
     _searchController.dispose();
+    _searchScrollController.dispose();
     super.dispose();
   }
 
@@ -451,57 +464,60 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage> with Single
   void _onSearchChanged(String value) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 400), () {
-      _searchPlaces(value);
+      _searchPlaces(value, autoSelectFirst: false, reset: true);
     });
   }
 
   /// 搜索地点
-  Future<void> _searchPlaces(String rawQuery, {bool autoSelectFirst = false}) async {
+  Future<void> _searchPlaces(String rawQuery, {bool autoSelectFirst = false, bool reset = true}) async {
     final query = rawQuery.trim();
     if (query.isEmpty) {
-      setState(() => _searchResults = const []);
+      setState(() {
+        _searchResults = const [];
+        _hasMoreResults = true;
+        _searchPage = 1;
+        _lastQuery = '';
+      });
       return;
+    }
+
+    if (reset) {
+      _searchPage = 1;
+      _hasMoreResults = true;
+      _searchResults = const [];
+      _lastQuery = query;
     }
 
     setState(() {
       _isSearching = true;
+      _isLoadingMore = false;
     });
 
-    final locale = Localizations.maybeLocaleOf(context);
-
     try {
-      final uri = Uri.https('nominatim.openstreetmap.org', '/search', {
-        'format': 'jsonv2',
-        'limit': '8',
-        'q': query,
-        'addressdetails': '1',
-      });
-
-      final response = await http.get(
-        uri,
-        headers: {
-          'User-Agent': _userAgent,
-          if (locale != null) 'Accept-Language': locale.languageCode,
-        },
+      final result = await AmapPoiService.instance.searchByKeyword(
+        keyword: query,
+        city: widget.city,
+        page: _searchPage,
+        pageSize: 20,
       );
-
-      if (response.statusCode != 200) {
-        throw Exception('搜索失败 (${response.statusCode})');
-      }
-
-      final list = (jsonDecode(response.body) as List<dynamic>)
-          .cast<Map<String, dynamic>>()
-          .map(_SearchResult.fromJson)
-          .toList();
 
       if (!mounted) return;
 
+      final mapped = result.items
+          .map((poi) => _SearchResult(
+                location: poi.toLatLng(),
+                title: poi.name,
+                subtitle: poi.address.isNotEmpty ? poi.address : (poi.businessArea ?? ''),
+              ))
+          .toList();
+
       setState(() {
-        _searchResults = list;
+        _searchResults = reset ? mapped : [..._searchResults, ...mapped];
+        _hasMoreResults = result.hasMore;
       });
 
-      if (autoSelectFirst && list.isNotEmpty) {
-        _moveCameraTo(list.first.location);
+      if (autoSelectFirst && mapped.isNotEmpty) {
+        _moveCameraTo(mapped.first.location);
       }
     } catch (e) {
       if (mounted) {
@@ -514,7 +530,46 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage> with Single
       if (mounted) {
         setState(() {
           _isSearching = false;
+          _isLoadingMore = false;
         });
+      }
+    }
+  }
+
+  Future<void> _loadMoreResults() async {
+    if (_lastQuery.isEmpty || !_hasMoreResults || _isLoadingMore) return;
+
+    setState(() {
+      _isLoadingMore = true;
+      _searchPage += 1;
+    });
+
+    try {
+      final result = await AmapPoiService.instance.searchByKeyword(
+        keyword: _lastQuery,
+        city: widget.city,
+        page: _searchPage,
+        pageSize: 20,
+      );
+
+      if (!mounted) return;
+
+      final mapped = result.items
+          .map((poi) => _SearchResult(
+                location: poi.toLatLng(),
+                title: poi.name,
+                subtitle: poi.address.isNotEmpty ? poi.address : (poi.businessArea ?? ''),
+              ))
+          .toList();
+
+      setState(() {
+        _searchResults = [..._searchResults, ...mapped];
+        _hasMoreResults = result.hasMore;
+        _isLoadingMore = false;
+      });
+    } catch (e) {
+      if (mounted) {
+        _isLoadingMore = false;
       }
     }
   }
@@ -752,24 +807,91 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage> with Single
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxHeight: 220),
                         child: ListView.separated(
+                          controller: _searchScrollController,
                           shrinkWrap: true,
-                          itemCount: _searchResults.length,
-                          separatorBuilder: (_, __) => const Divider(height: 1),
+                          itemCount: _searchResults.length + (_hasMoreResults ? 1 : 0),
+                          separatorBuilder: (_, __) => Divider(
+                            height: 1,
+                            color: Colors.grey.withValues(alpha: 0.15),
+                          ),
                           itemBuilder: (context, index) {
+                            if (index >= _searchResults.length) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: const [
+                                    SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text('加载更多中...', style: TextStyle(fontSize: 13, color: Colors.grey)),
+                                  ],
+                                ),
+                              );
+                            }
+
                             final result = _searchResults[index];
-                            return ListTile(
-                              dense: true,
-                              title: Text(
-                                result.title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              subtitle: Text(
-                                result.subtitle,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                            return InkWell(
                               onTap: () => _moveCameraTo(result.location),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      width: 36,
+                                      height: 36,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFFF4458).withValues(alpha: 0.12),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        FontAwesomeIcons.locationDot,
+                                        size: 16,
+                                        color: Color(0xFFFF4458),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            result.title,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w700,
+                                              color: Colors.black87,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            result.subtitle,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              color: Colors.grey[700],
+                                              height: 1.35,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Icon(
+                                      Icons.chevron_right,
+                                      color: Colors.grey,
+                                      size: 20,
+                                    ),
+                                  ],
+                                ),
+                              ),
                             );
                           },
                         ),
@@ -931,4 +1053,8 @@ class _SearchResult {
       subtitle: subtitle.isNotEmpty ? subtitle : address,
     );
   }
+}
+
+extension _PoiResultLatLng on PoiResult {
+  LatLng toLatLng() => LatLng(latitude, longitude);
 }

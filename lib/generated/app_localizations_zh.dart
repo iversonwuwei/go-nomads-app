@@ -3772,4 +3772,131 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get accountDeletionCancelled => '已取消删除账户';
+
+  @override
+  String get membershipPlans => '会员计划';
+
+  @override
+  String currentPlan(String planName) {
+    return '当前：$planName';
+  }
+
+  @override
+  String daysRemaining(int days) {
+    return '剩余 $days 天';
+  }
+
+  @override
+  String get upgradeToUnlock => '升级以解锁更多功能';
+
+  @override
+  String get selectPaymentMethod => '选择支付方式';
+
+  @override
+  String upgradeTo(String planName, String price) {
+    return '升级到 $planName - \$$price/年';
+  }
+
+  @override
+  String get paypalPayment => 'PayPal';
+
+  @override
+  String get paypalDescription => '快捷安全的国际支付';
+
+  @override
+  String get wechatPayment => '微信支付';
+
+  @override
+  String get wechatDescription => '使用微信支付';
+
+  @override
+  String get alipayPayment => '支付宝';
+
+  @override
+  String get alipayDescription => '使用支付宝支付';
+
+  @override
+  String get securePayment => '安全支付';
+
+  @override
+  String get allPaymentsSecure => '所有支付均安全处理，可随时取消。';
+
+  @override
+  String get allPaymentsEncrypted => '所有支付均安全加密';
+
+  @override
+  String get unableToLoadPlans => '无法加载会员计划';
+
+  @override
+  String get checkNetworkConnection => '请检查您的网络连接';
+
+  @override
+  String get currentPlanLabel => '当前计划';
+
+  @override
+  String get selectPlanLabel => '选择计划';
+
+  @override
+  String get perYear => '/年';
+
+  @override
+  String get alreadyHavePlan => '您已拥有此计划或更高级别的计划';
+
+  @override
+  String get creatingPaypalOrder => '正在创建 PayPal 订单...';
+
+  @override
+  String get creatingWechatOrder => '正在创建微信支付订单...';
+
+  @override
+  String get creatingAlipayOrder => '正在创建支付宝订单...';
+
+  @override
+  String priceForPlan(String price, String planName) {
+    return '\$$price - $planName';
+  }
+
+  @override
+  String cnyPriceForPlan(String price, String planName) {
+    return '¥$price - $planName';
+  }
+
+  @override
+  String get paymentServiceNotAvailable => '支付服务不可用';
+
+  @override
+  String paymentError(String error) {
+    return '支付错误：$error';
+  }
+
+  @override
+  String get openingPaypal => '正在打开 PayPal 支付...';
+
+  @override
+  String get failedToCreateOrder => '创建支付订单失败';
+
+  @override
+  String get wechatNotInstalled => '请安装微信以使用微信支付';
+
+  @override
+  String get alipayNotInstalled => '请安装支付宝以使用支付宝支付';
+
+  @override
+  String get paymentSuccessful => '支付成功！';
+
+  @override
+  String get wechatPayFailed => '微信支付失败';
+
+  @override
+  String get alipayPayFailed => '支付宝支付失败';
+
+  @override
+  String wechatPayError(String error) {
+    return '微信支付错误：$error';
+  }
+
+  @override
+  String alipayError(String error) {
+    return '支付宝错误：$error';
+  }
 }
