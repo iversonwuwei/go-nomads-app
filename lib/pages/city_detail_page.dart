@@ -1611,57 +1611,29 @@ class _CityDetailPageState extends State<CityDetailPage>
     final cityDetailController = Get.find<CityDetailStateController>();
     final city = cityDetailController.currentCity.value;
 
-    // 优先使用后端返回的主图（最新的 imageUrl 或 portraitImageUrl）
-    final latestMainImage = city?.imageUrl ?? city?.portraitImageUrl ?? cityImage;
+    // 收集所有有效的真实图片 URL
+    final List<String> allImages = [];
 
-    // 如果有 landscapeImageUrls，优先使用
+    // 1. 优先添加横屏图片列表 (最适合轮播展示)
     if (city?.landscapeImageUrls != null && city!.landscapeImageUrls!.isNotEmpty) {
-      // 如果有最新主图片，放在第一位
-      if (latestMainImage.isNotEmpty && !city.landscapeImageUrls!.contains(latestMainImage)) {
-        return [latestMainImage, ...city.landscapeImageUrls!];
-      }
-      return city.landscapeImageUrls!;
+      allImages.addAll(city.landscapeImageUrls!);
     }
 
-    // 回退：基于城市主图片生成多张展示图片
-    // 优先使用后端返回的最新主图，否则使用传入的 cityImage
-    final baseImage = latestMainImage.isNotEmpty ? latestMainImage : cityImage;
+    // 2. 添加主图片 (如果不在列表中)
+    final mainImage = city?.imageUrl ?? city?.portraitImageUrl ?? cityImage;
+    if (mainImage.isNotEmpty && !allImages.contains(mainImage)) {
+      // 主图插入到第一位
+      allImages.insert(0, mainImage);
+    }
 
-    // 检查图片 URL 是否有效
-    if (baseImage.isEmpty) {
-      // 返回默认通用城市图片
+    // 3. 如果完全没有图片，返回单张默认图片
+    if (allImages.isEmpty) {
       return [
-        'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800',
-        'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800',
-        'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=800',
+        'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800&h=600&fit=crop',
       ];
     }
 
-    // 如果主图片是Unsplash链接，生成系列图片
-    if (baseImage.contains('unsplash.com')) {
-      // 提取图片ID
-      final uri = Uri.parse(baseImage);
-      final photoId = uri.pathSegments
-          .lastWhere(
-            (segment) => segment.startsWith('photo-'),
-            orElse: () => 'photo-default',
-          )
-          .replaceAll('photo-', '');
-
-      return [
-        baseImage, // 主图片
-        'https://images.unsplash.com/$photoId?w=800&h=600&fit=crop&crop=entropy&q=80',
-        'https://images.unsplash.com/$photoId?w=800&h=600&fit=crop&crop=edges&q=80',
-        'https://images.unsplash.com/$photoId?w=800&h=600&fit=crop&crop=faces&q=80',
-      ];
-    }
-
-    // 如果不是Unsplash，返回主图片和一些通用城市图片
-    return [
-      baseImage,
-      'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800',
-      'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800',
-    ];
+    return allImages;
   }
 
   // 刷新包装方法

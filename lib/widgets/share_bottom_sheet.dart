@@ -257,13 +257,6 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
               color: Colors.orange[700]!,
               onTap: () => _shareToEmail(context),
             ),
-            _buildShareOption(
-              context,
-              icon: FontAwesomeIcons.message,
-              label: '短信',
-              color: Colors.green[700]!,
-              onTap: () => _shareToSms(context),
-            ),
           ],
         ),
 
@@ -297,13 +290,6 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
                 label: '微博',
                 color: const Color(0xFFE6162D),
                 onTap: () => _shareToWeibo(context),
-              ),
-              _buildShareOption(
-                context,
-                icon: Icons.work,
-                label: '钉钉',
-                color: const Color(0xFF0089FF),
-                onTap: () => _shareToDingTalk(context),
               ),
             ],
           ),
