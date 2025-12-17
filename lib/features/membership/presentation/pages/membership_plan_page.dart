@@ -6,6 +6,7 @@ import 'package:df_admin_mobile/features/payment/application/services/payment_se
 import 'package:df_admin_mobile/features/payment/application/services/unified_payment_service.dart';
 import 'package:df_admin_mobile/features/payment/application/services/wechat_pay_service.dart';
 import 'package:df_admin_mobile/features/payment/domain/entities/payment_method.dart' as payment_entities;
+import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:flutter/material.dart';
@@ -73,6 +74,7 @@ class MembershipPlanPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<MembershipStateController>();
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
@@ -80,9 +82,9 @@ class MembershipPlanPage extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: const AppBackButton(color: Colors.black87),
-        title: const Text(
-          'Membership Plans',
-          style: TextStyle(
+        title: Text(
+          l10n.membershipPlans,
+          style: const TextStyle(
             color: Colors.black87,
             fontWeight: FontWeight.bold,
           ),
@@ -113,7 +115,7 @@ class MembershipPlanPage extends StatelessWidget {
           child: Column(
             children: [
               // 当前会员状态
-              _buildCurrentStatus(controller),
+              _buildCurrentStatus(context, controller),
               const SizedBox(height: 24),
 
               // 动态生成会员计划卡片
@@ -129,7 +131,7 @@ class MembershipPlanPage extends StatelessWidget {
                     isCurrentPlan: currentLevel.levelValue == plan.level,
                     isLoading: isLoading,
                     isPopular: isPopular,
-                    onSelect: () => _handleUpgrade(controller, plan),
+                    onSelect: () => _handleUpgrade(context, controller, plan),
                   ),
                 );
               }),
@@ -137,7 +139,7 @@ class MembershipPlanPage extends StatelessWidget {
               const SizedBox(height: 32),
 
               // 底部说明
-              _buildFooterNote(),
+              _buildFooterNote(context),
             ],
           ),
         );
@@ -147,64 +149,70 @@ class MembershipPlanPage extends StatelessWidget {
 
   /// 错误状态视图
   Widget _buildErrorState(MembershipStateController controller) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              FontAwesomeIcons.triangleExclamation,
-              size: 64,
-              color: Colors.orange.shade400,
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'Unable to load membership plans',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              controller.plansError ?? 'Please check your network connection',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade600,
-              ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: controller.isLoadingPlans ? null : () => controller.loadPlans(),
-              icon: controller.isLoadingPlans
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                    )
-                  : const Icon(FontAwesomeIcons.arrowsRotate, size: 16),
-              label: Text(controller.isLoadingPlans ? 'Loading...' : 'Retry'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+    return Builder(
+      builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  FontAwesomeIcons.triangleExclamation,
+                  size: 64,
+                  color: Colors.orange.shade400,
                 ),
-              ),
+                const SizedBox(height: 24),
+                Text(
+                  l10n.unableToLoadPlans,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  controller.plansError ?? l10n.checkNetworkConnection,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton.icon(
+                  onPressed: controller.isLoadingPlans ? null : () => controller.loadPlans(),
+                  icon: controller.isLoadingPlans
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        )
+                      : const Icon(FontAwesomeIcons.arrowsRotate, size: 16),
+                  label: Text(controller.isLoadingPlans ? l10n.loading : l10n.retry),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildCurrentStatus(MembershipStateController controller) {
+  Widget _buildCurrentStatus(BuildContext context, MembershipStateController controller) {
     final membership = controller.membership;
     final level = controller.level;
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -248,7 +256,7 @@ class MembershipPlanPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Current: ${level.name}',
+                  l10n.currentPlan(level.name),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
@@ -258,7 +266,7 @@ class MembershipPlanPage extends StatelessWidget {
                 const SizedBox(height: 4),
                 if (membership?.isActive == true)
                   Text(
-                    '${controller.remainingDays} days remaining',
+                    l10n.daysRemaining(controller.remainingDays),
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.9),
                       fontSize: 14,
@@ -266,7 +274,7 @@ class MembershipPlanPage extends StatelessWidget {
                   )
                 else if (level == MembershipLevel.free)
                   Text(
-                    'Upgrade to unlock more features',
+                    l10n.upgradeToUnlock,
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.9),
                       fontSize: 14,
@@ -280,7 +288,8 @@ class MembershipPlanPage extends StatelessWidget {
     );
   }
 
-  Widget _buildFooterNote() {
+  Widget _buildFooterNote(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -294,15 +303,15 @@ class MembershipPlanPage extends StatelessWidget {
             children: [
               Icon(FontAwesomeIcons.shield, size: 16, color: Colors.green.shade600),
               const SizedBox(width: 8),
-              const Text(
-                'Secure Payment',
-                style: TextStyle(fontWeight: FontWeight.w600),
+              Text(
+                l10n.securePayment,
+                style: const TextStyle(fontWeight: FontWeight.w600),
               ),
             ],
           ),
           const SizedBox(height: 8),
           Text(
-            'All payments are processed securely. Cancel anytime.',
+            l10n.allPaymentsSecure,
             style: TextStyle(
               color: Colors.grey.shade600,
               fontSize: 13,
@@ -313,24 +322,26 @@ class MembershipPlanPage extends StatelessWidget {
     );
   }
 
-  void _handleUpgrade(MembershipStateController controller, MembershipPlan plan) async {
+  void _handleUpgrade(BuildContext context, MembershipStateController controller, MembershipPlan plan) async {
     final targetLevel = MembershipLevel.fromValue(plan.level);
+    final l10n = AppLocalizations.of(context)!;
 
     if (controller.level.levelValue >= plan.level) {
-      AppToast.info('You already have this or higher plan');
+      AppToast.info(l10n.alreadyHavePlan);
       return;
     }
 
     // 显示支付方式选择底部弹窗
-    final selectedMethod = await _showPaymentMethodSheet(plan);
+    final selectedMethod = await _showPaymentMethodSheet(context, plan);
 
     if (selectedMethod != null) {
-      await _processPayment(controller, plan, targetLevel, selectedMethod);
+      await _processPayment(context, controller, plan, targetLevel, selectedMethod);
     }
   }
 
   /// 显示支付方式选择底部弹窗
-  Future<PaymentMethod?> _showPaymentMethodSheet(MembershipPlan plan) {
+  Future<PaymentMethod?> _showPaymentMethodSheet(BuildContext context, MembershipPlan plan) {
+    final l10n = AppLocalizations.of(context)!;
     return Get.bottomSheet<PaymentMethod>(
       Container(
         decoration: const BoxDecoration(
@@ -358,7 +369,7 @@ class MembershipPlanPage extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      'Select Payment Method',
+                      l10n.selectPaymentMethod,
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -367,7 +378,7 @@ class MembershipPlanPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Upgrade to ${plan.name} - \$${plan.priceYearly.toStringAsFixed(0)}/year',
+                      l10n.upgradeTo(plan.name, plan.priceYearly.toStringAsFixed(0)),
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey.shade600,
@@ -381,16 +392,19 @@ class MembershipPlanPage extends StatelessWidget {
 
               // 支付方式列表
               _buildPaymentMethodTile(
+                context,
                 PaymentMethod.paypal,
-                'Fast & Secure international payment',
+                l10n.paypalDescription,
               ),
               _buildPaymentMethodTile(
+                context,
                 PaymentMethod.wechat,
-                'Pay with WeChat (微信支付)',
+                l10n.wechatDescription,
               ),
               _buildPaymentMethodTile(
+                context,
                 PaymentMethod.alipay,
-                'Pay with Alipay (支付宝)',
+                l10n.alipayDescription,
               ),
 
               const SizedBox(height: 8),
@@ -408,7 +422,7 @@ class MembershipPlanPage extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'All payments are secure and encrypted',
+                      l10n.allPaymentsEncrypted,
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey.shade600,
@@ -429,7 +443,20 @@ class MembershipPlanPage extends StatelessWidget {
   }
 
   /// 构建支付方式选项
-  Widget _buildPaymentMethodTile(PaymentMethod method, String subtitle) {
+  Widget _buildPaymentMethodTile(BuildContext context, PaymentMethod method, String subtitle) {
+    final l10n = AppLocalizations.of(context)!;
+    String title;
+    switch (method) {
+      case PaymentMethod.paypal:
+        title = l10n.paypalPayment;
+        break;
+      case PaymentMethod.wechat:
+        title = l10n.wechatPayment;
+        break;
+      case PaymentMethod.alipay:
+        title = l10n.alipayPayment;
+        break;
+    }
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       leading: Container(
@@ -446,7 +473,7 @@ class MembershipPlanPage extends StatelessWidget {
         ),
       ),
       title: Text(
-        method.name,
+        title,
         style: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,
@@ -470,6 +497,7 @@ class MembershipPlanPage extends StatelessWidget {
 
   /// 处理支付
   Future<void> _processPayment(
+    BuildContext context,
     MembershipStateController controller,
     MembershipPlan plan,
     MembershipLevel targetLevel,
@@ -477,31 +505,33 @@ class MembershipPlanPage extends StatelessWidget {
   ) async {
     switch (method) {
       case PaymentMethod.paypal:
-        await _processPayPalPayment(controller, plan, targetLevel);
+        await _processPayPalPayment(context, controller, plan, targetLevel);
         break;
       case PaymentMethod.wechat:
-        await _processWeChatPayment(controller, plan, targetLevel);
+        await _processWeChatPayment(context, controller, plan, targetLevel);
         break;
       case PaymentMethod.alipay:
-        await _processAlipayPayment(controller, plan, targetLevel);
+        await _processAlipayPayment(context, controller, plan, targetLevel);
         break;
     }
   }
 
   /// 处理 PayPal 支付
   Future<void> _processPayPalPayment(
+    BuildContext context,
     MembershipStateController controller,
     MembershipPlan plan,
     MembershipLevel targetLevel,
   ) async {
+    final l10n = AppLocalizations.of(context)!;
     // 获取支付服务
     PaymentService? paymentService;
     try {
       paymentService = Get.find<PaymentService>();
     } catch (e) {
       // 如果服务未注册，提示并重新选择支付方式
-      AppToast.warning('Payment service not available');
-      _retryPaymentMethodSelection(controller, plan, targetLevel);
+      AppToast.warning(l10n.paymentServiceNotAvailable);
+      _retryPaymentMethodSelection(context, controller, plan, targetLevel);
       return;
     }
 
@@ -517,13 +547,13 @@ class MembershipPlanPage extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Creating PayPal order...',
+                  Text(
+                    l10n.creatingPaypalOrder,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '\$${plan.priceYearly.toStringAsFixed(0)} for ${plan.name}',
+                    l10n.priceForPlan(plan.priceYearly.toStringAsFixed(0), plan.name),
                     style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -563,24 +593,26 @@ class MembershipPlanPage extends StatelessWidget {
 
     // 处理结果
     if (errorMessage != null) {
-      AppToast.error('Payment error: $errorMessage');
-      _retryPaymentMethodSelection(controller, plan, targetLevel);
+      AppToast.error(l10n.paymentError(errorMessage));
+      _retryPaymentMethodSelection(context, controller, plan, targetLevel);
     } else if (success) {
-      AppToast.info('Opening PayPal for payment...');
+      AppToast.info(l10n.openingPaypal);
       // 支付页面已在外部浏览器中打开
       // 用户完成支付后会通过 deep link 返回
     } else {
-      AppToast.error('Failed to create payment order');
-      _retryPaymentMethodSelection(controller, plan, targetLevel);
+      AppToast.error(l10n.failedToCreateOrder);
+      _retryPaymentMethodSelection(context, controller, plan, targetLevel);
     }
   }
 
   /// 处理微信支付
   Future<void> _processWeChatPayment(
+    BuildContext context,
     MembershipStateController controller,
     MembershipPlan plan,
     MembershipLevel targetLevel,
   ) async {
+    final l10n = AppLocalizations.of(context)!;
     // 检查微信支付服务
     UnifiedPaymentService? unifiedPaymentService;
     WeChatPayService? wechatService;
@@ -588,15 +620,15 @@ class MembershipPlanPage extends StatelessWidget {
       unifiedPaymentService = Get.find<UnifiedPaymentService>();
       wechatService = Get.find<WeChatPayService>();
     } catch (e) {
-      AppToast.warning('WeChat Pay service not available');
-      _retryPaymentMethodSelection(controller, plan, targetLevel);
+      AppToast.warning(l10n.paymentServiceNotAvailable);
+      _retryPaymentMethodSelection(context, controller, plan, targetLevel);
       return;
     }
 
     // 检查微信是否已安装
     if (!await wechatService.isWeChatInstalled) {
-      AppToast.error('Please install WeChat to use WeChat Pay');
-      _retryPaymentMethodSelection(controller, plan, targetLevel);
+      AppToast.error(l10n.wechatNotInstalled);
+      _retryPaymentMethodSelection(context, controller, plan, targetLevel);
       return;
     }
 
@@ -612,13 +644,13 @@ class MembershipPlanPage extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Creating WeChat Pay order...',
+                  Text(
+                    l10n.creatingWechatOrder,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '¥${(plan.priceYearly * 7.2).toStringAsFixed(0)} for ${plan.name}',
+                    l10n.cnyPriceForPlan((plan.priceYearly * 7.2).toStringAsFixed(0), plan.name),
                     style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -648,19 +680,19 @@ class MembershipPlanPage extends StatelessWidget {
           .then((result) {
         // 支付结果回调
         if (result.success) {
-          AppToast.success('Payment successful!');
+          AppToast.success(l10n.paymentSuccessful);
           controller.loadMembership();
         } else {
-          AppToast.error(result.errorMessage ?? 'WeChat Pay failed');
+          AppToast.error(result.errorMessage ?? l10n.wechatPayFailed);
         }
       }).catchError((e) {
-        AppToast.error('WeChat Pay error: $e');
+        AppToast.error(l10n.wechatPayError(e.toString()));
       });
 
       // 等待一下确保SDK已经开始调用
       await Future.delayed(const Duration(milliseconds: 500));
     } catch (e) {
-      AppToast.error('WeChat Pay error: $e');
+      AppToast.error(l10n.wechatPayError(e.toString()));
     } finally {
       // 无论成功与否都关闭加载对话框
       if (Get.isDialogOpen == true) {
@@ -671,10 +703,12 @@ class MembershipPlanPage extends StatelessWidget {
 
   /// 处理支付宝支付
   Future<void> _processAlipayPayment(
+    BuildContext context,
     MembershipStateController controller,
     MembershipPlan plan,
     MembershipLevel targetLevel,
   ) async {
+    final l10n = AppLocalizations.of(context)!;
     // 检查支付宝服务
     UnifiedPaymentService? unifiedPaymentService;
     AlipayService? alipayService;
@@ -682,17 +716,17 @@ class MembershipPlanPage extends StatelessWidget {
       unifiedPaymentService = Get.find<UnifiedPaymentService>();
       alipayService = Get.find<AlipayService>();
     } catch (e) {
-      AppToast.warning('Alipay service not available');
+      AppToast.warning(l10n.paymentServiceNotAvailable);
       // 重新显示支付方式选择
-      _retryPaymentMethodSelection(controller, plan, targetLevel);
+      _retryPaymentMethodSelection(context, controller, plan, targetLevel);
       return;
     }
 
     // 检查支付宝是否已安装
     if (!await alipayService.isAlipayInstalled) {
-      AppToast.error('Please install Alipay to use Alipay Pay');
+      AppToast.error(l10n.alipayNotInstalled);
       // 重新显示支付方式选择
-      _retryPaymentMethodSelection(controller, plan, targetLevel);
+      _retryPaymentMethodSelection(context, controller, plan, targetLevel);
       return;
     }
 
@@ -708,13 +742,13 @@ class MembershipPlanPage extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Creating Alipay order...',
+                  Text(
+                    l10n.creatingAlipayOrder,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '¥${(plan.priceYearly * 7.2).toStringAsFixed(0)} for ${plan.name}',
+                    l10n.cnyPriceForPlan((plan.priceYearly * 7.2).toStringAsFixed(0), plan.name),
                     style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -744,19 +778,19 @@ class MembershipPlanPage extends StatelessWidget {
           .then((result) {
         // 支付结果回调
         if (result.success) {
-          AppToast.success('Payment successful!');
+          AppToast.success(l10n.paymentSuccessful);
           controller.loadMembership();
         } else {
-          AppToast.error(result.errorMessage ?? 'Alipay payment failed');
+          AppToast.error(result.errorMessage ?? l10n.alipayPayFailed);
         }
       }).catchError((e) {
-        AppToast.error('Alipay error: $e');
+        AppToast.error(l10n.alipayError(e.toString()));
       });
 
       // 等待一下确保SDK已经开始调用
       await Future.delayed(const Duration(milliseconds: 500));
     } catch (e) {
-      AppToast.error('Alipay error: $e');
+      AppToast.error(l10n.alipayError(e.toString()));
     } finally {
       // 无论成功与否都关闭加载对话框
       if (Get.isDialogOpen == true) {
@@ -767,6 +801,7 @@ class MembershipPlanPage extends StatelessWidget {
 
   /// 重新显示支付方式选择
   void _retryPaymentMethodSelection(
+    BuildContext context,
     MembershipStateController controller,
     MembershipPlan plan,
     MembershipLevel targetLevel,
@@ -775,9 +810,9 @@ class MembershipPlanPage extends StatelessWidget {
     await Future.delayed(const Duration(milliseconds: 500));
 
     // 重新显示支付方式选择底部弹窗
-    final selectedMethod = await _showPaymentMethodSheet(plan);
+    final selectedMethod = await _showPaymentMethodSheet(context, plan);
     if (selectedMethod != null) {
-      await _processPayment(controller, plan, targetLevel, selectedMethod);
+      await _processPayment(context, controller, plan, targetLevel, selectedMethod);
     }
   }
 }
@@ -828,6 +863,7 @@ class _MembershipPlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Stack(
       children: [
         Container(
@@ -905,7 +941,7 @@ class _MembershipPlanCard extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          '/year',
+                          l10n.perYear,
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey.shade500,
@@ -966,7 +1002,7 @@ class _MembershipPlanCard extends StatelessWidget {
                             ),
                           )
                         : Text(
-                            isCurrentPlan ? 'Current Plan' : 'Select Plan',
+                            isCurrentPlan ? l10n.currentPlanLabel : l10n.selectPlanLabel,
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -992,9 +1028,9 @@ class _MembershipPlanCard extends StatelessWidget {
                   bottom: Radius.circular(8),
                 ),
               ),
-              child: const Text(
-                'POPULAR',
-                style: TextStyle(
+              child: Text(
+                l10n.popular,
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 11,
                   fontWeight: FontWeight.bold,

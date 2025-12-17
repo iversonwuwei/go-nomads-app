@@ -508,7 +508,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myProfile => 'Profile';
 
   @override
-  String get popular => 'Popular';
+  String get popular => 'POPULAR';
 
   @override
   String get costOfLiving => 'Cost of Living';
@@ -3825,4 +3825,132 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountDeletionCancelled => 'Account deletion cancelled';
+
+  @override
+  String get membershipPlans => 'Membership Plans';
+
+  @override
+  String currentPlan(String planName) {
+    return 'Current: $planName';
+  }
+
+  @override
+  String daysRemaining(int days) {
+    return '$days days remaining';
+  }
+
+  @override
+  String get upgradeToUnlock => 'Upgrade to unlock more features';
+
+  @override
+  String get selectPaymentMethod => 'Select Payment Method';
+
+  @override
+  String upgradeTo(String planName, String price) {
+    return 'Upgrade to $planName - \$$price/year';
+  }
+
+  @override
+  String get paypalPayment => 'PayPal';
+
+  @override
+  String get paypalDescription => 'Fast & Secure international payment';
+
+  @override
+  String get wechatPayment => 'WeChat Pay';
+
+  @override
+  String get wechatDescription => 'Pay with WeChat';
+
+  @override
+  String get alipayPayment => 'Alipay';
+
+  @override
+  String get alipayDescription => 'Pay with Alipay';
+
+  @override
+  String get securePayment => 'Secure Payment';
+
+  @override
+  String get allPaymentsSecure =>
+      'All payments are processed securely. Cancel anytime.';
+
+  @override
+  String get allPaymentsEncrypted => 'All payments are secure and encrypted';
+
+  @override
+  String get unableToLoadPlans => 'Unable to load membership plans';
+
+  @override
+  String get checkNetworkConnection => 'Please check your network connection';
+
+  @override
+  String get currentPlanLabel => 'Current Plan';
+
+  @override
+  String get selectPlanLabel => 'Select Plan';
+
+  @override
+  String get perYear => '/year';
+
+  @override
+  String get alreadyHavePlan => 'You already have this or higher plan';
+
+  @override
+  String get creatingPaypalOrder => 'Creating PayPal order...';
+
+  @override
+  String get creatingWechatOrder => 'Creating WeChat Pay order...';
+
+  @override
+  String get creatingAlipayOrder => 'Creating Alipay order...';
+
+  @override
+  String priceForPlan(String price, String planName) {
+    return '\$$price for $planName';
+  }
+
+  @override
+  String cnyPriceForPlan(String price, String planName) {
+    return '¥$price for $planName';
+  }
+
+  @override
+  String get paymentServiceNotAvailable => 'Payment service not available';
+
+  @override
+  String paymentError(String error) {
+    return 'Payment error: $error';
+  }
+
+  @override
+  String get openingPaypal => 'Opening PayPal for payment...';
+
+  @override
+  String get failedToCreateOrder => 'Failed to create payment order';
+
+  @override
+  String get wechatNotInstalled => 'Please install WeChat to use WeChat Pay';
+
+  @override
+  String get alipayNotInstalled => 'Please install Alipay to use Alipay Pay';
+
+  @override
+  String get paymentSuccessful => 'Payment successful!';
+
+  @override
+  String get wechatPayFailed => 'WeChat Pay failed';
+
+  @override
+  String get alipayPayFailed => 'Alipay payment failed';
+
+  @override
+  String wechatPayError(String error) {
+    return 'WeChat Pay error: $error';
+  }
+
+  @override
+  String alipayError(String error) {
+    return 'Alipay error: $error';
+  }
 }

@@ -121,8 +121,9 @@ extension MembershipLevelExtension on MembershipLevel {
   }
 
   /// 是否可以使用 AI 功能
+  /// Free 用户也可以使用，但有次数限制
   bool get canUseAI {
-    return this != MembershipLevel.free;
+    return true; // 所有用户都可以使用 AI，通过 aiUsageLimit 限制次数
   }
 
   /// 是否可以申请成为版主

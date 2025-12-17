@@ -1888,7 +1888,111 @@
   "privacySettingsComingSoon": "隐私设置功能即将推出",
   "deleteAccount": "删除账户",
   "deleteAccountConfirmation": "确定要删除您的账户吗？此操作无法撤销。",
-  "accountDeletionCancelled": "已取消删除账户"
+  "accountDeletionCancelled": "已取消删除账户",
+
+  "membershipPlans": "会员计划",
+  "currentPlan": "当前：{planName}",
+  "@currentPlan": {
+    "placeholders": {
+      "planName": {
+        "type": "String"
+      }
+    }
+  },
+  "daysRemaining": "剩余 {days} 天",
+  "@daysRemaining": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "upgradeToUnlock": "升级以解锁更多功能",
+  "selectPaymentMethod": "选择支付方式",
+  "upgradeTo": "升级到 {planName} - ${price}/年",
+  "@upgradeTo": {
+    "placeholders": {
+      "planName": {
+        "type": "String"
+      },
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "paypalPayment": "PayPal",
+  "paypalDescription": "快捷安全的国际支付",
+  "wechatPayment": "微信支付",
+  "wechatDescription": "使用微信支付",
+  "alipayPayment": "支付宝",
+  "alipayDescription": "使用支付宝支付",
+  "securePayment": "安全支付",
+  "allPaymentsSecure": "所有支付均安全处理，可随时取消。",
+  "allPaymentsEncrypted": "所有支付均安全加密",
+  "unableToLoadPlans": "无法加载会员计划",
+  "checkNetworkConnection": "请检查您的网络连接",
+  "currentPlanLabel": "当前计划",
+  "selectPlanLabel": "选择计划",
+  "popular": "热门",
+  "perYear": "/年",
+  "alreadyHavePlan": "您已拥有此计划或更高级别的计划",
+  "creatingPaypalOrder": "正在创建 PayPal 订单...",
+  "creatingWechatOrder": "正在创建微信支付订单...",
+  "creatingAlipayOrder": "正在创建支付宝订单...",
+  "priceForPlan": "${price} - {planName}",
+  "@priceForPlan": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      },
+      "planName": {
+        "type": "String"
+      }
+    }
+  },
+  "cnyPriceForPlan": "¥{price} - {planName}",
+  "@cnyPriceForPlan": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      },
+      "planName": {
+        "type": "String"
+      }
+    }
+  },
+  "paymentServiceNotAvailable": "支付服务不可用",
+  "paymentError": "支付错误：{error}",
+  "@paymentError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "openingPaypal": "正在打开 PayPal 支付...",
+  "failedToCreateOrder": "创建支付订单失败",
+  "wechatNotInstalled": "请安装微信以使用微信支付",
+  "alipayNotInstalled": "请安装支付宝以使用支付宝支付",
+  "paymentSuccessful": "支付成功！",
+  "wechatPayFailed": "微信支付失败",
+  "alipayPayFailed": "支付宝支付失败",
+  "wechatPayError": "微信支付错误：{error}",
+  "@wechatPayError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "alipayError": "支付宝错误：{error}",
+  "@alipayError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
 }
 
 

@@ -1040,7 +1040,7 @@ class _CityDetailPageState extends State<CityDetailPage>
     await reloadCityData();
   }
 
-  /// 检查用户是否有权限生成指南（管理员无会员限制，版主需要会员权限）
+  /// 检查用户是否有权限生成指南（仅根据会员级别限制 AI 使用次数）
   Future<bool> _checkGeneratePermission() async {
     log('🔐 [权限检查] 开始检查生成权限...');
 
@@ -1054,8 +1054,6 @@ class _CityDetailPageState extends State<CityDetailPage>
         log('   cityId: ${city.id}');
         log('   cityName: ${city.name}');
         log('   isCurrentUserAdmin: ${city.isCurrentUserAdmin}');
-        log('   isCurrentUserModerator: ${city.isCurrentUserModerator}');
-        log('   moderatorId: ${city.moderatorId}');
 
         // 检查是否是管理员（管理员直接跳过会员检查）
         if (city.isCurrentUserAdmin) {
@@ -1078,46 +1076,23 @@ class _CityDetailPageState extends State<CityDetailPage>
       return true;
     }
 
-    // 2. 非管理员用户需要检查会员权限
+    // 2. 非管理员用户只需检查会员权限（根据会员级别限制 AI 使用次数）
     try {
       final membershipController = Get.find<MembershipStateController>();
       final accessCheck = membershipController.checkAIAccess();
 
       if (accessCheck != null) {
-        log('❌ [权限检查] 会员权限不足: $accessCheck');
+        log('❌ [权限检查] AI 使用次数限制: $accessCheck');
         _showMembershipRequiredDialog(accessCheck);
         return false;
       }
-      log('✅ [权限检查] 会员权限检查通过');
+      log('✅ [权限检查] 会员权限检查通过，允许生成');
+      return true;
     } catch (e) {
-      log('⚠️ [权限检查] 会员检查异常: $e');
-      // 如果会员控制器未注册，暂时跳过会员检查
+      log('⚠️ [权限检查] 会员检查异常: $e，暂时允许生成');
+      // 如果会员控制器未注册，暂时允许生成
+      return true;
     }
-
-    // 3. 然后检查是否是版主
-    try {
-      final cityDetailController = Get.find<CityDetailStateController>();
-      final city = cityDetailController.currentCity.value;
-
-      if (city != null) {
-        if (city.isCurrentUserModerator) {
-          log('✅ [权限检查] 当前用户是该城市版主，允许生成');
-          return true;
-        }
-
-        log('❌ [权限检查] 当前用户不是该城市版主');
-        _showNoPermissionDialog();
-        return false;
-      } else {
-        log('⚠️ [权限检查] 城市信息为空');
-      }
-    } catch (e) {
-      log('❌ [权限检查] 获取城市信息异常: $e');
-    }
-
-    log('❌ [权限检查] 用户无权限生成指南');
-    _showNoPermissionDialog();
-    return false;
   }
 
   /// 显示需要升级会员对话框

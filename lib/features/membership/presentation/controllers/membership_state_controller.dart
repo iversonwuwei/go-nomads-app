@@ -242,16 +242,17 @@ class MembershipStateController extends GetxController {
       return '请先登录';
     }
 
-    if (!membership.level.canUseAI) {
-      return '升级到 Basic 会员即可使用 AI 功能';
-    }
-
-    if (membership.isExpired) {
+    // 付费会员过期检查
+    if (membership.level != MembershipLevel.free && membership.isExpired) {
       return '您的会员已过期，请续费后使用';
     }
 
+    // 检查 AI 使用次数限制
     final limit = membership.level.aiUsageLimit;
     if (limit > 0 && membership.aiUsageThisMonth >= limit) {
+      if (membership.level == MembershipLevel.free) {
+        return '免费用户本月 AI 使用次数已达上限 ($limit 次)，升级会员可获得更多次数';
+      }
       return '本月 AI 使用次数已达上限 ($limit 次)，升级会员可获得更多次数';
     }
 
