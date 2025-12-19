@@ -16,7 +16,7 @@ class AppToast {
   /// 显示成功 Toast
   static void success(String message, {String? title}) {
     _showToast(
-      title: title ?? '✅ Success',
+      title: title ?? 'Success',
       message: message,
       type: ToastType.success,
     );
@@ -25,7 +25,7 @@ class AppToast {
   /// 显示错误 Toast
   static void error(String message, {String? title}) {
     _showToast(
-      title: title ?? '❌ Error',
+      title: title ?? 'Error',
       message: message,
       type: ToastType.error,
     );
@@ -34,7 +34,7 @@ class AppToast {
   /// 显示警告 Toast
   static void warning(String message, {String? title}) {
     _showToast(
-      title: title ?? '⚠️ Warning',
+      title: title ?? 'Warning',
       message: message,
       type: ToastType.warning,
     );
@@ -43,7 +43,7 @@ class AppToast {
   /// 显示信息 Toast
   static void info(String message, {String? title}) {
     _showToast(
-      title: title ?? 'ℹ️ Info',
+      title: title ?? 'Info',
       message: message,
       type: ToastType.info,
     );
@@ -62,8 +62,7 @@ class AppToast {
       backgroundColor: backgroundColor ?? Colors.black87,
       textColor: textColor ?? Colors.white,
       icon: icon ?? FontAwesomeIcons.circleInfo,
-      indicatorColor:
-          (backgroundColor ?? Colors.black87).withValues(alpha: 0.8),
+      indicatorColor: (backgroundColor ?? Colors.black87).withValues(alpha: 0.8),
       shadowColor: (backgroundColor ?? Colors.black87).withValues(alpha: 0.3),
     );
 
@@ -112,8 +111,7 @@ class AppToast {
     _ToastConfig config,
     Duration duration,
   ) {
-    final overlayContext =
-        Get.overlayContext ?? Get.key.currentContext ?? Get.context;
+    final overlayContext = Get.overlayContext ?? Get.key.currentContext ?? Get.context;
     if (overlayContext == null) {
       return false;
     }
@@ -165,8 +163,7 @@ class AppToast {
 
     final messenger = ScaffoldMessenger.maybeOf(context);
     if (messenger == null) {
-      debugPrint(
-          'AppToast: No ScaffoldMessenger available for fallback toast.');
+      debugPrint('AppToast: No ScaffoldMessenger available for fallback toast.');
       return;
     }
 
@@ -189,8 +186,10 @@ class AppToast {
   }
 
   /// 构建 Toast 内容（居中对称设计）
-  static Widget _buildToastContent(
-      String title, String message, _ToastConfig config) {
+  static Widget _buildToastContent(String title, String message, _ToastConfig config) {
+    // 使用支持中文的字体族，优先使用系统默认字体
+    const String? fontFamily = null; // 使用系统默认字体以支持中文
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -209,6 +208,8 @@ class AppToast {
             color: config.textColor,
             fontSize: 16,
             fontWeight: FontWeight.bold,
+            fontFamily: fontFamily,
+            fontFamilyFallback: const ['PingFang SC', 'Heiti SC', 'Microsoft YaHei', 'sans-serif'],
           ),
         ),
         const SizedBox(height: 4),
@@ -220,6 +221,8 @@ class AppToast {
             color: config.textColor.withValues(alpha: 0.95),
             fontSize: 14,
             height: 1.4,
+            fontFamily: fontFamily,
+            fontFamilyFallback: const ['PingFang SC', 'Heiti SC', 'Microsoft YaHei', 'sans-serif'],
           ),
         ),
       ],

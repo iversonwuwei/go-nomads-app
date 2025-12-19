@@ -155,6 +155,13 @@ class ChatStateController extends GetxController {
   /// 处理新消息
   void _handleNewMessage(ChatMessage message) {
     // 检查消息是否属于当前聊天室
+    // 私聊消息可能通过个人频道接收，需要验证 roomId
+    if (message.roomId != null && _currentRoomId.value != null && message.roomId != _currentRoomId.value) {
+      // 消息不属于当前聊天室，忽略（可能是来自其他私聊的消息）
+      log('📩 收到非当前聊天室消息，忽略: roomId=${message.roomId}, currentRoom=${_currentRoomId.value}');
+      return;
+    }
+
     // 将新消息添加到列表顶部
     if (!_messages.any((m) => m.id == message.id)) {
       _messages.insert(0, message);
