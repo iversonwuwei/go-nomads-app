@@ -1,13 +1,21 @@
 {
     "java.compile.nullAnalysis.mode": "automatic",
     "java.configuration.updateBuildConfiguration": "automatic",
-    // 文件编码设置 - 防止中文乱码
+    
+    // ==================== 文件编码设置 - 彻底防止中文乱码 ====================
     "files.encoding": "utf8",
-    "files.autoGuessEncoding": true,
+    "files.autoGuessEncoding": false,  // 关闭自动猜测，强制使用 UTF-8
+    "files.candidateGuessEncodings": [], // 清空候选编码列表
+    
+    // 新建文件默认使用 UTF-8
+    "[*]": {
+        "files.encoding": "utf8"
+    },
+    
     // Dart 格式化和编码设置
     "dart.lineLength": 120,
     "[dart]": {
-        "editor.defaultCharset": "utf8",
+        "files.encoding": "utf8",
         "editor.formatOnSave": true,
         "editor.formatOnType": true,
         "editor.rulers": [
@@ -18,5 +26,6 @@
         "editor.suggestSelection": "first",
         "editor.tabCompletion": "onlySnippets",
         "editor.wordBasedSuggestions": "off"
-    }
+    },
+    "cmake.ignoreCMakeListsMissing": true
 }
