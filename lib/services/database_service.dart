@@ -1,6 +1,5 @@
-import 'dart:developer';
-
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:path/path.dart';
@@ -33,7 +32,7 @@ class DatabaseService {
     // 打开数据库,如果不存在则创建
     return await openDatabase(
       path,
-      version: 9, // 升级到版本9 - users表id改为TEXT类型以支持UUID
+      version: 10, // 升级到版本10 - 增强聊天消息表支持持久化和搜索
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -278,20 +277,56 @@ class DatabaseService {
       )
     ''');
 
-    // 聊天消息表
+    // 聊天消息表 - 支持持久化和搜索
     await db.execute('''
       CREATE TABLE chat_messages (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id TEXT PRIMARY KEY,
         room_id TEXT NOT NULL,
-        sender_id INTEGER NOT NULL,
+        sender_id TEXT NOT NULL,
         sender_name TEXT NOT NULL,
         sender_avatar TEXT,
         message TEXT NOT NULL,
         message_type TEXT DEFAULT 'text',
-        created_at TEXT NOT NULL,
-        FOREIGN KEY (sender_id) REFERENCES users (id)
+        reply_to_id TEXT,
+        reply_to_message TEXT,
+        reply_to_user_name TEXT,
+        mentions TEXT,
+        attachment_json TEXT,
+        timestamp TEXT NOT NULL,
+        is_synced INTEGER DEFAULT 1,
+        created_at TEXT NOT NULL
       )
     ''');
+
+    // 聊天消息索引 - 支持高效搜索
+    await db.execute('CREATE INDEX idx_chat_messages_room_id ON chat_messages(room_id)');
+    await db.execute('CREATE INDEX idx_chat_messages_timestamp ON chat_messages(timestamp DESC)');
+    await db.execute('CREATE INDEX idx_chat_messages_sender_id ON chat_messages(sender_id)');
+    await db.execute('CREATE INDEX idx_chat_messages_message ON chat_messages(message)');
+
+    // 聊天室缓存表
+    await db.execute('''
+      CREATE TABLE chat_rooms (
+        id TEXT PRIMARY KEY,
+        room_type TEXT NOT NULL,
+        city TEXT,
+        country TEXT,
+        meetup_id TEXT,
+        meetup_title TEXT,
+        online_users INTEGER DEFAULT 0,
+        total_members INTEGER DEFAULT 0,
+        last_message_id TEXT,
+        last_message_content TEXT,
+        last_message_time TEXT,
+        last_message_sender TEXT,
+        updated_at TEXT NOT NULL,
+        created_at TEXT NOT NULL
+      )
+    ''');
+
+    // 聊天室索引
+    await db.execute('CREATE INDEX idx_chat_rooms_room_type ON chat_rooms(room_type)');
+    await db.execute('CREATE INDEX idx_chat_rooms_updated_at ON chat_rooms(updated_at DESC)');
 
     // 收藏表
     await db.execute('''
@@ -662,6 +697,81 @@ class DatabaseService {
         log('✅ users 表迁移完成');
       } catch (e) {
         log('⚠️ 迁移 users 表时出错: $e');
+      }
+    }
+
+    if (oldVersion < 10 && newVersion >= 10) {
+      // 版本 9 -> 10: 增强聊天消息表，支持持久化和搜索
+      try {
+        log('💬 开始升级聊天相关表...');
+
+        // 备份现有消息（仅用于日志记录，新表结构不兼容旧数据）
+        try {
+          final existingCount = Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM chat_messages'));
+          if (existingCount != null && existingCount > 0) {
+            log('ℹ️ 旧的 chat_messages 表有 $existingCount 条记录，将被清除（表结构不兼容）');
+          }
+        } catch (e) {
+          log('ℹ️ 旧的 chat_messages 表不存在或为空');
+        }
+
+        // 删除旧表
+        await db.execute('DROP TABLE IF EXISTS chat_messages');
+
+        // 创建新的聊天消息表
+        await db.execute('''
+          CREATE TABLE chat_messages (
+            id TEXT PRIMARY KEY,
+            room_id TEXT NOT NULL,
+            sender_id TEXT NOT NULL,
+            sender_name TEXT NOT NULL,
+            sender_avatar TEXT,
+            message TEXT NOT NULL,
+            message_type TEXT DEFAULT 'text',
+            reply_to_id TEXT,
+            reply_to_message TEXT,
+            reply_to_user_name TEXT,
+            mentions TEXT,
+            attachment_json TEXT,
+            timestamp TEXT NOT NULL,
+            is_synced INTEGER DEFAULT 1,
+            created_at TEXT NOT NULL
+          )
+        ''');
+
+        // 创建聊天消息索引
+        await db.execute('CREATE INDEX IF NOT EXISTS idx_chat_messages_room_id ON chat_messages(room_id)');
+        await db.execute('CREATE INDEX IF NOT EXISTS idx_chat_messages_timestamp ON chat_messages(timestamp DESC)');
+        await db.execute('CREATE INDEX IF NOT EXISTS idx_chat_messages_sender_id ON chat_messages(sender_id)');
+        await db.execute('CREATE INDEX IF NOT EXISTS idx_chat_messages_message ON chat_messages(message)');
+
+        // 创建聊天室缓存表
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS chat_rooms (
+            id TEXT PRIMARY KEY,
+            room_type TEXT NOT NULL,
+            city TEXT,
+            country TEXT,
+            meetup_id TEXT,
+            meetup_title TEXT,
+            online_users INTEGER DEFAULT 0,
+            total_members INTEGER DEFAULT 0,
+            last_message_id TEXT,
+            last_message_content TEXT,
+            last_message_time TEXT,
+            last_message_sender TEXT,
+            updated_at TEXT NOT NULL,
+            created_at TEXT NOT NULL
+          )
+        ''');
+
+        // 创建聊天室索引
+        await db.execute('CREATE INDEX IF NOT EXISTS idx_chat_rooms_room_type ON chat_rooms(room_type)');
+        await db.execute('CREATE INDEX IF NOT EXISTS idx_chat_rooms_updated_at ON chat_rooms(updated_at DESC)');
+
+        log('✅ 聊天相关表升级完成');
+      } catch (e) {
+        log('⚠️ 升级聊天表时出错: $e');
       }
     }
   }

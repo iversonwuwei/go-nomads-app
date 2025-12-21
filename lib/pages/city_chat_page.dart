@@ -943,7 +943,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                 title: '搜索聊天记录',
                 onTap: () {
                   Get.back();
-                  AppToast.info('搜索功能即将推出');
+                  _showSearchDialog();
                 },
               ),
               _buildMenuOption(
@@ -1108,6 +1108,30 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
       return a.name.compareTo(b.name);
     });
     return sorted;
+  }
+
+  /// 显示搜索聊天记录弹窗
+  void _showSearchDialog() {
+    final room = widget.controller.currentRoom;
+    if (room == null) return;
+
+    // 使用 currentRoomId 而不是 room.id，因为 API 请求和文件存储使用的是 currentRoomId
+    final roomId = widget.controller.currentRoomId ?? room.id;
+    final searchController = TextEditingController();
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    Get.bottomSheet(
+      _ChatSearchSheet(
+        controller: widget.controller,
+        roomId: roomId,
+        searchController: searchController,
+        screenHeight: screenHeight,
+        scrollController: _scrollController,
+        messages: widget.controller.messages,
+      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+    );
   }
 
   /// 空成员列表
@@ -2087,5 +2111,496 @@ class _MessageBubble extends StatelessWidget {
     final minutes = seconds ~/ 60;
     final secs = seconds % 60;
     return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+  }
+}
+
+/// 聊天记录搜索 Sheet
+class _ChatSearchSheet extends StatefulWidget {
+  final ChatStateController controller;
+  final String roomId;
+  final TextEditingController searchController;
+  final double screenHeight;
+  final ScrollController scrollController;
+  final List<ChatMessage> messages;
+
+  const _ChatSearchSheet({
+    required this.controller,
+    required this.roomId,
+    required this.searchController,
+    required this.screenHeight,
+    required this.scrollController,
+    required this.messages,
+  });
+
+  @override
+  State<_ChatSearchSheet> createState() => _ChatSearchSheetState();
+}
+
+class _ChatSearchSheetState extends State<_ChatSearchSheet> {
+  final _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    // 自动聚焦搜索框
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _focusNode.requestFocus();
+    });
+    // 打印存储状态（调试用）
+    widget.controller.debugPrintStorageStats();
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    // 清除搜索状态
+    widget.controller.clearSearch();
+    super.dispose();
+  }
+
+  void _performSearch() {
+    final keyword = widget.searchController.text.trim();
+    if (keyword.isNotEmpty) {
+      widget.controller.searchMessages(keyword, roomId: widget.roomId);
+    }
+  }
+
+  /// 跳转到消息位置
+  void _jumpToMessage(ChatMessage message) {
+    // 在当前消息列表中查找
+    final index = widget.controller.findMessageIndex(message.id);
+    if (index >= 0) {
+      // 关闭搜索弹窗
+      Get.back();
+
+      // 滚动到消息位置
+      // 由于消息列表是倒序的，需要计算正确的位置
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (widget.scrollController.hasClients) {
+          // 计算目标位置（每个消息约 80 像素高度）
+          final targetPosition = index * 80.0;
+          widget.scrollController.animateTo(
+            targetPosition,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+      });
+
+      AppToast.success('已定位到消息');
+    } else {
+      AppToast.info('消息不在当前加载范围内，请加载更多历史消息');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: widget.screenHeight * 0.85,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        children: [
+          // 顶部拖动条
+          Container(
+            margin: const EdgeInsets.only(top: 12, bottom: 8),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE0E0E0),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          // 标题
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 8),
+            child: Text(
+              '搜索聊天记录',
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF333333),
+              ),
+            ),
+          ),
+          // 搜索框
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: TextField(
+              controller: widget.searchController,
+              focusNode: _focusNode,
+              decoration: InputDecoration(
+                hintText: '搜索消息内容...',
+                hintStyle: const TextStyle(color: Color(0xFF999999)),
+                prefixIcon: const Icon(
+                  FontAwesomeIcons.magnifyingGlass,
+                  size: 18,
+                  color: Color(0xFF999999),
+                ),
+                suffixIcon: Obx(() {
+                  if (widget.controller.isSearching) {
+                    return const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Color(0xFF07C160),
+                        ),
+                      ),
+                    );
+                  }
+                  if (widget.searchController.text.isNotEmpty) {
+                    return IconButton(
+                      icon: const Icon(
+                        FontAwesomeIcons.xmark,
+                        size: 16,
+                        color: Color(0xFF999999),
+                      ),
+                      onPressed: () {
+                        widget.searchController.clear();
+                        widget.controller.clearSearch();
+                      },
+                    );
+                  }
+                  return const SizedBox.shrink();
+                }),
+                filled: true,
+                fillColor: const Color(0xFFF5F5F5),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              ),
+              onSubmitted: (_) => _performSearch(),
+              onChanged: (value) {
+                setState(() {}); // 更新清除按钮状态
+                if (value.isEmpty) {
+                  widget.controller.clearSearch();
+                }
+              },
+            ),
+          ),
+          // 搜索按钮
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _performSearch,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF07C160),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  '搜索',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+              ),
+            ),
+          ),
+          // 搜索结果统计
+          Obx(() {
+            final count = widget.controller.searchResultCount;
+            final keyword = widget.controller.searchKeyword;
+            if (keyword.isNotEmpty && !widget.controller.isSearching) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  children: [
+                    Text(
+                      '找到 $count 条包含"$keyword"的消息',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF666666),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+            return const SizedBox.shrink();
+          }),
+          const Divider(height: 1),
+          // 搜索结果列表
+          Expanded(
+            child: Obx(() {
+              if (widget.controller.isSearching) {
+                return const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(color: Color(0xFF07C160)),
+                      SizedBox(height: 16),
+                      Text(
+                        '搜索中...',
+                        style: TextStyle(color: Color(0xFF999999)),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              final results = widget.controller.searchResults;
+              final keyword = widget.controller.searchKeyword;
+
+              if (keyword.isEmpty) {
+                return _buildSearchHint();
+              }
+
+              if (results.isEmpty) {
+                return _buildNoResults(keyword);
+              }
+
+              return ListView.builder(
+                itemCount: results.length + (widget.controller.hasMoreSearchResults ? 1 : 0),
+                itemBuilder: (context, index) {
+                  if (index == results.length) {
+                    // 加载更多
+                    return _buildLoadMore();
+                  }
+                  return _buildSearchResultItem(results[index], keyword);
+                },
+              );
+            }),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchHint() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            FontAwesomeIcons.magnifyingGlass,
+            size: 48,
+            color: Colors.grey[300],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '输入关键词搜索聊天记录',
+            style: TextStyle(
+              fontSize: 15,
+              color: Colors.grey[500],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoResults(String keyword) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            FontAwesomeIcons.faceSadTear,
+            size: 48,
+            color: Colors.grey[300],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '未找到包含"$keyword"的消息',
+            style: TextStyle(
+              fontSize: 15,
+              color: Colors.grey[500],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '试试其他关键词？',
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.grey[400],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadMore() {
+    return InkWell(
+      onTap: () => widget.controller.loadMoreSearchResults(roomId: widget.roomId),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: const Center(
+          child: Text(
+            '加载更多结果',
+            style: TextStyle(
+              color: Color(0xFF07C160),
+              fontSize: 14,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchResultItem(ChatMessage message, String keyword) {
+    return InkWell(
+      onTap: () => _jumpToMessage(message),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: const BoxDecoration(
+          border: Border(
+            bottom: BorderSide(color: Color(0xFFF0F0F0)),
+          ),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 发送者头像
+            SafeCircleAvatar(
+              imageUrl: message.author.userAvatar,
+              radius: 20,
+              backgroundColor: const Color(0xFF07C160),
+              placeholder: Text(
+                message.author.userName.isNotEmpty ? message.author.userName[0].toUpperCase() : '?',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            // 消息内容
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 发送者名称和时间
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          message.author.userName,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF333333),
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Text(
+                        _formatMessageTime(message.timestamp),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF999999),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  // 消息内容（高亮关键词）
+                  _buildHighlightedText(message.message, keyword),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            // 跳转图标
+            const Icon(
+              FontAwesomeIcons.chevronRight,
+              size: 12,
+              color: Color(0xFFCCCCCC),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 高亮显示关键词
+  Widget _buildHighlightedText(String text, String keyword) {
+    if (keyword.isEmpty) {
+      return Text(
+        text,
+        style: const TextStyle(
+          fontSize: 14,
+          color: Color(0xFF666666),
+        ),
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      );
+    }
+
+    final lowerText = text.toLowerCase();
+    final lowerKeyword = keyword.toLowerCase();
+    final List<TextSpan> spans = [];
+    int start = 0;
+
+    while (true) {
+      final index = lowerText.indexOf(lowerKeyword, start);
+      if (index == -1) {
+        spans.add(TextSpan(
+          text: text.substring(start),
+          style: const TextStyle(
+            fontSize: 14,
+            color: Color(0xFF666666),
+          ),
+        ));
+        break;
+      }
+
+      if (index > start) {
+        spans.add(TextSpan(
+          text: text.substring(start, index),
+          style: const TextStyle(
+            fontSize: 14,
+            color: Color(0xFF666666),
+          ),
+        ));
+      }
+
+      spans.add(TextSpan(
+        text: text.substring(index, index + keyword.length),
+        style: const TextStyle(
+          fontSize: 14,
+          color: Color(0xFF07C160),
+          fontWeight: FontWeight.w600,
+          backgroundColor: Color(0xFFE8F5E9),
+        ),
+      ));
+
+      start = index + keyword.length;
+    }
+
+    return RichText(
+      text: TextSpan(children: spans),
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+
+  /// 格式化消息时间
+  String _formatMessageTime(DateTime time) {
+    final now = DateTime.now();
+    final diff = now.difference(time);
+
+    if (diff.inDays == 0) {
+      // 今天，显示时:分
+      return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+    } else if (diff.inDays == 1) {
+      return '昨天';
+    } else if (diff.inDays < 7) {
+      const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+      return weekdays[time.weekday % 7];
+    } else {
+      return '${time.month}/${time.day}';
+    }
   }
 }
