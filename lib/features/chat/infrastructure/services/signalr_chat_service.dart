@@ -1,6 +1,5 @@
-import 'dart:developer';
-
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:df_admin_mobile/config/api_config.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
@@ -307,6 +306,7 @@ class SignalRChatService extends GetxService {
     final replyTo = data['replyTo'] as Map<String, dynamic>?;
     final mentions = (data['mentions'] as List<dynamic>?)?.cast<String>() ?? [];
     final attachment = data['attachment'] as Map<String, dynamic>?;
+    final roomId = data['roomId']?.toString();
 
     MessageType messageType;
     switch (data['messageType']) {
@@ -331,6 +331,7 @@ class SignalRChatService extends GetxService {
 
     return ChatMessage(
       id: data['id']?.toString() ?? '',
+      roomId: roomId,
       author: MessageAuthor(
         userId: author?['userId']?.toString() ?? '',
         userName: author?['userName']?.toString() ?? '',

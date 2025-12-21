@@ -4,12 +4,12 @@ import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:get/get.dart';
 
-/// ?????????? (Presentation Layer)
+/// 城市详情状态控制器 (Presentation Layer)
 ///
-/// ?????????? UI ??,?? Use Cases ??
+/// 负责管理城市详情的 UI 状态,通过 Use Cases 操作
 ///
-/// ??: ??????? City ????????
-/// Weather, UserCityContent, Coworking ?????????????/?????
+/// 注意: 该控制器仅管理 City 基本信息和收藏状态
+/// Weather, UserCityContent, Coworking 等使用独立的控制器/服务管理
 class CityDetailStateController extends GetxController {
   // ==================== Dependencies ====================
   final GetCityByIdUseCase _getCityByIdUseCase;
@@ -23,55 +23,48 @@ class CityDetailStateController extends GetxController {
 
   // ==================== State ====================
 
-  // ????
+  // 城市数据
   final Rx<City?> currentCity = Rx<City?>(null);
 
-  // ????
+  // 加载状态
   final RxBool isLoading = false.obs;
   final RxBool hasError = false.obs;
   final Rx<String?> errorMessage = Rx<String?>(null);
 
-  // ????
+  // 收藏状态
   final RxBool isFavorited = false.obs;
   final RxBool isTogglingFavorite = false.obs;
 
-  // Tab ??
+  // Tab 索引
   final RxInt currentTabIndex = 0.obs;
 
-  // ????????????ID,??????
+  // 缓存上一次加载的城市ID,避免重复加载
   String _lastLoadedCityId = '';
 
   // ==================== Public Methods ====================
 
-  /// ??????? (? cityId ?????)
+  /// 初始化城市详情 (从 cityId 加载完整数据)
   Future<void> initCity(String cityId, String cityName) async {
-    // log('??? ?????: $cityName ($cityId)');
-
-    // ??????
+    // 加载城市详情
     await loadCityDetail(cityId);
   }
 
-  /// ??????
+  /// 加载城市详情
   Future<void> loadCityDetail(String cityId, {bool forceRefresh = false}) async {
     if (cityId.isEmpty) {
-      // log('?? ??ID??');
       return;
     }
 
     // 如果不是强制刷新且是相同城市且已有数据，跳过加载
     if (!forceRefresh && cityId == _lastLoadedCityId && currentCity.value != null) {
-      // log('?? 使用缓存数据: $cityId');
       return;
     }
 
-    // log('?? 从服务器加载城市详情: $cityId');
     _lastLoadedCityId = cityId;
 
     isLoading.value = true;
     hasError.value = false;
     errorMessage.value = null;
-
-    // log('?? ??????: $cityId');
 
     final result = await _getCityByIdUseCase.execute(
       GetCityByIdParams(cityId: cityId),
@@ -79,42 +72,36 @@ class CityDetailStateController extends GetxController {
 
     result.fold(
       onSuccess: (city) {
-        // log('? ????????: ${city.nameEn}');
         currentCity.value = city;
         isFavorited.value = city.isFavorite;
         isLoading.value = false;
       },
       onFailure: (exception) {
-        // log('? ????????: ${exception.message}');
         hasError.value = true;
         errorMessage.value = exception.message;
         isLoading.value = false;
-        AppToast.error(exception.message, title: '????');
+        AppToast.error(exception.message, title: '加载失败');
       },
     );
   }
 
-  /// ??????
+  /// 切换收藏状态
   Future<void> toggleFavorite() async {
     if (currentCity.value == null) {
-      // log('?? ??????,????????');
       return;
     }
 
     final cityId = currentCity.value!.id;
 
     if (isTogglingFavorite.value) {
-      // log('?? ?????????,???');
       return;
     }
 
     isTogglingFavorite.value = true;
     final previousState = isFavorited.value;
 
-    // ???? UI
+    // 乐观更新 UI
     isFavorited.value = !previousState;
-
-    // log('?? ??????: $cityId, ????: ${isFavorited.value}');
 
     final result = await _toggleCityFavoriteUseCase.execute(
       ToggleCityFavoriteParams(cityId: cityId),
@@ -122,39 +109,35 @@ class CityDetailStateController extends GetxController {
 
     result.fold(
       onSuccess: (newState) {
-        // log('? ???????: $newState');
         isFavorited.value = newState;
 
-        // ?? currentCity ?????
+        // 更新 currentCity 的收藏状态
         if (currentCity.value != null) {
           currentCity.value = currentCity.value!.copyWith(isFavorite: newState);
         }
 
         AppToast.success(
-          newState ? '??????' : '?????',
-          title: '??',
+          newState ? '已添加到收藏' : '已取消收藏',
+          title: '成功',
         );
         isTogglingFavorite.value = false;
       },
       onFailure: (exception) {
-        // log('? ??????: ${exception.message}');
-
-        // ????,???????
+        // 操作失败,恢复之前的状态
         isFavorited.value = previousState;
 
-        AppToast.error(exception.message, title: '????');
+        AppToast.error(exception.message, title: '操作失败');
         isTogglingFavorite.value = false;
       },
     );
   }
 
-  /// ?? Tab
+  /// 切换 Tab
   void changeTab(int index) {
     currentTabIndex.value = index;
-    // log('?? ??? Tab: $index');
   }
 
-  /// ????????
+  /// 强制刷新城市详情
   Future<void> reload() async {
     if (currentCity.value != null) {
       await loadCityDetail(currentCity.value!.id);
@@ -163,25 +146,23 @@ class CityDetailStateController extends GetxController {
 
   // ==================== Computed Properties ====================
 
-  /// ????ID
+  /// 当前城市ID
   String get currentCityId => currentCity.value?.id ?? '';
 
-  /// ??????
+  /// 当前城市名称
   String get currentCityName => currentCity.value?.nameEn ?? '';
 
-  /// ???????
+  /// 是否有城市数据
   bool get hasCity => currentCity.value != null;
 
-  /// ??????
+  /// 是否正在加载
   bool get loading => isLoading.value;
 
   // ==================== Lifecycle ====================
 
   @override
   void onClose() {
-    // log('??? CityDetailStateController ??? - ??????');
-
-    // ?????????
+    // 清理所有状态
     currentCity.value = null;
     isLoading.value = false;
     hasError.value = false;
@@ -190,7 +171,7 @@ class CityDetailStateController extends GetxController {
     isTogglingFavorite.value = false;
     currentTabIndex.value = 0;
 
-    // ??????
+    // 清理缓存标记
     _lastLoadedCityId = '';
 
     super.onClose();
