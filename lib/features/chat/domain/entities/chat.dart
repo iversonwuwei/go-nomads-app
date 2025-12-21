@@ -2,6 +2,7 @@
 /// 聊天消息实体
 class ChatMessage {
   final String id;
+  final String? roomId; // 消息所属房间ID，用于私聊消息过滤
   final MessageAuthor author;
   final String message;
   final DateTime timestamp;
@@ -12,6 +13,7 @@ class ChatMessage {
 
   ChatMessage({
     required this.id,
+    this.roomId,
     required this.author,
     required this.message,
     required this.timestamp,
