@@ -18,6 +18,7 @@ import 'package:df_admin_mobile/services/notification_service.dart';
 import 'package:df_admin_mobile/services/token_storage_service.dart';
 import 'package:df_admin_mobile/utils/image_upload_helper.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/safe_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -379,11 +380,34 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
         child: ListView(
           padding: EdgeInsets.fromLTRB(
             isMobile ? 16 : 24,
-            isMobile ? 16 : 24,
+            isMobile ? 8 : 16,
             isMobile ? 16 : 24,
             100, // 底部留白给导航栏
           ),
           children: [
+            // 顶部导航栏
+            Padding(
+              padding: EdgeInsets.only(bottom: isMobile ? 8 : 16),
+              child: Row(
+                children: [
+                  // 回退按钮
+                  const AppBackButton(color: Color(0xFF1a1a1a)),
+                  const SizedBox(width: 8),
+                  // 页面标题
+                  Expanded(
+                    child: Text(
+                      l10n.editProfile,
+                      style: TextStyle(
+                        fontSize: isMobile ? 20 : 24,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF1a1a1a),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
             // 头像和基本信息编辑
             _buildProfileEditCard(isMobile),
 

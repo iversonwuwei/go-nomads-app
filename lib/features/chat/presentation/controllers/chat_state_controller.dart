@@ -6,6 +6,7 @@ import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/chat/application/use_cases/chat_use_cases.dart';
 import 'package:df_admin_mobile/features/chat/domain/entities/chat.dart';
 import 'package:df_admin_mobile/features/chat/domain/repositories/i_chat_repository.dart';
+import 'package:df_admin_mobile/features/chat/infrastructure/services/chat_file_storage_service.dart';
 import 'package:df_admin_mobile/features/chat/infrastructure/services/signalr_chat_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:get/get.dart';
@@ -19,6 +20,7 @@ import 'package:get/get.dart';
 /// - 处理消息回复和提及
 /// - 集成 SignalR 实时通信
 /// - 提供响应式状态给 UI 层
+/// - 支持消息搜索功能
 class ChatStateController extends GetxController {
   // ==================== Use Cases ====================
   final GetChatRoomsUseCase _getChatRoomsUseCase;
@@ -31,7 +33,13 @@ class ChatStateController extends GetxController {
   final GetOnlineUsersUseCase _getOnlineUsersUseCase;
   final GetRoomMembersUseCase _getRoomMembersUseCase;
 
-  // ==================== SignalR 服务 ====================
+  // ==================== Repository (用于搜索) ====================
+  final IChatRepository _chatRepository;
+
+  // ==================== 文件存储服务 (用于保存聊天记录到文件) ====================
+  late final ChatFileStorageService? _fileStorageService;
+
+  // ==================== SignalR 服务 ======================================
   late final SignalRChatService _signalRService;
   final List<StreamSubscription> _subscriptions = [];
 
@@ -45,6 +53,7 @@ class ChatStateController extends GetxController {
     this._deleteMessageUseCase,
     this._getOnlineUsersUseCase,
     this._getRoomMembersUseCase,
+    this._chatRepository,
   );
 
   // ==================== 响应式状态 ====================
@@ -105,12 +114,43 @@ class ChatStateController extends GetxController {
   final _errorMessage = Rx<String?>(null);
   String? get errorMessage => _errorMessage.value;
 
+  // 搜索状态
+  final _isSearching = false.obs;
+  bool get isSearching => _isSearching.value;
+
+  final _searchResults = <ChatMessage>[].obs;
+  List<ChatMessage> get searchResults => _searchResults;
+
+  final _searchKeyword = ''.obs;
+  String get searchKeyword => _searchKeyword.value;
+
+  final _searchResultCount = 0.obs;
+  int get searchResultCount => _searchResultCount.value;
+
+  final _hasMoreSearchResults = true.obs;
+  bool get hasMoreSearchResults => _hasMoreSearchResults.value;
+
+  final _searchPage = 1.obs;
+  int get searchPage => _searchPage.value;
+
   // ==================== 生命周期 ====================
 
   @override
   void onInit() {
     super.onInit();
+    _initFileStorageService();
     _initSignalR();
+  }
+
+  /// 初始化文件存储服务
+  void _initFileStorageService() {
+    if (Get.isRegistered<ChatFileStorageService>()) {
+      _fileStorageService = Get.find<ChatFileStorageService>();
+      log('📁 文件存储服务已初始化');
+    } else {
+      _fileStorageService = null;
+      log('⚠️ 文件存储服务未注册');
+    }
   }
 
   /// 初始化 SignalR 服务
@@ -158,6 +198,14 @@ class ChatStateController extends GetxController {
     // 将新消息添加到列表顶部
     if (!_messages.any((m) => m.id == message.id)) {
       _messages.insert(0, message);
+    }
+
+    // 保存接收到的消息到文件存储
+    final fileService = _fileStorageService;
+    final roomId = _currentRoomId.value;
+    if (fileService != null && roomId != null) {
+      fileService.saveMessage(message, roomId);
+      log('💾 接收的消息已保存到文件');
     }
   }
 
@@ -738,6 +786,127 @@ class ChatStateController extends GetxController {
     _isConnected.value = false;
   }
 
+  // ==================== 搜索方法 ====================
+
+  /// 搜索消息
+  /// [keyword] 搜索关键词
+  /// [roomId] 可选，指定在某个聊天室中搜索，为空则搜索所有
+  Future<void> searchMessages(String keyword, {String? roomId}) async {
+    if (keyword.trim().isEmpty) {
+      clearSearch();
+      return;
+    }
+
+    _isSearching.value = true;
+    _searchKeyword.value = keyword;
+    _searchPage.value = 1;
+    _searchResults.clear();
+    _hasMoreSearchResults.value = true;
+
+    try {
+      final result = await _chatRepository.searchMessages(
+        keyword: keyword,
+        roomId: roomId,
+        page: 1,
+        pageSize: 20,
+      );
+
+      result.fold(
+        onSuccess: (messages) {
+          _searchResults.assignAll(messages);
+          _hasMoreSearchResults.value = messages.length >= 20;
+          log('搜索到 ${messages.length} 条消息');
+        },
+        onFailure: (error) {
+          _errorMessage.value = error.message;
+          log('搜索失败: ${error.message}');
+        },
+      );
+
+      // 获取总数
+      final countResult = await _chatRepository.getSearchCount(
+        keyword: keyword,
+        roomId: roomId,
+      );
+      countResult.fold(
+        onSuccess: (count) {
+          _searchResultCount.value = count;
+        },
+        onFailure: (_) {},
+      );
+    } catch (e) {
+      _errorMessage.value = '搜索出错: $e';
+      log('搜索异常: $e');
+    } finally {
+      _isSearching.value = false;
+    }
+  }
+
+  /// 加载更多搜索结果
+  Future<void> loadMoreSearchResults({String? roomId}) async {
+    if (!_hasMoreSearchResults.value || _isSearching.value || _searchKeyword.value.isEmpty) {
+      return;
+    }
+
+    _isSearching.value = true;
+    final nextPage = _searchPage.value + 1;
+
+    try {
+      final result = await _chatRepository.searchMessages(
+        keyword: _searchKeyword.value,
+        roomId: roomId,
+        page: nextPage,
+        pageSize: 20,
+      );
+
+      result.fold(
+        onSuccess: (messages) {
+          if (messages.isEmpty) {
+            _hasMoreSearchResults.value = false;
+          } else {
+            _searchResults.addAll(messages);
+            _searchPage.value = nextPage;
+            _hasMoreSearchResults.value = messages.length >= 20;
+          }
+        },
+        onFailure: (error) {
+          _errorMessage.value = error.message;
+        },
+      );
+    } catch (e) {
+      _errorMessage.value = '加载更多搜索结果出错: $e';
+    } finally {
+      _isSearching.value = false;
+    }
+  }
+
+  /// 清除搜索状态
+  void clearSearch() {
+    _isSearching.value = false;
+    _searchResults.clear();
+    _searchKeyword.value = '';
+    _searchResultCount.value = 0;
+    _hasMoreSearchResults.value = true;
+    _searchPage.value = 1;
+  }
+
+  /// 打印文件存储状态（调试用）
+  Future<void> debugPrintStorageStats() async {
+    final fileService = _fileStorageService;
+    if (fileService != null) {
+      final stats = await fileService.getStorageStats();
+      log('📊 文件存储状态: $stats');
+    } else {
+      log('⚠️ 文件存储服务未初始化');
+    }
+  }
+
+  /// 跳转到搜索结果中的某条消息
+  /// 返回消息在当前列表中的索引，-1 表示消息不在当前列表中
+  int findMessageIndex(String messageId) {
+    return _messages.indexWhere((m) => m.id == messageId);
+  }
+
   @override
   void onClose() {
     // 取消所有订阅
@@ -770,6 +939,9 @@ class ChatStateController extends GetxController {
     // 重置分页状态
     _currentPage.value = 1;
     _hasMoreMessages.value = true;
+
+    // 清空搜索状态
+    clearSearch();
 
     // 清空错误信息
     _errorMessage.value = null;

@@ -100,10 +100,6 @@ class _BottomNavLayoutState extends State<BottomNavLayout> {
                 log('   → 用户消息列表页面');
                 Get.toNamed(AppRoutes.notifications);
                 break;
-              case 3: // 编辑资料
-                log('   → 编辑资料页面');
-                Get.toNamed(AppRoutes.profileEdit);
-                break;
             }
           },
           items: [
@@ -119,10 +115,6 @@ class _BottomNavLayoutState extends State<BottomNavLayout> {
               icon: FontAwesomeIcons.solidBell,
               label: '消息',
               badge: controller.unreadCount.value,
-            ),
-            _NavBarItem(
-              icon: FontAwesomeIcons.gear,
-              label: '设置',
             ),
           ],
         );

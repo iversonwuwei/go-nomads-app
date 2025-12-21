@@ -167,4 +167,35 @@ abstract class IChatRepository {
     Function(OnlineUser user)? onUserJoined,
     Function(String userId)? onUserLeft,
   });
+
+  // ==================== 消息搜索 ====================
+
+  /// 搜索消息
+  ///
+  /// 参数:
+  /// - [keyword]: 搜索关键词
+  /// - [roomId]: 聊天室ID (可选，不传则搜索所有聊天室)
+  /// - [page]: 页码 (默认1)
+  /// - [pageSize]: 每页数量 (默认20)
+  ///
+  /// 返回: Result<List<ChatMessage>>
+  /// 说明: 优先从本地缓存搜索，若无结果则从后端搜索
+  Future<Result<List<ChatMessage>>> searchMessages({
+    required String keyword,
+    String? roomId,
+    int page = 1,
+    int pageSize = 20,
+  });
+
+  /// 获取搜索结果数量
+  ///
+  /// 参数:
+  /// - [keyword]: 搜索关键词
+  /// - [roomId]: 聊天室ID (可选)
+  ///
+  /// 返回: Result<int>
+  Future<Result<int>> getSearchCount({
+    required String keyword,
+    String? roomId,
+  });
 }

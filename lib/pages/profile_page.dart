@@ -469,24 +469,26 @@ class _ProfilePageState extends State<ProfilePage> with RouteAwareRefreshMixin<P
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Avatar (只读，移除编辑功能)
-        Stack(
-          children: [
-            Container(
-              width: isMobile ? 80 : 120,
-              height: isMobile ? 80 : 120,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFFFF4458),
-                  width: 3,
+        // Avatar - 点击跳转到编辑页面
+        GestureDetector(
+          onTap: () => Get.toNamed(AppRoutes.profileEdit),
+          child: Stack(
+            children: [
+              Container(
+                width: isMobile ? 80 : 120,
+                height: isMobile ? 80 : 120,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: const Color(0xFFFF4458),
+                    width: 3,
+                  ),
+                ),
+                child: ClipOval(
+                  child: _buildAvatarContent(user, isMobile),
                 ),
               ),
-              child: ClipOval(
-                child: _buildAvatarContent(user, isMobile),
-              ),
-            ),
-            if (user.isVerified)
+              // 编辑图标
               Positioned(
                 right: 0,
                 bottom: 0,
@@ -497,14 +499,15 @@ class _ProfilePageState extends State<ProfilePage> with RouteAwareRefreshMixin<P
                     color: Color(0xFFFF4458),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    FontAwesomeIcons.check,
+                  child: Icon(
+                    user.isVerified ? FontAwesomeIcons.check : FontAwesomeIcons.pen,
                     color: Colors.white,
-                    size: 16,
+                    size: isMobile ? 12 : 14,
                   ),
                 ),
               ),
-          ],
+            ],
+          ),
         ),
 
         const SizedBox(width: 20),

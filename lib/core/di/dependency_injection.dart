@@ -16,8 +16,11 @@ import 'package:df_admin_mobile/features/auth/infrastructure/repositories/user_l
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 // Chat Domain
 import 'package:df_admin_mobile/features/chat/application/use_cases/chat_use_cases.dart';
+import 'package:df_admin_mobile/features/chat/domain/repositories/i_chat_local_repository.dart';
 import 'package:df_admin_mobile/features/chat/domain/repositories/i_chat_repository.dart';
+import 'package:df_admin_mobile/features/chat/infrastructure/repositories/chat_local_repository.dart';
 import 'package:df_admin_mobile/features/chat/infrastructure/repositories/chat_repository.dart';
+import 'package:df_admin_mobile/features/chat/infrastructure/services/chat_file_storage_service.dart';
 import 'package:df_admin_mobile/features/chat/presentation/controllers/chat_state_controller.dart';
 import 'package:df_admin_mobile/features/city/application/state_controllers/pros_cons_state_controller.dart';
 import 'package:df_admin_mobile/features/city/application/use_cases/city_use_cases.dart';
@@ -776,9 +779,23 @@ class DependencyInjection {
 
   /// 注册Chat领域依赖
   static void _registerChatDomain() {
-    // Repository
+    // 聊天文件存储服务 (按天保存聊天记录到文件)
+    Get.lazyPut<ChatFileStorageService>(
+      () => ChatFileStorageService(),
+    );
+
+    // Local Repository (SQLite 本地持久化)
+    Get.lazyPut<IChatLocalRepository>(
+      () => ChatLocalRepository(Get.find<DatabaseService>()),
+    );
+
+    // Repository (带文件存储和本地缓存支持)
     Get.lazyPut<IChatRepository>(
-      () => ChatRepository(Get.find<HttpService>()),
+      () => ChatRepository(
+        Get.find<HttpService>(),
+        Get.find<IChatLocalRepository>(),
+        Get.find<ChatFileStorageService>(),
+      ),
     );
 
     // Use Cases - 聊天室管理
@@ -808,6 +825,7 @@ class DependencyInjection {
         Get.find<DeleteMessageUseCase>(),
         Get.find<GetOnlineUsersUseCase>(),
         Get.find<GetRoomMembersUseCase>(),
+        Get.find<IChatRepository>(),
       ),
     );
   }
