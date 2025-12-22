@@ -52,7 +52,19 @@ class SignalRChatService extends GetxService {
       final hubUrl = '${ApiConfig.messageServiceBaseUrl}/hubs/chat';
       log('🔌 正在连接 SignalR ChatHub: $hubUrl');
 
-      _hubConnection = HubConnectionBuilder().withUrl(hubUrl).withAutomaticReconnect().build();
+      // 配置 SignalR 连接选项
+      final httpConnectionOptions = HttpConnectionOptions(
+        requestTimeout: 60000, // 请求超时 60 秒
+      );
+
+      _hubConnection = HubConnectionBuilder()
+          .withUrl(hubUrl, options: httpConnectionOptions)
+          .withAutomaticReconnect(retryDelays: [0, 2000, 5000, 10000, 30000]) // 重连延迟
+          .build();
+
+      // 设置服务器超时和保持连接间隔
+      _hubConnection!.serverTimeoutInMilliseconds = 60000; // 服务器超时 60 秒
+      _hubConnection!.keepAliveIntervalInMilliseconds = 15000; // 保持连接间隔 15 秒
 
       // 注册事件处理器
       _registerEventHandlers();
