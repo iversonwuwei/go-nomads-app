@@ -32,6 +32,9 @@ class SaveTokenToDatabaseParams {
 }
 
 /// 从数据库恢复 Token 用例
+/// 
+/// 注意: 此用例不会自动刷新过期的 token
+/// 如果 token 已过期，会清除数据并返回 null
 class RestoreTokenFromDatabaseUseCase extends UseCase<AuthToken?, NoParams> {
   final IAuthDatabaseRepository _databaseRepository;
   final IAuthRepository _authRepository;
@@ -60,24 +63,20 @@ class RestoreTokenFromDatabaseUseCase extends UseCase<AuthToken?, NoParams> {
           return expiredResult.fold(
             onSuccess: (isExpired) async {
               if (isExpired) {
-                // 3. 如果过期,尝试刷新
-                final refreshResult = await _authRepository.refreshToken(
-                  tokenData.refreshToken,
-                );
-
-                return refreshResult.fold(
-                  onSuccess: (newToken) => Result.success(newToken),
-                  onFailure: (error) => Result.success(null), // 刷新失败返回 null
-                );
+                // Token 已过期，清除数据并返回 null
+                // 不自动刷新，让用户手动重新登录
+                await _databaseRepository.deleteTokenByUserId(tokenData.userId);
+                await _authRepository.clearPersistedToken();
+                return Result.success(null);
               }
 
-              // 4. 未过期,返回现有 Token
+              // 3. 未过期,返回现有 Token
               final token = AuthToken(
                 accessToken: tokenData.accessToken,
                 refreshToken: tokenData.refreshToken,
               );
 
-              // 5. 持久化到内存 (TokenStorageService)
+              // 4. 持久化到内存 (TokenStorageService)
               await _authRepository.persistToken(token);
 
               return Result.success(token);
@@ -94,6 +93,9 @@ class RestoreTokenFromDatabaseUseCase extends UseCase<AuthToken?, NoParams> {
 }
 
 /// 检查登录状态 (优先从数据库)
+/// 
+/// 注意: 此用例在应用启动时调用，不会自动刷新过期的 token
+/// 如果 token 已过期，会清除数据并返回 false（需要用户重新登录）
 class CheckLoginStatusWithDatabaseUseCase extends UseCase<bool, NoParams> {
   final IAuthDatabaseRepository _databaseRepository;
   final IAuthRepository _authRepository;
@@ -129,15 +131,11 @@ class CheckLoginStatusWithDatabaseUseCase extends UseCase<bool, NoParams> {
           return expiredResult.fold(
             onSuccess: (isExpired) async {
               if (isExpired) {
-                // 4. 过期则尝试刷新
-                final refreshResult = await _authRepository.refreshToken(
-                  tokenData.refreshToken,
-                );
-
-                return refreshResult.fold(
-                  onSuccess: (_) => Result.success(true),
-                  onFailure: (_) => Result.success(false),
-                );
+                // Token 已过期，清除数据并返回未登录
+                // 不自动刷新，让用户手动重新登录
+                await _databaseRepository.deleteTokenByUserId(tokenData.userId);
+                await _authRepository.clearPersistedToken();
+                return Result.success(false);
               }
 
               // 5. 未过期,恢复到内存
