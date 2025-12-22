@@ -1,9 +1,9 @@
-import 'dart:developer';
-
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:df_admin_mobile/config/api_config.dart';
+import 'package:df_admin_mobile/core/auth/token_manager.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
@@ -85,11 +85,9 @@ class HttpService {
       log('🔥 处理 401 错误: ${reason ?? "Token 无效或已过期"}');
     }
 
-    // 清除所有认证信息
-    final tokenService = TokenStorageService();
-    await tokenService.clearTokens();
-    _authToken = null;
-    _userId = null;
+    // 使用 TokenManager 统一清除所有认证信息
+    final tokenManager = TokenManager();
+    await tokenManager.clearToken();
 
     // 更新 AuthStateController 状态
     try {

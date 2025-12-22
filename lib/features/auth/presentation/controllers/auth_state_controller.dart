@@ -1,12 +1,12 @@
 import 'dart:developer';
 
 import 'package:df_admin_mobile/core/application/use_case.dart';
+import 'package:df_admin_mobile/core/auth/token_manager.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/auth/application/use_cases/auth_database_use_cases.dart';
 import 'package:df_admin_mobile/features/auth/application/use_cases/auth_use_cases.dart';
 import 'package:df_admin_mobile/features/auth/domain/entities/auth_token.dart';
 import 'package:df_admin_mobile/features/auth/domain/entities/auth_user.dart';
-import 'package:df_admin_mobile/features/auth/domain/repositories/iauth_database_repository.dart';
 import 'package:df_admin_mobile/features/auth/domain/repositories/iauth_repository.dart';
 import 'package:df_admin_mobile/services/http_service.dart';
 import 'package:df_admin_mobile/services/signalr_service.dart';
@@ -528,40 +528,42 @@ class AuthStateController extends GetxController {
   /// 登出
   Future<void> logout() async {
     isLoading.value = true;
+    log('🔐 [AuthStateController] 开始登出...');
 
-    // 先删除数据库中的 token
-    final httpService = Get.find<HttpService>();
     final userId = currentUser.value?.id;
-    if (userId != null) {
-      // 删除当前用户的 token (不等待结果)
-      await Get.find<IAuthDatabaseRepository>().deleteTokenByUserId(userId);
+    final tokenManager = TokenManager();
+
+    try {
+      // 1. 调用后端登出 API
+      await _logoutUseCase.execute(NoParams());
+      log('   ✅ 后端登出 API 调用完成');
+    } catch (e) {
+      // 即使 API 调用失败也继续清理本地状态
+      log('   ⚠️ 后端登出 API 失败（不影响本地清理）: $e');
     }
 
-    final result = await _logoutUseCase.execute(NoParams());
+    // 2. 使用 TokenManager 统一清除所有 Token 状态
+    await tokenManager.clearToken(userId: userId);
+    log('   ✅ TokenManager 清除完成');
+
+    // 3. 清除控制器状态
+    currentUser.value = null;
+    currentToken.value = null;
+    isAuthenticated.value = false;
+    log('   ✅ 控制器状态已清除');
+
+    // 4. 断开 SignalR 连接
+    try {
+      final signalRService = Get.find<SignalRService>();
+      await signalRService.disconnect();
+      log('   ✅ SignalR 已断开');
+    } catch (e) {
+      log('   ⚠️ SignalR 断开失败: $e');
+    }
 
     isLoading.value = false;
-
-    result.fold(
-      onSuccess: (_) {
-        // 清除 HttpService 状态
-        httpService.clearAuthToken();
-        httpService.clearUserId();
-
-        currentUser.value = null;
-        currentToken.value = null;
-        isAuthenticated.value = false;
-        AppToast.success('已退出登录');
-      },
-      onFailure: (error) {
-        // 即使失败也清除本地状态
-        httpService.clearAuthToken();
-        httpService.clearUserId();
-
-        currentUser.value = null;
-        currentToken.value = null;
-        isAuthenticated.value = false;
-      },
-    );
+    log('✅ [AuthStateController] 登出完成');
+    AppToast.success('已退出登录');
   }
 
   /// 更新用户资料
