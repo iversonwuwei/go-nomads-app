@@ -2,6 +2,42 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
+/// 后端部署环境类型
+enum DeploymentEnvironment {
+  /// Docker Compose / 本地容器部署
+  docker,
+
+  /// Kubernetes 部署
+  kubernetes,
+}
+
+/// 部署环境端口配置
+class DeploymentConfig {
+  final int gatewayPort;
+  final int messageServicePort;
+  final int coworkingServicePort;
+
+  const DeploymentConfig({
+    required this.gatewayPort,
+    required this.messageServicePort,
+    required this.coworkingServicePort,
+  });
+
+  /// Docker 部署配置
+  static const docker = DeploymentConfig(
+    gatewayPort: 5000,
+    messageServicePort: 5005,
+    coworkingServicePort: 8006,
+  );
+
+  /// Kubernetes 部署配置
+  static const kubernetes = DeploymentConfig(
+    gatewayPort: 30080,
+    messageServicePort: 8010, // 通过 Gateway 路由，此端口仅作参考
+    coworkingServicePort: 8003, // 通过 Gateway 路由，此端口仅作参考
+  );
+}
+
 /// API 配置
 class ApiConfig {
   // ============================================================
@@ -10,16 +46,35 @@ class ApiConfig {
   static const bool kIsProduction = false;
 
   // ============================================================
-  // 端口配置
+  // 部署环境配置
+  // ============================================================
+  /// 当前后端部署环境
+  /// ⚠️ 切换后端部署方式时修改此配置：
+  /// - docker: 使用 deploy-services-local.ps1 脚本部署
+  /// - kubernetes: 使用 kubectl apply -f k8s/ 部署
+  static const DeploymentEnvironment deploymentEnvironment = DeploymentEnvironment.docker;
+
+  /// 获取当前部署配置
+  static DeploymentConfig get _deploymentConfig {
+    switch (deploymentEnvironment) {
+      case DeploymentEnvironment.docker:
+        return DeploymentConfig.docker;
+      case DeploymentEnvironment.kubernetes:
+        return DeploymentConfig.kubernetes;
+    }
+  }
+
+  // ============================================================
+  // 端口配置 (动态获取)
   // ============================================================
   /// Gateway 端口 (所有服务统一通过 Gateway 访问)
-  static const int gatewayPort = 5000;
+  static int get gatewayPort => _deploymentConfig.gatewayPort;
 
-  /// Message Service 端口 (SignalR Hub 需要直连)
-  static const int messageServicePort = 5005;
+  /// Message Service 端口 (SignalR Hub)
+  static int get messageServicePort => _deploymentConfig.messageServicePort;
 
-  /// Coworking Service 端口 (SignalR Hub 需要直连)
-  static const int coworkingServicePort = 5006;
+  /// Coworking Service 端口 (SignalR Hub)
+  static int get coworkingServicePort => _deploymentConfig.coworkingServicePort;
 
   // ============================================================
   // 主机地址配置
@@ -55,7 +110,7 @@ class ApiConfig {
   /// 是否使用真机测试地址(手动切换)
   /// ⚠️ 雷电模拟器用户请设置为 true
   /// ⚠️ Android 官方模拟器用户请设置为 false
-  static const bool usePhysicalDevice = false;
+  static const bool usePhysicalDevice = true;
 
   // ============================================================
   // URL 组装
@@ -92,24 +147,25 @@ class ApiConfig {
     return developmentUrl;
   }
 
-  /// Message Service 地址 (SignalR Hub 需要直连,不经过 Gateway)
-  /// SignalR WebSocket 连接需要保持长连接,因此直连 MessageService
+  /// Message Service 地址 (SignalR Hub)
+  /// K8s 环境下通过 Gateway 路由，Gateway 会代理 WebSocket 连接到 MessageService
   static String get messageServiceBaseUrl {
     if (kIsProduction) {
       return productionUrl; // 生产环境通过专用域名
     }
-    final host = usePhysicalDevice ? physicalDeviceHost : developmentHost;
-    return 'http://$host:$messageServicePort';
+    // K8s 环境下，SignalR 也通过 Gateway 路由
+    // Gateway 配置了 /hubs/chat -> message-service 的路由
+    return baseUrl; // 使用 Gateway 地址
   }
 
-  /// Coworking Service 地址 (SignalR Hub 需要直连,不经过 Gateway)
-  /// SignalR WebSocket 连接需要保持长连接,因此直连 CoworkingService
+  /// Coworking Service 地址 (SignalR Hub)
+  /// K8s 环境下通过 Gateway 路由
   static String get coworkingServiceBaseUrl {
     if (kIsProduction) {
       return productionUrl; // 生产环境通过专用域名
     }
-    final host = usePhysicalDevice ? physicalDeviceHost : developmentHost;
-    return 'http://$host:$coworkingServicePort';
+    // K8s 环境下，SignalR 也通过 Gateway 路由
+    return baseUrl; // 使用 Gateway 地址
   }
 
   // API 版本
@@ -351,7 +407,8 @@ class ApiConfig {
 📡 API 配置信息:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🌍 环境: ${kIsProduction ? '生产环境 🚀' : '开发环境 🔧'}
-💻 平台: ${kIsWeb ? 'Web 🌐' : Platform.operatingSystem}
+� 部署: ${deploymentEnvironment == DeploymentEnvironment.kubernetes ? 'Kubernetes ☸️' : 'Docker 🐳'}
+�💻 平台: ${kIsWeb ? 'Web 🌐' : Platform.operatingSystem}
 🏠 当前主机: $currentHost
 🔌 Gateway 端口: $gatewayPort
 📍 基础地址: $currentBaseUrl

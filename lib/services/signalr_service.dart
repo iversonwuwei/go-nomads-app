@@ -1,6 +1,5 @@
-import 'dart:developer';
-
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:df_admin_mobile/config/api_config.dart';
 import 'package:df_admin_mobile/features/async_task/domain/entities/async_task.dart';
@@ -80,15 +79,20 @@ class SignalRService {
       // 创建连接（带认证）
       _hubConnection = HubConnectionBuilder()
           .withUrl(
-            hubUrl,
-            options: HttpConnectionOptions(
-              skipNegotiation: false,
-              transport: HttpTransportType.WebSockets,
-              accessTokenFactory: () async => token ?? '', // 添加认证 token
-            ),
-          )
-          .withAutomaticReconnect()
+        hubUrl,
+        options: HttpConnectionOptions(
+          skipNegotiation: false,
+          transport: HttpTransportType.WebSockets,
+          accessTokenFactory: () async => token ?? '', // 添加认证 token
+          requestTimeout: 60000, // 请求超时 60 秒
+        ),
+      )
+          .withAutomaticReconnect(retryDelays: [0, 2000, 5000, 10000, 30000]) // 重连延迟
           .build();
+
+      // 设置服务器超时和保持连接间隔
+      _hubConnection!.serverTimeoutInMilliseconds = 60000; // 服务器超时 60 秒
+      _hubConnection!.keepAliveIntervalInMilliseconds = 15000; // 保持连接间隔 15 秒
 
       // 注册事件处理器
       _registerEventHandlers();
@@ -188,15 +192,20 @@ class SignalRService {
       // 创建连接（带认证）
       _notificationHubConnection = HubConnectionBuilder()
           .withUrl(
-            hubUrl,
-            options: HttpConnectionOptions(
-              skipNegotiation: false,
-              transport: HttpTransportType.WebSockets,
-              accessTokenFactory: () async => token ?? '',
-            ),
-          )
-          .withAutomaticReconnect()
+        hubUrl,
+        options: HttpConnectionOptions(
+          skipNegotiation: false,
+          transport: HttpTransportType.WebSockets,
+          accessTokenFactory: () async => token ?? '',
+          requestTimeout: 60000, // 请求超时 60 秒
+        ),
+      )
+          .withAutomaticReconnect(retryDelays: [0, 2000, 5000, 10000, 30000]) // 重连延迟
           .build();
+
+      // 设置服务器超时和保持连接间隔
+      _notificationHubConnection!.serverTimeoutInMilliseconds = 60000; // 服务器超时 60 秒
+      _notificationHubConnection!.keepAliveIntervalInMilliseconds = 15000; // 保持连接间隔 15 秒
 
       // 注册通知事件处理器
       _registerNotificationEventHandlers();
@@ -391,8 +400,7 @@ class SignalRService {
         if (arguments.isNotEmpty) {
           final data = arguments[0] as Map<String, dynamic>;
           log('   原始 JSON keys: ${data.keys.toList()}');
-          log(
-              '   完整数据: ${data.toString().substring(0, data.toString().length > 500 ? 500 : data.toString().length)}...');
+          log('   完整数据: ${data.toString().substring(0, data.toString().length > 500 ? 500 : data.toString().length)}...');
 
           final taskDto = AsyncTaskDto.fromJson(data);
           final task = taskDto.toDomain();
