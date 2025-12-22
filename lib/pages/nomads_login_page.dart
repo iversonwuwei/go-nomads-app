@@ -817,7 +817,7 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
         const SizedBox(height: 12),
         // 第二行
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _buildSocialLoginButton(
               onPressed: () {
@@ -828,22 +828,6 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
               icon: FontAwesomeIcons.mobile,
               color: const Color(0xFF4CAF50),
               label: '手机号',
-            ),
-            _buildSocialLoginButton(
-              onPressed: () {
-                AppToast.info('抖音登录即将上线', title: '抖音');
-              },
-              icon: FontAwesomeIcons.tiktok,
-              color: Colors.black,
-              label: '抖音',
-            ),
-            _buildSocialLoginButton(
-              onPressed: () {
-                AppToast.info('小红书登录即将上线', title: '小红书');
-              },
-              icon: FontAwesomeIcons.book,
-              color: const Color(0xFFFF2442),
-              label: '小红书',
             ),
           ],
         ),

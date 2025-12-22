@@ -508,14 +508,17 @@ class DependencyInjection {
     // Repository
     Get.lazyPut<ICoworkingRepository>(
       () => CoworkingRepository(),
+      fenix: true,
     );
 
     Get.lazyPut<ICoworkingCommentRepository>(
       () => CoworkingCommentRepository(),
+      fenix: true,
     );
 
     Get.lazyPut<ICoworkingReviewRepository>(
       () => CoworkingReviewRepository(),
+      fenix: true,
     );
 
     // Use Cases - 查询类

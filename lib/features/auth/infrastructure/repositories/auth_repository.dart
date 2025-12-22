@@ -1,4 +1,5 @@
 import 'package:df_admin_mobile/config/api_config.dart';
+import 'package:df_admin_mobile/core/auth/token_manager.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/core/infrastructure/base_repository.dart';
 import 'package:df_admin_mobile/features/auth/domain/entities/auth_token.dart';
@@ -165,11 +166,9 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
         // Silently ignore logout API errors
       }
 
-      // 清除HTTP服务的token
-      _httpService.clearAuthToken();
-
-      // 清除持久化的token
-      await clearPersistedToken();
+      // 使用 TokenManager 统一清除所有 Token
+      final tokenManager = TokenManager();
+      await tokenManager.clearToken();
 
       // 清除用户数据（SharedPreferences + SQLite 可选清除）
       await _userLocalRepo.clearUserData();
