@@ -1,5 +1,5 @@
+import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../config/app_colors.dart';
@@ -23,6 +23,7 @@ class TripConfirmationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 2,
@@ -59,7 +60,7 @@ class TripConfirmationCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'travel_detected'.tr,
+                          l10n.travelDetected,
                           style: const TextStyle(
                             fontSize: 12,
                             color: AppColors.textTertiary,
@@ -81,7 +82,7 @@ class TripConfirmationCard extends StatelessWidget {
                     icon: const Icon(Icons.close, size: 20),
                     color: AppColors.textTertiary,
                     onPressed: onDismiss,
-                    tooltip: 'dismiss'.tr,
+                    tooltip: l10n.dismiss,
                   ),
                 ],
               ),
@@ -96,13 +97,12 @@ class TripConfirmationCard extends StatelessWidget {
               const SizedBox(height: 8),
               _buildInfoRow(
                 Icons.schedule,
-                'duration_days'.trParams({'days': trip.durationDays.toString()}),
+                l10n.durationDays(trip.durationDays.toString()),
               ),
               const SizedBox(height: 8),
               _buildInfoRow(
                 Icons.place,
-                'distance_from_home'
-                    .trParams({'km': trip.distanceFromHome.toStringAsFixed(0)}),
+                l10n.distanceFromHome(trip.distanceFromHome.toStringAsFixed(0)),
               ),
 
               const SizedBox(height: 16),
@@ -124,7 +124,7 @@ class TripConfirmationCard extends StatelessWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'save_travel_question'.tr,
+                        l10n.saveTravelQuestion,
                         style: const TextStyle(
                           fontSize: 13,
                           color: AppColors.textSecondary,
@@ -151,7 +151,7 @@ class TripConfirmationCard extends StatelessWidget {
                         side: const BorderSide(color: AppColors.border),
                       ),
                       child: Text(
-                        'ignore'.tr,
+                        l10n.ignore,
                         style: const TextStyle(
                           color: AppColors.textSecondary,
                         ),
@@ -164,7 +164,7 @@ class TripConfirmationCard extends StatelessWidget {
                     child: ElevatedButton.icon(
                       onPressed: onConfirm,
                       icon: const Icon(Icons.check, size: 18),
-                      label: Text('save_travel'.tr),
+                      label: Text(l10n.saveTravel),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.cityPrimary,
                         foregroundColor: Colors.white,
@@ -226,6 +226,7 @@ class TripConfirmationBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Material(
       color: AppColors.cityPrimary.withValues(alpha: 0.95),
       child: SafeArea(
@@ -248,8 +249,7 @@ class TripConfirmationBanner extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'travel_detected_banner'
-                            .trParams({'city': trip.displayName}),
+                        l10n.travelDetectedBanner(trip.displayName),
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -257,7 +257,7 @@ class TripConfirmationBanner extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        'tap_to_save'.tr,
+                        l10n.tapToSave,
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.8),
                           fontSize: 12,
@@ -269,7 +269,7 @@ class TripConfirmationBanner extends StatelessWidget {
                 TextButton(
                   onPressed: onConfirm,
                   child: Text(
-                    'save'.tr,
+                    l10n.save,
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -306,6 +306,7 @@ class PendingTripsListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (trips.isEmpty) {
       return Center(
         child: Column(
@@ -318,7 +319,7 @@ class PendingTripsListView extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'no_pending_trips'.tr,
+              l10n.noPendingTrips,
               style: const TextStyle(
                 fontSize: 16,
                 color: AppColors.textTertiary,

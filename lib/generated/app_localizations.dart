@@ -7885,6 +7885,42 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'置信度：{percent}%'**
   String confidence(String percent);
+
+  /// No description provided for @synced.
+  ///
+  /// In zh, this message translates to:
+  /// **'已同步'**
+  String get synced;
+
+  /// No description provided for @nights.
+  ///
+  /// In zh, this message translates to:
+  /// **'晚'**
+  String get nights;
+
+  /// No description provided for @tip.
+  ///
+  /// In zh, this message translates to:
+  /// **'提示'**
+  String get tip;
+
+  /// No description provided for @travelHistoryNoCityLink.
+  ///
+  /// In zh, this message translates to:
+  /// **'此旅行记录暂无关联城市'**
+  String get travelHistoryNoCityLink;
+
+  /// No description provided for @syncCompleted.
+  ///
+  /// In zh, this message translates to:
+  /// **'同步完成'**
+  String get syncCompleted;
+
+  /// No description provided for @syncFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'同步失败'**
+  String get syncFailed;
 }
 
 class _AppLocalizationsDelegate

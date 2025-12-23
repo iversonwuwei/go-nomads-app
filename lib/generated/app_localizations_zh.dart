@@ -4006,4 +4006,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String confidence(String percent) {
     return '置信度：$percent%';
   }
+
+  @override
+  String get synced => '已同步';
+
+  @override
+  String get nights => '晚';
+
+  @override
+  String get tip => '提示';
+
+  @override
+  String get travelHistoryNoCityLink => '此旅行记录暂无关联城市';
+
+  @override
+  String get syncCompleted => '同步完成';
+
+  @override
+  String get syncFailed => '同步失败';
 }
