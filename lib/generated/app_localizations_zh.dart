@@ -3226,8 +3226,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get pickLocationOnMap => '在地图上选择位置';
 
   @override
-  String locationCoordinates(String lat, String lng) {
-    return '位置：$lat, $lng';
+  String locationCoordinates(String lat, String lon) {
+    return '$lat, $lon';
   }
 
   @override
@@ -3747,6 +3747,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get showTravelHistoryToOthers => '向其他用户展示您的旅行历史';
 
   @override
+  String get autoTravelDetection => '自动旅行记录';
+
+  @override
+  String get autoTravelDetectionDescription => '自动检测并记录您的旅行足迹';
+
+  @override
   String get publicProfile => '公开资料';
 
   @override
@@ -3898,5 +3904,106 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String alipayError(String error) {
     return '支付宝错误：$error';
+  }
+
+  @override
+  String get travelDetected => '发现新旅行';
+
+  @override
+  String get saveTravelQuestion => '要保存这次旅行吗？';
+
+  @override
+  String get saveTravel => '保存旅行';
+
+  @override
+  String get ignore => '忽略';
+
+  @override
+  String get travelSaved => '旅行已保存';
+
+  @override
+  String get saveFailed => '保存失败';
+
+  @override
+  String get dismiss => '关闭';
+
+  @override
+  String get noPendingTrips => '暂无待确认的旅行';
+
+  @override
+  String travelDetectedBanner(String city) {
+    return '我们发现您最近去过 $city';
+  }
+
+  @override
+  String get tapToSave => '点击保存这次旅行';
+
+  @override
+  String durationDays(String days) {
+    return '$days 天';
+  }
+
+  @override
+  String distanceFromHome(String km) {
+    return '距离常住地 $km 公里';
+  }
+
+  @override
+  String get pendingConfirmation => '待确认';
+
+  @override
+  String get confirmedTrips => '旅行记录';
+
+  @override
+  String get homeLocation => '常住地';
+
+  @override
+  String get setHomeLocation => '设置常住地';
+
+  @override
+  String get homeLocationSet => '常住地已设置';
+
+  @override
+  String get setHomeFailed => '设置常住地失败';
+
+  @override
+  String get locationUnavailable => '无法获取位置信息';
+
+  @override
+  String get autoDetectionOn => '自动检测已开启';
+
+  @override
+  String get autoDetectionOff => '自动检测已关闭';
+
+  @override
+  String get clearAllData => '清除所有数据';
+
+  @override
+  String get confirmClear => '确认清除';
+
+  @override
+  String get clearAllDataWarning => '此操作将清除所有旅行检测数据，包括位置记录、停留点和旅行历史。此操作无法撤销。';
+
+  @override
+  String get clear => '清除';
+
+  @override
+  String get dataCleared => '数据已清除';
+
+  @override
+  String get noTravelHistory => '暂无旅行记录';
+
+  @override
+  String get travelHistoryEmptyHint => '开启自动检测后，我们会自动识别您的旅行并提醒您保存';
+
+  @override
+  String get autoDetectionActive => '自动检测已开启';
+
+  @override
+  String get enableAutoDetection => '开启自动检测';
+
+  @override
+  String confidence(String percent) {
+    return '置信度：$percent%';
   }
 }

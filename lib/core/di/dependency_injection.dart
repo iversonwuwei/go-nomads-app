@@ -109,6 +109,9 @@ import 'package:df_admin_mobile/features/skill/application/use_cases/skill_use_c
 import 'package:df_admin_mobile/features/skill/domain/repositories/i_skill_repository.dart';
 import 'package:df_admin_mobile/features/skill/infrastructure/repositories/skill_repository.dart';
 import 'package:df_admin_mobile/features/skill/presentation/controllers/skill_state_controller.dart';
+// Travel History Domain
+import 'package:df_admin_mobile/features/travel_history/data/dao/travel_history_dao.dart';
+import 'package:df_admin_mobile/features/travel_history/services/travel_detection_service.dart';
 import 'package:df_admin_mobile/features/user/application/use_cases/favorite_city_use_cases.dart';
 import 'package:df_admin_mobile/features/user/application/use_cases/user_use_cases.dart' as user_use_cases;
 // User Preferences Domain
@@ -289,6 +292,15 @@ class DependencyInjection {
         dio: Get.find<Dio>(),
         tokenService: Get.find<TokenStorageService>(),
       ),
+    );
+
+    // Travel History DAO
+    Get.lazyPut<TravelHistoryDao>(() => TravelHistoryDao());
+
+    // Travel Detection Service (全局单例)
+    Get.lazyPut<TravelDetectionService>(
+      () => TravelDetectionService(dao: Get.find<TravelHistoryDao>()),
+      fenix: true,
     );
 
     // Use Cases - 基础用户操作

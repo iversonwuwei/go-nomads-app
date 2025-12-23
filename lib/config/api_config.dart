@@ -110,7 +110,7 @@ class ApiConfig {
   /// 是否使用真机测试地址(手动切换)
   /// ⚠️ 雷电模拟器用户请设置为 true
   /// ⚠️ Android 官方模拟器用户请设置为 false
-  static const bool usePhysicalDevice = false;
+  static const bool usePhysicalDevice = true;
 
   // ============================================================
   // URL 组装
@@ -336,6 +336,19 @@ class ApiConfig {
   static const String notificationDeleteEndpoint = '/notifications/{id}';
   static const String notificationSendEndpoint = '/notifications';
   static const String notificationSendToAdminsEndpoint = '/notifications/admins';
+
+  // ============================================================
+  // Travel History Endpoints - /api/v1/travel-history
+  // ============================================================
+  static const String travelHistoryEndpoint = '/travel-history';
+  static const String travelHistoryDetailEndpoint = '/travel-history/{id}';
+  static const String travelHistoryConfirmedEndpoint = '/travel-history/confirmed';
+  static const String travelHistoryUnconfirmedEndpoint = '/travel-history/unconfirmed';
+  static const String travelHistoryBatchEndpoint = '/travel-history/batch';
+  static const String travelHistoryConfirmEndpoint = '/travel-history/{id}/confirm';
+  static const String travelHistoryConfirmBatchEndpoint = '/travel-history/confirm/batch';
+  static const String travelHistoryStatsEndpoint = '/travel-history/stats';
+  static const String travelHistoryUserEndpoint = '/travel-history/user/{userId}';
 
   // 环境判断
   static bool get isDevelopment => !kIsProduction;

@@ -4,6 +4,7 @@ class UserPreferences {
   final String userId;
   final bool notificationsEnabled;
   final bool travelHistoryVisible;
+  final bool autoTravelDetectionEnabled;
   final bool profilePublic;
   final String currency;
   final String temperatureUnit;
@@ -16,6 +17,7 @@ class UserPreferences {
     required this.userId,
     required this.notificationsEnabled,
     required this.travelHistoryVisible,
+    required this.autoTravelDetectionEnabled,
     required this.profilePublic,
     required this.currency,
     required this.temperatureUnit,
@@ -31,6 +33,7 @@ class UserPreferences {
       userId: json['userId'] as String? ?? '',
       notificationsEnabled: json['notificationsEnabled'] as bool? ?? true,
       travelHistoryVisible: json['travelHistoryVisible'] as bool? ?? true,
+      autoTravelDetectionEnabled: json['autoTravelDetectionEnabled'] as bool? ?? false,
       profilePublic: json['profilePublic'] as bool? ?? true,
       currency: json['currency'] as String? ?? 'USD',
       temperatureUnit: json['temperatureUnit'] as String? ?? 'Celsius',
@@ -47,6 +50,7 @@ class UserPreferences {
       'userId': userId,
       'notificationsEnabled': notificationsEnabled,
       'travelHistoryVisible': travelHistoryVisible,
+      'autoTravelDetectionEnabled': autoTravelDetectionEnabled,
       'profilePublic': profilePublic,
       'currency': currency,
       'temperatureUnit': temperatureUnit,
@@ -63,6 +67,7 @@ class UserPreferences {
       userId: userId,
       notificationsEnabled: true,
       travelHistoryVisible: true,
+      autoTravelDetectionEnabled: false,
       profilePublic: true,
       currency: 'USD',
       temperatureUnit: 'Celsius',
@@ -78,6 +83,7 @@ class UserPreferences {
     String? userId,
     bool? notificationsEnabled,
     bool? travelHistoryVisible,
+    bool? autoTravelDetectionEnabled,
     bool? profilePublic,
     String? currency,
     String? temperatureUnit,
@@ -90,6 +96,7 @@ class UserPreferences {
       userId: userId ?? this.userId,
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
       travelHistoryVisible: travelHistoryVisible ?? this.travelHistoryVisible,
+      autoTravelDetectionEnabled: autoTravelDetectionEnabled ?? this.autoTravelDetectionEnabled,
       profilePublic: profilePublic ?? this.profilePublic,
       currency: currency ?? this.currency,
       temperatureUnit: temperatureUnit ?? this.temperatureUnit,

@@ -7,6 +7,7 @@ import 'package:df_admin_mobile/features/interest/domain/entities/interest.dart'
 import 'package:df_admin_mobile/features/interest/presentation/controllers/interest_state_controller.dart';
 import 'package:df_admin_mobile/features/skill/domain/entities/skill.dart';
 import 'package:df_admin_mobile/features/skill/presentation/controllers/skill_state_controller.dart';
+import 'package:df_admin_mobile/features/travel_history/services/travel_detection_service.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
 import 'package:df_admin_mobile/features/user/domain/repositories/i_user_preferences_repository.dart';
 import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
@@ -37,6 +38,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
   bool _notifications = true;
   bool _travelHistoryVisible = true;
   bool _profilePublic = true;
+  bool _autoTravelDetection = false;
   String _currency = 'USD';
   String _temperatureUnit = 'Celsius';
 
@@ -65,6 +67,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
     super.initState();
     // 初始化通知状态
     _initNotificationState();
+    // 初始化自动旅行检测状态
+    _initAutoTravelDetectionState();
     // 初始化偏好设置仓库
     _initPreferencesRepository();
     // 延迟到下一帧执行，避免在 build 过程中触发状态更新
@@ -103,6 +107,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
         setState(() {
           _notifications = preferences.notificationsEnabled;
           _travelHistoryVisible = preferences.travelHistoryVisible;
+          _autoTravelDetection = preferences.autoTravelDetectionEnabled;
           _profilePublic = preferences.profilePublic;
           _currency = preferences.currency;
           _temperatureUnit = preferences.temperatureUnit;
@@ -112,6 +117,16 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
         if (Get.isRegistered<NotificationService>()) {
           final notificationService = Get.find<NotificationService>();
           await notificationService.setEnabled(preferences.notificationsEnabled);
+        }
+
+        // 同步自动旅行检测状态到 TravelDetectionService
+        if (Get.isRegistered<TravelDetectionService>()) {
+          final detectionService = Get.find<TravelDetectionService>();
+          if (preferences.autoTravelDetectionEnabled && !detectionService.isRunning.value) {
+            await detectionService.start();
+          } else if (!preferences.autoTravelDetectionEnabled && detectionService.isRunning.value) {
+            await detectionService.stop();
+          }
         }
 
         debugPrint('✅ 用户偏好设置加载成功');
@@ -138,6 +153,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
       await _preferencesRepository!.updatePreferences(
         notificationsEnabled: _notifications,
         travelHistoryVisible: _travelHistoryVisible,
+        autoTravelDetectionEnabled: _autoTravelDetection,
         profilePublic: _profilePublic,
         currency: _currency,
         temperatureUnit: _temperatureUnit,
@@ -158,6 +174,65 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
     if (Get.isRegistered<NotificationService>()) {
       final notificationService = Get.find<NotificationService>();
       _notifications = notificationService.isEnabled.value;
+    }
+  }
+
+  // 初始化自动旅行检测状态 - 从后端加载，在 _loadUserPreferences 中处理
+  void _initAutoTravelDetectionState() {
+    // 状态已在 _loadUserPreferences 中从后端加载
+    // 这里只是检查本地服务状态作为后备
+    if (Get.isRegistered<TravelDetectionService>()) {
+      final detectionService = Get.find<TravelDetectionService>();
+      // 如果后端还没加载，先用本地状态
+      if (!_isLoadingPreferences) {
+        _autoTravelDetection = detectionService.isEnabled.value;
+      }
+    }
+  }
+
+  // 处理自动旅行检测开关变化 - 同时保存到后端
+  Future<void> _handleAutoTravelDetectionToggle(bool value) async {
+    if (!Get.isRegistered<TravelDetectionService>()) {
+      debugPrint('⚠️ TravelDetectionService 未注册');
+      return;
+    }
+
+    final detectionService = Get.find<TravelDetectionService>();
+
+    if (value) {
+      // 启动自动检测
+      await detectionService.start();
+      if (mounted) {
+        setState(() => _autoTravelDetection = detectionService.isRunning.value);
+      }
+      log('🚀 自动旅行检测已启动');
+    } else {
+      // 停止自动检测
+      await detectionService.stop();
+      if (mounted) {
+        setState(() => _autoTravelDetection = false);
+      }
+      log('⏹️ 自动旅行检测已停止');
+    }
+
+    // 保存到后端
+    await _saveAutoTravelDetectionPreference(value);
+  }
+
+  // 保存自动旅行检测状态到后端
+  Future<void> _saveAutoTravelDetectionPreference(bool enabled) async {
+    if (_preferencesRepository == null) {
+      debugPrint('⚠️ UserPreferencesRepository 未注册，无法保存到后端');
+      return;
+    }
+
+    try {
+      await _preferencesRepository!.updatePreferences(
+        autoTravelDetectionEnabled: enabled,
+      );
+      debugPrint('✅ 自动旅行检测状态已保存到后端: $enabled');
+    } catch (e) {
+      debugPrint('❌ 保存自动旅行检测状态失败: $e');
     }
   }
 
@@ -971,6 +1046,13 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
             l10n.showTravelHistoryToOthers,
             _travelHistoryVisible,
             _handleTravelHistoryVisibleToggle,
+          ),
+          Divider(color: AppColors.divider),
+          _buildSwitchTile(
+            l10n.autoTravelDetection,
+            l10n.autoTravelDetectionDescription,
+            _autoTravelDetection,
+            _handleAutoTravelDetectionToggle,
           ),
           Divider(color: AppColors.divider),
           _buildSwitchTile(
