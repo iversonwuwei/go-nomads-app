@@ -76,6 +76,7 @@ class TravelHistoryApiRepository extends BaseRepository {
       );
 
       log('📋 旅行历史响应类型: ${response.data.runtimeType}');
+      log('📋 旅行历史响应内容: ${response.data}');
 
       // 处理响应数据可能是字符串的情况
       final responseData = response.data is String
@@ -90,13 +91,22 @@ class TravelHistoryApiRepository extends BaseRepository {
           throw ServerException('响应数据格式错误: data 应为列表，实际类型: ${data.runtimeType}', code: 'INVALID_DATA_FORMAT');
         }
 
-        final items = (data).map((e) {
+        final items = <TravelHistoryApiDto>[];
+        for (int i = 0; i < data.length; i++) {
+          final e = data[i];
           if (e is! Map<String, dynamic>) {
-            log('⚠️ 旅行历史项类型错误: ${e.runtimeType}, 值: $e');
+            log('⚠️ 旅行历史项[$i]类型错误: ${e.runtimeType}, 值: $e');
             throw ServerException('响应数据格式错误: 列表项应为对象', code: 'INVALID_ITEM_FORMAT');
           }
-          return TravelHistoryApiDto.fromJson(e);
-        }).toList();
+          try {
+            items.add(TravelHistoryApiDto.fromJson(e));
+          } catch (parseError, stackTrace) {
+            log('⚠️ 解析旅行历史项[$i]失败: $parseError');
+            log('📍 原始数据: $e');
+            log('📍 堆栈: $stackTrace');
+            rethrow;
+          }
+        }
         return items;
       }
 

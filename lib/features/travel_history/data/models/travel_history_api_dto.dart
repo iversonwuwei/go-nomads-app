@@ -41,6 +41,14 @@ class TravelHistoryApiDto {
   });
 
   factory TravelHistoryApiDto.fromJson(Map<String, dynamic> json) {
+    // 安全解析 durationDays，可能是 int 或 String
+    int? parseDurationDays(dynamic value) {
+      if (value == null) return null;
+      if (value is int) return value;
+      if (value is String) return int.tryParse(value);
+      return null;
+    }
+
     return TravelHistoryApiDto(
       id: json['id'] as String,
       userId: json['userId'] as String,
@@ -56,7 +64,7 @@ class TravelHistoryApiDto {
       rating: (json['rating'] as num?)?.toDouble(),
       photos: (json['photos'] as List<dynamic>?)?.map((e) => e as String).toList(),
       cityId: json['cityId'] as String?,
-      durationDays: json['durationDays'] as int?,
+      durationDays: parseDurationDays(json['durationDays']),
       isOngoing: json['isOngoing'] as bool? ?? false,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),

@@ -44,6 +44,7 @@ import 'package:df_admin_mobile/pages/register_page.dart';
 import 'package:df_admin_mobile/pages/skills_interests_page.dart';
 import 'package:df_admin_mobile/pages/travel_plan_page.dart';
 import 'package:df_admin_mobile/pages/user_profile_page.dart';
+import 'package:df_admin_mobile/routes/bindings/city_detail_binding.dart';
 import 'package:get/get.dart';
 
 class AppRoutes {
@@ -191,6 +192,7 @@ class AppRoutes {
           reviewCount: args['reviewCount'] ?? 0,
         );
       },
+      binding: CityDetailBinding(),
       middlewares: [AuthMiddleware()],
     ),
     GetPage(

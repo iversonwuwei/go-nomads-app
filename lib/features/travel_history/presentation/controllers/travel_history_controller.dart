@@ -4,11 +4,11 @@ import 'package:df_admin_mobile/features/user/domain/repositories/i_user_prefere
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../domain/entities/entities.dart';
-import '../../services/travel_detection_service.dart';
-import '../../services/reverse_geocoding_service.dart';
-import '../../services/travel_history_sync_service.dart';
 import '../../data/dao/travel_history_dao.dart';
+import '../../domain/entities/entities.dart';
+import '../../services/reverse_geocoding_service.dart';
+import '../../services/travel_detection_service.dart';
+import '../../services/travel_history_sync_service.dart';
 
 /// 旅行历史控制器
 /// 管理旅行历史页面的状态和业务逻辑
@@ -130,15 +130,19 @@ class TravelHistoryController extends GetxController {
   Future<void> loadData() async {
     isLoading.value = true;
     try {
+      log('📂 开始加载旅行历史数据...');
+      
       // 首先从后端同步数据
       await _syncWithBackend();
 
       // 加载已确认的旅行
       confirmedTrips.value = await _detectionService.getConfirmedTrips();
+      log('✅ 已加载 ${confirmedTrips.length} 条已确认旅行');
 
       // 刷新待确认的旅行
       await _detectionService.refreshPendingTrips();
       pendingTrips.value = _detectionService.pendingTrips;
+      log('✅ 已加载 ${pendingTrips.length} 条待确认旅行');
 
       // 加载统计信息
       statistics.value = await _detectionService.getStatistics();
@@ -147,8 +151,9 @@ class TravelHistoryController extends GetxController {
       await _geocodePendingTrips();
 
       log('✅ 旅行历史数据加载完成');
-    } catch (e) {
+    } catch (e, stackTrace) {
       log('❌ 加载旅行历史数据失败: $e');
+      log('📍 堆栈: $stackTrace');
     } finally {
       isLoading.value = false;
     }

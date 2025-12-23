@@ -3,12 +3,13 @@ import 'dart:developer';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 
+import '../../../config/api_config.dart';
 import '../../../core/core.dart';
 import '../../../services/token_storage_service.dart';
-import '../domain/entities/candidate_trip.dart';
 import '../data/dao/travel_history_dao.dart';
 import '../data/models/travel_history_api_dto.dart';
 import '../data/repositories/travel_history_api_repository.dart';
+import '../domain/entities/candidate_trip.dart';
 
 /// 旅行历史同步服务
 /// 负责在本地 SQLite 和后端服务之间同步旅行历史数据
@@ -47,6 +48,16 @@ class TravelHistorySyncService {
   /// 同步已确认的旅行到后端
   Future<void> syncConfirmedTripsToBackend() async {
     if (isSyncing.value) return;
+    
+    // 检查是否有有效的 token
+    final tokenService = Get.find<TokenStorageService>();
+    final token = await tokenService.getAccessToken();
+    
+    if (token == null || token.isEmpty) {
+      log('⚠️ 用户未登录，跳过同步旅行历史到后端');
+      return;
+    }
+    
     isSyncing.value = true;
 
     try {
@@ -105,22 +116,37 @@ class TravelHistorySyncService {
   /// 从后端拉取旅行历史
   Future<List<CandidateTrip>> fetchFromBackend() async {
     try {
+      // 检查是否有有效的 token
+      final tokenService = Get.find<TokenStorageService>();
+      final token = await tokenService.getAccessToken();
+      
+      if (token == null || token.isEmpty) {
+        log('⚠️ 用户未登录，跳过从后端获取旅行历史');
+        return <CandidateTrip>[];
+      }
+      
       log('📥 正在从后端获取旅行历史...');
+      log('🔗 API URL: ${ApiConfig.currentApiBaseUrl}${ApiConfig.travelHistoryConfirmedEndpoint}');
 
       final result = await _apiRepository.getConfirmedTravelHistory();
 
       return switch (result) {
         Success(data: final apiTrips) => () {
             log('✅ 从后端获取到 ${apiTrips.length} 条旅行历史');
+            if (apiTrips.isNotEmpty) {
+              log('📋 第一条数据: ${apiTrips.first.city}, ${apiTrips.first.country}');
+            }
             return apiTrips.map(_apiDtoToLocalTrip).toList();
           }(),
         Failure(exception: final exception) => () {
             log('❌ 从后端获取旅行历史失败: ${exception.message}');
+            log('📍 错误代码: ${exception.code}');
             return <CandidateTrip>[];
           }(),
       };
-    } catch (e) {
+    } catch (e, stackTrace) {
       log('❌ 从后端获取旅行历史异常: $e');
+      log('📍 堆栈: $stackTrace');
       return [];
     }
   }
@@ -135,31 +161,47 @@ class TravelHistorySyncService {
 
       // 1. 先从后端获取最新数据
       final backendTrips = await fetchFromBackend();
+      log('📥 从后端获取到 ${backendTrips.length} 条旅行历史');
 
       // 2. 获取本地已确认的旅行
       final localTrips = await _dao.getConfirmedTrips();
+      log('📂 本地已有 ${localTrips.length} 条已确认旅行历史');
 
       // 3. 合并数据（以后端为准，补充本地未同步的）
       final mergedTrips = _mergeTrips(localTrips, backendTrips);
+      log('🔀 合并后共 ${mergedTrips.length} 条旅行历史');
 
       // 4. 将合并后的数据保存到本地
+      int insertedCount = 0;
+      int updatedCount = 0;
       for (final trip in mergedTrips) {
         if (trip.id != null) {
           // 更新现有记录
           await _dao.updateCandidateTrip(trip);
+          updatedCount++;
         } else {
-          // 插入新记录
-          await _dao.insertCandidateTrip(trip);
+          // 检查是否已存在相似记录，避免重复插入
+          final exists = await _dao.existsSimilarTrip(trip);
+          if (!exists) {
+            // 插入新记录
+            await _dao.insertCandidateTrip(trip);
+            insertedCount++;
+            log('➕ 插入新旅行: ${trip.cityName}, ${trip.countryName}');
+          } else {
+            log('⏭️ 跳过重复旅行: ${trip.cityName}, ${trip.countryName}');
+          }
         }
       }
+      log('📊 同步结果: 插入 $insertedCount 条, 更新 $updatedCount 条');
 
       // 5. 上传本地未同步的数据到后端
       await syncConfirmedTripsToBackend();
 
       _lastSyncTime = DateTime.now();
       log('✅ 完整同步完成');
-    } catch (e) {
+    } catch (e, stackTrace) {
       log('❌ 完整同步失败: $e');
+      log('📍 堆栈: $stackTrace');
     } finally {
       isSyncing.value = false;
     }
