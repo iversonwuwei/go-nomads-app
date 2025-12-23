@@ -2083,7 +2083,13 @@
         "type": "String"
       }
     }
-  }
+  },
+  "synced": "Synced",
+  "nights": "nights",
+  "tip": "Tip",
+  "travelHistoryNoCityLink": "This trip record is not linked to a city",
+  "syncCompleted": "Sync completed",
+  "syncFailed": "Sync failed"
 }
 
 

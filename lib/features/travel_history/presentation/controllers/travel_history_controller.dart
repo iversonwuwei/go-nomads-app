@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:df_admin_mobile/features/user/domain/repositories/i_user_preferences_repository.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -180,16 +181,18 @@ class TravelHistoryController extends GetxController {
       // 重新加载数据
       confirmedTrips.value = await _detectionService.getConfirmedTrips();
       
+      final l10n = AppLocalizations.of(Get.context!)!;
       Get.snackbar(
-        'success'.tr,
-        'sync_completed'.tr,
+        l10n.success,
+        l10n.syncCompleted,
         snackPosition: SnackPosition.BOTTOM,
       );
     } catch (e) {
       log('❌ 同步失败: $e');
+      final l10n = AppLocalizations.of(Get.context!)!;
       Get.snackbar(
-        'error'.tr,
-        'sync_failed'.tr,
+        l10n.error,
+        l10n.syncFailed,
         snackPosition: SnackPosition.BOTTOM,
       );
     }
@@ -246,9 +249,10 @@ class TravelHistoryController extends GetxController {
       final confirmedTrip = trip.confirm();
       confirmedTrips.insert(0, confirmedTrip);
 
+      final l10n = AppLocalizations.of(Get.context!)!;
       Get.snackbar(
-        'success'.tr,
-        'travel_saved'.tr,
+        l10n.success,
+        l10n.travelSaved,
         snackPosition: SnackPosition.BOTTOM,
       );
 
@@ -264,9 +268,10 @@ class TravelHistoryController extends GetxController {
       });
     } catch (e) {
       log('❌ 确认旅行失败: $e');
+      final l10n = AppLocalizations.of(Get.context!)!;
       Get.snackbar(
-        'error'.tr,
-        'save_failed'.tr,
+        l10n.error,
+        l10n.saveFailed,
         snackPosition: SnackPosition.BOTTOM,
       );
     }
@@ -294,9 +299,10 @@ class TravelHistoryController extends GetxController {
       // 使用 geolocator 获取当前位置
       final position = await Get.find<dynamic>().getCurrentLocation();
       if (position == null) {
+        final l10n = AppLocalizations.of(Get.context!)!;
         Get.snackbar(
-          'error'.tr,
-          'location_unavailable'.tr,
+          l10n.error,
+          l10n.locationUnavailable,
           snackPosition: SnackPosition.BOTTOM,
         );
         return;
@@ -324,18 +330,20 @@ class TravelHistoryController extends GetxController {
         }
       }
 
+      final l10n = AppLocalizations.of(Get.context!)!;
       Get.snackbar(
-        'success'.tr,
-        'home_location_set'.tr,
+        l10n.success,
+        l10n.homeLocationSet,
         snackPosition: SnackPosition.BOTTOM,
       );
 
       log('🏠 常住地已设置');
     } catch (e) {
       log('❌ 设置常住地失败: $e');
+      final l10n = AppLocalizations.of(Get.context!)!;
       Get.snackbar(
-        'error'.tr,
-        'set_home_failed'.tr,
+        l10n.error,
+        l10n.setHomeFailed,
         snackPosition: SnackPosition.BOTTOM,
       );
     } finally {
@@ -351,10 +359,11 @@ class TravelHistoryController extends GetxController {
 
   /// 清除所有数据
   Future<void> clearAllData() async {
+    final l10n = AppLocalizations.of(Get.context!)!;
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
-        title: Text('confirm_clear'.tr),
-        content: Text('clear_all_data_warning'.tr),
+        title: Text(l10n.confirmClear),
+        content: Text(l10n.clearAllDataWarning),
         actions: [
           TextButton(
             onPressed: () {
@@ -362,7 +371,7 @@ class TravelHistoryController extends GetxController {
                 Get.back(result: false);
               }
             },
-            child: Text('cancel'.tr),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () {
@@ -371,7 +380,7 @@ class TravelHistoryController extends GetxController {
               }
             },
             child: Text(
-              'clear'.tr,
+              l10n.clear,
               style: const TextStyle(color: Colors.red),
             ),
           ),

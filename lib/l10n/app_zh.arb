@@ -2067,7 +2067,13 @@
         "type": "String"
       }
     }
-  }
+  },
+  "synced": "已同步",
+  "nights": "晚",
+  "tip": "提示",
+  "travelHistoryNoCityLink": "此旅行记录暂无关联城市",
+  "syncCompleted": "同步完成",
+  "syncFailed": "同步失败"
 }
 
 

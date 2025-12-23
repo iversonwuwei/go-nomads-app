@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
@@ -14,10 +16,12 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text('travel_history'.tr),
+        leading: const AppBackButton(),
+        title: Text(l10n.travelHistory),
         backgroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -28,7 +32,7 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
                   color: controller.isAutoDetectionEnabled.value ? AppColors.cityPrimary : AppColors.textTertiary,
                 ),
                 onPressed: controller.toggleAutoDetection,
-                tooltip: controller.isAutoDetectionEnabled.value ? 'auto_detection_on'.tr : 'auto_detection_off'.tr,
+                tooltip: controller.isAutoDetectionEnabled.value ? l10n.autoDetectionOn : l10n.autoDetectionOff,
               )),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert, color: AppColors.textPrimary),
@@ -49,7 +53,7 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
                   children: [
                     const Icon(Icons.home, size: 20),
                     const SizedBox(width: 8),
-                    Text('set_home_location'.tr),
+                    Text(l10n.setHomeLocation),
                   ],
                 ),
               ),
@@ -60,7 +64,7 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
                     const Icon(Icons.delete_outline, size: 20, color: Colors.red),
                     const SizedBox(width: 8),
                     Text(
-                      'clear_all_data'.tr,
+                      l10n.clearAllData,
                       style: const TextStyle(color: Colors.red),
                     ),
                   ],
@@ -82,14 +86,14 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
               // 常住地信息卡片
               if (controller.homeLocation.value != null)
                 SliverToBoxAdapter(
-                  child: _buildHomeLocationCard(),
+                  child: _buildHomeLocationCard(context),
                 ),
 
               // 待确认的旅行
               if (controller.pendingTrips.isNotEmpty) ...[
                 SliverToBoxAdapter(
                   child: _buildSectionHeader(
-                    'pending_confirmation'.tr,
+                    l10n.pendingConfirmation,
                     count: controller.pendingTrips.length,
                   ),
                 ),
@@ -111,7 +115,7 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
               // 已确认的旅行历史
               SliverToBoxAdapter(
                 child: _buildSectionHeader(
-                  'confirmed_trips'.tr,
+                  l10n.confirmedTrips,
                   count: controller.confirmedTrips.length,
                 ),
               ),
@@ -119,14 +123,14 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
               if (controller.confirmedTrips.isEmpty)
                 SliverFillRemaining(
                   hasScrollBody: false,
-                  child: _buildEmptyState(),
+                  child: _buildEmptyState(context),
                 )
               else
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
                       final trip = controller.confirmedTrips[index];
-                      return _buildTripHistoryCard(trip);
+                      return _buildTripHistoryCard(context, trip);
                     },
                     childCount: controller.confirmedTrips.length,
                   ),
@@ -143,7 +147,8 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
     );
   }
 
-  Widget _buildHomeLocationCard() {
+  Widget _buildHomeLocationCard(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final home = controller.homeLocation.value!;
     return Card(
       margin: const EdgeInsets.all(16),
@@ -170,7 +175,7 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'home_location'.tr,
+                    l10n.homeLocation,
                     style: const TextStyle(
                       fontSize: 12,
                       color: AppColors.textTertiary,
@@ -179,10 +184,10 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
                   const SizedBox(height: 4),
                   Text(
                     home.cityName ??
-                        'location_coordinates'.trParams({
-                          'lat': home.latitude.toStringAsFixed(4),
-                          'lon': home.longitude.toStringAsFixed(4),
-                        }),
+                        l10n.locationCoordinates(
+                          home.latitude.toStringAsFixed(4),
+                          home.longitude.toStringAsFixed(4),
+                        ),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -191,7 +196,7 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
                   ),
                   if (home.confidence > 0)
                     Text(
-                      'confidence'.trParams({'percent': home.confidence.toString()}),
+                      l10n.confidence(home.confidence.toString()),
                       style: const TextStyle(
                         fontSize: 12,
                         color: AppColors.textTertiary,
@@ -266,7 +271,8 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
     );
   }
 
-  Widget _buildTripHistoryCard(CandidateTrip trip) {
+  Widget _buildTripHistoryCard(BuildContext context, CandidateTrip trip) {
+    final l10n = AppLocalizations.of(context)!;
     final monthFormat = DateFormat('MMM');
     final dayFormat = DateFormat('dd');
     
@@ -274,8 +280,8 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
     final duration = trip.departureTime.difference(trip.arrivalTime);
     final nights = duration.inDays;
     final durationText = nights > 0 
-        ? '$nights ${'nights'.tr}' 
-        : '${duration.inHours} ${'hours'.tr}';
+        ? '$nights ${l10n.nights}' 
+        : '${duration.inHours} ${l10n.hours}';
     
     // 获取国旗 emoji（如果有国家代码）
     String? flagEmoji;
@@ -315,8 +321,8 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
               );
             } else {
               Get.snackbar(
-                'tip'.tr,
-                'travel_history_no_city_link'.tr,
+                l10n.tip,
+                l10n.travelHistoryNoCityLink,
                 snackPosition: SnackPosition.BOTTOM,
                 duration: const Duration(seconds: 2),
               );
@@ -440,7 +446,7 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
                           if (trip.isSyncedToBackend)
                             _buildInfoChip(
                               icon: Icons.cloud_done_rounded,
-                              label: 'synced'.tr,
+                              label: l10n.synced,
                               color: Colors.green,
                             ),
                         ],
@@ -495,7 +501,8 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -507,7 +514,7 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
           ),
           const SizedBox(height: 16),
           Text(
-            'no_travel_history'.tr,
+            l10n.noTravelHistory,
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -518,7 +525,7 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 48),
             child: Text(
-              'travel_history_empty_hint'.tr,
+              l10n.travelHistoryEmptyHint,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 14,
@@ -544,7 +551,7 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'auto_detection_active'.tr,
+                        l10n.autoDetectionActive,
                         style: const TextStyle(
                           color: AppColors.cityPrimary,
                           fontWeight: FontWeight.w500,
@@ -556,7 +563,7 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
               : OutlinedButton.icon(
                   onPressed: controller.toggleAutoDetection,
                   icon: const Icon(Icons.location_off),
-                  label: Text('enable_auto_detection'.tr),
+                  label: Text(l10n.enableAutoDetection),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.cityPrimary,
                   ),

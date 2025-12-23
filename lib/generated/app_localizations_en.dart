@@ -4063,4 +4063,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String confidence(String percent) {
     return 'Confidence: $percent%';
   }
+
+  @override
+  String get synced => 'Synced';
+
+  @override
+  String get nights => 'nights';
+
+  @override
+  String get tip => 'Tip';
+
+  @override
+  String get travelHistoryNoCityLink =>
+      'This trip record is not linked to a city';
+
+  @override
+  String get syncCompleted => 'Sync completed';
+
+  @override
+  String get syncFailed => 'Sync failed';
 }
