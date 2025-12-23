@@ -84,7 +84,7 @@ class _CityChatPageState extends State<CityChatPage> {
             },
           );
         }
-        
+
         // 显示聊天视图
         final meetupTitle = (Get.arguments as Map<String, dynamic>?)?['city'] as String?;
         return _ChatRoomView(
@@ -685,10 +685,9 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
   PreferredSizeWidget _buildAppBar() {
     final room = widget.controller.currentRoom;
     // 对于 Meetup 聊天室，优先使用传入的 meetupTitle，确保显示正确的活动名称
-    final roomName = widget.isMeetupChat && widget.meetupTitle != null
-        ? widget.meetupTitle!
-        : (room?.displayName ?? '聊天室');
-    
+    final roomName =
+        widget.isMeetupChat && widget.meetupTitle != null ? widget.meetupTitle! : (room?.displayName ?? '聊天室');
+
     return AppBar(
       backgroundColor: const Color(0xFFEDEDED),
       elevation: 0,
