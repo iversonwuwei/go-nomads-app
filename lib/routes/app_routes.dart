@@ -1,5 +1,6 @@
 import 'package:df_admin_mobile/features/membership/presentation/pages/membership_plan_page.dart';
 import 'package:df_admin_mobile/features/moderator/presentation/pages/moderator_application_detail_page.dart';
+import 'package:df_admin_mobile/features/travel_history/travel_history.dart';
 import 'package:df_admin_mobile/layouts/bottom_nav_layout.dart';
 import 'package:df_admin_mobile/middlewares/auth_middleware.dart';
 import 'package:df_admin_mobile/pages/add_cost_page.dart';
@@ -94,6 +95,7 @@ class AppRoutes {
   // ============================================================================
   static const String travelPlan = '/travel-plan';
   static const String createTravelPlan = '/create-travel-plan';
+  static const String travelHistory = '/travel-history';
 
   // ============================================================================
   // 创新项目相关路由
@@ -361,6 +363,12 @@ class AppRoutes {
           cityName: args['cityName'],
         );
       },
+      middlewares: [AuthMiddleware()],
+    ),
+    GetPage(
+      name: travelHistory,
+      page: () => const TravelHistoryPage(),
+      binding: TravelHistoryBinding(),
       middlewares: [AuthMiddleware()],
     ),
 

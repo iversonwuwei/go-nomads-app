@@ -6410,11 +6410,11 @@ abstract class AppLocalizations {
   /// **'在地图上选择位置'**
   String get pickLocationOnMap;
 
-  /// 位置坐标
+  /// No description provided for @locationCoordinates.
   ///
   /// In zh, this message translates to:
-  /// **'位置：{lat}, {lng}'**
-  String locationCoordinates(String lat, String lng);
+  /// **'{lat}, {lon}'**
+  String locationCoordinates(String lat, String lon);
 
   /// No description provided for @contactInformation.
   ///
@@ -7412,6 +7412,18 @@ abstract class AppLocalizations {
   /// **'向其他用户展示您的旅行历史'**
   String get showTravelHistoryToOthers;
 
+  /// No description provided for @autoTravelDetection.
+  ///
+  /// In zh, this message translates to:
+  /// **'自动旅行记录'**
+  String get autoTravelDetection;
+
+  /// No description provided for @autoTravelDetectionDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'自动检测并记录您的旅行足迹'**
+  String get autoTravelDetectionDescription;
+
   /// No description provided for @publicProfile.
   ///
   /// In zh, this message translates to:
@@ -7687,6 +7699,192 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'支付宝错误：{error}'**
   String alipayError(String error);
+
+  /// No description provided for @travelDetected.
+  ///
+  /// In zh, this message translates to:
+  /// **'发现新旅行'**
+  String get travelDetected;
+
+  /// No description provided for @saveTravelQuestion.
+  ///
+  /// In zh, this message translates to:
+  /// **'要保存这次旅行吗？'**
+  String get saveTravelQuestion;
+
+  /// No description provided for @saveTravel.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存旅行'**
+  String get saveTravel;
+
+  /// No description provided for @ignore.
+  ///
+  /// In zh, this message translates to:
+  /// **'忽略'**
+  String get ignore;
+
+  /// No description provided for @travelSaved.
+  ///
+  /// In zh, this message translates to:
+  /// **'旅行已保存'**
+  String get travelSaved;
+
+  /// No description provided for @saveFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存失败'**
+  String get saveFailed;
+
+  /// No description provided for @dismiss.
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭'**
+  String get dismiss;
+
+  /// No description provided for @noPendingTrips.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无待确认的旅行'**
+  String get noPendingTrips;
+
+  /// No description provided for @travelDetectedBanner.
+  ///
+  /// In zh, this message translates to:
+  /// **'我们发现您最近去过 {city}'**
+  String travelDetectedBanner(String city);
+
+  /// No description provided for @tapToSave.
+  ///
+  /// In zh, this message translates to:
+  /// **'点击保存这次旅行'**
+  String get tapToSave;
+
+  /// No description provided for @durationDays.
+  ///
+  /// In zh, this message translates to:
+  /// **'{days} 天'**
+  String durationDays(String days);
+
+  /// No description provided for @distanceFromHome.
+  ///
+  /// In zh, this message translates to:
+  /// **'距离常住地 {km} 公里'**
+  String distanceFromHome(String km);
+
+  /// No description provided for @pendingConfirmation.
+  ///
+  /// In zh, this message translates to:
+  /// **'待确认'**
+  String get pendingConfirmation;
+
+  /// No description provided for @confirmedTrips.
+  ///
+  /// In zh, this message translates to:
+  /// **'旅行记录'**
+  String get confirmedTrips;
+
+  /// No description provided for @homeLocation.
+  ///
+  /// In zh, this message translates to:
+  /// **'常住地'**
+  String get homeLocation;
+
+  /// No description provided for @setHomeLocation.
+  ///
+  /// In zh, this message translates to:
+  /// **'设置常住地'**
+  String get setHomeLocation;
+
+  /// No description provided for @homeLocationSet.
+  ///
+  /// In zh, this message translates to:
+  /// **'常住地已设置'**
+  String get homeLocationSet;
+
+  /// No description provided for @setHomeFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'设置常住地失败'**
+  String get setHomeFailed;
+
+  /// No description provided for @locationUnavailable.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法获取位置信息'**
+  String get locationUnavailable;
+
+  /// No description provided for @autoDetectionOn.
+  ///
+  /// In zh, this message translates to:
+  /// **'自动检测已开启'**
+  String get autoDetectionOn;
+
+  /// No description provided for @autoDetectionOff.
+  ///
+  /// In zh, this message translates to:
+  /// **'自动检测已关闭'**
+  String get autoDetectionOff;
+
+  /// No description provided for @clearAllData.
+  ///
+  /// In zh, this message translates to:
+  /// **'清除所有数据'**
+  String get clearAllData;
+
+  /// No description provided for @confirmClear.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认清除'**
+  String get confirmClear;
+
+  /// No description provided for @clearAllDataWarning.
+  ///
+  /// In zh, this message translates to:
+  /// **'此操作将清除所有旅行检测数据，包括位置记录、停留点和旅行历史。此操作无法撤销。'**
+  String get clearAllDataWarning;
+
+  /// No description provided for @clear.
+  ///
+  /// In zh, this message translates to:
+  /// **'清除'**
+  String get clear;
+
+  /// No description provided for @dataCleared.
+  ///
+  /// In zh, this message translates to:
+  /// **'数据已清除'**
+  String get dataCleared;
+
+  /// No description provided for @noTravelHistory.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无旅行记录'**
+  String get noTravelHistory;
+
+  /// No description provided for @travelHistoryEmptyHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'开启自动检测后，我们会自动识别您的旅行并提醒您保存'**
+  String get travelHistoryEmptyHint;
+
+  /// No description provided for @autoDetectionActive.
+  ///
+  /// In zh, this message translates to:
+  /// **'自动检测已开启'**
+  String get autoDetectionActive;
+
+  /// No description provided for @enableAutoDetection.
+  ///
+  /// In zh, this message translates to:
+  /// **'开启自动检测'**
+  String get enableAutoDetection;
+
+  /// No description provided for @confidence.
+  ///
+  /// In zh, this message translates to:
+  /// **'置信度：{percent}%'**
+  String confidence(String percent);
 }
 
 class _AppLocalizationsDelegate

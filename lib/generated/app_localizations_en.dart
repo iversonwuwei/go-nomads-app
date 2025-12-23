@@ -713,7 +713,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String days(int count) {
-    return 'Days';
+    return 'days';
   }
 
   @override
@@ -3261,8 +3261,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pickLocationOnMap => 'Pick Location on Map';
 
   @override
-  String locationCoordinates(String lat, String lng) {
-    return 'Location: $lat, $lng';
+  String locationCoordinates(String lat, String lon) {
+    return '$lat, $lon';
   }
 
   @override
@@ -3798,6 +3798,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Show your travel history to other users';
 
   @override
+  String get autoTravelDetection => 'Auto Travel Detection';
+
+  @override
+  String get autoTravelDetectionDescription =>
+      'Automatically detect and record your travels';
+
+  @override
   String get publicProfile => 'Public Profile';
 
   @override
@@ -3952,5 +3959,108 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String alipayError(String error) {
     return 'Alipay error: $error';
+  }
+
+  @override
+  String get travelDetected => 'New Trip Detected';
+
+  @override
+  String get saveTravelQuestion => 'Would you like to save this trip?';
+
+  @override
+  String get saveTravel => 'Save Trip';
+
+  @override
+  String get ignore => 'Ignore';
+
+  @override
+  String get travelSaved => 'Trip saved';
+
+  @override
+  String get saveFailed => 'Failed to save';
+
+  @override
+  String get dismiss => 'Dismiss';
+
+  @override
+  String get noPendingTrips => 'No pending trips';
+
+  @override
+  String travelDetectedBanner(String city) {
+    return 'We noticed you recently visited $city';
+  }
+
+  @override
+  String get tapToSave => 'Tap to save this trip';
+
+  @override
+  String durationDays(String days) {
+    return '$days days';
+  }
+
+  @override
+  String distanceFromHome(String km) {
+    return '$km km from home';
+  }
+
+  @override
+  String get pendingConfirmation => 'Pending Confirmation';
+
+  @override
+  String get confirmedTrips => 'Trip Records';
+
+  @override
+  String get homeLocation => 'Home Location';
+
+  @override
+  String get setHomeLocation => 'Set Home Location';
+
+  @override
+  String get homeLocationSet => 'Home location set';
+
+  @override
+  String get setHomeFailed => 'Failed to set home location';
+
+  @override
+  String get locationUnavailable => 'Location unavailable';
+
+  @override
+  String get autoDetectionOn => 'Auto detection on';
+
+  @override
+  String get autoDetectionOff => 'Auto detection off';
+
+  @override
+  String get clearAllData => 'Clear All Data';
+
+  @override
+  String get confirmClear => 'Confirm Clear';
+
+  @override
+  String get clearAllDataWarning =>
+      'This will clear all travel detection data including location records, stay points and trip history. This action cannot be undone.';
+
+  @override
+  String get clear => 'Clear';
+
+  @override
+  String get dataCleared => 'Data cleared';
+
+  @override
+  String get noTravelHistory => 'No travel history';
+
+  @override
+  String get travelHistoryEmptyHint =>
+      'Enable auto detection and we\'ll automatically identify your trips and remind you to save them';
+
+  @override
+  String get autoDetectionActive => 'Auto detection active';
+
+  @override
+  String get enableAutoDetection => 'Enable Auto Detection';
+
+  @override
+  String confidence(String percent) {
+    return 'Confidence: $percent%';
   }
 }

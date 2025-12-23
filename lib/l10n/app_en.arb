@@ -1891,6 +1891,8 @@
   "receiveUpdatesAndAlerts": "Receive updates and alerts",
   "travelHistoryVisible": "Travel History Visible",
   "showTravelHistoryToOthers": "Show your travel history to other users",
+  "autoTravelDetection": "Auto Travel Detection",
+  "autoTravelDetectionDescription": "Automatically detect and record your travels",
   "publicProfile": "Public Profile",
   "makeProfileVisibleToEveryone": "Make your profile visible to everyone",
   "currency": "Currency",
@@ -2005,6 +2007,79 @@
   "@alipayError": {
     "placeholders": {
       "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "travelHistory": "Travel History",
+  "travelDetected": "New Trip Detected",
+  "saveTravelQuestion": "Would you like to save this trip?",
+  "saveTravel": "Save Trip",
+  "ignore": "Ignore",
+  "travelSaved": "Trip saved",
+  "saveFailed": "Failed to save",
+  "dismiss": "Dismiss",
+  "noPendingTrips": "No pending trips",
+  "travelDetectedBanner": "We noticed you recently visited {city}",
+  "@travelDetectedBanner": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "tapToSave": "Tap to save this trip",
+  "durationDays": "{days} days",
+  "@durationDays": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "distanceFromHome": "{km} km from home",
+  "@distanceFromHome": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "pendingConfirmation": "Pending Confirmation",
+  "confirmedTrips": "Trip Records",
+  "homeLocation": "Home Location",
+  "setHomeLocation": "Set Home Location",
+  "homeLocationSet": "Home location set",
+  "setHomeFailed": "Failed to set home location",
+  "locationUnavailable": "Location unavailable",
+  "autoDetectionOn": "Auto detection on",
+  "autoDetectionOff": "Auto detection off",
+  "clearAllData": "Clear All Data",
+  "confirmClear": "Confirm Clear",
+  "clearAllDataWarning": "This will clear all travel detection data including location records, stay points and trip history. This action cannot be undone.",
+  "clear": "Clear",
+  "dataCleared": "Data cleared",
+  "noTravelHistory": "No travel history",
+  "travelHistoryEmptyHint": "Enable auto detection and we'll automatically identify your trips and remind you to save them",
+  "autoDetectionActive": "Auto detection active",
+  "enableAutoDetection": "Enable Auto Detection",
+  "days": "days",
+  "locationCoordinates": "{lat}, {lon}",
+  "@locationCoordinates": {
+    "placeholders": {
+      "lat": {
+        "type": "String"
+      },
+      "lon": {
+        "type": "String"
+      }
+    }
+  },
+  "confidence": "Confidence: {percent}%",
+  "@confidence": {
+    "placeholders": {
+      "percent": {
         "type": "String"
       }
     }

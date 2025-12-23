@@ -1875,6 +1875,8 @@
   "receiveUpdatesAndAlerts": "接收更新和提醒",
   "travelHistoryVisible": "旅行历史可见",
   "showTravelHistoryToOthers": "向其他用户展示您的旅行历史",
+  "autoTravelDetection": "自动旅行记录",
+  "autoTravelDetectionDescription": "自动检测并记录您的旅行足迹",
   "publicProfile": "公开资料",
   "makeProfileVisibleToEveryone": "让所有人都能看到您的资料",
   "currency": "货币",
@@ -1989,6 +1991,79 @@
   "@alipayError": {
     "placeholders": {
       "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "travelHistory": "旅行历史",
+  "travelDetected": "发现新旅行",
+  "saveTravelQuestion": "要保存这次旅行吗？",
+  "saveTravel": "保存旅行",
+  "ignore": "忽略",
+  "travelSaved": "旅行已保存",
+  "saveFailed": "保存失败",
+  "dismiss": "关闭",
+  "noPendingTrips": "暂无待确认的旅行",
+  "travelDetectedBanner": "我们发现您最近去过 {city}",
+  "@travelDetectedBanner": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "tapToSave": "点击保存这次旅行",
+  "durationDays": "{days} 天",
+  "@durationDays": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "distanceFromHome": "距离常住地 {km} 公里",
+  "@distanceFromHome": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "pendingConfirmation": "待确认",
+  "confirmedTrips": "旅行记录",
+  "homeLocation": "常住地",
+  "setHomeLocation": "设置常住地",
+  "homeLocationSet": "常住地已设置",
+  "setHomeFailed": "设置常住地失败",
+  "locationUnavailable": "无法获取位置信息",
+  "autoDetectionOn": "自动检测已开启",
+  "autoDetectionOff": "自动检测已关闭",
+  "clearAllData": "清除所有数据",
+  "confirmClear": "确认清除",
+  "clearAllDataWarning": "此操作将清除所有旅行检测数据，包括位置记录、停留点和旅行历史。此操作无法撤销。",
+  "clear": "清除",
+  "dataCleared": "数据已清除",
+  "noTravelHistory": "暂无旅行记录",
+  "travelHistoryEmptyHint": "开启自动检测后，我们会自动识别您的旅行并提醒您保存",
+  "autoDetectionActive": "自动检测已开启",
+  "enableAutoDetection": "开启自动检测",
+  "days": "天",
+  "locationCoordinates": "{lat}, {lon}",
+  "@locationCoordinates": {
+    "placeholders": {
+      "lat": {
+        "type": "String"
+      },
+      "lon": {
+        "type": "String"
+      }
+    }
+  },
+  "confidence": "置信度：{percent}%",
+  "@confidence": {
+    "placeholders": {
+      "percent": {
         "type": "String"
       }
     }

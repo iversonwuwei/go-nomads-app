@@ -27,6 +27,9 @@ class UserDto {
   /// 用户会员信息
   final UserMembershipDto? membership;
 
+  /// 最新旅行历史（从后端返回）
+  final LatestTravelHistoryDto? latestTravelHistory;
+
   UserDto({
     required this.id,
     this.name,
@@ -45,6 +48,7 @@ class UserDto {
     this.joinedDate,
     this.isVerified = false,
     this.membership,
+    this.latestTravelHistory,
   });
 
   factory UserDto.fromJson(Map<String, dynamic> json) {
@@ -77,6 +81,9 @@ class UserDto {
       isVerified: json['isVerified'] as bool? ?? false,
       membership:
           json['membership'] != null ? UserMembershipDto.fromJson(json['membership'] as Map<String, dynamic>) : null,
+      latestTravelHistory: json['latestTravelHistory'] != null
+          ? LatestTravelHistoryDto.fromJson(json['latestTravelHistory'] as Map<String, dynamic>)
+          : null,
     );
   }
 
@@ -99,6 +106,7 @@ class UserDto {
       'joinedDate': joinedDate?.toIso8601String(),
       'isVerified': isVerified,
       if (membership != null) 'membership': membership!.toJson(),
+      if (latestTravelHistory != null) 'latestTravelHistory': latestTravelHistory!.toJson(),
     };
   }
 
@@ -129,6 +137,7 @@ class UserDto {
       joinedDate: joinedDate ?? DateTime.now(),
       isVerified: isVerified,
       membership: membership?.toDomain(),
+      latestTravelHistory: latestTravelHistory?.toDomain(),
     );
   }
 
@@ -469,6 +478,85 @@ class UserMembershipDto {
       autoRenew: autoRenew,
       aiUsageThisMonth: aiUsageThisMonth,
       moderatorDeposit: moderatorDeposit,
+    );
+  }
+}
+
+/// 最新旅行历史 DTO
+/// 用于解析后端返回的 latestTravelHistory 字段
+class LatestTravelHistoryDto {
+  final String id;
+  final String city;
+  final String country;
+  final double? latitude;
+  final double? longitude;
+  final DateTime arrivalTime;
+  final DateTime? departureTime;
+  final bool isConfirmed;
+  final String? cityId;
+  final int? durationDays;
+  final bool isOngoing;
+
+  LatestTravelHistoryDto({
+    required this.id,
+    required this.city,
+    required this.country,
+    this.latitude,
+    this.longitude,
+    required this.arrivalTime,
+    this.departureTime,
+    this.isConfirmed = true,
+    this.cityId,
+    this.durationDays,
+    this.isOngoing = false,
+  });
+
+  factory LatestTravelHistoryDto.fromJson(Map<String, dynamic> json) {
+    return LatestTravelHistoryDto(
+      id: json['id'] as String? ?? '',
+      city: json['city'] as String? ?? '',
+      country: json['country'] as String? ?? '',
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
+      arrivalTime: json['arrivalTime'] != null ? DateTime.parse(json['arrivalTime'] as String) : DateTime.now(),
+      departureTime: json['departureTime'] != null ? DateTime.parse(json['departureTime'] as String) : null,
+      isConfirmed: json['isConfirmed'] as bool? ?? true,
+      cityId: json['cityId'] as String?,
+      durationDays: json['durationDays'] as int?,
+      isOngoing: json['isOngoing'] as bool? ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'city': city,
+      'country': country,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
+      'arrivalTime': arrivalTime.toIso8601String(),
+      if (departureTime != null) 'departureTime': departureTime!.toIso8601String(),
+      'isConfirmed': isConfirmed,
+      if (cityId != null) 'cityId': cityId,
+      if (durationDays != null) 'durationDays': durationDays,
+      'isOngoing': isOngoing,
+    };
+  }
+
+  /// 转换为领域实体
+  entity.LatestTravelHistory toDomain() {
+    return entity.LatestTravelHistory(
+      id: id,
+      city: city,
+      country: country,
+      latitude: latitude,
+      longitude: longitude,
+      arrivalTime: arrivalTime,
+      departureTime: departureTime,
+      isConfirmed: isConfirmed,
+      cityId: cityId,
+      durationDays: durationDays,
+      isOngoing: isOngoing,
     );
   }
 }

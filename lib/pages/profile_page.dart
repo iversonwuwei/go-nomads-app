@@ -9,6 +9,7 @@ import 'package:df_admin_mobile/features/notification/presentation/controllers/n
 import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan_summary.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
 import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:df_admin_mobile/features/travel_history/routes/travel_history_routes.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
@@ -240,8 +241,8 @@ class _ProfilePageState extends State<ProfilePage> with RouteAwareRefreshMixin<P
                         _buildSkillsAndInterests(context, user, controller, isMobile),
                         const SizedBox(height: 32),
 
-                        // Travel History
-                        _buildTravelHistory(context, user.travelHistory, isMobile),
+                        // Travel History - 显示最新一条旅行历史
+                        _buildLatestTravelHistory(context, user.latestTravelHistory, isMobile),
                         const SizedBox(height: 32),
 
                         // Social Links
@@ -950,104 +951,217 @@ class _ProfilePageState extends State<ProfilePage> with RouteAwareRefreshMixin<P
     );
   }
 
-  // Travel History
-  Widget _buildTravelHistory(BuildContext context, List<TravelHistory> history, bool isMobile) {
+  // Travel History - 显示最新一条旅行历史并支持点击跳转
+  Widget _buildLatestTravelHistory(BuildContext context, LatestTravelHistory? latestTrip, bool isMobile) {
     final l10n = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(l10n.travelHistory,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1a1a1a))),
+        // 标题行：点击可进入完整旅行历史页面
+        InkWell(
+          onTap: () {
+            Get.toNamed(TravelHistoryRoutes.travelHistory);
+          },
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  l10n.travelHistory,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1a1a1a),
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right,
+                  color: Color(0xFF6b7280),
+                ),
+              ],
+            ),
+          ),
+        ),
         const SizedBox(height: 16),
-        history.isEmpty
-            ? Container(
-                padding: EdgeInsets.symmetric(
-                  vertical: isMobile ? 40 : 60,
-                  horizontal: isMobile ? 20 : 40,
-                ),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.grey.withValues(alpha: 0.3),
-                    width: 1,
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        FontAwesomeIcons.compass,
-                        size: isMobile ? 48 : 64,
-                        color: Colors.grey.withValues(alpha: 0.4),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'No travel history yet',
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: isMobile ? 16 : 18,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Start your digital nomad journey!',
-                        style: TextStyle(
-                          color: Colors.grey[500],
-                          fontSize: isMobile ? 14 : 16,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            : Column(
-                children: history.map((trip) => _buildTravelHistoryCard(trip)).toList(),
-              ),
+        latestTrip == null ? _buildEmptyTravelHistory(isMobile) : _buildLatestTripCard(latestTrip, isMobile),
       ],
     );
   }
 
-  Widget _buildTravelHistoryCard(TravelHistory trip) {
+  /// 构建空状态旅行历史
+  Widget _buildEmptyTravelHistory(bool isMobile) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.symmetric(
+        vertical: isMobile ? 40 : 60,
+        horizontal: isMobile ? 20 : 40,
+      ),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFFE5E7EB),
+          color: Colors.grey.withValues(alpha: 0.3),
           width: 1,
         ),
+        borderRadius: BorderRadius.circular(12),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              FontAwesomeIcons.compass,
+              size: isMobile ? 48 : 64,
+              color: Colors.grey.withValues(alpha: 0.4),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No travel history yet',
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: isMobile ? 16 : 18,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Start your digital nomad journey!',
+              style: TextStyle(
+                color: Colors.grey[500],
+                fontSize: isMobile ? 14 : 16,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 构建最新旅行卡片
+  Widget _buildLatestTripCard(LatestTravelHistory trip, bool isMobile) {
+    return Card(
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        onTap: () {
+          // 如果有 cityId，跳转到城市详情页面
+          if (trip.canNavigateToCityDetail) {
+            Get.toNamed(
+              AppRoutes.cityDetail,
+              arguments: {
+                'cityId': trip.cityId,
+                'cityName': trip.city,
+                'cityImage': '',
+              },
+            );
+          } else {
+            // 如果没有 cityId，跳转到旅行历史页面
+            Get.toNamed(TravelHistoryRoutes.travelHistory);
+          }
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
             children: [
+              // 目的地图标
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppColors.cityPrimary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.place,
+                  color: AppColors.cityPrimary,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              // 旅行信息
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('${trip.cityName}, ${trip.countryName ?? "Unknown"}',
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1a1a1a))),
-                    const SizedBox(height: 6),
                     Text(
-                      _formatDate(trip.visitDate),
-                      style: const TextStyle(fontSize: 13, color: Color(0xFF6b7280)),
+                      '${trip.city}, ${trip.country}',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1a1a1a),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Text(
+                          _formatTravelDate(trip.arrivalTime),
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF6b7280),
+                          ),
+                        ),
+                        if (trip.durationDays != null) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.cityPrimary.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              '${trip.durationDays} days',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppColors.cityPrimary,
+                              ),
+                            ),
+                          ),
+                        ],
+                        if (trip.isOngoing) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.green.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Text(
+                              'Ongoing',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.green,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ],
                 ),
               ),
+              // 箭头图标
+              const Icon(
+                Icons.chevron_right,
+                color: Color(0xFF6b7280),
+              ),
             ],
           ),
-          const SizedBox(height: 12),
-          Text(trip.cityName, style: const TextStyle(fontSize: 14, color: Color(0xFF374151), height: 1.5)),
-        ],
+        ),
       ),
     );
+  }
+
+  /// 格式化旅行日期
+  String _formatTravelDate(DateTime date) {
+    return '${date.year}/${date.month.toString().padLeft(2, '0')}/${date.day.toString().padLeft(2, '0')}';
   }
 
   // Social Links
@@ -1518,11 +1632,6 @@ class _ProfilePageState extends State<ProfilePage> with RouteAwareRefreshMixin<P
   String _formatJoinDate(DateTime date) {
     final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return '${months[date.month - 1]} ${date.year}';
-  }
-
-  String _formatDate(DateTime date) {
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 
   // Preferences Section

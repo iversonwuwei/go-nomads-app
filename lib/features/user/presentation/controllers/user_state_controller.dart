@@ -4,6 +4,7 @@ import 'package:df_admin_mobile/core/core.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/features/interest/presentation/controllers/interest_state_controller.dart';
 import 'package:df_admin_mobile/features/skill/presentation/controllers/skill_state_controller.dart';
+import 'package:df_admin_mobile/features/travel_history/presentation/controllers/travel_history_controller.dart';
 import 'package:df_admin_mobile/features/user/application/use_cases/favorite_city_use_cases.dart';
 import 'package:df_admin_mobile/features/user/application/use_cases/user_use_cases.dart' as user_use_cases;
 import 'package:df_admin_mobile/features/user/domain/entities/nomad_stats.dart';
@@ -96,6 +97,7 @@ class UserStateController extends GetxController {
           loadCurrentUser();
           loadFavoriteCityIds();
           loadNomadStats(); // 加载统计数据
+          _syncTravelHistory(); // 同步旅行历史
         } else {
           // 退出登录，清除用户数据
           log('⚠️ 用户已退出，清除用户数据');
@@ -106,6 +108,22 @@ class UserStateController extends GetxController {
       });
     } catch (e) {
       log('⚠️ AuthStateController 未就绪，无法设置监听器');
+    }
+  }
+
+  /// 同步旅行历史数据
+  Future<void> _syncTravelHistory() async {
+    try {
+      // 检查 TravelHistoryController 是否已注册
+      if (Get.isRegistered<TravelHistoryController>()) {
+        final travelHistoryController = Get.find<TravelHistoryController>();
+        await travelHistoryController.syncWithBackend();
+        log('✅ 旅行历史数据同步完成');
+      } else {
+        log('ℹ️ TravelHistoryController 未注册，跳过旅行历史同步');
+      }
+    } catch (e) {
+      log('⚠️ 同步旅行历史失败: $e');
     }
   }
 

@@ -9,6 +9,7 @@ abstract class IUserPreferencesRepository {
   Future<UserPreferences> updatePreferences({
     bool? notificationsEnabled,
     bool? travelHistoryVisible,
+    bool? autoTravelDetectionEnabled,
     bool? profilePublic,
     String? currency,
     String? temperatureUnit,

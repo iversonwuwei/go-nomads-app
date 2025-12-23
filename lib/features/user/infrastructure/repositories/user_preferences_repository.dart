@@ -25,7 +25,7 @@ class UserPreferencesRepository implements IUserPreferencesRepository {
       final token = await _tokenService.getAccessToken();
 
       final response = await _dio.get(
-        '${ApiConfig.currentApiBaseUrl}/api/v1/users/me/preferences',
+        '${ApiConfig.currentApiBaseUrl}/users/me/preferences',
         options: Options(
           headers: {
             if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
@@ -50,6 +50,7 @@ class UserPreferencesRepository implements IUserPreferencesRepository {
   Future<UserPreferences> updatePreferences({
     bool? notificationsEnabled,
     bool? travelHistoryVisible,
+    bool? autoTravelDetectionEnabled,
     bool? profilePublic,
     String? currency,
     String? temperatureUnit,
@@ -68,6 +69,9 @@ class UserPreferencesRepository implements IUserPreferencesRepository {
       if (travelHistoryVisible != null) {
         requestBody['travelHistoryVisible'] = travelHistoryVisible;
       }
+      if (autoTravelDetectionEnabled != null) {
+        requestBody['autoTravelDetectionEnabled'] = autoTravelDetectionEnabled;
+      }
       if (profilePublic != null) {
         requestBody['profilePublic'] = profilePublic;
       }
@@ -82,7 +86,7 @@ class UserPreferencesRepository implements IUserPreferencesRepository {
       }
 
       final response = await _dio.patch(
-        '${ApiConfig.currentApiBaseUrl}/api/v1/users/me/preferences',
+        '${ApiConfig.currentApiBaseUrl}/users/me/preferences',
         data: requestBody,
         options: Options(
           headers: {

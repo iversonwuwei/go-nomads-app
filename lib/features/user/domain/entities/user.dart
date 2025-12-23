@@ -24,6 +24,9 @@ class User {
   /// 用户会员信息（从 /users/me 接口获取）
   final UserMembership? membership;
 
+  /// 最新一条旅行历史（从后端返回，用于 Profile 页面显示）
+  final LatestTravelHistory? latestTravelHistory;
+
   User({
     required this.id,
     required this.name,
@@ -42,6 +45,7 @@ class User {
     required this.joinedDate,
     this.isVerified = false,
     this.membership,
+    this.latestTravelHistory,
   });
 
   // 业务逻辑方法
@@ -78,6 +82,7 @@ class User {
     DateTime? joinedDate,
     bool? isVerified,
     UserMembership? membership,
+    LatestTravelHistory? latestTravelHistory,
   }) {
     return User(
       id: id ?? this.id,
@@ -97,6 +102,7 @@ class User {
       joinedDate: joinedDate ?? this.joinedDate,
       isVerified: isVerified ?? this.isVerified,
       membership: membership ?? this.membership,
+      latestTravelHistory: latestTravelHistory ?? this.latestTravelHistory,
     );
   }
 }
@@ -182,4 +188,37 @@ class TravelHistory {
     required this.visitDate,
     this.durationDays,
   });
+}
+
+/// Latest Travel History Value Object
+/// 最新旅行历史，用于 Profile 页面显示
+class LatestTravelHistory {
+  final String id;
+  final String city;
+  final String country;
+  final double? latitude;
+  final double? longitude;
+  final DateTime arrivalTime;
+  final DateTime? departureTime;
+  final bool isConfirmed;
+  final String? cityId;
+  final int? durationDays;
+  final bool isOngoing;
+
+  LatestTravelHistory({
+    required this.id,
+    required this.city,
+    required this.country,
+    this.latitude,
+    this.longitude,
+    required this.arrivalTime,
+    this.departureTime,
+    this.isConfirmed = true,
+    this.cityId,
+    this.durationDays,
+    this.isOngoing = false,
+  });
+
+  /// 是否可以跳转到城市详情
+  bool get canNavigateToCityDetail => cityId != null && cityId!.isNotEmpty;
 }
