@@ -434,17 +434,6 @@ class _MeetupsListPageState extends State<MeetupsListPage>
                     ),
                     Row(
                       children: [
-                        // View toggle (could add list/grid view later)
-                        IconButton(
-                          icon: Icon(
-                            FontAwesomeIcons.grip,
-                            color: AppColors.textSecondary,
-                            size: 20.sp,
-                          ),
-                          onPressed: () {
-                            // Toggle view - could implement grid view
-                          },
-                        ),
                         // Sort
                         PopupMenuButton<String>(
                           icon: Icon(

@@ -2970,7 +2970,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get localTransport => '本地交通';
 
   @override
-  String get pricePerNight => '晚';
+  String get pricePerNight => '每晚价格';
 
   @override
   String get bookingTips => '预订建议';
@@ -3123,7 +3123,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get specifications => '规格';
 
   @override
-  String get wifiSpeed => 'WiFi 速度 (Mbps)';
+  String get wifiSpeed => 'WiFi速度';
 
   @override
   String get capacity => '容量';
@@ -3270,7 +3270,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get trialDurationHint => '1天、1周等';
 
   @override
-  String get wifiSpeedHint => '500';
+  String get wifiSpeedHint => '例如：100 Mbps';
 
   @override
   String get capacityHint => '50';
@@ -4024,4 +4024,69 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get syncFailed => '同步失败';
+
+  @override
+  String get addHotel => '添加酒店';
+
+  @override
+  String get editHotel => '编辑酒店';
+
+  @override
+  String get hotelName => '酒店名称';
+
+  @override
+  String get hotelNameHint => '请输入酒店名称';
+
+  @override
+  String get hotelDescription => '描述';
+
+  @override
+  String get hotelDescriptionHint => '为数字游民描述这家酒店';
+
+  @override
+  String get pricePerNightHint => '例如：50';
+
+  @override
+  String get longStayDiscount => '长住折扣';
+
+  @override
+  String get longStayDiscountHint => '周/月住折扣百分比';
+
+  @override
+  String get nomadFeatures => '游民友好设施';
+
+  @override
+  String get nomadFeaturesSubtitle => '对远程工作者重要的设施';
+
+  @override
+  String get workDesk => '工作台';
+
+  @override
+  String get hasCoworkingSpace => '有共享办公空间';
+
+  @override
+  String get laundry => '洗衣';
+
+  @override
+  String get pool => '游泳池';
+
+  @override
+  String get twentyFourHourReception => '24小时前台';
+
+  @override
+  String get submitHotel => '提交酒店';
+
+  @override
+  String get hotelSubmittedSuccess => '酒店提交成功！';
+
+  @override
+  String get failedToSubmitHotel => '提交酒店失败';
+
+  @override
+  String maxPhotosReached(int max) {
+    return '最多允许 $max 张照片';
+  }
+
+  @override
+  String get addFirstHotel => '添加第一家酒店';
 }

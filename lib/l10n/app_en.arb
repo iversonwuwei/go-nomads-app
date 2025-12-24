@@ -2089,7 +2089,42 @@
   "tip": "Tip",
   "travelHistoryNoCityLink": "This trip record is not linked to a city",
   "syncCompleted": "Sync completed",
-  "syncFailed": "Sync failed"
+  "syncFailed": "Sync failed",
+
+  "addHotel": "Add Hotel",
+  "editHotel": "Edit Hotel",
+  "hotelName": "Hotel Name",
+  "hotelNameHint": "Enter hotel name",
+  "hotelDescription": "Description",
+  "hotelDescriptionHint": "Describe this hotel for digital nomads",
+  "pricePerNight": "Price per Night",
+  "pricePerNightHint": "e.g., 50",
+  "longStayDiscount": "Long Stay Discount",
+  "longStayDiscountHint": "Discount % for weekly/monthly stays",
+  "nomadFeatures": "Nomad-Friendly Features",
+  "nomadFeaturesSubtitle": "Features important for remote workers",
+  "wifiSpeed": "WiFi Speed",
+  "wifiSpeedHint": "e.g., 100 Mbps",
+  "workDesk": "Work Desk",
+  "hasCoworkingSpace": "Has Coworking Space",
+  "airConditioning": "Air Conditioning",
+  "kitchen": "Kitchen",
+  "laundry": "Laundry",
+  "pool": "Pool",
+  "gym": "Gym",
+  "twentyFourHourReception": "24h Reception",
+  "submitHotel": "Submit Hotel",
+  "hotelSubmittedSuccess": "Hotel submitted successfully!",
+  "failedToSubmitHotel": "Failed to submit hotel",
+  "maxPhotosReached": "Maximum {max} photos allowed",
+  "@maxPhotosReached": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "addFirstHotel": "Add First Hotel"
 }
 
 

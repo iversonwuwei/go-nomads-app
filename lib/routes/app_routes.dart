@@ -26,6 +26,7 @@ import 'package:df_admin_mobile/pages/edit_skills_page.dart';
 import 'package:df_admin_mobile/pages/edit_social_links_page.dart';
 import 'package:df_admin_mobile/pages/favorites_page.dart';
 import 'package:df_admin_mobile/pages/global_map_page.dart';
+import 'package:df_admin_mobile/pages/add_hotel_page.dart';
 import 'package:df_admin_mobile/pages/hotel_detail_page.dart';
 import 'package:df_admin_mobile/pages/hotel_list_page.dart';
 import 'package:df_admin_mobile/pages/innovation_detail_page.dart';
@@ -90,6 +91,7 @@ class AppRoutes {
   // ============================================================================
   static const String hotelList = '/hotel-list';
   static const String hotelDetail = '/hotel-detail';
+  static const String addHotel = '/add-hotel';
 
   // ============================================================================
   // 旅行计划相关路由
@@ -338,6 +340,18 @@ class AppRoutes {
     GetPage(
       name: hotelDetail,
       page: () => HotelDetailPage(hotelId: Get.arguments),
+      middlewares: [AuthMiddleware()],
+    ),
+    GetPage(
+      name: addHotel,
+      page: () {
+        final args = Get.arguments as Map<String, dynamic>?;
+        return AddHotelPage(
+          cityId: args?['cityId'],
+          cityName: args?['cityName'],
+          countryName: args?['countryName'],
+        );
+      },
       middlewares: [AuthMiddleware()],
     ),
 

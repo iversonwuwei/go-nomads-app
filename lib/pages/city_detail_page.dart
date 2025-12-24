@@ -85,6 +85,9 @@ class _CityDetailPageState extends State<CityDetailPage>
   final ScrollController _scrollController = ScrollController();
   double _appBarOpacity = 0.0;
 
+  // Hotels 列表的 GlobalKey，用于刷新
+  final GlobalKey<HotelListPageState> _hotelListKey = GlobalKey<HotelListPageState>();
+
   // 下拉刷新状态标志
   bool _isRefreshingReviews = false;
   bool _isRefreshingPhotos = false;
@@ -1864,6 +1867,25 @@ class _CityDetailPageState extends State<CityDetailPage>
                                   );
                                   if (result != null && result is Map && result['uploaded'] == true) {
                                     userContentController.loadCityPhotos(cityId);
+                                  }
+                                };
+                              } else if (currentTab == 7) {
+                                // Hotels
+                                icon = FontAwesomeIcons.hotel;
+                                onPressed = () async {
+                                  // 所有用户都直接跳转到添加页面
+                                  final cityDetailController = Get.find<CityDetailStateController>();
+                                  final city = cityDetailController.currentCity.value;
+
+                                  final result = await Get.toNamed(AppRoutes.addHotel, arguments: {
+                                    'cityId': cityId,
+                                    'cityName': cityName,
+                                    'countryName': city?.country,
+                                  });
+                                  if (result == true) {
+                                    // 刷新酒店列表
+                                    log('✅ 酒店添加成功，正在刷新列表');
+                                    _hotelListKey.currentState?.refresh();
                                   }
                                 };
                               } else if (currentTab == 9) {
@@ -4958,12 +4980,14 @@ class _CityDetailPageState extends State<CityDetailPage>
 
   // Hotels Tab - 显示城市的酒店列表
   Widget _buildHotelsTab(CityDetailStateController controller) {
-    final parsedCityId = int.tryParse(cityId);
-    log('🏨 Hotels Tab - cityId: $cityId, parsed: $parsedCityId, cityName: $cityName');
+    final city = controller.currentCity.value;
+    log('🏨 Hotels Tab - cityId: $cityId, cityName: $cityName, country: ${city?.country}');
 
     return HotelListPage(
-      cityId: parsedCityId,
+      key: _hotelListKey,
+      cityId: cityId,
       cityName: cityName,
+      countryName: city?.country,
     );
   }
 

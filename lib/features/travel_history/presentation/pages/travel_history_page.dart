@@ -1,4 +1,5 @@
 import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -275,14 +276,12 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
     final l10n = AppLocalizations.of(context)!;
     final monthFormat = DateFormat('MMM');
     final dayFormat = DateFormat('dd');
-    
+
     // 计算旅行时长描述
     final duration = trip.departureTime.difference(trip.arrivalTime);
     final nights = duration.inDays;
-    final durationText = nights > 0 
-        ? '$nights ${l10n.nights}' 
-        : '${duration.inHours} ${l10n.hours}';
-    
+    final durationText = nights > 0 ? '$nights ${l10n.nights}' : '${duration.inHours} ${l10n.hours}';
+
     // 获取国旗 emoji（如果有国家代码）
     String? flagEmoji;
     if (trip.countryCode != null && trip.countryCode!.length == 2) {
@@ -292,7 +291,7 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
         0x1F1E6 + code.codeUnitAt(1) - 0x41,
       ]);
     }
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
@@ -320,11 +319,9 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
                 },
               );
             } else {
-              Get.snackbar(
-                l10n.tip,
+              AppToast.info(
                 l10n.travelHistoryNoCityLink,
-                snackPosition: SnackPosition.BOTTOM,
-                duration: const Duration(seconds: 2),
+                title: l10n.tip,
               );
             }
           },
