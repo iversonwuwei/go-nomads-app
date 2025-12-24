@@ -11,7 +11,7 @@ import 'package:get/get.dart';
 
 /// 房型列表页面
 class RoomTypeListPage extends StatefulWidget {
-  final int hotelId;
+  final String hotelId;
   final String hotelName;
 
   const RoomTypeListPage({
@@ -41,8 +41,7 @@ class _RoomTypeListPageState extends State<RoomTypeListPage> {
   Future<void> _loadRoomTypes() async {
     _isLoading.value = true;
     try {
-      final result =
-          await _hotelRepository.getRoomTypes(widget.hotelId.toString());
+      final result = await _hotelRepository.getRoomTypes(widget.hotelId);
 
       result.fold(
         onSuccess: (roomTypes) {
@@ -131,8 +130,7 @@ class _RoomTypeListPageState extends State<RoomTypeListPage> {
                       return Container(
                         height: 180.h,
                         color: Colors.grey[300],
-                        child: Icon(FontAwesomeIcons.imagePortrait,
-                            size: 48.w, color: Colors.grey),
+                        child: Icon(FontAwesomeIcons.imagePortrait, size: 48.w, color: Colors.grey),
                       );
                     },
                   ),
@@ -154,8 +152,7 @@ class _RoomTypeListPageState extends State<RoomTypeListPage> {
                   ),
                   if (!roomType.isAvailable)
                     Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                       decoration: BoxDecoration(
                         color: Colors.red,
                         borderRadius: BorderRadius.circular(4.r),
@@ -219,8 +216,7 @@ class _RoomTypeListPageState extends State<RoomTypeListPage> {
                   runSpacing: 6.h,
                   children: roomType.amenities.take(6).map((amenity) {
                     return Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                       decoration: BoxDecoration(
                         color: Colors.blue[50],
                         borderRadius: BorderRadius.circular(4.r),
@@ -269,8 +265,7 @@ class _RoomTypeListPageState extends State<RoomTypeListPage> {
                           }
                         : null,
                     style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 24.w, vertical: 12.h),
+                      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.r),
                       ),

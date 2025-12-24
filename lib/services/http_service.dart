@@ -49,8 +49,7 @@ class HttpService {
 
   static const String apiResponseMetaKey = '__apiResponseMeta';
   static const String apiResponseRawKey = '__apiResponseRaw';
-  static const String disableApiResponseUnwrapKey =
-      '__disableApiResponseUnwrap';
+  static const String disableApiResponseUnwrapKey = '__disableApiResponseUnwrap';
 
   HttpService._internal() {
     _dio = Dio(
@@ -162,14 +161,11 @@ class HttpService {
         onResponse: (response, handler) {
           // 打印响应日志 (仅开发环境)
           if (kDebugMode) {
-            log(
-                '✅ RESPONSE[${response.statusCode}] => ${response.requestOptions.uri}');
+            log('✅ RESPONSE[${response.statusCode}] => ${response.requestOptions.uri}');
             log('Data: ${response.data}');
           }
 
-          final disableUnwrap =
-              response.requestOptions.extra[disableApiResponseUnwrapKey] ==
-                  true;
+          final disableUnwrap = response.requestOptions.extra[disableApiResponseUnwrapKey] == true;
           if (!disableUnwrap) {
             final envelope = _unwrapApiResponse(response);
 
@@ -183,13 +179,9 @@ class HttpService {
                     response: response,
                     type: DioExceptionType.badResponse,
                     error: HttpException(
-                      envelope.meta.message.isNotEmpty
-                          ? envelope.meta.message
-                          : _handleStatusCode(response.statusCode),
+                      envelope.meta.message.isNotEmpty ? envelope.meta.message : _handleStatusCode(response.statusCode),
                       response.statusCode,
-                      envelope.meta.errors.isEmpty
-                          ? null
-                          : envelope.meta.errors,
+                      envelope.meta.errors.isEmpty ? null : envelope.meta.errors,
                     ),
                   ),
                 );
@@ -202,8 +194,7 @@ class HttpService {
         onError: (error, handler) async {
           // 打印错误日志
           if (kDebugMode) {
-            log(
-                '❌ ERROR[${error.response?.statusCode}] => ${error.requestOptions.uri}');
+            log('❌ ERROR[${error.response?.statusCode}] => ${error.requestOptions.uri}');
             log('Message: ${error.message}');
             if (error.response?.data != null) {
               // 完整打印响应数据，包括错误详情
@@ -223,9 +214,7 @@ class HttpService {
                   response: response,
                   type: error.type,
                   error: HttpException(
-                    envelope.meta.message.isNotEmpty
-                        ? envelope.meta.message
-                        : _handleStatusCode(response.statusCode),
+                    envelope.meta.message.isNotEmpty ? envelope.meta.message : _handleStatusCode(response.statusCode),
                     response.statusCode,
                     envelope.meta.errors.isEmpty ? null : envelope.meta.errors,
                   ),
@@ -239,8 +228,7 @@ class HttpService {
           if (error.response?.statusCode == 401) {
             if (kDebugMode) {
               log('⚠️ 401 Unauthorized - 认证失败');
-              log('完整响应数据:');
-              log(error.response?.data);
+              log('完整响应数据: ${error.response?.data}');
             }
 
             // 检查是否有 refresh token
@@ -272,8 +260,7 @@ class HttpService {
                   }
 
                   // 更新请求头
-                  error.requestOptions.headers['Authorization'] =
-                      'Bearer $newToken';
+                  error.requestOptions.headers['Authorization'] = 'Bearer $newToken';
                   _authToken = newToken;
 
                   // 重试原始请求
@@ -296,8 +283,7 @@ class HttpService {
                     log('❌ Token 刷新失败，清除认证信息并跳转登录页');
                   }
                   _isRefreshing = false;
-                  await _handleUnauthorized(
-                      reason: 'Session expired. Please login again.');
+                  await _handleUnauthorized(reason: 'Session expired. Please login again.');
                   return handler.next(error);
                 }
               } catch (refreshError) {
@@ -305,8 +291,7 @@ class HttpService {
                   log('❌ Token 刷新异常: $refreshError');
                 }
                 _isRefreshing = false;
-                await _handleUnauthorized(
-                    reason: 'Authentication failed. Please login again.');
+                await _handleUnauthorized(reason: 'Authentication failed. Please login again.');
                 return handler.next(error);
               }
             } else if (_onTokenRefreshCallback == null) {
@@ -633,8 +618,7 @@ class HttpService {
           final responseData = error.response!.data;
 
           // 检查是否有 errors 字段（后端验证错误格式）
-          if (responseData is Map<String, dynamic> &&
-              responseData['errors'] != null) {
+          if (responseData is Map<String, dynamic> && responseData['errors'] != null) {
             final errorsData = responseData['errors'];
             if (errorsData is Map<String, dynamic>) {
               // 提取所有验证错误
@@ -708,8 +692,7 @@ class HttpException implements Exception {
   final int? statusCode;
   final List<String> errors;
 
-  HttpException(this.message, [this.statusCode, List<String>? errors])
-      : errors = errors ?? const [];
+  HttpException(this.message, [this.statusCode, List<String>? errors]) : errors = errors ?? const [];
 
   bool get hasErrors => errors.isNotEmpty;
 

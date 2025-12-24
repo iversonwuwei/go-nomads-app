@@ -2073,7 +2073,42 @@
   "tip": "提示",
   "travelHistoryNoCityLink": "此旅行记录暂无关联城市",
   "syncCompleted": "同步完成",
-  "syncFailed": "同步失败"
+  "syncFailed": "同步失败",
+
+  "addHotel": "添加酒店",
+  "editHotel": "编辑酒店",
+  "hotelName": "酒店名称",
+  "hotelNameHint": "请输入酒店名称",
+  "hotelDescription": "描述",
+  "hotelDescriptionHint": "为数字游民描述这家酒店",
+  "pricePerNight": "每晚价格",
+  "pricePerNightHint": "例如：50",
+  "longStayDiscount": "长住折扣",
+  "longStayDiscountHint": "周/月住折扣百分比",
+  "nomadFeatures": "游民友好设施",
+  "nomadFeaturesSubtitle": "对远程工作者重要的设施",
+  "wifiSpeed": "WiFi速度",
+  "wifiSpeedHint": "例如：100 Mbps",
+  "workDesk": "工作台",
+  "hasCoworkingSpace": "有共享办公空间",
+  "airConditioning": "空调",
+  "kitchen": "厨房",
+  "laundry": "洗衣",
+  "pool": "游泳池",
+  "gym": "健身房",
+  "twentyFourHourReception": "24小时前台",
+  "submitHotel": "提交酒店",
+  "hotelSubmittedSuccess": "酒店提交成功！",
+  "failedToSubmitHotel": "提交酒店失败",
+  "maxPhotosReached": "最多允许 {max} 张照片",
+  "@maxPhotosReached": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "addFirstHotel": "添加第一家酒店"
 }
 
 

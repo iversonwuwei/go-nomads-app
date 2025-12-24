@@ -1,93 +1,188 @@
-import 'package:df_admin_mobile/features/hotel/domain/entities/hotel.dart'
-    as domain;
+import 'package:df_admin_mobile/features/hotel/domain/entities/hotel.dart' as domain;
 
-/// Hotel DTO
+/// Hotel DTO - 匹配后端 AccommodationService API 返回格式
 class HotelDto {
   final String id;
   final String name;
-  final String cityId;
-  final String cityName;
+  final String? description;
   final String address;
+  final String? cityId;
+  final String? cityName;
+  final String? country;
   final double latitude;
   final double longitude;
   final double rating;
   final int reviewCount;
-  final String description;
-  final List<String> amenities;
   final List<String> images;
   final String category;
+  final int? starRating;
   final double pricePerNight;
   final String currency;
   final bool isFeatured;
+
+  // 联系方式
+  final String? phone;
+  final String? email;
+  final String? website;
+
+  // 数字游民特性
+  final int? wifiSpeed;
+  final bool hasWifi;
+  final bool hasWorkDesk;
+  final bool hasCoworkingSpace;
+  final bool hasAirConditioning;
+  final bool hasKitchen;
+  final bool hasLaundry;
+  final bool hasParking;
+  final bool hasPool;
+  final bool hasGym;
+  final bool has24HReception;
+  final bool hasLongStayDiscount;
+  final double? longStayDiscountPercent;
+  final bool isPetFriendly;
+
+  // 计算字段
+  final int nomadScore;
+
+  // 房型列表
   final List<RoomTypeDto> roomTypes;
+
   final DateTime createdAt;
-  final DateTime updatedAt;
+  final String? createdBy;
 
   HotelDto({
     required this.id,
     required this.name,
-    required this.cityId,
-    required this.cityName,
+    this.description,
     required this.address,
+    this.cityId,
+    this.cityName,
+    this.country,
     required this.latitude,
     required this.longitude,
     required this.rating,
     required this.reviewCount,
-    required this.description,
-    required this.amenities,
     required this.images,
     required this.category,
+    this.starRating,
     required this.pricePerNight,
     required this.currency,
     this.isFeatured = false,
-    required this.roomTypes,
+    this.phone,
+    this.email,
+    this.website,
+    this.wifiSpeed,
+    this.hasWifi = false,
+    this.hasWorkDesk = false,
+    this.hasCoworkingSpace = false,
+    this.hasAirConditioning = false,
+    this.hasKitchen = false,
+    this.hasLaundry = false,
+    this.hasParking = false,
+    this.hasPool = false,
+    this.hasGym = false,
+    this.has24HReception = false,
+    this.hasLongStayDiscount = false,
+    this.longStayDiscountPercent,
+    this.isPetFriendly = false,
+    this.nomadScore = 0,
+    this.roomTypes = const [],
     required this.createdAt,
-    required this.updatedAt,
+    this.createdBy,
   });
 
   factory HotelDto.fromMap(Map<String, dynamic> map) {
+    // 解析 images - 可能是数组或逗号分隔的字符串
+    List<String> parseImages(dynamic imagesData) {
+      if (imagesData == null) return [];
+      if (imagesData is List) {
+        return imagesData.map((e) => e.toString()).toList();
+      }
+      if (imagesData is String) {
+        return imagesData.isNotEmpty ? imagesData.split(',') : [];
+      }
+      return [];
+    }
+
     return HotelDto(
-      id: map['id'].toString(),
-      name: map['name'] as String,
-      cityId: map['city_id'].toString(),
-      cityName: map['city_name'] as String? ?? '',
-      address: map['address'] as String,
+      id: map['id']?.toString() ?? '',
+      name: map['name'] as String? ?? '',
+      description: map['description'] as String?,
+      address: map['address'] as String? ?? '',
+      cityId: map['cityId']?.toString(),
+      cityName: map['cityName'] as String?,
+      country: map['country'] as String?,
       latitude: (map['latitude'] as num?)?.toDouble() ?? 0.0,
       longitude: (map['longitude'] as num?)?.toDouble() ?? 0.0,
       rating: (map['rating'] as num?)?.toDouble() ?? 0.0,
-      reviewCount: map['review_count'] as int? ?? 0,
-      description: map['description'] as String? ?? '',
-      amenities: (map['amenities'] as String?)?.split(',') ?? [],
-      images: (map['images'] as String?)?.split(',') ?? [],
+      reviewCount: map['reviewCount'] as int? ?? 0,
+      images: parseImages(map['images']),
       category: map['category'] as String? ?? 'mid-range',
-      pricePerNight: (map['price_per_night'] as num?)?.toDouble() ?? 0.0,
+      starRating: map['starRating'] as int?,
+      pricePerNight: (map['pricePerNight'] as num?)?.toDouble() ?? 0.0,
       currency: map['currency'] as String? ?? 'USD',
-      isFeatured: (map['is_featured'] as int?) == 1,
-      roomTypes: [],
-      createdAt: DateTime.parse(map['created_at'] as String),
-      updatedAt: DateTime.parse(map['updated_at'] as String),
+      isFeatured: map['isFeatured'] as bool? ?? false,
+      phone: map['phone'] as String?,
+      email: map['email'] as String?,
+      website: map['website'] as String?,
+      wifiSpeed: map['wifiSpeed'] as int?,
+      hasWifi: map['hasWifi'] as bool? ?? false,
+      hasWorkDesk: map['hasWorkDesk'] as bool? ?? false,
+      hasCoworkingSpace: map['hasCoworkingSpace'] as bool? ?? false,
+      hasAirConditioning: map['hasAirConditioning'] as bool? ?? false,
+      hasKitchen: map['hasKitchen'] as bool? ?? false,
+      hasLaundry: map['hasLaundry'] as bool? ?? false,
+      hasParking: map['hasParking'] as bool? ?? false,
+      hasPool: map['hasPool'] as bool? ?? false,
+      hasGym: map['hasGym'] as bool? ?? false,
+      has24HReception: map['has24HReception'] as bool? ?? false,
+      hasLongStayDiscount: map['hasLongStayDiscount'] as bool? ?? false,
+      longStayDiscountPercent: (map['longStayDiscountPercent'] as num?)?.toDouble(),
+      isPetFriendly: map['isPetFriendly'] as bool? ?? false,
+      nomadScore: map['nomadScore'] as int? ?? 0,
+      roomTypes: _parseRoomTypes(map['roomTypes']),
+      createdAt: map['createdAt'] != null ? DateTime.parse(map['createdAt'] as String) : DateTime.now(),
+      createdBy: map['createdBy']?.toString(),
     );
+  }
+
+  /// 解析房型列表
+  static List<RoomTypeDto> _parseRoomTypes(dynamic roomTypesData) {
+    if (roomTypesData == null) return [];
+    if (roomTypesData is! List) return [];
+    return roomTypesData.map((e) => RoomTypeDto.fromApiMap(e as Map<String, dynamic>)).toList();
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
       'name': name,
-      'city_id': cityId,
+      'description': description,
       'address': address,
+      'cityId': cityId,
+      'cityName': cityName,
+      'country': country,
       'latitude': latitude,
       'longitude': longitude,
-      'rating': rating,
-      'review_count': reviewCount,
-      'description': description,
-      'amenities': amenities.join(','),
-      'images': images.join(','),
-      'category': category,
-      'price_per_night': pricePerNight,
+      'pricePerNight': pricePerNight,
       'currency': currency,
-      'is_featured': isFeatured ? 1 : 0,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
+      'phone': phone,
+      'email': email,
+      'website': website,
+      'wifiSpeed': wifiSpeed,
+      'hasWifi': hasWifi,
+      'hasWorkDesk': hasWorkDesk,
+      'hasCoworkingSpace': hasCoworkingSpace,
+      'hasAirConditioning': hasAirConditioning,
+      'hasKitchen': hasKitchen,
+      'hasLaundry': hasLaundry,
+      'hasParking': hasParking,
+      'hasPool': hasPool,
+      'hasGym': hasGym,
+      'has24HReception': has24HReception,
+      'hasLongStayDiscount': hasLongStayDiscount,
+      'longStayDiscountPercent': longStayDiscountPercent,
+      'isPetFriendly': isPetFriendly,
+      'images': images,
     };
   }
 
@@ -95,24 +190,61 @@ class HotelDto {
     return domain.Hotel(
       id: id,
       name: name,
-      cityId: cityId,
-      cityName: cityName,
+      cityId: cityId ?? '',
+      cityName: cityName ?? '',
+      country: country,
       address: address,
       latitude: latitude,
       longitude: longitude,
       rating: rating,
       reviewCount: reviewCount,
-      description: description,
-      amenities: amenities,
+      description: description ?? '',
+      amenities: _buildAmenities(),
       images: images,
       category: category,
+      starRating: starRating,
       pricePerNight: pricePerNight,
       currency: currency,
       isFeatured: isFeatured,
-      roomTypes: roomTypes.map((r) => r.toDomain()).toList(),
+      roomTypes: roomTypes.map((rt) => rt.toDomain()).toList(),
       createdAt: createdAt,
-      updatedAt: updatedAt,
+      phone: phone,
+      email: email,
+      website: website,
+      wifiSpeed: wifiSpeed,
+      hasWifi: hasWifi,
+      hasWorkDesk: hasWorkDesk,
+      hasCoworkingSpace: hasCoworkingSpace,
+      hasAirConditioning: hasAirConditioning,
+      hasKitchen: hasKitchen,
+      hasLaundry: hasLaundry,
+      hasParking: hasParking,
+      hasPool: hasPool,
+      hasGym: hasGym,
+      has24HReception: has24HReception,
+      hasLongStayDiscount: hasLongStayDiscount,
+      longStayDiscountPercent: longStayDiscountPercent,
+      isPetFriendly: isPetFriendly,
+      nomadScore: nomadScore,
     );
+  }
+
+  /// 根据特性字段构建 amenities 列表
+  List<String> _buildAmenities() {
+    final amenities = <String>[];
+    if (hasWifi) amenities.add('WiFi');
+    if (hasWorkDesk) amenities.add('Work Desk');
+    if (hasCoworkingSpace) amenities.add('Coworking Space');
+    if (hasAirConditioning) amenities.add('Air Conditioning');
+    if (hasKitchen) amenities.add('Kitchen');
+    if (hasLaundry) amenities.add('Laundry');
+    if (hasParking) amenities.add('Parking');
+    if (hasPool) amenities.add('Pool');
+    if (hasGym) amenities.add('Gym');
+    if (has24HReception) amenities.add('24H Reception');
+    if (hasLongStayDiscount) amenities.add('Long Stay Discount');
+    if (isPetFriendly) amenities.add('Pet Friendly');
+    return amenities;
   }
 }
 
@@ -150,6 +282,7 @@ class RoomTypeDto {
     required this.createdAt,
   });
 
+  /// 从本地数据库格式解析 (snake_case)
   factory RoomTypeDto.fromMap(Map<String, dynamic> map) {
     return RoomTypeDto(
       id: map['id'].toString(),
@@ -166,6 +299,42 @@ class RoomTypeDto {
       images: (map['images'] as String?)?.split(',') ?? [],
       isAvailable: (map['is_available'] as int?) == 1,
       createdAt: DateTime.parse(map['created_at'] as String),
+    );
+  }
+
+  /// 从 API 返回格式解析 (camelCase)
+  factory RoomTypeDto.fromApiMap(Map<String, dynamic> map) {
+    // 解析 amenities - 可能是数组或逗号分隔字符串
+    List<String> parseAmenities(dynamic data) {
+      if (data == null) return [];
+      if (data is List) return data.map((e) => e.toString()).toList();
+      if (data is String) return data.isNotEmpty ? data.split(',') : [];
+      return [];
+    }
+
+    // 解析 images - 可能是数组或逗号分隔字符串
+    List<String> parseImages(dynamic data) {
+      if (data == null) return [];
+      if (data is List) return data.map((e) => e.toString()).toList();
+      if (data is String) return data.isNotEmpty ? data.split(',') : [];
+      return [];
+    }
+
+    return RoomTypeDto(
+      id: map['id']?.toString() ?? '',
+      hotelId: map['hotelId']?.toString() ?? '',
+      name: map['name'] as String? ?? '',
+      description: map['description'] as String? ?? '',
+      maxOccupancy: map['maxOccupancy'] as int? ?? 2,
+      size: (map['size'] as num?)?.toDouble() ?? 25.0,
+      bedType: map['bedType'] as String? ?? 'Queen',
+      pricePerNight: (map['pricePerNight'] as num?)?.toDouble() ?? 0.0,
+      currency: map['currency'] as String? ?? 'USD',
+      availableRooms: map['availableRooms'] as int? ?? 0,
+      amenities: parseAmenities(map['amenities']),
+      images: parseImages(map['images']),
+      isAvailable: map['isAvailable'] as bool? ?? true,
+      createdAt: map['createdAt'] != null ? DateTime.parse(map['createdAt'] as String) : DateTime.now(),
     );
   }
 

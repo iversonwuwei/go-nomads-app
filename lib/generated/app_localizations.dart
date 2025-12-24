@@ -5933,7 +5933,7 @@ abstract class AppLocalizations {
   /// No description provided for @pricePerNight.
   ///
   /// In zh, this message translates to:
-  /// **'晚'**
+  /// **'每晚价格'**
   String get pricePerNight;
 
   /// No description provided for @bookingTips.
@@ -6227,7 +6227,7 @@ abstract class AppLocalizations {
   /// No description provided for @wifiSpeed.
   ///
   /// In zh, this message translates to:
-  /// **'WiFi 速度 (Mbps)'**
+  /// **'WiFi速度'**
   String get wifiSpeed;
 
   /// No description provided for @capacity.
@@ -6497,7 +6497,7 @@ abstract class AppLocalizations {
   /// No description provided for @wifiSpeedHint.
   ///
   /// In zh, this message translates to:
-  /// **'500'**
+  /// **'例如：100 Mbps'**
   String get wifiSpeedHint;
 
   /// No description provided for @capacityHint.
@@ -7921,6 +7921,132 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'同步失败'**
   String get syncFailed;
+
+  /// No description provided for @addHotel.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加酒店'**
+  String get addHotel;
+
+  /// No description provided for @editHotel.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑酒店'**
+  String get editHotel;
+
+  /// No description provided for @hotelName.
+  ///
+  /// In zh, this message translates to:
+  /// **'酒店名称'**
+  String get hotelName;
+
+  /// No description provided for @hotelNameHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入酒店名称'**
+  String get hotelNameHint;
+
+  /// No description provided for @hotelDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'描述'**
+  String get hotelDescription;
+
+  /// No description provided for @hotelDescriptionHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'为数字游民描述这家酒店'**
+  String get hotelDescriptionHint;
+
+  /// No description provided for @pricePerNightHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'例如：50'**
+  String get pricePerNightHint;
+
+  /// No description provided for @longStayDiscount.
+  ///
+  /// In zh, this message translates to:
+  /// **'长住折扣'**
+  String get longStayDiscount;
+
+  /// No description provided for @longStayDiscountHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'周/月住折扣百分比'**
+  String get longStayDiscountHint;
+
+  /// No description provided for @nomadFeatures.
+  ///
+  /// In zh, this message translates to:
+  /// **'游民友好设施'**
+  String get nomadFeatures;
+
+  /// No description provided for @nomadFeaturesSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'对远程工作者重要的设施'**
+  String get nomadFeaturesSubtitle;
+
+  /// No description provided for @workDesk.
+  ///
+  /// In zh, this message translates to:
+  /// **'工作台'**
+  String get workDesk;
+
+  /// No description provided for @hasCoworkingSpace.
+  ///
+  /// In zh, this message translates to:
+  /// **'有共享办公空间'**
+  String get hasCoworkingSpace;
+
+  /// No description provided for @laundry.
+  ///
+  /// In zh, this message translates to:
+  /// **'洗衣'**
+  String get laundry;
+
+  /// No description provided for @pool.
+  ///
+  /// In zh, this message translates to:
+  /// **'游泳池'**
+  String get pool;
+
+  /// No description provided for @twentyFourHourReception.
+  ///
+  /// In zh, this message translates to:
+  /// **'24小时前台'**
+  String get twentyFourHourReception;
+
+  /// No description provided for @submitHotel.
+  ///
+  /// In zh, this message translates to:
+  /// **'提交酒店'**
+  String get submitHotel;
+
+  /// No description provided for @hotelSubmittedSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'酒店提交成功！'**
+  String get hotelSubmittedSuccess;
+
+  /// No description provided for @failedToSubmitHotel.
+  ///
+  /// In zh, this message translates to:
+  /// **'提交酒店失败'**
+  String get failedToSubmitHotel;
+
+  /// No description provided for @maxPhotosReached.
+  ///
+  /// In zh, this message translates to:
+  /// **'最多允许 {max} 张照片'**
+  String maxPhotosReached(int max);
+
+  /// No description provided for @addFirstHotel.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加第一家酒店'**
+  String get addFirstHotel;
 }
 
 class _AppLocalizationsDelegate

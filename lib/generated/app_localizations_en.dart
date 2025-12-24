@@ -1938,7 +1938,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get foodDining => 'Food & Dining';
 
   @override
-  String get gym => 'Fitness & Gym';
+  String get gym => 'Gym';
 
   @override
   String get coworkingSpace => 'Coworking Space';
@@ -2995,7 +2995,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get localTransport => 'Local Transport';
 
   @override
-  String get pricePerNight => 'night';
+  String get pricePerNight => 'Price per Night';
 
   @override
   String get bookingTips => 'Booking Tips';
@@ -3156,7 +3156,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get specifications => 'Specifications';
 
   @override
-  String get wifiSpeed => 'WiFi Speed (Mbps)';
+  String get wifiSpeed => 'WiFi Speed';
 
   @override
   String get capacity => 'Capacity';
@@ -3305,7 +3305,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get trialDurationHint => '1 day, 1 week, etc.';
 
   @override
-  String get wifiSpeedHint => '500';
+  String get wifiSpeedHint => 'e.g., 100 Mbps';
 
   @override
   String get capacityHint => '50';
@@ -4082,4 +4082,69 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get syncFailed => 'Sync failed';
+
+  @override
+  String get addHotel => 'Add Hotel';
+
+  @override
+  String get editHotel => 'Edit Hotel';
+
+  @override
+  String get hotelName => 'Hotel Name';
+
+  @override
+  String get hotelNameHint => 'Enter hotel name';
+
+  @override
+  String get hotelDescription => 'Description';
+
+  @override
+  String get hotelDescriptionHint => 'Describe this hotel for digital nomads';
+
+  @override
+  String get pricePerNightHint => 'e.g., 50';
+
+  @override
+  String get longStayDiscount => 'Long Stay Discount';
+
+  @override
+  String get longStayDiscountHint => 'Discount % for weekly/monthly stays';
+
+  @override
+  String get nomadFeatures => 'Nomad-Friendly Features';
+
+  @override
+  String get nomadFeaturesSubtitle => 'Features important for remote workers';
+
+  @override
+  String get workDesk => 'Work Desk';
+
+  @override
+  String get hasCoworkingSpace => 'Has Coworking Space';
+
+  @override
+  String get laundry => 'Laundry';
+
+  @override
+  String get pool => 'Pool';
+
+  @override
+  String get twentyFourHourReception => '24h Reception';
+
+  @override
+  String get submitHotel => 'Submit Hotel';
+
+  @override
+  String get hotelSubmittedSuccess => 'Hotel submitted successfully!';
+
+  @override
+  String get failedToSubmitHotel => 'Failed to submit hotel';
+
+  @override
+  String maxPhotosReached(int max) {
+    return 'Maximum $max photos allowed';
+  }
+
+  @override
+  String get addFirstHotel => 'Add First Hotel';
 }
