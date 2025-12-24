@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/config/api_config.dart';
 import 'package:df_admin_mobile/core/core.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/nomad_stats.dart';
@@ -97,9 +99,14 @@ class UserRepository extends BaseRepository implements IUserRepository {
       );
 
       if (response.data['success'] == true && response.data['data'] != null) {
-        final userDto =
-            UserDto.fromJson(response.data['data'] as Map<String, dynamic>);
-        return userDto.toDomain();
+        // 调试日志：检查后端返回的 latestTravelHistory
+        final data = response.data['data'] as Map<String, dynamic>;
+        log('🔍 getCurrentUser - latestTravelHistory: ${data['latestTravelHistory']}');
+
+        final userDto = UserDto.fromJson(data);
+        final user = userDto.toDomain();
+        log('🔍 getCurrentUser - User.latestTravelHistory: ${user.latestTravelHistory?.city ?? "null"}');
+        return user;
       }
 
       throw ServerException('获取当前用户失败', code: 'GET_CURRENT_USER_FAILED');

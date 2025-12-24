@@ -6,10 +6,10 @@ import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_stat
 import 'package:df_admin_mobile/features/membership/domain/entities/membership_level.dart';
 import 'package:df_admin_mobile/features/membership/presentation/controllers/membership_state_controller.dart';
 import 'package:df_admin_mobile/features/notification/presentation/controllers/notification_state_controller.dart';
+import 'package:df_admin_mobile/features/travel_history/routes/travel_history_routes.dart';
 import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan_summary.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
 import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
-import 'package:df_admin_mobile/features/travel_history/routes/travel_history_routes.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
@@ -1037,131 +1037,341 @@ class _ProfilePageState extends State<ProfilePage> with RouteAwareRefreshMixin<P
     );
   }
 
-  /// 构建最新旅行卡片
+  /// 构建最新旅行卡片 - 现代风格设计
   Widget _buildLatestTripCard(LatestTravelHistory trip, bool isMobile) {
-    return Card(
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        onTap: () {
-          // 如果有 cityId，跳转到城市详情页面
-          if (trip.canNavigateToCityDetail) {
-            Get.toNamed(
-              AppRoutes.cityDetail,
-              arguments: {
-                'cityId': trip.cityId,
-                'cityName': trip.city,
-                'cityImage': '',
-              },
-            );
-          } else {
-            // 如果没有 cityId，跳转到旅行历史页面
-            Get.toNamed(TravelHistoryRoutes.travelHistory);
-          }
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              // 目的地图标
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: AppColors.cityPrimary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.place,
-                  color: AppColors.cityPrimary,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 16),
-              // 旅行信息
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+    // 计算旅行状态和日期范围
+    final dateRange = _formatDateRange(trip.arrivalTime, trip.departureTime);
+    final daysAgo = DateTime.now().difference(trip.arrivalTime).inDays;
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            trip.isOngoing
+                ? const Color(0xFF10B981).withValues(alpha: 0.08)
+                : const Color(0xFF3B82F6).withValues(alpha: 0.08),
+            trip.isOngoing
+                ? const Color(0xFF059669).withValues(alpha: 0.04)
+                : const Color(0xFF1D4ED8).withValues(alpha: 0.04),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: trip.isOngoing
+              ? const Color(0xFF10B981).withValues(alpha: 0.2)
+              : const Color(0xFF3B82F6).withValues(alpha: 0.2),
+          width: 1,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            if (trip.canNavigateToCityDetail) {
+              Get.toNamed(
+                AppRoutes.cityDetail,
+                arguments: {
+                  'cityId': trip.cityId,
+                  'cityName': trip.city,
+                  'cityImage': '',
+                },
+              );
+            } else {
+              Get.toNamed(TravelHistoryRoutes.travelHistory);
+            }
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: EdgeInsets.all(isMobile ? 16 : 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 顶部：状态标签和时间
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      '${trip.city}, ${trip.country}',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1a1a1a),
+                    // 状态标签
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: trip.isOngoing ? const Color(0xFF10B981) : const Color(0xFF3B82F6),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            trip.isOngoing ? Icons.flight_takeoff : Icons.check_circle,
+                            size: 14,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            trip.isOngoing ? 'Currently Here' : 'Recent Trip',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Text(
-                          _formatTravelDate(trip.arrivalTime),
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Color(0xFF6b7280),
-                          ),
-                        ),
-                        if (trip.durationDays != null) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.cityPrimary.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              '${trip.durationDays} days',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: AppColors.cityPrimary,
-                              ),
-                            ),
-                          ),
-                        ],
-                        if (trip.isOngoing) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.green.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: const Text(
-                              'Ongoing',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.green,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
+                    // 多久之前
+                    Text(
+                      trip.isOngoing ? 'Now' : _formatDaysAgo(daysAgo),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
-              ),
-              // 箭头图标
-              const Icon(
-                Icons.chevron_right,
-                color: Color(0xFF6b7280),
-              ),
-            ],
+                const SizedBox(height: 16),
+
+                // 城市和国家
+                Row(
+                  children: [
+                    // 国旗或位置图标
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.08),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Text(
+                          _getCountryEmoji(trip.country),
+                          style: const TextStyle(fontSize: 24),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            trip.city,
+                            style: TextStyle(
+                              fontSize: isMobile ? 18 : 20,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF1a1a1a),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            trip.country,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // 箭头
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.arrow_forward_ios,
+                        size: 14,
+                        color: Color(0xFF6b7280),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // 底部信息栏
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.6),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    children: [
+                      // 日期范围
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.calendar_today_outlined,
+                              size: 16,
+                              color: Colors.grey[600],
+                            ),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                dateRange,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey[700],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // 天数
+                      if (trip.durationDays != null) ...[
+                        Container(
+                          width: 1,
+                          height: 20,
+                          color: Colors.grey[300],
+                        ),
+                        const SizedBox(width: 12),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.access_time,
+                              size: 16,
+                              color: Colors.grey[600],
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              '${trip.durationDays} ${trip.durationDays == 1 ? 'day' : 'days'}',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey[700],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                      // 坐标（如果有）
+                      if (trip.latitude != null && trip.longitude != null) ...[
+                        Container(
+                          width: 1,
+                          height: 20,
+                          color: Colors.grey[300],
+                        ),
+                        const SizedBox(width: 12),
+                        Icon(
+                          Icons.location_on_outlined,
+                          size: 16,
+                          color: Colors.grey[600],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  /// 格式化旅行日期
-  String _formatTravelDate(DateTime date) {
-    return '${date.year}/${date.month.toString().padLeft(2, '0')}/${date.day.toString().padLeft(2, '0')}';
+  /// 格式化日期范围
+  String _formatDateRange(DateTime arrival, DateTime? departure) {
+    final arrivalStr = '${arrival.month}/${arrival.day}';
+    if (departure != null) {
+      final departureStr = '${departure.month}/${departure.day}';
+      if (arrival.year == departure.year) {
+        return '$arrivalStr - $departureStr, ${arrival.year}';
+      }
+      return '${arrival.year}/$arrivalStr - ${departure.year}/$departureStr';
+    }
+    return '${arrival.year}/$arrivalStr - Present';
+  }
+
+  /// 格式化多少天前
+  String _formatDaysAgo(int days) {
+    if (days == 0) return 'Today';
+    if (days == 1) return 'Yesterday';
+    if (days < 7) return '$days days ago';
+    if (days < 30) return '${(days / 7).floor()} weeks ago';
+    if (days < 365) return '${(days / 30).floor()} months ago';
+    return '${(days / 365).floor()} years ago';
+  }
+
+  /// 根据国家名称获取国旗 emoji
+  String _getCountryEmoji(String country) {
+    final countryEmojis = {
+      'China': '🇨🇳',
+      'United States': '🇺🇸',
+      'USA': '🇺🇸',
+      'Japan': '🇯🇵',
+      'South Korea': '🇰🇷',
+      'Korea': '🇰🇷',
+      'Thailand': '🇹🇭',
+      'Vietnam': '🇻🇳',
+      'Singapore': '🇸🇬',
+      'Malaysia': '🇲🇾',
+      'Indonesia': '🇮🇩',
+      'Philippines': '🇵🇭',
+      'Australia': '🇦🇺',
+      'United Kingdom': '🇬🇧',
+      'UK': '🇬🇧',
+      'Germany': '🇩🇪',
+      'France': '🇫🇷',
+      'Italy': '🇮🇹',
+      'Spain': '🇪🇸',
+      'Portugal': '🇵🇹',
+      'Netherlands': '🇳🇱',
+      'Canada': '🇨🇦',
+      'Brazil': '🇧🇷',
+      'Mexico': '🇲🇽',
+      'India': '🇮🇳',
+      'Taiwan': '🇹🇼',
+      'Hong Kong': '🇭🇰',
+      'Macau': '🇲🇴',
+      'New Zealand': '🇳🇿',
+      'Switzerland': '🇨🇭',
+      'Austria': '🇦🇹',
+      'Belgium': '🇧🇪',
+      'Sweden': '🇸🇪',
+      'Norway': '🇳🇴',
+      'Denmark': '🇩🇰',
+      'Finland': '🇫🇮',
+      'Ireland': '🇮🇪',
+      'Greece': '🇬🇷',
+      'Turkey': '🇹🇷',
+      'Russia': '🇷🇺',
+      'Poland': '🇵🇱',
+      'Czech Republic': '🇨🇿',
+      'Hungary': '🇭🇺',
+      'UAE': '🇦🇪',
+      'United Arab Emirates': '🇦🇪',
+      'Saudi Arabia': '🇸🇦',
+      'Israel': '🇮🇱',
+      'Egypt': '🇪🇬',
+      'South Africa': '🇿🇦',
+      'Argentina': '🇦🇷',
+      'Chile': '🇨🇱',
+      'Colombia': '🇨🇴',
+      'Peru': '🇵🇪',
+    };
+    return countryEmojis[country] ?? '🌍';
   }
 
   // Social Links
