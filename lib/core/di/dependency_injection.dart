@@ -50,7 +50,9 @@ import 'package:df_admin_mobile/features/coworking/presentation/controllers/cowo
 // Hotel Domain
 import 'package:df_admin_mobile/features/hotel/application/use_cases/hotel_use_cases.dart';
 import 'package:df_admin_mobile/features/hotel/domain/repositories/i_hotel_repository.dart';
+import 'package:df_admin_mobile/features/hotel/domain/repositories/i_hotel_review_repository.dart';
 import 'package:df_admin_mobile/features/hotel/infrastructure/repositories/hotel_repository.dart';
+import 'package:df_admin_mobile/features/hotel/infrastructure/repositories/hotel_review_repository.dart';
 import 'package:df_admin_mobile/features/hotel/presentation/controllers/hotel_state_controller.dart';
 // InnovationProject Domain
 import 'package:df_admin_mobile/features/innovation_project/application/use_cases/innovation_project_use_cases.dart';
@@ -981,27 +983,32 @@ class DependencyInjection {
   }
 
   static void _registerHotelDomain() {
-    // Repository
+    // Repository (fenix: true 确保依赖项可以重新创建)
     Get.lazyPut<IHotelRepository>(
       () => HotelRepository(Get.find<HttpService>()),
+      fenix: true,
+    );
+    Get.lazyPut<IHotelReviewRepository>(
+      () => HotelReviewRepository(Get.find<HttpService>()),
+      fenix: true,
     );
 
-    // Use Cases
-    Get.lazyPut(() => GetHotelsUseCase(Get.find<IHotelRepository>()));
-    Get.lazyPut(() => GetHotelByIdUseCase(Get.find<IHotelRepository>()));
-    Get.lazyPut(() => GetHotelsByCityUseCase(Get.find<IHotelRepository>()));
-    Get.lazyPut(() => SearchHotelsUseCase(Get.find<IHotelRepository>()));
-    Get.lazyPut(() => CreateHotelUseCase(Get.find<IHotelRepository>()));
-    Get.lazyPut(() => UpdateHotelUseCase(Get.find<IHotelRepository>()));
-    Get.lazyPut(() => DeleteHotelUseCase(Get.find<IHotelRepository>()));
-    Get.lazyPut(() => GetFeaturedHotelsUseCase(Get.find<IHotelRepository>()));
-    Get.lazyPut(() => GetHotelsByCategoryUseCase(Get.find<IHotelRepository>()));
-    Get.lazyPut(() => GetRoomTypesUseCase(Get.find<IHotelRepository>()));
-    Get.lazyPut(() => CreateBookingUseCase(Get.find<IHotelRepository>()));
-    Get.lazyPut(() => GetUserBookingsUseCase(Get.find<IHotelRepository>()));
-    Get.lazyPut(() => CancelBookingUseCase(Get.find<IHotelRepository>()));
+    // Use Cases (fenix: true 确保依赖项可以重新创建)
+    Get.lazyPut(() => GetHotelsUseCase(Get.find<IHotelRepository>()), fenix: true);
+    Get.lazyPut(() => GetHotelByIdUseCase(Get.find<IHotelRepository>()), fenix: true);
+    Get.lazyPut(() => GetHotelsByCityUseCase(Get.find<IHotelRepository>()), fenix: true);
+    Get.lazyPut(() => SearchHotelsUseCase(Get.find<IHotelRepository>()), fenix: true);
+    Get.lazyPut(() => CreateHotelUseCase(Get.find<IHotelRepository>()), fenix: true);
+    Get.lazyPut(() => UpdateHotelUseCase(Get.find<IHotelRepository>()), fenix: true);
+    Get.lazyPut(() => DeleteHotelUseCase(Get.find<IHotelRepository>()), fenix: true);
+    Get.lazyPut(() => GetFeaturedHotelsUseCase(Get.find<IHotelRepository>()), fenix: true);
+    Get.lazyPut(() => GetHotelsByCategoryUseCase(Get.find<IHotelRepository>()), fenix: true);
+    Get.lazyPut(() => GetRoomTypesUseCase(Get.find<IHotelRepository>()), fenix: true);
+    Get.lazyPut(() => CreateBookingUseCase(Get.find<IHotelRepository>()), fenix: true);
+    Get.lazyPut(() => GetUserBookingsUseCase(Get.find<IHotelRepository>()), fenix: true);
+    Get.lazyPut(() => CancelBookingUseCase(Get.find<IHotelRepository>()), fenix: true);
 
-    // Controller
+    // Controller (fenix: true 确保依赖项可以重新创建)
     Get.lazyPut(
       () => HotelStateController(
         getHotelsUseCase: Get.find<GetHotelsUseCase>(),
@@ -1018,6 +1025,7 @@ class DependencyInjection {
         getUserBookingsUseCase: Get.find<GetUserBookingsUseCase>(),
         cancelBookingUseCase: Get.find<CancelBookingUseCase>(),
       ),
+      fenix: true,
     );
   }
 
