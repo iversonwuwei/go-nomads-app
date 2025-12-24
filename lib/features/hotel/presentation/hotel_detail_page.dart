@@ -2,7 +2,10 @@ import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:df_admin_mobile/features/hotel/domain/entities/hotel_review.dart';
 import 'package:df_admin_mobile/features/hotel/domain/repositories/i_hotel_repository.dart';
+import 'package:df_admin_mobile/features/hotel/domain/repositories/i_hotel_review_repository.dart';
 import 'package:df_admin_mobile/pages/add_hotel_page.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/edit_button.dart';
@@ -31,6 +34,13 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
   // 数据变更标记 - 用于返回时通知列表页面更新缓存
   bool _hasDataChanged = false;
 
+  // 评论列表状态
+  List<HotelReview> _reviews = [];
+  bool _isLoadingReviews = false;
+  bool _hasMoreReviews = true;
+  int _reviewsPage = 1;
+  static const int _reviewsPageSize = 10;
+
   Hotel get hotel => _hotel;
 
   @override
@@ -39,6 +49,8 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
     _hotel = widget.hotel;
     // 加载完整详情数据（包括房型）
     _reloadHotelDetail();
+    // 加载评论列表
+    _loadReviews();
   }
 
   @override
@@ -1038,9 +1050,19 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 显示写评论对话框
   void _showWriteReviewDialog() {
+    // 检查用户是否已登录
+    final authController = Get.find<AuthStateController>();
+    if (!authController.isAuthenticated.value) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('请先登录后再发表评论')),
+      );
+      return;
+    }
+
     final titleController = TextEditingController();
     final contentController = TextEditingController();
     double rating = 0;
+    bool isSubmitting = false;
 
     showModalBottomSheet(
       context: context,
@@ -1134,7 +1156,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   TextField(
                     controller: titleController,
                     decoration: InputDecoration(
-                      labelText: '标题',
+                      labelText: '标题（选填）',
                       hintText: '给您的评论起个标题',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -1159,25 +1181,51 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {
-                        if (rating == 0) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('请选择评分')),
-                          );
-                          return;
-                        }
-                        if (contentController.text.trim().isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('请输入评论内容')),
-                          );
-                          return;
-                        }
-                        // TODO: 提交评论到后端
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('评论功能即将上线')),
-                        );
-                      },
+                      onPressed: isSubmitting
+                          ? null
+                          : () async {
+                              if (rating == 0) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('请选择评分')),
+                                );
+                                return;
+                              }
+                              if (contentController.text.trim().isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('请输入评论内容')),
+                                );
+                                return;
+                              }
+
+                              setModalState(() => isSubmitting = true);
+
+                              await _submitReview(
+                                rating: rating.toInt(),
+                                title: titleController.text.trim().isNotEmpty ? titleController.text.trim() : null,
+                                content: contentController.text.trim(),
+                                onSuccess: () {
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('评论发表成功！'),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+                                  // 标记数据已变更并重新加载酒店详情
+                                  _hasDataChanged = true;
+                                  _reloadHotelDetail();
+                                },
+                                onError: (String message) {
+                                  setModalState(() => isSubmitting = false);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(message),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                },
+                              );
+                            },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Theme.of(context).colorScheme.primary,
                         foregroundColor: Colors.white,
@@ -1186,7 +1234,16 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text('提交评论'),
+                      child: isSubmitting
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            )
+                          : const Text('提交评论'),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -1199,6 +1256,51 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
     );
   }
 
+  /// 提交评论到后端
+  Future<void> _submitReview({
+    required int rating,
+    String? title,
+    required String content,
+    required VoidCallback onSuccess,
+    required void Function(String message) onError,
+  }) async {
+    try {
+      final reviewRepository = Get.find<IHotelReviewRepository>();
+      final request = CreateHotelReviewRequest(
+        rating: rating,
+        title: title,
+        content: content,
+      );
+
+      final result = await reviewRepository.createReview(
+        hotelId: _hotel.id,
+        request: request,
+      );
+
+      result.fold(
+        onSuccess: (review) {
+          log('✅ 评论创建成功: ${review.id}');
+          // 刷新评论列表
+          _loadReviews(refresh: true);
+          // 重新加载酒店详情（更新评分和评论数）
+          _reloadHotelDetail();
+          onSuccess();
+        },
+        onFailure: (exception) {
+          log('❌ 评论创建失败: ${exception.message}');
+          String errorMessage = '评论发表失败';
+          if (exception.message.contains('已经评论过')) {
+            errorMessage = '您已经评论过这家酒店了';
+          }
+          onError(errorMessage);
+        },
+      );
+    } catch (e) {
+      log('❌ 评论创建异常: $e');
+      onError('评论发表失败，请稍后重试');
+    }
+  }
+
   /// 获取评论评分文字
   String _getReviewRatingText(double rating) {
     if (rating == 0) return '点击星星评分';
@@ -1207,6 +1309,57 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
     if (rating == 3) return '一般';
     if (rating == 4) return '很好';
     return '非常好';
+  }
+
+  /// 加载评论列表
+  Future<void> _loadReviews({bool refresh = false}) async {
+    if (_isLoadingReviews) return;
+    if (!refresh && !_hasMoreReviews) return;
+
+    if (refresh) {
+      _reviewsPage = 1;
+      _hasMoreReviews = true;
+    }
+
+    setState(() => _isLoadingReviews = true);
+
+    try {
+      final reviewRepository = Get.find<IHotelReviewRepository>();
+      final result = await reviewRepository.getHotelReviews(
+        hotelId: _hotel.id,
+        page: _reviewsPage,
+        pageSize: _reviewsPageSize,
+      );
+
+      result.fold(
+        onSuccess: (response) {
+          if (mounted) {
+            setState(() {
+              if (refresh) {
+                _reviews = response.reviews;
+              } else {
+                _reviews.addAll(response.reviews);
+              }
+              _hasMoreReviews = _reviewsPage < response.totalPages;
+              _reviewsPage++;
+              _isLoadingReviews = false;
+            });
+            log('✅ [HotelDetail] 加载评论成功: ${response.reviews.length} 条, 总计: ${response.totalCount}');
+          }
+        },
+        onFailure: (exception) {
+          if (mounted) {
+            setState(() => _isLoadingReviews = false);
+          }
+          log('❌ [HotelDetail] 加载评论失败: ${exception.message}');
+        },
+      );
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoadingReviews = false);
+      }
+      log('❌ [HotelDetail] 加载评论异常: $e');
+    }
   }
 
   /// 房型区域
@@ -1460,17 +1613,263 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
               ),
             )
           else
-            // TODO: 显示评论列表
-            Center(
-              child: TextButton.icon(
-                onPressed: _showWriteReviewDialog,
-                icon: const Icon(Icons.add),
-                label: const Text('写评论'),
-              ),
+            // 评论列表
+            Column(
+              children: [
+                // 写评论按钮
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    onPressed: _showWriteReviewDialog,
+                    icon: const Icon(Icons.edit, size: 16),
+                    label: const Text('写评论'),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // 评论列表
+                if (_isLoadingReviews && _reviews.isEmpty)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(20),
+                      child: CircularProgressIndicator(),
+                    ),
+                  )
+                else if (_reviews.isEmpty)
+                  Center(
+                    child: Text(
+                      '暂无评论',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: Colors.grey[500],
+                      ),
+                    ),
+                  )
+                else
+                  Column(
+                    children: [
+                      ..._reviews.map((review) => _buildReviewItem(review)),
+                      // 加载更多按钮
+                      if (_hasMoreReviews)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: _isLoadingReviews
+                              ? const Center(
+                                  child: SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  ),
+                                )
+                              : TextButton(
+                                  onPressed: _loadReviews,
+                                  child: const Text('加载更多评论'),
+                                ),
+                        ),
+                    ],
+                  ),
+              ],
             ),
         ],
       ),
     );
+  }
+
+  /// 构建单个评论项
+  Widget _buildReviewItem(HotelReview review) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 用户信息和评分
+          Row(
+            children: [
+              // 用户头像
+              CircleAvatar(
+                radius: 18,
+                backgroundColor: Colors.grey[300],
+                backgroundImage: review.userAvatar != null
+                    ? CachedNetworkImageProvider(review.userAvatar!)
+                    : null,
+                child: review.userAvatar == null
+                    ? Text(
+                        review.userName.isNotEmpty
+                            ? review.userName[0].toUpperCase()
+                            : '?',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      )
+                    : null,
+              ),
+              const SizedBox(width: 10),
+              // 用户名和时间
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          review.userName,
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        if (review.isVerified) ...[
+                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.verified,
+                            size: 14,
+                            color: Colors.blue[400],
+                          ),
+                        ],
+                      ],
+                    ),
+                    Text(
+                      _formatReviewDate(review.createdAt),
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: Colors.grey[500],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // 评分
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _getRatingColor(review.rating.toDouble()),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.star, color: Colors.white, size: 14),
+                    const SizedBox(width: 2),
+                    Text(
+                      review.rating.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          // 评论标题
+          if (review.title != null && review.title!.isNotEmpty) ...[
+            Text(
+              review.title!,
+              style: TextStyle(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 4),
+          ],
+          // 评论内容
+          Text(
+            review.content,
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: Colors.grey[700],
+              height: 1.4,
+            ),
+          ),
+          // 评论图片
+          if (review.photoUrls.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 80,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: review.photoUrls.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: CachedNetworkImage(
+                        imageUrl: review.photoUrls[index],
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          color: Colors.grey[200],
+                          child: const Center(
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          color: Colors.grey[200],
+                          child: const Icon(Icons.broken_image, size: 24),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+          // 有用数
+          if (review.helpfulCount > 0) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(Icons.thumb_up_alt_outlined, size: 14, color: Colors.grey[500]),
+                const SizedBox(width: 4),
+                Text(
+                  '${review.helpfulCount} 人觉得有用',
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: Colors.grey[500],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// 格式化评论日期
+  String _formatReviewDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays == 0) {
+      if (difference.inHours == 0) {
+        return '${difference.inMinutes} 分钟前';
+      }
+      return '${difference.inHours} 小时前';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays} 天前';
+    } else if (difference.inDays < 30) {
+      return '${(difference.inDays / 7).floor()} 周前';
+    } else if (difference.inDays < 365) {
+      return '${(difference.inDays / 30).floor()} 个月前';
+    } else {
+      return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    }
   }
 
   /// 获取评分颜色
