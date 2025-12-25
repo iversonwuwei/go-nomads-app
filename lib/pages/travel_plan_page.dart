@@ -149,6 +149,7 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
         travelStyle: widget.travelStyle ?? 'culture',
         interests: widget.interests ?? [],
         departureLocation: widget.departureLocation,
+        departureDate: widget.departureDate,
       );
     } catch (e) {
       debugPrint('❌ 生成旅行计划失败: $e');

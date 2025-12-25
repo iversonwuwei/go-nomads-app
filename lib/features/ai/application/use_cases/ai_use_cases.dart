@@ -48,6 +48,7 @@ class GenerateTravelPlanStreamParams {
   final String travelStyle;
   final List<String> interests;
   final String? departureLocation;
+  final DateTime? departureDate;
   final double? customBudget;
   final String? currency;
   final List<String>? selectedAttractions;
@@ -64,6 +65,7 @@ class GenerateTravelPlanStreamParams {
     required this.travelStyle,
     required this.interests,
     this.departureLocation,
+    this.departureDate,
     this.customBudget,
     this.currency,
     this.selectedAttractions,
@@ -179,6 +181,7 @@ class GenerateTravelPlanStreamUseCase
       travelStyle: params.travelStyle,
       interests: params.interests,
       departureLocation: params.departureLocation,
+      departureDate: params.departureDate,
       customBudget: params.customBudget,
       currency: params.currency,
       selectedAttractions: params.selectedAttractions,
