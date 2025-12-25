@@ -5,7 +5,6 @@ import 'package:df_admin_mobile/controllers/bottom_nav_controller.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
-import 'package:df_admin_mobile/services/token_storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -64,30 +63,32 @@ class _BottomNavLayoutState extends State<BottomNavLayout> {
             }
 
             // 🔒 其他所有页面都需要验证 token（索引 1, 2, 3）
-            log('🔒 检查 token...');
-            final tokenService = TokenStorageService();
-            final accessToken = await tokenService.getAccessToken();
-            
-            if (accessToken != null && accessToken.isNotEmpty) {
-              log('   Token: ${accessToken.substring(0, 20)}...');
-            } else {
-              log('   Token: null 或空');
-            }
+            log('🔒 检查认证状态...');
 
-            if (accessToken == null || accessToken.isEmpty) {
-              log('❌ 无 token，跳转登录页');
-              
-              // 也检查 AuthStateController 的状态
-              final authController = Get.find<AuthStateController>();
-              log('   AuthStateController.isAuthenticated: ${authController.isAuthenticated.value}');
-              log('   AuthStateController.currentToken: ${authController.currentToken.value?.accessToken?.substring(0, 20) ?? 'null'}');
-              
+            // 统一使用 AuthStateController 检查认证状态
+            final authController = Get.find<AuthStateController>();
+            final isAuthenticated = authController.isAuthenticated.value;
+            final currentToken = authController.currentToken.value;
+
+            log('   isAuthenticated: $isAuthenticated');
+            log('   currentToken: ${currentToken?.accessToken != null ? '${currentToken!.accessToken.substring(0, 20)}...' : 'null'}');
+            log('   currentToken.isExpired: ${currentToken?.isExpired ?? 'N/A'}');
+
+            if (!isAuthenticated || currentToken == null) {
+              log('❌ 未认证或无 token，跳转登录页');
               Get.toNamed(AppRoutes.login);
               return;
             }
 
-            // Token 存在，允许跳转
-            log('✅ Token 有效，允许跳转');
+            // 检查 token 是否过期
+            if (currentToken.isExpired) {
+              log('❌ Token 已过期，跳转登录页');
+              Get.toNamed(AppRoutes.login);
+              return;
+            }
+
+            // 认证有效，允许跳转
+            log('✅ 认证有效，允许跳转');
             controller.changeTab(index);
 
             // 根据索引跳转到对应页面
