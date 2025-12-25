@@ -8,6 +8,7 @@ class TravelPlanSummary {
   final String budgetLevel;
   final String travelStyle;
   final String status;
+  final DateTime? departureDate;
   final DateTime createdAt;
 
   const TravelPlanSummary({
@@ -19,6 +20,7 @@ class TravelPlanSummary {
     required this.budgetLevel,
     required this.travelStyle,
     required this.status,
+    this.departureDate,
     required this.createdAt,
   });
 
@@ -32,9 +34,8 @@ class TravelPlanSummary {
       budgetLevel: json['budgetLevel'] ?? '',
       travelStyle: json['travelStyle'] ?? '',
       status: json['status'] ?? '',
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'])
-          : DateTime.now(),
+      departureDate: json['departureDate'] != null ? DateTime.parse(json['departureDate']) : null,
+      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : DateTime.now(),
     );
   }
 
@@ -48,8 +49,15 @@ class TravelPlanSummary {
       'budgetLevel': budgetLevel,
       'travelStyle': travelStyle,
       'status': status,
+      'departureDate': departureDate?.toIso8601String(),
       'createdAt': createdAt.toIso8601String(),
     };
+  }
+
+  /// 格式化出行日期
+  String? get formattedDepartureDate {
+    if (departureDate == null) return null;
+    return '${departureDate!.year}/${departureDate!.month.toString().padLeft(2, '0')}/${departureDate!.day.toString().padLeft(2, '0')}';
   }
 
   /// 获取预算级别显示文本
