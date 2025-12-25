@@ -1760,6 +1760,39 @@ class _ProfilePageState extends State<ProfilePage> with RouteAwareRefreshMixin<P
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // 计划出行日期（如果有）
+                  if (plan.departureDate != null) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF4458).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: const Color(0xFFFF4458).withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            FontAwesomeIcons.planeDeparture,
+                            size: 12,
+                            color: Color(0xFFFF4458),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Departure: ${plan.formattedDepartureDate}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFFFF4458),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                  ],
                   // 标签行
                   Wrap(
                     spacing: 8,
