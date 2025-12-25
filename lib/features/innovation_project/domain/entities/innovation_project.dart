@@ -1,6 +1,7 @@
 /// 创新项目领域实体
 class InnovationProject {
   final int id;
+  final String? uuid; // 原始 UUID 字符串
   final String projectName;
   final String elevatorPitch;
   final String problem;
@@ -25,6 +26,7 @@ class InnovationProject {
 
   const InnovationProject({
     required this.id,
+    this.uuid,
     required this.projectName,
     required this.elevatorPitch,
     required this.problem,

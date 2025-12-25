@@ -962,6 +962,8 @@ class DependencyInjection {
     Get.lazyPut(() => RemoveTeamMemberUseCase(Get.find<IInnovationProjectRepository>()));
     Get.lazyPut(() => ToggleLikeUseCase(Get.find<IInnovationProjectRepository>()));
     Get.lazyPut(() => GetPopularProjectsUseCase(Get.find<IInnovationProjectRepository>()));
+    Get.lazyPut(() => GetMyProjectsUseCase(Get.find<IInnovationProjectRepository>()));
+    Get.lazyPut(() => GetFeaturedProjectsUseCase(Get.find<IInnovationProjectRepository>()));
 
     // Controller
     Get.lazyPut(
@@ -978,6 +980,8 @@ class DependencyInjection {
         removeTeamMemberUseCase: Get.find<RemoveTeamMemberUseCase>(),
         toggleLikeUseCase: Get.find<ToggleLikeUseCase>(),
         getPopularProjectsUseCase: Get.find<GetPopularProjectsUseCase>(),
+        getMyProjectsUseCase: Get.find<GetMyProjectsUseCase>(),
+        getFeaturedProjectsUseCase: Get.find<GetFeaturedProjectsUseCase>(),
       ),
     );
   }

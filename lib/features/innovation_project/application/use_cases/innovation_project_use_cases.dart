@@ -2,6 +2,7 @@ import 'package:df_admin_mobile/core/domain/result.dart';
 
 import 'package:df_admin_mobile/features/innovation_project/domain/entities/innovation_project.dart';
 import 'package:df_admin_mobile/features/innovation_project/domain/repositories/i_innovation_project_repository.dart';
+import 'package:df_admin_mobile/features/innovation_project/infrastructure/models/innovation_project_dto.dart';
 
 /// 获取所有项目用例
 class GetProjectsUseCase {
@@ -9,8 +10,20 @@ class GetProjectsUseCase {
 
   GetProjectsUseCase(this._repository);
 
-  Future<Result<List<InnovationProject>>> call() {
-    return _repository.getProjects();
+  Future<Result<List<InnovationProject>>> call({
+    int page = 1,
+    int pageSize = 20,
+    String? category,
+    String? stage,
+    String? search,
+  }) {
+    return _repository.getProjects(
+      page: page,
+      pageSize: pageSize,
+      category: category,
+      stage: stage,
+      search: search,
+    );
   }
 }
 
@@ -26,7 +39,7 @@ class GetProjectByIdUseCase {
 }
 
 class GetProjectByIdParams {
-  final int projectId;
+  final String projectId;
 
   GetProjectByIdParams({required this.projectId});
 }
@@ -38,14 +51,14 @@ class CreateProjectUseCase {
   CreateProjectUseCase(this._repository);
 
   Future<Result<InnovationProject>> call(CreateProjectParams params) {
-    return _repository.createProject(params.projectData);
+    return _repository.createProject(params.request);
   }
 }
 
 class CreateProjectParams {
-  final Map<String, dynamic> projectData;
+  final CreateInnovationRequest request;
 
-  CreateProjectParams({required this.projectData});
+  CreateProjectParams({required this.request});
 }
 
 /// 更新项目用例
@@ -60,7 +73,7 @@ class UpdateProjectUseCase {
 }
 
 class UpdateProjectParams {
-  final int projectId;
+  final String projectId;
   final Map<String, dynamic> projectData;
 
   UpdateProjectParams({
@@ -81,7 +94,7 @@ class DeleteProjectUseCase {
 }
 
 class DeleteProjectParams {
-  final int projectId;
+  final String projectId;
 
   DeleteProjectParams({required this.projectId});
 }
@@ -98,9 +111,23 @@ class GetProjectsByUserUseCase {
 }
 
 class GetProjectsByUserParams {
-  final int userId;
+  final String userId;
 
   GetProjectsByUserParams({required this.userId});
+}
+
+/// 获取我的项目用例
+class GetMyProjectsUseCase {
+  final IInnovationProjectRepository _repository;
+
+  GetMyProjectsUseCase(this._repository);
+
+  Future<Result<List<InnovationProject>>> call({
+    int page = 1,
+    int pageSize = 20,
+  }) {
+    return _repository.getMyProjects(page: page, pageSize: pageSize);
+  }
 }
 
 /// 搜索项目用例
@@ -132,7 +159,7 @@ class GetTeamMembersUseCase {
 }
 
 class GetTeamMembersParams {
-  final int projectId;
+  final String projectId;
 
   GetTeamMembersParams({required this.projectId});
 }
@@ -149,7 +176,7 @@ class AddTeamMemberUseCase {
 }
 
 class AddTeamMemberParams {
-  final int projectId;
+  final String projectId;
   final Map<String, dynamic> memberData;
 
   AddTeamMemberParams({
@@ -165,17 +192,17 @@ class RemoveTeamMemberUseCase {
   RemoveTeamMemberUseCase(this._repository);
 
   Future<Result<void>> call(RemoveTeamMemberParams params) {
-    return _repository.removeTeamMember(params.projectId, params.memberName);
+    return _repository.removeTeamMember(params.projectId, params.memberId);
   }
 }
 
 class RemoveTeamMemberParams {
-  final int projectId;
-  final String memberName;
+  final String projectId;
+  final String memberId;
 
   RemoveTeamMemberParams({
     required this.projectId,
-    required this.memberName,
+    required this.memberId,
   });
 }
 
@@ -191,7 +218,7 @@ class ToggleLikeUseCase {
 }
 
 class ToggleLikeParams {
-  final int projectId;
+  final String projectId;
 
   ToggleLikeParams({required this.projectId});
 }
@@ -212,4 +239,22 @@ class GetPopularProjectsParams {
   final int limit;
 
   GetPopularProjectsParams({required this.limit});
+}
+
+/// 获取精选项目用例
+class GetFeaturedProjectsUseCase {
+  final IInnovationProjectRepository _repository;
+
+  GetFeaturedProjectsUseCase(this._repository);
+
+  Future<Result<List<InnovationProject>>> call(
+      GetFeaturedProjectsParams params) {
+    return _repository.getFeaturedProjects(params.limit);
+  }
+}
+
+class GetFeaturedProjectsParams {
+  final int limit;
+
+  GetFeaturedProjectsParams({required this.limit});
 }
