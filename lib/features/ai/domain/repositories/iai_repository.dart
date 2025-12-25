@@ -75,6 +75,7 @@ abstract class IAiRepository {
     required String travelStyle,
     required List<String> interests,
     String? departureLocation,
+    DateTime? departureDate,
     double? customBudget,
     String? currency,
     List<String>? selectedAttractions,
