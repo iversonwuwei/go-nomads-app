@@ -1,9 +1,8 @@
 import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/innovation_project/infrastructure/models/innovation_project_dto.dart';
-import 'package:get/get.dart';
-
 import 'package:df_admin_mobile/features/innovation_project/application/use_cases/innovation_project_use_cases.dart';
 import 'package:df_admin_mobile/features/innovation_project/domain/entities/innovation_project.dart';
+import 'package:df_admin_mobile/features/innovation_project/infrastructure/models/innovation_project_dto.dart';
+import 'package:get/get.dart';
 
 /// 创新项目状态控制器
 class InnovationProjectStateController extends GetxController {
