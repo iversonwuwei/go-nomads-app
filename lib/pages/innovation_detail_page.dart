@@ -1,4 +1,5 @@
 import 'package:df_admin_mobile/features/innovation_project/domain/entities/innovation_project.dart';
+import 'package:df_admin_mobile/features/innovation_project/presentation/controllers/innovation_project_state_controller.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
@@ -22,6 +23,51 @@ class InnovationDetailPage extends StatefulWidget {
 class _InnovationDetailPageState extends State<InnovationDetailPage> {
   // 关注状态
   bool _isFollowed = false;
+  // 完整项目数据
+  InnovationProject? _fullProject;
+  bool _isLoading = true;
+
+  // 获取 controller
+  InnovationProjectStateController? get _controller {
+    try {
+      return Get.find<InnovationProjectStateController>();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFullProject();
+  }
+
+  /// 加载完整项目数据
+  Future<void> _loadFullProject() async {
+    final controller = _controller;
+    final projectId = widget.project.uuid;
+    print('📱 加载项目详情: projectId=$projectId, controller=${controller != null}');
+    
+    if (controller != null && projectId != null) {
+      await controller.getProjectById(projectId);
+      print('📱 API返回: currentProject=${controller.currentProject.value?.projectName}');
+      if (mounted) {
+        setState(() {
+          _fullProject = controller.currentProject.value;
+          _isLoading = false;
+          print('📱 设置 _fullProject: ${_fullProject?.projectName}, problem: ${_fullProject?.problem}');
+        });
+      }
+    } else {
+      print('📱 跳过加载: controller=$controller, projectId=$projectId');
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  /// 获取当前显示的项目（优先使用完整数据）
+  InnovationProject get _project => _fullProject ?? widget.project;
 
   /// 切换关注状态
   void _toggleFollow() {
@@ -52,6 +98,19 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
 
+    // 加载中显示骨架屏
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF8B5CF6),
+          leading: const SliverBackButton(),
+          title: Text(widget.project.projectName),
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: CustomScrollView(
@@ -64,7 +123,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
             leading: const SliverBackButton(),
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
-                widget.project.projectName,
+                _project.projectName,
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -77,12 +136,12 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                   ],
                 ),
               ),
-              background: widget.project.userAvatar != null
+              background: _project.userAvatar != null
                   ? Stack(
                       fit: StackFit.expand,
                       children: [
                         Image.network(
-                          widget.project.userAvatar!,
+                          _project.userAvatar!,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
                             return Container(
@@ -129,7 +188,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                 _buildSection(
                   icon: FontAwesomeIcons.rocket,
                   title: l10n.elevatorPitch,
-                  content: widget.project.elevatorPitch,
+                  content: _project.elevatorPitch,
                   color: const Color(0xFF8B5CF6),
                 ),
 
@@ -139,7 +198,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                 _buildSection(
                   icon: FontAwesomeIcons.circleExclamation,
                   title: l10n.problem,
-                  content: widget.project.problem,
+                  content: _project.problem,
                   color: const Color(0xFFEF4444),
                 ),
 
@@ -149,7 +208,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                 _buildSection(
                   icon: FontAwesomeIcons.lightbulb,
                   title: l10n.solution,
-                  content: widget.project.solution,
+                  content: _project.solution,
                   color: const Color(0xFF10B981),
                 ),
 
@@ -159,7 +218,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                 _buildSection(
                   icon: FontAwesomeIcons.users,
                   title: l10n.targetAudience,
-                  content: widget.project.targetAudience,
+                  content: _project.targetAudience,
                   color: const Color(0xFF3B82F6),
                 ),
 
@@ -169,7 +228,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                 _buildSection(
                   icon: FontAwesomeIcons.laptop,
                   title: l10n.productType,
-                  content: widget.project.productType,
+                  content: _project.productType,
                   color: const Color(0xFFF59E0B),
                 ),
 
@@ -179,7 +238,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                 _buildListSection(
                   icon: FontAwesomeIcons.star,
                   title: l10n.keyFeatures,
-                  items: widget.project.keyFeatures
+                  items: _project.keyFeatures
                       .split('\n')
                       .where((s) => s.isNotEmpty)
                       .toList(),
@@ -192,7 +251,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                 _buildSection(
                   icon: FontAwesomeIcons.chartLine,
                   title: l10n.competitiveAdvantage,
-                  content: widget.project.competitiveAdvantage,
+                  content: _project.competitiveAdvantage,
                   color: const Color(0xFF6366F1),
                 ),
 
@@ -202,7 +261,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                 _buildSection(
                   icon: FontAwesomeIcons.dollarSign,
                   title: l10n.businessModel,
-                  content: widget.project.businessModel,
+                  content: _project.businessModel,
                   color: const Color(0xFF10B981),
                 ),
 
@@ -212,7 +271,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                 _buildSection(
                   icon: FontAwesomeIcons.chartLine,
                   title: l10n.marketOpportunity,
-                  content: widget.project.marketOpportunity,
+                  content: _project.marketOpportunity,
                   color: const Color(0xFF3B82F6),
                 ),
 
@@ -222,7 +281,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                 _buildSection(
                   icon: FontAwesomeIcons.clockRotateLeft,
                   title: l10n.currentStatus,
-                  content: widget.project.currentStatus,
+                  content: _project.currentStatus,
                   color: const Color(0xFFF59E0B),
                 ),
 
@@ -232,7 +291,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                 _buildTeamSection(
                   icon: FontAwesomeIcons.userGroup,
                   title: l10n.team,
-                  team: widget.project.team,
+                  team: _project.team,
                   color: const Color(0xFF8B5CF6),
                 ),
 
@@ -242,7 +301,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                 _buildSection(
                   icon: FontAwesomeIcons.handshake,
                   title: l10n.ask,
-                  content: widget.project.ask,
+                  content: _project.ask,
                   color: const Color(0xFFEF4444),
                 ),
 
@@ -261,7 +320,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                         radius: 24,
                         backgroundColor: const Color(0xFF8B5CF6),
                         child: Text(
-                          (widget.project.userName ?? '?').substring(0, 1),
+                          (_project.userName ?? '?').substring(0, 1),
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 20,
@@ -275,7 +334,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              widget.project.userName ?? 'Unknown',
+                              _project.userName ?? 'Unknown',
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -284,7 +343,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '${l10n.createdAt} ${_formatDate(widget.project.createdAt)}',
+                              '${l10n.createdAt} ${_formatDate(_project.createdAt)}',
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.grey[600],
@@ -396,12 +455,12 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
   void _contactCreator(BuildContext context) {
     // 创建发布者的 User 对象
     final creatorUser = User(
-      id: widget.project.userId.toString(),
-      name: widget.project.userName ?? 'Unknown',
-      username: (widget.project.userName ?? 'unknown')
+      id: _project.userId.toString(),
+      name: _project.userName ?? 'Unknown',
+      username: (_project.userName ?? 'unknown')
           .toLowerCase()
           .replaceAll(' ', '_'),
-      avatarUrl: widget.project.userAvatar,
+      avatarUrl: _project.userAvatar,
       stats: TravelStats(
         citiesVisited: 0,
         countriesVisited: 0,
