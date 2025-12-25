@@ -312,20 +312,25 @@ class TravelStatsDto {
   final int countriesVisited;
   final int daysAbroad;
   final int meetupsAttended;
+  final int totalTrips;
 
   TravelStatsDto({
     required this.citiesVisited,
     required this.countriesVisited,
     required this.daysAbroad,
     required this.meetupsAttended,
+    this.totalTrips = 0,
   });
 
   factory TravelStatsDto.fromJson(Map<String, dynamic> json) {
     return TravelStatsDto(
-      citiesVisited: json['citiesVisited'] as int? ?? 0,
-      countriesVisited: json['countriesVisited'] as int? ?? 0,
-      daysAbroad: json['daysAbroad'] as int? ?? 0,
+      // 支持后端返回的 citiesVisited 或旧版的 cities_visited
+      citiesVisited: json['citiesVisited'] as int? ?? json['CitiesVisited'] as int? ?? 0,
+      countriesVisited: json['countriesVisited'] as int? ?? json['CountriesVisited'] as int? ?? 0,
+      // totalDays 对应 daysAbroad
+      daysAbroad: json['daysAbroad'] as int? ?? json['totalDays'] as int? ?? json['TotalDays'] as int? ?? 0,
       meetupsAttended: json['meetupsAttended'] as int? ?? 0,
+      totalTrips: json['totalTrips'] as int? ?? json['TotalTrips'] as int? ?? 0,
     );
   }
 

@@ -31,6 +31,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
     'memberSince': '2024-01-15',
     'favoritesCount': 12,
     'visitedCount': 8,
+    'countriesCount': 0,
+    'citiesCount': 0,
     'avatar': 'https://ui-avatars.com/api/?name=Digital+Nomad&background=FF9800&color=fff&size=200',
   };
 
@@ -319,20 +321,20 @@ class _UserProfilePageState extends State<UserProfilePage> {
             children: [
               Expanded(
                 child: _buildStatItem(
-                  FontAwesomeIcons.heart,
-                  'Favorites',
-                  _userInfo['favoritesCount'].toString(),
-                  Colors.red,
+                  FontAwesomeIcons.earthAmericas,
+                  'Countries',
+                  _userInfo['countriesCount'].toString(),
+                  Colors.blue,
                   isMobile,
                 ),
               ),
               SizedBox(width: isMobile ? 12 : 16),
               Expanded(
                 child: _buildStatItem(
-                  FontAwesomeIcons.locationDot,
-                  'Visited',
-                  _userInfo['visitedCount'].toString(),
-                  Colors.green,
+                  FontAwesomeIcons.city,
+                  'Cities',
+                  _userInfo['citiesCount'].toString(),
+                  Colors.orange,
                   isMobile,
                 ),
               ),
@@ -1021,6 +1023,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
       'memberSince': '--',
       'favoritesCount': 0,
       'visitedCount': 0,
+      'countriesCount': 0,
+      'citiesCount': 0,
       'avatar': 'https://ui-avatars.com/api/?name=User&background=374151&color=fff&size=200',
     };
   }
@@ -1141,6 +1145,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
       'memberSince': _formatMemberSince(user.joinedDate),
       'favoritesCount': user.stats.reviewsWritten,
       'visitedCount': user.stats.citiesVisited,
+      'countriesCount': user.stats.countriesVisited,
+      'citiesCount': user.stats.citiesVisited,
       'avatar': user.avatarUrl ?? 'https://ui-avatars.com/api/?name=${user.name}&background=FF9800&color=fff&size=200',
     };
   }
