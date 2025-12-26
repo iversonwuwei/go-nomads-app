@@ -295,6 +295,7 @@ class TravelHistorySyncService {
   CandidateTrip _apiDtoToLocalTrip(TravelHistoryApiDto dto) {
     return CandidateTrip(
       id: null, // 本地 ID 需要在插入时生成
+      userId: dto.userId, // 保存用户 ID，用于区分不同用户的数据
       backendId: dto.id,
       latitude: dto.latitude ?? 0.0,
       longitude: dto.longitude ?? 0.0,

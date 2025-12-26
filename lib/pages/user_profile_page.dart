@@ -20,8 +20,8 @@ class UserProfilePage extends StatefulWidget {
 class _UserProfilePageState extends State<UserProfilePage> {
   final UserStateController _profileController = Get.find<UserStateController>();
 
-  // TODO: enable when server provides travel history data again.
-  static const bool _travelHistoryEnabled = false;
+  // Travel History 功能已启用
+  static const bool _travelHistoryEnabled = true;
 
   Map<String, dynamic> _userInfo = {
     'id': 'unknown',

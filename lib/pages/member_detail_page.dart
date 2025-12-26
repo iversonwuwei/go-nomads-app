@@ -614,9 +614,8 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
   }
 
   Widget _buildTravelHistorySection(BuildContext context) {
-    // 显示最多 5 条记录
-    final displayedHistory = _user!.travelHistory.take(5).toList();
-    final hasMore = _user!.travelHistory.length > 5;
+    // 只显示最新一条旅行历史
+    final latestTravel = _user!.latestTravelHistory;
 
     return Container(
       width: double.infinity,
@@ -665,7 +664,7 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
             ],
           ),
           const SizedBox(height: 16),
-          _user!.travelHistory.isEmpty
+          latestTravel == null
               ? Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 20),
@@ -679,53 +678,13 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
                     ),
                   ),
                 )
-              : Column(
-                  children: [
-                    ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: displayedHistory.length,
-                      separatorBuilder: (context, index) => const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        return _buildTravelHistoryCard(displayedHistory[index], context);
-                      },
-                    ),
-                    if (hasMore) ...[
-                      const SizedBox(height: 16),
-                      Center(
-                        child: TextButton.icon(
-                          onPressed: () {
-                            // TODO: Navigate to full travel history page
-                          },
-                          icon: const Icon(
-                            FontAwesomeIcons.arrowRight,
-                            size: 18,
-                          ),
-                          label: Text(
-                            AppLocalizations.of(context)!.viewAllTrips,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          style: TextButton.styleFrom(
-                            foregroundColor: const Color(0xFF1976D2),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
+              : _buildLatestTravelHistoryCard(latestTravel, context),
         ],
       ),
     );
   }
 
-  Widget _buildTravelHistoryCard(models.TravelHistory travel, BuildContext context) {
+  Widget _buildLatestTravelHistoryCard(models.LatestTravelHistory travel, BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -773,7 +732,7 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
             ),
             child: Center(
               child: Text(
-                _getCountryFlag(travel.countryName ?? ''),
+                _getCountryFlag(travel.country),
                 style: const TextStyle(fontSize: 32),
               ),
             ),
@@ -787,7 +746,7 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
               children: [
                 // City Name
                 Text(
-                  travel.cityName,
+                  travel.city,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -798,7 +757,7 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
 
                 // Country
                 Text(
-                  travel.countryName ?? 'Unknown',
+                  travel.country,
                   style: const TextStyle(
                     fontSize: 14,
                     color: Color(0xFF6b7280),
@@ -806,22 +765,40 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
                 ),
                 const SizedBox(height: 8),
 
-                // Date Range
+                // Date
                 Row(
                   children: [
                     const Icon(
                       FontAwesomeIcons.calendar,
                       size: 14,
-                      color: Color(0xFFFF6F00),
+                      color: Color(0xFF9ca3af),
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: 6),
                     Text(
-                      _formatDate(travel.visitDate),
+                      _formatTravelDate(travel.arrivalTime, travel.departureTime),
                       style: const TextStyle(
-                        fontSize: 12,
+                        fontSize: 13,
                         color: Color(0xFF9ca3af),
                       ),
                     ),
+                    if (travel.isOngoing) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          AppLocalizations.of(context)!.currentLocation,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ],
@@ -830,6 +807,15 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
         ],
       ),
     );
+  }
+
+  String _formatTravelDate(DateTime arrivalTime, DateTime? departureTime) {
+    final arrival = '${arrivalTime.year}/${arrivalTime.month}/${arrivalTime.day}';
+    if (departureTime == null) {
+      return '$arrival - 至今';
+    }
+    final departure = '${departureTime.year}/${departureTime.month}/${departureTime.day}';
+    return '$arrival - $departure';
   }
 
   String _getCountryFlag(String country) {
@@ -859,14 +845,6 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
     };
 
     return flagMap[country] ?? '🌍';
-  }
-
-  String _formatDate(DateTime date) {
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-    final month = months[date.month - 1];
-    final year = date.year;
-    return '$month $year';
   }
 
   Widget _buildStatCard(String label, String value, IconData icon, Color color) {

@@ -12,6 +12,7 @@ enum CandidateTripStatus {
 /// 当检测到可能的旅行目的地时创建，等待用户确认
 class CandidateTrip {
   final int? id;
+  final String? userId; // 用户 ID
   final String? backendId; // 后端服务的 UUID
   final double latitude;
   final double longitude;
@@ -30,6 +31,7 @@ class CandidateTrip {
 
   CandidateTrip({
     this.id,
+    this.userId,
     this.backendId,
     required this.latitude,
     required this.longitude,
@@ -102,6 +104,7 @@ class CandidateTrip {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
+      'user_id': userId,
       'backend_id': backendId,
       'latitude': latitude,
       'longitude': longitude,
@@ -123,6 +126,7 @@ class CandidateTrip {
   factory CandidateTrip.fromMap(Map<String, dynamic> map) {
     return CandidateTrip(
       id: map['id'] as int?,
+      userId: map['user_id'] as String?,
       backendId: map['backend_id'] as String?,
       latitude: map['latitude'] as double,
       longitude: map['longitude'] as double,
@@ -143,6 +147,7 @@ class CandidateTrip {
 
   CandidateTrip copyWith({
     int? id,
+    String? userId,
     String? backendId,
     double? latitude,
     double? longitude,
@@ -161,6 +166,7 @@ class CandidateTrip {
   }) {
     return CandidateTrip(
       id: id ?? this.id,
+      userId: userId ?? this.userId,
       backendId: backendId ?? this.backendId,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
