@@ -1,4 +1,6 @@
+import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/innovation_project/domain/entities/innovation_project.dart';
+import 'package:df_admin_mobile/features/innovation_project/domain/repositories/i_innovation_project_repository.dart';
 import 'package:df_admin_mobile/features/innovation_project/presentation/controllers/innovation_project_state_controller.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart' as models;
 import 'package:df_admin_mobile/generated/app_localizations.dart';
@@ -24,23 +26,31 @@ class _InnovationListPageState extends State<InnovationListPage> with WidgetsBin
   // 关注状态管理 - 用项目ID作为key
   final Map<String, bool> _followedProjects = {};
 
-  // 获取 controller（如果已注册）
-  InnovationProjectStateController? get _controller {
-    try {
-      return Get.find<InnovationProjectStateController>();
-    } catch (_) {
-      return null;
-    }
-  }
+  // Controller 实例
+  late final InnovationProjectStateController _controller;
+  bool _controllerInitialized = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // 初始化 controller
+    _initController();
     // 初始化时加载数据
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadProjects(forceRefresh: true);
     });
+  }
+
+  /// 初始化 controller
+  void _initController() {
+    try {
+      _controller = Get.find<InnovationProjectStateController>();
+      _controllerInitialized = true;
+    } catch (e) {
+      print('❌ InnovationProjectStateController 未注册: $e');
+      _controllerInitialized = false;
+    }
   }
 
   @override
@@ -59,15 +69,21 @@ class _InnovationListPageState extends State<InnovationListPage> with WidgetsBin
 
   /// 加载项目列表
   Future<void> _loadProjects({bool forceRefresh = false}) async {
-    final controller = _controller;
-    if (controller != null) {
-      await controller.getProjects(forceRefresh: forceRefresh);
+    if (_controllerInitialized) {
+      print('📱 开始加载项目列表...');
+      await _controller.getProjects(forceRefresh: forceRefresh);
+      print('📱 加载完成，项目数量: ${_controller.projects.length}');
+      if (_controller.errorMessage.value != null) {
+        print('❌ 加载错误: ${_controller.errorMessage.value}');
+      }
+    } else {
+      print('❌ Controller 未初始化，无法加载数据');
     }
   }
 
   // 数据刷新方法
   Future<void> _refreshData() async {
-    await _loadProjects();
+    await _loadProjects(forceRefresh: true);
   }
 
   // 静态示例数据（作为备用）
@@ -108,9 +124,8 @@ class _InnovationListPageState extends State<InnovationListPage> with WidgetsBin
 
   /// 获取显示的项目列表
   List<InnovationProject> get _displayProjects {
-    final controller = _controller;
-    if (controller != null && controller.projects.isNotEmpty) {
-      return controller.projects;
+    if (_controllerInitialized && _controller.projects.isNotEmpty) {
+      return _controller.projects;
     }
     return _fallbackProjects;
   }
@@ -120,7 +135,6 @@ class _InnovationListPageState extends State<InnovationListPage> with WidgetsBin
     final l10n = AppLocalizations.of(context)!;
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
-    final controller = _controller;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -139,13 +153,13 @@ class _InnovationListPageState extends State<InnovationListPage> with WidgetsBin
       ),
       body: RefreshIndicator(
         onRefresh: _refreshData,
-        child: controller != null
+        child: _controllerInitialized
             ? Obx(() {
-                if (controller.isLoading.value && controller.projects.isEmpty) {
+                if (_controller.isLoading.value && _controller.projects.isEmpty) {
                   return const Center(child: CircularProgressIndicator());
                 }
 
-                if (controller.errorMessage.value != null && controller.projects.isEmpty) {
+                if (_controller.errorMessage.value != null && _controller.projects.isEmpty) {
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -153,7 +167,7 @@ class _InnovationListPageState extends State<InnovationListPage> with WidgetsBin
                         Icon(FontAwesomeIcons.circleExclamation, size: 48, color: Colors.grey[400]),
                         const SizedBox(height: 16),
                         Text(
-                          controller.errorMessage.value!,
+                          _controller.errorMessage.value!,
                           style: TextStyle(color: Colors.grey[600]),
                         ),
                         const SizedBox(height: 16),
@@ -301,7 +315,7 @@ class _InnovationListPageState extends State<InnovationListPage> with WidgetsBin
               Positioned(
                 top: 12,
                 right: 12,
-                child: _buildFollowButton(project.id.toString()),
+                child: _buildFollowButton(project.uuid ?? project.id.toString(), project),
               ),
             ],
           ),
@@ -501,8 +515,9 @@ class _InnovationListPageState extends State<InnovationListPage> with WidgetsBin
   }
 
   /// 构建关注按钮
-  Widget _buildFollowButton(String projectId) {
-    final isFollowed = _followedProjects[projectId] ?? false;
+  Widget _buildFollowButton(String projectId, InnovationProject project) {
+    // 优先使用本地缓存状态，否则使用 API 返回的 isLiked 状态
+    final isFollowed = _followedProjects.containsKey(projectId) ? _followedProjects[projectId]! : project.isLiked;
 
     return Material(
       color: Colors.transparent,
@@ -526,7 +541,7 @@ class _InnovationListPageState extends State<InnovationListPage> with WidgetsBin
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                isFollowed ? FontAwesomeIcons.heart : FontAwesomeIcons.heart,
+                isFollowed ? FontAwesomeIcons.solidHeart : FontAwesomeIcons.heart,
                 size: 16,
                 color: isFollowed ? Colors.white : const Color(0xFF8B5CF6),
               ),
@@ -547,22 +562,70 @@ class _InnovationListPageState extends State<InnovationListPage> with WidgetsBin
   }
 
   /// 切换关注状态
-  void _toggleFollow(String projectId) {
+  Future<void> _toggleFollow(String projectId) async {
+    // 先乐观更新 UI
+    final previousState = _followedProjects[projectId] ?? false;
     setState(() {
-      _followedProjects[projectId] = !(_followedProjects[projectId] ?? false);
+      _followedProjects[projectId] = !previousState;
     });
 
-    // 显示提示
-    final isFollowed = _followedProjects[projectId] ?? false;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(isFollowed ? '已关注该项目' : '已取消关注'),
-        duration: const Duration(seconds: 1),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        backgroundColor: isFollowed ? const Color(0xFF10B981) : Colors.grey[700],
-      ),
-    );
+    // 调用 API
+    try {
+      final repository = Get.find<IInnovationProjectRepository>();
+      final result = await repository.toggleLike(projectId);
+
+      switch (result) {
+        case Success(data: final isLiked):
+          // API 成功，更新为服务器返回的状态
+          setState(() {
+            _followedProjects[projectId] = isLiked;
+          });
+          // 显示提示
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(isLiked ? '已关注该项目' : '已取消关注'),
+                duration: const Duration(seconds: 1),
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                backgroundColor: isLiked ? const Color(0xFF10B981) : Colors.grey[700],
+              ),
+            );
+          }
+        case Failure(exception: final error):
+          // API 失败，回滚状态
+          setState(() {
+            _followedProjects[projectId] = previousState;
+          });
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('操作失败: ${error.message}'),
+                duration: const Duration(seconds: 2),
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                backgroundColor: Colors.red[700],
+              ),
+            );
+          }
+      }
+    } catch (e) {
+      // 异常处理，回滚状态
+      setState(() {
+        _followedProjects[projectId] = previousState;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('操作失败: $e'),
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            backgroundColor: Colors.red[700],
+          ),
+        );
+      }
+    }
   }
 
   /// 构建默认封面占位图

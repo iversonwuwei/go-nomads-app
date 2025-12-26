@@ -309,13 +309,17 @@ class DependencyInjection {
 
     // Use Cases - 基础用户操作 (fenix: true 确保依赖项可以重新创建)
     Get.lazyPut<user_use_cases.BatchGetUsersUseCase>(
-        () => user_use_cases.BatchGetUsersUseCase(Get.find<IUserRepository>()), fenix: true);
-    Get.lazyPut<user_use_cases.GetUserUseCase>(() => user_use_cases.GetUserUseCase(Get.find<IUserRepository>()), fenix: true);
+        () => user_use_cases.BatchGetUsersUseCase(Get.find<IUserRepository>()),
+        fenix: true);
+    Get.lazyPut<user_use_cases.GetUserUseCase>(() => user_use_cases.GetUserUseCase(Get.find<IUserRepository>()),
+        fenix: true);
     Get.lazyPut<user_use_cases.GetUserProfileUseCase>(
-        () => user_use_cases.GetUserProfileUseCase(Get.find<IUserRepository>()), fenix: true);
-    Get.lazyPut<user_use_cases.UpdateUserUseCase>(() => user_use_cases.UpdateUserUseCase(Get.find<IUserRepository>()), fenix: true);
-    Get.lazyPut<user_use_cases.SearchUsersUseCase>(
-        () => user_use_cases.SearchUsersUseCase(Get.find<IUserRepository>()), fenix: true);
+        () => user_use_cases.GetUserProfileUseCase(Get.find<IUserRepository>()),
+        fenix: true);
+    Get.lazyPut<user_use_cases.UpdateUserUseCase>(() => user_use_cases.UpdateUserUseCase(Get.find<IUserRepository>()),
+        fenix: true);
+    Get.lazyPut<user_use_cases.SearchUsersUseCase>(() => user_use_cases.SearchUsersUseCase(Get.find<IUserRepository>()),
+        fenix: true);
 
     // Use Cases - 收藏城市 (fenix: true 确保依赖项可以重新创建)
     Get.lazyPut(() => AddFavoriteCityUseCase(Get.find<IUserRepository>()), fenix: true);
@@ -326,11 +330,14 @@ class DependencyInjection {
 
     // Use Cases - 用户统计数据 (fenix: true 确保依赖项可以重新创建)
     Get.lazyPut<user_use_cases.GetCurrentUserStatsUseCase>(
-        () => user_use_cases.GetCurrentUserStatsUseCase(Get.find<IUserRepository>()), fenix: true);
+        () => user_use_cases.GetCurrentUserStatsUseCase(Get.find<IUserRepository>()),
+        fenix: true);
     Get.lazyPut<user_use_cases.GetUserStatsUseCase>(
-        () => user_use_cases.GetUserStatsUseCase(Get.find<IUserRepository>()), fenix: true);
+        () => user_use_cases.GetUserStatsUseCase(Get.find<IUserRepository>()),
+        fenix: true);
     Get.lazyPut<user_use_cases.UpdateCurrentUserStatsUseCase>(
-        () => user_use_cases.UpdateCurrentUserStatsUseCase(Get.find<IUserRepository>()), fenix: true);
+        () => user_use_cases.UpdateCurrentUserStatsUseCase(Get.find<IUserRepository>()),
+        fenix: true);
 
     // Controller（fenix: true 允许删除后重新创建）
     Get.lazyPut(
@@ -454,7 +461,8 @@ class DependencyInjection {
 
     // Use Cases (fenix: true 确保依赖项可以重新创建)
     Get.lazyPut(() => GetCitiesUseCase(Get.find<ICityRepository>()), fenix: true);
-    Get.lazyPut(() => GetCityByIdUseCase(Get.find<ICityRepository>()), tag: 'city_domain', fenix: true); // 添加tag区分City domain
+    Get.lazyPut(() => GetCityByIdUseCase(Get.find<ICityRepository>()),
+        tag: 'city_domain', fenix: true); // 添加tag区分City domain
     Get.lazyPut(() => SearchCityListUseCase(Get.find<ICityRepository>()), fenix: true);
     Get.lazyPut(() => GetRecommendedCitiesUseCase(Get.find<ICityRepository>()), fenix: true);
     Get.lazyPut(() => GetPopularCitiesUseCase(Get.find<ICityRepository>()), fenix: true);
@@ -545,40 +553,60 @@ class DependencyInjection {
     );
 
     // Use Cases - 查询类 (fenix: true 确保依赖项可以重新创建)
-    Get.lazyPut(() => GetCoworkingSpacesByCityUseCase(
-          Get.find<ICoworkingRepository>(),
-        ), fenix: true);
-    Get.lazyPut(() => GetCoworkingByIdUseCase(
-          Get.find<ICoworkingRepository>(),
-        ), fenix: true);
-    Get.lazyPut(() => GetCityCoworkingCountUseCase(
-          Get.find<ICoworkingRepository>(),
-        ), fenix: true);
-    Get.lazyPut(() => GetCoworkingSpacesUseCase(
-          Get.find<ICoworkingRepository>(),
-        ), fenix: true);
+    Get.lazyPut(
+        () => GetCoworkingSpacesByCityUseCase(
+              Get.find<ICoworkingRepository>(),
+            ),
+        fenix: true);
+    Get.lazyPut(
+        () => GetCoworkingByIdUseCase(
+              Get.find<ICoworkingRepository>(),
+            ),
+        fenix: true);
+    Get.lazyPut(
+        () => GetCityCoworkingCountUseCase(
+              Get.find<ICoworkingRepository>(),
+            ),
+        fenix: true);
+    Get.lazyPut(
+        () => GetCoworkingSpacesUseCase(
+              Get.find<ICoworkingRepository>(),
+            ),
+        fenix: true);
 
     // Use Cases - 命令类 (fenix: true 确保依赖项可以重新创建)
-    Get.lazyPut(() => CreateCoworkingUseCase(
-          Get.find<ICoworkingRepository>(),
-        ), fenix: true);
-    Get.lazyPut(() => UpdateCoworkingUseCase(
-          Get.find<ICoworkingRepository>(),
-        ), fenix: true);
-    Get.lazyPut(() => DeleteCoworkingUseCase(
-          Get.find<ICoworkingRepository>(),
-        ), fenix: true);
-    Get.lazyPut(() => SubmitCoworkingVerificationUseCase(
-          Get.find<ICoworkingRepository>(),
-        ), fenix: true);
-    Get.lazyPut(() => CheckVerificationEligibilityUseCase(
-          Get.find<ICoworkingRepository>(),
-        ), fenix: true);
+    Get.lazyPut(
+        () => CreateCoworkingUseCase(
+              Get.find<ICoworkingRepository>(),
+            ),
+        fenix: true);
+    Get.lazyPut(
+        () => UpdateCoworkingUseCase(
+              Get.find<ICoworkingRepository>(),
+            ),
+        fenix: true);
+    Get.lazyPut(
+        () => DeleteCoworkingUseCase(
+              Get.find<ICoworkingRepository>(),
+            ),
+        fenix: true);
+    Get.lazyPut(
+        () => SubmitCoworkingVerificationUseCase(
+              Get.find<ICoworkingRepository>(),
+            ),
+        fenix: true);
+    Get.lazyPut(
+        () => CheckVerificationEligibilityUseCase(
+              Get.find<ICoworkingRepository>(),
+            ),
+        fenix: true);
 
     // Use Cases - 评论 (fenix: true 确保依赖项可以重新创建)
-    Get.lazyPut(() => CoworkingCommentUseCases(
-          Get.find<ICoworkingCommentRepository>(),
-        ), fenix: true);
+    Get.lazyPut(
+        () => CoworkingCommentUseCases(
+              Get.find<ICoworkingCommentRepository>(),
+            ),
+        fenix: true);
 
     // Controller
     Get.lazyPut(
@@ -602,57 +630,87 @@ class DependencyInjection {
     );
 
     // Use Cases - Photo (fenix: true 确保依赖项可以重新创建)
-    Get.lazyPut(() => AddCityPhotoUseCase(
-          Get.find<IUserCityContentRepository>(),
-        ), fenix: true);
-    Get.lazyPut(() => SubmitCityPhotosUseCase(
-          Get.find<IUserCityContentRepository>(),
-        ), fenix: true);
-    Get.lazyPut(() => GetCityPhotosUseCase(
-          Get.find<IUserCityContentRepository>(),
-        ), fenix: true);
-    Get.lazyPut(() => DeleteCityPhotoUseCase(
-          Get.find<IUserCityContentRepository>(),
-        ), fenix: true);
-    Get.lazyPut(() => GetMyPhotosUseCase(
-          Get.find<IUserCityContentRepository>(),
-        ), fenix: true);
+    Get.lazyPut(
+        () => AddCityPhotoUseCase(
+              Get.find<IUserCityContentRepository>(),
+            ),
+        fenix: true);
+    Get.lazyPut(
+        () => SubmitCityPhotosUseCase(
+              Get.find<IUserCityContentRepository>(),
+            ),
+        fenix: true);
+    Get.lazyPut(
+        () => GetCityPhotosUseCase(
+              Get.find<IUserCityContentRepository>(),
+            ),
+        fenix: true);
+    Get.lazyPut(
+        () => DeleteCityPhotoUseCase(
+              Get.find<IUserCityContentRepository>(),
+            ),
+        fenix: true);
+    Get.lazyPut(
+        () => GetMyPhotosUseCase(
+              Get.find<IUserCityContentRepository>(),
+            ),
+        fenix: true);
 
     // Use Cases - Expense (fenix: true 确保依赖项可以重新创建)
-    Get.lazyPut(() => AddCityExpenseUseCase(
-          Get.find<IUserCityContentRepository>(),
-        ), fenix: true);
-    Get.lazyPut(() => GetCityExpensesUseCase(
-          Get.find<IUserCityContentRepository>(),
-        ), fenix: true);
-    Get.lazyPut(() => DeleteCityExpenseUseCase(
-          Get.find<IUserCityContentRepository>(),
-        ), fenix: true);
-    Get.lazyPut(() => GetMyExpensesUseCase(
-          Get.find<IUserCityContentRepository>(),
-        ), fenix: true);
+    Get.lazyPut(
+        () => AddCityExpenseUseCase(
+              Get.find<IUserCityContentRepository>(),
+            ),
+        fenix: true);
+    Get.lazyPut(
+        () => GetCityExpensesUseCase(
+              Get.find<IUserCityContentRepository>(),
+            ),
+        fenix: true);
+    Get.lazyPut(
+        () => DeleteCityExpenseUseCase(
+              Get.find<IUserCityContentRepository>(),
+            ),
+        fenix: true);
+    Get.lazyPut(
+        () => GetMyExpensesUseCase(
+              Get.find<IUserCityContentRepository>(),
+            ),
+        fenix: true);
 
     // Use Cases - Review (fenix: true 确保依赖项可以重新创建)
-    Get.lazyPut(() => UpsertCityReviewUseCase(
-          Get.find<IUserCityContentRepository>(),
-        ), fenix: true);
-    Get.lazyPut(() => GetCityReviewsUseCase(
-          Get.find<IUserCityContentRepository>(),
-        ), fenix: true);
-    Get.lazyPut(() => GetMyCityReviewUseCase(
-          Get.find<IUserCityContentRepository>(),
-        ), fenix: true);
-    Get.lazyPut(() => DeleteMyCityReviewUseCase(
-          Get.find<IUserCityContentRepository>(),
-        ), fenix: true);
+    Get.lazyPut(
+        () => UpsertCityReviewUseCase(
+              Get.find<IUserCityContentRepository>(),
+            ),
+        fenix: true);
+    Get.lazyPut(
+        () => GetCityReviewsUseCase(
+              Get.find<IUserCityContentRepository>(),
+            ),
+        fenix: true);
+    Get.lazyPut(
+        () => GetMyCityReviewUseCase(
+              Get.find<IUserCityContentRepository>(),
+            ),
+        fenix: true);
+    Get.lazyPut(
+        () => DeleteMyCityReviewUseCase(
+              Get.find<IUserCityContentRepository>(),
+            ),
+        fenix: true);
 
     // Use Cases - Statistics (fenix: true 确保依赖项可以重新创建)
-    Get.lazyPut(() => GetCityStatsUseCase(
-          Get.find<IUserCityContentRepository>(),
-        ), fenix: true);
-    Get.lazyPut(() => GetCityCostSummaryUseCase(
-          Get.find<IUserCityContentRepository>(),
-        ), fenix: true);
+    Get.lazyPut(
+        () => GetCityStatsUseCase(
+              Get.find<IUserCityContentRepository>(),
+            ),
+        fenix: true);
+    Get.lazyPut(
+        () => GetCityCostSummaryUseCase(
+              Get.find<IUserCityContentRepository>(),
+            ),
+        fenix: true);
 
     // Controller (fenix: true 确保依赖项可以重新创建)
     Get.lazyPut(
@@ -947,23 +1005,24 @@ class DependencyInjection {
     // Repository
     Get.lazyPut<IInnovationProjectRepository>(
       () => InnovationProjectRepository(Get.find<HttpService>()),
+      fenix: true,
     );
 
     // Use Cases
-    Get.lazyPut(() => GetProjectsUseCase(Get.find<IInnovationProjectRepository>()));
-    Get.lazyPut(() => GetProjectByIdUseCase(Get.find<IInnovationProjectRepository>()));
-    Get.lazyPut(() => CreateProjectUseCase(Get.find<IInnovationProjectRepository>()));
-    Get.lazyPut(() => UpdateProjectUseCase(Get.find<IInnovationProjectRepository>()));
-    Get.lazyPut(() => DeleteProjectUseCase(Get.find<IInnovationProjectRepository>()));
-    Get.lazyPut(() => GetProjectsByUserUseCase(Get.find<IInnovationProjectRepository>()));
-    Get.lazyPut(() => SearchProjectsUseCase(Get.find<IInnovationProjectRepository>()));
-    Get.lazyPut(() => GetTeamMembersUseCase(Get.find<IInnovationProjectRepository>()));
-    Get.lazyPut(() => AddTeamMemberUseCase(Get.find<IInnovationProjectRepository>()));
-    Get.lazyPut(() => RemoveTeamMemberUseCase(Get.find<IInnovationProjectRepository>()));
-    Get.lazyPut(() => ToggleLikeUseCase(Get.find<IInnovationProjectRepository>()));
-    Get.lazyPut(() => GetPopularProjectsUseCase(Get.find<IInnovationProjectRepository>()));
-    Get.lazyPut(() => GetMyProjectsUseCase(Get.find<IInnovationProjectRepository>()));
-    Get.lazyPut(() => GetFeaturedProjectsUseCase(Get.find<IInnovationProjectRepository>()));
+    Get.lazyPut(() => GetProjectsUseCase(Get.find<IInnovationProjectRepository>()), fenix: true);
+    Get.lazyPut(() => GetProjectByIdUseCase(Get.find<IInnovationProjectRepository>()), fenix: true);
+    Get.lazyPut(() => CreateProjectUseCase(Get.find<IInnovationProjectRepository>()), fenix: true);
+    Get.lazyPut(() => UpdateProjectUseCase(Get.find<IInnovationProjectRepository>()), fenix: true);
+    Get.lazyPut(() => DeleteProjectUseCase(Get.find<IInnovationProjectRepository>()), fenix: true);
+    Get.lazyPut(() => GetProjectsByUserUseCase(Get.find<IInnovationProjectRepository>()), fenix: true);
+    Get.lazyPut(() => SearchProjectsUseCase(Get.find<IInnovationProjectRepository>()), fenix: true);
+    Get.lazyPut(() => GetTeamMembersUseCase(Get.find<IInnovationProjectRepository>()), fenix: true);
+    Get.lazyPut(() => AddTeamMemberUseCase(Get.find<IInnovationProjectRepository>()), fenix: true);
+    Get.lazyPut(() => RemoveTeamMemberUseCase(Get.find<IInnovationProjectRepository>()), fenix: true);
+    Get.lazyPut(() => ToggleLikeUseCase(Get.find<IInnovationProjectRepository>()), fenix: true);
+    Get.lazyPut(() => GetPopularProjectsUseCase(Get.find<IInnovationProjectRepository>()), fenix: true);
+    Get.lazyPut(() => GetMyProjectsUseCase(Get.find<IInnovationProjectRepository>()), fenix: true);
+    Get.lazyPut(() => GetFeaturedProjectsUseCase(Get.find<IInnovationProjectRepository>()), fenix: true);
 
     // Controller
     Get.lazyPut(
@@ -983,6 +1042,7 @@ class DependencyInjection {
         getMyProjectsUseCase: Get.find<GetMyProjectsUseCase>(),
         getFeaturedProjectsUseCase: Get.find<GetFeaturedProjectsUseCase>(),
       ),
+      fenix: true, // 确保可以重新创建
     );
   }
 

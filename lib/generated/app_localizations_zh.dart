@@ -4089,4 +4089,37 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get addFirstHotel => '添加第一家酒店';
+
+  @override
+  String get noTeamMembersAdded => '暂无团队成员';
+
+  @override
+  String get addTeamMember => '添加团队成员';
+
+  @override
+  String get editTeamMember => '编辑团队成员';
+
+  @override
+  String get enterMemberName => '请输入成员姓名';
+
+  @override
+  String get enterMemberRole => '请输入成员职位';
+
+  @override
+  String get enterMemberDescription => '请输入成员简介（可选）';
+
+  @override
+  String get markAsFounder => '标记为创始人';
+
+  @override
+  String get pleaseEnterMemberName => '请输入成员姓名';
+
+  @override
+  String get pleaseEnterMemberRole => '请输入成员职位';
+
+  @override
+  String get founder => '创始人';
+
+  @override
+  String get role => '职位';
 }

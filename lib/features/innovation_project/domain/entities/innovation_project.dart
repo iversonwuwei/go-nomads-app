@@ -24,6 +24,7 @@ class InnovationProject {
   final int? viewCount;
   final int? likeCount;
   final int? commentCount;
+  final bool isLiked; // 当前用户是否点赞
 
   const InnovationProject({
     required this.id,
@@ -50,7 +51,39 @@ class InnovationProject {
     this.viewCount,
     this.likeCount,
     this.commentCount,
+    this.isLiked = false,
   });
+
+  /// 复制并更新 isLiked 状态
+  InnovationProject copyWithLiked(bool liked) {
+    return InnovationProject(
+      id: id,
+      uuid: uuid,
+      projectName: projectName,
+      elevatorPitch: elevatorPitch,
+      problem: problem,
+      solution: solution,
+      targetAudience: targetAudience,
+      productType: productType,
+      keyFeatures: keyFeatures,
+      competitiveAdvantage: competitiveAdvantage,
+      businessModel: businessModel,
+      marketOpportunity: marketOpportunity,
+      currentStatus: currentStatus,
+      team: team,
+      ask: ask,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+      userId: userId,
+      userName: userName,
+      userAvatar: userAvatar,
+      imageUrl: imageUrl,
+      viewCount: viewCount,
+      likeCount: liked ? (likeCount ?? 0) + 1 : (likeCount ?? 1) - 1,
+      commentCount: commentCount,
+      isLiked: liked,
+    );
+  }
 
   /// 是否有团队成员
   bool get hasTeam => team.isNotEmpty;

@@ -8047,6 +8047,72 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'添加第一家酒店'**
   String get addFirstHotel;
+
+  /// No description provided for @noTeamMembersAdded.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无团队成员'**
+  String get noTeamMembersAdded;
+
+  /// No description provided for @addTeamMember.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加团队成员'**
+  String get addTeamMember;
+
+  /// No description provided for @editTeamMember.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑团队成员'**
+  String get editTeamMember;
+
+  /// No description provided for @enterMemberName.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入成员姓名'**
+  String get enterMemberName;
+
+  /// No description provided for @enterMemberRole.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入成员职位'**
+  String get enterMemberRole;
+
+  /// No description provided for @enterMemberDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入成员简介（可选）'**
+  String get enterMemberDescription;
+
+  /// No description provided for @markAsFounder.
+  ///
+  /// In zh, this message translates to:
+  /// **'标记为创始人'**
+  String get markAsFounder;
+
+  /// No description provided for @pleaseEnterMemberName.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入成员姓名'**
+  String get pleaseEnterMemberName;
+
+  /// No description provided for @pleaseEnterMemberRole.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入成员职位'**
+  String get pleaseEnterMemberRole;
+
+  /// No description provided for @founder.
+  ///
+  /// In zh, this message translates to:
+  /// **'创始人'**
+  String get founder;
+
+  /// No description provided for @role.
+  ///
+  /// In zh, this message translates to:
+  /// **'职位'**
+  String get role;
 }
 
 class _AppLocalizationsDelegate

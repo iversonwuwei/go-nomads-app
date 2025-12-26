@@ -202,6 +202,7 @@ class InnovationProjectDto {
       viewCount: viewCount,
       likeCount: likeCount,
       commentCount: commentCount,
+      isLiked: isLiked,
     );
   }
 }
@@ -211,6 +212,8 @@ class InnovationListItemDto {
   final String id;
   final String title;
   final String? elevatorPitch;
+  final String? productType;
+  final String? keyFeatures;
   final String? category;
   final String stage;
   final String? imageUrl;
@@ -228,6 +231,8 @@ class InnovationListItemDto {
     required this.id,
     required this.title,
     this.elevatorPitch,
+    this.productType,
+    this.keyFeatures,
     this.category,
     this.stage = 'idea',
     this.imageUrl,
@@ -247,6 +252,8 @@ class InnovationListItemDto {
       id: json['id'] as String,
       title: json['title'] as String? ?? '',
       elevatorPitch: json['elevatorPitch'] as String?,
+      productType: json['productType'] as String?,
+      keyFeatures: json['keyFeatures'] as String?,
       category: json['category'] as String?,
       stage: json['stage'] as String? ?? 'idea',
       imageUrl: json['imageUrl'] as String?,
@@ -282,8 +289,8 @@ class InnovationListItemDto {
       problem: '',
       solution: '',
       targetAudience: '',
-      productType: '',
-      keyFeatures: '',
+      productType: productType ?? '',
+      keyFeatures: keyFeatures ?? '',
       competitiveAdvantage: '',
       businessModel: '',
       marketOpportunity: '',
@@ -299,6 +306,7 @@ class InnovationListItemDto {
       viewCount: viewCount,
       likeCount: likeCount,
       commentCount: commentCount,
+      isLiked: false, // 列表 API 暂不返回 isLiked，默认 false
     );
   }
 }
