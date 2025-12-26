@@ -102,23 +102,16 @@ class InnovationProjectDto {
       stage: json['stage'] as String? ?? 'idea',
       tags: (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList(),
       imageUrl: json['imageUrl'] as String?,
-      images:
-          (json['images'] as List<dynamic>?)?.map((e) => e as String).toList(),
+      images: (json['images'] as List<dynamic>?)?.map((e) => e as String).toList(),
       videoUrl: json['videoUrl'] as String?,
       demoUrl: json['demoUrl'] as String?,
       githubUrl: json['githubUrl'] as String?,
       websiteUrl: json['websiteUrl'] as String?,
       teamSize: json['teamSize'] as int? ?? 1,
-      team: (json['team'] as List<dynamic>?)
-              ?.map((e) => TeamMemberDto.fromJson(e as Map<String, dynamic>))
-              .toList() ??
+      team: (json['team'] as List<dynamic>?)?.map((e) => TeamMemberDto.fromJson(e as Map<String, dynamic>)).toList() ??
           [],
-      lookingFor: (json['lookingFor'] as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList(),
-      skillsNeeded: (json['skillsNeeded'] as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList(),
+      lookingFor: (json['lookingFor'] as List<dynamic>?)?.map((e) => e as String).toList(),
+      skillsNeeded: (json['skillsNeeded'] as List<dynamic>?)?.map((e) => e as String).toList(),
       likeCount: json['likeCount'] as int? ?? 0,
       viewCount: json['viewCount'] as int? ?? 0,
       commentCount: json['commentCount'] as int? ?? 0,
@@ -205,6 +198,7 @@ class InnovationProjectDto {
       userId: creatorId.hashCode,
       userName: creatorName,
       userAvatar: creatorAvatar,
+      imageUrl: imageUrl,
       viewCount: viewCount,
       likeCount: likeCount,
       commentCount: commentCount,
@@ -301,6 +295,7 @@ class InnovationListItemDto {
       userId: creatorId.hashCode,
       userName: creatorName,
       userAvatar: creatorAvatar,
+      imageUrl: imageUrl,
       viewCount: viewCount,
       likeCount: likeCount,
       commentCount: commentCount,
@@ -447,4 +442,3 @@ class CreateInnovationRequest {
     };
   }
 }
-

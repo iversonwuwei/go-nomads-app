@@ -39,7 +39,10 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
   @override
   void initState() {
     super.initState();
-    _loadFullProject();
+    // 延迟到帧渲染完成后再加载数据，避免在 build 过程中触发状态更新
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadFullProject();
+    });
   }
 
   /// 加载完整项目数据
@@ -47,7 +50,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
     final controller = _controller;
     final projectId = widget.project.uuid;
     print('📱 加载项目详情: projectId=$projectId, controller=${controller != null}');
-    
+
     if (controller != null && projectId != null) {
       await controller.getProjectById(projectId);
       print('📱 API返回: currentProject=${controller.currentProject.value?.projectName}');
@@ -81,8 +84,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
           _isFollowed ? '已关注项目' : '已取消关注',
           style: const TextStyle(fontSize: 15),
         ),
-        backgroundColor:
-            _isFollowed ? const Color(0xFF8B5CF6) : Colors.grey[700],
+        backgroundColor: _isFollowed ? const Color(0xFF8B5CF6) : Colors.grey[700],
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
@@ -136,22 +138,15 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                   ],
                 ),
               ),
-              background: _project.userAvatar != null
+              background: _project.imageUrl != null && _project.imageUrl!.isNotEmpty
                   ? Stack(
                       fit: StackFit.expand,
                       children: [
                         Image.network(
-                          _project.userAvatar!,
+                          _project.imageUrl!,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: const Color(0xFF8B5CF6),
-                              child: const Icon(
-                                FontAwesomeIcons.lightbulb,
-                                size: 80,
-                                color: Colors.white,
-                              ),
-                            );
+                            return _buildDefaultHeader();
                           },
                         ),
                         Container(
@@ -168,14 +163,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                         ),
                       ],
                     )
-                  : Container(
-                      color: const Color(0xFF8B5CF6),
-                      child: const Icon(
-                        FontAwesomeIcons.lightbulb,
-                        size: 80,
-                        color: Colors.white,
-                      ),
-                    ),
+                  : _buildDefaultHeader(),
             ),
           ),
 
@@ -238,10 +226,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                 _buildListSection(
                   icon: FontAwesomeIcons.star,
                   title: l10n.keyFeatures,
-                  items: _project.keyFeatures
-                      .split('\n')
-                      .where((s) => s.isNotEmpty)
-                      .toList(),
+                  items: _project.keyFeatures.split('\n').where((s) => s.isNotEmpty).toList(),
                   color: const Color(0xFF8B5CF6),
                 ),
 
@@ -405,12 +390,9 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                   ),
                 ),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor:
-                      _isFollowed ? const Color(0xFF8B5CF6) : Colors.grey[700],
+                  foregroundColor: _isFollowed ? const Color(0xFF8B5CF6) : Colors.grey[700],
                   side: BorderSide(
-                    color: _isFollowed
-                        ? const Color(0xFF8B5CF6)
-                        : Colors.grey[300]!,
+                    color: _isFollowed ? const Color(0xFF8B5CF6) : Colors.grey[300]!,
                     width: 1.5,
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 12),
@@ -457,9 +439,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
     final creatorUser = User(
       id: _project.userId.toString(),
       name: _project.userName ?? 'Unknown',
-      username: (_project.userName ?? 'unknown')
-          .toLowerCase()
-          .replaceAll(' ', '_'),
+      username: (_project.userName ?? 'unknown').toLowerCase().replaceAll(' ', '_'),
       avatarUrl: _project.userAvatar,
       stats: TravelStats(
         citiesVisited: 0,
@@ -657,9 +637,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                     radius: 24,
                     backgroundColor: color,
                     child: Text(
-                      member.name.isNotEmpty
-                          ? member.name.substring(0, 1)
-                          : '?',
+                      member.name.isNotEmpty ? member.name.substring(0, 1) : '?',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,
@@ -696,6 +674,29 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
               ),
             )),
       ],
+    );
+  }
+
+  /// 构建默认的 Header 背景
+  Widget _buildDefaultHeader() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF8B5CF6),
+            const Color(0xFF6366F1),
+          ],
+        ),
+      ),
+      child: Center(
+        child: Icon(
+          FontAwesomeIcons.lightbulb,
+          size: 80,
+          color: Colors.white.withOpacity(0.3),
+        ),
+      ),
     );
   }
 

@@ -1,7 +1,6 @@
 import 'package:df_admin_mobile/features/innovation_project/domain/entities/innovation_project.dart';
 import 'package:df_admin_mobile/features/innovation_project/presentation/controllers/innovation_project_state_controller.dart';
-import 'package:df_admin_mobile/features/user/domain/entities/user.dart'
-    as models;
+import 'package:df_admin_mobile/features/user/domain/entities/user.dart' as models;
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:flutter/material.dart';
@@ -21,8 +20,7 @@ class InnovationListPage extends StatefulWidget {
   State<InnovationListPage> createState() => _InnovationListPageState();
 }
 
-class _InnovationListPageState extends State<InnovationListPage>
-    with WidgetsBindingObserver {
+class _InnovationListPageState extends State<InnovationListPage> with WidgetsBindingObserver {
   // 关注状态管理 - 用项目ID作为key
   final Map<String, bool> _followedProjects = {};
 
@@ -79,24 +77,16 @@ class _InnovationListPageState extends State<InnovationListPage>
           uuid: 'fallback-1',
           userId: 1,
           projectName: '智课通',
-          elevatorPitch:
-              '我们是面向大学生的AI学习伙伴，像私人tutor一样个性化辅导，但完全自动化且价格更低。',
-          problem:
-              '大学生备考四六级时缺乏个性化练习和及时反馈，导致复习效率低下、通过率不高。',
-          solution:
-              '我们开发了一款基于AI的备考App，能根据用户错题自动推荐学习路径，并生成每日训练计划，提升学习效率30%以上。',
-          targetAudience:
-              '主要用户：一二线城市的大二至大四本科生\n次要用户：考研学生、语言培训机构\n用户画像：年龄18-24岁，手机使用频繁，愿意为提分付费',
+          elevatorPitch: '我们是面向大学生的AI学习伙伴，像私人tutor一样个性化辅导，但完全自动化且价格更低。',
+          problem: '大学生备考四六级时缺乏个性化练习和及时反馈，导致复习效率低下、通过率不高。',
+          solution: '我们开发了一款基于AI的备考App，能根据用户错题自动推荐学习路径，并生成每日训练计划，提升学习效率30%以上。',
+          targetAudience: '主要用户：一二线城市的大二至大四本科生\n次要用户：考研学生、语言培训机构\n用户画像：年龄18-24岁，手机使用频繁，愿意为提分付费',
           productType: '微信小程序 + 后台管理系统',
-          keyFeatures:
-              '智能错题分析与知识点定位\n个性化每日学习任务推送\n模拟考试+成绩预测\n语音口语练习与评分\n学习进度可视化报告',
-          competitiveAdvantage:
-              '竞品A：题库大但无个性化推荐 → 我们有AI自适应引擎\n竞品B：价格高 → 我们采用订阅制，性价比更高\n我们的优势：团队有教育+AI背景，已获得某高校试点合作',
+          keyFeatures: '智能错题分析与知识点定位\n个性化每日学习任务推送\n模拟考试+成绩预测\n语音口语练习与评分\n学习进度可视化报告',
+          competitiveAdvantage: '竞品A：题库大但无个性化推荐 → 我们有AI自适应引擎\n竞品B：价格高 → 我们采用订阅制，性价比更高\n我们的优势：团队有教育+AI背景，已获得某高校试点合作',
           businessModel: '基础功能免费，高级功能月费19元，支持学期/年费套餐',
-          marketOpportunity:
-              '中国大学生人数超3000万，每年四六级考生约1000万人次，备考工具市场规模预计2025年达50亿元。',
-          currentStatus:
-              '已完成MVP原型\n正在进行小范围内测（50名用户）\n已注册公司，申请软件著作权\n寻求种子轮融资50万元，用于产品迭代和推广',
+          marketOpportunity: '中国大学生人数超3000万，每年四六级考生约1000万人次，备考工具市场规模预计2025年达50亿元。',
+          currentStatus: '已完成MVP原型\n正在进行小范围内测（50名用户）\n已注册公司，申请软件著作权\n寻求种子轮融资50万元，用于产品迭代和推广',
           team: [
             TeamMember(
               name: '张三',
@@ -155,14 +145,12 @@ class _InnovationListPageState extends State<InnovationListPage>
                   return const Center(child: CircularProgressIndicator());
                 }
 
-                if (controller.errorMessage.value != null &&
-                    controller.projects.isEmpty) {
+                if (controller.errorMessage.value != null && controller.projects.isEmpty) {
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(FontAwesomeIcons.circleExclamation,
-                            size: 48, color: Colors.grey[400]),
+                        Icon(FontAwesomeIcons.circleExclamation, size: 48, color: Colors.grey[400]),
                         const SizedBox(height: 16),
                         Text(
                           controller.errorMessage.value!,
@@ -185,8 +173,7 @@ class _InnovationListPageState extends State<InnovationListPage>
     );
   }
 
-  Widget _buildContent(
-      AppLocalizations l10n, bool isMobile, List<InnovationProject> projects) {
+  Widget _buildContent(AppLocalizations l10n, bool isMobile, List<InnovationProject> projects) {
     return ListView(
       padding: EdgeInsets.all(isMobile ? 16 : 24),
       children: [
@@ -257,8 +244,7 @@ class _InnovationListPageState extends State<InnovationListPage>
             child: Column(
               children: [
                 const SizedBox(height: 48),
-                Icon(FontAwesomeIcons.lightbulb,
-                    size: 64, color: Colors.grey[300]),
+                Icon(FontAwesomeIcons.lightbulb, size: 64, color: Colors.grey[300]),
                 const SizedBox(height: 16),
                 Text(
                   '暂无创意项目',
@@ -297,30 +283,28 @@ class _InnovationListPageState extends State<InnovationListPage>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 项目封面
-          if (project.userAvatar != null)
-            Stack(
-              children: [
-                AspectRatio(
-                  aspectRatio: 16 / 9,
-                  child: Image.network(
-                    project.userAvatar!,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.grey[300],
-                        child: const Icon(FontAwesomeIcons.lightbulb, size: 50),
-                      );
-                    },
-                  ),
-                ),
-                // 关注按钮 - 右上角
-                Positioned(
-                  top: 12,
-                  right: 12,
-                  child: _buildFollowButton(project.id.toString()),
-                ),
-              ],
-            ),
+          Stack(
+            children: [
+              AspectRatio(
+                aspectRatio: 16 / 9,
+                child: project.imageUrl != null && project.imageUrl!.isNotEmpty
+                    ? Image.network(
+                        project.imageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return _buildDefaultCover();
+                        },
+                      )
+                    : _buildDefaultCover(),
+              ),
+              // 关注按钮 - 右上角
+              Positioned(
+                top: 12,
+                right: 12,
+                child: _buildFollowButton(project.id.toString()),
+              ),
+            ],
+          ),
 
           Padding(
             padding: const EdgeInsets.all(16),
@@ -359,8 +343,10 @@ class _InnovationListPageState extends State<InnovationListPage>
                   runSpacing: 8,
                   children: [
                     _buildTag(project.productType, const Color(0xFF8B5CF6)),
-                    ...project.keyFeatures.split("\n").take(2).map((feature) =>
-                        _buildTag(feature, const Color(0xFF6366F1))),
+                    ...project.keyFeatures
+                        .split("\n")
+                        .take(2)
+                        .map((feature) => _buildTag(feature, const Color(0xFF6366F1))),
                   ],
                 ),
 
@@ -372,13 +358,20 @@ class _InnovationListPageState extends State<InnovationListPage>
                     CircleAvatar(
                       radius: 12,
                       backgroundColor: const Color(0xFF8B5CF6),
-                      child: Text(
-                        (project.userName ?? '?').substring(0, 1),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                        ),
-                      ),
+                      backgroundImage: project.userAvatar != null && project.userAvatar!.isNotEmpty
+                          ? NetworkImage(project.userAvatar!)
+                          : null,
+                      child: project.userAvatar == null || project.userAvatar!.isEmpty
+                          ? Text(
+                              (project.userName ?? '?').isNotEmpty
+                                  ? (project.userName ?? '?').substring(0, 1).toUpperCase()
+                                  : '?',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                              ),
+                            )
+                          : null,
                     ),
                     const SizedBox(width: 8),
                     Text(
@@ -389,8 +382,7 @@ class _InnovationListPageState extends State<InnovationListPage>
                       ),
                     ),
                     const Spacer(),
-                    Icon(FontAwesomeIcons.clock,
-                        size: 14, color: Colors.grey[600]),
+                    Icon(FontAwesomeIcons.clock, size: 14, color: Colors.grey[600]),
                     const SizedBox(width: 4),
                     Text(
                       _formatDate(project.updatedAt ?? project.createdAt),
@@ -414,8 +406,7 @@ class _InnovationListPageState extends State<InnovationListPage>
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  InnovationDetailPage(project: project),
+                              builder: (context) => InnovationDetailPage(project: project),
                             ),
                           );
                         },
@@ -453,8 +444,7 @@ class _InnovationListPageState extends State<InnovationListPage>
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  DirectChatPage(user: chatUser),
+                              builder: (context) => DirectChatPage(user: chatUser),
                             ),
                           );
                         },
@@ -522,9 +512,7 @@ class _InnovationListPageState extends State<InnovationListPage>
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: isFollowed
-                ? const Color(0xFF8B5CF6)
-                : Colors.white.withAlpha(230),
+            color: isFollowed ? const Color(0xFF8B5CF6) : Colors.white.withAlpha(230),
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
@@ -572,8 +560,30 @@ class _InnovationListPageState extends State<InnovationListPage>
         duration: const Duration(seconds: 1),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        backgroundColor:
-            isFollowed ? const Color(0xFF10B981) : Colors.grey[700],
+        backgroundColor: isFollowed ? const Color(0xFF10B981) : Colors.grey[700],
+      ),
+    );
+  }
+
+  /// 构建默认封面占位图
+  Widget _buildDefaultCover() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF8B5CF6).withOpacity(0.1),
+            const Color(0xFF6366F1).withOpacity(0.2),
+          ],
+        ),
+      ),
+      child: Center(
+        child: Icon(
+          FontAwesomeIcons.lightbulb,
+          size: 50,
+          color: const Color(0xFF8B5CF6).withOpacity(0.5),
+        ),
       ),
     );
   }
