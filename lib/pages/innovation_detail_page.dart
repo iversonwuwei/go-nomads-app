@@ -4,6 +4,7 @@ import 'package:df_admin_mobile/features/innovation_project/domain/repositories/
 import 'package:df_admin_mobile/features/innovation_project/presentation/controllers/innovation_project_state_controller.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/pages/add_innovation_page.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -165,6 +166,19 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
     }
   }
 
+  /// 跳转到编辑页面
+  Future<void> _navigateToEdit() async {
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => AddInnovationPage(project: _project),
+      ),
+    );
+    // 如果返回 true，说明编辑成功，刷新数据
+    if (result == true) {
+      _loadFullProject();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -194,6 +208,15 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
             pinned: true,
             backgroundColor: const Color(0xFF8B5CF6),
             leading: const SliverBackButton(),
+            actions: [
+              // 编辑按钮 - 仅当 canEdit 为 true 时显示
+              if (_project.canEdit)
+                IconButton(
+                  icon: const Icon(FontAwesomeIcons.penToSquare, color: Colors.white, size: 20),
+                  onPressed: () => _navigateToEdit(),
+                  tooltip: l10n.edit,
+                ),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
                 _project.projectName,

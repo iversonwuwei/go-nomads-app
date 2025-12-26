@@ -964,6 +964,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get updateSuccess => '更新成功';
 
   @override
+  String get updateFailed => '更新失败';
+
+  @override
   String get uploadPhoto => '上传照片';
 
   @override
@@ -4098,6 +4101,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get editTeamMember => '编辑团队成员';
+
+  @override
+  String get editProject => '编辑项目';
 
   @override
   String get enterMemberName => '请输入成员姓名';

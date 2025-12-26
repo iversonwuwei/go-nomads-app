@@ -37,6 +37,7 @@ class InnovationProjectDto {
   final bool isFeatured;
   final bool isPublic;
   final bool isLiked;
+  final bool canEdit;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -76,6 +77,7 @@ class InnovationProjectDto {
     this.isFeatured = false,
     this.isPublic = true,
     this.isLiked = false,
+    this.canEdit = false,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -118,6 +120,7 @@ class InnovationProjectDto {
       isFeatured: json['isFeatured'] as bool? ?? false,
       isPublic: json['isPublic'] as bool? ?? true,
       isLiked: json['isLiked'] as bool? ?? false,
+      canEdit: json['canEdit'] as bool? ?? false,
       createdAt: _parseDateTime(json['createdAt']),
       updatedAt: _parseDateTime(json['updatedAt']),
     );
@@ -203,6 +206,7 @@ class InnovationProjectDto {
       likeCount: likeCount,
       commentCount: commentCount,
       isLiked: isLiked,
+      canEdit: canEdit,
     );
   }
 }
@@ -225,6 +229,8 @@ class InnovationListItemDto {
   final int viewCount;
   final int commentCount;
   final bool isFeatured;
+  final bool isLiked;
+  final bool canEdit;
   final DateTime createdAt;
 
   InnovationListItemDto({
@@ -244,6 +250,8 @@ class InnovationListItemDto {
     this.viewCount = 0,
     this.commentCount = 0,
     this.isFeatured = false,
+    this.isLiked = false,
+    this.canEdit = false,
     required this.createdAt,
   });
 
@@ -265,6 +273,8 @@ class InnovationListItemDto {
       viewCount: json['viewCount'] as int? ?? 0,
       commentCount: json['commentCount'] as int? ?? 0,
       isFeatured: json['isFeatured'] as bool? ?? false,
+      isLiked: json['isLiked'] as bool? ?? false,
+      canEdit: json['canEdit'] as bool? ?? false,
       createdAt: _parseDateTime(json['createdAt']),
     );
   }
@@ -306,7 +316,8 @@ class InnovationListItemDto {
       viewCount: viewCount,
       likeCount: likeCount,
       commentCount: commentCount,
-      isLiked: false, // 列表 API 暂不返回 isLiked，默认 false
+      isLiked: isLiked,
+      canEdit: canEdit,
     );
   }
 }

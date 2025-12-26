@@ -25,6 +25,7 @@ class InnovationProject {
   final int? likeCount;
   final int? commentCount;
   final bool isLiked; // 当前用户是否点赞
+  final bool canEdit; // 当前用户是否可以编辑
 
   const InnovationProject({
     required this.id,
@@ -52,6 +53,7 @@ class InnovationProject {
     this.likeCount,
     this.commentCount,
     this.isLiked = false,
+    this.canEdit = false,
   });
 
   /// 复制并更新 isLiked 状态
@@ -82,6 +84,7 @@ class InnovationProject {
       likeCount: liked ? (likeCount ?? 0) + 1 : (likeCount ?? 1) - 1,
       commentCount: commentCount,
       isLiked: liked,
+      canEdit: canEdit,
     );
   }
 

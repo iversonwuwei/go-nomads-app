@@ -1988,6 +1988,12 @@ abstract class AppLocalizations {
   /// **'更新成功'**
   String get updateSuccess;
 
+  /// No description provided for @updateFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'更新失败'**
+  String get updateFailed;
+
   /// No description provided for @uploadPhoto.
   ///
   /// In zh, this message translates to:
@@ -8065,6 +8071,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'编辑团队成员'**
   String get editTeamMember;
+
+  /// No description provided for @editProject.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑项目'**
+  String get editProject;
 
   /// No description provided for @enterMemberName.
   ///
