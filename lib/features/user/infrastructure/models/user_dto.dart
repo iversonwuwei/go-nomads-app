@@ -52,10 +52,17 @@ class UserDto {
   });
 
   factory UserDto.fromJson(Map<String, dynamic> json) {
+    // username 后端没有返回，使用 name 作为默认值
+    final name = json['name'] as String?;
+    final username = json['username'] as String? ?? name;
+
+    // joinedDate 支持 joinedDate 或 createdAt 字段
+    final joinedDateStr = json['joinedDate'] as String? ?? json['createdAt'] as String?;
+    
     return UserDto(
       id: json['id'] as String? ?? '',
-      name: json['name'] as String?,
-      username: json['username'] as String?,
+      name: name,
+      username: username,
       email: json['email'] as String?,
       bio: json['bio'] as String?,
       avatarUrl: json['avatarUrl'] as String?,
@@ -77,7 +84,7 @@ class UserDto {
               ?.map((e) => TravelHistoryDto.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
-      joinedDate: json['joinedDate'] != null ? DateTime.parse(json['joinedDate'] as String) : null,
+      joinedDate: joinedDateStr != null ? DateTime.parse(joinedDateStr) : null,
       isVerified: json['isVerified'] as bool? ?? false,
       membership:
           json['membership'] != null ? UserMembershipDto.fromJson(json['membership'] as Map<String, dynamic>) : null,
@@ -355,47 +362,87 @@ class TravelStatsDto {
 }
 
 class TravelHistoryDto {
+  final String id;
   final String city;
   final String country;
-  final DateTime startDate;
-  final DateTime? endDate;
-  final String? notes;
+  final String? countryCode;
+  final double? latitude;
+  final double? longitude;
+  final DateTime arrivalTime;
+  final DateTime? departureTime;
+  final bool isConfirmed;
+  final String? review;
+  final double? rating;
+  final List<String>? photos;
+  final String? cityId;
+  final int? durationDays;
+  final bool isOngoing;
 
   TravelHistoryDto({
+    required this.id,
     required this.city,
     required this.country,
-    required this.startDate,
-    this.endDate,
-    this.notes,
+    this.countryCode,
+    this.latitude,
+    this.longitude,
+    required this.arrivalTime,
+    this.departureTime,
+    this.isConfirmed = true,
+    this.review,
+    this.rating,
+    this.photos,
+    this.cityId,
+    this.durationDays,
+    this.isOngoing = false,
   });
 
   factory TravelHistoryDto.fromJson(Map<String, dynamic> json) {
     return TravelHistoryDto(
+      id: json['id'] as String? ?? '',
       city: json['city'] as String? ?? '',
       country: json['country'] as String? ?? '',
-      startDate: json['startDate'] != null ? DateTime.parse(json['startDate'] as String) : DateTime.now(),
-      endDate: json['endDate'] != null ? DateTime.parse(json['endDate'] as String) : null,
-      notes: json['notes'] as String?,
+      countryCode: json['countryCode'] as String?,
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
+      arrivalTime: json['arrivalTime'] != null ? DateTime.parse(json['arrivalTime'] as String) : DateTime.now(),
+      departureTime: json['departureTime'] != null ? DateTime.parse(json['departureTime'] as String) : null,
+      isConfirmed: json['isConfirmed'] as bool? ?? true,
+      review: json['review'] as String?,
+      rating: (json['rating'] as num?)?.toDouble(),
+      photos: (json['photos'] as List<dynamic>?)?.cast<String>(),
+      cityId: json['cityId'] as String?,
+      durationDays: json['durationDays'] as int?,
+      isOngoing: json['isOngoing'] as bool? ?? false,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'city': city,
       'country': country,
-      'startDate': startDate.toIso8601String(),
-      'endDate': endDate?.toIso8601String(),
-      'notes': notes,
+      if (countryCode != null) 'countryCode': countryCode,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
+      'arrivalTime': arrivalTime.toIso8601String(),
+      if (departureTime != null) 'departureTime': departureTime!.toIso8601String(),
+      'isConfirmed': isConfirmed,
+      if (review != null) 'review': review,
+      if (rating != null) 'rating': rating,
+      if (photos != null) 'photos': photos,
+      if (cityId != null) 'cityId': cityId,
+      if (durationDays != null) 'durationDays': durationDays,
+      'isOngoing': isOngoing,
     };
   }
 
   entity.TravelHistory toDomain() {
     return entity.TravelHistory(
-      cityId: '', // DTO缺少cityId,使用空字符串
-      cityName: city, // DTO的city字段映射到cityName
-      countryName: country, // DTO的country字段映射到countryName
-      visitDate: startDate, // DTO的startDate映射到visitDate
-      durationDays: endDate?.difference(startDate).inDays, // 计算持续天数
+      cityId: cityId ?? '',
+      cityName: city,
+      countryName: country,
+      visitDate: arrivalTime,
+      durationDays: durationDays ?? departureTime?.difference(arrivalTime).inDays,
     );
   }
 }

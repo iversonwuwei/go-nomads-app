@@ -1,8 +1,10 @@
 import 'dart:developer';
 
+import 'package:get/get.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../../../../services/database_service.dart';
+import '../../../../services/token_storage_service.dart';
 import '../../domain/entities/entities.dart';
 
 /// 旅行历史数据访问对象
@@ -13,6 +15,19 @@ class TravelHistoryDao {
   TravelHistoryDao({DatabaseService? dbService}) : _dbService = dbService ?? DatabaseService();
 
   Future<Database> get _db => _dbService.database;
+
+  /// 获取当前用户 ID
+  Future<String?> _getCurrentUserId() async {
+    try {
+      if (Get.isRegistered<TokenStorageService>()) {
+        final tokenService = Get.find<TokenStorageService>();
+        return await tokenService.getUserId();
+      }
+    } catch (e) {
+      log('⚠️ 获取当前用户ID失败: $e');
+    }
+    return null;
+  }
 
   // ==================== 初始化 ====================
 
@@ -52,6 +67,7 @@ class TravelHistoryDao {
     await db.execute('''
       CREATE TABLE IF NOT EXISTS candidate_trips (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT,
         backend_id TEXT,
         latitude REAL NOT NULL,
         longitude REAL NOT NULL,
@@ -130,6 +146,14 @@ class TravelHistoryDao {
       if (!columnNames.contains('city_id')) {
         await db.execute('ALTER TABLE candidate_trips ADD COLUMN city_id TEXT');
         log('✅ 添加 city_id 字段成功');
+      }
+
+      // 添加 user_id 字段，用于区分不同用户的数据
+      if (!columnNames.contains('user_id')) {
+        await db.execute('ALTER TABLE candidate_trips ADD COLUMN user_id TEXT');
+        log('✅ 添加 user_id 字段成功');
+        // 创建索引
+        await db.execute('CREATE INDEX IF NOT EXISTS idx_candidate_trips_user_id ON candidate_trips(user_id)');
       }
     } catch (e) {
       log('⚠️ 数据库迁移警告: $e');
@@ -271,25 +295,41 @@ class TravelHistoryDao {
     );
   }
 
-  /// 获取待确认的候选旅行
+  /// 获取待确认的候选旅行（按当前用户过滤）
   Future<List<CandidateTrip>> getPendingCandidateTrips() async {
     final db = await _db;
+    final userId = await _getCurrentUserId();
+
+    // 如果没有用户 ID，返回空列表
+    if (userId == null) {
+      log('⚠️ 未登录用户，无法获取待确认旅行');
+      return [];
+    }
+    
     final maps = await db.query(
       'candidate_trips',
-      where: 'status = ?',
-      whereArgs: [CandidateTripStatus.pending.index],
+      where: 'status = ? AND user_id = ?',
+      whereArgs: [CandidateTripStatus.pending.index, userId],
       orderBy: 'created_at DESC',
     );
     return maps.map((map) => CandidateTrip.fromMap(map)).toList();
   }
 
-  /// 获取已确认的旅行
+  /// 获取已确认的旅行（按当前用户过滤）
   Future<List<CandidateTrip>> getConfirmedTrips() async {
     final db = await _db;
+    final userId = await _getCurrentUserId();
+
+    // 如果没有用户 ID，返回空列表
+    if (userId == null) {
+      log('⚠️ 未登录用户，无法获取已确认旅行');
+      return [];
+    }
+    
     final maps = await db.query(
       'candidate_trips',
-      where: 'status = ?',
-      whereArgs: [CandidateTripStatus.confirmed.index],
+      where: 'status = ? AND user_id = ?',
+      whereArgs: [CandidateTripStatus.confirmed.index, userId],
       orderBy: 'arrival_time DESC',
     );
     return maps.map((map) => CandidateTrip.fromMap(map)).toList();
@@ -353,26 +393,41 @@ class TravelHistoryDao {
     );
   }
 
-  /// 插入候选旅行
+  /// 插入候选旅行（自动添加当前用户 ID）
   Future<int> insertCandidateTrip(CandidateTrip trip) async {
     final db = await _db;
-    return await db.insert('candidate_trips', trip.toMap());
+    final userId = await _getCurrentUserId();
+    final tripMap = trip.toMap();
+
+    // 如果没有 user_id，添加当前用户 ID
+    if (tripMap['user_id'] == null && userId != null) {
+      tripMap['user_id'] = userId;
+    }
+    
+    return await db.insert('candidate_trips', tripMap);
   }
 
-  /// 检查是否存在相似的旅行（相同城市和国家，到达时间在24小时内）
+  /// 检查是否存在相似的旅行（相同城市和国家，到达时间在24小时内，同一用户）
   Future<bool> existsSimilarTrip(CandidateTrip trip) async {
     final db = await _db;
+    final userId = await _getCurrentUserId();
     final startTime = trip.arrivalTime.subtract(const Duration(hours: 24));
     final endTime = trip.arrivalTime.add(const Duration(hours: 24));
 
+    // 如果没有用户 ID，返回 false，允许插入
+    if (userId == null) {
+      return false;
+    }
+
     final result = await db.query(
       'candidate_trips',
-      where: 'city_name = ? AND country_name = ? AND arrival_time >= ? AND arrival_time <= ?',
+      where: 'city_name = ? AND country_name = ? AND arrival_time >= ? AND arrival_time <= ? AND user_id = ?',
       whereArgs: [
         trip.cityName,
         trip.countryName,
         startTime.toIso8601String(),
         endTime.toIso8601String(),
+        userId,
       ],
       limit: 1,
     );
