@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:df_admin_mobile/config/api_config.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/innovation_project/domain/entities/innovation_project.dart';
 import 'package:df_admin_mobile/features/innovation_project/infrastructure/models/innovation_project_dto.dart';
 import 'package:df_admin_mobile/features/innovation_project/infrastructure/repositories/innovation_project_repository.dart';
 import 'package:df_admin_mobile/features/membership/presentation/controllers/membership_state_controller.dart';
@@ -19,9 +20,15 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
 /// Add Innovation Project Page
-/// 添加创意项目页面
+/// 添加创意项目页面（支持编辑模式）
 class AddInnovationPage extends StatefulWidget {
-  const AddInnovationPage({super.key});
+  /// 编辑模式下传入的项目数据，null 表示创建新项目
+  final InnovationProject? project;
+  
+  const AddInnovationPage({super.key, this.project});
+  
+  /// 是否为编辑模式
+  bool get isEditMode => project != null;
 
   @override
   State<AddInnovationPage> createState() => _AddInnovationPageState();
@@ -66,6 +73,40 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
   // AI 图片生成状态
   final RxBool _isGeneratingImage = false.obs;
   final _aiPromptController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // 如果是编辑模式，初始化表单数据
+    if (widget.isEditMode) {
+      _initEditData();
+    }
+  }
+
+  /// 初始化编辑数据
+  void _initEditData() {
+    final project = widget.project!;
+    _projectNameController.text = project.projectName;
+    _elevatorPitchController.text = project.elevatorPitch;
+    _problemController.text = project.problem;
+    _solutionController.text = project.solution;
+    _targetAudienceController.text = project.targetAudience;
+    _productTypeController.text = project.productType;
+    _keyFeaturesController.text = project.keyFeatures;
+    _competitiveAdvantageController.text = project.competitiveAdvantage;
+    _businessModelController.text = project.businessModel;
+    _marketOpportunityController.text = project.marketOpportunity;
+    _currentStatusController.text = project.currentStatus;
+    _askController.text = project.ask;
+    _coverImageUrl = project.imageUrl;
+    
+    // 初始化团队成员
+    _teamMembers.value = project.team.map((m) => TeamMemberDto(
+      name: m.name,
+      role: m.role,
+      description: m.description,
+    )).toList();
+  }
 
   @override
   void dispose() {
@@ -584,49 +625,89 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
         }
       }
 
-      // 构建创建请求
-      final request = CreateInnovationRequest(
-        title: _projectNameController.text.trim(),
-        description: _elevatorPitchController.text.trim(),
-        elevatorPitch: _elevatorPitchController.text.trim(),
-        problem: _problemController.text.trim().isNotEmpty ? _problemController.text.trim() : null,
-        solution: _solutionController.text.trim().isNotEmpty ? _solutionController.text.trim() : null,
-        targetAudience: _targetAudienceController.text.trim().isNotEmpty ? _targetAudienceController.text.trim() : null,
-        productType: _productTypeController.text.trim().isNotEmpty ? _productTypeController.text.trim() : null,
-        keyFeatures: _keyFeaturesController.text.trim().isNotEmpty ? _keyFeaturesController.text.trim() : null,
-        competitiveAdvantage:
-            _competitiveAdvantageController.text.trim().isNotEmpty ? _competitiveAdvantageController.text.trim() : null,
-        businessModel: _businessModelController.text.trim().isNotEmpty ? _businessModelController.text.trim() : null,
-        marketOpportunity:
-            _marketOpportunityController.text.trim().isNotEmpty ? _marketOpportunityController.text.trim() : null,
-        ask: _askController.text.trim().isNotEmpty ? _askController.text.trim() : null,
-        stage: 'idea', // 默认为初始阶段
-        imageUrl: finalImageUrl,
-        isPublic: true,
-        team: _teamMembers.isNotEmpty ? _teamMembers.toList() : null,
-      );
+      if (widget.isEditMode) {
+        // 编辑模式 - 更新项目
+        final projectId = widget.project!.uuid ?? widget.project!.id.toString();
+        final updateData = {
+          'title': _projectNameController.text.trim(),
+          'description': _elevatorPitchController.text.trim(),
+          'elevatorPitch': _elevatorPitchController.text.trim(),
+          'problem': _problemController.text.trim().isNotEmpty ? _problemController.text.trim() : null,
+          'solution': _solutionController.text.trim().isNotEmpty ? _solutionController.text.trim() : null,
+          'targetAudience': _targetAudienceController.text.trim().isNotEmpty ? _targetAudienceController.text.trim() : null,
+          'productType': _productTypeController.text.trim().isNotEmpty ? _productTypeController.text.trim() : null,
+          'keyFeatures': _keyFeaturesController.text.trim().isNotEmpty ? _keyFeaturesController.text.trim() : null,
+          'competitiveAdvantage': _competitiveAdvantageController.text.trim().isNotEmpty ? _competitiveAdvantageController.text.trim() : null,
+          'businessModel': _businessModelController.text.trim().isNotEmpty ? _businessModelController.text.trim() : null,
+          'marketOpportunity': _marketOpportunityController.text.trim().isNotEmpty ? _marketOpportunityController.text.trim() : null,
+          'ask': _askController.text.trim().isNotEmpty ? _askController.text.trim() : null,
+          'imageUrl': finalImageUrl,
+          // 始终发送 team 字段，让后端知道是否需要更新团队成员
+          'team': _teamMembers.map((m) => m.toJson()).toList(),
+        };
 
-      debugPrint('🚀 [创建项目] 开始提交...');
-      debugPrint('🚀 [创建项目] 标题: ${request.title}');
-      debugPrint('🚀 [创建项目] 请求数据: ${request.toJson()}');
+        debugPrint('🚀 [更新项目] 开始提交...');
+        debugPrint('🚀 [更新项目] ID: $projectId');
+        debugPrint('🚀 [更新项目] 请求数据: $updateData');
 
-      // 调用 Repository 创建项目
-      final result = await repository.createProject(request);
+        final result = await repository.updateProject(projectId, updateData);
 
-      switch (result) {
-        case Success(:final data):
-          debugPrint('✅ [创建项目] 成功! ID: ${data.id}');
-          AppToast.success(l10n.projectCreatedSuccessfully);
-          if (mounted) {
-            Navigator.pop(context, true); // 返回 true 通知父页面刷新数据
-          }
-        case Failure(:final exception):
-          debugPrint('❌ [创建项目] 失败: $exception');
-          AppToast.error('${l10n.creationFailed}: ${exception.message}');
+        switch (result) {
+          case Success(:final data):
+            debugPrint('✅ [更新项目] 成功! ID: ${data.uuid}');
+            AppToast.success(l10n.updateSuccess);
+            if (mounted) {
+              Navigator.pop(context, true); // 返回 true 通知父页面刷新数据
+            }
+          case Failure(:final exception):
+            debugPrint('❌ [更新项目] 失败: $exception');
+            AppToast.error('${l10n.updateFailed}: ${exception.message}');
+        }
+      } else {
+        // 创建模式
+        final request = CreateInnovationRequest(
+          title: _projectNameController.text.trim(),
+          description: _elevatorPitchController.text.trim(),
+          elevatorPitch: _elevatorPitchController.text.trim(),
+          problem: _problemController.text.trim().isNotEmpty ? _problemController.text.trim() : null,
+          solution: _solutionController.text.trim().isNotEmpty ? _solutionController.text.trim() : null,
+          targetAudience: _targetAudienceController.text.trim().isNotEmpty ? _targetAudienceController.text.trim() : null,
+          productType: _productTypeController.text.trim().isNotEmpty ? _productTypeController.text.trim() : null,
+          keyFeatures: _keyFeaturesController.text.trim().isNotEmpty ? _keyFeaturesController.text.trim() : null,
+          competitiveAdvantage:
+              _competitiveAdvantageController.text.trim().isNotEmpty ? _competitiveAdvantageController.text.trim() : null,
+          businessModel: _businessModelController.text.trim().isNotEmpty ? _businessModelController.text.trim() : null,
+          marketOpportunity:
+              _marketOpportunityController.text.trim().isNotEmpty ? _marketOpportunityController.text.trim() : null,
+          ask: _askController.text.trim().isNotEmpty ? _askController.text.trim() : null,
+          stage: 'idea', // 默认为初始阶段
+          imageUrl: finalImageUrl,
+          isPublic: true,
+          team: _teamMembers.isNotEmpty ? _teamMembers.toList() : null,
+        );
+
+        debugPrint('🚀 [创建项目] 开始提交...');
+        debugPrint('🚀 [创建项目] 标题: ${request.title}');
+        debugPrint('🚀 [创建项目] 请求数据: ${request.toJson()}');
+
+        // 调用 Repository 创建项目
+        final result = await repository.createProject(request);
+
+        switch (result) {
+          case Success(:final data):
+            debugPrint('✅ [创建项目] 成功! ID: ${data.id}');
+            AppToast.success(l10n.projectCreatedSuccessfully);
+            if (mounted) {
+              Navigator.pop(context, true); // 返回 true 通知父页面刷新数据
+            }
+          case Failure(:final exception):
+            debugPrint('❌ [创建项目] 失败: $exception');
+            AppToast.error('${l10n.creationFailed}: ${exception.message}');
+        }
       }
     } catch (e, stackTrace) {
-      debugPrint('❌ [创建项目] 异常: $e');
-      debugPrint('❌ [创建项目] 堆栈: $stackTrace');
+      debugPrint('❌ [提交项目] 异常: $e');
+      debugPrint('❌ [提交项目] 堆栈: $stackTrace');
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
         AppToast.error('${l10n.creationFailed}: $e');
@@ -671,7 +752,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF8B5CF6),
         foregroundColor: Colors.white,
-        title: Text(l10n.createInnovationProject),
+        title: Text(widget.isEditMode ? l10n.editProject : l10n.createInnovationProject),
         elevation: 0,
       ),
       body: Form(

@@ -969,6 +969,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get updateSuccess => 'Updated Successfully';
 
   @override
+  String get updateFailed => 'Update Failed';
+
+  @override
   String get uploadPhoto => 'Upload Photo';
 
   @override
@@ -4156,6 +4159,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get editTeamMember => 'Edit Team Member';
+
+  @override
+  String get editProject => 'Edit Project';
 
   @override
   String get enterMemberName => 'Enter member name';
