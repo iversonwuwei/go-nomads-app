@@ -2108,7 +2108,19 @@
       }
     }
   },
-  "addFirstHotel": "添加第一家酒店"
+  "addFirstHotel": "添加第一家酒店",
+  "noTeamMembersAdded": "暂无团队成员",
+  "addTeamMember": "添加团队成员",
+  "editTeamMember": "编辑团队成员",
+  "enterMemberName": "请输入成员姓名",
+  "enterMemberRole": "请输入成员职位",
+  "enterMemberDescription": "请输入成员简介（可选）",
+  "markAsFounder": "标记为创始人",
+  "pleaseEnterMemberName": "请输入成员姓名",
+  "pleaseEnterMemberRole": "请输入成员职位",
+  "founder": "创始人",
+  "name": "姓名",
+  "role": "职位"
 }
 
 

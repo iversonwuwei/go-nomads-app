@@ -2,9 +2,14 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:df_admin_mobile/config/api_config.dart';
+import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/innovation_project/infrastructure/models/innovation_project_dto.dart';
+import 'package:df_admin_mobile/features/innovation_project/infrastructure/repositories/innovation_project_repository.dart';
 import 'package:df_admin_mobile/features/membership/presentation/controllers/membership_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
+import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:df_admin_mobile/services/image_upload_service.dart';
 import 'package:df_admin_mobile/services/token_storage_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
@@ -51,8 +56,10 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
 
   // 进展与团队
   final _currentStatusController = TextEditingController();
-  final _teamMembersController = TextEditingController(); // JSON 格式或逐个添加
   final _askController = TextEditingController();
+
+  // 团队成员列表
+  final RxList<TeamMemberDto> _teamMembers = <TeamMemberDto>[].obs;
 
   final ImagePicker _picker = ImagePicker();
 
@@ -73,7 +80,6 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
     _businessModelController.dispose();
     _marketOpportunityController.dispose();
     _currentStatusController.dispose();
-    _teamMembersController.dispose();
     _askController.dispose();
     _aiPromptController.dispose();
     super.dispose();
@@ -559,30 +565,98 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
     _isSubmitting.value = true;
 
     try {
-      // 处理核心功能列表
-      // final keyFeatures = _keyFeaturesController.text
-      //     .split(',')
-      //     .map((e) => e.trim())
-      //     .where((e) => e.isNotEmpty)
-      //     .toList();
+      final l10n = AppLocalizations.of(context)!;
 
-      // 这里应该调用 API 保存项目
-      // TODO: 实现项目保存逻辑，使用表单数据包括 keyFeatures
-      // 暂时只显示成功消息
-      await Future.delayed(const Duration(seconds: 2));
+      // 获取 HttpService 实例
+      final httpService = Get.find<HttpService>();
+      final repository = InnovationProjectRepository(httpService);
 
-      if (mounted) {
-        final l10n = AppLocalizations.of(context)!;
-        AppToast.success(l10n.projectCreatedSuccessfully);
-        Navigator.pop(context, true); // 返回 true 通知父页面刷新数据
+      // 处理封面图片
+      String? finalImageUrl = _coverImageUrl;
+
+      // 如果有本地图片，需要先上传
+      if (_coverImage != null) {
+        AppToast.info('正在上传封面图片...');
+        finalImageUrl = await _uploadCoverImage(_coverImage!);
+        if (finalImageUrl == null) {
+          AppToast.error('封面图片上传失败');
+          return;
+        }
       }
-    } catch (e) {
+
+      // 构建创建请求
+      final request = CreateInnovationRequest(
+        title: _projectNameController.text.trim(),
+        description: _elevatorPitchController.text.trim(),
+        elevatorPitch: _elevatorPitchController.text.trim(),
+        problem: _problemController.text.trim().isNotEmpty ? _problemController.text.trim() : null,
+        solution: _solutionController.text.trim().isNotEmpty ? _solutionController.text.trim() : null,
+        targetAudience: _targetAudienceController.text.trim().isNotEmpty ? _targetAudienceController.text.trim() : null,
+        productType: _productTypeController.text.trim().isNotEmpty ? _productTypeController.text.trim() : null,
+        keyFeatures: _keyFeaturesController.text.trim().isNotEmpty ? _keyFeaturesController.text.trim() : null,
+        competitiveAdvantage:
+            _competitiveAdvantageController.text.trim().isNotEmpty ? _competitiveAdvantageController.text.trim() : null,
+        businessModel: _businessModelController.text.trim().isNotEmpty ? _businessModelController.text.trim() : null,
+        marketOpportunity:
+            _marketOpportunityController.text.trim().isNotEmpty ? _marketOpportunityController.text.trim() : null,
+        ask: _askController.text.trim().isNotEmpty ? _askController.text.trim() : null,
+        stage: 'idea', // 默认为初始阶段
+        imageUrl: finalImageUrl,
+        isPublic: true,
+        team: _teamMembers.isNotEmpty ? _teamMembers.toList() : null,
+      );
+
+      debugPrint('🚀 [创建项目] 开始提交...');
+      debugPrint('🚀 [创建项目] 标题: ${request.title}');
+      debugPrint('🚀 [创建项目] 请求数据: ${request.toJson()}');
+
+      // 调用 Repository 创建项目
+      final result = await repository.createProject(request);
+
+      switch (result) {
+        case Success(:final data):
+          debugPrint('✅ [创建项目] 成功! ID: ${data.id}');
+          AppToast.success(l10n.projectCreatedSuccessfully);
+          if (mounted) {
+            Navigator.pop(context, true); // 返回 true 通知父页面刷新数据
+          }
+        case Failure(:final exception):
+          debugPrint('❌ [创建项目] 失败: $exception');
+          AppToast.error('${l10n.creationFailed}: ${exception.message}');
+      }
+    } catch (e, stackTrace) {
+      debugPrint('❌ [创建项目] 异常: $e');
+      debugPrint('❌ [创建项目] 堆栈: $stackTrace');
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
         AppToast.error('${l10n.creationFailed}: $e');
       }
     } finally {
       _isSubmitting.value = false;
+    }
+  }
+
+  /// 上传封面图片到 Supabase Storage
+  Future<String?> _uploadCoverImage(File imageFile) async {
+    try {
+      final uploadService = ImageUploadService();
+
+      // 上传到 city-photos bucket 的 innovation-covers 文件夹
+      final imageUrl = await uploadService.uploadImage(
+        imageFile: imageFile,
+        bucket: 'city-photos',
+        folder: 'innovation-covers',
+        compress: true,
+        quality: 85,
+        maxWidth: 1920,
+        maxHeight: 1080,
+      );
+
+      debugPrint('✅ 封面图片上传成功: $imageUrl');
+      return imageUrl;
+    } catch (e) {
+      debugPrint('❌ 上传图片异常: $e');
+      return null;
     }
   }
 
@@ -858,13 +932,8 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
               ),
               const SizedBox(height: 16),
 
-              _buildTextField(
-                controller: _teamMembersController,
-                label: l10n.teamMembers,
-                hint: l10n.teamMembersHint,
-                icon: FontAwesomeIcons.users,
-                maxLines: 6,
-              ),
+              // 团队成员列表
+              _buildTeamMembersSection(l10n),
 
               const SizedBox(height: 40),
 
@@ -1425,6 +1494,404 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
               ],
             ));
     }
+  }
+
+  /// 构建团队成员区域
+  Widget _buildTeamMembersSection(AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 已添加的团队成员列表
+        Obx(() => _teamMembers.isEmpty
+            ? Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey[200]!),
+                ),
+                child: Column(
+                  children: [
+                    Icon(FontAwesomeIcons.userGroup, size: 40, color: Colors.grey[300]),
+                    const SizedBox(height: 12),
+                    Text(
+                      l10n.noTeamMembersAdded,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[500],
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            : Column(
+                children: _teamMembers.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final member = entry.value;
+                  return _buildTeamMemberCard(member, index, l10n);
+                }).toList(),
+              )),
+
+        const SizedBox(height: 12),
+
+        // 添加团队成员按钮
+        InkWell(
+          onTap: () => _showAddTeamMemberDialog(l10n),
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: const Color(0xFF8B5CF6),
+                style: BorderStyle.solid,
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(FontAwesomeIcons.plus, size: 16, color: Color(0xFF8B5CF6)),
+                const SizedBox(width: 8),
+                Text(
+                  l10n.addTeamMember,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF8B5CF6),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 构建单个团队成员卡片
+  Widget _buildTeamMemberCard(TeamMemberDto member, int index, AppLocalizations l10n) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // 头像占位
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: const Color(0xFF8B5CF6).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Center(
+              child: Text(
+                member.name.isNotEmpty ? member.name[0].toUpperCase() : '?',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF8B5CF6),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // 成员信息
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        member.name,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF1F2937),
+                        ),
+                      ),
+                    ),
+                    if (member.isFounder == true)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFCD34D),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          l10n.founder,
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF92400E),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  member.role,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                if (member.description != null && member.description!.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    member.description!,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[500],
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
+            ),
+          ),
+          // 操作按钮
+          PopupMenuButton<String>(
+            icon: Icon(FontAwesomeIcons.ellipsisVertical, size: 16, color: Colors.grey[400]),
+            onSelected: (value) {
+              if (value == 'edit') {
+                _showEditTeamMemberDialog(member, index, l10n);
+              } else if (value == 'delete') {
+                _teamMembers.removeAt(index);
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'edit',
+                child: Row(
+                  children: [
+                    const Icon(FontAwesomeIcons.pen, size: 14),
+                    const SizedBox(width: 8),
+                    Text(l10n.edit),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'delete',
+                child: Row(
+                  children: [
+                    const Icon(FontAwesomeIcons.trash, size: 14, color: Colors.red),
+                    const SizedBox(width: 8),
+                    Text(l10n.delete, style: const TextStyle(color: Colors.red)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 显示添加团队成员对话框
+  void _showAddTeamMemberDialog(AppLocalizations l10n) {
+    final nameController = TextEditingController();
+    final roleController = TextEditingController();
+    final descriptionController = TextEditingController();
+    final isFounder = false.obs;
+
+    Get.dialog(
+      AlertDialog(
+        title: Text(l10n.addTeamMember),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(
+                  labelText: '${l10n.name} *',
+                  hintText: l10n.enterMemberName,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: roleController,
+                decoration: InputDecoration(
+                  labelText: '${l10n.role} *',
+                  hintText: l10n.enterMemberRole,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: descriptionController,
+                decoration: InputDecoration(
+                  labelText: l10n.description,
+                  hintText: l10n.enterMemberDescription,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                maxLines: 2,
+              ),
+              const SizedBox(height: 12),
+              Obx(() => CheckboxListTile(
+                    title: Text(l10n.markAsFounder),
+                    value: isFounder.value,
+                    onChanged: (value) => isFounder.value = value ?? false,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    contentPadding: EdgeInsets.zero,
+                  )),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text(l10n.cancel),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (nameController.text.trim().isEmpty) {
+                Get.snackbar(l10n.error, l10n.pleaseEnterMemberName);
+                return;
+              }
+              if (roleController.text.trim().isEmpty) {
+                Get.snackbar(l10n.error, l10n.pleaseEnterMemberRole);
+                return;
+              }
+
+              final member = TeamMemberDto(
+                name: nameController.text.trim(),
+                role: roleController.text.trim(),
+                description: descriptionController.text.trim().isEmpty ? null : descriptionController.text.trim(),
+                isFounder: isFounder.value,
+              );
+              _teamMembers.add(member);
+              Get.back();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF8B5CF6),
+            ),
+            child: Text(l10n.add, style: const TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 显示编辑团队成员对话框
+  void _showEditTeamMemberDialog(TeamMemberDto member, int index, AppLocalizations l10n) {
+    final nameController = TextEditingController(text: member.name);
+    final roleController = TextEditingController(text: member.role);
+    final descriptionController = TextEditingController(text: member.description);
+    final isFounder = member.isFounder.obs;
+
+    Get.dialog(
+      AlertDialog(
+        title: Text(l10n.editTeamMember),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(
+                  labelText: '${l10n.name} *',
+                  hintText: l10n.enterMemberName,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: roleController,
+                decoration: InputDecoration(
+                  labelText: '${l10n.role} *',
+                  hintText: l10n.enterMemberRole,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: descriptionController,
+                decoration: InputDecoration(
+                  labelText: l10n.description,
+                  hintText: l10n.enterMemberDescription,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                maxLines: 2,
+              ),
+              const SizedBox(height: 12),
+              Obx(() => CheckboxListTile(
+                    title: Text(l10n.markAsFounder),
+                    value: isFounder.value,
+                    onChanged: (value) => isFounder.value = value ?? false,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    contentPadding: EdgeInsets.zero,
+                  )),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text(l10n.cancel),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (nameController.text.trim().isEmpty) {
+                Get.snackbar(l10n.error, l10n.pleaseEnterMemberName);
+                return;
+              }
+              if (roleController.text.trim().isEmpty) {
+                Get.snackbar(l10n.error, l10n.pleaseEnterMemberRole);
+                return;
+              }
+
+              final updatedMember = TeamMemberDto(
+                id: member.id,
+                userId: member.userId,
+                name: nameController.text.trim(),
+                role: roleController.text.trim(),
+                description: descriptionController.text.trim().isEmpty ? null : descriptionController.text.trim(),
+                avatarUrl: member.avatarUrl,
+                isFounder: isFounder.value,
+              );
+              _teamMembers[index] = updatedMember;
+              Get.back();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF8B5CF6),
+            ),
+            child: Text(l10n.save, style: const TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
   }
 
   /// 构建删除按钮

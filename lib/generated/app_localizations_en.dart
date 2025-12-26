@@ -4147,4 +4147,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addFirstHotel => 'Add First Hotel';
+
+  @override
+  String get noTeamMembersAdded => 'No team members added yet';
+
+  @override
+  String get addTeamMember => 'Add Team Member';
+
+  @override
+  String get editTeamMember => 'Edit Team Member';
+
+  @override
+  String get enterMemberName => 'Enter member name';
+
+  @override
+  String get enterMemberRole => 'Enter member role';
+
+  @override
+  String get enterMemberDescription => 'Enter member description (optional)';
+
+  @override
+  String get markAsFounder => 'Mark as Founder';
+
+  @override
+  String get pleaseEnterMemberName => 'Please enter member name';
+
+  @override
+  String get pleaseEnterMemberRole => 'Please enter member role';
+
+  @override
+  String get founder => 'Founder';
+
+  @override
+  String get role => 'Role';
 }

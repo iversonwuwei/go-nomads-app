@@ -2124,7 +2124,19 @@
       }
     }
   },
-  "addFirstHotel": "Add First Hotel"
+  "addFirstHotel": "Add First Hotel",
+  "noTeamMembersAdded": "No team members added yet",
+  "addTeamMember": "Add Team Member",
+  "editTeamMember": "Edit Team Member",
+  "enterMemberName": "Enter member name",
+  "enterMemberRole": "Enter member role",
+  "enterMemberDescription": "Enter member description (optional)",
+  "markAsFounder": "Mark as Founder",
+  "pleaseEnterMemberName": "Please enter member name",
+  "pleaseEnterMemberRole": "Please enter member role",
+  "founder": "Founder",
+  "name": "Name",
+  "role": "Role"
 }
 
 

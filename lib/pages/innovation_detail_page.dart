@@ -1,4 +1,6 @@
+import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/innovation_project/domain/entities/innovation_project.dart';
+import 'package:df_admin_mobile/features/innovation_project/domain/repositories/i_innovation_project_repository.dart';
 import 'package:df_admin_mobile/features/innovation_project/presentation/controllers/innovation_project_state_controller.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
@@ -23,6 +25,7 @@ class InnovationDetailPage extends StatefulWidget {
 class _InnovationDetailPageState extends State<InnovationDetailPage> {
   // 关注状态
   bool _isFollowed = false;
+  bool _isToggling = false; // 防止重复点击
   // 完整项目数据
   InnovationProject? _fullProject;
   bool _isLoading = true;
@@ -58,7 +61,9 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
         setState(() {
           _fullProject = controller.currentProject.value;
           _isLoading = false;
-          print('📱 设置 _fullProject: ${_fullProject?.projectName}, problem: ${_fullProject?.problem}');
+          // 从服务器数据初始化关注状态
+          _isFollowed = _fullProject?.isLiked ?? false;
+          print('📱 设置 _fullProject: ${_fullProject?.projectName}, isLiked: $_isFollowed');
         });
       }
     } else {
@@ -73,25 +78,91 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
   InnovationProject get _project => _fullProject ?? widget.project;
 
   /// 切换关注状态
-  void _toggleFollow() {
+  Future<void> _toggleFollow() async {
+    if (_isToggling) return; // 防止重复点击
+
+    final projectId = _project.uuid;
+    if (projectId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('项目 ID 无效'),
+          backgroundColor: Colors.red[700],
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+      return;
+    }
+
+    // 先乐观更新 UI
+    final previousState = _isFollowed;
     setState(() {
-      _isFollowed = !_isFollowed;
+      _isFollowed = !previousState;
+      _isToggling = true;
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          _isFollowed ? '已关注项目' : '已取消关注',
-          style: const TextStyle(fontSize: 15),
-        ),
-        backgroundColor: _isFollowed ? const Color(0xFF8B5CF6) : Colors.grey[700],
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    // 调用 API
+    try {
+      final repository = Get.find<IInnovationProjectRepository>();
+      final result = await repository.toggleLike(projectId);
+
+      switch (result) {
+        case Success(data: final isLiked):
+          // API 成功，更新为服务器返回的状态
+          if (mounted) {
+            setState(() {
+              _isFollowed = isLiked;
+              _isToggling = false;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  isLiked ? '已关注项目' : '已取消关注',
+                  style: const TextStyle(fontSize: 15),
+                ),
+                backgroundColor: isLiked ? const Color(0xFF8B5CF6) : Colors.grey[700],
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
+        case Failure(exception: final error):
+          // API 失败，回滚状态
+          if (mounted) {
+            setState(() {
+              _isFollowed = previousState;
+              _isToggling = false;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('操作失败: ${error.message}'),
+                backgroundColor: Colors.red[700],
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
+      }
+    } catch (e) {
+      // 异常处理，回滚状态
+      if (mounted) {
+        setState(() {
+          _isFollowed = previousState;
+          _isToggling = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('操作失败: $e'),
+            backgroundColor: Colors.red[700],
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -377,13 +448,13 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
             Expanded(
               flex: 1,
               child: OutlinedButton.icon(
-                onPressed: _toggleFollow,
+                onPressed: _isToggling ? null : _toggleFollow,
                 icon: Icon(
-                  _isFollowed ? FontAwesomeIcons.heart : FontAwesomeIcons.heart,
+                  _isFollowed ? FontAwesomeIcons.solidHeart : FontAwesomeIcons.heart,
                   size: 20,
                 ),
                 label: Text(
-                  _isFollowed ? '已关注' : '关注',
+                  _isToggling ? '处理中...' : (_isFollowed ? '已关注' : '关注'),
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -621,58 +692,79 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
           ],
         ),
         const SizedBox(height: 12),
-        ...team.map((member) => Container(
-              width: double.infinity,
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.grey[50],
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey[200]!),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundColor: color,
-                    child: Text(
-                      member.name.isNotEmpty ? member.name.substring(0, 1) : '?',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+        if (team.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey[200]!),
+            ),
+            child: Column(
+              children: [
+                Icon(FontAwesomeIcons.userGroup, size: 40, color: Colors.grey[300]),
+                const SizedBox(height: 8),
+                Text(
+                  AppLocalizations.of(context)!.noTeamMembersAdded,
+                  style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                ),
+              ],
+            ),
+          )
+        else
+          ...team.map((member) => Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey[200]!),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundColor: color,
+                      child: Text(
+                        member.name.isNotEmpty ? member.name.substring(0, 1) : '?',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${member.name} - ${member.role}',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1a1a1a),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${member.name} - ${member.role}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1a1a1a),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          member.description,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF4a5568),
-                            height: 1.5,
+                          const SizedBox(height: 4),
+                          Text(
+                            member.description,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Color(0xFF4a5568),
+                              height: 1.5,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            )),
+                  ],
+                ),
+              )),
       ],
     );
   }
