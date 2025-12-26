@@ -20,6 +20,7 @@ class InnovationProject {
   final int userId;
   final String? userName;
   final String? userAvatar;
+  final String? imageUrl; // 项目封面图
   final int? viewCount;
   final int? likeCount;
   final int? commentCount;
@@ -45,6 +46,7 @@ class InnovationProject {
     required this.userId,
     this.userName,
     this.userAvatar,
+    this.imageUrl,
     this.viewCount,
     this.likeCount,
     this.commentCount,
@@ -97,8 +99,7 @@ class InnovationProject {
   }
 
   /// 是否有足够的商业模式说明
-  bool get hasBusinessModelClarity =>
-      businessModel.isNotEmpty && businessModel.length > 50;
+  bool get hasBusinessModelClarity => businessModel.isNotEmpty && businessModel.length > 50;
 }
 
 /// 团队成员领域实体
@@ -114,9 +115,7 @@ class TeamMember {
   });
 
   /// 是否为创始人角色
-  bool get isFounder =>
-      role.toLowerCase().contains('founder') ||
-      role.toLowerCase().contains('创始人');
+  bool get isFounder => role.toLowerCase().contains('founder') || role.toLowerCase().contains('创始人');
 
   /// 是否为技术角色
   bool get isTechnicalRole =>
