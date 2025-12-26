@@ -24,9 +24,9 @@ import 'package:image_picker/image_picker.dart';
 class AddInnovationPage extends StatefulWidget {
   /// 编辑模式下传入的项目数据，null 表示创建新项目
   final InnovationProject? project;
-  
+
   const AddInnovationPage({super.key, this.project});
-  
+
   /// 是否为编辑模式
   bool get isEditMode => project != null;
 
@@ -99,13 +99,15 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
     _currentStatusController.text = project.currentStatus;
     _askController.text = project.ask;
     _coverImageUrl = project.imageUrl;
-    
+
     // 初始化团队成员
-    _teamMembers.value = project.team.map((m) => TeamMemberDto(
-      name: m.name,
-      role: m.role,
-      description: m.description,
-    )).toList();
+    _teamMembers.value = project.team
+        .map((m) => TeamMemberDto(
+              name: m.name,
+              role: m.role,
+              description: m.description,
+            ))
+        .toList();
   }
 
   @override
@@ -634,12 +636,17 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
           'elevatorPitch': _elevatorPitchController.text.trim(),
           'problem': _problemController.text.trim().isNotEmpty ? _problemController.text.trim() : null,
           'solution': _solutionController.text.trim().isNotEmpty ? _solutionController.text.trim() : null,
-          'targetAudience': _targetAudienceController.text.trim().isNotEmpty ? _targetAudienceController.text.trim() : null,
+          'targetAudience':
+              _targetAudienceController.text.trim().isNotEmpty ? _targetAudienceController.text.trim() : null,
           'productType': _productTypeController.text.trim().isNotEmpty ? _productTypeController.text.trim() : null,
           'keyFeatures': _keyFeaturesController.text.trim().isNotEmpty ? _keyFeaturesController.text.trim() : null,
-          'competitiveAdvantage': _competitiveAdvantageController.text.trim().isNotEmpty ? _competitiveAdvantageController.text.trim() : null,
-          'businessModel': _businessModelController.text.trim().isNotEmpty ? _businessModelController.text.trim() : null,
-          'marketOpportunity': _marketOpportunityController.text.trim().isNotEmpty ? _marketOpportunityController.text.trim() : null,
+          'competitiveAdvantage': _competitiveAdvantageController.text.trim().isNotEmpty
+              ? _competitiveAdvantageController.text.trim()
+              : null,
+          'businessModel':
+              _businessModelController.text.trim().isNotEmpty ? _businessModelController.text.trim() : null,
+          'marketOpportunity':
+              _marketOpportunityController.text.trim().isNotEmpty ? _marketOpportunityController.text.trim() : null,
           'ask': _askController.text.trim().isNotEmpty ? _askController.text.trim() : null,
           'imageUrl': finalImageUrl,
           // 始终发送 team 字段，让后端知道是否需要更新团队成员
@@ -671,11 +678,13 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
           elevatorPitch: _elevatorPitchController.text.trim(),
           problem: _problemController.text.trim().isNotEmpty ? _problemController.text.trim() : null,
           solution: _solutionController.text.trim().isNotEmpty ? _solutionController.text.trim() : null,
-          targetAudience: _targetAudienceController.text.trim().isNotEmpty ? _targetAudienceController.text.trim() : null,
+          targetAudience:
+              _targetAudienceController.text.trim().isNotEmpty ? _targetAudienceController.text.trim() : null,
           productType: _productTypeController.text.trim().isNotEmpty ? _productTypeController.text.trim() : null,
           keyFeatures: _keyFeaturesController.text.trim().isNotEmpty ? _keyFeaturesController.text.trim() : null,
-          competitiveAdvantage:
-              _competitiveAdvantageController.text.trim().isNotEmpty ? _competitiveAdvantageController.text.trim() : null,
+          competitiveAdvantage: _competitiveAdvantageController.text.trim().isNotEmpty
+              ? _competitiveAdvantageController.text.trim()
+              : null,
           businessModel: _businessModelController.text.trim().isNotEmpty ? _businessModelController.text.trim() : null,
           marketOpportunity:
               _marketOpportunityController.text.trim().isNotEmpty ? _marketOpportunityController.text.trim() : null,
