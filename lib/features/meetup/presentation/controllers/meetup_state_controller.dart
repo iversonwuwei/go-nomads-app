@@ -9,7 +9,9 @@ import 'package:df_admin_mobile/features/meetup/application/use_cases/get_meetup
 import 'package:df_admin_mobile/features/meetup/application/use_cases/rsvp_to_meetup_use_case.dart';
 import 'package:df_admin_mobile/features/meetup/application/use_cases/update_meetup_use_case.dart';
 import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
+import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
 import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:df_admin_mobile/services/http_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:get/get.dart';
 
@@ -24,6 +26,7 @@ class MeetupStateController extends GetxController {
   final RsvpToMeetupUseCase _rsvpToMeetupUseCase;
   final CancelRsvpUseCase _cancelRsvpUseCase;
   final CancelMeetupUseCase _cancelMeetupUseCase;
+  final IMeetupRepository _meetupRepository;
 
   MeetupStateController({
     required GetMeetupsUseCase getMeetupsUseCase,
@@ -33,13 +36,15 @@ class MeetupStateController extends GetxController {
     required RsvpToMeetupUseCase rsvpToMeetupUseCase,
     required CancelRsvpUseCase cancelRsvpUseCase,
     required CancelMeetupUseCase cancelMeetupUseCase,
+    required IMeetupRepository meetupRepository,
   })  : _getMeetupsUseCase = getMeetupsUseCase,
         _getMeetupsByCityUseCase = getMeetupsByCityUseCase,
         _createMeetupUseCase = createMeetupUseCase,
         _updateMeetupUseCase = updateMeetupUseCase,
         _rsvpToMeetupUseCase = rsvpToMeetupUseCase,
         _cancelRsvpUseCase = cancelRsvpUseCase,
-        _cancelMeetupUseCase = cancelMeetupUseCase;
+        _cancelMeetupUseCase = cancelMeetupUseCase,
+        _meetupRepository = meetupRepository;
 
   // State Properties
   final RxList<Meetup> meetups = <Meetup>[].obs;
@@ -603,6 +608,128 @@ class MeetupStateController extends GetxController {
     rsvpedMeetupIds.clear();
     errorMessage.value = '';
     log('🧹 活动数据已清空');
+  }
+
+  // =============================================================================
+  // 邀请相关方法
+  // =============================================================================
+
+  /// 邀请用户参加聚会
+  /// [meetupId] 聚会ID
+  /// [inviteeId] 被邀请人ID
+  /// [message] 可选的邀请消息
+  Future<bool> inviteToMeetup({
+    required String meetupId,
+    required String inviteeId,
+    String? message,
+  }) async {
+    try {
+      isLoading.value = true;
+      errorMessage.value = '';
+      log('📨 发送聚会邀请: meetupId=$meetupId, inviteeId=$inviteeId');
+
+      final result = await _meetupRepository.inviteToMeetup(
+        meetupId: meetupId,
+        inviteeId: inviteeId,
+        message: message,
+      );
+
+      log('✅ 邀请发送成功: invitationId=${result.id}');
+      AppToast.success('邀请已发送');
+      return true;
+    } catch (e) {
+      // 提取更友好的错误消息
+      String errorMsg = _extractErrorMessage(e);
+      errorMessage.value = errorMsg;
+      log('❌ 邀请发送异常: $errorMsg');
+      AppToast.error(errorMsg);
+      return false;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// 响应聚会邀请
+  /// [invitationId] 邀请ID
+  /// [accept] 是否接受邀请
+  Future<bool> respondToInvitation({
+    required String invitationId,
+    required bool accept,
+  }) async {
+    try {
+      isLoading.value = true;
+      errorMessage.value = '';
+      log('📬 响应聚会邀请: invitationId=$invitationId, accept=$accept');
+
+      final result = await _meetupRepository.respondToInvitation(
+        invitationId: invitationId,
+        accept: accept,
+      );
+
+      log('✅ 邀请响应成功: invitationId=${result.id}, status=${result.status}');
+      AppToast.success(accept ? '已接受邀请' : '已拒绝邀请');
+      // 如果接受邀请，刷新聚会列表
+      if (accept) {
+        await loadMeetups();
+      }
+      return true;
+    } catch (e) {
+      final error = e.toString();
+      errorMessage.value = error;
+      log('❌ 响应邀请异常: $error');
+      AppToast.error('响应邀请失败: $error');
+      return false;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// 获取收到的邀请列表
+  Future<List<MeetupInvitation>> getReceivedInvitations({
+    String? status,
+  }) async {
+    try {
+      log('📥 获取收到的邀请列表: status=$status');
+      final invitations = await _meetupRepository.getReceivedInvitations(
+        status: status,
+      );
+      log('✅ 获取到 ${invitations.length} 条邀请');
+      return invitations;
+    } catch (e) {
+      log('❌ 获取邀请列表失败: $e');
+      return [];
+    }
+  }
+
+  /// 获取发送的邀请列表
+  Future<List<MeetupInvitation>> getSentInvitations({
+    String? status,
+  }) async {
+    try {
+      log('📤 获取发送的邀请列表: status=$status');
+      final invitations = await _meetupRepository.getSentInvitations(
+        status: status,
+      );
+      log('✅ 获取到 ${invitations.length} 条发送的邀请');
+      return invitations;
+    } catch (e) {
+      log('❌ 获取发送邀请列表失败: $e');
+      return [];
+    }
+  }
+
+  /// 从异常中提取友好的错误消息
+  String _extractErrorMessage(dynamic e) {
+    if (e is HttpException) {
+      return e.message;
+    }
+    final errorStr = e.toString();
+    // 尝试从 HttpException 字符串中提取消息
+    if (errorStr.startsWith('HttpException: ')) {
+      final parts = errorStr.substring('HttpException: '.length).split(' (Status Code:');
+      return parts.first;
+    }
+    return errorStr;
   }
 
   // Lifecycle

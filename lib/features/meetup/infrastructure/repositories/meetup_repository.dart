@@ -395,6 +395,141 @@ class MeetupRepository implements IMeetupRepository {
     }
   }
 
+  // ========== 邀请相关方法实现 ==========
+
+  @override
+  Future<MeetupInvitation> inviteToMeetup({
+    required String meetupId,
+    required String inviteeId,
+    String? message,
+  }) async {
+    try {
+      log('📡 调用 HttpService POST /events/$meetupId/invitations');
+      log('   inviteeId: $inviteeId, message: $message');
+
+      final response = await _httpService.post(
+        '/events/$meetupId/invitations',
+        data: {
+          'inviteeId': inviteeId,
+          if (message != null && message.isNotEmpty) 'message': message,
+        },
+      );
+
+      final data = response.data as Map<String, dynamic>;
+      log('✅ 邀请发送成功: ${data['id']}');
+      
+      return MeetupInvitation.fromJson(data);
+    } catch (e, stackTrace) {
+      log('❌ MeetupRepository.inviteToMeetup 失败: $e');
+      log('   堆栈: $stackTrace');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<MeetupInvitation> respondToInvitation({
+    required String invitationId,
+    required bool accept,
+  }) async {
+    try {
+      final response = accept ? 'accept' : 'reject';
+      log('📡 调用 HttpService POST /events/invitations/$invitationId/respond');
+      log('   response: $response');
+
+      final apiResponse = await _httpService.post(
+        '/events/invitations/$invitationId/respond',
+        data: {
+          'response': response,
+        },
+      );
+
+      final data = apiResponse.data as Map<String, dynamic>;
+      log('✅ 邀请响应成功: $response');
+      
+      return MeetupInvitation.fromJson(data);
+    } catch (e, stackTrace) {
+      log('❌ MeetupRepository.respondToInvitation 失败: $e');
+      log('   堆栈: $stackTrace');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<MeetupInvitation>> getReceivedInvitations({String? status}) async {
+    try {
+      log('📡 调用 HttpService GET /events/invitations/received');
+      
+      final queryParams = <String, dynamic>{};
+      if (status != null) {
+        queryParams['status'] = status;
+      }
+
+      final response = await _httpService.get(
+        '/events/invitations/received',
+        queryParameters: queryParams,
+      );
+
+      final data = response.data;
+      List items;
+      
+      if (data is List) {
+        items = data;
+      } else if (data is Map<String, dynamic>) {
+        items = (data['items'] as List?) ?? (data['data'] as List?) ?? [];
+      } else {
+        items = [];
+      }
+
+      log('✅ 获取到 ${items.length} 条收到的邀请');
+      
+      return items
+          .map((json) => MeetupInvitation.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } catch (e, stackTrace) {
+      log('❌ MeetupRepository.getReceivedInvitations 失败: $e');
+      log('   堆栈: $stackTrace');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<MeetupInvitation>> getSentInvitations({String? status}) async {
+    try {
+      log('📡 调用 HttpService GET /events/invitations/sent');
+      
+      final queryParams = <String, dynamic>{};
+      if (status != null) {
+        queryParams['status'] = status;
+      }
+
+      final response = await _httpService.get(
+        '/events/invitations/sent',
+        queryParameters: queryParams,
+      );
+
+      final data = response.data;
+      List items;
+      
+      if (data is List) {
+        items = data;
+      } else if (data is Map<String, dynamic>) {
+        items = (data['items'] as List?) ?? (data['data'] as List?) ?? [];
+      } else {
+        items = [];
+      }
+
+      log('✅ 获取到 ${items.length} 条发出的邀请');
+      
+      return items
+          .map((json) => MeetupInvitation.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } catch (e, stackTrace) {
+      log('❌ MeetupRepository.getSentInvitations 失败: $e');
+      log('   堆栈: $stackTrace');
+      rethrow;
+    }
+  }
+
   /// 将 MeetupType 映射到 API 的 category
   String _mapTypeToCategory(MeetupType type) {
     switch (type.value) {
