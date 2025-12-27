@@ -407,6 +407,28 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
         _showAnnouncementDialog(notification);
         break;
 
+      case NotificationType.eventInvitation:
+        // 活动邀请：跳转到活动详情页面
+        final eventId = notification.metadata?['eventId'] ?? notification.relatedId;
+        if (eventId != null) {
+          Get.toNamed(
+            AppRoutes.meetupDetail,
+            arguments: {'meetupId': eventId.toString()},
+          );
+        }
+        break;
+
+      case NotificationType.eventInvitationResponse:
+        // 邀请响应：跳转到活动详情页面
+        final eventId = notification.metadata?['eventId'] ?? notification.relatedId;
+        if (eventId != null) {
+          Get.toNamed(
+            AppRoutes.meetupDetail,
+            arguments: {'meetupId': eventId.toString()},
+          );
+        }
+        break;
+
       case NotificationType.other:
         break;
     }

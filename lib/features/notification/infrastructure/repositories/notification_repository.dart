@@ -321,6 +321,10 @@ class NotificationRepository implements INotificationRepository {
         return 'city_update';
       case NotificationType.systemAnnouncement:
         return 'system_announcement';
+      case NotificationType.eventInvitation:
+        return 'event_invitation';
+      case NotificationType.eventInvitationResponse:
+        return 'event_invitation_response';
       case NotificationType.other:
         return 'other';
     }
@@ -339,6 +343,10 @@ class NotificationRepository implements INotificationRepository {
         return NotificationType.cityUpdate;
       case 'system_announcement':
         return NotificationType.systemAnnouncement;
+      case 'event_invitation':
+        return NotificationType.eventInvitation;
+      case 'event_invitation_response':
+        return NotificationType.eventInvitationResponse;
       default:
         return NotificationType.other;
     }

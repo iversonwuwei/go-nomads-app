@@ -2,7 +2,6 @@ import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
 import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -367,15 +366,24 @@ class InviteToMeetupPage extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () {
-                        // TODO: 实现实际的邀请逻辑
+                      onPressed: () async {
+                        // 先关闭对话框
                         Navigator.pop(context);
-                        AppToast.success(
-                          '${user.name} ${l10n.sendInvitation}',
-                          title: l10n.success,
+
+                        // 获取 MeetupController 并发送邀请
+                        final meetupController = Get.find<MeetupStateController>();
+
+                        final success = await meetupController.inviteToMeetup(
+                          meetupId: meetup.id,
+                          inviteeId: user.id,
                         );
-                        // 返回上一页
-                        Navigator.pop(Get.context!);
+
+                        if (success) {
+                          // 返回上一页
+                          if (Get.context != null) {
+                            Navigator.pop(Get.context!);
+                          }
+                        }
                       },
                       icon: const Icon(FontAwesomeIcons.paperPlane, size: 18),
                       label: Text(l10n.sendInvitation),

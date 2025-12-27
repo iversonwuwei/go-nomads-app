@@ -858,6 +858,7 @@ class DependencyInjection {
         rsvpToMeetupUseCase: Get.find<RsvpToMeetupUseCase>(),
         cancelRsvpUseCase: Get.find<CancelRsvpUseCase>(),
         cancelMeetupUseCase: Get.find<CancelMeetupUseCase>(),
+        meetupRepository: Get.find<IMeetupRepository>(),
       ),
       fenix: true,
     );

@@ -849,11 +849,12 @@ class _DirectChatViewState extends State<_DirectChatView> {
           child: SafeArea(
             top: false,
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // 相机按钮
                 Container(
-                  margin: const EdgeInsets.only(bottom: 4),
+                  width: 44,
+                  height: 44,
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       colors: [Color(0xFFFFFC00), Color(0xFFFFD700)],
@@ -862,11 +863,17 @@ class _DirectChatViewState extends State<_DirectChatView> {
                     ),
                     shape: BoxShape.circle,
                   ),
-                  child: IconButton(
-                    icon: const Icon(FontAwesomeIcons.camera, color: Colors.black, size: 24),
-                    onPressed: () {
-                      AppToast.info('拍摄功能即将推出');
-                    },
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(22),
+                      onTap: () {
+                        AppToast.info('拍摄功能即将推出');
+                      },
+                      child: const Center(
+                        child: FaIcon(FontAwesomeIcons.camera, color: Colors.black, size: 18),
+                      ),
+                    ),
                   ),
                 ),
 
@@ -875,11 +882,11 @@ class _DirectChatViewState extends State<_DirectChatView> {
                 // Text field
                 Expanded(
                   child: Container(
-                    constraints: const BoxConstraints(maxHeight: 120),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    height: 44,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF5F5F5),
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(22),
                     ),
                     child: Row(
                       children: [
@@ -896,19 +903,17 @@ class _DirectChatViewState extends State<_DirectChatView> {
                               isDense: true,
                               contentPadding: EdgeInsets.zero,
                             ),
-                            maxLines: null,
+                            maxLines: 1,
                             textCapitalization: TextCapitalization.sentences,
-                            style: const TextStyle(fontSize: 16, height: 1.5),
+                            style: const TextStyle(fontSize: 16),
                           ),
                         ),
                         // Emoji button
-                        IconButton(
-                          icon: const Icon(FontAwesomeIcons.faceSmile, color: Color(0xFF999999), size: 24),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          onPressed: () {
+                        GestureDetector(
+                          onTap: () {
                             AppToast.info('表情功能即将推出');
                           },
+                          child: const FaIcon(FontAwesomeIcons.faceSmile, color: Color(0xFF999999), size: 20),
                         ),
                       ],
                     ),
@@ -923,7 +928,8 @@ class _DirectChatViewState extends State<_DirectChatView> {
                   builder: (context, child) {
                     final hasText = _messageController.text.trim().isNotEmpty;
                     return Container(
-                      margin: const EdgeInsets.only(bottom: 4),
+                      width: 44,
+                      height: 44,
                       decoration: BoxDecoration(
                         gradient: hasText
                             ? const LinearGradient(
@@ -933,7 +939,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
                               )
                             : null,
                         color: hasText ? null : const Color(0xFFE5E5E5),
-                        shape: BoxShape.circle,
+                        borderRadius: BorderRadius.circular(12),
                         boxShadow: hasText
                             ? [
                                 BoxShadow(
@@ -944,23 +950,29 @@ class _DirectChatViewState extends State<_DirectChatView> {
                               ]
                             : null,
                       ),
-                      child: IconButton(
-                        icon: Icon(
-                          hasText ? FontAwesomeIcons.paperPlane : FontAwesomeIcons.microphone,
-                          color: Colors.white,
-                          size: 22,
-                        ),
-                        onPressed: hasText
-                            ? () {
-                                final text = _messageController.text;
-                                if (text.trim().isNotEmpty) {
-                                  controller.sendMessage(text);
-                                  _messageController.clear();
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: hasText
+                              ? () {
+                                  final text = _messageController.text;
+                                  if (text.trim().isNotEmpty) {
+                                    controller.sendMessage(text);
+                                    _messageController.clear();
+                                  }
                                 }
-                              }
-                            : () {
-                                AppToast.info('语音功能即将推出');
-                              },
+                              : () {
+                                  AppToast.info('语音功能即将推出');
+                                },
+                          child: Center(
+                            child: FaIcon(
+                              hasText ? FontAwesomeIcons.paperPlane : FontAwesomeIcons.microphone,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                          ),
+                        ),
                       ),
                     );
                   },
