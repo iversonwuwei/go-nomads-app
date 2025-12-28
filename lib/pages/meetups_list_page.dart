@@ -204,14 +204,14 @@ class _MeetupsListPageState extends State<MeetupsListPage>
 
       // 根据 tab 索引调用不同的后端接口
       switch (tabIndex) {
-        case 0: // Upcoming - 即将进行的活动
+        case 0: // Upcoming - 所有未取消和未过期的活动 (upcoming + ongoing)
           meetups = await _meetupRepository.getMeetups(
-            status: 'upcoming',
+            status: 'upcoming,ongoing',
             page: page,
             pageSize: 20,
           );
           break;
-        case 1: // Joined - 已加入的活动
+        case 1: // Joined - 已加入的活动（不包含已过期和取消的）
           meetups = await _meetupRepository.getJoinedMeetups(
             page: page,
             pageSize: 20,
@@ -224,7 +224,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
             pageSize: 20,
           );
           break;
-        case 3: // Cancelled - 当前用户取消的活动
+        case 3: // Cancelled - 当前用户取消参与的活动
           if (_currentUserId == null) {
             log('⚠️ 用户未登录，无法加载已取消的活动');
             meetups = [];
@@ -555,6 +555,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
     // 使用自管理生命周期的 StatefulWidget，参考 data_service_page 的设计
     return _MeetupListCard(
       meetup: meetup,
+      currentTabIndex: _tabController.index, // 传递当前 Tab 索引
       onUpdated: (updatedMeetup) {
         // 回调更新当前 tab 的列表
         final currentTabIndex = _tabController.index;
@@ -591,11 +592,13 @@ class _MeetupsListPageState extends State<MeetupsListPage>
 // 自管理生命周期的 Meetup Card - 参考 data_service_page 的设计
 class _MeetupListCard extends StatefulWidget {
   final Meetup meetup;
+  final int currentTabIndex; // 0: 全部, 1: 已加入, 2: 过往, 3: 已取消
   final Function(Meetup) onUpdated;
   final Future<void> Function()? onRefresh;
 
   const _MeetupListCard({
     required this.meetup,
+    required this.currentTabIndex,
     required this.onUpdated,
     this.onRefresh,
   });
@@ -610,6 +613,16 @@ class _MeetupListCardState extends State<_MeetupListCard> {
   late int _currentAttendees;
   late int _maxAttendees;
   late bool _isOrganizer;
+
+  // Tab 索引常量
+  static const int _tabCancelled = 3; // 已取消 Tab
+  static const int _tabPast = 2; // 过往 Tab
+
+  // 是否在"已取消"Tab 或 活动本身已取消
+  bool get _isInCancelledContext => widget.currentTabIndex == _tabCancelled || widget.meetup.isCancelled;
+
+  // 是否在"过往"Tab 或 活动已结束
+  bool get _isInPastContext => widget.currentTabIndex == _tabPast || widget.meetup.isEnded;
 
   @override
   void initState() {
@@ -990,27 +1003,34 @@ class _MeetupListCardState extends State<_MeetupListCard> {
                           ),
                         ),
                       ),
-                      // 编辑按钮 - 只有组织者可见，放在所有小按钮之前
-                      if (_isOrganizer)
-                        AppEditButton(
-                          onPressed: () async {
-                            final result = await Get.to(() => CreateMeetupPage(editingMeetup: widget.meetup));
-                            if (result == true) {
-                              // 编辑成功，刷新整个列表
-                              widget.onRefresh?.call();
-                            }
-                          },
-                          size: 14.r,
-                          mini: true,
-                        ),
-                      if (_isOrganizer) SizedBox(width: 8.w),
-                      // 聊天按钮 - 只有已加入或组织者可见
-                      if (_isJoined || _isOrganizer) _buildChatButton(),
-                      if (_isJoined || _isOrganizer) SizedBox(width: 8.w),
-                      // 加入按钮 - 只有非组织者可见
-                      if (!_isOrganizer) _buildJoinButton(l10n),
-                      // 取消按钮 - 只有组织者可见
-                      if (_isOrganizer) _buildCancelButton(l10n),
+                      // === 过往/已取消 Tab: 只显示一个置灰状态按钮 ===
+                      if (_isInCancelledContext)
+                        _buildCancelledBadge(l10n)
+                      else if (_isInPastContext)
+                        _buildEndedBadge(l10n)
+                      // === 正常 Tab: 显示完整操作按钮 ===
+                      else ...[
+                        // 编辑按钮 - 只有组织者可见
+                        if (_isOrganizer)
+                          AppEditButton(
+                            onPressed: () async {
+                              final result = await Get.to(() => CreateMeetupPage(editingMeetup: widget.meetup));
+                              if (result == true) {
+                                widget.onRefresh?.call();
+                              }
+                            },
+                            size: 14.r,
+                            mini: true,
+                          ),
+                        if (_isOrganizer) SizedBox(width: 8.w),
+                        // 聊天按钮 - 只有已加入或组织者可见
+                        if (_isJoined || _isOrganizer) _buildChatButton(),
+                        if (_isJoined || _isOrganizer) SizedBox(width: 8.w),
+                        // 加入按钮 - 只有非组织者可见
+                        if (!_isOrganizer) _buildJoinButton(l10n),
+                        // 取消活动按钮 - 只有组织者可见
+                        if (_isOrganizer) _buildCancelButton(l10n),
+                      ],
                     ],
                   ),
                 ],
@@ -1131,25 +1151,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
   }
 
   Widget _buildJoinButton(AppLocalizations l10n) {
-    // 如果活动已结束
-    if (widget.meetup.isEnded) {
-      return Container(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
-        decoration: BoxDecoration(
-          color: AppColors.borderLight,
-          borderRadius: BorderRadius.circular(20.r),
-        ),
-        child: Text(
-          l10n.ended,
-          style: TextStyle(
-            fontSize: 12.sp,
-            color: AppColors.textSecondary,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      );
-    }
-
+    // 如果在"已取消"Tab 或活动已取消 - 显示"已取消"标签
     // 如果活动已满且用户未加入
     if (_isFull && !_isJoined) {
       return Container(
@@ -1221,6 +1223,44 @@ class _MeetupListCardState extends State<_MeetupListCard> {
           FontAwesomeIcons.ban,
           size: 14.sp,
           color: Colors.red,
+        ),
+      ),
+    );
+  }
+
+  // 已取消标识按钮 - 置灰显示文字
+  Widget _buildCancelledBadge(AppLocalizations l10n) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: Colors.grey.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20.r),
+      ),
+      child: Text(
+        l10n.statusCancelled,
+        style: TextStyle(
+          fontSize: 12.sp,
+          color: Colors.grey,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  // 已结束标识按钮 - 置灰显示文字
+  Widget _buildEndedBadge(AppLocalizations l10n) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: Colors.grey.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20.r),
+      ),
+      child: Text(
+        l10n.ended,
+        style: TextStyle(
+          fontSize: 12.sp,
+          color: Colors.grey,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
