@@ -198,193 +198,448 @@ class _CityDetailPageState extends State<CityDetailPage>
       log('🔍 [版主管理] moderatorId: ${city.moderatorId}');
       log('🔍 [版主管理] moderator: ${city.moderator?.name}');
 
-      // 如果已有版主且当前用户不是管理员也不是该城市版主，只显示版主信息
-      if (hasModerator && !isAdmin && !isModerator) {
-        log('✅ [版主管理] 显示只读版主信息');
-        // 安全检查：如果 moderator 对象为空，显示加载中
-        if (city.moderator == null) {
-          return const SizedBox.shrink();
+      // 普通用户（非管理员且非版主）
+      if (!isAdmin && !isModerator) {
+        // 如果有版主，显示版主信息（只读）
+        if (hasModerator && city.moderator != null) {
+          log('✅ [版主管理] 显示只读版主信息（普通用户）');
+          return _buildModeratorInfoBanner(city.moderator!);
         }
-        return _buildModeratorInfoBanner(city.moderator!);
+        // 没有版主则不显示任何内容
+        log('✅ [版主管理] 普通用户，无版主，不显示任何内容');
+        return const SizedBox.shrink();
       }
 
-      // 如果已有版主且当前用户是管理员或该城市版主，显示版主信息+更换按钮
-      if (hasModerator && (isAdmin || isModerator)) {
-        log('✅ [版主管理] 显示版主信息+管理按钮');
-        // 安全检查：如果 moderator 对象为空，显示加载中
+      // 管理员或版主用户
+      if (hasModerator) {
+        // 有版主：显示版主信息+更换按钮
         if (city.moderator == null) {
           return const SizedBox.shrink();
         }
+        log('✅ [版主管理] 显示版主信息+更换按钮（管理员/版主）');
         return _buildModeratorInfoWithChange(city.moderator!);
-      }
-
-      // 如果没有版主，根据用户角色显示不同按钮
-      if (isAdmin) {
-        log('✅ [版主管理] 显示指定版主按钮（管理员）');
-        return _buildAssignModeratorButton();
       } else {
-        log('✅ [版主管理] 显示申请成为版主按钮（普通用户）');
-        return _buildApplyModeratorButton();
+        // 没有版主：显示指定版主按钮
+        log('✅ [版主管理] 显示指定版主按钮（管理员/版主）');
+        return _buildAssignModeratorButton();
       }
     });
   }
 
-  /// 版主信息横幅（只读）
+  /// 版主信息横幅（只读）- 现代简约风格
   Widget _buildModeratorInfoBanner(Moderator moderator) {
+    // Debug log
+    log('🔍 [ModeratorBanner] moderator.stats: ${moderator.stats}');
+    log('🔍 [ModeratorBanner] moderator.latestTravelHistory: ${moderator.latestTravelHistory}');
+    if (moderator.stats != null) {
+      log('🔍 [ModeratorBanner] stats.countriesVisited: ${moderator.stats!.countriesVisited}');
+    }
+    if (moderator.latestTravelHistory != null) {
+      log('🔍 [ModeratorBanner] latestTravelHistory.cityName: ${moderator.latestTravelHistory!.cityName}');
+    }
+    
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.blue.withValues(alpha: 0.9),
-            Colors.blue.shade700.withValues(alpha: 0.9),
-          ],
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.grey.shade200,
+          width: 1,
         ),
-        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundImage: _safeNetworkImage(moderator.avatar),
-            child: _safeNetworkImage(moderator.avatar) == null
-                ? const Icon(FontAwesomeIcons.user, color: Colors.white)
-                : null,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildModeratorHeader(moderator, label: '城市版主：'),
-                if (moderator.email != null) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    moderator.email!,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.9),
-                      fontSize: 12,
+          Row(
+            children: [
+              // Avatar with subtle badge
+              Stack(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.blueGrey.shade400,
+                          Colors.blueGrey.shade600,
+                        ],
+                      ),
+                    ),
+                    child: CircleAvatar(
+                      radius: 22,
+                      backgroundColor: Colors.white,
+                      backgroundImage: _safeNetworkImage(moderator.avatar),
+                      child: _safeNetworkImage(moderator.avatar) == null
+                          ? Icon(FontAwesomeIcons.user, color: Colors.blueGrey.shade400, size: 18)
+                          : null,
+                    ),
+                  ),
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(3),
+                      decoration: BoxDecoration(
+                        color: Colors.blueGrey.shade500,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                      child: const Icon(
+                        FontAwesomeIcons.check,
+                        color: Colors.white,
+                        size: 8,
+                      ),
                     ),
                   ),
                 ],
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// 版主信息+更换按钮（管理员可见）
-  Widget _buildModeratorInfoWithChange(Moderator moderator) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.blue.withValues(alpha: 0.9),
-            Colors.blue.shade700.withValues(alpha: 0.9),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundImage: _safeNetworkImage(moderator.avatar),
-            child: _safeNetworkImage(moderator.avatar) == null
-                ? const Icon(FontAwesomeIcons.user, color: Colors.white)
-                : null,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildModeratorHeader(moderator, label: '版主：'),
-              ],
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () => _showAssignModeratorDialog(),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.blue.shade700,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
               ),
-            ),
-            child: const Text('更换版主', style: TextStyle(fontSize: 12)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildModeratorHeader(Moderator moderator, {required String label}) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        const Icon(FontAwesomeIcons.circleCheck, color: Colors.white, size: 16),
-        const SizedBox(width: 4),
-        Flexible(
-          child: Wrap(
-            spacing: 4,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'City Moderator',
+                      style: TextStyle(
+                        color: Colors.blueGrey.shade400,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    GestureDetector(
+                      onTap: () => _openModeratorProfile(moderator),
+                      child: Text(
+                        moderator.name,
+                        style: TextStyle(
+                          color: Colors.blueGrey.shade800,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              _buildModeratorNameLink(moderator),
+              // Profile arrow
+              GestureDetector(
+                onTap: () => _openModeratorProfile(moderator),
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    FontAwesomeIcons.arrowRight,
+                    color: Colors.blueGrey.shade400,
+                    size: 14,
+                  ),
+                ),
+              ),
             ],
+          ),
+          // Travel Stats Section
+          if (moderator.stats != null) ...[
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blueGrey.shade50,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildTravelStatItem(
+                    icon: FontAwesomeIcons.earthAmericas,
+                    value: '${moderator.stats!.countriesVisited}',
+                    label: 'Countries',
+                  ),
+                  _buildTravelStatDivider(),
+                  _buildTravelStatItem(
+                    icon: FontAwesomeIcons.city,
+                    value: '${moderator.stats!.citiesVisited}',
+                    label: 'Cities',
+                  ),
+                  _buildTravelStatDivider(),
+                  _buildTravelStatItem(
+                    icon: FontAwesomeIcons.calendarDays,
+                    value: '${moderator.stats!.totalDays}',
+                    label: 'Days',
+                  ),
+                ],
+              ),
+            ),
+          ],
+          // Latest Travel History
+          if (moderator.latestTravelHistory != null && moderator.latestTravelHistory!.cityName != null) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(
+                  FontAwesomeIcons.locationDot,
+                  size: 12,
+                  color: Colors.blueGrey.shade400,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    _formatLatestTravel(moderator.latestTravelHistory!),
+                    style: TextStyle(
+                      color: Colors.blueGrey.shade600,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// 构建旅行统计项
+  Widget _buildTravelStatItem({
+    required IconData icon,
+    required String value,
+    required String label,
+  }) {
+    return Column(
+      children: [
+        Icon(icon, size: 14, color: Colors.blueGrey.shade500),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: TextStyle(
+            color: Colors.blueGrey.shade800,
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.blueGrey.shade400,
+            fontSize: 10,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildModeratorNameLink(Moderator moderator) {
-    return GestureDetector(
-      onTap: () => _openModeratorProfile(moderator),
-      behavior: HitTestBehavior.translucent,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+  /// 构建统计分隔线
+  Widget _buildTravelStatDivider() {
+    return Container(
+      height: 30,
+      width: 1,
+      color: Colors.blueGrey.shade200,
+    );
+  }
+
+  /// 格式化最新旅行信息
+  String _formatLatestTravel(ModeratorTravelHistory history) {
+    final location = [history.cityName, history.countryName]
+        .where((s) => s != null && s.isNotEmpty)
+        .join(', ');
+    
+    final statusText = history.status == 'current' ? 'Currently in' : 'Recently visited';
+    
+    return '$statusText $location';
+  }
+
+  /// 版主信息+更换按钮（管理员可见）- 现代简约风格
+  Widget _buildModeratorInfoWithChange(Moderator moderator) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.grey.shade200,
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            moderator.name,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              decoration: TextDecoration.underline,
+          Row(
+            children: [
+              // Avatar with admin badge
+              Stack(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.blueGrey.shade400,
+                          Colors.blueGrey.shade600,
+                        ],
+                      ),
+                    ),
+                    child: CircleAvatar(
+                      radius: 22,
+                      backgroundColor: Colors.white,
+                      backgroundImage: _safeNetworkImage(moderator.avatar),
+                      child: _safeNetworkImage(moderator.avatar) == null
+                          ? Icon(FontAwesomeIcons.user, color: Colors.blueGrey.shade400, size: 18)
+                          : null,
+                    ),
+                  ),
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(3),
+                      decoration: BoxDecoration(
+                        color: Colors.blueGrey.shade500,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                      child: const Icon(
+                        FontAwesomeIcons.check,
+                        color: Colors.white,
+                        size: 8,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'City Moderator',
+                      style: TextStyle(
+                        color: Colors.blueGrey.shade400,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    GestureDetector(
+                      onTap: () => _openModeratorProfile(moderator),
+                      child: Text(
+                        moderator.name,
+                        style: TextStyle(
+                          color: Colors.blueGrey.shade800,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Change button - minimal style
+              TextButton.icon(
+                onPressed: () => _showAssignModeratorDialog(),
+                icon: Icon(
+                  FontAwesomeIcons.arrowsRotate,
+                  size: 12,
+                  color: Colors.blueGrey.shade500,
+                ),
+                label: Text(
+                  'Change',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.blueGrey.shade600,
+                  ),
+                ),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  backgroundColor: Colors.grey.shade100,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          // Travel Stats Section
+          if (moderator.stats != null) ...[
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blueGrey.shade50,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildTravelStatItem(
+                    icon: FontAwesomeIcons.earthAmericas,
+                    value: '${moderator.stats!.countriesVisited}',
+                    label: 'Countries',
+                  ),
+                  _buildTravelStatDivider(),
+                  _buildTravelStatItem(
+                    icon: FontAwesomeIcons.city,
+                    value: '${moderator.stats!.citiesVisited}',
+                    label: 'Cities',
+                  ),
+                  _buildTravelStatDivider(),
+                  _buildTravelStatItem(
+                    icon: FontAwesomeIcons.calendarDays,
+                    value: '${moderator.stats!.totalDays}',
+                    label: 'Days',
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 4),
-          Icon(
-            FontAwesomeIcons.upRightFromSquare,
-            size: 14,
-            color: Colors.white.withValues(alpha: 0.9),
-          ),
+          ],
+          // Latest Travel History
+          if (moderator.latestTravelHistory != null && moderator.latestTravelHistory!.cityName != null) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(
+                  FontAwesomeIcons.locationDot,
+                  size: 12,
+                  color: Colors.blueGrey.shade400,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    _formatLatestTravel(moderator.latestTravelHistory!),
+                    style: TextStyle(
+                      color: Colors.blueGrey.shade600,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
@@ -407,102 +662,178 @@ class _CityDetailPageState extends State<CityDetailPage>
     );
   }
 
-  /// 申请成为版主按钮（普通用户）
+  /// 申请成为版主按钮（普通用户）- 现代简约风格
   Widget _buildApplyModeratorButton() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFFFF4458).withValues(alpha: 0.9),
-            Colors.deepOrange.withValues(alpha: 0.9),
-          ],
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.grey.shade200,
+          width: 1,
         ),
-        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Row(
         children: [
-          const Icon(FontAwesomeIcons.handHoldingHeart, color: Colors.white, size: 24),
-          const SizedBox(width: 12),
-          const Expanded(
-            child: Text(
-              '成为城市版主，管理社区内容',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
+          // Icon container with subtle gradient
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.blueGrey.shade50,
+                  Colors.blueGrey.shade100,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              FontAwesomeIcons.userShield,
+              color: Colors.blueGrey.shade500,
+              size: 20,
             ),
           ),
-          ElevatedButton(
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Become a Moderator',
+                  style: TextStyle(
+                    color: Colors.blueGrey.shade800,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  'Help manage community content',
+                  style: TextStyle(
+                    color: Colors.blueGrey.shade400,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Apply button - refined style
+          TextButton(
             onPressed: () => _showApplyModeratorDialog(),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: const Color(0xFFFF4458),
+            style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              backgroundColor: Colors.blueGrey.shade700,
+              foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(10),
               ),
             ),
-            child: const Text('立即申请', style: TextStyle(fontSize: 12)),
+            child: const Text(
+              'Apply',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  /// 指定版主按钮（管理员）
+  /// 指定版主按钮（管理员）- 现代简约风格
   Widget _buildAssignModeratorButton() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.orange.withValues(alpha: 0.9),
-            Colors.deepOrange.withValues(alpha: 0.9),
-          ],
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.amber.shade200,
+          width: 1,
         ),
-        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Row(
         children: [
-          const Icon(FontAwesomeIcons.userShield, color: Colors.white, size: 24),
-          const SizedBox(width: 12),
-          const Expanded(
-            child: Text(
-              '该城市暂无版主',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
+          // Icon with amber accent for admin action
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.amber.shade50,
+                  Colors.amber.shade100,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              FontAwesomeIcons.userPlus,
+              color: Colors.amber.shade700,
+              size: 20,
             ),
           ),
-          ElevatedButton(
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'No Moderator Assigned',
+                  style: TextStyle(
+                    color: Colors.blueGrey.shade800,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  'Assign someone to manage this city',
+                  style: TextStyle(
+                    color: Colors.blueGrey.shade400,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Assign button - accent color
+          TextButton(
             onPressed: () => _showAssignModeratorDialog(),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.orange.shade700,
+            style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              backgroundColor: Colors.amber.shade600,
+              foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(10),
               ),
             ),
-            child: const Text('指定版主', style: TextStyle(fontSize: 12)),
+            child: const Text(
+              'Assign',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),
@@ -530,13 +861,32 @@ class _CityDetailPageState extends State<CityDetailPage>
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
         ),
-        title: const Row(
+        backgroundColor: Colors.white,
+        title: Row(
           children: [
-            Icon(FontAwesomeIcons.handHoldingHeart, color: Color(0xFFFF4458), size: 28),
-            SizedBox(width: 12),
-            Text('申请成为版主'),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.blueGrey.shade50,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                FontAwesomeIcons.userShield,
+                color: Colors.blueGrey.shade600,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Text(
+              'Become a Moderator',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.blueGrey.shade800,
+              ),
+            ),
           ],
         ),
         content: Column(
@@ -544,27 +894,36 @@ class _CityDetailPageState extends State<CityDetailPage>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '您确定要申请成为 $cityName 的版主吗？',
-              style: const TextStyle(fontSize: 16),
+              'Would you like to become the moderator for $cityName?',
+              style: TextStyle(
+                fontSize: 15,
+                color: Colors.blueGrey.shade700,
+                height: 1.4,
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(8),
+                color: Colors.blueGrey.shade50,
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    '版主权限：',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                  Text(
+                    'Moderator Permissions',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                      color: Colors.blueGrey.shade700,
+                      letterSpacing: 0.3,
+                    ),
                   ),
-                  const SizedBox(height: 8),
-                  _buildPermissionItem('管理城市内容和评论'),
-                  _buildPermissionItem('审核用户提交的信息'),
-                  _buildPermissionItem('组织社区活动'),
+                  const SizedBox(height: 12),
+                  _buildPermissionItem('Manage city content & reviews'),
+                  _buildPermissionItem('Review user submissions'),
+                  _buildPermissionItem('Organize community events'),
                 ],
               ),
             ),
@@ -573,15 +932,29 @@ class _CityDetailPageState extends State<CityDetailPage>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('取消'),
-          ),
-          ElevatedButton(
-            onPressed: () => _handleApplyModerator(),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFF4458),
-              foregroundColor: Colors.white,
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.blueGrey.shade500,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             ),
-            child: const Text('确认申请'),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(fontWeight: FontWeight.w500),
+            ),
+          ),
+          TextButton(
+            onPressed: () => _handleApplyModerator(),
+            style: TextButton.styleFrom(
+              backgroundColor: Colors.blueGrey.shade700,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text(
+              'Apply Now',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
           ),
         ],
       ),
@@ -615,15 +988,26 @@ class _CityDetailPageState extends State<CityDetailPage>
           ),
           title: Row(
             children: [
-              Icon(
-                FontAwesomeIcons.crown,
-                color: Colors.amber[700],
-                size: 28,
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.amber.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  FontAwesomeIcons.crown,
+                  color: Colors.amber.shade700,
+                  size: 22,
+                ),
               ),
-              const SizedBox(width: 12),
-              const Text(
-                '会员专属权益',
-                style: TextStyle(fontSize: 18),
+              const SizedBox(width: 14),
+              Text(
+                'Premium Membership',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.blueGrey.shade800,
+                ),
               ),
             ],
           ),
@@ -633,19 +1017,18 @@ class _CityDetailPageState extends State<CityDetailPage>
             children: [
               Text(
                 message,
-                style: const TextStyle(fontSize: 16),
+                style: TextStyle(
+                  fontSize: 15,
+                  color: Colors.blueGrey.shade700,
+                  height: 1.4,
+                ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.purple.withValues(alpha: 0.1),
-                      Colors.indigo.withValues(alpha: 0.1),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.blueGrey.shade50,
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -654,27 +1037,28 @@ class _CityDetailPageState extends State<CityDetailPage>
                       children: [
                         Icon(
                           FontAwesomeIcons.userShield,
-                          color: Colors.purple[700],
-                          size: 18,
+                          color: Colors.blueGrey.shade600,
+                          size: 16,
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          '成为版主的好处',
+                          'Benefits of Being a Moderator',
                           style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.purple[800],
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.blueGrey.shade700,
+                            letterSpacing: 0.3,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
                     Text(
-                      '• 管理城市内容和评论\n• 组织线下活动和 Meetup\n• 获得专属徽章和荣誉',
+                      '• Manage city content & reviews\n• Organize offline events & meetups\n• Earn exclusive badges & recognition',
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.grey[700],
-                        height: 1.5,
+                        color: Colors.blueGrey.shade600,
+                        height: 1.6,
                       ),
                     ),
                   ],
@@ -684,23 +1068,23 @@ class _CityDetailPageState extends State<CityDetailPage>
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.orange.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.amber.shade50,
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       FontAwesomeIcons.circleInfo,
-                      color: Colors.orange[700],
-                      size: 16,
+                      color: Colors.amber.shade700,
+                      size: 14,
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        '成为版主需要缴纳保证金，退出时全额退还',
+                        'A refundable deposit is required to become a moderator',
                         style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.orange[800],
+                          fontSize: 12,
+                          color: Colors.amber.shade800,
                         ),
                       ),
                     ),
@@ -712,21 +1096,31 @@ class _CityDetailPageState extends State<CityDetailPage>
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('稍后再说'),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.blueGrey.shade500,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              ),
+              child: const Text(
+                'Maybe Later',
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
             ),
-            ElevatedButton.icon(
+            TextButton.icon(
               onPressed: () {
                 Navigator.of(context).pop();
                 Get.toNamed(AppRoutes.membershipPlan);
               },
-              icon: const Icon(FontAwesomeIcons.crown, size: 16),
-              label: const Text('升级到 Pro'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.purple[600],
+              icon: Icon(FontAwesomeIcons.crown, size: 14, color: Colors.amber.shade100),
+              label: const Text(
+                'Upgrade to Pro',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.amber.shade600,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
             ),
@@ -738,13 +1132,30 @@ class _CityDetailPageState extends State<CityDetailPage>
 
   Widget _buildPermissionItem(String text) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
-          const Icon(FontAwesomeIcons.circleCheck, color: Colors.green, size: 16),
-          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Colors.blueGrey.shade100,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Icon(
+              FontAwesomeIcons.check,
+              color: Colors.blueGrey.shade600,
+              size: 10,
+            ),
+          ),
+          const SizedBox(width: 10),
           Expanded(
-            child: Text(text, style: const TextStyle(fontSize: 14)),
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.blueGrey.shade600,
+              ),
+            ),
           ),
         ],
       ),
@@ -756,7 +1167,7 @@ class _CityDetailPageState extends State<CityDetailPage>
     Navigator.of(context).pop(); // 关闭对话框
 
     // 显示加载提示
-    AppToast.info('正在提交申请...');
+    AppToast.info('Submitting application...');
 
     try {
       final controller = Get.find<CityDetailStateController>();
@@ -768,7 +1179,7 @@ class _CityDetailPageState extends State<CityDetailPage>
 
       result.fold(
         onSuccess: (success) async {
-          AppToast.success('申请已提交！我们会尽快审核');
+          AppToast.success('Application submitted! We will review it shortly.');
 
           // 注意：通知已由后端 ModeratorApplicationService 统一发送给管理员
           // 不需要在 Flutter 端重复发送
@@ -777,11 +1188,11 @@ class _CityDetailPageState extends State<CityDetailPage>
           controller.loadCityDetail(cityId);
         },
         onFailure: (error) {
-          AppToast.error('申请失败：${error.message}');
+          AppToast.error('Application failed: ${error.message}');
         },
       );
     } catch (e) {
-      AppToast.error('申请失败：${e.toString()}');
+      AppToast.error('Application failed: ${e.toString()}');
     }
   }
 
@@ -2085,14 +2496,6 @@ class _CityDetailPageState extends State<CityDetailPage>
                               );
                             }),
                           ),
-
-                          // 版主管理蒙层 - 在城市名称上方
-                          Positioned(
-                            bottom: 70,
-                            left: 16,
-                            right: 16,
-                            child: _buildModeratorManagementOverlay(cityDetailController),
-                          ),
                         ],
                       ),
                     ),
@@ -2225,6 +2628,14 @@ class _CityDetailPageState extends State<CityDetailPage>
                           }),
                         ],
                       ),
+                    ),
+                  ),
+
+                  // 版主管理区域 - 简洁现代风格
+                  SliverToBoxAdapter(
+                    child: Container(
+                      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      child: _buildModeratorManagementOverlay(cityDetailController),
                     ),
                   ),
 
