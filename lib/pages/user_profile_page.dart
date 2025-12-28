@@ -2,7 +2,6 @@ import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
 import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/safe_network_image.dart';
 import 'package:flutter/material.dart' hide Badge;
@@ -508,7 +507,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
       );
     }
 
-    final travelHistory = user.travelHistory;
+    final latestTravel = user.latestTravelHistory;
+    final stats = user.stats;
 
     return Container(
       padding: EdgeInsets.all(isMobile ? 16 : 20),
@@ -535,7 +535,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   Icon(FontAwesomeIcons.earthAmericas, color: AppColors.accent, size: isMobile ? 24 : 28),
                   const SizedBox(width: 8),
                   Text(
-                    'Travel History',
+                    'Travel Stats',
                     style: TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: isMobile ? 18 : 22,
@@ -547,57 +547,73 @@ class _UserProfilePageState extends State<UserProfilePage> {
             ],
           ),
           SizedBox(height: isMobile ? 16 : 20),
-          if (travelHistory.isEmpty)
+          // 旅行统计数据
+          Container(
+            padding: EdgeInsets.all(isMobile ? 12 : 16),
+            decoration: BoxDecoration(
+              color: AppColors.accent.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildTravelStatItem(
+                  icon: FontAwesomeIcons.flag,
+                  value: '${stats.countriesVisited}',
+                  label: 'Countries',
+                  isMobile: isMobile,
+                ),
+                _buildStatDivider(),
+                _buildTravelStatItem(
+                  icon: FontAwesomeIcons.city,
+                  value: '${stats.citiesVisited}',
+                  label: 'Cities',
+                  isMobile: isMobile,
+                ),
+                _buildStatDivider(),
+                _buildTravelStatItem(
+                  icon: FontAwesomeIcons.calendarDays,
+                  value: '${stats.totalDistanceTraveled.toInt()}',
+                  label: 'Days',
+                  isMobile: isMobile,
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: isMobile ? 16 : 20),
+          // 最新旅行位置
+          if (latestTravel != null) ...[
+            Text(
+              'Latest Location',
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: isMobile ? 12 : 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 10),
+            _buildLatestTravelCard(latestTravel, isMobile),
+          ] else
             Center(
               child: Padding(
-                padding: EdgeInsets.symmetric(vertical: isMobile ? 40 : 60),
+                padding: EdgeInsets.symmetric(vertical: isMobile ? 30 : 40),
                 child: Column(
                   children: [
                     Icon(
                       FontAwesomeIcons.plane,
-                      size: isMobile ? 48 : 64,
+                      size: isMobile ? 40 : 48,
                       color: AppColors.iconSecondary,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     Text(
                       'No travel history yet',
                       style: TextStyle(
                         color: AppColors.textSecondary,
-                        fontSize: isMobile ? 16 : 18,
+                        fontSize: isMobile ? 14 : 16,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
-                ),
-              ),
-            )
-          else
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: travelHistory.length > 5 ? 5 : travelHistory.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final travel = travelHistory[index];
-                return _buildTravelHistoryCard(travel, isMobile);
-              },
-            ),
-          if (travelHistory.length > 5)
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: Center(
-                child: TextButton(
-                  onPressed: () {
-                    AppToast.info('View all travel history coming soon');
-                  },
-                  child: Text(
-                    'View all ${travelHistory.length} trips →',
-                    style: TextStyle(
-                      color: AppColors.accent,
-                      fontSize: isMobile ? 14 : 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
                 ),
               ),
             ),
@@ -606,79 +622,140 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
   }
 
-  Widget _buildTravelHistoryCard(TravelHistory travel, bool isMobile) {
+  Widget _buildTravelStatItem({
+    required IconData icon,
+    required String value,
+    required String label,
+    required bool isMobile,
+  }) {
+    return Column(
+      children: [
+        Icon(icon, size: isMobile ? 16 : 18, color: AppColors.accent),
+        const SizedBox(height: 6),
+        Text(
+          value,
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: isMobile ? 20 : 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: isMobile ? 11 : 12,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatDivider() {
     return Container(
-      padding: EdgeInsets.all(isMobile ? 12 : 16),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.borderLight),
-      ),
-      child: Row(
-        children: [
-          // 城市国旗/图标
-          Container(
-            width: isMobile ? 50 : 60,
-            height: isMobile ? 50 : 60,
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: Center(
-              child: Text(
-                _getCountryFlag(travel.countryName ?? ''),
-                style: TextStyle(fontSize: isMobile ? 24 : 32),
+      height: 40,
+      width: 1,
+      color: AppColors.border,
+    );
+  }
+
+  Widget _buildLatestTravelCard(LatestTravelHistory travel, bool isMobile) {
+    return GestureDetector(
+      onTap: travel.canNavigateToCityDetail ? () => Get.toNamed(AppRoutes.cityDetail, arguments: travel.cityId) : null,
+      child: Container(
+        padding: EdgeInsets.all(isMobile ? 14 : 18),
+        decoration: BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.borderLight),
+        ),
+        child: Row(
+          children: [
+            // 国旗
+            Container(
+              width: isMobile ? 54 : 64,
+              height: isMobile ? 54 : 64,
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Center(
+                child: Text(
+                  _getCountryFlag(travel.country),
+                  style: TextStyle(fontSize: isMobile ? 28 : 36),
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 12),
-          // 城市信息
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  travel.cityName,
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: isMobile ? 16 : 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  travel.countryName ?? '',
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: isMobile ? 12 : 14,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(
-                      FontAwesomeIcons.calendar,
-                      size: isMobile ? 12 : 14,
-                      color: AppColors.accent,
+            const SizedBox(width: 14),
+            // 位置信息
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    travel.city,
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: isMobile ? 17 : 20,
+                      fontWeight: FontWeight.bold,
                     ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _formatDateRange(travel.visitDate.toIso8601String(), null),
-                      style: TextStyle(
-                        color: AppColors.textTertiary,
-                        fontSize: isMobile ? 11 : 13,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    travel.country,
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: isMobile ? 13 : 15,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Icon(
+                        travel.isOngoing ? FontAwesomeIcons.locationDot : FontAwesomeIcons.calendar,
+                        size: isMobile ? 12 : 14,
+                        color: travel.isOngoing ? Colors.green : AppColors.accent,
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                      const SizedBox(width: 6),
+                      Text(
+                        travel.isOngoing
+                            ? 'Currently here'
+                            : _formatTravelDates(travel.arrivalTime, travel.departureTime, travel.durationDays),
+                        style: TextStyle(
+                          color: travel.isOngoing ? Colors.green : AppColors.textTertiary,
+                          fontSize: isMobile ? 12 : 14,
+                          fontWeight: travel.isOngoing ? FontWeight.w600 : FontWeight.normal,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-          // 不显示评分(entity中没有rating字段)
-        ],
+            // 箭头（如果可以跳转）
+            if (travel.canNavigateToCityDetail)
+              Icon(
+                FontAwesomeIcons.chevronRight,
+                size: isMobile ? 14 : 16,
+                color: AppColors.iconSecondary,
+              ),
+          ],
+        ),
       ),
     );
+  }
+
+  String _formatTravelDates(DateTime arrival, DateTime? departure, int? durationDays) {
+    final arrivalStr = '${arrival.month}/${arrival.day}/${arrival.year}';
+    if (departure != null) {
+      final departureStr = '${departure.month}/${departure.day}/${departure.year}';
+      final days = durationDays ?? departure.difference(arrival).inDays;
+      return '$arrivalStr - $departureStr ($days days)';
+    }
+    return arrivalStr;
   }
 
   String _getCountryFlag(String country) {
@@ -701,24 +778,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
       'Australia': '🇦🇺',
     };
     return countryFlags[country] ?? '🌍';
-  }
-
-  String _formatDateRange(String startDate, String? endDate) {
-    try {
-      final start = DateTime.parse(startDate);
-      final startFormatted = '${start.month}/${start.year}';
-
-      if (endDate == null || endDate.isEmpty) {
-        return '$startFormatted - Present';
-      }
-
-      final end = DateTime.parse(endDate);
-      final endFormatted = '${end.month}/${end.year}';
-
-      return '$startFormatted - $endFormatted';
-    } catch (e) {
-      return startDate;
-    }
   }
 
   Widget _buildStatItem(IconData icon, String label, String value, Color color, bool isMobile) {

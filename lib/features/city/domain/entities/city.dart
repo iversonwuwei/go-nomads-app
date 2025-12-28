@@ -4,12 +4,16 @@ class Moderator {
   final String name;
   final String? email;
   final String? avatar;
+  final ModeratorTravelStats? stats;
+  final ModeratorTravelHistory? latestTravelHistory;
 
   const Moderator({
     required this.id,
     required this.name,
     this.email,
     this.avatar,
+    this.stats,
+    this.latestTravelHistory,
   });
 
   factory Moderator.fromJson(Map<String, dynamic> json) {
@@ -18,6 +22,10 @@ class Moderator {
       name: json['name'] as String? ?? '',
       email: json['email'] as String?,
       avatar: json['avatar'] as String?,
+      stats: json['stats'] != null ? ModeratorTravelStats.fromJson(json['stats'] as Map<String, dynamic>) : null,
+      latestTravelHistory: json['latestTravelHistory'] != null
+          ? ModeratorTravelHistory.fromJson(json['latestTravelHistory'] as Map<String, dynamic>)
+          : null,
     );
   }
 
@@ -27,6 +35,8 @@ class Moderator {
       'name': name,
       if (email != null) 'email': email,
       if (avatar != null) 'avatar': avatar,
+      if (stats != null) 'stats': stats!.toJson(),
+      if (latestTravelHistory != null) 'latestTravelHistory': latestTravelHistory!.toJson(),
     };
   }
 
@@ -41,6 +51,76 @@ class Moderator {
 
   @override
   String toString() => 'Moderator(id: $id, name: $name)';
+}
+
+/// 版主旅行统计
+class ModeratorTravelStats {
+  final int countriesVisited;
+  final int citiesVisited;
+  final int totalDays;
+  final int totalTrips;
+
+  const ModeratorTravelStats({
+    this.countriesVisited = 0,
+    this.citiesVisited = 0,
+    this.totalDays = 0,
+    this.totalTrips = 0,
+  });
+
+  factory ModeratorTravelStats.fromJson(Map<String, dynamic> json) {
+    return ModeratorTravelStats(
+      countriesVisited: json['countriesVisited'] as int? ?? 0,
+      citiesVisited: json['citiesVisited'] as int? ?? 0,
+      totalDays: json['totalDays'] as int? ?? 0,
+      totalTrips: json['totalTrips'] as int? ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'countriesVisited': countriesVisited,
+      'citiesVisited': citiesVisited,
+      'totalDays': totalDays,
+      'totalTrips': totalTrips,
+    };
+  }
+}
+
+/// 版主最新旅行历史
+class ModeratorTravelHistory {
+  final String? cityName;
+  final String? countryName;
+  final DateTime? startDate;
+  final DateTime? endDate;
+  final String? status;
+
+  const ModeratorTravelHistory({
+    this.cityName,
+    this.countryName,
+    this.startDate,
+    this.endDate,
+    this.status,
+  });
+
+  factory ModeratorTravelHistory.fromJson(Map<String, dynamic> json) {
+    return ModeratorTravelHistory(
+      cityName: json['cityName'] as String?,
+      countryName: json['countryName'] as String?,
+      startDate: json['startDate'] != null ? DateTime.tryParse(json['startDate'] as String) : null,
+      endDate: json['endDate'] != null ? DateTime.tryParse(json['endDate'] as String) : null,
+      status: json['status'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      if (cityName != null) 'cityName': cityName,
+      if (countryName != null) 'countryName': countryName,
+      if (startDate != null) 'startDate': startDate!.toIso8601String(),
+      if (endDate != null) 'endDate': endDate!.toIso8601String(),
+      if (status != null) 'status': status,
+    };
+  }
 }
 
 /// City Domain Entity - 城市实体
