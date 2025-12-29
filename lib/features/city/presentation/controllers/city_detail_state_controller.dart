@@ -1,4 +1,7 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/core/core.dart';
+import 'package:df_admin_mobile/core/sync/sync.dart';
 import 'package:df_admin_mobile/features/city/application/use_cases/city_use_cases.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
@@ -115,6 +118,16 @@ class CityDetailStateController extends GetxController {
         if (currentCity.value != null) {
           currentCity.value = currentCity.value!.copyWith(isFavorite: newState);
         }
+
+        // 通知其他组件收藏状态变更（如城市列表）
+        DataEventBus.instance.emit(DataChangedEvent(
+          entityType: 'city_favorite',
+          entityId: cityId,
+          version: DateTime.now().millisecondsSinceEpoch,
+          changeType: newState ? DataChangeType.created : DataChangeType.deleted,
+          metadata: {'isFavorite': newState},
+        ));
+        log('✅ [城市详情] 收藏状态已同步: $cityId -> $newState');
 
         AppToast.success(
           newState ? '已添加到收藏' : '已取消收藏',

@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/core/sync/sync.dart';
 import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_review_repository.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/services/image_upload_service.dart';
@@ -98,7 +99,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
   /// 提交评论
   Future<void> _submit() async {
     final l10n = AppLocalizations.of(context)!;
-    
+
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -115,7 +116,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
       log('   coworkingId: ${widget.coworkingId}');
       log('   rating: ${_rating.value}');
       log('   title: ${_titleController.text.trim()}');
-      
+
       final repository = Get.find<ICoworkingReviewRepository>();
 
       // 上传图片到 Supabase Storage
@@ -125,7 +126,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
         try {
           final imageUploadService = ImageUploadService();
           final imageFiles = _selectedImages.map((xFile) => File(xFile.path)).toList();
-          
+
           photoUrls = await imageUploadService.uploadMultipleImages(
             imageFiles: imageFiles,
             bucket: 'user-uploads',
@@ -154,6 +155,15 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
 
       log('✅ 评论提交成功: ${result.id}');
 
+      // 发送数据变更事件通知其他组件
+      DataEventBus.instance.emit(DataChangedEvent(
+        entityType: 'coworking_review',
+        entityId: widget.coworkingId,
+        version: DateTime.now().millisecondsSinceEpoch,
+        changeType: DataChangeType.created,
+      ));
+      log('✅ [Coworking评论] 已发送数据变更事件');
+
       // 显示成功提示
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
@@ -168,10 +178,9 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
         Navigator.of(context).pop(true);
         log('✅ Navigator.pop() called');
       }
-      
+
       // 重置按钮状态
       _isSubmitting.value = false;
-      
     } catch (e) {
       final l10n = AppLocalizations.of(context)!;
       log('❌ 提交评论失败: $e');
@@ -193,7 +202,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -446,7 +455,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
   /// 访问日期区域
   Widget _buildVisitDateSection() {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return InkWell(
       onTap: _selectVisitDate,
       child: Container(
@@ -501,7 +510,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
   /// 标题输入
   Widget _buildTitleInput() {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -569,7 +578,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
   /// 内容输入
   Widget _buildContentInput() {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -638,14 +647,13 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
   /// 照片区域
   Widget _buildPhotosSection() {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Icon(FontAwesomeIcons.photoFilm,
-                color: AppColors.textSecondary, size: 20.sp),
+            Icon(FontAwesomeIcons.photoFilm, color: AppColors.textSecondary, size: 20.sp),
             SizedBox(width: 8.w),
             Text(
               l10n.photosOptional,
@@ -769,7 +777,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
   /// 指南
   Widget _buildGuidelines() {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -813,7 +821,7 @@ class _AddCoworkingReviewPageState extends State<AddCoworkingReviewPage> {
   /// 底部提交栏
   Widget _buildBottomBar() {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(

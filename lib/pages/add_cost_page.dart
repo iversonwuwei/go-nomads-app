@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/core/sync/sync.dart';
 import 'package:df_admin_mobile/features/user_city_content/domain/entities/user_city_content.dart';
 import 'package:df_admin_mobile/features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
@@ -100,66 +101,16 @@ class _AddCostPageState extends State<AddCostPage> {
   List<Map<String, dynamic>> _getCategories(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return [
-      {
-        'key': 'accommodation',
-        'name': l10n.accommodation,
-        'icon': '🏠',
-        'hint': l10n.monthlyRent
-      },
-      {
-        'key': 'food',
-        'name': l10n.foodDining,
-        'icon': '🍽️',
-        'hint': l10n.groceriesRestaurants
-      },
-      {
-        'key': 'transportation',
-        'name': l10n.transportation,
-        'icon': '🚗',
-        'hint': l10n.publicTransport
-      },
-      {
-        'key': 'entertainment',
-        'name': l10n.entertainment,
-        'icon': '🎬',
-        'hint': l10n.moviesActivities
-      },
-      {
-        'key': 'gym',
-        'name': l10n.gym,
-        'icon': '💪',
-        'hint': l10n.gymMembership
-      },
-      {
-        'key': 'coworking',
-        'name': l10n.coworkingSpace,
-        'icon': '💼',
-        'hint': l10n.workspaceRental
-      },
-      {
-        'key': 'utilities',
-        'name': l10n.utilities,
-        'icon': '💡',
-        'hint': l10n.electricityWater
-      },
-      {
-        'key': 'healthcare',
-        'name': l10n.healthcare,
-        'icon': '🏥',
-        'hint': l10n.medicalInsurance
-      },
-      {
-        'key': 'shopping',
-        'name': l10n.shopping,
-        'icon': '🛍️',
-        'hint': l10n.clothesPersonal
-      },
-      {
-        'key': 'other',
-        'name': l10n.otherExpenses,
-        'icon': '📝',
-        'hint': l10n.miscellaneous
-      },
+      {'key': 'accommodation', 'name': l10n.accommodation, 'icon': '🏠', 'hint': l10n.monthlyRent},
+      {'key': 'food', 'name': l10n.foodDining, 'icon': '🍽️', 'hint': l10n.groceriesRestaurants},
+      {'key': 'transportation', 'name': l10n.transportation, 'icon': '🚗', 'hint': l10n.publicTransport},
+      {'key': 'entertainment', 'name': l10n.entertainment, 'icon': '🎬', 'hint': l10n.moviesActivities},
+      {'key': 'gym', 'name': l10n.gym, 'icon': '💪', 'hint': l10n.gymMembership},
+      {'key': 'coworking', 'name': l10n.coworkingSpace, 'icon': '💼', 'hint': l10n.workspaceRental},
+      {'key': 'utilities', 'name': l10n.utilities, 'icon': '💡', 'hint': l10n.electricityWater},
+      {'key': 'healthcare', 'name': l10n.healthcare, 'icon': '🏥', 'hint': l10n.medicalInsurance},
+      {'key': 'shopping', 'name': l10n.shopping, 'icon': '🛍️', 'hint': l10n.clothesPersonal},
+      {'key': 'other', 'name': l10n.otherExpenses, 'icon': '📝', 'hint': l10n.miscellaneous},
     ];
   }
 
@@ -176,8 +127,7 @@ class _AddCostPageState extends State<AddCostPage> {
 
   String _getCurrencySymbol(BuildContext context) {
     final currencies = _getCurrencies(context);
-    return currencies
-        .firstWhere((c) => c['code'] == _selectedCurrency)['symbol']!;
+    return currencies.firstWhere((c) => c['code'] == _selectedCurrency)['symbol']!;
   }
 
   double get _totalCost {
@@ -227,9 +177,7 @@ class _AddCostPageState extends State<AddCostPage> {
             category: category,
             amount: amount,
             currency: _selectedCurrency,
-            description: _notesController.text.trim().isEmpty
-                ? null
-                : _notesController.text.trim(),
+            description: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
             date: DateTime.now(),
           );
 
@@ -243,6 +191,15 @@ class _AddCostPageState extends State<AddCostPage> {
       }
 
       _isSubmitting.value = false;
+
+      // 发送数据变更事件通知其他组件
+      DataEventBus.instance.emit(DataChangedEvent(
+        entityType: 'city_expense',
+        entityId: widget.cityId,
+        version: DateTime.now().millisecondsSinceEpoch,
+        changeType: DataChangeType.created,
+      ));
+      log('✅ [城市费用] 已发送数据变更事件');
 
       // Show success message
       final l10n = AppLocalizations.of(context)!;
@@ -397,8 +354,7 @@ class _AddCostPageState extends State<AddCostPage> {
               decoration: InputDecoration(
                 filled: true,
                 fillColor: Colors.white,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide(color: Colors.grey[300]!),
@@ -497,8 +453,7 @@ class _AddCostPageState extends State<AddCostPage> {
             const SizedBox(height: 8),
             TextFormField(
               controller: _controllers[category['key']],
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
               ],
@@ -513,8 +468,7 @@ class _AddCostPageState extends State<AddCostPage> {
                 ),
                 filled: true,
                 fillColor: Colors.grey[50],
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide(color: Colors.grey[300]!),
@@ -525,8 +479,7 @@ class _AddCostPageState extends State<AddCostPage> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide:
-                      const BorderSide(color: Color(0xFFFF4458), width: 2),
+                  borderSide: const BorderSide(color: Color(0xFFFF4458), width: 2),
                 ),
               ),
               onChanged: (_) => setState(() {}), // Update total
@@ -551,8 +504,7 @@ class _AddCostPageState extends State<AddCostPage> {
             ],
           ),
           borderRadius: BorderRadius.circular(12),
-          border:
-              Border.all(color: const Color(0xFFFF4458).withValues(alpha: 0.3)),
+          border: Border.all(color: const Color(0xFFFF4458).withValues(alpha: 0.3)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -640,8 +592,7 @@ class _AddCostPageState extends State<AddCostPage> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide:
-                    const BorderSide(color: Color(0xFFFF4458), width: 2),
+                borderSide: const BorderSide(color: Color(0xFFFF4458), width: 2),
               ),
             ),
           ),
@@ -685,8 +636,7 @@ class _AddCostPageState extends State<AddCostPage> {
                           width: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
                       : Text(

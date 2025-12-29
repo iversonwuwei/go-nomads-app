@@ -1,5 +1,5 @@
-import 'dart:developer';
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:df_admin_mobile/core/core.dart';
 import 'package:df_admin_mobile/core/sync/sync.dart';
@@ -264,6 +264,53 @@ class CityStateControllerV2 extends PaginatedRefreshableController {
     
     // 也监听 city_list 事件
     DataEventBus.instance.on('city_list', _handleDataChanged);
+    
+    // 监听收藏状态变更事件
+    DataEventBus.instance.on('city_favorite', _handleFavoriteChanged);
+  }
+
+  /// 处理收藏状态变更事件
+  void _handleFavoriteChanged(DataChangedEvent event) {
+    if (event.entityId == null) return;
+    
+    final cityId = event.entityId!;
+    final isFavorite = event.changeType == DataChangeType.created;
+    
+    log('🔔 [城市列表] 收到收藏状态变更: $cityId -> $isFavorite');
+    
+    // 更新主列表中的城市状态
+    final index = cities.indexWhere((c) => c.id == cityId);
+    if (index != -1) {
+      cities[index] = cities[index].copyWith(isFavorite: isFavorite);
+      cities.refresh();
+      log('✅ [城市列表] 已更新城市收藏状态: ${cities[index].name}');
+    }
+    
+    // 更新推荐城市列表
+    final recIndex = recommendedCities.indexWhere((c) => c.id == cityId);
+    if (recIndex != -1) {
+      recommendedCities[recIndex] = recommendedCities[recIndex].copyWith(isFavorite: isFavorite);
+      recommendedCities.refresh();
+    }
+    
+    // 更新热门城市列表
+    final popIndex = popularCities.indexWhere((c) => c.id == cityId);
+    if (popIndex != -1) {
+      popularCities[popIndex] = popularCities[popIndex].copyWith(isFavorite: isFavorite);
+      popularCities.refresh();
+    }
+    
+    // 更新收藏列表
+    if (isFavorite) {
+      // 添加到收藏列表（如果不存在）
+      final favIndex = favoriteCities.indexWhere((c) => c.id == cityId);
+      if (favIndex == -1 && index != -1) {
+        favoriteCities.add(cities[index]);
+      }
+    } else {
+      // 从收藏列表移除
+      favoriteCities.removeWhere((c) => c.id == cityId);
+    }
   }
 
   /// 设置 SignalR 监听器

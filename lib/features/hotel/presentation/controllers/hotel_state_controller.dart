@@ -1,8 +1,11 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:get/get.dart';
+import 'dart:async';
+import 'dart:developer';
 
+import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/core/sync/sync.dart';
 import 'package:df_admin_mobile/features/hotel/application/use_cases/hotel_use_cases.dart';
 import 'package:df_admin_mobile/features/hotel/domain/entities/hotel.dart';
+import 'package:get/get.dart';
 
 /// Hotel State Controller
 /// 使用 GetX 进行响应式状态管理
@@ -57,6 +60,66 @@ class HotelStateController extends GetxController {
   final bookings = <HotelBooking>[].obs;
   final isLoading = false.obs;
   final errorMessage = Rx<String?>(null);
+
+  // 数据变更订阅
+  StreamSubscription<DataChangedEvent>? _dataChangedSubscription;
+
+  @override
+  void onInit() {
+    super.onInit();
+    _setupDataChangeListeners();
+  }
+
+  @override
+  void onClose() {
+    _dataChangedSubscription?.cancel();
+    super.onClose();
+  }
+
+  /// 设置数据变更监听器
+  void _setupDataChangeListeners() {
+    _dataChangedSubscription = DataEventBus.instance.on('hotel', _handleDataChanged);
+  }
+
+  /// 处理数据变更事件
+  void _handleDataChanged(DataChangedEvent event) {
+    log('🔔 收到 Hotel 数据变更通知: ${event.changeType}');
+
+    switch (event.changeType) {
+      case DataChangeType.created:
+      case DataChangeType.invalidated:
+        getHotels();
+        break;
+      case DataChangeType.updated:
+        if (event.entityId != null) {
+          _refreshSingleHotel(event.entityId!);
+        }
+        break;
+      case DataChangeType.deleted:
+        if (event.entityId != null) {
+          hotels.removeWhere((h) => h.id == event.entityId);
+        }
+        break;
+    }
+  }
+
+  /// 刷新单个酒店
+  Future<void> _refreshSingleHotel(String id) async {
+    final result = await _getHotelByIdUseCase(GetHotelByIdParams(id));
+    result.fold(
+      onSuccess: (hotel) {
+        final index = hotels.indexWhere((h) => h.id == id);
+        if (index != -1) {
+          hotels[index] = hotel;
+          hotels.refresh();
+        }
+        if (currentHotel.value?.id == id) {
+          currentHotel.value = hotel;
+        }
+      },
+      onFailure: (e) => log('⚠️ 刷新酒店失败: ${e.message}'),
+    );
+  }
 
   // ==================== Public Methods ====================
 
@@ -142,6 +205,16 @@ class HotelStateController extends GetxController {
       onSuccess: (hotel) {
         hotels.add(hotel);
         isLoading.value = false;
+
+        // 通知其他组件数据变更
+        DataEventBus.instance.emit(DataChangedEvent(
+          entityType: 'hotel',
+          entityId: hotel.id,
+          version: DateTime.now().millisecondsSinceEpoch,
+          changeType: DataChangeType.created,
+        ));
+        log('✅ 创建酒店成功: ${hotel.name}');
+
         return true;
       },
       onFailure: (exception) {
@@ -168,6 +241,16 @@ class HotelStateController extends GetxController {
           currentHotel.value = hotel;
         }
         isLoading.value = false;
+
+        // 通知其他组件数据变更
+        DataEventBus.instance.emit(DataChangedEvent(
+          entityType: 'hotel',
+          entityId: id,
+          version: DateTime.now().millisecondsSinceEpoch,
+          changeType: DataChangeType.updated,
+        ));
+        log('✅ 更新酒店成功: ${hotel.name}');
+
         return true;
       },
       onFailure: (exception) {
@@ -191,6 +274,16 @@ class HotelStateController extends GetxController {
           currentHotel.value = null;
         }
         isLoading.value = false;
+
+        // 通知其他组件数据变更
+        DataEventBus.instance.emit(DataChangedEvent(
+          entityType: 'hotel',
+          entityId: id,
+          version: DateTime.now().millisecondsSinceEpoch,
+          changeType: DataChangeType.deleted,
+        ));
+        log('✅ 删除酒店成功: $id');
+
         return true;
       },
       onFailure: (exception) {
@@ -224,8 +317,7 @@ class HotelStateController extends GetxController {
     isLoading.value = true;
     errorMessage.value = null;
 
-    final result =
-        await _getHotelsByCategoryUseCase(GetHotelsByCategoryParams(category));
+    final result = await _getHotelsByCategoryUseCase(GetHotelsByCategoryParams(category));
     result.fold(
       onSuccess: (hotels) {
         this.hotels.value = hotels;
@@ -312,20 +404,5 @@ class HotelStateController extends GetxController {
         return false;
       },
     );
-  }
-
-  @override
-  void onClose() {
-    // 清空所有响应式变量
-    hotels.clear();
-    currentHotel.value = null;
-    roomTypes.clear();
-    bookings.clear();
-    
-    // 重置加载状态
-    isLoading.value = false;
-    errorMessage.value = null;
-    
-    super.onClose();
   }
 }
