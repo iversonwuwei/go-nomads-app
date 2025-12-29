@@ -91,24 +91,24 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
       final response = await httpService.get('/events/${widget.meetup.id}');
       final data = response.data as Map<String, dynamic>;
 
-      // 提取 participants 列表
+      // 提取 participants 列表（直接使用后端返回的数据，不做过滤）
       if (data['participants'] != null) {
         final participantsList = data['participants'] as List<dynamic>;
         _participants.value = participantsList.map((p) => p as Map<String, dynamic>).toList();
         log('✅ 成功加载 ${_participants.length} 位参与者');
-        // 调试：打印参与者数据结构
-        for (var p in _participants) {
-          final userInfo = p['user'] as Map<String, dynamic>?;
-          log('👤 参与者: ${userInfo?['name']}, 头像: ${userInfo?['avatar']}');
-        }
       }
 
       // 映射为 Meetup 实体
       final dto = MeetupDto.fromJson(data);
       final meetup = dto.toDomain();
 
+      // 调试：打印解析后的数据
+      log('🔍 解析后 - capacity.currentAttendees: ${meetup.capacity.currentAttendees}');
+
+      // 先触发刷新，确保 Obx 重新构建
       _meetup.value = meetup;
-      log('✅ 成功加载活动详情: ${meetup.title}');
+      _meetup.refresh(); // 强制触发更新
+      log('✅ 成功加载活动详情: ${meetup.title}, 参与者: ${meetup.capacity.currentAttendees}');
     } catch (e) {
       log('❌ 加载活动详情失败: $e');
       AppToast.error('加载活动详情失败');
@@ -250,6 +250,11 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
             // 内容区域
             SliverToBoxAdapter(
               child: Obx(() {
+                // 触发对 _meetup 的监听，确保数据变化时能重新构建
+                // 通过访问 capacity 属性来确保 GetX 追踪到 _meetup 的变化
+                final currentAttendees = _meetup.value.capacity.currentAttendees;
+                log('🔄 Obx 重建 - currentAttendees: $currentAttendees');
+
                 // 显示加载指示器
                 if (_isLoading.value) {
                   return Container(
@@ -391,6 +396,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
             subtitle: _meetup.value.venue.address,
           ),
           SizedBox(height: 20.h),
+          // 使用后端返回的 capacity 数据显示参与者数量
           _buildInfoRow(
             FontAwesomeIcons.users,
             l10n.attendees,
@@ -528,31 +534,35 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                l10n.attendeesCount('${_meetup.value.capacity.currentAttendees}'),
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              if (_meetup.value.capacity.currentAttendees > 0)
-                TextButton(
-                  onPressed: _showAllAttendees,
-                  child: Text(
-                    l10n.viewAll,
-                    style: TextStyle(
-                      fontSize: 13.sp,
-                      color: const Color(0xFFFF4458),
-                      fontWeight: FontWeight.w600,
-                    ),
+          // 使用 Obx 监听 _participants 的变化来显示真实参与者数量
+          Obx(() {
+            final attendeesCount = _meetup.value.capacity.currentAttendees;
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  l10n.attendeesCount('$attendeesCount'),
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
                   ),
                 ),
-            ],
-          ),
+                if (attendeesCount > 0)
+                  TextButton(
+                    onPressed: _showAllAttendees,
+                    child: Text(
+                      l10n.viewAll,
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        color: const Color(0xFFFF4458),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          }),
           SizedBox(height: 16.h),
           Obx(() {
             if (_participants.isEmpty) {
@@ -666,18 +676,22 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                   // 取消活动按钮
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: _meetup.value.status == 'cancelled' || _meetup.value.isEnded ? null : _cancelMeetup,
+                      onPressed: _meetup.value.status == MeetupStatus.cancelled || _meetup.value.isEnded
+                          ? null
+                          : _cancelMeetup,
                       icon: Icon(FontAwesomeIcons.ban, size: 20.sp),
                       label: Text(
-                        _meetup.value.status == 'cancelled' ? '已取消' : '取消活动',
+                        _meetup.value.status == MeetupStatus.cancelled ? '已取消' : '取消活动',
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _meetup.value.status == 'cancelled' ? AppColors.borderLight : Colors.red,
-                        foregroundColor: _meetup.value.status == 'cancelled' ? AppColors.textSecondary : Colors.white,
+                        backgroundColor:
+                            _meetup.value.status == MeetupStatus.cancelled ? AppColors.borderLight : Colors.red,
+                        foregroundColor:
+                            _meetup.value.status == MeetupStatus.cancelled ? AppColors.textSecondary : Colors.white,
                         padding: EdgeInsets.symmetric(vertical: 14.h),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12.r),
@@ -715,13 +729,14 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                     ),
                   ),
                   SizedBox(width: 12.w),
-                  // Join Button
+                  // Join Button - 使用后端返回的 capacity.isFull 判断
                   Expanded(
                     child: ElevatedButton(
-                      onPressed:
-                          _meetup.value.isEnded || _meetup.value.capacity.isFull || _meetup.value.status == 'cancelled'
-                              ? null
-                              : _toggleJoin,
+                      onPressed: _meetup.value.isEnded ||
+                              (_meetup.value.capacity.isFull && !_isJoined) ||
+                              _meetup.value.status == MeetupStatus.cancelled
+                          ? null
+                          : _toggleJoin,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _isJoined ? AppColors.borderLight : const Color(0xFFFF4458),
                         foregroundColor: _isJoined ? AppColors.textSecondary : Colors.white,
@@ -733,11 +748,11 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                         disabledBackgroundColor: AppColors.borderLight,
                       ),
                       child: Text(
-                        _meetup.value.status == 'cancelled'
+                        _meetup.value.status == MeetupStatus.cancelled
                             ? '已取消'
                             : _meetup.value.isEnded
                                 ? l10n.ended
-                                : _meetup.value.capacity.isFull
+                                : (_meetup.value.capacity.isFull && !_isJoined)
                                     ? l10n.full
                                     : _isJoined
                                         ? l10n.leaveMeetup
@@ -895,8 +910,14 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
       // API 调用成功后，重新加载活动详情以获取最新数据
       await _loadEventDetails();
 
+      // 打印更新后的数据用于调试
+      log('📊 更新后数据 - currentAttendees: ${_meetup.value.capacity.currentAttendees}, participants: ${_participants.length}');
+
       // 标记数据已变更，返回时通知列表页面更新缓存
       _hasDataChanged = true;
+
+      // 刷新列表页的 meetup 数据，确保人数等信息同步
+      _meetupController.refreshMeetups();
 
       // 显示成功消息
       if (isJoining) {
