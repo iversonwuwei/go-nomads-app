@@ -4,7 +4,7 @@ import 'package:df_admin_mobile/features/interest/domain/entities/interest.dart'
 import 'package:df_admin_mobile/features/interest/presentation/controllers/interest_state_controller.dart';
 import 'package:df_admin_mobile/features/skill/domain/entities/skill.dart';
 import 'package:df_admin_mobile/features/skill/presentation/controllers/skill_state_controller.dart';
-import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller_v2.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/interests_selector.dart';
 import 'package:df_admin_mobile/widgets/skills_selector.dart';
@@ -25,7 +25,7 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage> with SingleTi
   late TabController _tabController;
   late final SkillStateController _skillController;
   late final InterestStateController _interestController;
-  late final UserStateController _userStateController;
+  late final UserStateControllerV2 _userStateController;
 
   List<UserSkill> _selectedSkills = [];
   List<UserInterest> _selectedInterests = [];
@@ -37,7 +37,7 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage> with SingleTi
     _tabController = TabController(length: 2, vsync: this);
     _skillController = Get.find<SkillStateController>();
     _interestController = Get.find<InterestStateController>();
-    _userStateController = Get.find<UserStateController>();
+    _userStateController = Get.find<UserStateControllerV2>();
   }
 
   @override

@@ -1,8 +1,12 @@
+// ignore_for_file: unused_element_parameter
+import 'dart:io';
+
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/features/chat/domain/entities/chat.dart';
 import 'package:df_admin_mobile/features/chat/presentation/controllers/chat_state_controller.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart' as models;
 import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/services/image_upload_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/safe_network_image.dart';
@@ -11,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'member_detail_page.dart';
 
@@ -405,8 +410,28 @@ class _DirectChatView extends StatefulWidget {
   State<_DirectChatView> createState() => _DirectChatViewState();
 }
 
+/// 上传中的图片信息
+class _UploadingImage {
+  final String id;
+  final String localPath;
+  double progress;
+  String? errorMessage;
+
+  _UploadingImage({
+    required this.id,
+    required this.localPath,
+    this.progress = 0,
+    this.errorMessage,
+  });
+}
+
 class _DirectChatViewState extends State<_DirectChatView> {
   final _messageController = TextEditingController();
+  final _inputFocusNode = FocusNode();
+  bool _showEmojiPanel = false;
+
+  /// 正在上传的图片列表
+  final List<_UploadingImage> _uploadingImages = [];
 
   /// 获取当前用户 ID
   String? get _currentUserId {
@@ -421,6 +446,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
   @override
   void dispose() {
     _messageController.dispose();
+    _inputFocusNode.dispose();
     super.dispose();
   }
 
@@ -491,14 +517,16 @@ class _DirectChatViewState extends State<_DirectChatView> {
           ),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(FontAwesomeIcons.video, color: Colors.black, size: 28),
-            onPressed: () => AppToast.info('视频通话功能即将推出'),
-          ),
-          IconButton(
-            icon: const Icon(FontAwesomeIcons.phone, color: Colors.black, size: 24),
-            onPressed: () => AppToast.info('语音通话功能即将推出'),
-          ),
+          // TODO: 暂时隐藏视频通话按钮，功能待完善后启用
+          // IconButton(
+          //   icon: const Icon(FontAwesomeIcons.video, color: Colors.black, size: 28),
+          //   onPressed: () => AppToast.info('视频通话功能即将推出'),
+          // ),
+          // TODO: 暂时隐藏语音通话按钮，功能待完善后启用
+          // IconButton(
+          //   icon: const Icon(FontAwesomeIcons.phone, color: Colors.black, size: 24),
+          //   onPressed: () => AppToast.info('语音通话功能即将推出'),
+          // ),
           PopupMenuButton<String>(
             icon: const Icon(FontAwesomeIcons.ellipsisVertical, color: Colors.black),
             onSelected: (value) {
@@ -567,14 +595,21 @@ class _DirectChatViewState extends State<_DirectChatView> {
           children: [
             // Messages
             Expanded(
-              child: controller.messages.isEmpty
+              child: controller.messages.isEmpty && _uploadingImages.isEmpty
                   ? _buildEmptyState()
                   : ListView.builder(
                       reverse: true,
                       padding: const EdgeInsets.all(16),
-                      itemCount: controller.messages.length,
+                      itemCount: controller.messages.length + _uploadingImages.length,
                       itemBuilder: (context, index) {
-                        final message = controller.messages[index];
+                        // 先显示上传中的图片（在最底部/最新位置）
+                        if (index < _uploadingImages.length) {
+                          final uploadingImage = _uploadingImages[_uploadingImages.length - 1 - index];
+                          return _buildUploadingImageBubble(uploadingImage);
+                        }
+                        // 然后显示已发送的消息
+                        final messageIndex = index - _uploadingImages.length;
+                        final message = controller.messages[messageIndex];
                         final isMe = currentUserId != null && message.author.userId == currentUserId;
                         return _buildMessageBubble(message, isMe, controller);
                       },
@@ -591,6 +626,9 @@ class _DirectChatViewState extends State<_DirectChatView> {
 
             // Input
             _buildMessageInput(controller),
+
+            // Emoji Panel
+            if (_showEmojiPanel) _buildEmojiPanel(),
           ],
         );
       }),
@@ -728,14 +766,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
                         ],
 
                         // Message content
-                        Text(
-                          message.message,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: isMe ? Colors.white : const Color(0xFF1a1a1a),
-                            height: 1.4,
-                          ),
-                        ),
+                        _buildMessageContent(message, isMe),
 
                         const SizedBox(height: 6),
 
@@ -765,6 +796,181 @@ class _DirectChatViewState extends State<_DirectChatView> {
           ],
         ),
       ),
+    );
+  }
+
+  /// 构建上传中图片的气泡
+  Widget _buildUploadingImageBubble(_UploadingImage uploadingImage) {
+    final hasError = uploadingImage.errorMessage != null;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Container(
+                  constraints: const BoxConstraints(
+                    maxWidth: 200,
+                    maxHeight: 200,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFF3838).withValues(alpha: 0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Stack(
+                      children: [
+                        // 本地图片预览
+                        Image.file(
+                          File(uploadingImage.localPath),
+                          fit: BoxFit.cover,
+                          width: 150,
+                          height: 150,
+                        ),
+
+                        // 上传进度遮罩
+                        Positioned.fill(
+                          child: Container(
+                            color: Colors.black.withValues(alpha: hasError ? 0.6 : 0.4),
+                            child: Center(
+                              child: hasError
+                                  ? _buildUploadErrorOverlay(uploadingImage)
+                                  : _buildUploadProgressOverlay(uploadingImage),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 4),
+
+                // 状态文字
+                Text(
+                  hasError ? uploadingImage.errorMessage! : '上传中...',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: hasError ? const Color(0xFFFF3838) : const Color(0xFF999999),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          // 上传状态图标
+          Icon(
+            hasError ? FontAwesomeIcons.circleExclamation : FontAwesomeIcons.cloudArrowUp,
+            size: 16,
+            color: hasError
+                ? const Color(0xFFFF3838).withValues(alpha: 0.8)
+                : const Color(0xFFFF3838).withValues(alpha: 0.5),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 构建上传进度遮罩
+  Widget _buildUploadProgressOverlay(_UploadingImage uploadingImage) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          width: 50,
+          height: 50,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              CircularProgressIndicator(
+                value: uploadingImage.progress,
+                strokeWidth: 3,
+                backgroundColor: Colors.white.withValues(alpha: 0.3),
+                valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+              Text(
+                '${(uploadingImage.progress * 100).toInt()}%',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 构建上传错误遮罩
+  Widget _buildUploadErrorOverlay(_UploadingImage uploadingImage) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Icon(
+          FontAwesomeIcons.circleExclamation,
+          color: Colors.white,
+          size: 24,
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 重试按钮
+            GestureDetector(
+              onTap: () => _retryUpload(uploadingImage),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(FontAwesomeIcons.arrowRotateRight, size: 12, color: Color(0xFFFF3838)),
+                    SizedBox(width: 4),
+                    Text('重试', style: TextStyle(fontSize: 12, color: Color(0xFFFF3838))),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            // 取消按钮
+            GestureDetector(
+              onTap: () => _removeUploadingImage(uploadingImage.id),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(FontAwesomeIcons.xmark, size: 12, color: Colors.white),
+                    SizedBox(width: 4),
+                    Text('取消', style: TextStyle(fontSize: 12, color: Colors.white)),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -867,9 +1073,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
                     color: Colors.transparent,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(22),
-                      onTap: () {
-                        AppToast.info('拍摄功能即将推出');
-                      },
+                      onTap: () => _showImagePickerOptions(context),
                       child: const Center(
                         child: FaIcon(FontAwesomeIcons.camera, color: Colors.black, size: 18),
                       ),
@@ -893,6 +1097,13 @@ class _DirectChatViewState extends State<_DirectChatView> {
                         Expanded(
                           child: TextField(
                             controller: _messageController,
+                            focusNode: _inputFocusNode,
+                            onTap: () {
+                              // 点击输入框时收起表情面板
+                              if (_showEmojiPanel) {
+                                setState(() => _showEmojiPanel = false);
+                              }
+                            },
                             decoration: InputDecoration(
                               hintText: l10n.typeMessage,
                               hintStyle: const TextStyle(
@@ -910,10 +1121,12 @@ class _DirectChatViewState extends State<_DirectChatView> {
                         ),
                         // Emoji button
                         GestureDetector(
-                          onTap: () {
-                            AppToast.info('表情功能即将推出');
-                          },
-                          child: const FaIcon(FontAwesomeIcons.faceSmile, color: Color(0xFF999999), size: 20),
+                          onTap: _toggleEmojiPanel,
+                          child: FaIcon(
+                            _showEmojiPanel ? FontAwesomeIcons.keyboard : FontAwesomeIcons.faceSmile,
+                            color: const Color(0xFF999999),
+                            size: 20,
+                          ),
                         ),
                       ],
                     ),
@@ -1027,6 +1240,700 @@ class _DirectChatViewState extends State<_DirectChatView> {
           ),
         ],
       ),
+    );
+  }
+
+  /// 显示图片选择选项菜单
+  void _showImagePickerOptions(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    Get.bottomSheet(
+      Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 顶部拖动条
+              Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE0E0E0),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              // 拍照选项
+              ListTile(
+                leading: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFC00).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(FontAwesomeIcons.camera, color: Color(0xFFFFAA00), size: 22),
+                ),
+                title: Text(l10n.takePhoto),
+                subtitle:
+                    Text(l10n.useCameraToTakePhoto, style: const TextStyle(fontSize: 12, color: Color(0xFF999999))),
+                onTap: () => _pickImage(ImageSource.camera),
+              ),
+              // 相册选项
+              ListTile(
+                leading: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(FontAwesomeIcons.images, color: Color(0xFF10B981), size: 22),
+                ),
+                title: Text(l10n.chooseFromGallery),
+                subtitle: Text(l10n.tapToSelectPhoto, style: const TextStyle(fontSize: 12, color: Color(0xFF999999))),
+                onTap: () => _pickImage(ImageSource.gallery),
+              ),
+              const SizedBox(height: 8),
+              // 取消按钮
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: TextButton(
+                    onPressed: () => Get.back(),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      backgroundColor: const Color(0xFFF5F5F5),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(l10n.cancel, style: const TextStyle(color: Color(0xFF666666))),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 选择图片（相册/相机）
+  Future<void> _pickImage(ImageSource source) async {
+    Get.back(); // 关闭底部菜单
+    try {
+      final picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: source,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
+      );
+      if (image != null) {
+        _sendImage(image);
+      }
+    } catch (e) {
+      AppToast.error('选择图片失败: $e');
+    }
+  }
+
+  /// 发送图片消息
+  Future<void> _sendImage(XFile image) async {
+    // 创建上传中图片的唯一 ID
+    final uploadId = DateTime.now().millisecondsSinceEpoch.toString();
+    final uploadingImage = _UploadingImage(
+      id: uploadId,
+      localPath: image.path,
+      progress: 0,
+    );
+
+    // 添加到上传列表，显示在聊天中
+    setState(() {
+      _uploadingImages.add(uploadingImage);
+    });
+
+    try {
+      // 1. 上传图片到 Supabase Storage
+      final imageFile = File(image.path);
+      final imageUploadService = ImageUploadService();
+
+      // 模拟进度更新（Supabase SDK 暂不支持进度回调，使用模拟进度）
+      _simulateUploadProgress(uploadId);
+
+      // 使用 user-uploads bucket，文件夹为 chat-images/direct-chat
+      final imageUrl = await imageUploadService.uploadImage(
+        imageFile: imageFile,
+        bucket: 'user-uploads',
+        folder: 'chat-images/direct-chat',
+        compress: true,
+        quality: 85,
+        maxWidth: 1920,
+        maxHeight: 1920,
+      );
+
+      debugPrint('✅ 图片上传成功: $imageUrl');
+
+      // 2. 上传完成，从上传列表移除
+      setState(() {
+        _uploadingImages.removeWhere((img) => img.id == uploadId);
+      });
+
+      // 3. 发送图片消息（使用返回的 URL）
+      widget.controller.sendMessage(
+        imageUrl, // 发送图片 URL 作为消息内容
+        messageType: 'image',
+        attachment: {
+          'url': imageUrl,
+          'name': image.name,
+          'type': 'image',
+          'mimeType': 'image/jpeg',
+        },
+      );
+    } catch (e) {
+      debugPrint('❌ 图片上传失败: $e');
+      // 标记上传失败
+      String errorMsg = '上传失败';
+      if (e.toString().contains('Bucket not found')) {
+        errorMsg = '存储服务错误';
+      } else if (e.toString().contains('not authenticated')) {
+        errorMsg = '请重新登录';
+      } else if (e.toString().contains('未初始化')) {
+        errorMsg = '请重启应用';
+      } else if (e.toString().contains('network') || e.toString().contains('Connection')) {
+        errorMsg = '网络错误';
+      }
+
+      setState(() {
+        final index = _uploadingImages.indexWhere((img) => img.id == uploadId);
+        if (index != -1) {
+          _uploadingImages[index].errorMessage = errorMsg;
+          _uploadingImages[index].progress = 0;
+        }
+      });
+    }
+  }
+
+  /// 模拟上传进度（因为 Supabase 不支持进度回调）
+  void _simulateUploadProgress(String uploadId) {
+    Future.doWhile(() async {
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      final index = _uploadingImages.indexWhere((img) => img.id == uploadId);
+      if (index == -1) return false; // 已完成或已移除
+
+      if (_uploadingImages[index].progress < 0.9) {
+        setState(() {
+          _uploadingImages[index].progress += 0.1;
+        });
+        return true;
+      }
+      return false;
+    });
+  }
+
+  /// 重试上传失败的图片
+  void _retryUpload(_UploadingImage uploadingImage) {
+    // 移除失败的记录
+    setState(() {
+      _uploadingImages.removeWhere((img) => img.id == uploadingImage.id);
+    });
+    // 重新上传
+    _sendImage(XFile(uploadingImage.localPath));
+  }
+
+  /// 取消/移除上传失败的图片
+  void _removeUploadingImage(String uploadId) {
+    setState(() {
+      _uploadingImages.removeWhere((img) => img.id == uploadId);
+    });
+  }
+
+  /// 构建消息内容（支持文本和图片）
+  Widget _buildMessageContent(ChatMessage message, bool isMe) {
+    // 检查是否是图片消息
+    final isImageMessage = message.type == MessageType.image ||
+        (message.attachment?.url.isNotEmpty == true &&
+            (message.attachment!.isImage ||
+                message.attachment!.url.endsWith('.jpg') ||
+                message.attachment!.url.endsWith('.png') ||
+                message.attachment!.url.endsWith('.jpeg'))) ||
+        _isImageUrl(message.message);
+
+    if (isImageMessage) {
+      return _buildImageMessage(message, isMe);
+    }
+
+    // 普通文本消息
+    return Text(
+      message.message,
+      style: TextStyle(
+        fontSize: 16,
+        color: isMe ? Colors.white : const Color(0xFF1a1a1a),
+        height: 1.4,
+      ),
+    );
+  }
+
+  /// 检查是否是图片 URL
+  bool _isImageUrl(String text) {
+    // 检查是否是网络图片 URL
+    if (text.startsWith('http://') || text.startsWith('https://')) {
+      final lowerText = text.toLowerCase();
+      return lowerText.endsWith('.jpg') ||
+          lowerText.endsWith('.jpeg') ||
+          lowerText.endsWith('.png') ||
+          lowerText.endsWith('.gif') ||
+          lowerText.endsWith('.webp') ||
+          lowerText.contains('supabase') && lowerText.contains('storage'); // Supabase 存储 URL
+    }
+    return false;
+  }
+
+  /// 构建图片消息
+  Widget _buildImageMessage(ChatMessage message, bool isMe) {
+    // 获取图片路径或URL
+    String? imagePath = message.attachment?.url;
+    if (imagePath == null || imagePath.isEmpty) {
+      imagePath = message.message;
+    }
+
+    return GestureDetector(
+      onTap: () => _showFullScreenImage(imagePath!),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          constraints: const BoxConstraints(
+            maxWidth: 200,
+            maxHeight: 200,
+          ),
+          child: _buildImageWidget(imagePath),
+        ),
+      ),
+    );
+  }
+
+  /// 构建图片组件（主要支持网络图片 URL）
+  Widget _buildImageWidget(String imageUrl) {
+    // 网络图片
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return Image.network(
+        imageUrl,
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Container(
+            width: 150,
+            height: 150,
+            color: Colors.grey[200],
+            child: Center(
+              child: CircularProgressIndicator(
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                    : null,
+                strokeWidth: 2,
+                color: const Color(0xFFFF3838),
+              ),
+            ),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) {
+          return _buildImagePlaceholder();
+        },
+      );
+    }
+
+    return _buildImagePlaceholder();
+  }
+
+  /// 构建图片占位符
+  Widget _buildImagePlaceholder() {
+    return Container(
+      width: 150,
+      height: 150,
+      color: Colors.grey[200],
+      child: const Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(FontAwesomeIcons.image, size: 40, color: Colors.grey),
+          SizedBox(height: 8),
+          Text('图片加载失败', style: TextStyle(color: Colors.grey, fontSize: 12)),
+        ],
+      ),
+    );
+  }
+
+  /// 显示全屏图片
+  void _showFullScreenImage(String imagePath) {
+    Get.to(
+      () => _FullScreenImageViewer(imagePath: imagePath),
+      transition: Transition.fadeIn,
+      duration: const Duration(milliseconds: 200),
+    );
+  }
+
+  /// 切换表情面板显示
+  void _toggleEmojiPanel() {
+    setState(() {
+      _showEmojiPanel = !_showEmojiPanel;
+      if (_showEmojiPanel) {
+        // 显示表情面板时收起键盘
+        _inputFocusNode.unfocus();
+      } else {
+        // 收起表情面板时显示键盘
+        _inputFocusNode.requestFocus();
+      }
+    });
+  }
+
+  /// 插入表情到输入框
+  void _insertEmoji(String emoji) {
+    final text = _messageController.text;
+    final selection = _messageController.selection;
+    final newText = text.replaceRange(
+      selection.start,
+      selection.end,
+      emoji,
+    );
+    _messageController.value = TextEditingValue(
+      text: newText,
+      selection: TextSelection.collapsed(
+        offset: selection.start + emoji.length,
+      ),
+    );
+    setState(() {});
+  }
+
+  /// 构建表情面板
+  Widget _buildEmojiPanel() {
+    return Container(
+      height: 260,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F5F5),
+        border: Border(
+          top: BorderSide(color: const Color(0xFFE5E5E5)),
+        ),
+      ),
+      child: Column(
+        children: [
+          // 表情分类标签
+          Container(
+            height: 44,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              border: Border(
+                bottom: BorderSide(color: Color(0xFFE5E5E5), width: 0.5),
+              ),
+            ),
+            child: Row(
+              children: [
+                _buildEmojiCategoryTab('😀', true),
+                _buildEmojiCategoryTab('❤️', false),
+                _buildEmojiCategoryTab('👋', false),
+                _buildEmojiCategoryTab('🎉', false),
+                _buildEmojiCategoryTab('🍔', false),
+                _buildEmojiCategoryTab('⚽', false),
+                _buildEmojiCategoryTab('🚗', false),
+                const Spacer(),
+                // 删除按钮
+                IconButton(
+                  icon: const Icon(FontAwesomeIcons.deleteLeft, size: 20, color: Color(0xFF666666)),
+                  onPressed: () {
+                    final text = _messageController.text;
+                    if (text.isNotEmpty) {
+                      // 删除最后一个字符（考虑 emoji 可能是多个字符）
+                      final characters = text.characters.toList();
+                      characters.removeLast();
+                      _messageController.text = characters.join();
+                      _messageController.selection = TextSelection.collapsed(
+                        offset: _messageController.text.length,
+                      );
+                      setState(() {});
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+          // 表情网格
+          Expanded(
+            child: GridView.builder(
+              padding: const EdgeInsets.all(8),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 8,
+                mainAxisSpacing: 4,
+                crossAxisSpacing: 4,
+              ),
+              itemCount: _emojis.length,
+              itemBuilder: (context, index) {
+                return GestureDetector(
+                  onTap: () => _insertEmoji(_emojis[index]),
+                  child: Container(
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      _emojis[index],
+                      style: const TextStyle(fontSize: 28),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          // 发送按钮区域
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              border: Border(
+                top: BorderSide(color: Color(0xFFE5E5E5), width: 0.5),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: _messageController.text.trim().isEmpty
+                      ? null
+                      : () {
+                          final text = _messageController.text;
+                          if (text.trim().isNotEmpty) {
+                            widget.controller.sendMessage(text);
+                            _messageController.clear();
+                            setState(() {});
+                          }
+                        },
+                  style: TextButton.styleFrom(
+                    backgroundColor:
+                        _messageController.text.trim().isEmpty ? const Color(0xFFE5E5E5) : const Color(0xFFFF3838),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                  child: const Text('发送'),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 构建表情分类标签
+  Widget _buildEmojiCategoryTab(String emoji, bool isSelected) {
+    return GestureDetector(
+      onTap: () {
+        // TODO: 切换表情分类
+      },
+      child: Container(
+        width: 44,
+        height: 44,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: isSelected ? const Color(0xFFFF3838) : Colors.transparent,
+              width: 2,
+            ),
+          ),
+        ),
+        child: Text(emoji, style: const TextStyle(fontSize: 22)),
+      ),
+    );
+  }
+
+  /// 常用表情列表
+  static const List<String> _emojis = [
+    // 笑脸与情绪
+    '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂',
+    '🙂', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗',
+    '😚', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗',
+    '🤭', '🤫', '🤔', '🤐', '🤨', '😐', '😑', '😶',
+    '😏', '😒', '🙄', '😬', '🤥', '😌', '😔', '😪',
+    '🤤', '😴', '😷', '🤒', '🤕', '🤢', '🤮', '🤧',
+    '🥵', '🥶', '🥴', '😵', '🤯', '🤠', '🥳', '🥸',
+    '😎', '🤓', '🧐', '😕', '😟', '🙁', '☹️', '😮',
+    '😯', '😲', '😳', '🥺', '😦', '😧', '😨', '😰',
+    '😥', '😢', '😭', '😱', '😖', '😣', '😞', '😓',
+    '😩', '😫', '🥱', '😤', '😡', '😠', '🤬', '😈',
+    '👿', '💀', '☠️', '💩', '🤡', '👹', '👺', '👻',
+    // 手势
+    '👋', '🤚', '🖐️', '✋', '🖖', '👌', '🤌', '🤏',
+    '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆',
+    '🖕', '👇', '☝️', '👍', '👎', '✊', '👊', '🤛',
+    '🤜', '👏', '🙌', '👐', '🤲', '🤝', '🙏', '✍️',
+    // 爱心
+    '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍',
+    '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖',
+    '💘', '💝', '💟', '♥️', '😻', '💑', '💏', '👩‍❤️‍👨',
+    // 庆祝
+    '🎉', '🎊', '🎈', '🎁', '🎀', '🏆', '🥇', '🥈',
+    '🥉', '🏅', '🎖️', '🎗️', '🎄', '🎃', '🎂', '🍰',
+    // 食物
+    '🍔', '🍟', '🍕', '🌭', '🥪', '🌮', '🌯', '🥙',
+    '🧆', '🥚', '🍳', '🥘', '🍲', '🥣', '🥗', '🍿',
+    '🧈', '🧂', '🥫', '🍱', '🍘', '🍙', '🍚', '🍛',
+    '🍜', '🍝', '🍠', '🍢', '🍣', '🍤', '🍥', '🥮',
+    // 运动
+    '⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉',
+    '🥏', '🎱', '🪀', '🏓', '🏸', '🏒', '🏑', '🥍',
+    '🏏', '🪃', '🥅', '⛳', '🪁', '🏹', '🎣', '🤿',
+    // 交通
+    '🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑',
+    '🚒', '🚐', '🛻', '🚚', '🚛', '🚜', '🛵', '🏍️',
+    '🛺', '🚲', '🛴', '✈️', '🚀', '🛸', '🚁', '🛶',
+  ];
+}
+
+/// 全屏图片查看器
+class _FullScreenImageViewer extends StatefulWidget {
+  final String imagePath;
+
+  const _FullScreenImageViewer({required this.imagePath});
+
+  @override
+  State<_FullScreenImageViewer> createState() => _FullScreenImageViewerState();
+}
+
+class _FullScreenImageViewerState extends State<_FullScreenImageViewer> {
+  final TransformationController _transformationController = TransformationController();
+  double _currentScale = 1.0;
+
+  @override
+  void dispose() {
+    _transformationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.close, color: Colors.white, size: 28),
+          onPressed: () => Get.back(),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(FontAwesomeIcons.download, color: Colors.white, size: 20),
+            onPressed: () {
+              AppToast.info('保存功能即将推出');
+            },
+          ),
+          IconButton(
+            icon: const Icon(FontAwesomeIcons.share, color: Colors.white, size: 20),
+            onPressed: () {
+              AppToast.info('分享功能即将推出');
+            },
+          ),
+        ],
+      ),
+      body: GestureDetector(
+        onTap: () => Get.back(),
+        child: Center(
+          child: InteractiveViewer(
+            transformationController: _transformationController,
+            minScale: 0.5,
+            maxScale: 4.0,
+            onInteractionEnd: (details) {
+              setState(() {
+                _currentScale = _transformationController.value.getMaxScaleOnAxis();
+              });
+            },
+            child: _buildFullScreenImage(),
+          ),
+        ),
+      ),
+      bottomNavigationBar: Container(
+        color: Colors.black,
+        padding: const EdgeInsets.all(16),
+        child: SafeArea(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                icon: const Icon(FontAwesomeIcons.magnifyingGlassMinus, color: Colors.white54, size: 20),
+                onPressed: () {
+                  _transformationController.value = Matrix4.identity();
+                  setState(() => _currentScale = 1.0);
+                },
+              ),
+              const SizedBox(width: 16),
+              Text(
+                '${(_currentScale * 100).toInt()}%',
+                style: const TextStyle(color: Colors.white54, fontSize: 14),
+              ),
+              const SizedBox(width: 16),
+              IconButton(
+                icon: const Icon(FontAwesomeIcons.magnifyingGlassPlus, color: Colors.white54, size: 20),
+                onPressed: () {
+                  final currentScale = _transformationController.value.getMaxScaleOnAxis();
+                  if (currentScale < 4.0) {
+                    final newScale = currentScale + 0.5;
+                    _transformationController.value = Matrix4.diagonal3Values(newScale, newScale, 1.0);
+                    setState(() => _currentScale = newScale);
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFullScreenImage() {
+    final imageUrl = widget.imagePath;
+
+    // 网络图片
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return Image.network(
+        imageUrl,
+        fit: BoxFit.contain,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Center(
+            child: CircularProgressIndicator(
+              value: loadingProgress.expectedTotalBytes != null
+                  ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                  : null,
+              color: Colors.white,
+            ),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) {
+          return _buildErrorWidget();
+        },
+      );
+    }
+
+    return _buildErrorWidget();
+  }
+
+  Widget _buildErrorWidget() {
+    return const Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(FontAwesomeIcons.circleExclamation, size: 48, color: Colors.white54),
+        SizedBox(height: 16),
+        Text(
+          '无法加载图片',
+          style: TextStyle(color: Colors.white54, fontSize: 16),
+        ),
+      ],
     );
   }
 }

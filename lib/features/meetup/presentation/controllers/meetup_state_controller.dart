@@ -130,8 +130,7 @@ class MeetupStateController extends GetxController {
 
       // 将后端返回的 isJoined=true 的活动添加到 rsvpedMeetupIds
       for (final meetup in loadedMeetups) {
-        log(
-            '   检查活动: ${meetup.title} (${meetup.id}), isJoined=${meetup.isJoined}, organizerId=${meetup.organizer.id}');
+        log('   检查活动: ${meetup.title} (${meetup.id}), isJoined=${meetup.isJoined}, organizerId=${meetup.organizer.id}');
 
         // 检查是否应该标记为已加入:
         // 1. 后端返回 isJoined=true
@@ -141,8 +140,7 @@ class MeetupStateController extends GetxController {
         if (shouldBeJoined) {
           if (!rsvpedMeetupIds.contains(meetup.id)) {
             rsvpedMeetupIds.add(meetup.id);
-            log(
-                '   ✅ 添加到 rsvpedMeetupIds: ${meetup.title} (${meetup.id})${meetup.organizer.id == currentUserId ? ' [组织者]' : ''}');
+            log('   ✅ 添加到 rsvpedMeetupIds: ${meetup.title} (${meetup.id})${meetup.organizer.id == currentUserId ? ' [组织者]' : ''}');
           } else {
             log('   ℹ️ 已存在于 rsvpedMeetupIds: ${meetup.title} (${meetup.id})');
           }
@@ -209,8 +207,7 @@ class MeetupStateController extends GetxController {
 
         // 同步新加载活动的 isJoined 状态到 rsvpedMeetupIds
         for (final meetup in moreMeetups) {
-          log(
-              '   检查活动: ${meetup.title} (${meetup.id}), isJoined=${meetup.isJoined}, organizerId=${meetup.organizer.id}');
+          log('   检查活动: ${meetup.title} (${meetup.id}), isJoined=${meetup.isJoined}, organizerId=${meetup.organizer.id}');
 
           // 检查是否应该标记为已加入:
           // 1. 后端返回 isJoined=true
@@ -220,8 +217,7 @@ class MeetupStateController extends GetxController {
           if (shouldBeJoined) {
             if (!rsvpedMeetupIds.contains(meetup.id)) {
               rsvpedMeetupIds.add(meetup.id);
-              log(
-                  '   ✅ 添加到 rsvpedMeetupIds: ${meetup.title} (${meetup.id})${meetup.organizer.id == currentUserId ? ' [组织者]' : ''}');
+              log('   ✅ 添加到 rsvpedMeetupIds: ${meetup.title} (${meetup.id})${meetup.organizer.id == currentUserId ? ' [组织者]' : ''}');
             } else {
               log('   ℹ️ 已存在于 rsvpedMeetupIds: ${meetup.title} (${meetup.id})');
             }
@@ -400,6 +396,7 @@ class MeetupStateController extends GetxController {
       final index = meetups.indexWhere((m) => m.id == meetupId);
       if (index != -1) {
         meetups[index] = updatedMeetup;
+        meetups.refresh(); // 触发 Obx 更新
       }
 
       log('✅ 活动更新成功: ${updatedMeetup.id}');
@@ -561,6 +558,7 @@ class MeetupStateController extends GetxController {
       );
 
       meetups[index] = updatedMeetup;
+      meetups.refresh(); // 触发 Obx 更新
       log('📊 更新参与人数: $newCount/${meetup.capacity.maxAttendees}');
     }
   }

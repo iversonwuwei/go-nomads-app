@@ -10,7 +10,7 @@ import 'package:df_admin_mobile/features/skill/presentation/controllers/skill_st
 import 'package:df_admin_mobile/features/travel_history/services/travel_detection_service.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
 import 'package:df_admin_mobile/features/user/domain/repositories/i_user_preferences_repository.dart';
-import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller_v2.dart';
 import 'package:df_admin_mobile/features/user_management/domain/repositories/iuser_management_repository.dart';
 import 'package:df_admin_mobile/features/user_management/presentation/controllers/user_management_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
@@ -338,7 +338,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
 
   // 加载用户资料
   Future<void> _loadUserProfile() async {
-    final profileController = Get.find<UserStateController>();
+    final profileController = Get.find<UserStateControllerV2>();
 
     // 安全地获取或初始化 controller
     final skillController = Get.isRegistered<SkillStateController>() ? Get.find<SkillStateController>() : null;
@@ -412,7 +412,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
       });
 
       // 只更新头像到后端，不刷新整个用户数据（避免丢失 skills/interests）
-      final profileController = Get.find<UserStateController>();
+      final profileController = Get.find<UserStateControllerV2>();
       await profileController.updateAvatarOnly(avatarUrl);
 
       AppToast.success(
@@ -446,7 +446,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
     final l10n = AppLocalizations.of(context)!;
 
     // 在这里获取 controller
-    final profileController = Get.find<UserStateController>();
+    final profileController = Get.find<UserStateControllerV2>();
     final isMobile = screenWidth < 768;
 
     return Scaffold(
@@ -519,7 +519,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () async {
-                  final profileController = Get.find<UserStateController>();
+                  final profileController = Get.find<UserStateControllerV2>();
 
                   // 验证邮箱格式
                   final email = _emailController.text.trim();
@@ -595,7 +595,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
 
   Widget _buildProfileEditCard(bool isMobile) {
     final l10n = AppLocalizations.of(Get.context!)!;
-    final profileController = Get.find<UserStateController>();
+    final profileController = Get.find<UserStateControllerV2>();
 
     return Obx(() {
       final user = profileController.currentUser.value;
@@ -759,7 +759,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
     }); // 关闭 Obx
   }
 
-  Widget _buildSkillsSection(bool isMobile, UserStateController profileController) {
+  Widget _buildSkillsSection(bool isMobile, UserStateControllerV2 profileController) {
     final l10n = AppLocalizations.of(Get.context!)!;
 
     // 安全地获取 controller，如果不存在则不显示加载状态
@@ -875,7 +875,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
     });
   }
 
-  Widget _buildInterestsSection(bool isMobile, UserStateController profileController) {
+  Widget _buildInterestsSection(bool isMobile, UserStateControllerV2 profileController) {
     final l10n = AppLocalizations.of(Get.context!)!;
 
     // 安全地获取 controller，如果不存在则不显示加载状态
@@ -1248,7 +1248,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
   }
 
   // 显示技能选择底部抽屉
-  void _showSkillsBottomSheet(UserStateController profileController) {
+  void _showSkillsBottomSheet(UserStateControllerV2 profileController) {
     final SkillStateController skillController = Get.find<SkillStateController>();
     final currentUser = profileController.currentUser.value;
 
@@ -1310,7 +1310,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
   }
 
   // 显示兴趣选择底部抽屉
-  void _showInterestsBottomSheet(UserStateController profileController) {
+  void _showInterestsBottomSheet(UserStateControllerV2 profileController) {
     final InterestStateController interestController = Get.find<InterestStateController>();
     final currentUser = profileController.currentUser.value;
 

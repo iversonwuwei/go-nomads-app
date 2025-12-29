@@ -79,7 +79,7 @@ class _ManageCityRatingsPageState extends State<ManageCityRatingsPage> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: selectedIcon,
+                initialValue: selectedIcon,
                 decoration: const InputDecoration(labelText: '图标'),
                 items: const [
                   DropdownMenuItem(value: 'star', child: Text('星星')),
@@ -255,8 +255,7 @@ class _ManageCityRatingsPageState extends State<ManageCityRatingsPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(FontAwesomeIcons.star,
-                size: 72, color: Colors.grey.withValues(alpha: 0.4)),
+            Icon(FontAwesomeIcons.star, size: 72, color: Colors.grey.withValues(alpha: 0.4)),
             const SizedBox(height: 16),
             const Text(
               '暂无评分项',

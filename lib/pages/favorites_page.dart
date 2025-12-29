@@ -1,9 +1,12 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
-import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller.dart';
-import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller_v2.dart';
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller_v2.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
+import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:flutter/material.dart';
@@ -20,9 +23,9 @@ class FavoritesPage extends StatefulWidget {
   State<FavoritesPage> createState() => _FavoritesPageState();
 }
 
-class _FavoritesPageState extends State<FavoritesPage> {
-  late final CityStateController _cityController;
-  late final UserStateController _userController;
+class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMixin<FavoritesPage> {
+  late final CityStateControllerV2 _cityController;
+  late final UserStateControllerV2 _userController;
 
   String _sortBy = 'score'; // score, price, name
   bool _isLoading = true;
@@ -30,9 +33,16 @@ class _FavoritesPageState extends State<FavoritesPage> {
   @override
   void initState() {
     super.initState();
-    _cityController = Get.find<CityStateController>();
-    _userController = Get.find<UserStateController>();
+    _cityController = Get.find<CityStateControllerV2>();
+    _userController = Get.find<UserStateControllerV2>();
     _loadFavorites();
+  }
+
+  @override
+  Future<void> onRouteResume() async {
+    // 页面恢复时刷新收藏数据，确保数据同步
+    log('🔄 FavoritesPage: 页面恢复，刷新收藏数据');
+    await _loadFavorites();
   }
 
   Future<void> _loadFavorites() async {

@@ -636,8 +636,8 @@ class _InnovationListPageState extends State<InnovationListPage> with WidgetsBin
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF8B5CF6).withOpacity(0.1),
-            const Color(0xFF6366F1).withOpacity(0.2),
+            const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+            const Color(0xFF6366F1).withValues(alpha: 0.2),
           ],
         ),
       ),
@@ -645,7 +645,7 @@ class _InnovationListPageState extends State<InnovationListPage> with WidgetsBin
         child: Icon(
           FontAwesomeIcons.lightbulb,
           size: 50,
-          color: const Color(0xFF8B5CF6).withOpacity(0.5),
+          color: const Color(0xFF8B5CF6).withValues(alpha: 0.5),
         ),
       ),
     );

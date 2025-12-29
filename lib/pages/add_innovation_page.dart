@@ -554,10 +554,10 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor.withOpacity(0.1),
+                        color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: Theme.of(context).primaryColor.withOpacity(0.3),
+                          color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
                         ),
                       ),
                       child: Text(
@@ -1671,7 +1671,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
         border: Border.all(color: Colors.grey[200]!),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -1684,7 +1684,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: const Color(0xFF8B5CF6).withOpacity(0.1),
+              color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(24),
             ),
             child: Center(
@@ -2016,7 +2016,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.6),
+          color: Colors.black.withValues(alpha: 0.6),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Row(

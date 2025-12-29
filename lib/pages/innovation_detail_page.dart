@@ -809,7 +809,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
         child: Icon(
           FontAwesomeIcons.lightbulb,
           size: 80,
-          color: Colors.white.withOpacity(0.3),
+          color: Colors.white.withValues(alpha: 0.3),
         ),
       ),
     );

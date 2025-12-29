@@ -1,5 +1,5 @@
 import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
-import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
+import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller_v2.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
@@ -20,7 +20,7 @@ class InviteToMeetupPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final meetupController = Get.find<MeetupStateController>();
+    final meetupController = Get.find<MeetupStateControllerV2>();
     final myMeetups = meetupController.upcomingMeetups;
 
     return Scaffold(
@@ -371,7 +371,7 @@ class InviteToMeetupPage extends StatelessWidget {
                         Navigator.pop(context);
 
                         // 获取 MeetupController 并发送邀请
-                        final meetupController = Get.find<MeetupStateController>();
+                        final meetupController = Get.find<MeetupStateControllerV2>();
 
                         final success = await meetupController.inviteToMeetup(
                           meetupId: meetup.id,

@@ -1,8 +1,8 @@
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/verification_eligibility.dart';
-import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
-import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller_v2.dart';
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller_v2.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
@@ -21,10 +21,8 @@ class CoworkingVerificationBadge extends StatelessWidget {
   final void Function(CoworkingSpace updatedSpace)? onVerified;
   final EdgeInsetsGeometry padding;
 
-  final CoworkingStateController _coworkingController =
-      Get.find<CoworkingStateController>();
-  final UserStateController _userStateController =
-      Get.find<UserStateController>();
+  final CoworkingStateControllerV2 _coworkingController = Get.find<CoworkingStateControllerV2>();
+  final UserStateControllerV2 _userStateController = Get.find<UserStateControllerV2>();
 
   bool get _isCreator {
     if (space.isOwner) {
@@ -134,9 +132,7 @@ class CoworkingVerificationBadge extends StatelessWidget {
         onVerified?.call(data);
         AppToast.success(l10n.coworkingVerifySuccess);
       case Failure(:final exception):
-        final message = exception.message.isNotEmpty
-            ? exception.message
-            : l10n.coworkingVerifyFailed;
+        final message = exception.message.isNotEmpty ? exception.message : l10n.coworkingVerifyFailed;
         AppToast.error(message);
     }
   }
@@ -146,19 +142,15 @@ class CoworkingVerificationBadge extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Obx(() {
-      final isVerifying =
-          _coworkingController.verifyingCoworkingIds.contains(space.id);
+      final isVerifying = _coworkingController.verifyingCoworkingIds.contains(space.id);
       // 未验证的空间允许点击（包括创建者，点击时会显示提示）
       final bool canTap = !space.isVerified && !isVerifying;
 
       // 获取实时验证人数（优先使用实时数据）
       final int verificationVotes = _coworkingController.getVerificationVotes(space);
 
-      final Color backgroundColor =
-          space.isVerified ? Colors.blue : Colors.grey;
-      final IconData iconData = space.isVerified
-          ? FontAwesomeIcons.solidCircleCheck
-          : FontAwesomeIcons.circleCheck;
+      final Color backgroundColor = space.isVerified ? Colors.blue : Colors.grey;
+      final IconData iconData = space.isVerified ? FontAwesomeIcons.solidCircleCheck : FontAwesomeIcons.circleCheck;
       final String label = space.isVerified ? l10n.verified : l10n.unverified;
 
       final badge = Container(

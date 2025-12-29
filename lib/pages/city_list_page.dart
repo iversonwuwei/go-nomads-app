@@ -4,7 +4,7 @@ import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/core/core.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
-import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller.dart';
+import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller_v2.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
@@ -27,7 +27,7 @@ class CityListPage extends StatefulWidget {
 }
 
 class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin<CityListPage> {
-  final CityStateController controller = Get.find<CityStateController>();
+  final CityStateControllerV2 controller = Get.find<CityStateControllerV2>();
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final Map<String, bool> _followedCities = {}; // 城市关注状态
@@ -398,8 +398,7 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
   // 城市卡片
   Widget _buildCityCard(City city, bool isMobile) {
     // 调试日志
-    log(
-        '🏙️ City: ${city.name}, ReviewCount: ${city.reviewCount}, AverageCost: ${city.averageCost}, OverallScore: ${city.overallScore}');
+    log('🏙️ City: ${city.name}, ReviewCount: ${city.reviewCount}, AverageCost: ${city.averageCost}, OverallScore: ${city.overallScore}');
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -892,7 +891,7 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
 // 城市筛选抽屉
 // ignore: unused_element
 class _CityFilterDrawer extends StatelessWidget {
-  final CityStateController controller;
+  final CityStateControllerV2 controller;
 
   const _CityFilterDrawer({required this.controller});
 
@@ -1324,7 +1323,7 @@ class _GenerateImageButton extends StatelessWidget {
   });
 
   Future<void> _generateImages() async {
-    final cityController = Get.find<CityStateController>();
+    final cityController = Get.find<CityStateControllerV2>();
 
     // 检查是否正在生成
     if (cityController.isGeneratingImages(cityId)) return;
@@ -1379,7 +1378,7 @@ class _GenerateImageButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cityController = Get.find<CityStateController>();
+    final cityController = Get.find<CityStateControllerV2>();
 
     return Obx(() {
       final isGenerating = cityController.isGeneratingImages(cityId);
