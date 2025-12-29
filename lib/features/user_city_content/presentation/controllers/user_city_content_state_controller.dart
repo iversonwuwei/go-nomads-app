@@ -433,6 +433,7 @@ class UserCityContentStateController extends GetxController {
         final index = reviews.indexWhere((r) => r.id == review.id);
         if (index != -1) {
           reviews[index] = review;
+          reviews.refresh(); // 触发 Obx 更新
         } else {
           reviews.insert(0, review);
         }

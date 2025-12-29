@@ -22,11 +22,10 @@ class CoworkingHomePage extends StatefulWidget {
   State<CoworkingHomePage> createState() => _CoworkingHomePageState();
 }
 
-class _CoworkingHomePageState extends State<CoworkingHomePage>
-    with RouteAwareRefreshMixin<CoworkingHomePage> {
+class _CoworkingHomePageState extends State<CoworkingHomePage> with RouteAwareRefreshMixin<CoworkingHomePage> {
   final List<Map<String, dynamic>> _cities = [];
   final ScrollController _scrollController = ScrollController();
-  
+
   bool _isLoading = true;
   bool _isLoadingMore = false;
   bool _hasMoreData = true;
@@ -50,10 +49,10 @@ class _CoworkingHomePageState extends State<CoworkingHomePage>
   /// 滚动监听 - 触发加载更多
   void _onScroll() {
     if (!_scrollController.hasClients) return;
-    
+
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.position.pixels;
-    
+
     // 当滚动到距离底部 200 像素时加载更多
     if (currentScroll >= maxScroll - 200 && !_isLoadingMore && _hasMoreData) {
       _loadMoreCities();
@@ -80,9 +79,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage>
       case '09': // shower rain
         return FontAwesomeIcons.cloudShowersHeavy;
       case '10': // rain
-        return isNight
-            ? FontAwesomeIcons.cloudMoonRain
-            : FontAwesomeIcons.cloudSunRain;
+        return isNight ? FontAwesomeIcons.cloudMoonRain : FontAwesomeIcons.cloudSunRain;
       case '11': // thunderstorm
         return FontAwesomeIcons.cloudBolt;
       case '13': // snow
@@ -141,14 +138,9 @@ class _CoworkingHomePageState extends State<CoworkingHomePage>
 
   @override
   Future<void> onRouteResume() async {
-    // 页面恢复时不自动刷新，避免并发请求
-    // 只在数据为空时才加载
-    if (_cities.isEmpty) {
-      log('🔄 CoworkingHome: 数据为空，重新加载');
-      await _refreshData();
-    } else {
-      log('✅ CoworkingHome: 使用缓存数据，跳过刷新');
-    }
+    // 页面恢复时刷新数据，确保数据同步
+    log('🔄 CoworkingHome: 页面恢复，刷新数据');
+    await _refreshData();
   }
 
   /// 加载城市列表（首次加载或刷新）
@@ -261,9 +253,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage>
       final coworkingCountValue = city['coworkingCount'];
       final count = coworkingCountValue is int
           ? coworkingCountValue
-          : (coworkingCountValue is String
-              ? int.tryParse(coworkingCountValue) ?? 0
-              : 0);
+          : (coworkingCountValue is String ? int.tryParse(coworkingCountValue) ?? 0 : 0);
 
       // 只添加有 coworking 空间的城市
       if (count > 0) {
@@ -277,8 +267,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage>
           'id': city['id'] as String,
           'name': city['name'] as String,
           'country': city['country'] as String? ?? '',
-          'image': city['imageUrl'] as String? ??
-              'https://images.unsplash.com/photo-1449824913935-59a10b8d2000',
+          'image': city['imageUrl'] as String? ?? 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000',
           'spaces': count,
           'temperature': temperature,
           'weatherIcon': weatherIcon,
@@ -325,8 +314,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage>
                                 final result = await Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) =>
-                                        const AddCoworkingPage(),
+                                    builder: (context) => const AddCoworkingPage(),
                                   ),
                                 );
 
@@ -334,8 +322,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage>
                                   await _refreshData();
                                 }
                               },
-                              icon: const Icon(FontAwesomeIcons.circlePlus,
-                                  size: 24),
+                              icon: const Icon(FontAwesomeIcons.circlePlus, size: 24),
                               label: Builder(
                                 builder: (context) {
                                   final l10n = AppLocalizations.of(context)!;
@@ -407,8 +394,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage>
                     SliverPadding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       sliver: SliverGrid(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
                           crossAxisSpacing: 8,
                           mainAxisSpacing: 8,
@@ -510,8 +496,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage>
             Stack(
               children: [
                 ClipRRect(
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(12)),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                   child: AspectRatio(
                     aspectRatio: 1.5,
                     child: Image.network(

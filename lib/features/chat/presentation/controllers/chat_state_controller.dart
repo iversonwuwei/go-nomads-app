@@ -239,6 +239,7 @@ class ChatStateController extends GetxController {
           avatar: userAvatar,
           isOnline: true,
         );
+        _onlineUsers.refresh(); // 通知 UI 更新
       }
     }
   }

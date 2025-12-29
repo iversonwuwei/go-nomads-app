@@ -1032,27 +1032,6 @@ class _SearchResult {
     required this.title,
     required this.subtitle,
   });
-
-  factory _SearchResult.fromJson(Map<String, dynamic> json) {
-    final lat = double.tryParse(json['lat']?.toString() ?? '') ?? 0;
-    final lon = double.tryParse(json['lon']?.toString() ?? '') ?? 0;
-    final address = json['display_name'] as String? ?? '';
-    final structured = json['address'] as Map<String, dynamic>?;
-
-    final String title = (json['name'] as String?) ?? (structured?['road'] as String?) ?? address;
-    final subtitle = structured != null
-        ? [structured['city'] ?? structured['town'] ?? structured['state'], structured['country']]
-            .whereType<String>()
-            .where((value) => value.isNotEmpty)
-            .join(' · ')
-        : address;
-
-    return _SearchResult(
-      location: LatLng(lat, lon),
-      title: title,
-      subtitle: subtitle.isNotEmpty ? subtitle : address,
-    );
-  }
 }
 
 extension _PoiResultLatLng on PoiResult {

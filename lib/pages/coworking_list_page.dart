@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
-import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
+import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller_v2.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/pages/add_coworking_page.dart';
 import 'package:df_admin_mobile/pages/coworking_detail_page.dart';
@@ -33,23 +33,19 @@ class CoworkingListPage extends StatefulWidget {
 }
 
 class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRefreshMixin<CoworkingListPage> {
-  late final CoworkingStateController controller;
+  late final CoworkingStateControllerV2 controller;
   final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    controller = Get.find<CoworkingStateController>();
+    controller = Get.find<CoworkingStateControllerV2>();
     _scrollController.addListener(_onScroll);
 
-    // 延迟加载，防止快速导航时的并发请求
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (!mounted) return;
-
-      // 每次进入页面都刷新数据，确保数据最新
-      log('🔄 CoworkingList: 加载数据 cityId=${widget.cityId}');
-      controller.loadCoworkingsByCity(widget.cityId, refresh: true);
-    });
+    // 立即加载数据，不使用延迟
+    log('🔄 CoworkingList: 加载数据 cityId=${widget.cityId}');
+    // 强制刷新确保每次进入都加载正确的城市数据
+    controller.loadCoworkingsByCity(widget.cityId, refresh: true);
 
     // 初始化 SignalR 连接
     _initSignalRSubscription();
@@ -93,9 +89,9 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
 
   @override
   Future<void> onRouteResume() async {
-    // 页面恢复时不刷新，避免并发请求
-    // 数据已通过 initState 或上次加载获取
-    log('🔙 CoworkingList: 页面恢复,使用缓存数据');
+    // 页面恢复时刷新数据，确保数据同步
+    log('🔄 CoworkingList: 页面恢复，刷新数据');
+    await _refreshData();
   }
 
   @override
@@ -290,7 +286,7 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
 
           // 如果返回了更新后的 CoworkingSpace 对象，直接更新缓存
           if (result is CoworkingSpace && mounted) {
-            final controller = Get.find<CoworkingStateController>();
+            final controller = Get.find<CoworkingStateControllerV2>();
             controller.updateCoworkingInList(result);
           } else if (result == true && mounted) {
             // 向后兼容：如果返回 true，刷新整个列表

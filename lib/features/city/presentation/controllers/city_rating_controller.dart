@@ -35,7 +35,7 @@ class CityRatingController extends GetxController {
   /// 加载城市评分信息
   Future<void> loadCityRatings(String cityId) async {
     log('🔍 [CityRatingController] 开始加载评分数据: cityId=$cityId');
-    
+
     // 如果切换到不同城市，先清空旧数据
     if (_currentCityId != null && _currentCityId != cityId) {
       log('🔄 [CityRatingController] 城市切换: $_currentCityId -> $cityId, 清空旧数据');
@@ -57,7 +57,7 @@ class CityRatingController extends GetxController {
     try {
       log('📡 [CityRatingController] 调用 API 获取评分信息...');
       final info = await _useCases.getCityRatings(cityId);
-      
+
       log('📊 [CityRatingController] API 返回数据:');
       log('  - categories: ${info.categories.length} 项');
       log('  - statistics: ${info.statistics.length} 项');
@@ -93,12 +93,12 @@ class CityRatingController extends GetxController {
             log('    * ${cat.name} (${cat.nameEn}) - ${cat.icon}');
           }
         }
-        
+
         categories.value = info.categories;
         statistics.value = info.statistics;
         overallScore.value = info.overallScore;
       }
-      
+
       log('✅ [CityRatingController] 评分数据加载完成');
     } catch (e) {
       log('❌ [CityRatingController] 加载评分信息失败: $e');
@@ -138,8 +138,7 @@ class CityRatingController extends GetxController {
 
       // 立即更新本地UI，不等待服务器响应
       final oldTotal = originalStat.averageRating * originalStat.ratingCount;
-      final newCount =
-          isNewRating ? originalStat.ratingCount + 1 : originalStat.ratingCount;
+      final newCount = isNewRating ? originalStat.ratingCount + 1 : originalStat.ratingCount;
       final newTotal = isNewRating ? oldTotal + rating : oldTotal - (originalStat.userRating ?? 0) + rating;
       final newAverage = newCount > 0 ? newTotal / newCount : 0.0;
 
@@ -154,6 +153,7 @@ class CityRatingController extends GetxController {
         averageRating: double.parse(newAverage.toStringAsFixed(1)),
         userRating: rating,
       );
+      statistics.refresh(); // 触发 Obx 更新
 
       // 设置提交中状态（短暂显示）
       submittingCategoryId.value = categoryId;
@@ -180,6 +180,7 @@ class CityRatingController extends GetxController {
         final currentIndex = statistics.indexWhere((s) => s.categoryId == categoryId);
         if (currentIndex != -1) {
           statistics[currentIndex] = originalStat;
+          statistics.refresh(); // 触发 Obx 更新回滚状态
         }
 
         AppToast.error('提交评分失败');
@@ -191,7 +192,6 @@ class CityRatingController extends GetxController {
           submittingCategoryId.value = null;
         }
       });
-      
     } catch (e) {
       submittingCategoryId.value = null;
       completedCategoryId.value = null;

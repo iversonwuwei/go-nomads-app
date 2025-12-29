@@ -4,7 +4,7 @@ import 'dart:io';
 
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
-import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller.dart';
+import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller_v2.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -21,15 +21,15 @@ class AmapGlobalPage extends StatefulWidget {
 
 class _AmapGlobalPageState extends State<AmapGlobalPage> {
   static const String _viewType = 'amap_global_view';
-  
+
   final TextEditingController _searchController = TextEditingController();
   String _searchKeyword = '';
   bool _isLoading = true;
   String? _errorMessage;
 
-  CityStateController? _cityControllerCache;
-  CityStateController get _cityController {
-    _cityControllerCache ??= Get.find<CityStateController>();
+  CityStateControllerV2? _cityControllerCache;
+  CityStateControllerV2 get _cityController {
+    _cityControllerCache ??= Get.find<CityStateControllerV2>();
     return _cityControllerCache!;
   }
 
@@ -93,7 +93,7 @@ class _AmapGlobalPageState extends State<AmapGlobalPage> {
         children: [
           // 地图层
           _buildMapView(),
-          
+
           // 顶部面板
           Positioned(
             top: 0,
@@ -101,7 +101,7 @@ class _AmapGlobalPageState extends State<AmapGlobalPage> {
             right: 0,
             child: _buildTopPanel(l10n),
           ),
-          
+
           // 加载指示器
           if (_isLoading)
             const Positioned.fill(
@@ -112,7 +112,7 @@ class _AmapGlobalPageState extends State<AmapGlobalPage> {
                 ),
               ),
             ),
-          
+
           // 错误提示
           if (_errorMessage != null)
             Positioned(
@@ -121,14 +121,14 @@ class _AmapGlobalPageState extends State<AmapGlobalPage> {
               right: 20,
               child: _buildErrorBanner(),
             ),
-          
+
           // 右下角控制按钮
           Positioned(
             bottom: 24,
             right: 16,
             child: _buildControlButtons(),
           ),
-          
+
           // 左下角统计信息
           Positioned(
             bottom: 24,
@@ -148,14 +148,16 @@ class _AmapGlobalPageState extends State<AmapGlobalPage> {
     }
 
     // 准备传递给原生的城市数据
-    final citiesData = _citiesWithCoordinates.map((city) => {
-      'id': city.id,
-      'name': city.displayName,
-      'latitude': city.latitude,
-      'longitude': city.longitude,
-      'country': city.country ?? '',
-      'score': city.overallScore ?? 0.0,
-    }).toList();
+    final citiesData = _citiesWithCoordinates
+        .map((city) => {
+              'id': city.id,
+              'name': city.displayName,
+              'latitude': city.latitude,
+              'longitude': city.longitude,
+              'country': city.country ?? '',
+              'score': city.overallScore ?? 0.0,
+            })
+        .toList();
 
     final creationParams = {
       'cities': citiesData,
@@ -187,11 +189,8 @@ class _AmapGlobalPageState extends State<AmapGlobalPage> {
 
   Widget _buildTopPanel(AppLocalizations l10n) {
     final totalCities = _citiesWithCoordinates.length;
-    final totalCountries = _citiesWithCoordinates
-        .map((c) => c.country)
-        .where((c) => c != null && c.isNotEmpty)
-        .toSet()
-        .length;
+    final totalCountries =
+        _citiesWithCoordinates.map((c) => c.country).where((c) => c != null && c.isNotEmpty).toSet().length;
 
     return Container(
       padding: EdgeInsets.only(
@@ -416,29 +415,29 @@ class _AmapGlobalPageState extends State<AmapGlobalPage> {
           ),
           const SizedBox(height: 8),
           ...regionStats.entries.take(4).map((e) => Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: _getRegionColor(e.key),
-                    shape: BoxShape.circle,
-                  ),
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: _getRegionColor(e.key),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${e.key}: ${e.value}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  '${e.key}: ${e.value}',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ],
-            ),
-          )),
+              )),
         ],
       ),
     );

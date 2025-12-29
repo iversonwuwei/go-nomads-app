@@ -1023,7 +1023,9 @@ class _AddHotelPageState extends State<AddHotelPage> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -2))],
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -2))
+        ],
       ),
       child: SafeArea(
         child: Obx(() => ElevatedButton(

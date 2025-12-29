@@ -6,7 +6,7 @@ import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_rev
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
 import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_repository.dart';
 import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_review_repository.dart';
-import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
+import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller_v2.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/coworking_verification_badge.dart';
@@ -60,7 +60,7 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
   /// 订阅验证人数实时更新
   Future<void> _subscribeVerificationUpdates() async {
     try {
-      final controller = Get.find<CoworkingStateController>();
+      final controller = Get.find<CoworkingStateControllerV2>();
       await controller.subscribeCoworking(_space.id);
       log('✅ 已订阅 Coworking ${_space.id} 的验证人数更新');
     } catch (e) {
@@ -126,8 +126,13 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
     );
 
     if (result == true) {
-      // 刷新评论列表
-      await _loadComments();
+      // 标记数据已变更
+      _hasDataChanged = true;
+      // 刷新评论列表和详情数据（包括评分）
+      await Future.wait([
+        _loadComments(),
+        _reloadCoworkingDetail(),
+      ]);
     }
   }
 
@@ -327,7 +332,11 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                             Get.to(() => CoworkingReviewsPage(
                                   coworkingId: _space.id,
                                   coworkingName: _space.name,
-                                ))?.then((_) => _loadComments());
+                                ))?.then((_) {
+                              // 刷新评论列表和详情数据（包括评分）
+                              _loadComments();
+                              _reloadCoworkingDetail();
+                            });
                           },
                           borderRadius: BorderRadius.circular(20),
                           child: Container(
@@ -1382,7 +1391,11 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
                     Get.to(() => CoworkingReviewsPage(
                           coworkingId: _space.id,
                           coworkingName: _space.name,
-                        ))?.then((_) => _loadComments());
+                        ))?.then((_) {
+                      // 刷新评论列表和详情数据（包括评分）
+                      _loadComments();
+                      _reloadCoworkingDetail();
+                    });
                   },
                   child: const Text('查看更多评论'),
                 ),

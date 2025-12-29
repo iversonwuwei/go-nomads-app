@@ -294,7 +294,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
         return Container(
           padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
           decoration: BoxDecoration(
-            color: (feature['color'] as Color).withOpacity(0.1),
+            color: (feature['color'] as Color).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20.r),
             border: Border.all(color: feature['color'] as Color),
           ),

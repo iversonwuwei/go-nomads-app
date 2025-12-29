@@ -5,7 +5,7 @@ import 'package:df_admin_mobile/features/membership/domain/entities/membership_l
 import 'package:df_admin_mobile/features/membership/domain/entities/membership_plan.dart';
 import 'package:df_admin_mobile/features/membership/domain/entities/user_membership.dart';
 import 'package:df_admin_mobile/features/membership/domain/repositories/membership_repository.dart';
-import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller_v2.dart';
 import 'package:get/get.dart';
 
 /// 会员状态控制器
@@ -125,8 +125,8 @@ class MembershipStateController extends GetxController {
 
   /// 设置用户状态监听器
   void _setupUserStateListener() {
-    if (Get.isRegistered<UserStateController>()) {
-      final userController = Get.find<UserStateController>();
+    if (Get.isRegistered<UserStateControllerV2>()) {
+      final userController = Get.find<UserStateControllerV2>();
       _userStateWorker = ever(userController.currentUser, (user) {
         if (user != null && user.membership != null) {
           // 用户信息中包含会员数据，直接使用
@@ -139,8 +139,8 @@ class MembershipStateController extends GetxController {
 
   /// 从 UserStateController 同步会员信息
   void _syncFromUserState() {
-    if (Get.isRegistered<UserStateController>()) {
-      final userController = Get.find<UserStateController>();
+    if (Get.isRegistered<UserStateControllerV2>()) {
+      final userController = Get.find<UserStateControllerV2>();
       final user = userController.currentUser.value;
 
       if (user != null && user.membership != null) {

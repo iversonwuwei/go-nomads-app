@@ -9,13 +9,12 @@ import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city_detail.dart' hide BestArea;
 import 'package:df_admin_mobile/features/city/domain/entities/city_rating_item.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/digital_nomad_guide.dart';
-import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
 import 'package:df_admin_mobile/features/city/infrastructure/models/city_detail_dto.dart' hide ProsCons, BestArea;
 import 'package:df_admin_mobile/features/city/presentation/controllers/city_detail_state_controller.dart';
 import 'package:df_admin_mobile/features/city/presentation/controllers/city_rating_controller.dart';
 import 'package:df_admin_mobile/features/city/presentation/widgets/city_ratings_card.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart' as coworking;
-import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
+import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller_v2.dart';
 import 'package:df_admin_mobile/features/membership/presentation/controllers/membership_state_controller.dart';
 import 'package:df_admin_mobile/features/user_city_content/domain/entities/user_city_content.dart';
 import 'package:df_admin_mobile/features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
@@ -237,7 +236,7 @@ class _CityDetailPageState extends State<CityDetailPage>
     if (moderator.latestTravelHistory != null) {
       log('🔍 [ModeratorBanner] latestTravelHistory.cityName: ${moderator.latestTravelHistory!.cityName}');
     }
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -453,12 +452,10 @@ class _CityDetailPageState extends State<CityDetailPage>
 
   /// 格式化最新旅行信息
   String _formatLatestTravel(ModeratorTravelHistory history) {
-    final location = [history.cityName, history.countryName]
-        .where((s) => s != null && s.isNotEmpty)
-        .join(', ');
-    
+    final location = [history.cityName, history.countryName].where((s) => s != null && s.isNotEmpty).join(', ');
+
     final statusText = history.status == 'current' ? 'Currently in' : 'Recently visited';
-    
+
     return '$statusText $location';
   }
 
@@ -662,95 +659,6 @@ class _CityDetailPageState extends State<CityDetailPage>
     );
   }
 
-  /// 申请成为版主按钮（普通用户）- 现代简约风格
-  Widget _buildApplyModeratorButton() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.grey.shade200,
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // Icon container with subtle gradient
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.blueGrey.shade50,
-                  Colors.blueGrey.shade100,
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              FontAwesomeIcons.userShield,
-              color: Colors.blueGrey.shade500,
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Become a Moderator',
-                  style: TextStyle(
-                    color: Colors.blueGrey.shade800,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  'Help manage community content',
-                  style: TextStyle(
-                    color: Colors.blueGrey.shade400,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Apply button - refined style
-          TextButton(
-            onPressed: () => _showApplyModeratorDialog(),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              backgroundColor: Colors.blueGrey.shade700,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            child: const Text(
-              'Apply',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   /// 指定版主按钮（管理员）- 现代简约风格
   Widget _buildAssignModeratorButton() {
     return Container(
@@ -840,127 +748,6 @@ class _CityDetailPageState extends State<CityDetailPage>
     );
   }
 
-  /// 申请成为版主对话框
-  void _showApplyModeratorDialog() async {
-    // 检查会员权限
-    try {
-      final membershipController = Get.find<MembershipStateController>();
-      final accessCheck = membershipController.checkModeratorAccess();
-
-      if (accessCheck != null) {
-        log('❌ [版主申请] 会员权限不足: $accessCheck');
-        _showModeratorMembershipRequiredDialog(accessCheck);
-        return;
-      }
-    } catch (e) {
-      log('⚠️ [版主申请] 会员检查异常: $e');
-      // 如果会员控制器未注册，暂时跳过会员检查
-    }
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        backgroundColor: Colors.white,
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.blueGrey.shade50,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                FontAwesomeIcons.userShield,
-                color: Colors.blueGrey.shade600,
-                size: 22,
-              ),
-            ),
-            const SizedBox(width: 14),
-            Text(
-              'Become a Moderator',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.blueGrey.shade800,
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Would you like to become the moderator for $cityName?',
-              style: TextStyle(
-                fontSize: 15,
-                color: Colors.blueGrey.shade700,
-                height: 1.4,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.blueGrey.shade50,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Moderator Permissions',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13,
-                      color: Colors.blueGrey.shade700,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildPermissionItem('Manage city content & reviews'),
-                  _buildPermissionItem('Review user submissions'),
-                  _buildPermissionItem('Organize community events'),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.blueGrey.shade500,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            ),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(fontWeight: FontWeight.w500),
-            ),
-          ),
-          TextButton(
-            onPressed: () => _handleApplyModerator(),
-            style: TextButton.styleFrom(
-              backgroundColor: Colors.blueGrey.shade700,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            child: const Text(
-              'Apply Now',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   /// 指定版主 - 跳转到专门的指定版主页面
   void _showAssignModeratorDialog() async {
     final result = await Get.to(() => AssignModeratorPage(
@@ -975,225 +762,6 @@ class _CityDetailPageState extends State<CityDetailPage>
       await cityDetailController.loadCityDetail(cityId, forceRefresh: true);
     }
     // 用户点击返回按钮,不需要刷新(没有任何更改)
-  }
-
-  /// 显示版主申请需要升级会员对话框
-  void _showModeratorMembershipRequiredDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.amber.shade50,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  FontAwesomeIcons.crown,
-                  color: Colors.amber.shade700,
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: 14),
-              Text(
-                'Premium Membership',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.blueGrey.shade800,
-                ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                message,
-                style: TextStyle(
-                  fontSize: 15,
-                  color: Colors.blueGrey.shade700,
-                  height: 1.4,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.blueGrey.shade50,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          FontAwesomeIcons.userShield,
-                          color: Colors.blueGrey.shade600,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Benefits of Being a Moderator',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.blueGrey.shade700,
-                            letterSpacing: 0.3,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      '• Manage city content & reviews\n• Organize offline events & meetups\n• Earn exclusive badges & recognition',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.blueGrey.shade600,
-                        height: 1.6,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.amber.shade50,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      FontAwesomeIcons.circleInfo,
-                      color: Colors.amber.shade700,
-                      size: 14,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'A refundable deposit is required to become a moderator',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.amber.shade800,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.blueGrey.shade500,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              ),
-              child: const Text(
-                'Maybe Later',
-                style: TextStyle(fontWeight: FontWeight.w500),
-              ),
-            ),
-            TextButton.icon(
-              onPressed: () {
-                Navigator.of(context).pop();
-                Get.toNamed(AppRoutes.membershipPlan);
-              },
-              icon: Icon(FontAwesomeIcons.crown, size: 14, color: Colors.amber.shade100),
-              label: const Text(
-                'Upgrade to Pro',
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.amber.shade600,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildPermissionItem(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: Colors.blueGrey.shade100,
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Icon(
-              FontAwesomeIcons.check,
-              color: Colors.blueGrey.shade600,
-              size: 10,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              text,
-              style: TextStyle(
-                fontSize: 13,
-                color: Colors.blueGrey.shade600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// 处理申请版主
-  Future<void> _handleApplyModerator() async {
-    Navigator.of(context).pop(); // 关闭对话框
-
-    // 显示加载提示
-    AppToast.info('Submitting application...');
-
-    try {
-      final controller = Get.find<CityDetailStateController>();
-
-      // 通过 Get.find 获取 repository
-      final repository = Get.find<ICityRepository>();
-
-      final result = await repository.applyModerator(cityId);
-
-      result.fold(
-        onSuccess: (success) async {
-          AppToast.success('Application submitted! We will review it shortly.');
-
-          // 注意：通知已由后端 ModeratorApplicationService 统一发送给管理员
-          // 不需要在 Flutter 端重复发送
-
-          // 刷新城市信息
-          controller.loadCityDetail(cityId);
-        },
-        onFailure: (error) {
-          AppToast.error('Application failed: ${error.message}');
-        },
-      );
-    } catch (e) {
-      AppToast.error('Application failed: ${e.toString()}');
-    }
   }
 
   Widget _buildWeatherMetric({
@@ -1370,7 +938,7 @@ class _CityDetailPageState extends State<CityDetailPage>
 
         // 当切换到 Coworking tab (索引 9) 时，检查缓存后再决定是否加载
         if (_tabController.index == 9) {
-          final coworkingController = Get.find<CoworkingStateController>();
+          final coworkingController = Get.find<CoworkingStateControllerV2>();
           // 只有在城市ID不同或数据为空时才重新加载
           if (coworkingController.currentCityId.value != cityId) {
             coworkingController.loadCoworkingSpacesByCity(cityId);
@@ -1588,94 +1156,6 @@ class _CityDetailPageState extends State<CityDetailPage>
               label: const Text('立即升级'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.amber[700],
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  /// 显示无权限对话框
-  void _showNoPermissionDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Row(
-            children: [
-              Icon(
-                FontAwesomeIcons.lock,
-                color: Colors.orange[700],
-                size: 28,
-              ),
-              const SizedBox(width: 12),
-              const Text(
-                '权限不足',
-                style: TextStyle(fontSize: 18),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                '抱歉，只有管理员或该城市的版主才能生成 AI 旅游指南。',
-                style: TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.blue.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      FontAwesomeIcons.circleInfo,
-                      color: Colors.blue[700],
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        '想要成为版主？贡献优质内容即可获得审核资格！',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.blue[800],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('我知道了'),
-            ),
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.of(context).pop();
-                // TODO: 跳转到申请成为版主的页面
-                AppToast.info('申请版主功能即将上线');
-              },
-              icon: const Icon(FontAwesomeIcons.handHoldingHeart, size: 18),
-              label: const Text('申请成为版主'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF4458),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 shape: RoundedRectangleBorder(
@@ -2149,7 +1629,7 @@ class _CityDetailPageState extends State<CityDetailPage>
     // 获取所有需要的State Controllers
     final cityDetailController = Get.find<CityDetailStateController>();
     final weatherController = Get.find<WeatherStateController>();
-    final coworkingController = Get.find<CoworkingStateController>();
+    final coworkingController = Get.find<CoworkingStateControllerV2>();
     final userContentController = Get.find<UserCityContentStateController>();
     final aiController = Get.find<AiStateController>();
     final prosConsController = Get.find<ProsConsStateController>();
@@ -5058,7 +4538,7 @@ class _CityDetailPageState extends State<CityDetailPage>
   }
 
   /// Coworking 标签页
-  Widget _buildCoworkingTab(CoworkingStateController controller) {
+  Widget _buildCoworkingTab(CoworkingStateControllerV2 controller) {
     return Obx(() {
       // 显示加载状态
       if (controller.isLoading.value) {
@@ -5692,7 +5172,7 @@ class _CityDetailPageState extends State<CityDetailPage>
         ));
 
     // 无论是否成功，返回时都重新加载数据
-    final coworkingController = Get.find<CoworkingStateController>();
+    final coworkingController = Get.find<CoworkingStateControllerV2>();
     coworkingController.loadCoworkingSpacesByCity(cityId);
     log('🔄 [AddCoworking] 返回页面，重新加载 coworking 数据');
 

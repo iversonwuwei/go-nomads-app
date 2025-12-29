@@ -435,29 +435,6 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
     );
   }
 
-  /// 分享到短信
-  void _shareToSms(BuildContext context) async {
-    final text = '$title\n$description\n$shareUrl';
-    final smsUrl = 'sms:?body=${Uri.encodeComponent(text)}';
-    await _launchUrl(context, smsUrl);
-  }
-
-  /// 分享到钉钉
-  void _shareToDingTalk(BuildContext context) async {
-    final text = Uri.encodeComponent('$title\n$description\n$shareUrl');
-    // 优先尝试唤醒钉钉App
-    final appUrl = 'dingtalk://dingtalkclient/action/sendmsg?type=text&content=$text';
-    if (await canLaunchUrl(Uri.parse(appUrl))) {
-      await launchUrl(Uri.parse(appUrl), mode: LaunchMode.externalApplication);
-    } else {
-      // 回退到网页版
-      final webUrl =
-          'https://open.dingtalk.com/share?url=${Uri.encodeComponent(shareUrl)}&title=${Uri.encodeComponent(title)}';
-      await _launchUrl(context, webUrl);
-    }
-    Navigator.pop(context);
-  }
-
   /// 构建分享选项
   Widget _buildShareOption(
     BuildContext context, {

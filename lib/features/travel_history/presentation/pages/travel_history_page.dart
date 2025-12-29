@@ -299,7 +299,7 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -341,7 +341,7 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
                       end: Alignment.bottomRight,
                       colors: [
                         AppColors.cityPrimary,
-                        AppColors.cityPrimary.withOpacity(0.8),
+                        AppColors.cityPrimary.withValues(alpha: 0.8),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(12),
@@ -477,7 +477,7 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Row(

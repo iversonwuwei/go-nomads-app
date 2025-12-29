@@ -5,12 +5,12 @@ import 'package:df_admin_mobile/core/core.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
 import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
-import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller.dart';
+import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller_v2.dart';
 import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
 import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
 import 'package:df_admin_mobile/features/meetup/infrastructure/repositories/meetup_repository.dart';
-import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
-import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller_v2.dart';
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller_v2.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
@@ -48,21 +48,21 @@ class _DataServicePageState extends State<DataServicePage>
   bool _isLocalSearching = false;
 
   // 获取领域层的 StateController（延迟初始化，避免在构建时查找）
-  CityStateController? _cityControllerCache;
-  CityStateController get _cityController {
-    _cityControllerCache ??= Get.find<CityStateController>();
+  CityStateControllerV2? _cityControllerCache;
+  CityStateControllerV2 get _cityController {
+    _cityControllerCache ??= Get.find<CityStateControllerV2>();
     return _cityControllerCache!;
   }
 
-  MeetupStateController? _meetupControllerCache;
-  MeetupStateController get _meetupController {
-    _meetupControllerCache ??= Get.find<MeetupStateController>();
+  MeetupStateControllerV2? _meetupControllerCache;
+  MeetupStateControllerV2 get _meetupController {
+    _meetupControllerCache ??= Get.find<MeetupStateControllerV2>();
     return _meetupControllerCache!;
   }
 
-  UserStateController? _userControllerCache;
-  UserStateController get _userController {
-    _userControllerCache ??= Get.find<UserStateController>();
+  UserStateControllerV2? _userControllerCache;
+  UserStateControllerV2 get _userController {
+    _userControllerCache ??= Get.find<UserStateControllerV2>();
     return _userControllerCache!;
   }
 
@@ -121,7 +121,22 @@ class _DataServicePageState extends State<DataServicePage>
   Future<void> onRouteResume() async {
     log('🔄 DataServicePage: 从其他页面返回，重新加载数据');
     _clearSearchOnReturn();
-    await _loadHomeCities();
+
+    // 并行加载城市和活动数据
+    await Future.wait([
+      _loadHomeCities(),
+      _refreshMeetups(),
+    ]);
+  }
+
+  /// 刷新 meetup 数据
+  Future<void> _refreshMeetups() async {
+    try {
+      log('🔄 DataServicePage: 刷新 meetup 数据');
+      await _meetupController.loadMeetups(isForceRefresh: true);
+    } catch (e) {
+      log('⚠️ DataServicePage: meetup 数据刷新失败: $e');
+    }
   }
 
   /// 清除搜索状态（从 detail 页面返回时调用）
@@ -396,7 +411,7 @@ class _DataServicePageState extends State<DataServicePage>
   @override
   Widget build(BuildContext context) {
     // 使用领域层的 StateController
-    final MeetupStateController meetupController = Get.find<MeetupStateController>();
+    final MeetupStateControllerV2 meetupController = Get.find<MeetupStateControllerV2>();
     final l10n = AppLocalizations.of(context)!;
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
@@ -1187,7 +1202,7 @@ class _DataServicePageState extends State<DataServicePage>
   }
 
   // Meetups 部分 - Nomads.com 风格
-  Widget _buildMeetupsSection(MeetupStateController meetupController, bool isMobile) {
+  Widget _buildMeetupsSection(MeetupStateControllerV2 meetupController, bool isMobile) {
     return Obx(() {
       final upcomingMeetups = meetupController.upcomingMeetups;
       final isLoadingMeetups = _meetupController.isLoading.value;
@@ -1343,7 +1358,7 @@ class _DataServicePageState extends State<DataServicePage>
                     // 当滚动到接近末尾时，加载更多数据
                     if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent * 0.8 &&
                         !_meetupController.isLoadingMore.value &&
-                        _meetupController.hasMoreData.value) {
+                        _meetupController.hasMoreData) {
                       log('📜 接近滚动末尾，触发加载更多活动');
                       _meetupController.loadMoreMeetups();
                     }
@@ -1351,7 +1366,7 @@ class _DataServicePageState extends State<DataServicePage>
                   },
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
-                    itemCount: upcomingMeetups.length + (_meetupController.hasMoreData.value ? 1 : 0),
+                    itemCount: upcomingMeetups.length + (_meetupController.hasMoreData ? 1 : 0),
                     itemBuilder: (context, index) {
                       // 如果是最后一项且还有更多数据，显示加载指示器
                       if (index == upcomingMeetups.length) {
@@ -2226,7 +2241,7 @@ class _MeetupCard extends StatefulWidget {
 
 class _MeetupCardState extends State<_MeetupCard> {
   // 获取 MeetupStateController
-  MeetupStateController get _meetupController => Get.find<MeetupStateController>();
+  MeetupStateControllerV2 get _meetupController => Get.find<MeetupStateControllerV2>();
 
   // 卡片自己的状态 - 符合 DDD 原则
   late bool _isJoined;
@@ -3082,7 +3097,7 @@ class _GenerateImageButton extends StatelessWidget {
   });
 
   Future<void> _generateImages() async {
-    final cityController = Get.find<CityStateController>();
+    final cityController = Get.find<CityStateControllerV2>();
 
     // 检查是否正在生成
     if (cityController.isGeneratingImages(cityId)) return;
@@ -3137,7 +3152,7 @@ class _GenerateImageButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cityController = Get.find<CityStateController>();
+    final cityController = Get.find<CityStateControllerV2>();
 
     return Obx(() {
       final isGenerating = cityController.isGeneratingImages(cityId);

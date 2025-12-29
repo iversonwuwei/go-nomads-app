@@ -22,8 +22,8 @@ class AsyncTaskProgressDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async => false, // 禁止返回键关闭
+    return PopScope(
+      canPop: false, // 禁止返回键关闭
       child: Dialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),

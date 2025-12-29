@@ -4,7 +4,7 @@ import 'package:df_admin_mobile/config/api_config.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/notification/domain/entities/app_notification.dart';
 import 'package:df_admin_mobile/features/notification/domain/repositories/i_notification_repository.dart';
-import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller_v2.dart';
 import 'package:df_admin_mobile/services/http_service.dart';
 import 'package:get/get.dart';
 
@@ -17,7 +17,7 @@ class NotificationRepository implements INotificationRepository {
   /// 获取当前用户ID
   String? get _currentUserId {
     try {
-      final userController = Get.find<UserStateController>();
+      final userController = Get.find<UserStateControllerV2>();
       final userId = userController.currentUser.value?.id;
       log('📋 NotificationRepository._currentUserId: $userId');
       log('📋 currentUser 对象: ${userController.currentUser.value}');
@@ -248,7 +248,7 @@ class NotificationRepository implements INotificationRepository {
   }) async {
     try {
       log('📤 发送通知给管理员: title=$title, type=${_typeToString(type)}');
-      
+
       final response = await _httpService.post(
         '${ApiConfig.apiBaseUrl}/notifications/admins',
         data: {
@@ -278,7 +278,7 @@ class NotificationRepository implements INotificationRepository {
 
         final notifications =
             (response.data as List).map((json) => _mapFromJson(json as Map<String, dynamic>)).toList();
-        
+
         log('✅ 成功发送通知给 ${notifications.length} 位管理员');
         return Result.success(notifications);
       } else {

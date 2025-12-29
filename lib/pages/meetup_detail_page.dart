@@ -4,7 +4,7 @@ import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
 import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
 import 'package:df_admin_mobile/features/meetup/infrastructure/models/meetup_dto.dart';
-import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
+import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller_v2.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/pages/create_meetup_page.dart';
@@ -41,7 +41,7 @@ class MeetupDetailPage extends StatefulWidget {
 class _MeetupDetailPageState extends State<MeetupDetailPage> {
   late Rx<Meetup> _meetup;
   final IMeetupRepository _meetupRepository = Get.find();
-  final _meetupController = Get.find<MeetupStateController>();
+  final _meetupController = Get.find<MeetupStateControllerV2>();
   final RxBool _isLoading = true.obs;
   final RxList<Map<String, dynamic>> _participants = <Map<String, dynamic>>[].obs;
 

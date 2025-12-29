@@ -1,7 +1,7 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart' as models;
-import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller_v2.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
@@ -31,7 +31,7 @@ class MemberDetailPage extends StatefulWidget {
 }
 
 class _MemberDetailPageState extends State<MemberDetailPage> {
-  late final UserStateController _userController;
+  late final UserStateControllerV2 _userController;
   late final AuthStateController _authController;
   models.User? _user;
   bool _isLoading = true;
@@ -47,7 +47,7 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
   @override
   void initState() {
     super.initState();
-    _userController = Get.find<UserStateController>();
+    _userController = Get.find<UserStateControllerV2>();
     _authController = Get.find<AuthStateController>();
     _user = widget.user;
     _loadUserDetails();
@@ -774,11 +774,14 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
                       color: Color(0xFF9ca3af),
                     ),
                     const SizedBox(width: 6),
-                    Text(
-                      _formatTravelDate(travel.arrivalTime, travel.departureTime),
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF9ca3af),
+                    Flexible(
+                      child: Text(
+                        _formatTravelDate(travel.arrivalTime, travel.departureTime),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF9ca3af),
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     if (travel.isOngoing) ...[

@@ -5,7 +5,7 @@ import 'package:df_admin_mobile/controllers/location_controller.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
 import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
-import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
+import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller_v2.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
@@ -667,7 +667,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
   Future<void> _handleToggleJoin() async {
     final l10n = AppLocalizations.of(context)!;
     final meetupRepository = Get.find<IMeetupRepository>();
-    final meetupController = Get.find<MeetupStateController>();
+    final meetupController = Get.find<MeetupStateControllerV2>();
 
     // 判断是加入还是退出
     final isJoining = !_isJoined;

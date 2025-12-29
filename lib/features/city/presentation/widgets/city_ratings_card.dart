@@ -260,7 +260,7 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
       starIcon = FontAwesomeIcons.solidStar; // 实心星
       starColor = const Color(0xFFFF4458); // 红色
     } else if (isHalfFilled) {
-      starIcon = FontAwesomeIcons.starHalfAlt; // 半星
+      starIcon = FontAwesomeIcons.starHalfStroke; // 半星
       starColor = const Color(0xFFFF4458); // 红色
     } else {
       starIcon = FontAwesomeIcons.star; // 无评分：空心星
@@ -292,7 +292,7 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
     if (isFilled) {
       starIcon = FontAwesomeIcons.solidStar; // 实心星
     } else if (isHalfFilled) {
-      starIcon = FontAwesomeIcons.starHalfAlt; // 半星
+      starIcon = FontAwesomeIcons.starHalfStroke; // 半星
     } else {
       starIcon = FontAwesomeIcons.star; // 空心星
     }

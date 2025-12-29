@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'dart:io';
 
 import 'package:df_admin_mobile/config/supabase_config.dart';
@@ -23,8 +22,7 @@ class AddCoworkingCommentPage extends StatefulWidget {
   });
 
   @override
-  State<AddCoworkingCommentPage> createState() =>
-      _AddCoworkingCommentPageState();
+  State<AddCoworkingCommentPage> createState() => _AddCoworkingCommentPageState();
 }
 
 class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
@@ -112,8 +110,7 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
           final imageUploadService = ImageUploadService();
 
           // 转换 XFile 为 File
-          final imageFiles =
-              _selectedImages.map((xFile) => File(xFile.path)).toList();
+          final imageFiles = _selectedImages.map((xFile) => File(xFile.path)).toList();
 
           // 显示上传提示
           AppToast.info('正在上传 ${imageFiles.length} 张图片...');
@@ -257,9 +254,7 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
                         ? '选择您的访问日期'
                         : '${_visitDate!.year}-${_visitDate!.month.toString().padLeft(2, '0')}-${_visitDate!.day.toString().padLeft(2, '0')}',
                     style: TextStyle(
-                      color: _visitDate == null
-                          ? Colors.grey[600]
-                          : Colors.black87,
+                      color: _visitDate == null ? Colors.grey[600] : Colors.black87,
                     ),
                   ),
                 ),
@@ -342,15 +337,13 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
                     ? null
                     : (details) {
                         // 通过点击位置判断是半星还是整星
-                        final RenderBox box =
-                            context.findRenderObject() as RenderBox;
+                        final RenderBox box = context.findRenderObject() as RenderBox;
                         final starSize = 40.0;
                         final padding = 4.0;
                         final totalWidth = starSize + padding * 2;
 
                         // 计算相对于整个Row的x坐标
-                        final localX =
-                            box.globalToLocal(details.globalPosition).dx;
+                        final localX = box.globalToLocal(details.globalPosition).dx;
 
                         // 计算点击的是哪颗星
                         final clickedIndex = (localX / totalWidth).floor();
@@ -383,8 +376,7 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
               child: Row(
                 children: [
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFFA000), // 深黄色背景
                       borderRadius: BorderRadius.circular(12),
@@ -442,7 +434,7 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
       color = const Color(0xFFFFA000); // 深黄色/橙黄色
     } else if (index == fullStars && hasHalfStar) {
       // 半星 - 黄色
-      iconData = FontAwesomeIcons.starHalfAlt;
+      iconData = FontAwesomeIcons.starHalfStroke;
       color = const Color(0xFFFFA000); // 深黄色/橙黄色
     } else {
       // 空星 - 浅灰色边框

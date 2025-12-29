@@ -1,6 +1,6 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
-import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller_v2.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/safe_network_image.dart';
@@ -17,7 +17,7 @@ class UserProfilePage extends StatefulWidget {
 }
 
 class _UserProfilePageState extends State<UserProfilePage> {
-  final UserStateController _profileController = Get.find<UserStateController>();
+  final UserStateControllerV2 _profileController = Get.find<UserStateControllerV2>();
 
   // Travel History 功能已启用
   static const bool _travelHistoryEnabled = true;
