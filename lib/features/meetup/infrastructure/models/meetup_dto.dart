@@ -117,7 +117,10 @@ class MeetupDto {
               : DateTime.now(),
       endTime: json['endTime'] != null ? DateTime.parse(json['endTime'] as String) : null,
       maxAttendees: (json['maxAttendees'] as num?)?.toInt() ?? (json['maxParticipants'] as num?)?.toInt() ?? 0,
-      currentAttendees: (json['currentAttendees'] as num?)?.toInt() ?? (json['participantCount'] as num?)?.toInt() ?? 0,
+      currentAttendees: (json['currentAttendees'] as num?)?.toInt() ??
+          (json['participantCount'] as num?)?.toInt() ??
+          (json['participants'] as List<dynamic>?)?.length ??
+          0,
       organizerId: organizerId ?? '',
       organizerName: organizerName ?? '',
       organizerAvatar: organizerAvatar,

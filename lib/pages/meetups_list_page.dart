@@ -891,7 +891,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
                       : _buildPlaceholderImage(),
                 ),
                 // 如果已取消，显示标识
-                if (widget.meetup.status == 'cancelled')
+                if (widget.meetup.status == MeetupStatus.cancelled)
                   Positioned.fill(
                     child: Container(
                       decoration: BoxDecoration(
