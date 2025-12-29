@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:df_admin_mobile/config/api_config.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/core/sync/sync.dart';
 import 'package:df_admin_mobile/features/innovation_project/domain/entities/innovation_project.dart';
 import 'package:df_admin_mobile/features/innovation_project/infrastructure/models/innovation_project_dto.dart';
 import 'package:df_admin_mobile/features/innovation_project/infrastructure/repositories/innovation_project_repository.dart';
@@ -662,6 +663,15 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
         switch (result) {
           case Success(:final data):
             debugPrint('✅ [更新项目] 成功! ID: ${data.uuid}');
+
+            // 发送数据变更事件
+            DataEventBus.instance.emit(DataChangedEvent(
+              entityType: 'innovation_project',
+              entityId: data.uuid ?? data.id.toString(),
+              version: DateTime.now().millisecondsSinceEpoch,
+              changeType: DataChangeType.updated,
+            ));
+
             AppToast.success(l10n.updateSuccess);
             if (mounted) {
               Navigator.pop(context, true); // 返回 true 通知父页面刷新数据
@@ -705,6 +715,15 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
         switch (result) {
           case Success(:final data):
             debugPrint('✅ [创建项目] 成功! ID: ${data.id}');
+
+            // 发送数据变更事件
+            DataEventBus.instance.emit(DataChangedEvent(
+              entityType: 'innovation_project',
+              entityId: data.uuid ?? data.id.toString(),
+              version: DateTime.now().millisecondsSinceEpoch,
+              changeType: DataChangeType.created,
+            ));
+
             AppToast.success(l10n.projectCreatedSuccessfully);
             if (mounted) {
               Navigator.pop(context, true); // 返回 true 通知父页面刷新数据

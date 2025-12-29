@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/config/supabase_config.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/core/sync/sync.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city_option.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
 import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_repository.dart';
@@ -1414,6 +1415,15 @@ class _AddCoworkingPageState extends State<AddCoworkingPage> {
       // 处理结果
       result.fold(
         onSuccess: (savedSpace) {
+          // 发送数据变更事件通知列表刷新
+          DataEventBus.instance.emit(DataChangedEvent(
+            entityType: 'coworking',
+            entityId: savedSpace.id,
+            version: DateTime.now().millisecondsSinceEpoch,
+            changeType: widget.isEditMode ? DataChangeType.updated : DataChangeType.created,
+          ));
+          log('✅ [Coworking] 已发送数据变更事件: ${savedSpace.id}');
+
           // 返回结果,传递 true 表示需要刷新数据
           Navigator.pop(context, true);
           AppToast.success(

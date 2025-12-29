@@ -1,4 +1,8 @@
+import 'dart:async';
+import 'dart:developer';
+
 import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/core/sync/sync.dart';
 import 'package:df_admin_mobile/features/innovation_project/application/use_cases/innovation_project_use_cases.dart';
 import 'package:df_admin_mobile/features/innovation_project/domain/entities/innovation_project.dart';
 import 'package:df_admin_mobile/features/innovation_project/infrastructure/models/innovation_project_dto.dart';
@@ -57,6 +61,80 @@ class InnovationProjectStateController extends GetxController {
   final teamMembers = <TeamMember>[].obs;
   final isLoading = false.obs;
   final errorMessage = Rx<String?>(null);
+
+  // 事件订阅
+  StreamSubscription<DataChangedEvent>? _dataChangedSubscription;
+
+  @override
+  void onInit() {
+    super.onInit();
+    _setupDataChangeListeners();
+  }
+
+  /// 设置数据变更监听器
+  void _setupDataChangeListeners() {
+    _dataChangedSubscription = DataEventBus.instance.on('innovation_project', _handleDataChanged);
+  }
+
+  /// 处理数据变更事件
+  void _handleDataChanged(DataChangedEvent event) {
+    if (event.entityType == 'innovation_project') {
+      log('🔔 收到创新项目数据变更通知: ${event.changeType}');
+
+      switch (event.changeType) {
+        case DataChangeType.created:
+          // 创建新项目时刷新列表
+          getProjects(forceRefresh: true);
+          break;
+        case DataChangeType.updated:
+          if (event.entityId != null) {
+            _refreshSingleProject(event.entityId!);
+          }
+          break;
+        case DataChangeType.deleted:
+          if (event.entityId != null) {
+            projects.removeWhere((p) => p.id.toString() == event.entityId || p.uuid == event.entityId);
+            if (currentProject.value?.id.toString() == event.entityId || currentProject.value?.uuid == event.entityId) {
+              currentProject.value = null;
+            }
+          }
+          break;
+        case DataChangeType.invalidated:
+          getProjects(forceRefresh: true);
+          break;
+      }
+    }
+  }
+
+  /// 刷新单个项目
+  Future<void> _refreshSingleProject(String projectId) async {
+    try {
+      final result = await _getProjectByIdUseCase(
+        GetProjectByIdParams(projectId: projectId),
+      );
+
+      result.fold(
+        onSuccess: (data) {
+          // 更新列表中的项目
+          final index = projects.indexWhere(
+            (p) => p.id.toString() == projectId || p.uuid == projectId,
+          );
+          if (index != -1) {
+            projects[index] = data;
+            projects.refresh();
+          }
+          // 更新当前项目
+          if (currentProject.value?.id.toString() == projectId || currentProject.value?.uuid == projectId) {
+            currentProject.value = data;
+          }
+          log('✅ 刷新单个项目成功: $projectId');
+        },
+        onFailure: (e) => log('⚠️ 刷新项目失败: ${e.message}'),
+      );
+    } catch (e) {
+      log('⚠️ 刷新项目异常: $e');
+    }
+  }
 
   /// 获取所有项目
   Future<void> getProjects({
@@ -131,6 +209,16 @@ class InnovationProjectStateController extends GetxController {
       onSuccess: (data) {
         projects.add(data);
         currentProject.value = data;
+
+        // 通知其他组件数据变更
+        DataEventBus.instance.emit(DataChangedEvent(
+          entityType: 'innovation_project',
+          entityId: data.uuid ?? data.id.toString(),
+          version: DateTime.now().millisecondsSinceEpoch,
+          changeType: DataChangeType.created,
+        ));
+        log('✅ 创新项目成功: ${data.projectName}');
+
         return true;
       },
       onFailure: (exception) {
@@ -141,8 +229,7 @@ class InnovationProjectStateController extends GetxController {
   }
 
   /// 更新项目
-  Future<bool> updateProject(
-      String projectId, Map<String, dynamic> projectData) async {
+  Future<bool> updateProject(String projectId, Map<String, dynamic> projectData) async {
     isLoading.value = true;
     errorMessage.value = null;
 
@@ -157,8 +244,19 @@ class InnovationProjectStateController extends GetxController {
         final index = projects.indexWhere((p) => p.id == data.id);
         if (index != -1) {
           projects[index] = data;
+          projects.refresh();
         }
         currentProject.value = data;
+
+        // 通知其他组件数据变更
+        DataEventBus.instance.emit(DataChangedEvent(
+          entityType: 'innovation_project',
+          entityId: data.uuid ?? data.id.toString(),
+          version: DateTime.now().millisecondsSinceEpoch,
+          changeType: DataChangeType.updated,
+        ));
+        log('✅ 更新项目成功: ${data.projectName}');
+
         return true;
       },
       onFailure: (exception) {
@@ -185,6 +283,16 @@ class InnovationProjectStateController extends GetxController {
         if (currentProject.value?.id.toString() == projectId) {
           currentProject.value = null;
         }
+
+        // 通知其他组件数据变更
+        DataEventBus.instance.emit(DataChangedEvent(
+          entityType: 'innovation_project',
+          entityId: projectId,
+          version: DateTime.now().millisecondsSinceEpoch,
+          changeType: DataChangeType.deleted,
+        ));
+        log('✅ 删除项目成功: $projectId');
+
         return true;
       },
       onFailure: (exception) {
@@ -285,8 +393,7 @@ class InnovationProjectStateController extends GetxController {
   }
 
   /// 添加团队成员
-  Future<bool> addTeamMember(
-      String projectId, Map<String, dynamic> memberData) async {
+  Future<bool> addTeamMember(String projectId, Map<String, dynamic> memberData) async {
     isLoading.value = true;
     errorMessage.value = null;
 
@@ -413,15 +520,18 @@ class InnovationProjectStateController extends GetxController {
 
   @override
   void onClose() {
+    // 取消事件订阅
+    _dataChangedSubscription?.cancel();
+
     // 清空所有响应式变量
     projects.clear();
     currentProject.value = null;
     teamMembers.clear();
-    
+
     // 重置加载状态
     isLoading.value = false;
     errorMessage.value = null;
-    
+
     super.onClose();
   }
 }

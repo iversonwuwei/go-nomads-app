@@ -1,9 +1,9 @@
 import 'dart:developer';
-
 import 'dart:io';
 
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/core/sync/sync.dart';
 import 'package:df_admin_mobile/features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
@@ -476,8 +476,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
           children: [
             Row(
               children: [
-                Icon(FontAwesomeIcons.images,
-                    color: AppColors.textSecondary, size: 20.sp),
+                Icon(FontAwesomeIcons.images, color: AppColors.textSecondary, size: 20.sp),
                 SizedBox(width: 8.w),
                 Text(
                   l10n.photos,
@@ -502,9 +501,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
-                    color: _selectedImages.length >= 5
-                        ? const Color(0xFFFF4458)
-                        : AppColors.textSecondary,
+                    color: _selectedImages.length >= 5 ? const Color(0xFFFF4458) : AppColors.textSecondary,
                   ),
                 )),
           ],
@@ -697,8 +694,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 elevation: 0,
-                disabledBackgroundColor:
-                    AppColors.cityPrimary.withValues(alpha: 0.5),
+                disabledBackgroundColor: AppColors.cityPrimary.withValues(alpha: 0.5),
               ),
               child: _isSubmitting.value
                   ? SizedBox(
@@ -706,8 +702,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
                       width: 20.w,
                       child: CircularProgressIndicator(
                         strokeWidth: 2.w,
-                        valueColor:
-                            const AlwaysStoppedAnimation<Color>(Colors.white),
+                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     )
                   : Row(
@@ -779,7 +774,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
       log('🔄 Submitting review for city: ${widget.cityId}');
       log('   Rating: ${_rating.value.round()}');
       log('   Title: ${_titleController.text.trim()}');
-      
+
       final result = await apiService.upsertCityReview(
         cityId: widget.cityId,
         rating: _rating.value.round(),
@@ -793,6 +788,15 @@ class _AddReviewPageState extends State<AddReviewPage> {
       switch (result) {
         case Success(:final data):
           log('✅ Success! Review data: $data');
+
+          // 发送数据变更事件通知其他组件
+          DataEventBus.instance.emit(DataChangedEvent(
+            entityType: 'city_review',
+            entityId: widget.cityId,
+            version: DateTime.now().millisecondsSinceEpoch,
+            changeType: DataChangeType.created,
+          ));
+          log('✅ [城市评论] 已发送数据变更事件');
 
           // 先重置按钮状态,让用户看到提交完成
           _isSubmitting.value = false;
@@ -822,7 +826,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
             log('❌ Widget not mounted, cannot navigate');
           }
           return;
-          
+
         case Failure(:final exception):
           log('❌ Failure: $exception');
           AppToast.error(

@@ -124,8 +124,10 @@ class CoworkingStateControllerV2 extends PaginatedRefreshableController {
 
   @override
   Future<PaginatedResult> loadPageData(int page, int pageSize) async {
+    // 如果城市ID为空，返回空结果（避免自动刷新时抛出异常）
     if (currentCityId.value.isEmpty) {
-      throw ValidationException('城市ID不能为空', code: 'INVALID_CITY_ID');
+      log('⏭️ Coworking 加载跳过: 城市ID未设置');
+      return PaginatedResult(items: [], totalCount: 0, hasMore: false);
     }
 
     log('🏢 加载 Coworking 列表: 城市=${currentCityId.value}, 页码=$page');

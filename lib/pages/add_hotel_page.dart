@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/config/supabase_config.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/core/sync/sync.dart';
 import 'package:df_admin_mobile/features/hotel/domain/entities/hotel.dart';
 import 'package:df_admin_mobile/features/hotel/infrastructure/repositories/hotel_repository.dart';
 import 'package:df_admin_mobile/features/location/presentation/controllers/location_state_controller.dart';
@@ -1110,6 +1111,16 @@ class _AddHotelPageState extends State<AddHotelPage> {
 
       result.onSuccess((hotel) {
         log('✅ 酒店${widget.isEditMode ? "更新" : "创建"}成功: ${hotel.id}');
+
+        // 发送数据变更事件通知列表刷新
+        DataEventBus.instance.emit(DataChangedEvent(
+          entityType: 'hotel',
+          entityId: hotel.id,
+          version: DateTime.now().millisecondsSinceEpoch,
+          changeType: widget.isEditMode ? DataChangeType.updated : DataChangeType.created,
+        ));
+        log('✅ [Hotel] 已发送数据变更事件: ${hotel.id}');
+
         AppToast.success(widget.isEditMode ? l10n.updateSuccess : l10n.hotelSubmittedSuccess);
         Navigator.pop(context, true);
       }).onFailure((exception) {
