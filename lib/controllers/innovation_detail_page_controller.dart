@@ -74,12 +74,17 @@ class InnovationDetailPageController extends GetxController {
       return;
     }
 
-    print('🔔 [创新项目详情] 收到数据变更通知: ${event.entityId} (${event.changeType})');
+    // 忽略自己发出的事件（通过 source 判断）
+    if (event.metadata?['source'] == 'detail') {
+      return;
+    }
+
+    print('🔔 [创新项目详情] 收到数据变更通知: ${event.entityId} (${event.changeType}), metadata: ${event.metadata}');
 
     switch (event.changeType) {
       case DataChangeType.updated:
-        // 项目数据更新，重新加载详情
-        loadFullProject();
+        // 项目数据更新，从事件 metadata 同步关注状态
+        _syncFollowedStateFromEvent(event.metadata);
         break;
       case DataChangeType.deleted:
         // 项目被删除
@@ -92,6 +97,17 @@ class InnovationDetailPageController extends GetxController {
       case DataChangeType.created:
         // 新建项目通常不影响详情页
         break;
+    }
+  }
+
+  /// 从事件 metadata 同步关注状态
+  void _syncFollowedStateFromEvent(Map<String, dynamic>? metadata) {
+    if (metadata != null && metadata.containsKey('isFollowed')) {
+      final newState = metadata['isFollowed'] as bool;
+      if (isFollowed.value != newState) {
+        isFollowed.value = newState;
+        print('🔄 [创新项目详情] 从事件同步关注状态: ${initialProject.uuid} -> $newState');
+      }
     }
   }
 
@@ -139,15 +155,16 @@ class InnovationDetailPageController extends GetxController {
       switch (result) {
         case Success(data: final isLiked):
           // API 成功，更新为服务器返回的状态
-          // 通知其他组件数据变更
+          isFollowed.value = isLiked;
+          
+          // 通知其他组件数据变更（携带新的关注状态）
           DataEventBus.instance.emit(DataChangedEvent(
             entityType: 'innovation_project',
             entityId: projectId,
             version: DateTime.now().millisecondsSinceEpoch,
             changeType: DataChangeType.updated,
+            metadata: {'isFollowed': isLiked, 'source': 'detail'},
           ));
-
-          isFollowed.value = isLiked;
           isToggling.value = false;
           _showSnackBar(
             context,
