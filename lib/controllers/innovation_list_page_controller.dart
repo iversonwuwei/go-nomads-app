@@ -1,4 +1,8 @@
+import 'dart:async';
+import 'dart:developer';
+
 import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/core/sync/sync.dart';
 import 'package:df_admin_mobile/features/innovation_project/domain/entities/innovation_project.dart';
 import 'package:df_admin_mobile/features/innovation_project/domain/repositories/i_innovation_project_repository.dart';
 import 'package:df_admin_mobile/features/innovation_project/presentation/controllers/innovation_project_state_controller.dart';
@@ -14,11 +18,15 @@ class InnovationListPageController extends GetxController with WidgetsBindingObs
   // 关注状态管理 - 用项目ID作为key
   final RxMap<String, bool> followedProjects = <String, bool>{}.obs;
 
+  // 数据变更订阅
+  StreamSubscription<DataChangedEvent>? _dataChangedSubscription;
+
   @override
   void onInit() {
     super.onInit();
     WidgetsBinding.instance.addObserver(this);
     _initController();
+    _setupDataChangeListeners();
 
     // 初始化时加载数据
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -29,7 +37,58 @@ class InnovationListPageController extends GetxController with WidgetsBindingObs
   @override
   void onClose() {
     WidgetsBinding.instance.removeObserver(this);
+    _dataChangedSubscription?.cancel();
+    _dataChangedSubscription = null;
     super.onClose();
+  }
+
+  /// 设置数据变更监听器
+  void _setupDataChangeListeners() {
+    _dataChangedSubscription = DataEventBus.instance.on('innovation_project', _handleDataChanged);
+    log('✅ [InnovationListPageController] 数据变更监听器已设置');
+  }
+
+  /// 处理数据变更事件
+  void _handleDataChanged(DataChangedEvent event) {
+    // 忽略自己发出的事件（通过 source 判断）
+    if (event.metadata?['source'] == 'list') {
+      return;
+    }
+
+    log('🔔 [创新项目列表] 收到数据变更通知: ${event.entityId} (${event.changeType}), metadata: ${event.metadata}');
+
+    switch (event.changeType) {
+      case DataChangeType.created:
+        // 新建项目，刷新列表
+        loadProjects(forceRefresh: true);
+        break;
+      case DataChangeType.updated:
+        // 项目更新，从 metadata 同步关注状态
+        if (event.entityId != null && event.metadata != null) {
+          _syncFollowStateFromEvent(event.entityId!, event.metadata!);
+        }
+        break;
+      case DataChangeType.deleted:
+        // 项目删除，从列表中移除
+        if (event.entityId != null) {
+          followedProjects.remove(event.entityId);
+        }
+        loadProjects(forceRefresh: true);
+        break;
+      case DataChangeType.invalidated:
+        // 缓存失效，重新加载
+        loadProjects(forceRefresh: true);
+        break;
+    }
+  }
+
+  /// 从事件 metadata 同步关注状态
+  void _syncFollowStateFromEvent(String projectId, Map<String, dynamic> metadata) {
+    if (metadata.containsKey('isFollowed')) {
+      final isFollowed = metadata['isFollowed'] as bool;
+      followedProjects[projectId] = isFollowed;
+      log('🔄 [创新项目列表] 从事件同步关注状态: $projectId -> $isFollowed');
+    }
   }
 
   @override
@@ -128,6 +187,16 @@ class InnovationListPageController extends GetxController with WidgetsBindingObs
           followedProjects[projectId] = isLiked;
           // 显示提示
           AppToast.success(isLiked ? '已关注该项目' : '已取消关注');
+          
+          // 发送数据变更事件，通知其他页面（携带新的关注状态）
+          DataEventBus.instance.emit(DataChangedEvent(
+            entityType: 'innovation_project',
+            entityId: projectId,
+            version: DateTime.now().millisecondsSinceEpoch,
+            changeType: DataChangeType.updated,
+            metadata: {'isFollowed': isLiked, 'source': 'list'},
+          ));
+          log('📤 [创新项目列表] 发送关注状态变更事件: $projectId -> $isLiked');
 
         case Failure(exception: final error):
           // API 失败，回滚状态
