@@ -11,7 +11,7 @@ import 'package:df_admin_mobile/features/location/presentation/controllers/locat
 import 'package:df_admin_mobile/features/meetup/domain/entities/event_type.dart';
 import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
 import 'package:df_admin_mobile/features/meetup/presentation/controllers/event_type_controller.dart';
-import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller_v2.dart';
+import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/services/image_upload_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
@@ -76,7 +76,7 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
   bool _isSubmitting = false;
 
   final LocationStateController _locationController = Get.find<LocationStateController>();
-  final MeetupStateControllerV2 meetupController = Get.find<MeetupStateControllerV2>();
+  final MeetupStateController meetupController = Get.find<MeetupStateController>();
   final EventTypeController _eventTypeController = Get.put(EventTypeController());
 
   @override

@@ -9,7 +9,7 @@ import 'package:df_admin_mobile/features/notification/presentation/controllers/n
 import 'package:df_admin_mobile/features/travel_history/routes/travel_history_routes.dart';
 import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan_summary.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
-import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller_v2.dart';
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
@@ -38,7 +38,7 @@ class _ProfilePageState extends State<ProfilePage> with RouteAwareRefreshMixin<P
 
   /// 加载用户数据
   Future<void> _loadUserData() async {
-    final controller = Get.find<UserStateControllerV2>();
+    final controller = Get.find<UserStateController>();
 
     // 先检查 Token 是否存在
     final authController = Get.find<AuthStateController>();
@@ -116,7 +116,7 @@ class _ProfilePageState extends State<ProfilePage> with RouteAwareRefreshMixin<P
 
       // 获取控制器
       final authController = Get.find<AuthStateController>();
-      final userStateController = Get.find<UserStateControllerV2>();
+      final userStateController = Get.find<UserStateController>();
 
       log('   当前登录状态: ${userStateController.isLoggedIn}');
       log('   当前用户: ${userStateController.currentUser.value?.name ?? "Unknown"}');
@@ -161,7 +161,7 @@ class _ProfilePageState extends State<ProfilePage> with RouteAwareRefreshMixin<P
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<UserStateControllerV2>();
+    final controller = Get.find<UserStateController>();
     final authController = Get.find<AuthStateController>();
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
@@ -466,7 +466,7 @@ class _ProfilePageState extends State<ProfilePage> with RouteAwareRefreshMixin<P
   }
 
   // Profile Header
-  Widget _buildProfileHeader(BuildContext context, User user, UserStateControllerV2 controller, bool isMobile) {
+  Widget _buildProfileHeader(BuildContext context, User user, UserStateController controller, bool isMobile) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -596,7 +596,7 @@ class _ProfilePageState extends State<ProfilePage> with RouteAwareRefreshMixin<P
   // Stats Section - 使用后端返回的 NomadStats
   Widget _buildStatsSection(BuildContext context, bool isMobile) {
     final l10n = AppLocalizations.of(context)!;
-    final controller = Get.find<UserStateControllerV2>();
+    final controller = Get.find<UserStateController>();
 
     return Obx(() {
       final stats = controller.nomadStats.value;
@@ -802,7 +802,7 @@ class _ProfilePageState extends State<ProfilePage> with RouteAwareRefreshMixin<P
   }
 
   // Skills and Interests
-  Widget _buildSkillsAndInterests(BuildContext context, User user, UserStateControllerV2 controller, bool isMobile) {
+  Widget _buildSkillsAndInterests(BuildContext context, User user, UserStateController controller, bool isMobile) {
     final l10n = AppLocalizations.of(context)!;
 
     return Column(

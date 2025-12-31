@@ -7,7 +7,7 @@ import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_rev
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
 import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_repository.dart';
 import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_review_repository.dart';
-import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller_v2.dart';
+import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -93,7 +93,7 @@ class CoworkingDetailPageController extends GetxController {
   /// 订阅验证人数实时更新
   Future<void> _subscribeVerificationUpdates() async {
     try {
-      final controller = Get.find<CoworkingStateControllerV2>();
+      final controller = Get.find<CoworkingStateController>();
       await controller.subscribeCoworking(space.value.id);
       log('✅ 已订阅 Coworking ${space.value.id} 的验证人数更新');
     } catch (e) {

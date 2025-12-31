@@ -5,7 +5,7 @@ import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_stat
 import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
 import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
 import 'package:df_admin_mobile/features/meetup/infrastructure/repositories/meetup_repository.dart';
-import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller_v2.dart';
+import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
@@ -24,7 +24,7 @@ class HomeMeetupCard extends StatelessWidget {
     required this.isMobile,
   });
 
-  MeetupStateControllerV2 get _meetupController => Get.find<MeetupStateControllerV2>();
+  MeetupStateController get _meetupController => Get.find<MeetupStateController>();
 
   bool _isJoined(RxList<String> rsvpedIds) {
     return rsvpedIds.contains(meetup.id) || meetup.isJoined;

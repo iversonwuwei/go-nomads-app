@@ -16,7 +16,7 @@ import 'package:df_admin_mobile/features/city/presentation/controllers/city_deta
 import 'package:df_admin_mobile/features/city/presentation/controllers/city_rating_controller.dart';
 import 'package:df_admin_mobile/features/city/presentation/widgets/city_ratings_card.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart' as coworking;
-import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller_v2.dart';
+import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
 import 'package:df_admin_mobile/features/membership/presentation/controllers/membership_state_controller.dart';
 import 'package:df_admin_mobile/features/user_city_content/domain/entities/user_city_content.dart';
 import 'package:df_admin_mobile/features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
@@ -1774,7 +1774,7 @@ class _CityDetailPageContentState extends State<_CityDetailPageContent> {
     // 获取所有需要的State Controllers
     final cityDetailController = Get.find<CityDetailStateController>();
     final weatherController = Get.find<WeatherStateController>();
-    final coworkingController = Get.find<CoworkingStateControllerV2>();
+    final coworkingController = Get.find<CoworkingStateController>();
     final userContentController = Get.find<UserCityContentStateController>();
     final aiController = Get.find<AiStateController>();
     final prosConsController = Get.find<ProsConsStateController>();
@@ -4681,7 +4681,7 @@ class _CityDetailPageContentState extends State<_CityDetailPageContent> {
   }
 
   /// Coworking 标签页
-  Widget _buildCoworkingTab(CoworkingStateControllerV2 controller) {
+  Widget _buildCoworkingTab(CoworkingStateController controller) {
     return Obx(() {
       // 显示加载状态
       if (controller.isLoading.value) {
@@ -5314,7 +5314,7 @@ class _CityDetailPageContentState extends State<_CityDetailPageContent> {
         ));
 
     // 无论是否成功，返回时都重新加载数据
-    final coworkingController = Get.find<CoworkingStateControllerV2>();
+    final coworkingController = Get.find<CoworkingStateController>();
     coworkingController.loadCoworkingSpacesByCity(cityId);
     log('🔄 [AddCoworking] 返回页面，重新加载 coworking 数据');
 

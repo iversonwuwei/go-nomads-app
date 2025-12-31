@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:df_admin_mobile/core/sync/sync.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/features/meetup/application/use_cases/cancel_meetup_use_case.dart';
 import 'package:df_admin_mobile/features/meetup/application/use_cases/cancel_rsvp_use_case.dart';
@@ -15,10 +16,17 @@ import 'package:df_admin_mobile/services/http_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:get/get.dart';
 
-/// Meetup 状态管理 Controller
-/// 从 DataServiceController 迁移活动相关功能
-class MeetupStateController extends GetxController {
-  // Dependencies
+/// Meetup 状态管理 Controller V2
+///
+/// 使用新的数据同步框架优化版本
+///
+/// 改进点：
+/// 1. 继承 PaginatedRefreshableController，统一分页和刷新逻辑
+/// 2. 使用 hybrid 刷新策略
+/// 3. 自动订阅数据变更事件
+/// 4. 保留所有业务功能（RSVP、创建、更新等）
+class MeetupStateController extends PaginatedRefreshableController {
+  // ==================== Dependencies ====================
   final GetMeetupsUseCase _getMeetupsUseCase;
   final GetMeetupsByCityUseCase _getMeetupsByCityUseCase;
   final CreateMeetupUseCase _createMeetupUseCase;
@@ -46,19 +54,35 @@ class MeetupStateController extends GetxController {
         _cancelMeetupUseCase = cancelMeetupUseCase,
         _meetupRepository = meetupRepository;
 
-  // State Properties
+  // ==================== 继承配置 ====================
+
+  @override
+  String get entityType => 'meetup_list';
+
+  @override
+  RefreshStrategy get refreshStrategy => RefreshStrategy.hybrid;
+
+  @override
+  Duration? get customCacheDuration => const Duration(minutes: 2);
+
+  @override
+  int get pageSize => 20;
+
+  // ==================== 状态管理 ====================
+
+  /// 活动列表
   final RxList<Meetup> meetups = <Meetup>[].obs;
+
+  /// 用户已 RSVP 的活动 ID 集合
   final RxList<String> rsvpedMeetupIds = <String>[].obs;
-  final RxBool isLoading = false.obs;
-  final RxBool isLoadingMore = false.obs; // 加载更多状态
-  final RxString errorMessage = ''.obs;
 
-  // 分页相关
-  final RxInt currentPage = 1.obs;
-  final RxBool hasMoreData = true.obs;
-  final int pageSize = 20;
+  /// 当前筛选的城市ID
+  final RxString currentCityId = ''.obs;
 
-  // Getters
+  /// 当前筛选的状态
+  final RxString currentStatus = 'upcoming'.obs;
+
+  // ==================== Getters ====================
 
   /// 获取即将到来的活动 (未来30天内)
   List<Meetup> get upcomingMeetups {
@@ -67,7 +91,7 @@ class MeetupStateController extends GetxController {
 
     return meetups
         .where((m) =>
-            m.status.value != 'cancelled' && // 明确排除已取消的活动
+            m.status.value != 'cancelled' &&
             m.status.value == 'upcoming' &&
             m.schedule.startTime.isAfter(now) &&
             m.schedule.startTime.isBefore(thirtyDaysLater))
@@ -85,179 +109,214 @@ class MeetupStateController extends GetxController {
     return meetups.where((m) => rsvpedMeetupIds.contains(m.id)).toList();
   }
 
-  // Methods
+  // ==================== 生命周期 ====================
 
-  /// 加载活动列表
-  Future<void> loadMeetups({
-    String? cityId,
-    String? status,
-    bool forceRefresh = false,
-  }) async {
+  @override
+  void onInit() {
+    super.onInit();
+    log('🎬 MeetupStateController 初始化...');
+    _setupLoginStateListener();
+    _setupDataChangeListeners();
+
+    // 初始加载 - 使用基类的智能加载（检查缓存有效性）
+    initialLoad();
+  }
+
+  @override
+  void onClose() {
+    log('👋 MeetupStateController 关闭');
+    meetups.clear();
+    rsvpedMeetupIds.clear();
+    currentCityId.value = '';
+    currentStatus.value = 'upcoming';
+    super.onClose();
+  }
+
+  // ==================== 数据加载实现 ====================
+
+  @override
+  Future<PaginatedResult> loadPageData(int page, int pageSize) async {
+    log('🔄 加载活动列表: 城市=${currentCityId.value}, 状态=${currentStatus.value}, 页码=$page');
+
+    final loadedMeetups = await _getMeetupsUseCase.execute(
+      status: currentStatus.value,
+      cityId: currentCityId.value.isEmpty ? null : currentCityId.value,
+      page: page,
+      pageSize: pageSize,
+    );
+
+    log('✅ 成功加载 ${loadedMeetups.length} 个活动');
+
+    return PaginatedResult(
+      items: loadedMeetups,
+      totalCount: loadedMeetups.length,
+      hasMore: loadedMeetups.length >= pageSize,
+    );
+  }
+
+  @override
+  Future<void> onPageLoaded(List<dynamic> items, {required bool isRefresh}) async {
+    final loadedMeetups = items.cast<Meetup>();
+
+    if (isRefresh) {
+      meetups.clear();
+    }
+
+    meetups.addAll(loadedMeetups);
+
+    // 同步 RSVP 状态
+    _syncRsvpStatus(loadedMeetups);
+
+    log('📊 当前活动总数: ${meetups.length}');
+  }
+
+  // ==================== 私有方法 ====================
+
+  /// 设置登录状态监听
+  void _setupLoginStateListener() {
     try {
-      if (!forceRefresh && isLoading.value) {
-        log('⏸️ 正在加载中,跳过重复请求');
-        return;
-      }
-
-      isLoading.value = true;
-      errorMessage.value = '';
-      currentPage.value = 1; // 重置页码
-      hasMoreData.value = true; // 重置是否有更多数据
-
-      log('🔄 加载活动列表...');
-      log('   cityId: $cityId, status: $status, page: 1, pageSize: $pageSize');
-
-      final loadedMeetups = await _getMeetupsUseCase.execute(
-        status: status ?? 'upcoming',
-        cityId: cityId,
-        page: 1,
-        pageSize: pageSize,
-      );
-
-      meetups.value = loadedMeetups;
-
-      // 同步 isJoined 状态到 rsvpedMeetupIds
-      // 清除现有的 RSVP 列表(可选,根据业务需求)
-      // rsvpedMeetupIds.clear();
-
-      log('🔍 开始同步 RSVP 状态...');
-      log('   当前 rsvpedMeetupIds: ${rsvpedMeetupIds.toList()}');
-
-      // 获取当前用户 ID
-      final userController = Get.find<UserStateController>();
-      final currentUserId = userController.currentUser.value?.id;
-      log('   当前用户 ID: $currentUserId');
-
-      // 将后端返回的 isJoined=true 的活动添加到 rsvpedMeetupIds
-      for (final meetup in loadedMeetups) {
-        log('   检查活动: ${meetup.title} (${meetup.id}), isJoined=${meetup.isJoined}, organizerId=${meetup.organizer.id}');
-
-        // 检查是否应该标记为已加入:
-        // 1. 后端返回 isJoined=true
-        // 2. 用户是活动的组织者(后端可能没有正确返回 isJoined)
-        final shouldBeJoined = meetup.isJoined || (currentUserId != null && meetup.organizer.id == currentUserId);
-
-        if (shouldBeJoined) {
-          if (!rsvpedMeetupIds.contains(meetup.id)) {
-            rsvpedMeetupIds.add(meetup.id);
-            log('   ✅ 添加到 rsvpedMeetupIds: ${meetup.title} (${meetup.id})${meetup.organizer.id == currentUserId ? ' [组织者]' : ''}');
-          } else {
-            log('   ℹ️ 已存在于 rsvpedMeetupIds: ${meetup.title} (${meetup.id})');
-          }
+      final authController = Get.find<AuthStateController>();
+      ever(authController.isAuthenticated, (isAuth) {
+        if (isAuth) {
+          log('🔄 用户已登录，刷新活动列表...');
+          refresh();
         } else {
-          // 如果后端返回 isJoined=false 且不是组织者,从列表中移除(如果存在)
-          if (rsvpedMeetupIds.contains(meetup.id)) {
-            rsvpedMeetupIds.remove(meetup.id);
-            log('   🔄 从 rsvpedMeetupIds 移除: ${meetup.title} (${meetup.id})');
-          }
+          log('👋 用户已退出，清空活动数据');
+          meetups.clear();
+          rsvpedMeetupIds.clear();
         }
-      }
-
-      log('✅ 已同步 ${rsvpedMeetupIds.length} 个已加入的活动');
-      log('   最终 rsvpedMeetupIds: ${rsvpedMeetupIds.toList()}');
-
-      // 如果返回的数据少于 pageSize，说明没有更多数据了
-      if (loadedMeetups.length < pageSize) {
-        hasMoreData.value = false;
-      }
-
-      log('✅ 加载了 ${loadedMeetups.length} 个活动');
+      });
     } catch (e) {
-      errorMessage.value = '加载活动失败: $e';
-      log('❌ 加载活动失败: $e');
-    } finally {
-      isLoading.value = false;
+      log('⚠️ 无法找到 AuthStateController: $e');
     }
   }
 
-  /// 加载更多活动
+  /// 设置数据变更监听器
+  void _setupDataChangeListeners() {
+    DataEventBus.instance.on('meetup', _handleDataChanged);
+    DataEventBus.instance.on('meetup_list', _handleDataChanged);
+  }
+
+  /// 处理数据变更事件
+  void _handleDataChanged(DataChangedEvent event) {
+    log('🔔 收到 Meetup 数据变更通知: ${event.changeType}');
+
+    switch (event.changeType) {
+      case DataChangeType.created:
+      case DataChangeType.invalidated:
+        refresh();
+        break;
+      case DataChangeType.updated:
+        if (event.entityId != null) {
+          _refreshSingleMeetup(event.entityId!);
+        }
+        break;
+      case DataChangeType.deleted:
+        if (event.entityId != null) {
+          meetups.removeWhere((m) => m.id == event.entityId);
+        }
+        break;
+    }
+  }
+
+  /// 同步 RSVP 状态
+  void _syncRsvpStatus(List<Meetup> loadedMeetups) {
+    final userController = Get.find<UserStateController>();
+    final currentUserId = userController.currentUser.value?.id;
+
+    for (final meetup in loadedMeetups) {
+      final shouldBeJoined = meetup.isJoined || (currentUserId != null && meetup.organizer.id == currentUserId);
+
+      if (shouldBeJoined) {
+        if (!rsvpedMeetupIds.contains(meetup.id)) {
+          rsvpedMeetupIds.add(meetup.id);
+        }
+      } else {
+        rsvpedMeetupIds.remove(meetup.id);
+      }
+    }
+
+    log('✅ 已同步 ${rsvpedMeetupIds.length} 个已加入的活动');
+  }
+
+  /// 刷新单个活动
+  Future<void> _refreshSingleMeetup(String meetupId) async {
+    try {
+      final meetup = await _meetupRepository.getMeetupById(meetupId);
+      if (meetup != null) {
+        final index = meetups.indexWhere((m) => m.id == meetupId);
+        if (index != -1) {
+          meetups[index] = meetup;
+          meetups.refresh(); // 触发 Obx 更新
+        }
+      }
+    } catch (e) {
+      log('⚠️ 刷新单个活动失败: $e');
+    }
+  }
+
+  /// 检查登录状态
+  bool _requireLogin({String action = '此操作'}) {
+    try {
+      final authController = Get.find<AuthStateController>();
+      if (!authController.isAuthenticated.value) {
+        AppToast.warning('请先登录后再$action');
+        return false;
+      }
+      return true;
+    } catch (e) {
+      AppToast.error('无法检查登录状态');
+      return false;
+    }
+  }
+
+  /// 从异常中提取友好的错误消息
+  String _extractErrorMessage(dynamic e) {
+    if (e is HttpException) {
+      return e.message;
+    }
+    final errorStr = e.toString();
+    if (errorStr.startsWith('HttpException: ')) {
+      final parts = errorStr.substring('HttpException: '.length).split(' (Status Code:');
+      return parts.first;
+    }
+    return errorStr;
+  }
+
+  // ==================== 公共业务方法 ====================
+
+  /// 加载活动列表（兼容旧 API）
+  Future<void> loadMeetups({
+    String? cityId,
+    String? status,
+    bool isForceRefresh = false,
+  }) async {
+    currentCityId.value = cityId ?? '';
+    currentStatus.value = status ?? 'upcoming';
+
+    if (isForceRefresh) {
+      await forceRefresh();
+    } else {
+      await initialLoad();
+    }
+  }
+
+  /// 加载更多活动（使用基类方法）
   Future<void> loadMoreMeetups({
     String? cityId,
     String? status,
   }) async {
-    // 如果已经在加载或没有更多数据，直接返回
-    if (isLoadingMore.value || !hasMoreData.value) {
-      log('⏸️ 跳过加载更多: isLoadingMore=${isLoadingMore.value}, hasMoreData=${hasMoreData.value}');
-      return;
-    }
-
-    try {
-      isLoadingMore.value = true;
-      final nextPage = currentPage.value + 1;
-
-      log('🔄 加载更多活动...');
-      log('   cityId: $cityId, status: $status, page: $nextPage, pageSize: $pageSize');
-
-      final moreMeetups = await _getMeetupsUseCase.execute(
-        status: status ?? 'upcoming',
-        cityId: cityId,
-        page: nextPage,
-        pageSize: pageSize,
-      );
-
-      if (moreMeetups.isNotEmpty) {
-        meetups.addAll(moreMeetups);
-        currentPage.value = nextPage;
-
-        log('🔍 开始同步更多活动的 RSVP 状态...');
-
-        // 获取当前用户 ID
-        final userController = Get.find<UserStateController>();
-        final currentUserId = userController.currentUser.value?.id;
-
-        // 同步新加载活动的 isJoined 状态到 rsvpedMeetupIds
-        for (final meetup in moreMeetups) {
-          log('   检查活动: ${meetup.title} (${meetup.id}), isJoined=${meetup.isJoined}, organizerId=${meetup.organizer.id}');
-
-          // 检查是否应该标记为已加入:
-          // 1. 后端返回 isJoined=true
-          // 2. 用户是活动的组织者(后端可能没有正确返回 isJoined)
-          final shouldBeJoined = meetup.isJoined || (currentUserId != null && meetup.organizer.id == currentUserId);
-
-          if (shouldBeJoined) {
-            if (!rsvpedMeetupIds.contains(meetup.id)) {
-              rsvpedMeetupIds.add(meetup.id);
-              log('   ✅ 添加到 rsvpedMeetupIds: ${meetup.title} (${meetup.id})${meetup.organizer.id == currentUserId ? ' [组织者]' : ''}');
-            } else {
-              log('   ℹ️ 已存在于 rsvpedMeetupIds: ${meetup.title} (${meetup.id})');
-            }
-          } else {
-            if (rsvpedMeetupIds.contains(meetup.id)) {
-              rsvpedMeetupIds.remove(meetup.id);
-              log('   🔄 从 rsvpedMeetupIds 移除: ${meetup.title} (${meetup.id})');
-            }
-          }
-        }
-
-        log('✅ 同步完成,当前共 ${rsvpedMeetupIds.length} 个已加入的活动');
-
-        // 如果返回的数据少于 pageSize，说明没有更多数据了
-        if (moreMeetups.length < pageSize) {
-          hasMoreData.value = false;
-        }
-
-        log('✅ 加载了更多 ${moreMeetups.length} 个活动，当前总数: ${meetups.length}');
-      } else {
-        hasMoreData.value = false;
-        log('✅ 没有更多活动了');
-      }
-    } catch (e) {
-      log('❌ 加载更多活动失败: $e');
-    } finally {
-      isLoadingMore.value = false;
-    }
+    await loadMore();
   }
 
   /// 按城市获取活动
   Future<List<Meetup>> getMeetupsByCity(String cityName) async {
     try {
       log('🔍 按城市获取活动: $cityName');
-
       final cityMeetups = await _getMeetupsByCityUseCase.executeByName(
         cityName: cityName,
         status: 'upcoming',
       );
-
       log('✅ 找到 ${cityMeetups.length} 个活动');
       return cityMeetups;
     } catch (e) {
@@ -270,12 +329,10 @@ class MeetupStateController extends GetxController {
   Future<List<Meetup>> getMeetupsByCityId(String cityId) async {
     try {
       log('🔍 按城市ID获取活动: $cityId');
-
       final cityMeetups = await _getMeetupsByCityUseCase.execute(
         cityId: cityId,
         status: 'upcoming',
       );
-
       log('✅ 找到 ${cityMeetups.length} 个活动');
       return cityMeetups;
     } catch (e) {
@@ -292,7 +349,7 @@ class MeetupStateController extends GetxController {
     required String venue,
     required String venueAddress,
     required MeetupType type,
-    String? eventTypeId, // 新增：EventType UUID
+    String? eventTypeId,
     required DateTime startTime,
     DateTime? endTime,
     required int maxAttendees,
@@ -300,12 +357,9 @@ class MeetupStateController extends GetxController {
     List<String>? images,
     List<String>? tags,
   }) async {
-    try {
-      // 检查登录状态
-      if (!_requireLogin(action: '创建活动')) {
-        return null;
-      }
+    if (!_requireLogin(action: '创建活动')) return null;
 
+    try {
       isLoading.value = true;
       errorMessage.value = '';
 
@@ -327,18 +381,23 @@ class MeetupStateController extends GetxController {
         tags: tags,
       );
 
-      // 添加到列表
       meetups.insert(0, newMeetup);
 
-      log('✅ 活动创建成功: ${newMeetup.id}');
-      log('🔍 isOrganizer: ${newMeetup.isOrganizer}');
-      AppToast.success('活动创建成功!');
+      // 通知其他组件
+      DataEventBus.instance.emit(DataChangedEvent(
+        entityType: 'meetup',
+        entityId: newMeetup.id,
+        version: DateTime.now().millisecondsSinceEpoch,
+        changeType: DataChangeType.created,
+      ));
 
+      log('✅ 活动创建成功: ${newMeetup.id}');
+      AppToast.success('活动创建成功!');
       return newMeetup;
     } catch (e) {
       errorMessage.value = '创建活动失败: $e';
       log('❌ 创建活动失败: $e');
-      AppToast.error('创建活动失败: $e');
+      AppToast.error('创建活动失败: ${_extractErrorMessage(e)}');
       return null;
     } finally {
       isLoading.value = false;
@@ -363,12 +422,9 @@ class MeetupStateController extends GetxController {
     double? latitude,
     double? longitude,
   }) async {
-    try {
-      // 检查登录状态
-      if (!_requireLogin(action: '更新活动')) {
-        return null;
-      }
+    if (!_requireLogin(action: '更新活动')) return null;
 
+    try {
       isLoading.value = true;
       errorMessage.value = '';
 
@@ -392,230 +448,222 @@ class MeetupStateController extends GetxController {
         longitude: longitude,
       );
 
-      // 更新本地列表中的活动
       final index = meetups.indexWhere((m) => m.id == meetupId);
       if (index != -1) {
         meetups[index] = updatedMeetup;
         meetups.refresh(); // 触发 Obx 更新
       }
 
-      log('✅ 活动更新成功: ${updatedMeetup.id}');
-      AppToast.success('活动更新成功!');
+      // 通知其他组件
+      DataEventBus.instance.emit(DataChangedEvent(
+        entityType: 'meetup',
+        entityId: meetupId,
+        version: DateTime.now().millisecondsSinceEpoch,
+        changeType: DataChangeType.updated,
+      ));
 
+      log('✅ 活动更新成功');
+      AppToast.success('活动更新成功!');
       return updatedMeetup;
     } catch (e) {
       errorMessage.value = '更新活动失败: $e';
       log('❌ 更新活动失败: $e');
-      AppToast.error('更新活动失败: $e');
+      AppToast.error('更新活动失败: ${_extractErrorMessage(e)}');
       return null;
     } finally {
       isLoading.value = false;
     }
   }
 
-  /// 切换 RSVP 状态
-  Future<void> toggleRsvp(String meetupId) async {
+  /// RSVP 参加活动
+  Future<bool> rsvpToMeetup(String meetupId) async {
+    if (!_requireLogin(action: '报名活动')) return false;
+
     try {
-      // 检查登录状态
-      if (!_requireLogin(action: 'RSVP活动')) {
-        return;
+      log('📝 RSVP 活动: $meetupId');
+
+      final result = await _rsvpToMeetupUseCase.execute(meetupId);
+      rsvpedMeetupIds.add(meetupId);
+
+      // 更新本地活动数据
+      final index = meetups.indexWhere((m) => m.id == meetupId);
+      if (index != -1) {
+        final meetup = meetups[index];
+        final newCapacity = Capacity(
+          maxAttendees: meetup.capacity.maxAttendees,
+          currentAttendees: meetup.capacity.currentAttendees + 1,
+        );
+        meetups[index] = Meetup(
+          id: meetup.id,
+          title: meetup.title,
+          type: meetup.type,
+          eventType: meetup.eventType,
+          description: meetup.description,
+          location: meetup.location,
+          venue: meetup.venue,
+          schedule: meetup.schedule,
+          capacity: newCapacity,
+          organizer: meetup.organizer,
+          images: meetup.images,
+          attendeeIds: meetup.attendeeIds,
+          status: meetup.status,
+          createdAt: meetup.createdAt,
+          isJoined: true,
+          isOrganizer: meetup.isOrganizer,
+        );
+
+        // 强制刷新列表，确保 UI 更新
+        meetups.refresh();
       }
 
-      final isCurrentlyRsvped = rsvpedMeetupIds.contains(meetupId);
-
-      log('🔄 切换 RSVP: $meetupId (当前: ${isCurrentlyRsvped ? "已RSVP" : "未RSVP"})');
-
-      bool success;
-      if (isCurrentlyRsvped) {
-        // 取消 RSVP
-        success = await _cancelRsvpUseCase.execute(meetupId);
-        if (success) {
-          rsvpedMeetupIds.remove(meetupId);
-          _updateAttendeeCount(meetupId, -1);
-          log('✅ 已取消 RSVP');
-        }
-      } else {
-        // RSVP
-        success = await _rsvpToMeetupUseCase.execute(meetupId);
-        if (success) {
-          rsvpedMeetupIds.add(meetupId);
-          _updateAttendeeCount(meetupId, 1);
-          log('✅ RSVP 成功');
-        }
-      }
+      log('✅ RSVP 成功');
+      AppToast.success('报名成功!');
+      return result;
     } catch (e) {
-      log('❌ 切换 RSVP 失败: $e');
-
-      // 特殊处理:如果后端返回"已经参加"错误,说明状态不同步,需要修正
-      final errorMessage = e.toString();
-      if (errorMessage.contains('已经参加') || errorMessage.contains('already joined')) {
-        // 后端说已经参加了,但前端认为没参加,修正状态
-        if (!rsvpedMeetupIds.contains(meetupId)) {
-          rsvpedMeetupIds.add(meetupId);
-          log('🔄 修正 RSVP 状态: 已将 $meetupId 标记为已参加');
-        }
-        AppToast.error('您已经参加了这个活动');
-      } else if (errorMessage.contains('未参加') || errorMessage.contains('not joined')) {
-        // 后端说未参加,但前端认为参加了,修正状态
-        if (rsvpedMeetupIds.contains(meetupId)) {
-          rsvpedMeetupIds.remove(meetupId);
-          log('🔄 修正 RSVP 状态: 已将 $meetupId 标记为未参加');
-        }
-        AppToast.error('您还未参加这个活动');
-      } else {
-        // 其他错误,显示错误信息
-        AppToast.error('RSVP 操作失败: $e');
-      }
+      log('❌ RSVP 失败: $e');
+      AppToast.error('报名失败: ${_extractErrorMessage(e)}');
+      return false;
     }
   }
 
-  /// 取消活动 (组织者专用)
+  /// 取消 RSVP
+  Future<bool> cancelRsvp(String meetupId) async {
+    if (!_requireLogin(action: '取消报名')) return false;
+
+    try {
+      log('🚫 取消 RSVP: $meetupId');
+
+      final result = await _cancelRsvpUseCase.execute(meetupId);
+      rsvpedMeetupIds.remove(meetupId);
+
+      // 更新本地活动数据
+      final index = meetups.indexWhere((m) => m.id == meetupId);
+      if (index != -1) {
+        final meetup = meetups[index];
+        final newCount = (meetup.capacity.currentAttendees - 1).clamp(0, meetup.capacity.maxAttendees);
+        final newCapacity = Capacity(
+          maxAttendees: meetup.capacity.maxAttendees,
+          currentAttendees: newCount,
+        );
+        meetups[index] = Meetup(
+          id: meetup.id,
+          title: meetup.title,
+          type: meetup.type,
+          eventType: meetup.eventType,
+          description: meetup.description,
+          location: meetup.location,
+          venue: meetup.venue,
+          schedule: meetup.schedule,
+          capacity: newCapacity,
+          organizer: meetup.organizer,
+          images: meetup.images,
+          attendeeIds: meetup.attendeeIds,
+          status: meetup.status,
+          createdAt: meetup.createdAt,
+          isJoined: false,
+          isOrganizer: meetup.isOrganizer,
+        );
+
+        // 强制刷新列表，确保 UI 更新
+        meetups.refresh();
+      }
+
+      log('✅ 取消 RSVP 成功');
+      AppToast.success('已取消报名');
+      return result;
+    } catch (e) {
+      log('❌ 取消 RSVP 失败: $e');
+      AppToast.error('取消报名失败: ${_extractErrorMessage(e)}');
+      return false;
+    }
+  }
+
+  /// 取消活动
   Future<bool> cancelMeetup(String meetupId) async {
+    if (!_requireLogin(action: '取消活动')) return false;
+
     try {
-      // 检查登录状态
-      if (!_requireLogin(action: '取消活动')) {
-        return false;
+      log('🚫 取消活动: $meetupId');
+
+      await _cancelMeetupUseCase.execute(meetupId);
+
+      // 更新本地活动状态
+      final index = meetups.indexWhere((m) => m.id == meetupId);
+      if (index != -1) {
+        final meetup = meetups[index];
+        meetups[index] = Meetup(
+          id: meetup.id,
+          title: meetup.title,
+          type: meetup.type,
+          eventType: meetup.eventType,
+          description: meetup.description,
+          location: meetup.location,
+          venue: meetup.venue,
+          schedule: meetup.schedule,
+          capacity: meetup.capacity,
+          organizer: meetup.organizer,
+          images: meetup.images,
+          attendeeIds: meetup.attendeeIds,
+          status: MeetupStatus.cancelled,
+          createdAt: meetup.createdAt,
+          isJoined: meetup.isJoined,
+          isOrganizer: meetup.isOrganizer,
+        );
+
+        // 强制刷新列表，确保 UI 更新
+        meetups.refresh();
       }
 
-      log('🔄 取消活动: $meetupId');
+      // 通知其他组件
+      DataEventBus.instance.emit(DataChangedEvent(
+        entityType: 'meetup',
+        entityId: meetupId,
+        version: DateTime.now().millisecondsSinceEpoch,
+        changeType: DataChangeType.updated,
+      ));
 
-      final success = await _cancelMeetupUseCase.execute(meetupId);
-
-      if (success) {
-        // 更新本地状态 - 将活动标记为已取消
-        final index = meetups.indexWhere((m) => m.id == meetupId);
-        if (index != -1) {
-          final meetup = meetups[index];
-          final updatedMeetup = Meetup(
-            id: meetup.id,
-            title: meetup.title,
-            type: meetup.type,
-            description: meetup.description,
-            location: meetup.location,
-            venue: meetup.venue,
-            schedule: meetup.schedule,
-            capacity: meetup.capacity,
-            organizer: meetup.organizer,
-            images: meetup.images,
-            attendeeIds: meetup.attendeeIds,
-            status: MeetupStatus.cancelled,
-            createdAt: meetup.createdAt,
-            isJoined: meetup.isJoined,
-            isOrganizer: meetup.isOrganizer,
-          );
-          meetups[index] = updatedMeetup;
-        }
-
-        log('✅ 活动已取消');
-        AppToast.success('活动已取消');
-        return true;
-      }
-
-      return false;
-    } catch (e) {
-      log('❌ 取消活动失败: $e');
-      AppToast.error('取消活动失败: $e');
-      return false;
-    }
-  }
-
-  /// 刷新活动列表
-  Future<void> refreshMeetups() async {
-    log('🔄 刷新活动列表...');
-    await loadMeetups(forceRefresh: true);
-  }
-
-  // Private Methods
-
-  /// 更新参与人数
-  void _updateAttendeeCount(String meetupId, int delta) {
-    final index = meetups.indexWhere((m) => m.id == meetupId);
-    if (index != -1) {
-      final meetup = meetups[index];
-      final newCount = meetup.capacity.currentAttendees + delta;
-
-      // 创建新的 Capacity
-      final updatedCapacity = Capacity(
-        maxAttendees: meetup.capacity.maxAttendees,
-        currentAttendees: newCount < 0 ? 0 : newCount,
-      );
-
-      // 创建新的 Meetup
-      final updatedMeetup = Meetup(
-        id: meetup.id,
-        title: meetup.title,
-        type: meetup.type,
-        description: meetup.description,
-        location: meetup.location,
-        venue: meetup.venue,
-        schedule: meetup.schedule,
-        capacity: updatedCapacity,
-        organizer: meetup.organizer,
-        images: meetup.images,
-        attendeeIds: meetup.attendeeIds,
-        status: meetup.status,
-        createdAt: meetup.createdAt,
-      );
-
-      meetups[index] = updatedMeetup;
-      meetups.refresh(); // 触发 Obx 更新
-      log('📊 更新参与人数: $newCount/${meetup.capacity.maxAttendees}');
-    }
-  }
-
-  /// 检查登录状态
-  bool _requireLogin({String? action}) {
-    try {
-      final authController = Get.find<AuthStateController>();
-      if (!authController.isAuthenticated.value) {
-        final actionText = action ?? '此操作';
-        log('⚠️ 需要登录: $actionText');
-        AppToast.error('请先登录后再$actionText');
-        return false;
-      }
+      log('✅ 活动取消成功');
+      AppToast.success('活动已取消');
       return true;
     } catch (e) {
-      log('⚠️ 无法检查登录状态: $e');
+      log('❌ 取消活动失败: $e');
+      AppToast.error('取消活动失败: ${_extractErrorMessage(e)}');
       return false;
     }
   }
 
-  /// 设置登录状态监听
-  void _setupLoginStateListener() {
+  /// 根据ID获取活动详情
+  Future<Meetup?> getMeetupById(String meetupId) async {
     try {
-      final userController = Get.find<UserStateController>();
+      log('🔍 获取活动详情: $meetupId');
 
-      // 监听 currentUser 变化
-      ever(userController.currentUser, (user) {
-        if (user != null) {
-          log('👤 用户已登录,刷新活动数据...');
-          refreshMeetups();
-        } else {
-          log('👤 用户已登出,清空活动数据...');
-          _clearData();
-        }
-      });
+      // 先检查本地缓存
+      final cached = meetups.firstWhereOrNull((m) => m.id == meetupId);
+      if (cached != null) {
+        return cached;
+      }
+
+      // 从服务器获取
+      final meetup = await _meetupRepository.getMeetupById(meetupId);
+      return meetup;
     } catch (e) {
-      log('⚠️ 无法设置登录状态监听: $e');
+      log('❌ 获取活动详情失败: $e');
+      return null;
     }
   }
 
-  /// 清空数据
-  void _clearData() {
-    meetups.clear();
-    rsvpedMeetupIds.clear();
-    errorMessage.value = '';
-    log('🧹 活动数据已清空');
+  // ==================== 兼容旧 API ====================
+
+  /// 刷新活动列表 - 兼容原控制器 API
+  Future<void> refreshMeetups() async {
+    log('🔄 刷新活动列表...');
+    await forceRefresh();
   }
 
-  // =============================================================================
-  // 邀请相关方法
-  // =============================================================================
+  /// 是否有更多数据 - 兼容原控制器
+  bool get hasMoreData => hasMore.value;
 
-  /// 邀请用户参加聚会
-  /// [meetupId] 聚会ID
-  /// [inviteeId] 被邀请人ID
-  /// [message] 可选的邀请消息
+  /// 邀请用户参加聚会 - 兼容原控制器 API
   Future<bool> inviteToMeetup({
     required String meetupId,
     required String inviteeId,
@@ -623,7 +671,6 @@ class MeetupStateController extends GetxController {
   }) async {
     try {
       isLoading.value = true;
-      errorMessage.value = '';
       log('📨 发送聚会邀请: meetupId=$meetupId, inviteeId=$inviteeId');
 
       final result = await _meetupRepository.inviteToMeetup(
@@ -636,129 +683,12 @@ class MeetupStateController extends GetxController {
       AppToast.success('邀请已发送');
       return true;
     } catch (e) {
-      // 提取更友好的错误消息
       String errorMsg = _extractErrorMessage(e);
-      errorMessage.value = errorMsg;
       log('❌ 邀请发送异常: $errorMsg');
       AppToast.error(errorMsg);
       return false;
     } finally {
       isLoading.value = false;
     }
-  }
-
-  /// 响应聚会邀请
-  /// [invitationId] 邀请ID
-  /// [accept] 是否接受邀请
-  Future<bool> respondToInvitation({
-    required String invitationId,
-    required bool accept,
-  }) async {
-    try {
-      isLoading.value = true;
-      errorMessage.value = '';
-      log('📬 响应聚会邀请: invitationId=$invitationId, accept=$accept');
-
-      final result = await _meetupRepository.respondToInvitation(
-        invitationId: invitationId,
-        accept: accept,
-      );
-
-      log('✅ 邀请响应成功: invitationId=${result.id}, status=${result.status}');
-      AppToast.success(accept ? '已接受邀请' : '已拒绝邀请');
-      // 如果接受邀请，刷新聚会列表
-      if (accept) {
-        await loadMeetups();
-      }
-      return true;
-    } catch (e) {
-      final error = e.toString();
-      errorMessage.value = error;
-      log('❌ 响应邀请异常: $error');
-      AppToast.error('响应邀请失败: $error');
-      return false;
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  /// 获取收到的邀请列表
-  Future<List<MeetupInvitation>> getReceivedInvitations({
-    String? status,
-  }) async {
-    try {
-      log('📥 获取收到的邀请列表: status=$status');
-      final invitations = await _meetupRepository.getReceivedInvitations(
-        status: status,
-      );
-      log('✅ 获取到 ${invitations.length} 条邀请');
-      return invitations;
-    } catch (e) {
-      log('❌ 获取邀请列表失败: $e');
-      return [];
-    }
-  }
-
-  /// 获取发送的邀请列表
-  Future<List<MeetupInvitation>> getSentInvitations({
-    String? status,
-  }) async {
-    try {
-      log('📤 获取发送的邀请列表: status=$status');
-      final invitations = await _meetupRepository.getSentInvitations(
-        status: status,
-      );
-      log('✅ 获取到 ${invitations.length} 条发送的邀请');
-      return invitations;
-    } catch (e) {
-      log('❌ 获取发送邀请列表失败: $e');
-      return [];
-    }
-  }
-
-  /// 从异常中提取友好的错误消息
-  String _extractErrorMessage(dynamic e) {
-    if (e is HttpException) {
-      return e.message;
-    }
-    final errorStr = e.toString();
-    // 尝试从 HttpException 字符串中提取消息
-    if (errorStr.startsWith('HttpException: ')) {
-      final parts = errorStr.substring('HttpException: '.length).split(' (Status Code:');
-      return parts.first;
-    }
-    return errorStr;
-  }
-
-  // Lifecycle
-
-  @override
-  void onInit() {
-    super.onInit();
-    log('🎬 MeetupStateController 初始化...');
-
-    // 设置登录状态监听
-    _setupLoginStateListener();
-
-    // 不在这里自动加载，由页面决定何时加载
-    // loadMeetups();
-  }
-
-  @override
-  void onClose() {
-    log('👋 MeetupStateController 关闭 - 清理所有数据');
-
-    // 清空所有响应式变量
-    meetups.clear();
-    rsvpedMeetupIds.clear();
-    isLoading.value = false;
-    isLoadingMore.value = false;
-    errorMessage.value = '';
-
-    // 重置分页状态
-    currentPage.value = 1;
-    hasMoreData.value = true;
-
-    super.onClose();
   }
 }

@@ -4,7 +4,7 @@ import 'package:df_admin_mobile/features/ai/presentation/controllers/ai_state_co
 import 'package:df_admin_mobile/features/city/application/state_controllers/pros_cons_state_controller.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city_rating_item.dart';
 import 'package:df_admin_mobile/features/city/presentation/controllers/city_detail_state_controller.dart';
-import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller_v2.dart';
+import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
 import 'package:df_admin_mobile/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
 import 'package:df_admin_mobile/features/weather/presentation/controllers/weather_state_controller.dart';
 import 'package:df_admin_mobile/services/token_storage_service.dart';
@@ -168,7 +168,7 @@ class CityDetailController extends GetxController with GetTickerProviderStateMix
   }
 
   void _loadCoworkingData() {
-    final coworkingController = Get.find<CoworkingStateControllerV2>();
+    final coworkingController = Get.find<CoworkingStateController>();
     if (coworkingController.currentCityId.value != cityId) {
       coworkingController.loadCoworkingSpacesByCity(cityId);
       log('🔄 [TabSwitch] 切换到 Coworking tab，加载新城市数据');

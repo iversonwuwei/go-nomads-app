@@ -34,7 +34,6 @@ import 'package:df_admin_mobile/features/city/infrastructure/repositories/city_r
 import 'package:df_admin_mobile/features/city/presentation/controllers/city_detail_state_controller.dart';
 import 'package:df_admin_mobile/features/city/presentation/controllers/city_rating_controller.dart';
 import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller.dart';
-import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller_v2.dart';
 // Community Domain
 import 'package:df_admin_mobile/features/community/domain/repositories/i_community_repository.dart';
 import 'package:df_admin_mobile/features/community/infrastructure/repositories/community_repository.dart';
@@ -49,7 +48,6 @@ import 'package:df_admin_mobile/features/coworking/infrastructure/repositories/c
 import 'package:df_admin_mobile/features/coworking/infrastructure/repositories/coworking_repository.dart';
 import 'package:df_admin_mobile/features/coworking/infrastructure/repositories/coworking_review_repository.dart';
 import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
-import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller_v2.dart';
 // Hotel Domain
 import 'package:df_admin_mobile/features/hotel/application/use_cases/hotel_use_cases.dart';
 import 'package:df_admin_mobile/features/hotel/domain/repositories/i_hotel_repository.dart';
@@ -88,7 +86,6 @@ import 'package:df_admin_mobile/features/meetup/application/use_cases/update_mee
 import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
 import 'package:df_admin_mobile/features/meetup/infrastructure/repositories/meetup_repository.dart';
 import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
-import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller_v2.dart';
 // Membership Domain
 import 'package:df_admin_mobile/features/membership/domain/repositories/membership_repository.dart';
 import 'package:df_admin_mobile/features/membership/infrastructure/repositories/membership_repository_impl.dart';
@@ -127,7 +124,6 @@ import 'package:df_admin_mobile/features/user/domain/repositories/iuser_reposito
 import 'package:df_admin_mobile/features/user/infrastructure/repositories/user_preferences_repository.dart';
 import 'package:df_admin_mobile/features/user/infrastructure/repositories/user_repository.dart';
 import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
-import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller_v2.dart';
 // User City Content Domain
 import 'package:df_admin_mobile/features/user_city_content/application/use_cases/user_city_content_use_cases.dart';
 import 'package:df_admin_mobile/features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
@@ -238,10 +234,10 @@ class DependencyInjection {
 
     // 立即创建 Controller 实例，确保它们在整个应用生命周期中存活
     // 使用 V2 版本的控制器
-    Get.find<CityStateControllerV2>();
-    Get.find<MeetupStateControllerV2>();
-    Get.find<UserStateControllerV2>();
-    Get.find<CoworkingStateControllerV2>();
+    Get.find<CityStateController>();
+    Get.find<MeetupStateController>();
+    Get.find<UserStateController>();
+    Get.find<CoworkingStateController>();
     Get.find<SkillStateController>();
     Get.find<InterestStateController>();
     Get.find<ChatStateController>();
@@ -378,22 +374,6 @@ class DependencyInjection {
       ),
       fenix: true,
     );
-
-    // Controller V2 - 使用新的数据同步框架
-    Get.lazyPut(
-      () => UserStateControllerV2(
-        getCurrentUserUseCase: Get.find<user_use_cases.GetUserProfileUseCase>(),
-        getUserUseCase: Get.find<user_use_cases.GetUserUseCase>(),
-        updateUserUseCase: Get.find<user_use_cases.UpdateUserUseCase>(),
-        addFavoriteCityUseCase: Get.find<AddFavoriteCityUseCase>(),
-        removeFavoriteCityUseCase: Get.find<RemoveFavoriteCityUseCase>(),
-        isCityFavoritedUseCase: Get.find<IsCityFavoritedUseCase>(),
-        getFavoriteCityIdsUseCase: Get.find<GetFavoriteCityIdsUseCase>(),
-        toggleFavoriteCityUseCase: Get.find<ToggleFavoriteCityUseCase>(),
-        getCurrentUserStatsUseCase: Get.find<user_use_cases.GetCurrentUserStatsUseCase>(),
-      ),
-      fenix: true,
-    );
   }
 
   /// 注册认证领域依赖
@@ -515,24 +495,9 @@ class DependencyInjection {
     Get.lazyPut(() => GetCitiesWithCoworkingCountUseCase(Get.find<ICityRepository>()), fenix: true);
     Get.lazyPut(() => CityRatingUseCases(Get.find<ICityRatingRepository>()), fenix: true);
 
-    // Controller（permanent: true 防止路由切换时被销毁）
+    // Controller
     Get.lazyPut(
       () => CityStateController(
-        getCitiesUseCase: Get.find<GetCitiesUseCase>(),
-        searchCitiesUseCase: Get.find<SearchCityListUseCase>(),
-        getRecommendedCitiesUseCase: Get.find<GetRecommendedCitiesUseCase>(),
-        getPopularCitiesUseCase: Get.find<GetPopularCitiesUseCase>(),
-        toggleCityFavoriteUseCase: Get.find<ToggleCityFavoriteUseCase>(),
-        getFavoriteCitiesUseCase: Get.find<GetFavoriteCitiesUseCase>(),
-        getUserFavoriteCityIdsUseCase: Get.find<GetUserFavoriteCityIdsUseCase>(),
-        cityRepository: Get.find<ICityRepository>(),
-      ),
-      fenix: true, // 允许在删除后重新创建
-    );
-
-    // Controller V2 - 使用新的数据同步框架
-    Get.lazyPut(
-      () => CityStateControllerV2(
         getCitiesUseCase: Get.find<GetCitiesUseCase>(),
         getRecommendedCitiesUseCase: Get.find<GetRecommendedCitiesUseCase>(),
         getPopularCitiesUseCase: Get.find<GetPopularCitiesUseCase>(),
@@ -664,18 +629,6 @@ class DependencyInjection {
     // Controller
     Get.lazyPut(
       () => CoworkingStateController(
-        getCoworkingSpacesByCityUseCase: Get.find<GetCoworkingSpacesByCityUseCase>(),
-        getCoworkingByIdUseCase: Get.find<GetCoworkingByIdUseCase>(),
-        getCityCoworkingCountUseCase: Get.find<GetCityCoworkingCountUseCase>(),
-        submitCoworkingVerificationUseCase: Get.find<SubmitCoworkingVerificationUseCase>(),
-        checkVerificationEligibilityUseCase: Get.find<CheckVerificationEligibilityUseCase>(),
-      ),
-      fenix: true, // 允许在删除后重新创建,防止路由切换导致的状态丢失
-    );
-
-    // Controller V2 - 使用新的数据同步框架
-    Get.lazyPut(
-      () => CoworkingStateControllerV2(
         getCoworkingSpacesByCityUseCase: Get.find<GetCoworkingSpacesByCityUseCase>(),
         getCoworkingByIdUseCase: Get.find<GetCoworkingByIdUseCase>(),
         getCityCoworkingCountUseCase: Get.find<GetCityCoworkingCountUseCase>(),
@@ -916,21 +869,6 @@ class DependencyInjection {
     // Controller（fenix: true 允许删除后重新创建）
     Get.lazyPut(
       () => MeetupStateController(
-        getMeetupsUseCase: Get.find<GetMeetupsUseCase>(),
-        getMeetupsByCityUseCase: Get.find<GetMeetupsByCityUseCase>(),
-        createMeetupUseCase: Get.find<CreateMeetupUseCase>(),
-        updateMeetupUseCase: Get.find<UpdateMeetupUseCase>(),
-        rsvpToMeetupUseCase: Get.find<RsvpToMeetupUseCase>(),
-        cancelRsvpUseCase: Get.find<CancelRsvpUseCase>(),
-        cancelMeetupUseCase: Get.find<CancelMeetupUseCase>(),
-        meetupRepository: Get.find<IMeetupRepository>(),
-      ),
-      fenix: true,
-    );
-
-    // Controller V2 - 使用新的数据同步框架
-    Get.lazyPut(
-      () => MeetupStateControllerV2(
         getMeetupsUseCase: Get.find<GetMeetupsUseCase>(),
         getMeetupsByCityUseCase: Get.find<GetMeetupsByCityUseCase>(),
         createMeetupUseCase: Get.find<CreateMeetupUseCase>(),

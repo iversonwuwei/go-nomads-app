@@ -5,9 +5,9 @@ import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
 import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
-import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller_v2.dart';
-import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller_v2.dart';
-import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller_v2.dart';
+import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller.dart';
+import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
@@ -20,9 +20,9 @@ class HomePageController extends GetxController with WidgetsBindingObserver {
   final ICityRepository _cityRepository = Get.find<ICityRepository>();
 
   // 延迟获取的控制器
-  CityStateControllerV2 get cityController => Get.find<CityStateControllerV2>();
-  MeetupStateControllerV2 get meetupController => Get.find<MeetupStateControllerV2>();
-  UserStateControllerV2 get userController => Get.find<UserStateControllerV2>();
+  CityStateController get cityController => Get.find<CityStateController>();
+  MeetupStateController get meetupController => Get.find<MeetupStateController>();
+  UserStateController get userController => Get.find<UserStateController>();
   AuthStateController get authController => Get.find<AuthStateController>();
 
   // ==================== UI 控制器 ====================

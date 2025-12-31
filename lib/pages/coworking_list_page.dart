@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
-import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller_v2.dart';
+import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/pages/add_coworking/add_coworking_page.dart';
 import 'package:df_admin_mobile/pages/coworking_detail/coworking_detail_page.dart';
@@ -33,13 +33,13 @@ class CoworkingListPage extends StatefulWidget {
 }
 
 class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRefreshMixin<CoworkingListPage> {
-  late final CoworkingStateControllerV2 controller;
+  late final CoworkingStateController controller;
   final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    controller = Get.find<CoworkingStateControllerV2>();
+    controller = Get.find<CoworkingStateController>();
     _scrollController.addListener(_onScroll);
 
     // 立即加载数据，不使用延迟
@@ -286,7 +286,7 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
 
           // 如果返回了更新后的 CoworkingSpace 对象，直接更新缓存
           if (result is CoworkingSpace && mounted) {
-            final controller = Get.find<CoworkingStateControllerV2>();
+            final controller = Get.find<CoworkingStateController>();
             controller.updateCoworkingInList(result);
           } else if (result == true && mounted) {
             // 向后兼容：如果返回 true，刷新整个列表

@@ -1,7 +1,7 @@
 import 'dart:developer';
 
 import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
-import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller_v2.dart';
+import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -12,9 +12,9 @@ class AmapGlobalPageController extends GetxController {
   final RxBool isLoading = true.obs;
   final Rx<String?> errorMessage = Rx<String?>(null);
 
-  CityStateControllerV2? _cityControllerCache;
-  CityStateControllerV2 get cityController {
-    _cityControllerCache ??= Get.find<CityStateControllerV2>();
+  CityStateController? _cityControllerCache;
+  CityStateController get cityController {
+    _cityControllerCache ??= Get.find<CityStateController>();
     return _cityControllerCache!;
   }
 

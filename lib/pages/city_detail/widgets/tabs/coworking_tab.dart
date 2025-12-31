@@ -6,7 +6,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 import '../../../../features/coworking/domain/entities/coworking_space.dart' as coworking;
-import '../../../../features/coworking/presentation/controllers/coworking_state_controller_v2.dart';
+import '../../../../features/coworking/presentation/controllers/coworking_state_controller.dart';
 import '../../city_detail_controller.dart';
 
 /// Coworking Tab - GetView 实现
@@ -25,7 +25,7 @@ class CoworkingTab extends GetView<CityDetailController> {
 
   @override
   Widget build(BuildContext context) {
-    final coworkingController = Get.find<CoworkingStateControllerV2>();
+    final coworkingController = Get.find<CoworkingStateController>();
 
     return Obx(() {
       // 显示加载状态
@@ -62,7 +62,7 @@ class _EmptyCoworkingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final coworkingController = Get.find<CoworkingStateControllerV2>();
+    final coworkingController = Get.find<CoworkingStateController>();
 
     return RefreshIndicator(
       onRefresh: () => coworkingController.loadCoworkingSpacesByCity(cityName),
@@ -208,7 +208,7 @@ class _CoworkingList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final coworkingController = Get.find<CoworkingStateControllerV2>();
+    final coworkingController = Get.find<CoworkingStateController>();
 
     return RefreshIndicator(
       onRefresh: () => coworkingController.loadCoworkingSpacesByCity(cityName),

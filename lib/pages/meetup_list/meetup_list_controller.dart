@@ -4,7 +4,7 @@ import 'package:df_admin_mobile/controllers/location_controller.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
 import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
-import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller_v2.dart';
+import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -23,7 +23,7 @@ class MeetupListController extends GetxController with GetSingleTickerProviderSt
   final IMeetupRepository _meetupRepository = Get.find();
   final AuthStateController _authController = Get.find();
   final LocationController _locationController = Get.put(LocationController());
-  final MeetupStateControllerV2 _meetupStateController = Get.find();
+  final MeetupStateController _meetupStateController = Get.find();
 
   // Tab 控制器
   late TabController tabController;

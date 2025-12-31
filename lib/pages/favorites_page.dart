@@ -2,8 +2,8 @@ import 'dart:developer';
 
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
-import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller_v2.dart';
-import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller_v2.dart';
+import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller.dart';
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
@@ -24,8 +24,8 @@ class FavoritesPage extends StatefulWidget {
 }
 
 class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMixin<FavoritesPage> {
-  late final CityStateControllerV2 _cityController;
-  late final UserStateControllerV2 _userController;
+  late final CityStateController _cityController;
+  late final UserStateController _userController;
 
   String _sortBy = 'score'; // score, price, name
   bool _isLoading = true;
@@ -33,8 +33,8 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
   @override
   void initState() {
     super.initState();
-    _cityController = Get.find<CityStateControllerV2>();
-    _userController = Get.find<UserStateControllerV2>();
+    _cityController = Get.find<CityStateController>();
+    _userController = Get.find<UserStateController>();
     _loadFavorites();
   }
 
