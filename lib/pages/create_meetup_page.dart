@@ -22,7 +22,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
-import 'venue_map_picker_page.dart';
+import 'venue_map_picker/venue_map_picker_page.dart';
 
 class CreateMeetupPage extends StatefulWidget {
   /// 编辑模式：传入要编辑的 Meetup

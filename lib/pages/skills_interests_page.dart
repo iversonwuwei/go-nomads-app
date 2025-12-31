@@ -1,11 +1,4 @@
-import 'dart:developer';
-
-import 'package:df_admin_mobile/features/interest/domain/entities/interest.dart';
-import 'package:df_admin_mobile/features/interest/presentation/controllers/interest_state_controller.dart';
-import 'package:df_admin_mobile/features/skill/domain/entities/skill.dart';
-import 'package:df_admin_mobile/features/skill/presentation/controllers/skill_state_controller.dart';
-import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller_v2.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/controllers/skills_interests_page_controller.dart';
 import 'package:df_admin_mobile/widgets/interests_selector.dart';
 import 'package:df_admin_mobile/widgets/skills_selector.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +7,7 @@ import 'package:get/get.dart';
 
 /// 技能和兴趣选择页面
 /// 用于用户注册流程或个人资料编辑
+/// 需要 StatefulWidget 因为 TabController 需要 SingleTickerProviderStateMixin
 class SkillsInterestsPage extends StatefulWidget {
   const SkillsInterestsPage({super.key});
 
@@ -22,108 +16,28 @@ class SkillsInterestsPage extends StatefulWidget {
 }
 
 class _SkillsInterestsPageState extends State<SkillsInterestsPage> with SingleTickerProviderStateMixin {
+  static const String _tag = 'SkillsInterestsPage';
   late TabController _tabController;
-  late final SkillStateController _skillController;
-  late final InterestStateController _interestController;
-  late final UserStateControllerV2 _userStateController;
+  late final SkillsInterestsPageController _controller;
 
-  List<UserSkill> _selectedSkills = [];
-  List<UserInterest> _selectedInterests = [];
-  bool _isSaving = false;
+  SkillsInterestsPageController _useController() {
+    if (Get.isRegistered<SkillsInterestsPageController>(tag: _tag)) {
+      return Get.find<SkillsInterestsPageController>(tag: _tag);
+    }
+    return Get.put(SkillsInterestsPageController(), tag: _tag);
+  }
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _skillController = Get.find<SkillStateController>();
-    _interestController = Get.find<InterestStateController>();
-    _userStateController = Get.find<UserStateControllerV2>();
+    _controller = _useController();
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
-  }
-
-  Future<void> _saveSkillsAndInterests() async {
-    final currentUser = _userStateController.currentUser.value;
-
-    if (currentUser == null) {
-      AppToast.error('请先登录以保存您的技能和兴趣');
-      return;
-    }
-
-    if (_selectedSkills.isEmpty && _selectedInterests.isEmpty) {
-      AppToast.error('请至少选择一个技能或兴趣');
-      return;
-    }
-
-    setState(() => _isSaving = true);
-
-    try {
-      var skillSuccessCount = 0;
-      var interestSuccessCount = 0;
-
-      // 保存技能
-      if (_selectedSkills.isNotEmpty) {
-        for (final skill in _selectedSkills) {
-          final success = await _skillController.addUserSkill(
-            currentUser.id,
-            AddUserSkillRequest(
-              skillId: skill.skillId,
-              proficiencyLevel: skill.proficiencyLevel,
-              yearsOfExperience: skill.yearsOfExperience,
-            ),
-          );
-          if (success) {
-            skillSuccessCount++;
-          }
-        }
-      }
-
-      // 保存兴趣
-      if (_selectedInterests.isNotEmpty) {
-        for (final interest in _selectedInterests) {
-          final success = await _interestController.addUserInterest(
-            currentUser.id,
-            AddUserInterestRequest(
-              interestId: interest.interestId,
-              intensityLevel: interest.intensityLevel,
-            ),
-          );
-          if (success) {
-            interestSuccessCount++;
-          }
-        }
-      }
-
-      final hasSkillFailure = skillSuccessCount != _selectedSkills.length && _selectedSkills.isNotEmpty;
-      final hasInterestFailure = interestSuccessCount != _selectedInterests.length && _selectedInterests.isNotEmpty;
-
-      if (!hasSkillFailure && !hasInterestFailure) {
-        AppToast.error('已保存 $skillSuccessCount 个技能和 $interestSuccessCount 个兴趣');
-
-        // 返回上一页
-        Get.back();
-      } else {
-        final failureMessages = <String>[];
-        if (hasSkillFailure) {
-          failureMessages.add('技能保存失败 ${_selectedSkills.length - skillSuccessCount}/${_selectedSkills.length}');
-        }
-        if (hasInterestFailure) {
-          failureMessages
-              .add('兴趣保存失败 ${_selectedInterests.length - interestSuccessCount}/${_selectedInterests.length}');
-        }
-
-        AppToast.warning(failureMessages.join(' · '));
-      }
-    } catch (e) {
-      log('❌ 保存失败: $e');
-      AppToast.error('无法保存您的选择，请稍后重试');
-    } finally {
-      setState(() => _isSaving = false);
-    }
   }
 
   @override
@@ -139,10 +53,11 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage> with SingleTi
           ],
         ),
         actions: [
-          if (_selectedSkills.isNotEmpty || _selectedInterests.isNotEmpty)
-            TextButton(
-              onPressed: _isSaving ? null : _saveSkillsAndInterests,
-              child: _isSaving
+          Obx(() {
+            if (!_controller.hasSelection) return const SizedBox.shrink();
+            return TextButton(
+              onPressed: _controller.isSaving.value ? null : _controller.saveSkillsAndInterests,
+              child: _controller.isSaving.value
                   ? const SizedBox(
                       width: 20,
                       height: 20,
@@ -155,31 +70,28 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage> with SingleTi
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-            ),
+            );
+          }),
         ],
       ),
       body: TabBarView(
         controller: _tabController,
         children: [
           // 技能选择器
-          SkillsSelector(
-            selectedSkillIds: _selectedSkills.map((s) => s.skillId).toList(),
-            onChanged: (skills) {
-              setState(() => _selectedSkills = skills);
-            },
-            showProficiency: true,
-            maxSelection: 10, // 最多选择10个技能
-          ),
+          Obx(() => SkillsSelector(
+                selectedSkillIds: _controller.selectedSkillIds,
+                onChanged: _controller.updateSelectedSkills,
+                showProficiency: true,
+                maxSelection: 10, // 最多选择10个技能
+              )),
 
           // 兴趣选择器
-          InterestsSelector(
-            selectedInterestIds: _selectedInterests.map((i) => i.interestId).toList(),
-            onChanged: (interests) {
-              setState(() => _selectedInterests = interests);
-            },
-            showIntensity: true,
-            maxSelection: 15, // 最多选择15个兴趣
-          ),
+          Obx(() => InterestsSelector(
+                selectedInterestIds: _controller.selectedInterestIds,
+                onChanged: _controller.updateSelectedInterests,
+                showIntensity: true,
+                maxSelection: 15, // 最多选择15个兴趣
+              )),
         ],
       ),
       bottomNavigationBar: Container(
@@ -194,47 +106,47 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage> with SingleTi
           ],
         ),
         child: SafeArea(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
+          child: Obx(() => Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    '已选择',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 12,
-                    ),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '已选择',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '技能 ${_controller.selectedSkills.length}/10  ·  兴趣 ${_controller.selectedInterests.length}/15',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '技能 ${_selectedSkills.length}/10  ·  兴趣 ${_selectedInterests.length}/15',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                  ElevatedButton(
+                    onPressed: !_controller.hasSelection || _controller.isSaving.value
+                        ? null
+                        : _controller.saveSkillsAndInterests,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                     ),
+                    child: _controller.isSaving.value
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text('保存'),
                   ),
                 ],
-              ),
-              ElevatedButton(
-                onPressed: (_selectedSkills.isEmpty && _selectedInterests.isEmpty) || _isSaving
-                    ? null
-                    : _saveSkillsAndInterests,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                ),
-                child: _isSaving
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text('保存'),
-              ),
-            ],
-          ),
+              )),
         ),
       ),
     );

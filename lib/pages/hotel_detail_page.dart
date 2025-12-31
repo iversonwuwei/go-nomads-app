@@ -1,16 +1,12 @@
-import 'dart:developer';
-
-import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/hotel/domain/entities/hotel.dart';
-import 'package:df_admin_mobile/features/hotel/infrastructure/repositories/hotel_repository.dart';
-import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:df_admin_mobile/controllers/hotel_detail_page_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 /// 酒店详情页面
-class HotelDetailPage extends StatefulWidget {
+class HotelDetailPage extends StatelessWidget {
   final int hotelId;
 
   const HotelDetailPage({
@@ -18,54 +14,33 @@ class HotelDetailPage extends StatefulWidget {
     required this.hotelId,
   });
 
-  @override
-  State<HotelDetailPage> createState() => _HotelDetailPageState();
-}
+  String get _tag => 'hotel_detail_$hotelId';
 
-class _HotelDetailPageState extends State<HotelDetailPage> {
-  final HotelRepository _hotelRepository = HotelRepository(HttpService());
-  final RxBool _isLoading = true.obs;
-  final Rxn<Hotel> _hotel = Rxn<Hotel>();
-  final RxString _error = ''.obs;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadHotel();
-  }
-
-  Future<void> _loadHotel() async {
-    _isLoading.value = true;
-    _error.value = '';
-
-    final result = await _hotelRepository.getHotelById(widget.hotelId.toString());
-
-    result.onSuccess((hotel) {
-      _hotel.value = hotel;
-      log('🏨 加载酒店详情成功: ${hotel.name}');
-    }).onFailure((exception) {
-      _error.value = exception.message;
-      log('❌ 加载酒店详情失败: ${exception.message}');
-    });
-
-    _isLoading.value = false;
+  HotelDetailPageController get _controller {
+    if (!Get.isRegistered<HotelDetailPageController>(tag: _tag)) {
+      Get.put(HotelDetailPageController(hotelId: hotelId), tag: _tag);
+    }
+    return Get.find<HotelDetailPageController>(tag: _tag);
   }
 
   @override
   Widget build(BuildContext context) {
+    // 确保控制器初始化
+    final controller = _controller;
+
     return Scaffold(
       body: Obx(() {
-        if (_isLoading.value) {
+        if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (_error.value.isNotEmpty) {
-          return _buildErrorState();
+        if (controller.error.value.isNotEmpty) {
+          return _buildErrorState(controller);
         }
 
-        final hotel = _hotel.value;
+        final hotel = controller.hotel.value;
         if (hotel == null) {
-          return _buildErrorState();
+          return _buildErrorState(controller);
         }
 
         return _buildHotelDetail(hotel);
@@ -73,7 +48,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
     );
   }
 
-  Widget _buildErrorState() {
+  Widget _buildErrorState(HotelDetailPageController controller) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -81,7 +56,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
           Icon(FontAwesomeIcons.circleExclamation, size: 64, color: Colors.grey[400]),
           SizedBox(height: 16.h),
           Text(
-            _error.value.isNotEmpty ? _error.value : 'Hotel not found',
+            controller.error.value.isNotEmpty ? controller.error.value : 'Hotel not found',
             style: TextStyle(fontSize: 16.sp, color: Colors.grey[600]),
             textAlign: TextAlign.center,
           ),

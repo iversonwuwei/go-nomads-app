@@ -1,8 +1,6 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/hotel/domain/entities/hotel.dart';
-import 'package:df_admin_mobile/features/hotel/infrastructure/repositories/hotel_repository.dart';
-import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:df_admin_mobile/controllers/room_type_list_page_controller.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -10,7 +8,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 /// 房型列表页面
-class RoomTypeListPage extends StatefulWidget {
+class RoomTypeListPage extends StatelessWidget {
   final String hotelId;
   final String hotelName;
 
@@ -20,58 +18,34 @@ class RoomTypeListPage extends StatefulWidget {
     required this.hotelName,
   });
 
-  @override
-  State<RoomTypeListPage> createState() => _RoomTypeListPageState();
-}
+  String get _tag => 'RoomTypeListPage_$hotelId';
 
-class _RoomTypeListPageState extends State<RoomTypeListPage> {
-  final RxBool _isLoading = false.obs;
-  final RxList<RoomType> _roomTypes = <RoomType>[].obs;
-
-  final HotelRepository _hotelRepository = HotelRepository(HttpService());
-
-  @override
-  void initState() {
-    super.initState();
-    // 异步加载数据,不阻塞页面显示
-    Future.microtask(() => _loadRoomTypes());
-  }
-
-  // 加载房型数据
-  Future<void> _loadRoomTypes() async {
-    _isLoading.value = true;
-    try {
-      final result = await _hotelRepository.getRoomTypes(widget.hotelId);
-
-      result.fold(
-        onSuccess: (roomTypes) {
-          _roomTypes.value = roomTypes;
-        },
-        onFailure: (exception) {
-          AppToast.error('加载房型失败: ${exception.message}');
-        },
+  RoomTypeListPageController get _controller {
+    if (!Get.isRegistered<RoomTypeListPageController>(tag: _tag)) {
+      Get.put(
+        RoomTypeListPageController(hotelId: hotelId, hotelName: hotelName),
+        tag: _tag,
       );
-    } catch (e) {
-      AppToast.error('加载房型失败: $e');
-    } finally {
-      _isLoading.value = false;
     }
+    return Get.find<RoomTypeListPageController>(tag: _tag);
   }
 
   @override
   Widget build(BuildContext context) {
+    final controller = _controller;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(widget.hotelName),
+        title: Text(hotelName),
         elevation: 0,
       ),
       body: Obx(() {
-        if (_isLoading.value) {
+        if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (_roomTypes.isEmpty) {
+        if (controller.roomTypes.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -89,9 +63,9 @@ class _RoomTypeListPageState extends State<RoomTypeListPage> {
 
         return ListView.builder(
           padding: EdgeInsets.all(16.w),
-          itemCount: _roomTypes.length,
+          itemCount: controller.roomTypes.length,
           itemBuilder: (context, index) {
-            final roomType = _roomTypes[index];
+            final roomType = controller.roomTypes[index];
             return _buildRoomTypeCard(roomType);
           },
         );

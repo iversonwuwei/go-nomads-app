@@ -1,62 +1,23 @@
+import 'package:df_admin_mobile/controllers/global_map_page_controller.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
 
 /// 使用 flutter_map 显示基础全球地图页面
-class GlobalMapPage extends StatefulWidget {
+class GlobalMapPage extends StatelessWidget {
   const GlobalMapPage({super.key});
 
-  @override
-  State<GlobalMapPage> createState() => _GlobalMapPageState();
-}
-
-class _GlobalMapPageState extends State<GlobalMapPage> {
-  final MapController _mapController = MapController();
-  bool _isLoading = true;
-  String? _errorMessage;
-
-  // 可用的瓦片源配置（优先国内可访问源）
-  final Map<String, Map<String, String>> _tileSources = {
-    'gaode-road': {
-      'name': '高德标准',
-      'url': 'https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
-    },
-    'gaode-satellite': {
-      'name': '高德卫星',
-      'url': 'https://webst01.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}',
-    },
-    'tianditu-vec': {
-      'name': '天地图矢量',
-      'url':
-          'https://t0.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=vec&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=YOUR_KEY',
-    },
-    'osm-standard': {
-      'name': 'OpenStreetMap',
-      'url': 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    },
-    'cartodb-voyager': {
-      'name': 'CartoDB Voyager',
-      'url': 'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
-    },
-  };
-
-  String _selectedTileSource = 'gaode-road'; // 默认使用高德标准（国内可访问）
-
-  @override
-  void initState() {
-    super.initState();
-    // 模拟加载完成
-    Future.delayed(const Duration(milliseconds: 500), () {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    });
+  GlobalMapPageController get _controller {
+    if (!Get.isRegistered<GlobalMapPageController>()) {
+      Get.put(GlobalMapPageController());
+    }
+    return Get.find<GlobalMapPageController>();
   }
 
-  void _showTileSourceSelector() {
+  void _showTileSourceSelector(BuildContext context) {
+    final controller = _controller;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -79,28 +40,28 @@ class _GlobalMapPageState extends State<GlobalMapPage> {
                 ),
               ),
               const Divider(height: 1),
-              ..._tileSources.entries.map((entry) {
-                final isSelected = _selectedTileSource == entry.key;
-                return ListTile(
-                  leading: Icon(
-                    Icons.map,
-                    color: isSelected ? const Color(0xFFFF4458) : Colors.grey,
-                  ),
-                  title: Text(
-                    entry.value['name']!,
-                    style: TextStyle(
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                      color: isSelected ? const Color(0xFFFF4458) : null,
+              ...controller.tileSources.entries.map((entry) {
+                return Obx(() {
+                  final isSelected = controller.selectedTileSource.value == entry.key;
+                  return ListTile(
+                    leading: Icon(
+                      Icons.map,
+                      color: isSelected ? const Color(0xFFFF4458) : Colors.grey,
                     ),
-                  ),
-                  trailing: isSelected ? const Icon(Icons.check_circle, color: Color(0xFFFF4458)) : null,
-                  onTap: () {
-                    setState(() {
-                      _selectedTileSource = entry.key;
-                    });
-                    Navigator.pop(context);
-                  },
-                );
+                    title: Text(
+                      entry.value['name']!,
+                      style: TextStyle(
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        color: isSelected ? const Color(0xFFFF4458) : null,
+                      ),
+                    ),
+                    trailing: isSelected ? const Icon(Icons.check_circle, color: Color(0xFFFF4458)) : null,
+                    onTap: () {
+                      controller.setTileSource(entry.key);
+                      Navigator.pop(context);
+                    },
+                  );
+                });
               }),
               const SizedBox(height: 16),
             ],
@@ -112,6 +73,8 @@ class _GlobalMapPageState extends State<GlobalMapPage> {
 
   @override
   Widget build(BuildContext context) {
+    final controller = _controller;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('全球地图'),
@@ -122,7 +85,7 @@ class _GlobalMapPageState extends State<GlobalMapPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.layers),
-            onPressed: _showTileSourceSelector,
+            onPressed: () => _showTileSourceSelector(context),
             tooltip: '切换地图样式',
           ),
         ],
@@ -130,91 +93,81 @@ class _GlobalMapPageState extends State<GlobalMapPage> {
       body: Stack(
         children: [
           // 地图主体
-          FlutterMap(
-            mapController: _mapController,
+          Obx(() => FlutterMap(
+            mapController: controller.mapController,
             options: MapOptions(
               initialCenter: const LatLng(30.0, 105.0), // 默认中国中心
               initialZoom: 4,
               minZoom: 2,
               maxZoom: 18,
-              onMapReady: () {
-                debugPrint('🗺️ 地图加载完成');
-                if (mounted) {
-                  setState(() {
-                    _isLoading = false;
-                  });
-                }
-              },
+              onMapReady: controller.onMapReady,
             ),
             children: [
               TileLayer(
-                urlTemplate: _tileSources[_selectedTileSource]!['url']!,
+                urlTemplate: controller.tileSources[controller.selectedTileSource.value]!['url']!,
                 userAgentPackageName: 'com.digitalfuture.df_admin_mobile',
                 maxZoom: 18,
                 minZoom: 2,
               ),
             ],
-          ),
+          )),
 
           // 加载指示器
-          if (_isLoading)
-            Container(
-              color: Colors.white.withValues(alpha: 0.8),
-              child: const Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
+          Obx(() => controller.isLoading.value
+              ? Container(
+                  color: Colors.white.withValues(alpha: 0.8),
+                  child: const Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          '加载地图中...',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
                     ),
-                    SizedBox(height: 16),
-                    Text(
-                      '加载地图中...',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+                  ),
+                )
+              : const SizedBox.shrink()),
 
           // 错误提示
-          if (_errorMessage != null)
-            Container(
-              color: Colors.white.withValues(alpha: 0.9),
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.error_outline,
-                      size: 48,
-                      color: Colors.red,
+          Obx(() => controller.errorMessage.value != null
+              ? Container(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.error_outline,
+                          size: 48,
+                          color: Colors.red,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          controller.errorMessage.value!,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.red,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: controller.retry,
+                          child: const Text('重试'),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 16),
-                    Text(
-                      _errorMessage!,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.red,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          _errorMessage = null;
-                          _isLoading = true;
-                        });
-                      },
-                      child: const Text('重试'),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+                  ),
+                )
+              : const SizedBox.shrink()),
 
           // 缩放控制按钮
           Positioned(
@@ -224,24 +177,12 @@ class _GlobalMapPageState extends State<GlobalMapPage> {
               children: [
                 _buildZoomButton(
                   icon: Icons.add,
-                  onTap: () {
-                    final currentZoom = _mapController.camera.zoom;
-                    _mapController.move(
-                      _mapController.camera.center,
-                      currentZoom + 1,
-                    );
-                  },
+                  onTap: controller.zoomIn,
                 ),
                 const SizedBox(height: 8),
                 _buildZoomButton(
                   icon: Icons.remove,
-                  onTap: () {
-                    final currentZoom = _mapController.camera.zoom;
-                    _mapController.move(
-                      _mapController.camera.center,
-                      currentZoom - 1,
-                    );
-                  },
+                  onTap: controller.zoomOut,
                 ),
               ],
             ),
@@ -251,7 +192,7 @@ class _GlobalMapPageState extends State<GlobalMapPage> {
           Positioned(
             left: 16,
             bottom: 32,
-            child: Container(
+            child: Obx(() => Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -270,7 +211,7 @@ class _GlobalMapPageState extends State<GlobalMapPage> {
                   const Icon(Icons.map, size: 16, color: Color(0xFFFF4458)),
                   const SizedBox(width: 8),
                   Text(
-                    _tileSources[_selectedTileSource]!['name']!,
+                    controller.tileSources[controller.selectedTileSource.value]!['name']!,
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
@@ -278,7 +219,7 @@ class _GlobalMapPageState extends State<GlobalMapPage> {
                   ),
                 ],
               ),
-            ),
+            )),
           ),
         ],
       ),

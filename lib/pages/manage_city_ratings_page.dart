@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-class ManageCityRatingsPage extends StatefulWidget {
+class ManageCityRatingsPage extends StatelessWidget {
   final String cityId;
   final String cityName;
 
@@ -17,27 +17,11 @@ class ManageCityRatingsPage extends StatefulWidget {
     required this.cityName,
   });
 
-  @override
-  State<ManageCityRatingsPage> createState() => _ManageCityRatingsPageState();
-}
+  CityRatingController get _controller => Get.find<CityRatingController>();
 
-class _ManageCityRatingsPageState extends State<ManageCityRatingsPage> {
-  late final CityRatingController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    // 确保 Controller 已初始化
-    _controller = Get.find<CityRatingController>();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadData();
-    });
-  }
-
-  Future<void> _loadData() async {
-    log('🔍 [ManageCityRatingsPage] 加载评分项数据: cityId=${widget.cityId}');
-    await _controller.loadCityRatings(widget.cityId);
+  void _loadData() {
+    log('🔍 [ManageCityRatingsPage] 加载评分项数据: cityId=$cityId');
+    _controller.loadCityRatings(cityId);
   }
 
   Future<void> _addRating() async {
@@ -170,13 +154,18 @@ class _ManageCityRatingsPageState extends State<ManageCityRatingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    // 初始化时加载数据
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadData();
+    });
+
     return PopScope(
       canPop: true,
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: AppColors.cityPrimary,
           foregroundColor: Colors.white,
-          title: Text('${widget.cityName} - 评分数据'),
+          title: Text('$cityName - 评分数据'),
           leading: AppBackButton(
             color: Colors.white,
             onPressed: _finish,

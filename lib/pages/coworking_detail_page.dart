@@ -17,8 +17,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'add_coworking_page.dart';
-import 'add_coworking_review_page.dart';
+import 'add_coworking/add_coworking_page.dart';
+import 'add_coworking_review/add_coworking_review_page.dart';
 import 'coworking_reviews_page.dart';
 import 'osm_navigation_page.dart';
 

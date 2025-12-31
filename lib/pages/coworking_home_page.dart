@@ -4,7 +4,7 @@ import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/core/core.dart';
 import 'package:df_admin_mobile/features/city/application/use_cases/city_use_cases.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/pages/add_coworking_page.dart';
+import 'package:df_admin_mobile/pages/add_coworking/add_coworking_page.dart';
 import 'package:df_admin_mobile/pages/coworking_list_page.dart';
 import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
@@ -314,7 +314,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> with RouteAwareRe
                                 final result = await Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => const AddCoworkingPage(),
+                                    builder: (context) => AddCoworkingPage(),
                                   ),
                                 );
 

@@ -19,8 +19,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
-import 'create_meetup_page.dart';
-import 'meetup_detail_page.dart';
+import 'package:df_admin_mobile/pages/create_meetup/create_meetup_page.dart';
+import 'meetup_detail/meetup_detail_page.dart';
 
 /// Meetups 列表页面
 class MeetupsListPage extends StatefulWidget {

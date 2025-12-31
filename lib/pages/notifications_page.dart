@@ -1,16 +1,15 @@
 import 'dart:developer';
 
 import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/controllers/notifications_page_controller.dart';
 import 'package:df_admin_mobile/features/notification/domain/entities/app_notification.dart';
-import 'package:df_admin_mobile/features/notification/presentation/controllers/notification_state_controller.dart';
-import 'package:df_admin_mobile/routes/app_routes.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:timeago/timeago.dart' as timeago;
 
 /// 通知列表页面
+/// 注意: 由于 TabController 需要 TickerProvider，保持 StatefulWidget 结构
+/// 但业务逻辑已移至 NotificationsPageController
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
 
@@ -19,43 +18,28 @@ class NotificationsPage extends StatefulWidget {
 }
 
 class _NotificationsPageState extends State<NotificationsPage> with SingleTickerProviderStateMixin {
+  static const String _tag = 'NotificationsPage';
   late TabController _tabController;
-  late NotificationStateController _controller;
-  bool _isInitialized = false;
-  final RxBool _isRefreshing = false.obs; // 下拉刷新状态标志
+  late NotificationsPageController _controller;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _controller = _useController();
+  }
 
-    // 设置中文 timeago
-    timeago.setLocaleMessages('zh_CN', timeago.ZhCnMessages());
-
-    // 获取控制器
-    _controller = Get.find<NotificationStateController>();
-
-    // 页面显示后立即加载数据
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_isInitialized) {
-        _isInitialized = true;
-        log('📱 页面初始化完成，开始加载通知数据');
-        // 只调用一次，获取列表和未读数量
-        _controller.loadNotifications();
-      }
-    });
+  NotificationsPageController _useController() {
+    if (Get.isRegistered<NotificationsPageController>(tag: _tag)) {
+      return Get.find<NotificationsPageController>(tag: _tag);
+    }
+    return Get.put(NotificationsPageController(), tag: _tag);
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
-  }
-
-  Future<void> _handleRefresh() async {
-    _isRefreshing.value = true;
-    await _controller.refresh();
-    _isRefreshing.value = false;
   }
 
   @override
@@ -89,34 +73,17 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
                             Tab(text: '未读'),
                             Tab(text: '已读'),
                           ],
-                          onTap: (index) {
-                            switch (index) {
-                              case 0:
-                                _controller.loadNotifications();
-                                break;
-                              case 1:
-                                _controller.loadNotifications(isRead: false);
-                                break;
-                              case 2:
-                                _controller.loadNotifications(isRead: true);
-                                break;
-                            }
-                          },
+                          onTap: (index) => _controller.loadNotificationsByTab(index),
                         ),
                       ),
                       // 全部标记为已读按钮
                       Obx(() {
-                        final hasUnread = _controller.unreadCount.value > 0;
+                        final hasUnread = _controller.notificationController.unreadCount.value > 0;
                         return hasUnread
                             ? IconButton(
                                 icon: const Icon(FontAwesomeIcons.checkDouble),
                                 tooltip: '全部标记为已读',
-                                onPressed: () async {
-                                  final success = await _controller.markAllAsRead();
-                                  if (success) {
-                                    AppToast.success('已全部标记为已读');
-                                  }
-                                },
+                                onPressed: () => _controller.markAllAsRead(),
                               )
                             : const SizedBox(width: 48);
                       }),
@@ -131,9 +98,9 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
             child: TabBarView(
               controller: _tabController,
               children: [
-                _buildNotificationList(_controller, isMobile, null),
-                _buildNotificationList(_controller, isMobile, false),
-                _buildNotificationList(_controller, isMobile, true),
+                _buildNotificationList(isMobile, null),
+                _buildNotificationList(isMobile, false),
+                _buildNotificationList(isMobile, true),
               ],
             ),
           ),
@@ -142,18 +109,18 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
     );
   }
 
-  Widget _buildNotificationList(
-    NotificationStateController controller,
-    bool isMobile,
-    bool? isRead,
-  ) {
+  Widget _buildNotificationList(bool isMobile, bool? isRead) {
     return Obx(() {
+      final notificationController = _controller.notificationController;
+
       // 首次加载时显示中间加载指示器
-      if (_controller.isLoading.value && _controller.notifications.isEmpty && !_isRefreshing.value) {
+      if (notificationController.isLoading.value &&
+          notificationController.notifications.isEmpty &&
+          !_controller.isRefreshing.value) {
         return const Center(child: CircularProgressIndicator());
       }
 
-      if (_controller.errorMessage.value.isNotEmpty) {
+      if (notificationController.errorMessage.value.isNotEmpty) {
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -161,12 +128,12 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
               Icon(FontAwesomeIcons.circleExclamation, size: 64, color: AppColors.iconSecondary),
               const SizedBox(height: 16),
               Text(
-                _controller.errorMessage.value,
+                notificationController.errorMessage.value,
                 style: TextStyle(color: AppColors.textSecondary),
               ),
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () => _controller.loadNotifications(isRead: isRead),
+                onPressed: () => notificationController.loadNotifications(isRead: isRead),
                 child: const Text('重试'),
               ),
             ],
@@ -174,11 +141,12 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
         );
       }
 
-      final notifications = _controller.notifications.where((n) => isRead == null || n.isRead == isRead).toList();
+      final notifications =
+          notificationController.notifications.where((n) => isRead == null || n.isRead == isRead).toList();
 
       if (notifications.isEmpty) {
         return RefreshIndicator(
-          onRefresh: _handleRefresh,
+          onRefresh: _controller.handleRefresh,
           child: LayoutBuilder(
             builder: (context, constraints) {
               return SingleChildScrollView(
@@ -210,25 +178,21 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
       }
 
       return RefreshIndicator(
-        onRefresh: _controller.refresh,
+        onRefresh: notificationController.refresh,
         child: ListView.separated(
           padding: EdgeInsets.all(isMobile ? 8 : 16),
           itemCount: notifications.length,
           separatorBuilder: (context, index) => const SizedBox(height: 8),
           itemBuilder: (context, index) {
             final notification = notifications[index];
-            return _buildNotificationCard(notification, controller, isMobile);
+            return _buildNotificationCard(notification, isMobile);
           },
         ),
       );
     });
   }
 
-  Widget _buildNotificationCard(
-    AppNotification notification,
-    NotificationStateController controller,
-    bool isMobile,
-  ) {
+  Widget _buildNotificationCard(AppNotification notification, bool isMobile) {
     final color = Color(
       int.parse(notification.type.colorHex.substring(1), radix: 16) + 0xFF000000,
     );
@@ -245,18 +209,13 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
         child: const Icon(FontAwesomeIcons.trash, color: Colors.white),
       ),
       direction: DismissDirection.endToStart,
-      onDismissed: (_) {
-        _controller.deleteNotification(notification.id);
-        AppToast.info('通知已删除');
-      },
+      onDismissed: (_) => _controller.deleteNotification(notification.id),
       child: InkWell(
         onTap: () async {
           if (!notification.isRead) {
             await _controller.markAsRead(notification.id);
           }
-
-          // 导航到相关页面
-          _handleNotificationTap(notification);
+          _controller.handleNotificationTap(notification);
         },
         child: Container(
           padding: EdgeInsets.all(isMobile ? 12 : 16),
@@ -337,7 +296,7 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
 
                     // 时间
                     Text(
-                      timeago.format(notification.createdAt, locale: 'zh_CN'),
+                      _controller.formatTime(notification.createdAt),
                       style: TextStyle(
                         fontSize: 12,
                         color: AppColors.textTertiary,
@@ -349,102 +308,6 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  void _handleNotificationTap(AppNotification notification) {
-    log('🔔 _handleNotificationTap: type=${notification.type}');
-    log('   relatedId: ${notification.relatedId}');
-    log('   metadata: ${notification.metadata}');
-    
-    switch (notification.type) {
-      case NotificationType.moderatorApplication:
-        // 管理员：跳转到申请详情页面
-        // 优先使用 metadata 中的 applicationId，其次使用 relatedId
-        final applicationId = notification.metadata?['applicationId'] ?? notification.relatedId;
-        log('   applicationId to use: $applicationId');
-
-        if (applicationId != null && applicationId.toString().isNotEmpty) {
-          Get.toNamed(
-            AppRoutes.moderatorApplicationDetail,
-            arguments: {'applicationId': applicationId.toString()},
-          );
-        } else {
-          AppToast.error('无法获取申请ID，请刷新通知列表');
-        }
-        break;
-
-      case NotificationType.moderatorApproved:
-      case NotificationType.moderatorRejected:
-        // 跳转到相关城市页面
-        final cityId = notification.metadata?['cityId'] ?? notification.relatedId;
-        if (cityId != null) {
-          Get.toNamed(
-            AppRoutes.cityDetail,
-            arguments: {
-              'cityId': cityId,
-              'cityName': notification.metadata?['cityName'] ?? '',
-            },
-          );
-        }
-        break;
-
-      case NotificationType.cityUpdate:
-        if (notification.relatedId != null) {
-          Get.toNamed(
-            AppRoutes.cityDetail,
-            arguments: {
-              'cityId': notification.relatedId,
-              'cityName': notification.metadata?['cityName'] ?? '',
-            },
-          );
-        }
-        break;
-
-      case NotificationType.systemAnnouncement:
-        // 显示详情对话框
-        _showAnnouncementDialog(notification);
-        break;
-
-      case NotificationType.eventInvitation:
-        // 活动邀请：跳转到活动详情页面
-        final eventId = notification.metadata?['eventId'] ?? notification.relatedId;
-        if (eventId != null) {
-          Get.toNamed(
-            AppRoutes.meetupDetail,
-            arguments: {'meetupId': eventId.toString()},
-          );
-        }
-        break;
-
-      case NotificationType.eventInvitationResponse:
-        // 邀请响应：跳转到活动详情页面
-        final eventId = notification.metadata?['eventId'] ?? notification.relatedId;
-        if (eventId != null) {
-          Get.toNamed(
-            AppRoutes.meetupDetail,
-            arguments: {'meetupId': eventId.toString()},
-          );
-        }
-        break;
-
-      case NotificationType.other:
-        break;
-    }
-  }
-
-  void _showAnnouncementDialog(AppNotification notification) {
-    Get.dialog(
-      AlertDialog(
-        title: Text(notification.title),
-        content: Text(notification.message),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('关闭'),
-          ),
-        ],
       ),
     );
   }

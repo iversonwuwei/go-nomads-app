@@ -1,11 +1,7 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/core/sync/sync.dart';
+import 'package:df_admin_mobile/controllers/innovation_detail_page_controller.dart';
 import 'package:df_admin_mobile/features/innovation_project/domain/entities/innovation_project.dart';
-import 'package:df_admin_mobile/features/innovation_project/domain/repositories/i_innovation_project_repository.dart';
-import 'package:df_admin_mobile/features/innovation_project/presentation/controllers/innovation_project_state_controller.dart';
-import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/pages/add_innovation_page.dart';
+import 'package:df_admin_mobile/pages/add_innovation/add_innovation_page.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -15,451 +11,322 @@ import 'direct_chat_page.dart';
 
 /// Innovation Project Detail Page
 /// 创意项目详情页面
-class InnovationDetailPage extends StatefulWidget {
+class InnovationDetailPage extends StatelessWidget {
   final InnovationProject project;
 
   const InnovationDetailPage({super.key, required this.project});
 
-  @override
-  State<InnovationDetailPage> createState() => _InnovationDetailPageState();
-}
+  static const String _tag = 'InnovationDetailPage';
 
-class _InnovationDetailPageState extends State<InnovationDetailPage> {
-  // 关注状态
-  bool _isFollowed = false;
-  bool _isToggling = false; // 防止重复点击
-  // 完整项目数据
-  InnovationProject? _fullProject;
-  bool _isLoading = true;
-
-  // 获取 controller
-  InnovationProjectStateController? get _controller {
-    try {
-      return Get.find<InnovationProjectStateController>();
-    } catch (_) {
-      return null;
+  InnovationDetailPageController _useController() {
+    if (Get.isRegistered<InnovationDetailPageController>(tag: _tag)) {
+      return Get.find<InnovationDetailPageController>(tag: _tag);
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    // 延迟到帧渲染完成后再加载数据，避免在 build 过程中触发状态更新
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadFullProject();
-    });
-  }
-
-  /// 加载完整项目数据
-  Future<void> _loadFullProject() async {
-    final controller = _controller;
-    final projectId = widget.project.uuid;
-    print('📱 加载项目详情: projectId=$projectId, controller=${controller != null}');
-
-    if (controller != null && projectId != null) {
-      await controller.getProjectById(projectId);
-      print('📱 API返回: currentProject=${controller.currentProject.value?.projectName}');
-      if (mounted) {
-        setState(() {
-          _fullProject = controller.currentProject.value;
-          _isLoading = false;
-          // 从服务器数据初始化关注状态
-          _isFollowed = _fullProject?.isLiked ?? false;
-          print('📱 设置 _fullProject: ${_fullProject?.projectName}, isLiked: $_isFollowed');
-        });
-      }
-    } else {
-      print('📱 跳过加载: controller=$controller, projectId=$projectId');
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  /// 获取当前显示的项目（优先使用完整数据）
-  InnovationProject get _project => _fullProject ?? widget.project;
-
-  /// 切换关注状态
-  Future<void> _toggleFollow() async {
-    if (_isToggling) return; // 防止重复点击
-
-    final projectId = _project.uuid;
-    if (projectId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('项目 ID 无效'),
-          backgroundColor: Colors.red[700],
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
-      );
-      return;
-    }
-
-    // 先乐观更新 UI
-    final previousState = _isFollowed;
-    setState(() {
-      _isFollowed = !previousState;
-      _isToggling = true;
-    });
-
-    // 调用 API
-    try {
-      final repository = Get.find<IInnovationProjectRepository>();
-      final result = await repository.toggleLike(projectId);
-
-      switch (result) {
-        case Success(data: final isLiked):
-          // API 成功，更新为服务器返回的状态
-          // 通知其他组件数据变更
-          DataEventBus.instance.emit(DataChangedEvent(
-            entityType: 'innovation_project',
-            entityId: projectId,
-            version: DateTime.now().millisecondsSinceEpoch,
-            changeType: DataChangeType.updated,
-          ));
-          if (mounted) {
-            setState(() {
-              _isFollowed = isLiked;
-              _isToggling = false;
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  isLiked ? '已关注项目' : '已取消关注',
-                  style: const TextStyle(fontSize: 15),
-                ),
-                backgroundColor: isLiked ? const Color(0xFF8B5CF6) : Colors.grey[700],
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                duration: const Duration(seconds: 2),
-              ),
-            );
-          }
-        case Failure(exception: final error):
-          // API 失败，回滚状态
-          if (mounted) {
-            setState(() {
-              _isFollowed = previousState;
-              _isToggling = false;
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('操作失败: ${error.message}'),
-                backgroundColor: Colors.red[700],
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                duration: const Duration(seconds: 2),
-              ),
-            );
-          }
-      }
-    } catch (e) {
-      // 异常处理，回滚状态
-      if (mounted) {
-        setState(() {
-          _isFollowed = previousState;
-          _isToggling = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('操作失败: $e'),
-            backgroundColor: Colors.red[700],
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
-    }
-  }
-
-  /// 跳转到编辑页面
-  Future<void> _navigateToEdit() async {
-    final result = await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => AddInnovationPage(project: _project),
-      ),
+    return Get.put(
+      InnovationDetailPageController(initialProject: project),
+      tag: _tag,
     );
-    // 如果返回 true，说明编辑成功，刷新数据
-    if (result == true) {
-      _loadFullProject();
-    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final controller = _useController();
     final l10n = AppLocalizations.of(context)!;
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
 
-    // 加载中显示骨架屏
-    if (_isLoading) {
-      return Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: const Color(0xFF8B5CF6),
-          leading: const SliverBackButton(),
-          title: Text(widget.project.projectName),
-        ),
-        body: const Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: CustomScrollView(
-        slivers: [
-          // App Bar with Image
-          SliverAppBar(
-            expandedHeight: 250,
-            pinned: true,
+    return Obx(() {
+      // 加载中显示骨架屏
+      if (controller.isLoading.value) {
+        return Scaffold(
+          backgroundColor: Colors.white,
+          appBar: AppBar(
             backgroundColor: const Color(0xFF8B5CF6),
             leading: const SliverBackButton(),
-            actions: [
-              // 编辑按钮 - 仅当 canEdit 为 true 时显示
-              if (_project.canEdit)
-                IconButton(
-                  icon: const Icon(FontAwesomeIcons.penToSquare, color: Colors.white, size: 20),
-                  onPressed: () => _navigateToEdit(),
-                  tooltip: l10n.edit,
-                ),
-            ],
-            flexibleSpace: FlexibleSpaceBar(
-              title: Text(
-                _project.projectName,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  shadows: [
-                    Shadow(
-                      offset: Offset(0, 1),
-                      blurRadius: 3.0,
-                      color: Color.fromARGB(128, 0, 0, 0),
-                    ),
-                  ],
-                ),
+            title: Text(project.projectName),
+          ),
+          body: const Center(child: CircularProgressIndicator()),
+        );
+      }
+
+      return Scaffold(
+        backgroundColor: Colors.white,
+        body: CustomScrollView(
+          slivers: [
+            // App Bar with Image
+            _buildSliverAppBar(controller, l10n),
+
+            // Content
+            SliverPadding(
+              padding: EdgeInsets.all(isMobile ? 16 : 24),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  // 1. 一句话定位
+                  _buildSection(
+                    icon: FontAwesomeIcons.rocket,
+                    title: l10n.elevatorPitch,
+                    content: controller.project.elevatorPitch,
+                    color: const Color(0xFF8B5CF6),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // 2. 要解决的问题
+                  _buildSection(
+                    icon: FontAwesomeIcons.circleExclamation,
+                    title: l10n.problem,
+                    content: controller.project.problem,
+                    color: const Color(0xFFEF4444),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // 3. 解决方案
+                  _buildSection(
+                    icon: FontAwesomeIcons.lightbulb,
+                    title: l10n.solution,
+                    content: controller.project.solution,
+                    color: const Color(0xFF10B981),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // 4. 目标用户
+                  _buildSection(
+                    icon: FontAwesomeIcons.users,
+                    title: l10n.targetAudience,
+                    content: controller.project.targetAudience,
+                    color: const Color(0xFF3B82F6),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // 5. 产品形态
+                  _buildSection(
+                    icon: FontAwesomeIcons.laptop,
+                    title: l10n.productType,
+                    content: controller.project.productType,
+                    color: const Color(0xFFF59E0B),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // 6. 核心功能
+                  _buildListSection(
+                    icon: FontAwesomeIcons.star,
+                    title: l10n.keyFeatures,
+                    items: controller.project.keyFeatures.split('\n').where((s) => s.isNotEmpty).toList(),
+                    color: const Color(0xFF8B5CF6),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // 7. 竞争优势
+                  _buildSection(
+                    icon: FontAwesomeIcons.chartLine,
+                    title: l10n.competitiveAdvantage,
+                    content: controller.project.competitiveAdvantage,
+                    color: const Color(0xFF6366F1),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // 8. 商业模式
+                  _buildSection(
+                    icon: FontAwesomeIcons.dollarSign,
+                    title: l10n.businessModel,
+                    content: controller.project.businessModel,
+                    color: const Color(0xFF10B981),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // 9. 市场潜力
+                  _buildSection(
+                    icon: FontAwesomeIcons.chartLine,
+                    title: l10n.marketOpportunity,
+                    content: controller.project.marketOpportunity,
+                    color: const Color(0xFF3B82F6),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // 10. 当前进展
+                  _buildSection(
+                    icon: FontAwesomeIcons.clockRotateLeft,
+                    title: l10n.currentStatus,
+                    content: controller.project.currentStatus,
+                    color: const Color(0xFFF59E0B),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // 11. 团队介绍
+                  _buildTeamSection(
+                    context: context,
+                    icon: FontAwesomeIcons.userGroup,
+                    title: l10n.team,
+                    team: controller.project.team,
+                    color: const Color(0xFF8B5CF6),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // 12. 所需支持
+                  _buildSection(
+                    icon: FontAwesomeIcons.handshake,
+                    title: l10n.ask,
+                    content: controller.project.ask,
+                    color: const Color(0xFFEF4444),
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // Footer - Creator Info
+                  _buildCreatorFooter(controller, l10n),
+
+                  const SizedBox(height: 32),
+
+                  // 底部留白,为底部栏留出空间
+                  const SizedBox(height: 80),
+                ]),
               ),
-              background: _project.imageUrl != null && _project.imageUrl!.isNotEmpty
-                  ? Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        Image.network(
-                          _project.imageUrl!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return _buildDefaultHeader();
-                          },
-                        ),
-                        Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.transparent,
-                                Colors.black.withValues(alpha: 0.7),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    )
-                  : _buildDefaultHeader(),
+            ),
+          ],
+        ),
+        // 底部栏
+        bottomNavigationBar: _buildBottomBar(context, controller, l10n),
+      );
+    });
+  }
+
+  Widget _buildSliverAppBar(InnovationDetailPageController controller, AppLocalizations l10n) {
+    return SliverAppBar(
+      expandedHeight: 250,
+      pinned: true,
+      backgroundColor: const Color(0xFF8B5CF6),
+      leading: const SliverBackButton(),
+      actions: [
+        // 编辑按钮 - 仅当 canEdit 为 true 时显示
+        if (controller.project.canEdit)
+          Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(FontAwesomeIcons.penToSquare, color: Colors.white, size: 20),
+              onPressed: () => _navigateToEdit(context, controller),
+              tooltip: l10n.edit,
             ),
           ),
-
-          // Content
-          SliverPadding(
-            padding: EdgeInsets.all(isMobile ? 16 : 24),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                // 1. 一句话定位
-                _buildSection(
-                  icon: FontAwesomeIcons.rocket,
-                  title: l10n.elevatorPitch,
-                  content: _project.elevatorPitch,
-                  color: const Color(0xFF8B5CF6),
-                ),
-
-                const SizedBox(height: 24),
-
-                // 2. 要解决的问题
-                _buildSection(
-                  icon: FontAwesomeIcons.circleExclamation,
-                  title: l10n.problem,
-                  content: _project.problem,
-                  color: const Color(0xFFEF4444),
-                ),
-
-                const SizedBox(height: 24),
-
-                // 3. 解决方案
-                _buildSection(
-                  icon: FontAwesomeIcons.lightbulb,
-                  title: l10n.solution,
-                  content: _project.solution,
-                  color: const Color(0xFF10B981),
-                ),
-
-                const SizedBox(height: 24),
-
-                // 4. 目标用户
-                _buildSection(
-                  icon: FontAwesomeIcons.users,
-                  title: l10n.targetAudience,
-                  content: _project.targetAudience,
-                  color: const Color(0xFF3B82F6),
-                ),
-
-                const SizedBox(height: 24),
-
-                // 5. 产品形态
-                _buildSection(
-                  icon: FontAwesomeIcons.laptop,
-                  title: l10n.productType,
-                  content: _project.productType,
-                  color: const Color(0xFFF59E0B),
-                ),
-
-                const SizedBox(height: 24),
-
-                // 6. 核心功能
-                _buildListSection(
-                  icon: FontAwesomeIcons.star,
-                  title: l10n.keyFeatures,
-                  items: _project.keyFeatures.split('\n').where((s) => s.isNotEmpty).toList(),
-                  color: const Color(0xFF8B5CF6),
-                ),
-
-                const SizedBox(height: 24),
-
-                // 7. 竞争优势
-                _buildSection(
-                  icon: FontAwesomeIcons.chartLine,
-                  title: l10n.competitiveAdvantage,
-                  content: _project.competitiveAdvantage,
-                  color: const Color(0xFF6366F1),
-                ),
-
-                const SizedBox(height: 24),
-
-                // 8. 商业模式
-                _buildSection(
-                  icon: FontAwesomeIcons.dollarSign,
-                  title: l10n.businessModel,
-                  content: _project.businessModel,
-                  color: const Color(0xFF10B981),
-                ),
-
-                const SizedBox(height: 24),
-
-                // 9. 市场潜力
-                _buildSection(
-                  icon: FontAwesomeIcons.chartLine,
-                  title: l10n.marketOpportunity,
-                  content: _project.marketOpportunity,
-                  color: const Color(0xFF3B82F6),
-                ),
-
-                const SizedBox(height: 24),
-
-                // 10. 当前进展
-                _buildSection(
-                  icon: FontAwesomeIcons.clockRotateLeft,
-                  title: l10n.currentStatus,
-                  content: _project.currentStatus,
-                  color: const Color(0xFFF59E0B),
-                ),
-
-                const SizedBox(height: 24),
-
-                // 11. 团队介绍
-                _buildTeamSection(
-                  icon: FontAwesomeIcons.userGroup,
-                  title: l10n.team,
-                  team: _project.team,
-                  color: const Color(0xFF8B5CF6),
-                ),
-
-                const SizedBox(height: 24),
-
-                // 12. 所需支持
-                _buildSection(
-                  icon: FontAwesomeIcons.handshake,
-                  title: l10n.ask,
-                  content: _project.ask,
-                  color: const Color(0xFFEF4444),
-                ),
-
-                const SizedBox(height: 32),
-
-                // Footer - Creator Info
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[50],
-                    borderRadius: BorderRadius.circular(12),
+      ],
+      flexibleSpace: FlexibleSpaceBar(
+        title: Text(
+          controller.project.projectName,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            shadows: [
+              Shadow(
+                offset: Offset(0, 1),
+                blurRadius: 3.0,
+                color: Color.fromARGB(128, 0, 0, 0),
+              ),
+            ],
+          ),
+        ),
+        background: controller.project.imageUrl != null && controller.project.imageUrl!.isNotEmpty
+            ? Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.network(
+                    controller.project.imageUrl!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return _buildDefaultHeader();
+                    },
                   ),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 24,
-                        backgroundColor: const Color(0xFF8B5CF6),
-                        child: Text(
-                          (_project.userName ?? '?').substring(0, 1),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.7),
+                        ],
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _project.userName ?? 'Unknown',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF1a1a1a),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${l10n.createdAt} ${_formatDate(_project.createdAt)}',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                    ),
+                  ),
+                ],
+              )
+            : _buildDefaultHeader(),
+      ),
+    );
+  }
+
+  /// 跳转到编辑页面
+  Future<void> _navigateToEdit(BuildContext context, InnovationDetailPageController controller) async {
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => AddInnovationPage(project: controller.project),
+      ),
+    );
+    // 如果返回 true，说明编辑成功，刷新数据
+    if (result == true) {
+      controller.loadFullProject();
+    }
+  }
+
+  Widget _buildCreatorFooter(InnovationDetailPageController controller, AppLocalizations l10n) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: const Color(0xFF8B5CF6),
+            child: Text(
+              (controller.project.userName ?? '?').substring(0, 1),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  controller.project.userName ?? 'Unknown',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1a1a1a),
                   ),
                 ),
-
-                const SizedBox(height: 32),
-
-                // 底部留白,为底部栏留出空间
-                const SizedBox(height: 80),
-              ]),
+                const SizedBox(height: 4),
+                Text(
+                  '${l10n.createdAt} ${controller.formatDate(controller.project.createdAt)}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
             ),
           ),
         ],
       ),
-      // 底部栏
-      bottomNavigationBar: _buildBottomBar(context),
     );
   }
 
   /// 构建底部栏
-  Widget _buildBottomBar(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+  Widget _buildBottomBar(BuildContext context, InnovationDetailPageController controller, AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -478,23 +345,23 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
             // 关注按钮
             Expanded(
               flex: 1,
-              child: OutlinedButton.icon(
-                onPressed: _isToggling ? null : _toggleFollow,
+              child: Obx(() => OutlinedButton.icon(
+                onPressed: controller.isToggling.value ? null : () => controller.toggleFollow(context),
                 icon: Icon(
-                  _isFollowed ? FontAwesomeIcons.solidHeart : FontAwesomeIcons.heart,
+                  controller.isFollowed.value ? FontAwesomeIcons.solidHeart : FontAwesomeIcons.heart,
                   size: 20,
                 ),
                 label: Text(
-                  _isToggling ? '处理中...' : (_isFollowed ? '已关注' : '关注'),
+                  controller.isToggling.value ? '处理中...' : (controller.isFollowed.value ? '已关注' : '关注'),
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: _isFollowed ? const Color(0xFF8B5CF6) : Colors.grey[700],
+                  foregroundColor: controller.isFollowed.value ? const Color(0xFF8B5CF6) : Colors.grey[700],
                   side: BorderSide(
-                    color: _isFollowed ? const Color(0xFF8B5CF6) : Colors.grey[300]!,
+                    color: controller.isFollowed.value ? const Color(0xFF8B5CF6) : Colors.grey[300]!,
                     width: 1.5,
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 12),
@@ -502,14 +369,14 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-              ),
+              )),
             ),
             const SizedBox(width: 12),
             // 联系按钮
             Expanded(
               flex: 2,
               child: ElevatedButton.icon(
-                onPressed: () => _contactCreator(context),
+                onPressed: () => _contactCreator(controller),
                 icon: const Icon(FontAwesomeIcons.message, size: 20),
                 label: Text(
                   l10n.message,
@@ -536,25 +403,8 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
   }
 
   /// 联系创建者
-  void _contactCreator(BuildContext context) {
-    // 创建发布者的 User 对象
-    final creatorUser = User(
-      id: _project.userId.toString(),
-      name: _project.userName ?? 'Unknown',
-      username: (_project.userName ?? 'unknown').toLowerCase().replaceAll(' ', '_'),
-      avatarUrl: _project.userAvatar,
-      stats: TravelStats(
-        citiesVisited: 0,
-        countriesVisited: 0,
-        reviewsWritten: 0,
-        photosShared: 0,
-        totalDistanceTraveled: 0,
-      ),
-      joinedDate: DateTime.now(),
-    );
-
-    // 跳转到一对一聊天页面
-    Get.to(() => DirectChatPage(user: creatorUser));
+  void _contactCreator(InnovationDetailPageController controller) {
+    Get.to(() => DirectChatPage(user: controller.creatorUser));
   }
 
   Widget _buildSection({
@@ -693,6 +543,7 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
   }
 
   Widget _buildTeamSection({
+    required BuildContext context,
     required IconData icon,
     required String title,
     required List<TeamMember> team,
@@ -803,13 +654,13 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
   /// 构建默认的 Header 背景
   Widget _buildDefaultHeader() {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF8B5CF6),
-            const Color(0xFF6366F1),
+            Color(0xFF8B5CF6),
+            Color(0xFF6366F1),
           ],
         ),
       ),
@@ -821,9 +672,5 @@ class _InnovationDetailPageState extends State<InnovationDetailPage> {
         ),
       ),
     );
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 }

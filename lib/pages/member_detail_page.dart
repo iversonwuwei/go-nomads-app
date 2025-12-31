@@ -1,8 +1,7 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart' as models;
-import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller_v2.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/controllers/member_detail_page_controller.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/safe_network_image.dart';
@@ -13,146 +12,96 @@ import 'package:get/get.dart';
 import 'direct_chat_page.dart';
 import 'invite_to_meetup_page.dart';
 
-class MemberDetailPage extends StatefulWidget {
-  /// 用户对象（可能包含部分信息）
+class MemberDetailPage extends StatelessWidget {
   final models.User? user;
-
-  /// 用户ID（用于从后端获取完整信息）
   final String? userId;
+  final String _tag;
 
-  const MemberDetailPage({
+  MemberDetailPage({
     super.key,
     this.user,
     this.userId,
-  }) : assert(user != null || userId != null, 'Either user or userId must be provided');
+  })  : assert(user != null || userId != null, 'Either user or userId must be provided'),
+        _tag = 'MemberDetailPage-${userId ?? user?.id ?? 'self'}';
 
-  @override
-  State<MemberDetailPage> createState() => _MemberDetailPageState();
-}
-
-class _MemberDetailPageState extends State<MemberDetailPage> {
-  late final UserStateControllerV2 _userController;
-  late final AuthStateController _authController;
-  models.User? _user;
-  bool _isLoading = true;
-  String? _errorMessage;
-
-  /// 判断当前显示的是否是登录用户自己
-  bool get _isCurrentUser {
-    final currentUserId = _authController.currentUser.value?.id;
-    final displayUserId = _user?.id ?? widget.userId;
-    return currentUserId != null && displayUserId != null && currentUserId == displayUserId;
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _userController = Get.find<UserStateControllerV2>();
-    _authController = Get.find<AuthStateController>();
-    _user = widget.user;
-    _loadUserDetails();
-  }
-
-  /// 从后端获取完整的用户信息
-  Future<void> _loadUserDetails() async {
-    final userId = widget.userId ?? widget.user?.id;
-    if (userId == null) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = '无法获取用户信息';
-      });
-      return;
+  MemberDetailPageController get _controller {
+    if (!Get.isRegistered<MemberDetailPageController>(tag: _tag)) {
+      Get.put(
+        MemberDetailPageController(
+          initialUser: user,
+          userId: userId,
+        ),
+        tag: _tag,
+      );
     }
-
-    try {
-      final user = await _userController.getUserById(userId);
-      if (mounted) {
-        setState(() {
-          if (user != null) {
-            _user = user;
-          }
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _errorMessage = '加载用户信息失败';
-        });
-      }
-    }
+    return Get.find<MemberDetailPageController>(tag: _tag);
   }
 
   @override
   Widget build(BuildContext context) {
-    // 显示加载状态
-    if (_isLoading) {
-      return Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: const AppBackButton(),
-        ),
-        body: const Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
+    final controller = _controller;
 
-    // 显示错误状态
-    if (_user == null) {
-      return Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: const AppBackButton(),
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                FontAwesomeIcons.circleExclamation,
-                size: 48,
-                color: Colors.grey,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                _errorMessage ?? '用户信息不存在',
-                style: const TextStyle(
-                  fontSize: 16,
+    return Obx(() {
+      if (controller.isLoading.value) {
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: const AppBackButton(),
+          ),
+          body: const Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+      }
+
+      if (controller.user.value == null) {
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: const AppBackButton(),
+          ),
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  FontAwesomeIcons.circleExclamation,
+                  size: 48,
                   color: Colors.grey,
                 ),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    _isLoading = true;
-                    _errorMessage = null;
-                  });
-                  _loadUserDetails();
-                },
-                child: const Text('重试'),
-              ),
-            ],
+                const SizedBox(height: 16),
+                Text(
+                  controller.errorMessage.value ?? '用户信息不存在',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: controller.retry,
+                  child: const Text('重试'),
+                ),
+              ],
+            ),
           ),
-        ),
-      );
-    }
+        );
+      }
 
-    return _buildContent(context, _user!);
+      final user = controller.user.value!;
+      return _buildContent(context, controller, user);
+    });
   }
 
-  Widget _buildContent(BuildContext context, models.User user) {
+  Widget _buildContent(BuildContext context, MemberDetailPageController controller, models.User user) {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: CustomScrollView(
         slivers: [
-          // App Bar with User Avatar
           SliverAppBar(
             expandedHeight: 300,
             pinned: true,
@@ -163,7 +112,6 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // User Avatar
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -205,7 +153,6 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
                       ),
                     ),
                   ),
-                  // Verified Badge (if verified)
                   if (user.isVerified)
                     Positioned(
                       top: 180,
@@ -252,15 +199,12 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
               ),
             ),
           ),
-
-          // Content
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Name and Username
                   Center(
                     child: Column(
                       children: [
@@ -305,10 +249,7 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 24),
-
-                  // Bio Section
                   if (user.bio != null && user.bio!.isNotEmpty) ...[
                     _buildSectionTitle(AppLocalizations.of(context)!.about),
                     const SizedBox(height: 12),
@@ -333,24 +274,14 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
                     ),
                     const SizedBox(height: 24),
                   ],
-
-                  // Interests Section
-                  _buildInterestsSection(context),
+                  _buildInterestsSection(context, user),
                   const SizedBox(height: 24),
-
-                  // Skills Section
-                  _buildSkillsSection(context),
+                  _buildSkillsSection(context, user),
                   const SizedBox(height: 24),
-
-                  // Badges Section
-                  _buildBadgesSection(context),
+                  _buildBadgesSection(context, user),
                   const SizedBox(height: 24),
-
-                  // Travel History Section
-                  _buildTravelHistorySection(context),
+                  _buildTravelHistorySection(context, user),
                   const SizedBox(height: 24),
-
-                  // Stats Section
                   _buildSectionTitle(AppLocalizations.of(context)!.stats),
                   const SizedBox(height: 12),
                   Row(
@@ -383,17 +314,13 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 24),
-
-                  // Action Buttons - 只有查看其他用户时才显示
-                  if (!_isCurrentUser)
+                  if (!controller.isCurrentUser)
                     Builder(
                       builder: (context) {
                         final l10n = AppLocalizations.of(context)!;
                         return Row(
                           children: [
-                            // Invite 按钮
                             Expanded(
                               child: ElevatedButton.icon(
                                 onPressed: () => Get.to(() => InviteToMeetupPage(user: user)),
@@ -411,11 +338,9 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
                               ),
                             ),
                             const SizedBox(width: 12),
-                            // Message 按钮
                             Expanded(
                               child: ElevatedButton.icon(
                                 onPressed: () {
-                                  // 跳转到一对一聊天页面
                                   Get.to(() => DirectChatPage(user: user));
                                 },
                                 icon: const Icon(FontAwesomeIcons.message),
@@ -441,7 +366,6 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
                               ),
                               child: IconButton(
                                 onPressed: () {
-                                  // TODO: Add to favorites
                                   AppToast.success(
                                     l10n.favoriteAdded,
                                     title: l10n.favorites,
@@ -457,7 +381,6 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
                         );
                       },
                     ),
-
                   const SizedBox(height: 40),
                 ],
               ),
@@ -500,14 +423,11 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Badge Icon
           Text(
             badge.icon,
             style: const TextStyle(fontSize: 32),
           ),
           const SizedBox(height: 8),
-
-          // Badge Name
           Text(
             badge.name,
             textAlign: TextAlign.center,
@@ -525,7 +445,7 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
     );
   }
 
-  Widget _buildBadgesSection(BuildContext context) {
+  Widget _buildBadgesSection(BuildContext context, models.User user) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isMobile = constraints.maxWidth < 768;
@@ -535,10 +455,10 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
           width: double.infinity,
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
+            gradient: const LinearGradient(
               colors: [
-                const Color(0xFFFFF3E0),
-                const Color(0xFFFFE0B2),
+                Color(0xFFFFF3E0),
+                Color(0xFFFFE0B2),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -560,16 +480,16 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                children: [
-                  const Icon(
+                children: const [
+                  Icon(
                     FontAwesomeIcons.trophy,
                     color: Color(0xFFFF6F00),
                     size: 24,
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Text(
-                    AppLocalizations.of(context)!.badges,
-                    style: const TextStyle(
+                    'Badges',
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF1a1a1a),
@@ -578,7 +498,7 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
                 ],
               ),
               const SizedBox(height: 16),
-              _user!.badges.isEmpty
+              user.badges.isEmpty
                   ? Center(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 20),
@@ -601,9 +521,9 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
                         mainAxisSpacing: 12,
                         childAspectRatio: 1,
                       ),
-                      itemCount: _user!.badges.length,
+                      itemCount: user.badges.length,
                       itemBuilder: (context, index) {
-                        return _buildBadgeCard(_user!.badges[index]);
+                        return _buildBadgeCard(user.badges[index]);
                       },
                     ),
             ],
@@ -613,18 +533,17 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
     );
   }
 
-  Widget _buildTravelHistorySection(BuildContext context) {
-    // 只显示最新一条旅行历史
-    final latestTravel = _user!.latestTravelHistory;
+  Widget _buildTravelHistorySection(BuildContext context, models.User user) {
+    final latestTravel = user.latestTravelHistory;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           colors: [
-            const Color(0xFFE3F2FD),
-            const Color(0xFFBBDEFB),
+            Color(0xFFE3F2FD),
+            Color(0xFFBBDEFB),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -646,16 +565,16 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: [
-              const Icon(
+            children: const [
+              Icon(
                 FontAwesomeIcons.earthAmericas,
                 color: Color(0xFF1976D2),
                 size: 24,
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(
-                AppLocalizations.of(context)!.travelHistory,
-                style: const TextStyle(
+                'Travel History',
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF1a1a1a),
@@ -688,10 +607,10 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           colors: [
-            const Color(0xFFFFF8E1),
-            const Color(0xFFFFF3CD),
+            Color(0xFFFFF8E1),
+            Color(0xFFFFF3CD),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -711,15 +630,14 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
       ),
       child: Row(
         children: [
-          // Country Flag
           Container(
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
+              gradient: const LinearGradient(
                 colors: [
-                  const Color(0xFFFFE082),
-                  const Color(0xFFFFD54F),
+                  Color(0xFFFFE082),
+                  Color(0xFFFFD54F),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -738,13 +656,10 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
             ),
           ),
           const SizedBox(width: 16),
-
-          // City and Country Info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // City Name
                 Text(
                   travel.city,
                   style: const TextStyle(
@@ -754,8 +669,6 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
                   ),
                 ),
                 const SizedBox(height: 4),
-
-                // Country
                 Text(
                   travel.country,
                   style: const TextStyle(
@@ -764,8 +677,6 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
                   ),
                 ),
                 const SizedBox(height: 8),
-
-                // Date
                 Row(
                   children: [
                     const Icon(
@@ -825,7 +736,7 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
     final flagMap = {
       'Thailand': '🇹🇭',
       'Portugal': '🇵🇹',
-      'Indonesia': '🇮🇩',
+      'Indonesia': '��🇩',
       'Mexico': '🇲🇽',
       'Spain': '🇪🇸',
       'Vietnam': '🇻🇳',
@@ -835,9 +746,9 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
       'United Kingdom': '🇬🇧',
       'UK': '🇬🇧',
       'France': '🇫🇷',
-      'Germany': '🇩🇪',
+      'Germany': '🇩��',
       'Italy': '🇮🇹',
-      'Netherlands': '🇳🇱',
+      'Netherlands': '��🇱',
       'Canada': '🇨🇦',
       'Australia': '🇦🇺',
       'New Zealand': '🇳🇿',
@@ -889,15 +800,15 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
     );
   }
 
-  Widget _buildInterestsSection(BuildContext context) {
+  Widget _buildInterestsSection(BuildContext context, models.User user) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           colors: [
-            const Color(0xFFFCE4EC),
-            const Color(0xFFF8BBD0),
+            Color(0xFFFCE4EC),
+            Color(0xFFF8BBD0),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -919,16 +830,16 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: [
-              const Icon(
+            children: const [
+              Icon(
                 FontAwesomeIcons.heart,
                 color: Color(0xFFC2185B),
                 size: 24,
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(
-                AppLocalizations.of(context)!.interests,
-                style: const TextStyle(
+                'Interests',
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF1a1a1a),
@@ -937,7 +848,7 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
             ],
           ),
           const SizedBox(height: 16),
-          _user!.interests.isEmpty
+          user.interests.isEmpty
               ? Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 20),
@@ -954,14 +865,14 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
               : Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: _user!.interests.map((interest) {
+                  children: user.interests.map((interest) {
                     return Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
+                        gradient: const LinearGradient(
                           colors: [
-                            const Color(0xFFFF4458),
-                            const Color(0xFFE91E63),
+                            Color(0xFFFF4458),
+                            Color(0xFFE91E63),
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
@@ -996,15 +907,15 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
     );
   }
 
-  Widget _buildSkillsSection(BuildContext context) {
+  Widget _buildSkillsSection(BuildContext context, models.User user) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           colors: [
-            const Color(0xFFE3F2FD),
-            const Color(0xFFBBDEFB),
+            Color(0xFFE3F2FD),
+            Color(0xFFBBDEFB),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -1026,16 +937,16 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: [
-              const Icon(
+            children: const [
+              Icon(
                 FontAwesomeIcons.star,
                 color: Color(0xFF1976D2),
                 size: 24,
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(
-                AppLocalizations.of(context)!.skills,
-                style: const TextStyle(
+                'Skills',
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF1a1a1a),
@@ -1044,7 +955,7 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
             ],
           ),
           const SizedBox(height: 16),
-          _user!.skills.isEmpty
+          user.skills.isEmpty
               ? Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 20),
@@ -1061,14 +972,14 @@ class _MemberDetailPageState extends State<MemberDetailPage> {
               : Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: _user!.skills.map((skill) {
+                  children: user.skills.map((skill) {
                     return Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
+                        gradient: const LinearGradient(
                           colors: [
-                            const Color(0xFF3B82F6),
-                            const Color(0xFF1976D2),
+                            Color(0xFF3B82F6),
+                            Color(0xFF1976D2),
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
