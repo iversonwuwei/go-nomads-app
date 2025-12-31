@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/core/sync/sync.dart';
 import 'package:df_admin_mobile/features/hotel/domain/entities/hotel.dart';
 import 'package:df_admin_mobile/features/hotel/infrastructure/repositories/hotel_repository.dart';
 import 'package:df_admin_mobile/services/http_service.dart';
@@ -17,10 +19,56 @@ class HotelDetailPageController extends GetxController {
   final Rxn<Hotel> hotel = Rxn<Hotel>();
   final RxString error = ''.obs;
 
+  // 数据变更订阅
+  StreamSubscription<DataChangedEvent>? _dataChangedSubscription;
+
   @override
   void onInit() {
     super.onInit();
+    _setupDataChangeListeners();
     loadHotel();
+  }
+
+  @override
+  void onClose() {
+    // 取消数据变更订阅
+    _dataChangedSubscription?.cancel();
+    _dataChangedSubscription = null;
+    super.onClose();
+  }
+
+  /// 设置数据变更监听器
+  void _setupDataChangeListeners() {
+    _dataChangedSubscription = DataEventBus.instance.on('hotel', _handleDataChanged);
+    log('✅ [HotelDetailPageController] 数据变更监听器已设置');
+  }
+
+  /// 处理数据变更事件
+  void _handleDataChanged(DataChangedEvent event) {
+    // 只处理当前酒店的变更
+    if (event.entityId != hotelId.toString()) {
+      return;
+    }
+
+    log('🔔 [酒店详情] 收到数据变更通知: ${event.entityId} (${event.changeType})');
+
+    switch (event.changeType) {
+      case DataChangeType.updated:
+        // 酒店数据更新，重新加载详情
+        loadHotel();
+        break;
+      case DataChangeType.deleted:
+        // 酒店被删除
+        log('⚠️ [酒店详情] 该酒店已被删除');
+        break;
+      case DataChangeType.invalidated:
+        // 缓存失效，重新加载
+        loadHotel();
+        break;
+      case DataChangeType.created:
+        // 新建酒店通常不影响详情页
+        break;
+    }
   }
 
   Future<void> loadHotel() async {

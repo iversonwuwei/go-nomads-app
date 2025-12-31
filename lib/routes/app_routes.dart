@@ -19,7 +19,6 @@ import 'package:df_admin_mobile/pages/coworking_home_page.dart';
 import 'package:df_admin_mobile/pages/coworking_list_page.dart';
 import 'package:df_admin_mobile/pages/create_meetup/create_meetup_page.dart';
 import 'package:df_admin_mobile/pages/create_travel_plan/create_travel_plan_page.dart';
-import 'package:df_admin_mobile/pages/data_service_page.dart';
 import 'package:df_admin_mobile/pages/direct_chat_page.dart';
 import 'package:df_admin_mobile/pages/edit_basic_info_page.dart';
 import 'package:df_admin_mobile/pages/edit_interests_page.dart';
@@ -27,13 +26,14 @@ import 'package:df_admin_mobile/pages/edit_skills_page.dart';
 import 'package:df_admin_mobile/pages/edit_social_links_page.dart';
 import 'package:df_admin_mobile/pages/favorites_page.dart';
 import 'package:df_admin_mobile/pages/global_map_page.dart';
+import 'package:df_admin_mobile/pages/home/home.dart';
 import 'package:df_admin_mobile/pages/hotel_detail_page.dart';
 import 'package:df_admin_mobile/pages/hotel_list/hotel_list_page.dart';
 import 'package:df_admin_mobile/pages/innovation_detail_page.dart';
 import 'package:df_admin_mobile/pages/innovation_list_page.dart';
 import 'package:df_admin_mobile/pages/invite_to_meetup_page.dart';
 import 'package:df_admin_mobile/pages/meetup_detail/meetup_detail_page.dart';
-import 'package:df_admin_mobile/pages/meetups_list_page.dart';
+import 'package:df_admin_mobile/pages/meetup_list/meetup_list.dart';
 import 'package:df_admin_mobile/pages/member_detail_page.dart';
 import 'package:df_admin_mobile/pages/my_meetups_page.dart';
 import 'package:df_admin_mobile/pages/nomads_login/nomads_login_page.dart';
@@ -170,7 +170,8 @@ class AppRoutes {
     // ============================================================================
     GetPage(
       name: home,
-      page: () => const BottomNavLayout(child: DataServicePage()),
+      page: () => const BottomNavLayout(child: HomePage()),
+      binding: HomePageBinding(),
       middlewares: [AuthMiddleware()],
     ),
 
@@ -259,7 +260,8 @@ class AppRoutes {
     // ============================================================================
     GetPage(
       name: meetupsList,
-      page: () => const MeetupsListPage(),
+      page: () => const MeetupListPage(),
+      binding: MeetupListBinding(),
       middlewares: [AuthMiddleware()],
       preventDuplicates: false, // 允许重复进入，确保每次都重新加载数据
     ),

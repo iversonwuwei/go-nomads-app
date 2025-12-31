@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:developer';
 
+import 'package:df_admin_mobile/core/sync/sync.dart';
 import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
 import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
 import 'package:df_admin_mobile/features/meetup/infrastructure/models/meetup_dto.dart';
@@ -29,6 +31,9 @@ class MeetupDetailPageController extends GetxController {
   late final IMeetupRepository _meetupRepository;
   late final MeetupStateControllerV2 _meetupController;
 
+  // 数据变更订阅
+  StreamSubscription<DataChangedEvent>? _dataChangedSubscription;
+
   bool get isJoined => _meetupController.isRsvped(meetup.value.id);
 
   bool get isOrganizer => meetup.value.isOrganizer;
@@ -39,11 +44,49 @@ class MeetupDetailPageController extends GetxController {
     _meetupRepository = Get.find<IMeetupRepository>();
     _meetupController = Get.find<MeetupStateControllerV2>();
     meetup = Rx<Meetup>(initialMeetup);
+    _setupDataChangeListeners();
     _loadEventDetails();
+  }
+
+  /// 设置数据变更监听器
+  void _setupDataChangeListeners() {
+    _dataChangedSubscription = DataEventBus.instance.on('meetup', _handleDataChanged);
+    log('✅ [MeetupDetailPageController] 数据变更监听器已设置');
+  }
+
+  /// 处理数据变更事件
+  void _handleDataChanged(DataChangedEvent event) {
+    // 只处理当前活动的变更
+    if (event.entityId != meetup.value.id) {
+      return;
+    }
+
+    log('🔔 [活动详情] 收到数据变更通知: ${event.entityId} (${event.changeType})');
+
+    switch (event.changeType) {
+      case DataChangeType.updated:
+        // 活动数据更新，重新加载详情
+        _loadEventDetails();
+        break;
+      case DataChangeType.deleted:
+        // 活动被删除，可以显示提示或返回列表页
+        AppToast.info('该活动已被删除');
+        break;
+      case DataChangeType.invalidated:
+        // 缓存失效，重新加载
+        _loadEventDetails();
+        break;
+      case DataChangeType.created:
+        // 新建活动通常不影响详情页
+        break;
+    }
   }
 
   @override
   void onClose() {
+    // 取消数据变更订阅
+    _dataChangedSubscription?.cancel();
+    _dataChangedSubscription = null;
     imagePageController.dispose();
     super.onClose();
   }

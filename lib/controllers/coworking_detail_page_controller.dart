@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/core/sync/sync.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_review.dart' as review_entity;
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
 import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_repository.dart';
@@ -24,6 +26,9 @@ class CoworkingDetailPageController extends GetxController {
 
   final PageController pageController = PageController();
 
+  // 数据变更订阅
+  StreamSubscription<DataChangedEvent>? _dataChangedSubscription;
+
   List<String> get allImages {
     final images = <String>[];
     images.add(space.value.spaceInfo.imageUrl);
@@ -37,12 +42,50 @@ class CoworkingDetailPageController extends GetxController {
   void onInit() {
     super.onInit();
     space = Rx<CoworkingSpace>(initialSpace);
+    _setupDataChangeListeners();
     _loadComments();
     _subscribeVerificationUpdates();
   }
 
+  /// 设置数据变更监听器
+  void _setupDataChangeListeners() {
+    _dataChangedSubscription = DataEventBus.instance.on('coworking', _handleDataChanged);
+    log('✅ [CoworkingDetailPageController] 数据变更监听器已设置');
+  }
+
+  /// 处理数据变更事件
+  void _handleDataChanged(DataChangedEvent event) {
+    // 只处理当前空间的变更
+    if (event.entityId != space.value.id) {
+      return;
+    }
+
+    log('🔔 [Coworking详情] 收到数据变更通知: ${event.entityId} (${event.changeType})');
+
+    switch (event.changeType) {
+      case DataChangeType.updated:
+        // 数据更新，重新加载详情
+        reloadCoworkingDetail();
+        break;
+      case DataChangeType.deleted:
+        // 被删除
+        log('⚠️ [Coworking详情] 该空间已被删除');
+        break;
+      case DataChangeType.invalidated:
+        // 缓存失效，重新加载
+        reloadCoworkingDetail();
+        break;
+      case DataChangeType.created:
+        // 新建通常不影响详情页
+        break;
+    }
+  }
+
   @override
   void onClose() {
+    // 取消数据变更订阅
+    _dataChangedSubscription?.cancel();
+    _dataChangedSubscription = null;
     pageController.dispose();
     super.onClose();
   }
