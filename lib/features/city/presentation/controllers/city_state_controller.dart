@@ -1,8 +1,8 @@
+import 'dart:async';
 import 'dart:developer';
 
-import 'dart:async';
-
 import 'package:df_admin_mobile/core/core.dart';
+import 'package:df_admin_mobile/core/sync/sync.dart';
 import 'package:df_admin_mobile/features/city/application/use_cases/city_use_cases.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
 import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
@@ -10,58 +10,61 @@ import 'package:df_admin_mobile/services/signalr_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:get/get.dart';
 
-/// ??????? (Presentation Layer)
+/// 城市列表控制器 - 使用新的数据同步框架优化版本
 ///
-/// ????????? UI ??,?? Use Cases ??
-class CityStateController extends GetxController {
+/// 改进点：
+/// 1. 继承 PaginatedRefreshableController，统一分页和刷新逻辑
+/// 2. 使用 hybrid 刷新策略：时间过期 + 事件驱动
+/// 3. 自动订阅数据变更事件
+/// 4. 统一的加载状态管理
+/// 5. 防重复请求机制
+class CityStateController extends PaginatedRefreshableController {
   // ==================== Dependencies ====================
   final GetCitiesUseCase _getCitiesUseCase;
-  final SearchCityListUseCase _searchCitiesUseCase;
   final GetRecommendedCitiesUseCase _getRecommendedCitiesUseCase;
   final GetPopularCitiesUseCase _getPopularCitiesUseCase;
   final ToggleCityFavoriteUseCase _toggleCityFavoriteUseCase;
   final GetFavoriteCitiesUseCase _getFavoriteCitiesUseCase;
-  final GetUserFavoriteCityIdsUseCase _getUserFavoriteCityIdsUseCase;
   final ICityRepository _cityRepository;
 
   CityStateController({
     required GetCitiesUseCase getCitiesUseCase,
-    required SearchCityListUseCase searchCitiesUseCase,
     required GetRecommendedCitiesUseCase getRecommendedCitiesUseCase,
     required GetPopularCitiesUseCase getPopularCitiesUseCase,
     required ToggleCityFavoriteUseCase toggleCityFavoriteUseCase,
     required GetFavoriteCitiesUseCase getFavoriteCitiesUseCase,
-    required GetUserFavoriteCityIdsUseCase getUserFavoriteCityIdsUseCase,
     required ICityRepository cityRepository,
   })  : _getCitiesUseCase = getCitiesUseCase,
-        _searchCitiesUseCase = searchCitiesUseCase,
         _getRecommendedCitiesUseCase = getRecommendedCitiesUseCase,
         _getPopularCitiesUseCase = getPopularCitiesUseCase,
         _toggleCityFavoriteUseCase = toggleCityFavoriteUseCase,
         _getFavoriteCitiesUseCase = getFavoriteCitiesUseCase,
-        _getUserFavoriteCityIdsUseCase = getUserFavoriteCityIdsUseCase,
         _cityRepository = cityRepository;
 
+  // ==================== 继承配置 ====================
+  
+  @override
+  String get entityType => 'city_list';
+
+  @override
+  RefreshStrategy get refreshStrategy => RefreshStrategy.hybrid;
+
+  @override
+  Duration? get customCacheDuration => const Duration(minutes: 5);
+
   // ==================== State ====================
-  final RxBool isLoading = false.obs;
-  final RxBool isLoadingMore = false.obs;
-  final RxBool hasError = false.obs;
-  final Rx<String?> errorMessage = Rx<String?>(null);
+  
+  /// 城市列表数据
   final RxList<City> cities = <City>[].obs;
 
   // 正在生成图片的城市 ID 集合
   final RxSet<String> generatingImageCityIds = <String>{}.obs;
 
-  // ????
-  int _currentPage = 1;
-  final int _pageSize = 20;
-  bool _hasMoreData = true;
-
-  // ????
+  // 筛选条件
   final RxString searchQuery = ''.obs;
   final Rx<String?> selectedCountryId = Rx<String?>(null);
 
-  // ???? (?????)
+  // 高级筛选 (未来扩展)
   final RxList<String> selectedRegions = <String>[].obs;
   final RxList<String> selectedCountries = <String>[].obs;
   final RxList<String> selectedCities = <String>[].obs;
@@ -72,18 +75,60 @@ class CityStateController extends GetxController {
   final RxInt maxAqi = 500.obs;
   final RxList<String> selectedClimates = <String>[].obs;
 
-  // ?????
+  // 推荐城市
   final RxList<City> recommendedCities = <City>[].obs;
   final RxList<City> popularCities = <City>[].obs;
 
-  // ??
+  // 收藏
   final RxList<City> favoriteCities = <City>[].obs;
-
-  // ????? (??????)
-  int get totalCitiesCount => cities.length;
 
   // SignalR 订阅
   StreamSubscription<Map<String, dynamic>>? _cityImageUpdatedSubscription;
+  
+  // 数据变更事件订阅
+  StreamSubscription<DataChangedEvent>? _dataChangedSubscription;
+
+  // 兼容性属性 - 保持与旧代码兼容
+  bool get hasMoreData => hasMore.value;
+  int get totalCitiesCount => cities.length;
+  bool get hasCities => cities.isNotEmpty;
+  bool get canLoadMore => hasMore.value && !isLoadingMore.value;
+  
+  /// 是否有加载错误 - 兼容原控制器
+  RxBool get hasError => RxBool(errorMessage.value != null);
+  
+  /// 是否有活动的筛选条件 - 兼容原控制器
+  bool get hasActiveFilters {
+    return selectedRegions.isNotEmpty ||
+        selectedCountries.isNotEmpty ||
+        selectedCities.isNotEmpty ||
+        minPrice.value > 0.0 ||
+        maxPrice.value < 5000.0 ||
+        minInternet.value > 0.0 ||
+        minRating.value > 0.0 ||
+        maxAqi.value < 500 ||
+        selectedClimates.isNotEmpty;
+  }
+
+  /// 可选区域列表 - 兼容原控制器
+  List<String> get availableRegions {
+    return cities.where((city) => city.region != null).map((city) => city.region!).toSet().toList()..sort();
+  }
+
+  /// 可选国家列表 - 兼容原控制器
+  List<String> get availableCountries {
+    return cities.where((city) => city.country != null).map((city) => city.country!).toSet().toList()..sort();
+  }
+
+  /// 可选城市名称列表 - 兼容原控制器
+  List<String> get availableCities {
+    return cities.map((city) => city.name).toSet().toList()..sort();
+  }
+
+  /// 可选气候类型列表 - 兼容原控制器
+  List<String> get availableClimates {
+    return <String>[];
+  }
 
   // ==================== Lifecycle ====================
 
@@ -91,82 +136,31 @@ class CityStateController extends GetxController {
   void onInit() {
     super.onInit();
     _setupSignalRListeners();
-  }
-
-  /// 设置 SignalR 监听器
-  void _setupSignalRListeners() {
-    final signalRService = SignalRService();
-
-    // 监听城市图片更新事件
-    _cityImageUpdatedSubscription = signalRService.cityImageUpdatedStream.listen((data) {
-      log('🖼️ [CityStateController] 收到城市图片更新通知: $data');
-
-      final cityId = data['cityId'] as String?;
-      final success = data['success'] as bool? ?? false;
-
-      if (cityId == null) {
-        log('⚠️ [CityStateController] 城市ID为空，忽略通知');
-        return;
-      }
-
-      // 无论成功还是失败，都从生成中列表移除
-      generatingImageCityIds.remove(cityId);
-
-      if (!success) {
-        final errorMessage = data['errorMessage'] as String? ?? '图片生成失败';
-        log('❌ [CityStateController] 城市图片生成失败: $errorMessage');
-        AppToast.error(errorMessage, title: '图片生成失败');
-        return;
-      }
-
-      // 构造图片数据
-      final imageData = <String, dynamic>{};
-
-      // 处理竖屏图片
-      final portraitUrl = data['portraitImageUrl'] as String?;
-      if (portraitUrl != null) {
-        imageData['portraitImage'] = {'url': portraitUrl};
-      }
-
-      // 处理横屏图片
-      final landscapeUrls = data['landscapeImageUrls'];
-      if (landscapeUrls is List && landscapeUrls.isNotEmpty) {
-        imageData['landscapeImages'] = landscapeUrls.map((url) => {'url': url}).toList();
-      }
-
-      // 调用更新方法
-      updateCityImages(cityId, imageData);
-
-      // 显示成功提示
-      final cityName = data['cityName'] as String? ?? '';
-      AppToast.success('$cityName 的图片已更新', title: '图片生成完成');
-    });
-
-    log('✅ [CityStateController] SignalR 城市图片更新监听已设置');
+    _setupDataChangeListeners();
+    
+    // 初始加载 - 使用基类的智能加载（检查缓存有效性）
+    initialLoad();
+    
+    // 加载推荐和热门城市
+    loadRecommendedCities();
+    loadPopularCities();
   }
 
   @override
   void onClose() {
-    // 取消 SignalR 订阅
     _cityImageUpdatedSubscription?.cancel();
     _cityImageUpdatedSubscription = null;
-    // ?????????
+    _dataChangedSubscription?.cancel();
+    _dataChangedSubscription = null;
+    
+    // 清理状态
     cities.clear();
     recommendedCities.clear();
     popularCities.clear();
     favoriteCities.clear();
-
-    // ??????
-    isLoading.value = false;
-    isLoadingMore.value = false;
-    hasError.value = false;
-    errorMessage.value = null;
-
-    // ??????
-    _currentPage = 1;
-    _hasMoreData = true;
-
-    // ??????
+    generatingImageCityIds.clear();
+    
+    // 清理筛选条件
     searchQuery.value = '';
     selectedCountryId.value = null;
     selectedRegions.clear();
@@ -182,405 +176,440 @@ class CityStateController extends GetxController {
     super.onClose();
   }
 
-  // ==================== Public Methods ====================
+  // ==================== 实现基类抽象方法 ====================
 
-  /// ???????? (???)
-  Future<void> loadInitialCities({bool refresh = true}) async {
-    // 如果不是强制刷新，且已有数据，跳过加载
-    if (!refresh && cities.isNotEmpty) {
-      log('🔄 CityController: 已有缓存数据，跳过加载');
-      return;
-    }
-
-    // 防止重复请求
-    if (isLoading.value) {
-      log('⚠️ CityController: 正在加载中，跳过重复请求');
-      return;
-    }
-
-    isLoading.value = true;
-    hasError.value = false;
-    errorMessage.value = null;
-    _currentPage = 1;
-    _hasMoreData = true;
-    cities.clear();
-
-    // log('?? ??????????...');
-
+  @override
+  Future<PaginatedResult> loadPageData(int page, int pageSize) async {
+    log('📄 CityController: 加载第 $page 页，每页 $pageSize 条');
+    
     final result = await _getCitiesUseCase.execute(
       GetCitiesParams(
-        page: _currentPage,
-        pageSize: _pageSize,
+        page: page,
+        pageSize: pageSize,
         search: searchQuery.value.isEmpty ? null : searchQuery.value,
         countryId: selectedCountryId.value,
       ),
     );
 
-    result.fold(
+    return result.fold(
       onSuccess: (data) {
-        // log('? ???? ${data.length} ???');
-        cities.value = data;
-        _hasMoreData = data.length >= _pageSize;
-        isLoading.value = false;
+        log('✅ 成功加载 ${data.length} 个城市');
+        return PaginatedResult(
+          items: data,
+          totalCount: data.length, // API 未返回总数时使用当前数量
+          hasMore: data.length >= pageSize,
+        );
       },
       onFailure: (exception) {
-        // log('? ??????: ${exception.message}');
-        hasError.value = true;
-        errorMessage.value = exception.message;
-        isLoading.value = false;
-
-        // ????????,????(??? Toast)
-        // ?? AuthStateController ??? 401 ????????
+        log('❌ 加载城市失败: ${exception.message}');
+        
+        // 非授权错误才显示 Toast
         if (exception is! UnauthorizedException) {
-          AppToast.error(exception.message, title: '????');
-        } else {
-          log('?? ??????: Token ?????');
+          AppToast.error(exception.message, title: '加载失败');
         }
+        
+        throw exception;
       },
     );
   }
 
-  /// ?????? (???)
-  Future<void> loadMoreCities() async {
-    if (isLoadingMore.value || !_hasMoreData) {
-      // log('?? ?????????????');
-      return;
+  @override
+  Future<void> onPageLoaded(List<dynamic> items, {required bool isRefresh}) async {
+    final cityList = items.cast<City>();
+    
+    if (isRefresh) {
+      cities.clear();
+    }
+    
+    cities.addAll(cityList);
+    log('📊 当前城市总数: ${cities.length}');
+  }
+
+  /// 处理数据变更事件（由事件总线触发）
+  void _handleDataChanged(DataChangedEvent event) {
+    // 处理城市数据变更
+    if (event.entityType == 'city' || event.entityType == 'city_list') {
+      log('🔔 收到城市数据变更通知: ${event.changeType}');
+      
+      switch (event.changeType) {
+        case DataChangeType.created:
+          // 新城市创建，刷新列表
+          refresh();
+          break;
+        case DataChangeType.updated:
+          // 城市更新，如果是当前列表中的城市，局部更新
+          if (event.entityId != null) {
+            _updateCityInList(event.entityId!);
+          }
+          break;
+        case DataChangeType.deleted:
+          // 城市删除，从列表中移除
+          if (event.entityId != null) {
+            cities.removeWhere((city) => city.id == event.entityId);
+          }
+          break;
+        case DataChangeType.invalidated:
+          // 缓存失效，刷新列表
+          refresh();
+          break;
+      }
+    }
+  }
+
+  // ==================== 私有方法 ====================
+
+  /// 设置数据变更监听器
+  void _setupDataChangeListeners() {
+    _dataChangedSubscription = DataEventBus.instance.on('city', _handleDataChanged);
+    
+    // 也监听 city_list 事件
+    DataEventBus.instance.on('city_list', _handleDataChanged);
+    
+    // 监听收藏状态变更事件
+    DataEventBus.instance.on('city_favorite', _handleFavoriteChanged);
+  }
+
+  /// 处理收藏状态变更事件
+  void _handleFavoriteChanged(DataChangedEvent event) {
+    if (event.entityId == null) return;
+    
+    final cityId = event.entityId!;
+    final isFavorite = event.changeType == DataChangeType.created;
+    
+    log('🔔 [城市列表] 收到收藏状态变更: $cityId -> $isFavorite');
+    
+    // 更新主列表中的城市状态
+    final index = cities.indexWhere((c) => c.id == cityId);
+    if (index != -1) {
+      cities[index] = cities[index].copyWith(isFavorite: isFavorite);
+      cities.refresh();
+      log('✅ [城市列表] 已更新城市收藏状态: ${cities[index].name}');
+    }
+    
+    // 更新推荐城市列表
+    final recIndex = recommendedCities.indexWhere((c) => c.id == cityId);
+    if (recIndex != -1) {
+      recommendedCities[recIndex] = recommendedCities[recIndex].copyWith(isFavorite: isFavorite);
+      recommendedCities.refresh();
+    }
+    
+    // 更新热门城市列表
+    final popIndex = popularCities.indexWhere((c) => c.id == cityId);
+    if (popIndex != -1) {
+      popularCities[popIndex] = popularCities[popIndex].copyWith(isFavorite: isFavorite);
+      popularCities.refresh();
+    }
+    
+    // 更新收藏列表
+    if (isFavorite) {
+      // 添加到收藏列表（如果不存在）
+      final favIndex = favoriteCities.indexWhere((c) => c.id == cityId);
+      if (favIndex == -1 && index != -1) {
+        favoriteCities.add(cities[index]);
+      }
+    } else {
+      // 从收藏列表移除
+      favoriteCities.removeWhere((c) => c.id == cityId);
+    }
+  }
+
+  /// 设置 SignalR 监听器
+  void _setupSignalRListeners() {
+    final signalRService = SignalRService();
+
+    // 监听城市图片更新事件
+    _cityImageUpdatedSubscription = signalRService.cityImageUpdatedStream.listen((data) {
+      log('🖼️ [CityController] 收到城市图片更新通知: $data');
+
+      final cityId = data['cityId'] as String?;
+      final success = data['success'] as bool? ?? false;
+
+      if (cityId == null) {
+        log('⚠️ [CityController] 城市ID为空，忽略通知');
+        return;
+      }
+
+      // 无论成功还是失败，都从生成中列表移除
+      generatingImageCityIds.remove(cityId);
+
+      if (!success) {
+        final errorMsg = data['errorMessage'] as String? ?? '图片生成失败';
+        log('❌ [CityController] 城市图片生成失败: $errorMsg');
+        AppToast.error(errorMsg, title: '图片生成失败');
+        return;
+      }
+
+      // 构造图片数据并更新
+      final imageData = _buildImageData(data);
+      updateCityImages(cityId, imageData);
+
+      // 显示成功提示
+      final cityName = data['cityName'] as String? ?? '';
+      AppToast.success('$cityName 的图片已更新', title: '图片生成完成');
+    });
+
+    log('✅ [CityController] SignalR 城市图片更新监听已设置');
+  }
+
+  Map<String, dynamic> _buildImageData(Map<String, dynamic> data) {
+    final imageData = <String, dynamic>{};
+
+    final portraitUrl = data['portraitImageUrl'] as String?;
+    if (portraitUrl != null) {
+      imageData['portraitImage'] = {'url': portraitUrl};
     }
 
-    isLoadingMore.value = true;
-    _currentPage++;
+    final landscapeUrls = data['landscapeImageUrls'];
+    if (landscapeUrls is List && landscapeUrls.isNotEmpty) {
+      imageData['landscapeImages'] = landscapeUrls.map((url) => {'url': url}).toList();
+    }
 
-    // log('?? ??? $_currentPage ?...');
-
-    final result = await _getCitiesUseCase.execute(
-      GetCitiesParams(
-        page: _currentPage,
-        pageSize: _pageSize,
-        search: searchQuery.value.isEmpty ? null : searchQuery.value,
-        countryId: selectedCountryId.value,
-      ),
-    );
-
-    result.fold(
-      onSuccess: (data) {
-        // log('? ???? ${data.length} ???');
-        cities.addAll(data);
-        _hasMoreData = data.length >= _pageSize;
-        isLoadingMore.value = false;
-      },
-      onFailure: (exception) {
-        // log('? ??????: ${exception.message}');
-        _currentPage--; // ????
-        isLoadingMore.value = false;
-        AppToast.error(exception.message, title: '????');
-      },
-    );
+    return imageData;
   }
 
-  /// ????
+  /// 更新列表中的单个城市
+  Future<void> _updateCityInList(String cityId) async {
+    try {
+      final result = await _cityRepository.getCityById(cityId);
+      result.fold(
+        onSuccess: (updatedCity) {
+          final index = cities.indexWhere((c) => c.id == cityId);
+          if (index != -1) {
+            cities[index] = updatedCity;
+            cities.refresh(); // 触发 Obx 更新
+            log('✅ 已更新城市: ${updatedCity.name}');
+          }
+        },
+        onFailure: (e) {
+          log('⚠️ 更新城市失败: ${e.message}');
+        },
+      );
+    } catch (e) {
+      log('⚠️ 更新城市异常: $e');
+    }
+  }
+
+  // ==================== 公共方法 ====================
+
+  /// 搜索城市
   Future<void> searchCities(String query) async {
     searchQuery.value = query;
 
     if (query.trim().isEmpty) {
-      // ??????,??????
-      return loadInitialCities();
+      // 清空搜索时，重新加载所有城市
+      return refresh();
     }
 
-    isLoading.value = true;
-    hasError.value = false;
-    errorMessage.value = null;
-    cities.clear();
-
-    // log('?? ????: $query');
-
-    final result = await _searchCitiesUseCase.execute(
-      SearchCitiesParams(keyword: query, pageSize: _pageSize),
-    );
-
-    result.fold(
-      onSuccess: (data) {
-        // log('? ??? ${data.length} ???');
-        cities.value = data;
-        isLoading.value = false;
-      },
-      onFailure: (exception) {
-        // log('? ????: ${exception.message}');
-        hasError.value = true;
-        errorMessage.value = exception.message;
-        isLoading.value = false;
-        AppToast.error(exception.message, title: '????');
-      },
-    );
+    // 使用基类的刷新方法，会自动调用 loadPageData
+    await forceRefresh();
   }
 
-  /// ?????
+  /// 按国家筛选
   Future<void> filterByCountry(String? countryId) async {
     selectedCountryId.value = countryId;
-    return loadInitialCities();
+    await forceRefresh();
   }
 
-  /// ????
+  /// 清除所有筛选
   Future<void> clearFilters() async {
     searchQuery.value = '';
     selectedCountryId.value = null;
-    return loadInitialCities();
-  }
-
-  /// ???????? (?????)
-  void resetFilters() {
     selectedRegions.clear();
     selectedCountries.clear();
+    selectedCities.clear();
     minPrice.value = 0.0;
     maxPrice.value = 5000.0;
     minInternet.value = 0.0;
     minRating.value = 0.0;
     maxAqi.value = 500;
     selectedClimates.clear();
+    
+    await forceRefresh();
+  }
+
+  /// 重置筛选（同步方法，兼容旧 API）
+  void resetFilters() {
     searchQuery.value = '';
     selectedCountryId.value = null;
+    selectedRegions.clear();
+    selectedCountries.clear();
+    selectedCities.clear();
+    minPrice.value = 0.0;
+    maxPrice.value = 5000.0;
+    minInternet.value = 0.0;
+    minRating.value = 0.0;
+    maxAqi.value = 500;
+    selectedClimates.clear();
   }
 
-  /// ?????????? (?????)
+  /// 获取筛选后的城市列表（兼容旧 API）
   List<City> get filteredCities {
-    var items = cities.toList();
-
-    // ????
-    if (selectedRegions.isNotEmpty) {
-      items = items.where((city) => city.region != null && selectedRegions.contains(city.region)).toList();
+    var result = cities.toList();
+    
+    // 搜索过滤
+    if (searchQuery.value.isNotEmpty) {
+      final query = searchQuery.value.toLowerCase();
+      result = result.where((city) {
+        return city.name.toLowerCase().contains(query) ||
+            (city.nameEn?.toLowerCase().contains(query) ?? false) ||
+            (city.country?.toLowerCase().contains(query) ?? false);
+      }).toList();
     }
-
-    // ???? (???)
-    if (selectedCountries.isNotEmpty) {
-      items = items.where((city) => city.country != null && selectedCountries.contains(city.country)).toList();
-    }
-
-    // ???? (?? costScore * 500 ??????)
-    items = items.where((city) {
-      if (city.costScore == null) return true;
-      final estimatedCost = city.costScore! * 500; // 0-5 score ? $0-2500 range
-      return estimatedCost >= minPrice.value && estimatedCost <= maxPrice.value;
-    }).toList();
-
-    // ???? (?? internetScore * 20 ????)
-    items = items.where((city) {
-      if (city.internetScore == null) return true;
-      final estimatedSpeed = city.internetScore! * 20; // 0-5 score ? 0-100 Mbps range
-      return estimatedSpeed >= minInternet.value;
-    }).toList();
-
-    // ????
-    items = items.where((city) {
-      if (city.overallScore == null) return true;
-      return city.overallScore! >= minRating.value;
-    }).toList();
-
-    // AQI ??
-    items = items.where((city) {
-      if (city.airQualityIndex == null) return true;
-      return city.airQualityIndex! <= maxAqi.value;
-    }).toList();
-
-    // ???? (City ???? climate ??,??????)
-    // ????????,?????????
-    if (selectedClimates.isNotEmpty) {
-      // ?????,?? City ???? climate ??
-      // ????????????????
-    }
-
-    return items;
+    
+    return result;
   }
 
-  /// ????
-  @override
-  Future<void> refresh() async {
-    return loadInitialCities();
-  }
-
-  /// ??????
-  Future<void> loadRecommendedCities({String? countryId, int limit = 10}) async {
-    // log('?? ??????...');
-
+  /// 加载推荐城市
+  Future<void> loadRecommendedCities() async {
     final result = await _getRecommendedCitiesUseCase.execute(
-      GetRecommendedCitiesParams(countryId: countryId, limit: limit),
+      const GetRecommendedCitiesParams(limit: 10),
     );
 
     result.fold(
       onSuccess: (data) {
-        // log('? ???? ${data.length} ?????');
         recommendedCities.value = data;
+        log('✅ 加载推荐城市成功: ${data.length} 个');
       },
       onFailure: (exception) {
-        // log('? ????????: ${exception.message}');
-        AppToast.error(exception.message, title: '????');
+        log('❌ 加载推荐城市失败: ${exception.message}');
       },
     );
   }
 
-  /// ??????
-  Future<void> loadPopularCities({int limit = 10}) async {
-    // log('?? ??????...');
-
+  /// 加载热门城市
+  Future<void> loadPopularCities() async {
     final result = await _getPopularCitiesUseCase.execute(
-      GetPopularCitiesParams(limit: limit),
+      const GetPopularCitiesParams(limit: 10),
     );
 
     result.fold(
       onSuccess: (data) {
-        // log('? ???? ${data.length} ?????');
         popularCities.value = data;
+        log('✅ 加载热门城市成功: ${data.length} 个');
       },
       onFailure: (exception) {
-        // log('? ????????: ${exception.message}');
-        AppToast.error(exception.message, title: '????');
+        log('❌ 加载热门城市失败: ${exception.message}');
       },
     );
   }
 
-  /// ????????
-  Future<void> toggleFavorite(String cityId) async {
-    // log('?? ??????: $cityId');
-
+  /// 切换城市收藏状态
+  Future<bool> toggleFavorite(String cityId) async {
     final result = await _toggleCityFavoriteUseCase.execute(
       ToggleCityFavoriteParams(cityId: cityId),
     );
 
-    result.fold(
+    return result.fold(
       onSuccess: (isFavorited) {
-        // log('? ???????: $isFavorited');
-
-        // ????????????
-        final index = cities.indexWhere((city) => city.id == cityId);
+        // 更新列表中的城市状态
+        final index = cities.indexWhere((c) => c.id == cityId);
         if (index != -1) {
           cities[index] = cities[index].copyWith(isFavorite: isFavorited);
           cities.refresh();
         }
-
-        AppToast.success(
-          isFavorited ? '??????' : '?????',
-          title: '??',
-        );
+        
+        // 通知其他组件收藏状态变更
+        DataEventBus.instance.emit(DataChangedEvent(
+          entityType: 'city_favorite',
+          entityId: cityId,
+          version: DateTime.now().millisecondsSinceEpoch,
+          changeType: isFavorited ? DataChangeType.created : DataChangeType.deleted,
+        ));
+        
+        log('✅ 切换收藏成功: $isFavorited');
+        return true;
       },
       onFailure: (exception) {
-        // log('? ??????: ${exception.message}');
-        AppToast.error(exception.message, title: '????');
+        log('❌ 切换收藏失败: ${exception.message}');
+        AppToast.error(exception.message, title: '操作失败');
+        return false;
       },
     );
   }
 
-  /// ????????
+  /// 加载收藏城市
   Future<void> loadFavoriteCities() async {
-    // log('?? ??????...');
-
     final result = await _getFavoriteCitiesUseCase.execute(const NoParams());
 
     result.fold(
       onSuccess: (data) {
-        // log('? ???? ${data.length} ?????');
         favoriteCities.value = data;
+        log('✅ 加载收藏城市成功: ${data.length} 个');
       },
       onFailure: (exception) {
-        // log('? ????????: ${exception.message}');
-        AppToast.error(exception.message, title: '????');
+        log('❌ 加载收藏城市失败: ${exception.message}');
       },
     );
   }
 
-  /// ???????? (? city_list_page ??)
-  Future<Result<void>> toggleCityFavorite(String cityId) async {
-    // log('?? ??????: $cityId');
+  /// 更新城市图片
+  void updateCityImages(String cityId, Map<String, dynamic> imageData) {
+    log('🖼️ [CityController] 更新城市图片: $cityId');
 
-    final result = await _toggleCityFavoriteUseCase.execute(
-      ToggleCityFavoriteParams(cityId: cityId),
+    final index = cities.indexWhere((c) => c.id == cityId);
+    if (index == -1) {
+      log('⚠️ [CityController] 未找到城市: $cityId');
+      return;
+    }
+
+    final oldCity = cities[index];
+
+    // 解析图片数据
+    Map<String, dynamic>? data;
+    if (imageData.containsKey('data') && imageData['data'] is Map<String, dynamic>) {
+      data = imageData['data'] as Map<String, dynamic>;
+    } else if (imageData.containsKey('portraitImage') || imageData.containsKey('landscapeImages')) {
+      data = imageData;
+    } else {
+      data = imageData;
+    }
+
+    // 提取竖屏图片 URL
+    String? portraitUrl;
+    final portraitImage = data['portraitImage'];
+    if (portraitImage is Map<String, dynamic>) {
+      portraitUrl = portraitImage['url'] as String?;
+    }
+
+    // 提取横屏图片 URL 列表
+    List<String>? landscapeUrls;
+    final landscapeImages = data['landscapeImages'];
+    if (landscapeImages is List && landscapeImages.isNotEmpty) {
+      landscapeUrls = landscapeImages
+          .where((img) => img is Map<String, dynamic> && img['url'] != null)
+          .map((img) => (img as Map<String, dynamic>)['url'] as String)
+          .toList();
+    }
+
+    // 如果没有解析到任何图片，不更新
+    if (portraitUrl == null && (landscapeUrls == null || landscapeUrls.isEmpty)) {
+      log('⚠️ [CityController] 未解析到图片URL，跳过更新');
+      return;
+    }
+
+    // 使用 copyWith 只更新图片字段
+    final updatedCity = oldCity.copyWith(
+      portraitImageUrl: portraitUrl ?? oldCity.portraitImageUrl,
+      landscapeImageUrls: landscapeUrls ?? oldCity.landscapeImageUrls,
+      imageUrl: portraitUrl ?? oldCity.imageUrl,
     );
 
-    return result.fold(
-      onSuccess: (isFavorited) {
-        // log('? ???????: $isFavorited');
-
-        // ????????????
-        final index = cities.indexWhere((city) => city.id == cityId);
-        if (index != -1) {
-          cities[index] = cities[index].copyWith(isFavorite: isFavorited);
-          cities.refresh();
-        }
-
-        return const Success(null);
-      },
-      onFailure: (exception) {
-        // log('? ??????: ${exception.message}');
-        return Failure(exception);
-      },
-    );
+    cities[index] = updatedCity;
+    cities.refresh();
+    log('✅ [CityController] 城市图片已更新: portrait=$portraitUrl, landscape=${landscapeUrls?.length ?? 0}张');
   }
 
-  /// ?????????ID?? (? city_list_page ??)
-  Future<Result<List<String>>> loadUserFavoriteCityIds() async {
-    // log('?? ??????ID??...');
-
-    final result = await _getUserFavoriteCityIdsUseCase.execute(const NoParams());
-
-    return result.fold(
-      onSuccess: (ids) {
-        // log('? ???? ${ids.length} ?????ID');
-        return Success(ids);
-      },
-      onFailure: (exception) {
-        // log('? ??????ID??: ${exception.message}');
-        return Failure(exception);
-      },
-    );
-  }
-
-  // ==================== Computed Properties ====================
-
-  /// ???????
-  bool get hasCities => cities.isNotEmpty;
-
-  /// ????????
-  bool get canLoadMore => _hasMoreData && !isLoadingMore.value;
-
-  /// ???????? (????)
-  bool get hasMoreData => _hasMoreData;
-
-  /// ????????
-  int get searchResultCount => cities.length;
-
-  /// ??????????
-  bool get hasActiveFilters {
-    return selectedRegions.isNotEmpty ||
-        selectedCountries.isNotEmpty ||
-        selectedCities.isNotEmpty ||
-        minPrice.value > 0.0 ||
-        maxPrice.value < 5000.0 ||
-        minInternet.value > 0.0 ||
-        minRating.value > 0.0 ||
-        maxAqi.value < 500 ||
-        selectedClimates.isNotEmpty;
-  }
-
-  /// ???????????
-  List<String> get availableRegions {
-    return cities.where((city) => city.region != null).map((city) => city.region!).toSet().toList()..sort();
-  }
-
-  /// ???????????
-  List<String> get availableCountries {
-    return cities.where((city) => city.country != null).map((city) => city.country!).toSet().toList()..sort();
-  }
-
-  /// ?????????????
-  List<String> get availableCities {
-    return cities.map((city) => city.name).toSet().toList()..sort();
-  }
-
-  /// ????????????? (?? City ??? climate ??)
-  List<String> get availableClimates {
-    // ??: City ?????? climate ??
-    // ???????,?????????????
-    return <String>[];
+  /// 标记城市正在生成图片
+  void markCityGeneratingImage(String cityId) {
+    generatingImageCityIds.add(cityId);
   }
 
   /// 检查城市是否正在生成图片
+  bool isCityGeneratingImage(String cityId) {
+    return generatingImageCityIds.contains(cityId);
+  }
+
+  /// 检查城市是否正在生成图片 - 兼容原控制器 API
   bool isGeneratingImages(String cityId) {
     return generatingImageCityIds.contains(cityId);
   }
@@ -619,101 +648,56 @@ class CityStateController extends GetxController {
     }
   }
 
-  /// 刷新单个城市数据
-  ///
-  /// [cityId] 城市ID
-  /// 更新本地城市列表中的对应城市数据
-  Future<void> refreshSingleCity(String cityId) async {
-    log('🔄 [CityStateController] 刷新单个城市数据: $cityId');
+  // ==================== 兼容旧 API ====================
+  
+  /// 兼容旧代码：初始加载城市
+  Future<void> loadInitialCities({bool refresh = true}) async {
+    if (refresh) {
+      await forceRefresh();
+    } else {
+      await initialLoad();
+    }
+  }
 
-    final result = await _cityRepository.getCityById(cityId);
+  /// 兼容旧代码：加载更多城市
+  Future<void> loadMoreCities() async {
+    await loadMore();
+  }
 
-    result.fold(
-      onSuccess: (city) {
-        log('✅ [CityStateController] 获取城市数据成功');
-        // 更新列表中的城市数据
-        final index = cities.indexWhere((c) => c.id == cityId);
+  /// 切换城市收藏状态 - 兼容原控制器 API
+  Future<Result<void>> toggleCityFavorite(String cityId) async {
+    final result = await _toggleCityFavoriteUseCase.execute(
+      ToggleCityFavoriteParams(cityId: cityId),
+    );
+
+    return result.fold(
+      onSuccess: (isFavorited) {
+        // 更新列表中的城市状态
+        final index = cities.indexWhere((city) => city.id == cityId);
         if (index != -1) {
-          cities[index] = city;
+          cities[index] = cities[index].copyWith(isFavorite: isFavorited);
           cities.refresh();
-          log('🔄 [CityStateController] 城市列表已更新');
         }
+        return const Success(null);
       },
       onFailure: (exception) {
-        log('❌ [CityStateController] 刷新城市数据失败: ${exception.message}');
+        return Failure(exception);
       },
     );
   }
 
-  /// 只更新城市图片字段（不影响其他数据如温度等）
-  ///
-  /// [cityId] 城市ID
-  /// [imageData] 图片生成结果数据
-  void updateCityImages(String cityId, Map<String, dynamic> imageData) {
-    log('🖼️ [CityStateController] 更新城市图片: $cityId');
-    log('🖼️ [CityStateController] 原始数据: $imageData');
+  /// 加载用户收藏城市ID列表 - 兼容原控制器 API
+  Future<Result<List<String>>> loadUserFavoriteCityIds() async {
+    final result = await _getFavoriteCitiesUseCase.execute(const NoParams());
 
-    final index = cities.indexWhere((c) => c.id == cityId);
-    if (index == -1) {
-      log('⚠️ [CityStateController] 未找到城市: $cityId');
-      return;
-    }
-
-    final oldCity = cities[index];
-
-    // 从返回数据中提取图片信息
-    // 后端返回格式: { success: true, data: { portraitImage: {...}, landscapeImages: [...] } }
-    // 或者直接是 data 层级的内容
-    Map<String, dynamic>? data;
-    if (imageData.containsKey('data') && imageData['data'] is Map<String, dynamic>) {
-      data = imageData['data'] as Map<String, dynamic>;
-    } else if (imageData.containsKey('portraitImage') || imageData.containsKey('landscapeImages')) {
-      // 直接就是 data 层级
-      data = imageData;
-    }
-
-    log('🖼️ [CityStateController] 解析后的 data: $data');
-
-    if (data == null) {
-      log('⚠️ [CityStateController] 图片数据为空，尝试直接使用 imageData');
-      data = imageData;
-    }
-
-    // 提取竖屏图片 URL
-    String? portraitUrl;
-    final portraitImage = data['portraitImage'];
-    if (portraitImage is Map<String, dynamic>) {
-      portraitUrl = portraitImage['url'] as String?;
-    }
-    log('🖼️ [CityStateController] 竖屏图片: $portraitUrl');
-
-    // 提取横屏图片 URL 列表
-    List<String>? landscapeUrls;
-    final landscapeImages = data['landscapeImages'];
-    if (landscapeImages is List && landscapeImages.isNotEmpty) {
-      landscapeUrls = landscapeImages
-          .where((img) => img is Map<String, dynamic> && img['url'] != null)
-          .map((img) => (img as Map<String, dynamic>)['url'] as String)
-          .toList();
-    }
-    log('🖼️ [CityStateController] 横屏图片数量: ${landscapeUrls?.length ?? 0}');
-
-    // 如果没有解析到任何图片，不更新
-    if (portraitUrl == null && (landscapeUrls == null || landscapeUrls.isEmpty)) {
-      log('⚠️ [CityStateController] 未解析到图片URL，跳过更新');
-      return;
-    }
-
-    // 使用 copyWith 只更新图片字段，保留其他所有数据
-    final updatedCity = oldCity.copyWith(
-      portraitImageUrl: portraitUrl ?? oldCity.portraitImageUrl,
-      landscapeImageUrls: landscapeUrls ?? oldCity.landscapeImageUrls,
-      // 如果有竖屏图片，也更新主图
-      imageUrl: portraitUrl ?? oldCity.imageUrl,
+    return result.fold(
+      onSuccess: (cities) {
+        final ids = cities.map((c) => c.id).toList();
+        return Success(ids);
+      },
+      onFailure: (exception) {
+        return Failure(exception);
+      },
     );
-
-    cities[index] = updatedCity;
-    cities.refresh();
-    log('✅ [CityStateController] 城市图片已更新: portrait=$portraitUrl, landscape=${landscapeUrls?.length ?? 0}张');
   }
 }

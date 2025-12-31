@@ -5,7 +5,7 @@ import 'package:df_admin_mobile/core/sync/sync.dart';
 import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
 import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
 import 'package:df_admin_mobile/features/meetup/infrastructure/models/meetup_dto.dart';
-import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller_v2.dart';
+import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/services/http_service.dart';
@@ -29,7 +29,7 @@ class MeetupDetailPageController extends GetxController {
   final PageController imagePageController = PageController();
 
   late final IMeetupRepository _meetupRepository;
-  late final MeetupStateControllerV2 _meetupController;
+  late final MeetupStateController _meetupController;
 
   // 数据变更订阅
   StreamSubscription<DataChangedEvent>? _dataChangedSubscription;
@@ -42,7 +42,7 @@ class MeetupDetailPageController extends GetxController {
   void onInit() {
     super.onInit();
     _meetupRepository = Get.find<IMeetupRepository>();
-    _meetupController = Get.find<MeetupStateControllerV2>();
+    _meetupController = Get.find<MeetupStateController>();
     meetup = Rx<Meetup>(initialMeetup);
     _setupDataChangeListeners();
     _loadEventDetails();

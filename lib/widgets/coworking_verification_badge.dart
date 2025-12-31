@@ -1,8 +1,8 @@
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/verification_eligibility.dart';
-import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller_v2.dart';
-import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller_v2.dart';
+import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
@@ -21,8 +21,8 @@ class CoworkingVerificationBadge extends StatelessWidget {
   final void Function(CoworkingSpace updatedSpace)? onVerified;
   final EdgeInsetsGeometry padding;
 
-  final CoworkingStateControllerV2 _coworkingController = Get.find<CoworkingStateControllerV2>();
-  final UserStateControllerV2 _userStateController = Get.find<UserStateControllerV2>();
+  final CoworkingStateController _coworkingController = Get.find<CoworkingStateController>();
+  final UserStateController _userStateController = Get.find<UserStateController>();
 
   bool get _isCreator {
     if (space.isOwner) {

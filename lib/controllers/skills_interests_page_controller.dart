@@ -4,7 +4,7 @@ import 'package:df_admin_mobile/features/interest/domain/entities/interest.dart'
 import 'package:df_admin_mobile/features/interest/presentation/controllers/interest_state_controller.dart';
 import 'package:df_admin_mobile/features/skill/domain/entities/skill.dart';
 import 'package:df_admin_mobile/features/skill/presentation/controllers/skill_state_controller.dart';
-import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller_v2.dart';
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:get/get.dart';
 
@@ -12,7 +12,7 @@ import 'package:get/get.dart';
 class SkillsInterestsPageController extends GetxController {
   late final SkillStateController skillController;
   late final InterestStateController interestController;
-  late final UserStateControllerV2 userStateController;
+  late final UserStateController userStateController;
 
   /// 已选技能列表
   final RxList<UserSkill> selectedSkills = <UserSkill>[].obs;
@@ -28,7 +28,7 @@ class SkillsInterestsPageController extends GetxController {
     super.onInit();
     skillController = Get.find<SkillStateController>();
     interestController = Get.find<InterestStateController>();
-    userStateController = Get.find<UserStateControllerV2>();
+    userStateController = Get.find<UserStateController>();
   }
 
   /// 更新选中的技能

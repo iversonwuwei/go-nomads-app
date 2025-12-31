@@ -1,8 +1,8 @@
 import 'dart:developer';
 
 import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller_v2.dart';
-import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller_v2.dart';
+import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/pages/create_meetup_page.dart';
 import 'package:df_admin_mobile/pages/home/widgets/home_meetup_card.dart';
@@ -18,8 +18,8 @@ class HomeMeetupsSection extends StatelessWidget {
 
   const HomeMeetupsSection({super.key, required this.isMobile});
 
-  MeetupStateControllerV2 get _meetupController => Get.find<MeetupStateControllerV2>();
-  UserStateControllerV2 get _userController => Get.find<UserStateControllerV2>();
+  MeetupStateController get _meetupController => Get.find<MeetupStateController>();
+  UserStateController get _userController => Get.find<UserStateController>();
 
   @override
   Widget build(BuildContext context) {

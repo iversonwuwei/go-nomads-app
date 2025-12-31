@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:df_admin_mobile/core/sync/sync.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart' as models;
-import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller_v2.dart';
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:get/get.dart';
 
 /// MemberDetailPage 控制器
@@ -16,7 +16,7 @@ class MemberDetailPageController extends GetxController {
     this.userId,
   });
 
-  late final UserStateControllerV2 _userController;
+  late final UserStateController _userController;
   late final AuthStateController _authController;
 
   final Rxn<models.User> user = Rxn<models.User>();
@@ -36,7 +36,7 @@ class MemberDetailPageController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _userController = Get.find<UserStateControllerV2>();
+    _userController = Get.find<UserStateController>();
     _authController = Get.find<AuthStateController>();
     user.value = initialUser;
     _setupDataChangeListeners();

@@ -1,5 +1,5 @@
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
-import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller_v2.dart';
+import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:get/get.dart';
 
 class UserProfilePageController extends GetxController {
@@ -7,7 +7,7 @@ class UserProfilePageController extends GetxController {
 
   final dynamic args;
 
-  late final UserStateControllerV2 _profileController = Get.find<UserStateControllerV2>();
+  late final UserStateController _profileController = Get.find<UserStateController>();
   Worker? _currentUserWorker;
 
   final RxMap<String, dynamic> userInfo = <String, dynamic>{}.obs;

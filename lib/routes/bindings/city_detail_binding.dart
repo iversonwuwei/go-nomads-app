@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import '../../features/city/application/state_controllers/pros_cons_state_controller.dart';
 import '../../features/city/presentation/controllers/city_detail_state_controller.dart';
 import '../../features/city/presentation/controllers/city_rating_controller.dart';
-import '../../features/coworking/presentation/controllers/coworking_state_controller_v2.dart';
+import '../../features/coworking/presentation/controllers/coworking_state_controller.dart';
 import '../../features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
 import '../../features/weather/presentation/controllers/weather_state_controller.dart';
 
@@ -22,6 +22,6 @@ class CityDetailBinding extends Bindings {
     Get.find<UserCityContentStateController>();
     Get.find<ProsConsStateController>();
     Get.find<CityRatingController>();
-    Get.find<CoworkingStateControllerV2>();
+    Get.find<CoworkingStateController>();
   }
 }

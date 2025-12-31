@@ -5,7 +5,7 @@ import 'package:df_admin_mobile/core/core.dart';
 import 'package:df_admin_mobile/core/sync/sync.dart';
 import 'package:df_admin_mobile/features/city/application/use_cases/city_use_cases.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
-import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller_v2.dart';
+import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:get/get.dart';
 
@@ -166,7 +166,7 @@ class CityDetailStateController extends GetxController {
   void _syncFavoriteStateFromList(String cityId) {
     try {
       // 尝试获取列表控制器中的最新状态
-      final cityListController = Get.find<CityStateControllerV2>();
+      final cityListController = Get.find<CityStateController>();
       final cityInList = cityListController.cities.firstWhereOrNull((c) => c.id == cityId);
 
       if (cityInList != null && currentCity.value != null) {

@@ -4,7 +4,7 @@ import 'package:df_admin_mobile/features/ai/presentation/controllers/ai_state_co
 import 'package:df_admin_mobile/features/city/application/state_controllers/pros_cons_state_controller.dart';
 import 'package:df_admin_mobile/features/city/presentation/controllers/city_detail_state_controller.dart';
 import 'package:df_admin_mobile/features/city/presentation/controllers/city_rating_controller.dart';
-import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller_v2.dart';
+import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
 import 'package:df_admin_mobile/features/membership/presentation/controllers/membership_state_controller.dart';
 import 'package:df_admin_mobile/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
 import 'package:df_admin_mobile/features/weather/presentation/controllers/weather_state_controller.dart';
@@ -23,7 +23,7 @@ class CityDetailBinding extends Bindings {
     _ensureRegistered<ProsConsStateController>('ProsConsStateController');
     _ensureRegistered<AiStateController>('AiStateController');
     _ensureRegistered<WeatherStateController>('WeatherStateController');
-    _ensureRegistered<CoworkingStateControllerV2>('CoworkingStateControllerV2');
+    _ensureRegistered<CoworkingStateController>('CoworkingStateController');
     _ensureRegistered<CityRatingController>('CityRatingController');
     _ensureRegistered<MembershipStateController>('MembershipStateController');
   }
