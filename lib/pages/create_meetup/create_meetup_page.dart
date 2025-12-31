@@ -1,10 +1,10 @@
-import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/controllers/create_meetup_page_controller.dart';
+import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/pages/create_meetup/create_meetup_datetime_section.dart';
 import 'package:df_admin_mobile/pages/create_meetup/create_meetup_images_section.dart';
 import 'package:df_admin_mobile/pages/create_meetup/create_meetup_location_section.dart';
 import 'package:df_admin_mobile/pages/create_meetup/create_meetup_title_type_section.dart';
-import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -16,21 +16,32 @@ class CreateMeetupPage extends StatelessWidget {
 
   String get _controllerTag => editingMeetup != null ? 'edit_meetup_${editingMeetup!.id}' : 'create_meetup_new';
 
+  CreateMeetupPageController get _controller {
+    if (!Get.isRegistered<CreateMeetupPageController>(tag: _controllerTag)) {
+      return Get.put(
+        CreateMeetupPageController(editingMeetup: editingMeetup),
+        tag: _controllerTag,
+      );
+    }
+    return Get.find<CreateMeetupPageController>(tag: _controllerTag);
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Register controller with unique tag
-    final controller = Get.put(
-      CreateMeetupPageController(editingMeetup: editingMeetup),
-      tag: _controllerTag,
-    );
-
+    final controller = _controller;
     final l10n = AppLocalizations.of(context)!;
     final isEditMode = editingMeetup != null;
 
-    return WillPopScope(
-      onWillPop: () async {
-        _cleanupController();
-        return true;
+    return PopScope(
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) {
+          // 页面退出后延迟清理 controller
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (Get.isRegistered<CreateMeetupPageController>(tag: _controllerTag)) {
+              Get.delete<CreateMeetupPageController>(tag: _controllerTag);
+            }
+          });
+        }
       },
       child: Scaffold(
         backgroundColor: Colors.grey.shade50,
@@ -107,10 +118,7 @@ class CreateMeetupPage extends StatelessWidget {
       elevation: 0,
       leading: IconButton(
         icon: const Icon(FontAwesomeIcons.arrowLeft, size: 18),
-        onPressed: () {
-          _cleanupController();
-          Get.back();
-        },
+        onPressed: () => Get.back(),
       ),
       title: Text(
         isEditMode ? l10n.editMeetup : l10n.createMeetup,
@@ -272,14 +280,7 @@ class CreateMeetupPage extends StatelessWidget {
     // Create meetup
     final success = await controller.createMeetup(context);
     if (success) {
-      _cleanupController();
       Get.back(result: true);
-    }
-  }
-
-  void _cleanupController() {
-    if (Get.isRegistered<CreateMeetupPageController>(tag: _controllerTag)) {
-      Get.delete<CreateMeetupPageController>(tag: _controllerTag);
     }
   }
 }
