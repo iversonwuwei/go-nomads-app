@@ -3,9 +3,10 @@ import 'package:df_admin_mobile/features/moderator/presentation/pages/moderator_
 import 'package:df_admin_mobile/features/travel_history/travel_history.dart';
 import 'package:df_admin_mobile/layouts/bottom_nav_layout.dart';
 import 'package:df_admin_mobile/middlewares/auth_middleware.dart';
-import 'package:df_admin_mobile/pages/add_cost_page.dart';
-import 'package:df_admin_mobile/pages/add_coworking_page.dart';
-import 'package:df_admin_mobile/pages/add_innovation_page.dart';
+import 'package:df_admin_mobile/pages/add_cost/add_cost_page.dart';
+import 'package:df_admin_mobile/pages/add_coworking/add_coworking_page.dart';
+import 'package:df_admin_mobile/pages/add_hotel_page.dart';
+import 'package:df_admin_mobile/pages/add_innovation/add_innovation_page.dart';
 import 'package:df_admin_mobile/pages/add_review_page.dart';
 import 'package:df_admin_mobile/pages/ai_chat_page.dart';
 import 'package:df_admin_mobile/pages/city_chat_page.dart';
@@ -13,11 +14,11 @@ import 'package:df_admin_mobile/pages/city_detail_page.dart';
 import 'package:df_admin_mobile/pages/city_list_page.dart';
 import 'package:df_admin_mobile/pages/city_search_page.dart';
 import 'package:df_admin_mobile/pages/community_page.dart';
-import 'package:df_admin_mobile/pages/coworking_detail_page.dart';
+import 'package:df_admin_mobile/pages/coworking_detail/coworking_detail_page.dart';
 import 'package:df_admin_mobile/pages/coworking_home_page.dart';
 import 'package:df_admin_mobile/pages/coworking_list_page.dart';
-import 'package:df_admin_mobile/pages/create_meetup_page.dart';
-import 'package:df_admin_mobile/pages/create_travel_plan_page.dart';
+import 'package:df_admin_mobile/pages/create_meetup/create_meetup_page.dart';
+import 'package:df_admin_mobile/pages/create_travel_plan/create_travel_plan_page.dart';
 import 'package:df_admin_mobile/pages/data_service_page.dart';
 import 'package:df_admin_mobile/pages/direct_chat_page.dart';
 import 'package:df_admin_mobile/pages/edit_basic_info_page.dart';
@@ -26,17 +27,16 @@ import 'package:df_admin_mobile/pages/edit_skills_page.dart';
 import 'package:df_admin_mobile/pages/edit_social_links_page.dart';
 import 'package:df_admin_mobile/pages/favorites_page.dart';
 import 'package:df_admin_mobile/pages/global_map_page.dart';
-import 'package:df_admin_mobile/pages/add_hotel_page.dart';
 import 'package:df_admin_mobile/pages/hotel_detail_page.dart';
-import 'package:df_admin_mobile/pages/hotel_list_page.dart';
+import 'package:df_admin_mobile/pages/hotel_list/hotel_list_page.dart';
 import 'package:df_admin_mobile/pages/innovation_detail_page.dart';
 import 'package:df_admin_mobile/pages/innovation_list_page.dart';
 import 'package:df_admin_mobile/pages/invite_to_meetup_page.dart';
-import 'package:df_admin_mobile/pages/meetup_detail_page.dart';
+import 'package:df_admin_mobile/pages/meetup_detail/meetup_detail_page.dart';
 import 'package:df_admin_mobile/pages/meetups_list_page.dart';
 import 'package:df_admin_mobile/pages/member_detail_page.dart';
 import 'package:df_admin_mobile/pages/my_meetups_page.dart';
-import 'package:df_admin_mobile/pages/nomads_login_page.dart';
+import 'package:df_admin_mobile/pages/nomads_login/nomads_login_page.dart';
 import 'package:df_admin_mobile/pages/notifications_page.dart';
 import 'package:df_admin_mobile/pages/profile_edit_page.dart';
 import 'package:df_admin_mobile/pages/profile_page.dart';
@@ -422,7 +422,7 @@ class AppRoutes {
     ),
     GetPage(
       name: userProfile,
-      page: () => const UserProfilePage(),
+      page: () => UserProfilePage(),
       middlewares: [AuthMiddleware()],
     ),
     GetPage(

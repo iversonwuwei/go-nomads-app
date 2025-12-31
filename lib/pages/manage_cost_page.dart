@@ -1,16 +1,13 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/user_city_content/domain/entities/user_city_content.dart';
-import 'package:df_admin_mobile/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
-import 'package:df_admin_mobile/services/token_storage_service.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import 'add_cost_page.dart';
+import 'package:df_admin_mobile/controllers/manage_cost_page_controller.dart';
 
 /// Cost 数据管理列表页面
-class ManageCostPage extends StatefulWidget {
+class ManageCostPage extends StatelessWidget {
   final String cityId;
   final String cityName;
 
@@ -20,90 +17,17 @@ class ManageCostPage extends StatefulWidget {
     required this.cityName,
   });
 
-  @override
-  State<ManageCostPage> createState() => _ManageCostPageState();
-}
+  static String _generateTag(String cityId) => 'ManageCostPage_$cityId';
 
-class _ManageCostPageState extends State<ManageCostPage> {
-  final RxBool canDelete = false.obs;
-  final RxBool isLoading = false.obs;
-
-  @override
-  void initState() {
-    super.initState();
-    // 异步加载数据,不阻塞页面显示
-    Future.microtask(() {
-      _checkPermissions();
-      _loadData();
-    });
-  }
-
-  Future<void> _checkPermissions() async {
-    final isAdmin = await TokenStorageService().isAdmin();
-    canDelete.value = isAdmin;
-  }
-
-  Future<void> _loadData() async {
-    isLoading.value = true;
-    try {
-      final controller = Get.find<UserCityContentStateController>();
-      await controller.loadCityExpenses(widget.cityId);
-    } finally {
-      isLoading.value = false;
+  ManageCostPageController _useController() {
+    final tag = _generateTag(cityId);
+    if (Get.isRegistered<ManageCostPageController>(tag: tag)) {
+      return Get.find<ManageCostPageController>(tag: tag);
     }
-  }
-
-  Future<void> _deleteExpense(String expenseId) async {
-    final confirmed = await Get.dialog<bool>(
-      AlertDialog(
-        title: const Text('确认删除'),
-        content: const Text('确定要删除这条费用记录吗？此操作可以恢复。'),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(result: false),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () => Get.back(result: true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.cityPrimary),
-            child: const Text('删除'),
-          ),
-        ],
-      ),
+    return Get.put(
+      ManageCostPageController(cityId: cityId, cityName: cityName),
+      tag: tag,
     );
-
-    if (confirmed != true) return;
-
-    try {
-      final controller = Get.find<UserCityContentStateController>();
-      final success = await controller.deleteExpense(widget.cityId, expenseId);
-
-      if (success) {
-        AppToast.success('费用记录已删除');
-        await _loadData();
-      } else {
-        AppToast.error('删除失败,请重试');
-      }
-    } catch (e) {
-      AppToast.error('删除失败: $e');
-    }
-  }
-
-  String _getCategoryName(ExpenseCategory category) {
-    switch (category) {
-      case ExpenseCategory.food:
-        return '餐饮';
-      case ExpenseCategory.transport:
-        return '交通';
-      case ExpenseCategory.accommodation:
-        return '住宿';
-      case ExpenseCategory.activity:
-        return '活动';
-      case ExpenseCategory.shopping:
-        return '购物';
-      case ExpenseCategory.other:
-        return '其他';
-    }
   }
 
   IconData _getCategoryIcon(ExpenseCategory category) {
@@ -123,60 +47,34 @@ class _ManageCostPageState extends State<ManageCostPage> {
     }
   }
 
-  Color _getCategoryColor(ExpenseCategory category) {
-    switch (category) {
-      case ExpenseCategory.food:
-        return Colors.orange;
-      case ExpenseCategory.transport:
-        return Colors.blue;
-      case ExpenseCategory.accommodation:
-        return Colors.purple;
-      case ExpenseCategory.activity:
-        return Colors.green;
-      case ExpenseCategory.shopping:
-        return Colors.pink;
-      case ExpenseCategory.other:
-        return Colors.grey;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<UserCityContentStateController>();
+    final controller = _useController();
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.cityPrimary,
         foregroundColor: Colors.white,
-        title: Text('${widget.cityName} - 费用管理'),
+        title: Text('$cityName - 费用管理'),
         actions: [
           IconButton(
             icon: const Icon(FontAwesomeIcons.plus),
-            onPressed: () async {
-              final result = await Get.to(() => AddCostPage(
-                    cityId: widget.cityId,
-                    cityName: widget.cityName,
-                  ));
-              if (result != null && result['success'] == true) {
-                await _loadData();
-              }
-            },
+            onPressed: controller.navigateToAddCost,
             tooltip: '添加费用',
           ),
         ],
       ),
       body: Obx(() {
-        if (isLoading.value) {
+        if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (controller.expenses.isEmpty) {
+        if (controller.contentController.expenses.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(FontAwesomeIcons.dollarSign,
-                    size: 80, color: Colors.grey[300]),
+                Icon(FontAwesomeIcons.dollarSign, size: 80, color: Colors.grey[300]),
                 const SizedBox(height: 16),
                 Text(
                   '暂无费用数据',
@@ -188,15 +86,7 @@ class _ManageCostPageState extends State<ManageCostPage> {
                     backgroundColor: AppColors.cityPrimary,
                     foregroundColor: Colors.white,
                   ),
-                  onPressed: () async {
-                    final result = await Get.to(() => AddCostPage(
-                          cityId: widget.cityId,
-                          cityName: widget.cityName,
-                        ));
-                    if (result != null && result['success'] == true) {
-                      await _loadData();
-                    }
-                  },
+                  onPressed: controller.navigateToAddCost,
                   icon: const Icon(FontAwesomeIcons.plus),
                   label: const Text('添加第一条费用'),
                 ),
@@ -207,12 +97,12 @@ class _ManageCostPageState extends State<ManageCostPage> {
 
         return ListView.builder(
           padding: const EdgeInsets.all(16),
-          itemCount: controller.expenses.length,
+          itemCount: controller.contentController.expenses.length,
           itemBuilder: (context, index) {
-            final expense = controller.expenses[index];
-            final categoryName = _getCategoryName(expense.category);
+            final expense = controller.contentController.expenses[index];
+            final categoryName = controller.getCategoryName(expense.category);
             final categoryIcon = _getCategoryIcon(expense.category);
-            final categoryColor = _getCategoryColor(expense.category);
+            final categoryColor = controller.getCategoryColor(expense.category);
 
             return Card(
               margin: const EdgeInsets.only(bottom: 12),
@@ -233,8 +123,7 @@ class _ManageCostPageState extends State<ManageCostPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 8),
-                    if (expense.description != null &&
-                        expense.description!.isNotEmpty)
+                    if (expense.description != null && expense.description!.isNotEmpty)
                       Text(
                         expense.description!,
                         maxLines: 1,
@@ -244,13 +133,11 @@ class _ManageCostPageState extends State<ManageCostPage> {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(FontAwesomeIcons.calendar,
-                            size: 12, color: Colors.grey[600]),
+                        Icon(FontAwesomeIcons.calendar, size: 12, color: Colors.grey[600]),
                         const SizedBox(width: 4),
                         Text(
-                          _formatDate(expense.date),
-                          style:
-                              TextStyle(fontSize: 12, color: Colors.grey[600]),
+                          controller.formatDate(expense.date),
+                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                         ),
                       ],
                     ),
@@ -280,15 +167,20 @@ class _ManageCostPageState extends State<ManageCostPage> {
                         ),
                       ],
                     ),
-                    if (canDelete.value) ...[
-                      const SizedBox(width: 8),
-                      IconButton(
-                        icon: const Icon(FontAwesomeIcons.trash,
-                            color: Colors.red),
-                        onPressed: () => _deleteExpense(expense.id),
-                        tooltip: '删除',
-                      ),
-                    ],
+                    Obx(() {
+                      if (!controller.canDelete.value) return const SizedBox.shrink();
+                      return Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(width: 8),
+                          IconButton(
+                            icon: const Icon(FontAwesomeIcons.trash, color: Colors.red),
+                            onPressed: () => controller.deleteExpense(expense.id),
+                            tooltip: '删除',
+                          ),
+                        ],
+                      );
+                    }),
                   ],
                 ),
               ),
@@ -299,22 +191,10 @@ class _ManageCostPageState extends State<ManageCostPage> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.cityPrimary,
         foregroundColor: Colors.white,
-        onPressed: () async {
-          final result = await Get.to(() => AddCostPage(
-                cityId: widget.cityId,
-                cityName: widget.cityName,
-              ));
-          if (result != null && result['success'] == true) {
-            await _loadData();
-          }
-        },
+        onPressed: controller.navigateToAddCost,
         tooltip: '添加费用',
         child: const Icon(FontAwesomeIcons.plus),
       ),
     );
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 }

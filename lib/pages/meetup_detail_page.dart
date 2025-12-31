@@ -7,7 +7,7 @@ import 'package:df_admin_mobile/features/meetup/infrastructure/models/meetup_dto
 import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller_v2.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/pages/create_meetup_page.dart';
+import 'package:df_admin_mobile/pages/create_meetup/create_meetup_page.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/services/http_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';

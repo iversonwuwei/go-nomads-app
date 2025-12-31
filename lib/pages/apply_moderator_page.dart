@@ -1,5 +1,7 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
+import 'package:df_admin_mobile/features/moderator/domain/repositories/i_moderator_application_repository.dart';
+import 'package:df_admin_mobile/features/moderator/infrastructure/repositories/moderator_application_repository.dart';
 import 'package:df_admin_mobile/features/moderator/presentation/controllers/moderator_application_controller.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
@@ -7,27 +9,27 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 /// 申请成为版主页面
-class ApplyModeratorPage extends StatefulWidget {
+class ApplyModeratorPage extends StatelessWidget {
   final City city;
 
-  const ApplyModeratorPage({
+  ApplyModeratorPage({
     super.key,
     required this.city,
   });
 
-  @override
-  State<ApplyModeratorPage> createState() => _ApplyModeratorPageState();
-}
-
-class _ApplyModeratorPageState extends State<ApplyModeratorPage> {
   final _formKey = GlobalKey<FormState>();
   final _reasonController = TextEditingController();
-  final _controller = Get.find<ModeratorApplicationController>();
 
-  @override
-  void dispose() {
-    _reasonController.dispose();
-    super.dispose();
+  ModeratorApplicationController get _controller {
+    // 确保 Repository 已注册
+    if (!Get.isRegistered<IModeratorApplicationRepository>()) {
+      Get.put<IModeratorApplicationRepository>(ModeratorApplicationRepository());
+    }
+    // 确保 Controller 已注册
+    if (!Get.isRegistered<ModeratorApplicationController>()) {
+      Get.put(ModeratorApplicationController(Get.find<IModeratorApplicationRepository>()));
+    }
+    return Get.find<ModeratorApplicationController>();
   }
 
   Future<void> _submit() async {
@@ -37,15 +39,13 @@ class _ApplyModeratorPageState extends State<ApplyModeratorPage> {
 
     try {
       await _controller.applyForModerator(
-        cityId: widget.city.id,
-        cityName: widget.city.name,
+        cityId: city.id,
+        cityName: city.name,
         reason: _reasonController.text,
       );
 
-      if (mounted) {
-        AppToast.success('申请已提交，请等待管理员审核');
-        Get.back();
-      }
+      AppToast.success('申请已提交，请等待管理员审核');
+      Get.back();
     } catch (e) {
       AppToast.error(e.toString());
     }
@@ -139,17 +139,17 @@ class _ApplyModeratorPageState extends State<ApplyModeratorPage> {
             height: 60,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              image: widget.city.imageUrl != null
+              image: city.imageUrl != null
                   ? DecorationImage(
-                      image: NetworkImage(widget.city.imageUrl!),
+                      image: NetworkImage(city.imageUrl!),
                       fit: BoxFit.cover,
                     )
                   : null,
-              color: widget.city.imageUrl == null
+              color: city.imageUrl == null
                   ? AppColors.accent.withValues(alpha: 0.1)
                   : null,
             ),
-            child: widget.city.imageUrl == null
+            child: city.imageUrl == null
                 ? Icon(
                     FontAwesomeIcons.city,
                     color: AppColors.accent,
@@ -163,7 +163,7 @@ class _ApplyModeratorPageState extends State<ApplyModeratorPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.city.name,
+                  city.name,
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -172,7 +172,7 @@ class _ApplyModeratorPageState extends State<ApplyModeratorPage> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  widget.city.country ?? '',
+                  city.country ?? '',
                   style: const TextStyle(
                     fontSize: 14,
                     color: AppColors.textSecondary,

@@ -1,16 +1,8 @@
-import 'dart:developer';
-
 import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/config/supabase_config.dart';
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/core/sync/sync.dart';
 import 'package:df_admin_mobile/features/hotel/domain/entities/hotel.dart';
-import 'package:df_admin_mobile/features/hotel/infrastructure/repositories/hotel_repository.dart';
-import 'package:df_admin_mobile/features/location/presentation/controllers/location_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/services/http_service.dart';
-import 'package:df_admin_mobile/services/image_upload_service.dart';
-import 'package:df_admin_mobile/utils/image_upload_helper.dart';
+import 'package:df_admin_mobile/controllers/add_hotel_page_controller.dart';
+import 'package:df_admin_mobile/pages/flutter_map_picker_page.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/location_picker_field.dart';
@@ -18,16 +10,10 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import 'flutter_map_picker_page.dart';
-
-/// Add/Edit Hotel Page - 添加或编辑酒店页面
-/// 为数字游民提供酒店信息录入功能
-class AddHotelPage extends StatefulWidget {
+class AddHotelPage extends StatelessWidget {
   final String? cityName;
   final String? cityId;
   final String? countryName;
-
-  /// 编辑模式：传入要编辑的 Hotel
   final Hotel? editingHotel;
 
   const AddHotelPage({
@@ -38,174 +24,12 @@ class AddHotelPage extends StatefulWidget {
     this.editingHotel,
   });
 
-  /// 是否是编辑模式
   bool get isEditMode => editingHotel != null;
-
-  @override
-  State<AddHotelPage> createState() => _AddHotelPageState();
-}
-
-class _AddHotelPageState extends State<AddHotelPage> {
-  final _formKey = GlobalKey<FormState>();
-  final RxBool _isSubmitting = false.obs;
-
-  late final LocationStateController _locationController;
-  final HotelRepository _hotelRepository = HotelRepository(HttpService());
-
-  // ============ 基本信息 ============
-  final _nameController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  final _addressController = TextEditingController();
-
-  // ============ 位置信息 ============
-  String? _selectedCountry;
-  String? _selectedCity;
-  String? _selectedCountryId;
-  String? _selectedCityId;
-  double _latitude = 0.0;
-  double _longitude = 0.0;
-
-  // ============ 联系方式 ============
-  final _phoneController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _websiteController = TextEditingController();
-
-  // ============ 价格信息 ============
-  final _pricePerNightController = TextEditingController();
-  String _currency = 'USD';
-
-  // ============ 数字游民特性 ============
-  final _wifiSpeedController = TextEditingController();
-  bool _hasWifi = true;
-  bool _hasWorkDesk = false;
-  bool _hasAirConditioning = false;
-  bool _hasKitchen = false;
-  bool _hasLaundry = false;
-  bool _hasParking = false;
-  bool _hasPool = false;
-  bool _hasGym = false;
-  bool _has24HourReception = false;
-  bool _hasLongStayDiscount = false;
-  bool _isPetFriendly = false;
-  bool _hasCoworkingSpace = false;
-
-  // ============ 图片 ============
-  static const int maxHotelImages = 5;
-  final List<String> _hotelImageUrls = [];
-  bool _isUploadingImages = false;
-  String? _imageUploadStatus;
-  final ImageUploadService _imageUploadService = ImageUploadService();
-
-  // ============ 房型列表 ============
-  final List<Map<String, dynamic>> _roomTypes = [];
-
-  int get _remainingImageSlots => maxHotelImages - _hotelImageUrls.length;
-  String get _imageUploadBucket => SupabaseConfig.buckets['hotelPhotos'] ?? SupabaseConfig.defaultBucket;
-  String get _imageUploadFolder => 'hotels/${_selectedCityId ?? 'general'}';
-
-  @override
-  void initState() {
-    super.initState();
-    _locationController = Get.find<LocationStateController>();
-    _initializeFromParams();
-
-    // 如果是编辑模式，填充现有数据
-    if (widget.isEditMode) {
-      log('✏️ [AddHotel] 编辑模式 - 填充现有数据');
-      _fillFormWithExistingData(widget.editingHotel!);
-    }
-  }
-
-  void _initializeFromParams() {
-    log('🏨 [AddHotel] _initializeFromParams:');
-    log('   widget.cityId: "${widget.cityId}" (type: ${widget.cityId.runtimeType})');
-    log('   widget.cityName: "${widget.cityName}"');
-    log('   widget.countryName: "${widget.countryName}"');
-
-    if (widget.cityId != null && widget.cityId!.isNotEmpty) {
-      _selectedCityId = widget.cityId;
-      _selectedCity = widget.cityName;
-      _selectedCountry = widget.countryName;
-      log('🏨 [AddHotel] ✅ 已设置城市: $_selectedCity (ID: $_selectedCityId), 国家: $_selectedCountry');
-    } else {
-      log('🏨 [AddHotel] ⚠️ cityId 为空，未设置城市');
-    }
-  }
-
-  /// 编辑模式：用现有数据填充表单
-  void _fillFormWithExistingData(Hotel hotel) {
-    // 基本信息
-    _nameController.text = hotel.name;
-    _descriptionController.text = hotel.description;
-    _addressController.text = hotel.address;
-
-    // 位置信息
-    _selectedCityId = hotel.cityId;
-    _selectedCity = hotel.cityName;
-    _selectedCountry = hotel.country;
-    _latitude = hotel.latitude;
-    _longitude = hotel.longitude;
-
-    // 联系方式
-    _phoneController.text = hotel.phone ?? '';
-    _emailController.text = hotel.email ?? '';
-    _websiteController.text = hotel.website ?? '';
-
-    // 价格信息
-    _pricePerNightController.text = hotel.pricePerNight.toString();
-    _currency = hotel.currency;
-
-    // 数字游民特性
-    if (hotel.wifiSpeed != null) _wifiSpeedController.text = hotel.wifiSpeed.toString();
-    _hasWifi = hotel.hasWifi;
-    _hasWorkDesk = hotel.hasWorkDesk;
-    _hasAirConditioning = hotel.hasAirConditioning;
-    _hasKitchen = hotel.hasKitchen;
-    _hasLaundry = hotel.hasLaundry;
-    _hasParking = hotel.hasParking;
-    _hasPool = hotel.hasPool;
-    _hasGym = hotel.hasGym;
-    _has24HourReception = hotel.has24HReception;
-    _hasLongStayDiscount = hotel.hasLongStayDiscount;
-    _isPetFriendly = hotel.isPetFriendly;
-    _hasCoworkingSpace = hotel.hasCoworkingSpace;
-
-    // 图片
-    _hotelImageUrls.addAll(hotel.images);
-
-    // 房型
-    for (final room in hotel.roomTypes) {
-      _roomTypes.add({
-        'id': room.id, // 保存房型ID，用于更新时识别
-        'name': room.name,
-        'description': room.description,
-        'pricePerNight': room.pricePerNight,
-        'currency': room.currency,
-        'roomSize': room.size, // 使用 roomSize 匹配后端
-        'maxOccupancy': room.maxOccupancy,
-        'bedType': room.bedType,
-        'availableRooms': room.availableRooms,
-        'isAvailable': room.isAvailable,
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _descriptionController.dispose();
-    _addressController.dispose();
-    _phoneController.dispose();
-    _emailController.dispose();
-    _websiteController.dispose();
-    _pricePerNightController.dispose();
-    _wifiSpeedController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final controller = _useController();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -214,7 +38,7 @@ class _AddHotelPageState extends State<AddHotelPage> {
         elevation: 0,
         leading: const AppBackButton(),
         title: Text(
-          widget.isEditMode ? l10n.editHotel : l10n.addHotel,
+          isEditMode ? l10n.editHotel : l10n.addHotel,
           style: const TextStyle(
             color: AppColors.textPrimary,
             fontSize: 18,
@@ -226,35 +50,46 @@ class _AddHotelPageState extends State<AddHotelPage> {
         children: [
           Expanded(
             child: Form(
-              key: _formKey,
+              key: controller.formKey,
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  _buildImageSection(l10n),
+                  _buildImageSection(controller, l10n),
                   const SizedBox(height: 24),
-                  _buildBasicInfoSection(l10n),
+                  _buildBasicInfoSection(controller, l10n),
                   const SizedBox(height: 24),
-                  _buildLocationSection(l10n),
+                  _buildLocationSection(controller, l10n),
                   const SizedBox(height: 24),
-                  _buildContactSection(l10n),
+                  _buildContactSection(controller, l10n),
                   const SizedBox(height: 24),
-                  _buildPricingSection(l10n),
+                  _buildPricingSection(controller, l10n),
                   const SizedBox(height: 24),
-                  _buildRoomTypesSection(l10n),
+                  _buildRoomTypesSection(controller),
                   const SizedBox(height: 24),
-                  _buildNomadFeaturesSection(l10n),
+                  _buildNomadFeaturesSection(controller, l10n),
                   const SizedBox(height: 32),
                 ],
               ),
             ),
           ),
-          _buildBottomBar(l10n),
+          _buildBottomBar(controller, l10n),
         ],
       ),
     );
   }
 
-  // ============ UI 构建方法将在后续任务中添加 ============
+  AddHotelPageController _useController() {
+    final tag = 'AddHotelPage_${editingHotel?.id ?? cityId ?? cityName ?? 'new'}';
+    return Get.put(
+      AddHotelPageController(
+        cityId: cityId,
+        cityName: cityName,
+        countryName: countryName,
+        editingHotel: editingHotel,
+      ),
+      tag: tag,
+    );
+  }
 
   Widget _buildSectionTitle(String title, IconData icon) {
     return Row(
@@ -263,11 +98,7 @@ class _AddHotelPageState extends State<AddHotelPage> {
         const SizedBox(width: 8),
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
-          ),
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
         ),
       ],
     );
@@ -281,8 +112,7 @@ class _AddHotelPageState extends State<AddHotelPage> {
     bool required = false,
     TextInputType? keyboardType,
   }) {
-    final l10n = AppLocalizations.of(context)!;
-
+    final l10n = AppLocalizations.of(Get.context!)!;
     return TextFormField(
       controller: controller,
       maxLines: maxLines,
@@ -303,56 +133,60 @@ class _AddHotelPageState extends State<AddHotelPage> {
     );
   }
 
-  Widget _buildSwitchTile(String title, bool value, Function(bool) onChanged) {
-    return SwitchListTile(
-      title: Text(title),
-      value: value,
-      onChanged: onChanged,
-      activeThumbColor: const Color(0xFFFF4458),
-      contentPadding: EdgeInsets.zero,
-    );
+  Widget _buildSwitchTile(String title, RxBool value, void Function(bool) onChanged) {
+    return Obx(() {
+      return SwitchListTile(
+        title: Text(title),
+        value: value.value,
+        onChanged: onChanged,
+        activeThumbColor: const Color(0xFFFF4458),
+        contentPadding: EdgeInsets.zero,
+      );
+    });
   }
 
-  // 占位方法，将在后续任务中实现
-  Widget _buildImageSection(AppLocalizations l10n) {
-    final canAddMore = _remainingImageSlots > 0;
-    final hasImages = _hotelImageUrls.isNotEmpty;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(l10n.addCoverPhoto, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-            Text('${_hotelImageUrls.length}/$maxHotelImages', style: TextStyle(fontSize: 13, color: Colors.grey[600])),
-          ],
-        ),
-        const SizedBox(height: 12),
-        if (hasImages)
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
+  // ============ 图片 ============
+  Widget _buildImageSection(AddHotelPageController controller, AppLocalizations l10n) {
+    return Obx(() {
+      final canAddMore = controller.remainingImageSlots > 0;
+      final hasImages = controller.hotelImageUrls.isNotEmpty;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              ..._hotelImageUrls.asMap().entries.map((e) => _buildImageTile(e.value, e.key)),
-              if (canAddMore) _buildAddImageTile(l10n),
+              Text(l10n.addCoverPhoto, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              Text('${controller.hotelImageUrls.length}/${AddHotelPageController.maxHotelImages}',
+                  style: TextStyle(fontSize: 13, color: Colors.grey[600])),
             ],
-          )
-        else
-          _buildAddImageTile(l10n, fullWidth: true),
-        if (_isUploadingImages) ...[
+          ),
           const SizedBox(height: 12),
-          Row(children: [
-            const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2)),
-            const SizedBox(width: 8),
-            Text(_imageUploadStatus ?? 'Uploading...'),
-          ]),
+          if (hasImages)
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                ...controller.hotelImageUrls.asMap().entries.map((e) => _buildImageTile(controller, e.value, e.key)),
+                if (canAddMore) _buildAddImageTile(controller, l10n),
+              ],
+            )
+          else
+            _buildAddImageTile(controller, l10n, fullWidth: true),
+          if (controller.isUploadingImages.value) ...[
+            const SizedBox(height: 12),
+            Row(children: [
+              const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2)),
+              const SizedBox(width: 8),
+              Text(controller.imageUploadStatus.value ?? 'Uploading...'),
+            ]),
+          ],
         ],
-      ],
-    );
+      );
+    });
   }
 
-  Widget _buildImageTile(String url, int index) {
+  Widget _buildImageTile(AddHotelPageController controller, String url, int index) {
     return Stack(
       children: [
         ClipRRect(
@@ -361,15 +195,14 @@ class _AddHotelPageState extends State<AddHotelPage> {
             width: 120,
             height: 120,
             color: Colors.grey[200],
-            child:
-                Image.network(url, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(FontAwesomeIcons.image)),
+            child: Image.network(url, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(FontAwesomeIcons.image)),
           ),
         ),
         Positioned(
           top: 6,
           right: 6,
           child: IconButton(
-            onPressed: () => _removeImageAt(index),
+            onPressed: () => controller.removeImageAt(index),
             icon: const Icon(FontAwesomeIcons.xmark, size: 18, color: Colors.white),
             style: IconButton.styleFrom(backgroundColor: Colors.black45, padding: const EdgeInsets.all(4)),
           ),
@@ -378,9 +211,9 @@ class _AddHotelPageState extends State<AddHotelPage> {
     );
   }
 
-  Widget _buildAddImageTile(AppLocalizations l10n, {bool fullWidth = false}) {
+  Widget _buildAddImageTile(AddHotelPageController controller, AppLocalizations l10n, {bool fullWidth = false}) {
     return GestureDetector(
-      onTap: _showImageOptions,
+      onTap: () => _showImageOptions(controller, l10n),
       child: Container(
         width: fullWidth ? double.infinity : 120,
         height: 120,
@@ -394,110 +227,65 @@ class _AddHotelPageState extends State<AddHotelPage> {
           children: [
             Icon(FontAwesomeIcons.photoFilm, size: 32, color: Colors.grey[500]),
             const SizedBox(height: 8),
-            Text(l10n.tapToChoosePhoto,
-                textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+            Text(l10n.tapToChoosePhoto, textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 12, color: Colors.grey[600])),
           ],
         ),
       ),
     );
   }
 
-  Future<void> _showImageOptions() async {
-    final l10n = AppLocalizations.of(context)!;
-    if (_remainingImageSlots <= 0) {
-      AppToast.info(l10n.maxPhotosReached(10));
+  Future<void> _showImageOptions(AddHotelPageController controller, AppLocalizations l10n) async {
+    if (controller.remainingImageSlots <= 0) {
+      AppToast.info(l10n.maxPhotosReached(AddHotelPageController.maxHotelImages));
       return;
     }
     await showModalBottomSheet<void>(
-      context: context,
+      context: Get.context!,
       builder: (ctx) => SafeArea(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           ListTile(
-              leading: const Icon(FontAwesomeIcons.images),
-              title: Text(l10n.photoLibrary),
-              onTap: () {
-                Navigator.pop(ctx);
-                _addImagesFromGallery();
-              }),
+            leading: const Icon(FontAwesomeIcons.images),
+            title: Text(l10n.photoLibrary),
+            onTap: () {
+              Navigator.pop(ctx);
+              controller.addImagesFromGallery();
+            },
+          ),
           ListTile(
-              leading: const Icon(FontAwesomeIcons.camera),
-              title: Text(l10n.camera),
-              onTap: () {
-                Navigator.pop(ctx);
-                _addImageFromCamera();
-              }),
+            leading: const Icon(FontAwesomeIcons.camera),
+            title: Text(l10n.camera),
+            onTap: () {
+              Navigator.pop(ctx);
+              controller.addImageFromCamera();
+            },
+          ),
           ListTile(
-              leading: const Icon(FontAwesomeIcons.xmark), title: Text(l10n.cancel), onTap: () => Navigator.pop(ctx)),
+            leading: const Icon(FontAwesomeIcons.xmark),
+            title: Text(l10n.cancel),
+            onTap: () => Navigator.pop(ctx),
+          ),
         ]),
       ),
     );
   }
 
-  Future<void> _addImagesFromGallery() async {
-    setState(() {
-      _isUploadingImages = true;
-      _imageUploadStatus = null;
-    });
-    try {
-      final urls = await ImageUploadHelper.pickMultipleAndUpload(
-        bucket: _imageUploadBucket,
-        folder: _imageUploadFolder,
-        maxImages: _remainingImageSlots,
-        onProgress: (c, t) => setState(() => _imageUploadStatus = 'Uploading $c / $t'),
-      );
-      if (urls.isNotEmpty) setState(() => _hotelImageUrls.addAll(urls));
-    } catch (e) {
-      AppToast.error(e.toString());
-    } finally {
-      setState(() {
-        _isUploadingImages = false;
-        _imageUploadStatus = null;
-      });
-    }
-  }
-
-  Future<void> _addImageFromCamera() async {
-    setState(() {
-      _isUploadingImages = true;
-    });
-    try {
-      final url = await ImageUploadHelper.captureAndUpload(bucket: _imageUploadBucket, folder: _imageUploadFolder);
-      if (url != null) setState(() => _hotelImageUrls.add(url));
-    } catch (e) {
-      AppToast.error(e.toString());
-    } finally {
-      setState(() {
-        _isUploadingImages = false;
-      });
-    }
-  }
-
-  Future<void> _removeImageAt(int index) async {
-    if (index < 0 || index >= _hotelImageUrls.length) return;
-    final url = _hotelImageUrls[index];
-    setState(() => _hotelImageUrls.removeAt(index));
-    try {
-      await _imageUploadService.deleteImage(imageUrl: url, bucket: _imageUploadBucket);
-    } catch (e) {
-      log('Failed to delete image: $e');
-    }
-  }
-
-  Widget _buildBasicInfoSection(AppLocalizations l10n) {
+  // ============ 基本信息 ============
+  Widget _buildBasicInfoSection(AddHotelPageController controller, AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle(l10n.basicInformation, FontAwesomeIcons.circleInfo),
         const SizedBox(height: 16),
         _buildTextField(
-          controller: _nameController,
+          controller: controller.nameController,
           label: l10n.hotelName,
           hint: l10n.hotelNameHint,
           required: true,
         ),
         const SizedBox(height: 16),
         _buildTextField(
-          controller: _descriptionController,
+          controller: controller.descriptionController,
           label: l10n.description,
           hint: l10n.hotelDescriptionHint,
           maxLines: 4,
@@ -507,102 +295,106 @@ class _AddHotelPageState extends State<AddHotelPage> {
     );
   }
 
-  Widget _buildLocationSection(AppLocalizations l10n) {
+  // ============ 位置 ============
+  Widget _buildLocationSection(AddHotelPageController controller, AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle(l10n.location, FontAwesomeIcons.locationDot),
         const SizedBox(height: 16),
         _buildTextField(
-          controller: _addressController,
+          controller: controller.addressController,
           label: l10n.address,
           hint: l10n.addressHint,
           required: true,
         ),
         const SizedBox(height: 16),
-        LocationPickerField(
-          locationController: _locationController,
-          initialCountryId: _selectedCountryId,
-          initialCountryName: _selectedCountry,
-          initialCityId: _selectedCityId,
-          initialCityName: _selectedCity,
-          required: true,
-          enabled: widget.cityId == null,
-          label: l10n.city,
-          onChanged: (result) {
-            setState(() {
-              _selectedCountryId = result.countryId;
-              _selectedCountry = result.countryName;
-              _selectedCityId = result.cityId;
-              _selectedCity = result.cityName;
-            });
-          },
-        ),
+        Obx(() {
+          return LocationPickerField(
+            locationController: controller.locationController,
+            initialCountryId: controller.selectedCountryId.value,
+            initialCountryName: controller.selectedCountry.value,
+            initialCityId: controller.selectedCityId.value,
+            initialCityName: controller.selectedCity.value,
+            required: true,
+            enabled: cityId == null,
+            label: l10n.city,
+            onChanged: (result) {
+              controller.updateLocation(
+                countryId: result.countryId,
+                countryName: result.countryName,
+                cityIdValue: result.cityId,
+                cityNameValue: result.cityName,
+              );
+            },
+          );
+        }),
         const SizedBox(height: 16),
-        _buildLocationPicker(l10n),
+        _buildLocationPicker(controller, l10n),
       ],
     );
   }
 
-  Widget _buildLocationPicker(AppLocalizations l10n) {
-    return Card(
-      elevation: 0,
-      color: Colors.grey[50],
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey[300]!),
-      ),
-      child: ListTile(
-        leading: const Icon(FontAwesomeIcons.map, color: Color(0xFFFF4458)),
-        title: _latitude != 0 && _longitude != 0
-            ? Text(l10n.locationCoordinates(
-                _latitude.toStringAsFixed(6),
-                _longitude.toStringAsFixed(6),
-              ))
-            : Text(l10n.pickLocationOnMap),
-        trailing: const Icon(FontAwesomeIcons.arrowRight, size: 16),
-        onTap: () async {
-          final result = await Get.to(() => FlutterMapPickerPage(
-                initialLatitude: _latitude != 0 ? _latitude : null,
-                initialLongitude: _longitude != 0 ? _longitude : null,
-                searchQuery: _addressController.text.trim().isNotEmpty ? _addressController.text.trim() : null,
-                country: _selectedCountry,
-                city: _selectedCity,
-              ));
+  Widget _buildLocationPicker(AddHotelPageController controller, AppLocalizations l10n) {
+    return Obx(() {
+      final lat = controller.latitude.value;
+      final lng = controller.longitude.value;
+      return Card(
+        elevation: 0,
+        color: Colors.grey[50],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: Colors.grey[300]!),
+        ),
+        child: ListTile(
+          leading: const Icon(FontAwesomeIcons.map, color: Color(0xFFFF4458)),
+          title: (lat != 0 && lng != 0)
+              ? Text(l10n.locationCoordinates(lat.toStringAsFixed(6), lng.toStringAsFixed(6)))
+              : Text(l10n.pickLocationOnMap),
+          trailing: const Icon(FontAwesomeIcons.arrowRight, size: 16),
+          onTap: () async {
+            final result = await Get.to(() => FlutterMapPickerPage(
+                  initialLatitude: lat != 0 ? lat : null,
+                  initialLongitude: lng != 0 ? lng : null,
+                  searchQuery: controller.addressController.text.trim().isNotEmpty
+                      ? controller.addressController.text.trim()
+                      : null,
+                  country: controller.selectedCountry.value,
+                  city: controller.selectedCity.value,
+                ));
 
-          if (result != null && result is Map<String, dynamic>) {
-            setState(() {
-              _latitude = result['latitude'] ?? 0.0;
-              _longitude = result['longitude'] ?? 0.0;
-            });
-          }
-        },
-      ),
-    );
+            if (result != null && result is Map<String, dynamic>) {
+              controller.updateCoordinates(result['latitude'] ?? 0.0, result['longitude'] ?? 0.0);
+            }
+          },
+        ),
+      );
+    });
   }
 
-  Widget _buildContactSection(AppLocalizations l10n) {
+  // ============ 联系方式 ============
+  Widget _buildContactSection(AddHotelPageController controller, AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle(l10n.contactInformation, FontAwesomeIcons.addressBook),
         const SizedBox(height: 16),
         _buildTextField(
-          controller: _phoneController,
+          controller: controller.phoneController,
           label: l10n.phone,
           hint: l10n.phoneHint,
           keyboardType: TextInputType.phone,
         ),
         const SizedBox(height: 16),
         _buildTextField(
-          controller: _emailController,
+          controller: controller.emailController,
           label: l10n.email,
           hint: l10n.emailHint,
           keyboardType: TextInputType.emailAddress,
         ),
         const SizedBox(height: 16),
         _buildTextField(
-          controller: _websiteController,
+          controller: controller.websiteController,
           label: l10n.website,
           hint: l10n.websiteHint,
           keyboardType: TextInputType.url,
@@ -611,84 +403,105 @@ class _AddHotelPageState extends State<AddHotelPage> {
     );
   }
 
-  Widget _buildPricingSection(AppLocalizations l10n) {
+  // ============ 价格 ============
+  Widget _buildPricingSection(AddHotelPageController controller, AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle(l10n.pricing, FontAwesomeIcons.dollarSign),
         const SizedBox(height: 16),
-        _buildCurrencyDropdown(l10n),
+        _buildCurrencyDropdown(controller, l10n),
         const SizedBox(height: 16),
         _buildTextField(
-          controller: _pricePerNightController,
+          controller: controller.pricePerNightController,
           label: l10n.pricePerNight,
           hint: l10n.pricePerNightHint,
           keyboardType: TextInputType.number,
           required: true,
         ),
         const SizedBox(height: 16),
-        _buildSwitchTile(
-          l10n.longStayDiscount,
-          _hasLongStayDiscount,
-          (value) => setState(() => _hasLongStayDiscount = value),
-        ),
+        Obx(() {
+          return _buildSwitchTile(
+            l10n.longStayDiscount,
+            controller.hasLongStayDiscount,
+            (value) => controller.hasLongStayDiscount.value = value,
+          );
+        }),
       ],
     );
   }
 
-  // ============ 房型管理区域 ============
-  Widget _buildRoomTypesSection(AppLocalizations l10n) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _buildSectionTitle('房型管理', FontAwesomeIcons.bed),
-            TextButton.icon(
-              onPressed: _showAddRoomTypeDialog,
-              icon: const Icon(FontAwesomeIcons.plus, size: 14),
-              label: const Text('添加房型'),
-            ),
-          ],
+  Widget _buildCurrencyDropdown(AddHotelPageController controller, AppLocalizations l10n) {
+    return Obx(() {
+      return DropdownButtonFormField<String>(
+        value: controller.currency.value,
+        decoration: InputDecoration(
+          labelText: l10n.currency,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          filled: true,
+          fillColor: Colors.grey[50],
         ),
-        const SizedBox(height: 8),
-        Text(
-          '添加不同的房型及价格（可选）',
-          style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-        ),
-        const SizedBox(height: 16),
-        if (_roomTypes.isEmpty)
-          Card(
-            elevation: 0,
-            color: Colors.grey[50],
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: Colors.grey[300]!),
-            ),
-            child: const Padding(
-              padding: EdgeInsets.all(24),
-              child: Center(
-                child: Column(
-                  children: [
-                    Icon(FontAwesomeIcons.bed, size: 32, color: Colors.grey),
-                    SizedBox(height: 12),
-                    Text('暂无房型', style: TextStyle(color: Colors.grey)),
-                    SizedBox(height: 4),
-                    Text('点击上方按钮添加房型', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                  ],
+        items: const ['USD', 'EUR', 'GBP', 'JPY', 'CNY', 'THB', 'VND', 'IDR', 'MYR', 'SGD']
+            .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+            .toList(),
+        onChanged: (value) => controller.currency.value = value!,
+      );
+    });
+  }
+
+  // ============ 房型 ============
+  Widget _buildRoomTypesSection(AddHotelPageController controller) {
+    return Obx(() {
+      final rooms = controller.roomTypes;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildSectionTitle('房型管理', FontAwesomeIcons.bed),
+              TextButton.icon(
+                onPressed: () => _showRoomTypeDialog(controller),
+                icon: const Icon(FontAwesomeIcons.plus, size: 14),
+                label: const Text('添加房型'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text('添加不同的房型及价格（可选）', style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+          const SizedBox(height: 16),
+          if (rooms.isEmpty)
+            Card(
+              elevation: 0,
+              color: Colors.grey[50],
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: Colors.grey[300]!),
+              ),
+              child: const Padding(
+                padding: EdgeInsets.all(24),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Icon(FontAwesomeIcons.bed, size: 32, color: Colors.grey),
+                      SizedBox(height: 12),
+                      Text('暂无房型', style: TextStyle(color: Colors.grey)),
+                      SizedBox(height: 4),
+                      Text('点击上方按钮添加房型', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          )
-        else
-          ...List.generate(_roomTypes.length, (index) => _buildRoomTypeCard(index)),
-      ],
-    );
+            )
+          else
+            ...List.generate(rooms.length, (index) => _buildRoomTypeCard(controller, index)),
+        ],
+      );
+    });
   }
 
-  Widget _buildRoomTypeCard(int index) {
-    final room = _roomTypes[index];
+  Widget _buildRoomTypeCard(AddHotelPageController controller, int index) {
+    final room = controller.roomTypes[index];
     return Card(
       elevation: 0,
       margin: const EdgeInsets.only(bottom: 12),
@@ -714,12 +527,12 @@ class _AddHotelPageState extends State<AddHotelPage> {
                   children: [
                     IconButton(
                       icon: const Icon(FontAwesomeIcons.penToSquare, size: 16),
-                      onPressed: () => _showEditRoomTypeDialog(index),
+                      onPressed: () => _showRoomTypeDialog(controller, editIndex: index),
                       color: Colors.blue,
                     ),
                     IconButton(
                       icon: const Icon(FontAwesomeIcons.trash, size: 16),
-                      onPressed: () => _removeRoomType(index),
+                      onPressed: () => _confirmRemoveRoomType(controller, index),
                       color: Colors.red,
                     ),
                   ],
@@ -733,7 +546,7 @@ class _AddHotelPageState extends State<AddHotelPage> {
                 const SizedBox(width: 8),
                 _buildRoomInfoChip(Icons.people, '最多${room['maxOccupancy']}人'),
                 const SizedBox(width: 8),
-                _buildRoomInfoChip(Icons.square_foot, '${room['size']}㎡'),
+                _buildRoomInfoChip(Icons.square_foot, '${room['size'] ?? room['roomSize']}㎡'),
               ],
             ),
             const SizedBox(height: 8),
@@ -768,17 +581,9 @@ class _AddHotelPageState extends State<AddHotelPage> {
     );
   }
 
-  void _showAddRoomTypeDialog() {
-    _showRoomTypeDialog();
-  }
-
-  void _showEditRoomTypeDialog(int index) {
-    _showRoomTypeDialog(editIndex: index);
-  }
-
-  void _showRoomTypeDialog({int? editIndex}) {
+  void _showRoomTypeDialog(AddHotelPageController controller, {int? editIndex}) {
     final isEdit = editIndex != null;
-    final room = isEdit ? _roomTypes[editIndex] : <String, dynamic>{};
+    final room = isEdit ? controller.roomTypes[editIndex] : <String, dynamic>{};
 
     final nameController = TextEditingController(text: room['name'] ?? '');
     final descController = TextEditingController(text: room['description'] ?? '');
@@ -787,10 +592,10 @@ class _AddHotelPageState extends State<AddHotelPage> {
     final maxOccupancyController = TextEditingController(text: room['maxOccupancy']?.toString() ?? '2');
     final availableRoomsController = TextEditingController(text: room['availableRooms']?.toString() ?? '1');
     String selectedBedType = room['bedType'] ?? 'Double';
-    String selectedCurrency = room['currency'] ?? _currency;
+    String selectedCurrency = room['currency'] ?? controller.currency.value;
 
     showDialog(
-      context: context,
+      context: Get.context!,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
           title: Text(isEdit ? '编辑房型' : '添加房型'),
@@ -800,18 +605,12 @@ class _AddHotelPageState extends State<AddHotelPage> {
               children: [
                 TextField(
                   controller: nameController,
-                  decoration: const InputDecoration(
-                    labelText: '房型名称 *',
-                    hintText: '例如：标准双人间',
-                  ),
+                  decoration: const InputDecoration(labelText: '房型名称 *', hintText: '例如：标准双人间'),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: descController,
-                  decoration: const InputDecoration(
-                    labelText: '房型描述',
-                    hintText: '房间设施、特色等',
-                  ),
+                  decoration: const InputDecoration(labelText: '房型描述', hintText: '房间设施、特色等'),
                   maxLines: 2,
                 ),
                 const SizedBox(height: 12),
@@ -821,18 +620,16 @@ class _AddHotelPageState extends State<AddHotelPage> {
                       flex: 2,
                       child: TextField(
                         controller: priceController,
-                        decoration: const InputDecoration(
-                          labelText: '每晚价格 *',
-                        ),
+                        decoration: const InputDecoration(labelText: '每晚价格 *'),
                         keyboardType: TextInputType.number,
                       ),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: DropdownButtonFormField<String>(
-                        initialValue: selectedCurrency,
+                        value: selectedCurrency,
                         decoration: const InputDecoration(labelText: '货币'),
-                        items: ['USD', 'EUR', 'CNY', 'THB', 'VND', 'IDR']
+                        items: const ['USD', 'EUR', 'CNY', 'THB', 'VND', 'IDR']
                             .map((c) => DropdownMenuItem(value: c, child: Text(c)))
                             .toList(),
                         onChanged: (v) => setDialogState(() => selectedCurrency = v!),
@@ -846,9 +643,7 @@ class _AddHotelPageState extends State<AddHotelPage> {
                     Expanded(
                       child: TextField(
                         controller: sizeController,
-                        decoration: const InputDecoration(
-                          labelText: '面积(㎡)',
-                        ),
+                        decoration: const InputDecoration(labelText: '面积(㎡)'),
                         keyboardType: TextInputType.number,
                       ),
                     ),
@@ -856,9 +651,7 @@ class _AddHotelPageState extends State<AddHotelPage> {
                     Expanded(
                       child: TextField(
                         controller: maxOccupancyController,
-                        decoration: const InputDecoration(
-                          labelText: '最大入住',
-                        ),
+                        decoration: const InputDecoration(labelText: '最大入住'),
                         keyboardType: TextInputType.number,
                       ),
                     ),
@@ -869,9 +662,9 @@ class _AddHotelPageState extends State<AddHotelPage> {
                   children: [
                     Expanded(
                       child: DropdownButtonFormField<String>(
-                        initialValue: selectedBedType,
+                        value: selectedBedType,
                         decoration: const InputDecoration(labelText: '床型'),
-                        items: ['Single', 'Double', 'Queen', 'King', 'Twin', 'Bunk']
+                        items: const ['Single', 'Double', 'Queen', 'King', 'Twin', 'Bunk']
                             .map((b) => DropdownMenuItem(value: b, child: Text(b)))
                             .toList(),
                         onChanged: (v) => setDialogState(() => selectedBedType = v!),
@@ -881,9 +674,7 @@ class _AddHotelPageState extends State<AddHotelPage> {
                     Expanded(
                       child: TextField(
                         controller: availableRoomsController,
-                        decoration: const InputDecoration(
-                          labelText: '可用房间数',
-                        ),
+                        decoration: const InputDecoration(labelText: '可用房间数'),
                         keyboardType: TextInputType.number,
                       ),
                     ),
@@ -893,10 +684,7 @@ class _AddHotelPageState extends State<AddHotelPage> {
             ),
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('取消'),
-            ),
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
             ElevatedButton(
               onPressed: () {
                 if (nameController.text.trim().isEmpty) {
@@ -920,18 +708,15 @@ class _AddHotelPageState extends State<AddHotelPage> {
                   'isAvailable': true,
                 };
 
-                // 编辑模式下保留原有的id
                 if (isEdit && room['id'] != null) {
                   roomData['id'] = room['id'];
                 }
 
-                setState(() {
-                  if (isEdit) {
-                    _roomTypes[editIndex] = roomData;
-                  } else {
-                    _roomTypes.add(roomData);
-                  }
-                });
+                if (isEdit) {
+                  controller.updateRoomType(editIndex, roomData);
+                } else {
+                  controller.addRoomType(roomData);
+                }
 
                 Navigator.pop(context);
                 AppToast.success(isEdit ? '房型已更新' : '房型已添加');
@@ -944,20 +729,17 @@ class _AddHotelPageState extends State<AddHotelPage> {
     );
   }
 
-  void _removeRoomType(int index) {
+  void _confirmRemoveRoomType(AddHotelPageController controller, int index) {
     showDialog(
-      context: context,
+      context: Get.context!,
       builder: (context) => AlertDialog(
         title: const Text('确认删除'),
-        content: Text('确定要删除房型 "${_roomTypes[index]['name']}" 吗？'),
+        content: Text('确定要删除房型 "${controller.roomTypes[index]['name']}" 吗？'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
           ElevatedButton(
             onPressed: () {
-              setState(() => _roomTypes.removeAt(index));
+              controller.removeRoomType(index);
               Navigator.pop(context);
               AppToast.success('房型已删除');
             },
@@ -969,169 +751,86 @@ class _AddHotelPageState extends State<AddHotelPage> {
     );
   }
 
-  Widget _buildCurrencyDropdown(AppLocalizations l10n) {
-    return DropdownButtonFormField<String>(
-      initialValue: _currency,
-      decoration: InputDecoration(
-        labelText: l10n.currency,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        filled: true,
-        fillColor: Colors.grey[50],
-      ),
-      items: ['USD', 'EUR', 'GBP', 'JPY', 'CNY', 'THB', 'VND', 'IDR', 'MYR', 'SGD']
-          .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-          .toList(),
-      onChanged: (value) => setState(() => _currency = value!),
-    );
-  }
-
-  Widget _buildNomadFeaturesSection(AppLocalizations l10n) {
+  // ============ 数字游民特性 ============
+  Widget _buildNomadFeaturesSection(AddHotelPageController controller, AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle(l10n.nomadFeatures, FontAwesomeIcons.laptopCode),
         const SizedBox(height: 8),
-        Text(
-          l10n.nomadFeaturesSubtitle,
-          style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-        ),
+        Text(l10n.nomadFeaturesSubtitle, style: TextStyle(fontSize: 13, color: Colors.grey[600])),
         const SizedBox(height: 16),
         _buildTextField(
-          controller: _wifiSpeedController,
+          controller: controller.wifiSpeedController,
           label: l10n.wifiSpeed,
           hint: l10n.wifiSpeedHint,
           keyboardType: TextInputType.number,
         ),
         const SizedBox(height: 8),
-        _buildSwitchTile(l10n.wifi, _hasWifi, (v) => setState(() => _hasWifi = v)),
-        _buildSwitchTile(l10n.workDesk, _hasWorkDesk, (v) => setState(() => _hasWorkDesk = v)),
-        _buildSwitchTile(l10n.hasCoworkingSpace, _hasCoworkingSpace, (v) => setState(() => _hasCoworkingSpace = v)),
-        _buildSwitchTile(l10n.airConditioning, _hasAirConditioning, (v) => setState(() => _hasAirConditioning = v)),
-        _buildSwitchTile(l10n.kitchen, _hasKitchen, (v) => setState(() => _hasKitchen = v)),
-        _buildSwitchTile(l10n.laundry, _hasLaundry, (v) => setState(() => _hasLaundry = v)),
-        _buildSwitchTile(l10n.parking, _hasParking, (v) => setState(() => _hasParking = v)),
-        _buildSwitchTile(l10n.pool, _hasPool, (v) => setState(() => _hasPool = v)),
-        _buildSwitchTile(l10n.gym, _hasGym, (v) => setState(() => _hasGym = v)),
-        _buildSwitchTile(
-            l10n.twentyFourHourReception, _has24HourReception, (v) => setState(() => _has24HourReception = v)),
-        _buildSwitchTile(l10n.petFriendly, _isPetFriendly, (v) => setState(() => _isPetFriendly = v)),
+        _buildSwitchTile(l10n.wifi, controller.hasWifi, (v) => controller.hasWifi.value = v),
+        _buildSwitchTile(l10n.workDesk, controller.hasWorkDesk, (v) => controller.hasWorkDesk.value = v),
+        _buildSwitchTile(l10n.hasCoworkingSpace, controller.hasCoworkingSpace, (v) => controller.hasCoworkingSpace.value = v),
+        _buildSwitchTile(l10n.airConditioning, controller.hasAirConditioning, (v) => controller.hasAirConditioning.value = v),
+        _buildSwitchTile(l10n.kitchen, controller.hasKitchen, (v) => controller.hasKitchen.value = v),
+        _buildSwitchTile(l10n.laundry, controller.hasLaundry, (v) => controller.hasLaundry.value = v),
+        _buildSwitchTile(l10n.parking, controller.hasParking, (v) => controller.hasParking.value = v),
+        _buildSwitchTile(l10n.pool, controller.hasPool, (v) => controller.hasPool.value = v),
+        _buildSwitchTile(l10n.gym, controller.hasGym, (v) => controller.hasGym.value = v),
+        _buildSwitchTile(l10n.twentyFourHourReception, controller.has24HourReception,
+            (v) => controller.has24HourReception.value = v),
+        _buildSwitchTile(l10n.petFriendly, controller.isPetFriendly, (v) => controller.isPetFriendly.value = v),
       ],
     );
   }
 
-  Widget _buildBottomBar(AppLocalizations l10n) {
+  // ============ 底部按钮 ============
+  Widget _buildBottomBar(AddHotelPageController controller, AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -2))
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -2))],
       ),
       child: SafeArea(
-        child: Obx(() => ElevatedButton(
-              onPressed: _isSubmitting.value ? null : _submitHotel,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF4458),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _isSubmitting.value
-                      ? const SizedBox(
-                          height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : Icon(widget.isEditMode ? FontAwesomeIcons.penToSquare : FontAwesomeIcons.circleCheck, size: 20),
-                  const SizedBox(width: 8),
-                  Text(widget.isEditMode ? l10n.save : l10n.submitHotel,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                ],
-              ),
-            )),
+        child: Obx(() {
+          return ElevatedButton(
+            onPressed: controller.isSubmitting.value
+                ? null
+                : () async {
+                    final success = await controller.submitHotel(
+                      l10n.selectCity,
+                      l10n.updateSuccess,
+                      l10n.hotelSubmittedSuccess,
+                      l10n.failedToSubmitHotel,
+                    );
+                    if (success) Get.back(result: true);
+                  },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFF4458),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                controller.isSubmitting.value
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : Icon(isEditMode ? FontAwesomeIcons.penToSquare : FontAwesomeIcons.circleCheck, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  isEditMode ? l10n.save : l10n.submitHotel,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          );
+        }),
       ),
     );
-  }
-
-  Future<void> _submitHotel() async {
-    final l10n = AppLocalizations.of(context)!;
-
-    if (!_formKey.currentState!.validate()) return;
-
-    if (_selectedCityId == null || _selectedCityId!.isEmpty) {
-      AppToast.error(l10n.selectCity);
-      return;
-    }
-
-    _isSubmitting.value = true;
-
-    try {
-      // 构建酒店数据 - 使用 camelCase 匹配后端 API
-      final hotelData = {
-        'name': _nameController.text.trim(),
-        'description': _descriptionController.text.trim(),
-        'address': _addressController.text.trim(),
-        'cityId': _selectedCityId,
-        'cityName': _selectedCity ?? '',
-        'country': _selectedCountry ?? '',
-        'latitude': _latitude,
-        'longitude': _longitude,
-        'phone': _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
-        'email': _emailController.text.trim().isEmpty ? null : _emailController.text.trim(),
-        'website': _websiteController.text.trim().isEmpty ? null : _websiteController.text.trim(),
-        'pricePerNight': double.tryParse(_pricePerNightController.text) ?? 0,
-        'currency': _currency,
-        'wifiSpeed': int.tryParse(_wifiSpeedController.text),
-        'hasWifi': _hasWifi,
-        'hasWorkDesk': _hasWorkDesk,
-        'hasCoworkingSpace': _hasCoworkingSpace,
-        'hasAirConditioning': _hasAirConditioning,
-        'hasKitchen': _hasKitchen,
-        'hasLaundry': _hasLaundry,
-        'hasParking': _hasParking,
-        'hasPool': _hasPool,
-        'hasGym': _hasGym,
-        'has24HReception': _has24HourReception,
-        'hasLongStayDiscount': _hasLongStayDiscount,
-        'isPetFriendly': _isPetFriendly,
-        'images': _hotelImageUrls,
-        'roomTypes': _roomTypes,
-      };
-
-      log('📤 ${widget.isEditMode ? "Updating" : "Submitting"} hotel: $hotelData');
-
-      // 调用后端 API 创建或更新酒店
-      Result<Hotel> result;
-      if (widget.isEditMode) {
-        result = await _hotelRepository.updateHotel(widget.editingHotel!.id, hotelData);
-      } else {
-        result = await _hotelRepository.createHotel(hotelData);
-      }
-
-      result.onSuccess((hotel) {
-        log('✅ 酒店${widget.isEditMode ? "更新" : "创建"}成功: ${hotel.id}');
-
-        // 发送数据变更事件通知列表刷新
-        DataEventBus.instance.emit(DataChangedEvent(
-          entityType: 'hotel',
-          entityId: hotel.id,
-          version: DateTime.now().millisecondsSinceEpoch,
-          changeType: widget.isEditMode ? DataChangeType.updated : DataChangeType.created,
-        ));
-        log('✅ [Hotel] 已发送数据变更事件: ${hotel.id}');
-
-        AppToast.success(widget.isEditMode ? l10n.updateSuccess : l10n.hotelSubmittedSuccess);
-        Navigator.pop(context, true);
-      }).onFailure((exception) {
-        log('❌ 酒店${widget.isEditMode ? "更新" : "创建"}失败: ${exception.message}');
-        AppToast.error('${l10n.failedToSubmitHotel}: ${exception.message}');
-      });
-    } catch (e) {
-      log('❌ 酒店创建异常: $e');
-      AppToast.error('${l10n.failedToSubmitHotel}: $e');
-    } finally {
-      _isSubmitting.value = false;
-    }
   }
 }

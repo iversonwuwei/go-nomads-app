@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/controllers/city_detail_page_controller.dart';
+import 'package:df_admin_mobile/controllers/hotel_list_page_controller.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/ai/presentation/controllers/ai_state_controller.dart';
 import 'package:df_admin_mobile/features/city/application/state_controllers/pros_cons_state_controller.dart';
@@ -21,8 +23,8 @@ import 'package:df_admin_mobile/features/user_city_content/domain/repositories/i
 import 'package:df_admin_mobile/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
 import 'package:df_admin_mobile/features/weather/presentation/controllers/weather_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/pages/coworking_detail/coworking_detail_page.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
-import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
 import 'package:df_admin_mobile/services/token_storage_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
@@ -39,14 +41,14 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
-import 'add_cost_page.dart';
-import 'add_coworking_page.dart';
+import 'add_cost/add_cost_page.dart';
+import 'add_coworking/add_coworking_page.dart';
 import 'add_review_page.dart';
+import 'apply_moderator_page.dart';
 import 'assign_moderator_page.dart';
 import 'city_photo_submission_page.dart';
-import 'coworking_detail_page.dart';
-import 'create_travel_plan_page.dart';
-import 'hotel_list_page.dart';
+import 'create_travel_plan/create_travel_plan_page.dart';
+import 'hotel_list/hotel_list_page.dart';
 import 'manage_city_ratings_page.dart';
 import 'manage_cost_page.dart';
 import 'manage_pros_cons_page.dart';
@@ -54,7 +56,10 @@ import 'manage_reviews_page.dart';
 import 'pros_and_cons_add_page.dart';
 
 /// 城市详情页 - 完整的 Nomads.com 风格标签页系统
-class CityDetailPage extends StatefulWidget {
+/// 
+/// 注意: 由于 TabController 需要 TickerProvider，且页面复杂度高，
+/// 保持 StatefulWidget 结构但使用 CityDetailPageController 管理状态
+class CityDetailPage extends StatelessWidget {
   final String cityId;
   final String cityName;
   final String cityImage;
@@ -71,46 +76,114 @@ class CityDetailPage extends StatefulWidget {
   });
 
   @override
-  State<CityDetailPage> createState() => _CityDetailPageState();
+  Widget build(BuildContext context) {
+    // 从 Get.arguments 或构造函数获取参数
+    final args = Get.arguments as Map<String, dynamic>?;
+    final resolvedCityId = args?['cityId'] ?? cityId;
+    final resolvedCityName = args?['cityName'] ?? cityName;
+    final resolvedCityImage = args?['cityImage'] ?? cityImage;
+    final resolvedOverallScore = args?['overallScore'] ?? overallScore;
+    final resolvedReviewCount = args?['reviewCount'] ?? reviewCount;
+    final initialTab = args?['initialTab'] as int? ?? 0;
+
+    // 使用唯一 tag 注册控制器，确保每个城市页面有独立的控制器实例
+    final tag = 'city_detail_$resolvedCityId';
+    
+    // 注册或获取控制器
+    if (!Get.isRegistered<CityDetailPageController>(tag: tag)) {
+      final controller = Get.put(
+        CityDetailPageController(),
+        tag: tag,
+      );
+      controller.initWithParams(
+        cityId: resolvedCityId,
+        cityName: resolvedCityName,
+        cityImage: resolvedCityImage,
+        overallScore: resolvedOverallScore is double 
+            ? resolvedOverallScore 
+            : (resolvedOverallScore as num?)?.toDouble() ?? 0.0,
+        reviewCount: resolvedReviewCount is int 
+            ? resolvedReviewCount 
+            : (resolvedReviewCount as num?)?.toInt() ?? 0,
+        initialTab: initialTab,
+      );
+    }
+
+    return _CityDetailPageContent(
+      tag: tag,
+      cityId: resolvedCityId,
+      cityName: resolvedCityName,
+      cityImage: resolvedCityImage,
+      overallScore: resolvedOverallScore is double 
+          ? resolvedOverallScore 
+          : (resolvedOverallScore as num?)?.toDouble() ?? 0.0,
+      reviewCount: resolvedReviewCount is int 
+          ? resolvedReviewCount 
+          : (resolvedReviewCount as num?)?.toInt() ?? 0,
+    );
+  }
 }
 
-class _CityDetailPageState extends State<CityDetailPage>
-    with SingleTickerProviderStateMixin, RouteAwareRefreshMixin<CityDetailPage> {
-  late PageController _pageController;
-  late TabController _tabController;
-  int _currentPage = 0;
+/// 城市详情页内容组件
+/// 使用 StatefulWidget 仅用于管理 HotelListPageState 的 GlobalKey
+class _CityDetailPageContent extends StatefulWidget {
+  final String tag;
+  final String cityId;
+  final String cityName;
+  final String cityImage;
+  final double overallScore;
+  final int reviewCount;
 
-  // 添加滚动控制器和透明度状态
-  final ScrollController _scrollController = ScrollController();
-  double _appBarOpacity = 0.0;
+  const _CityDetailPageContent({
+    required this.tag,
+    required this.cityId,
+    required this.cityName,
+    required this.cityImage,
+    required this.overallScore,
+    required this.reviewCount,
+  });
 
-  // Hotels 列表的 GlobalKey，用于刷新
-  final GlobalKey<HotelListPageState> _hotelListKey = GlobalKey<HotelListPageState>();
+  @override
+  State<_CityDetailPageContent> createState() => _CityDetailPageContentState();
+}
 
-  // 下拉刷新状态标志
-  bool _isRefreshingReviews = false;
-  bool _isRefreshingPhotos = false;
+class _CityDetailPageContentState extends State<_CityDetailPageContent> {
+  // Hotels 列表的 tag，用于刷新控制器
+  String get _hotelListTag => 'hotel_list_${widget.cityId}';
 
-  // Guide Tab 初始化标志，防止滚动时重复请求
-  bool _hasInitializedGuide = false;
-  String? _lastGuideLoadedCityId;
+  CityDetailPageController get _pageController => 
+      Get.find<CityDetailPageController>(tag: widget.tag);
 
-  // Nearby Cities Tab 初始化标志，防止滚动时重复请求
-  bool _hasInitializedNearbyCities = false;
-  String? _lastNearbyCitiesLoadedCityId;
+  // 便捷访问器
+  String get cityId => widget.cityId;
+  String get cityName => widget.cityName;
+  String get cityImage => widget.cityImage;
+  double get overallScore => widget.overallScore;
+  int get reviewCount => widget.reviewCount;
 
-  // 从 Get.arguments 或构造函数获取参数
-  late final String cityId;
-  late final String cityName;
-  late final String cityImage;
-  late final double overallScore;
-  late final int reviewCount;
-  List<CityRatingItem> _customRatingItems = [];
+  // 从控制器获取
+  PageController get _pageControllerWidget => _pageController.pageController;
+  TabController get _tabController => _pageController.tabController;
+  ScrollController get _scrollController => _pageController.scrollController;
+  int get _currentPage => _pageController.currentPage.value;
+  double get _appBarOpacity => _pageController.appBarOpacity.value;
+  List<CityRatingItem> get _customRatingItems => _pageController.customRatingItems;
+  bool get _isRefreshingReviews => _pageController.isRefreshingReviews.value;
+  bool get _isRefreshingPhotos => _pageController.isRefreshingPhotos.value;
+  bool get _hasInitializedGuide => _pageController.hasInitializedGuide.value;
+  String? get _lastGuideLoadedCityId => _pageController.lastGuideLoadedCityId.value;
+  bool get _hasInitializedNearbyCities => _pageController.hasInitializedNearbyCities.value;
+  String? get _lastNearbyCitiesLoadedCityId => _pageController.lastNearbyCitiesLoadedCityId.value;
 
-  String _generateRatingId() {
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    return 'rating_${timestamp}_${_customRatingItems.length}';
-  }
+  // Setters for controller values
+  set _hasInitializedGuide(bool value) => _pageController.hasInitializedGuide.value = value;
+  set _lastGuideLoadedCityId(String? value) => _pageController.lastGuideLoadedCityId.value = value;
+  set _hasInitializedNearbyCities(bool value) => _pageController.hasInitializedNearbyCities.value = value;
+  set _lastNearbyCitiesLoadedCityId(String? value) => _pageController.lastNearbyCitiesLoadedCityId.value = value;
+  set _currentPage(int value) => _pageController.currentPage.value = value;
+  set _customRatingItems(List<CityRatingItem> value) => _pageController.customRatingItems.assignAll(value);
+
+  String _generateRatingId() => _pageController.generateRatingId();
 
   // 根据天气代码返回对应的 FontAwesome 图标
   IconData _getWeatherIcon(String weatherIcon, {bool isNight = false}) {
@@ -204,9 +277,9 @@ class _CityDetailPageState extends State<CityDetailPage>
           log('✅ [版主管理] 显示只读版主信息（普通用户）');
           return _buildModeratorInfoBanner(city.moderator!);
         }
-        // 没有版主则不显示任何内容
-        log('✅ [版主管理] 普通用户，无版主，不显示任何内容');
-        return const SizedBox.shrink();
+        // 没有版主则显示申请成为版主按钮
+        log('✅ [版主管理] 普通用户，无版主，显示申请按钮');
+        return _buildApplyModeratorButton(city);
       }
 
       // 管理员或版主用户
@@ -764,6 +837,223 @@ class _CityDetailPageState extends State<CityDetailPage>
     // 用户点击返回按钮,不需要刷新(没有任何更改)
   }
 
+  /// 申请成为版主按钮（普通用户）- 现代简约风格
+  Widget _buildApplyModeratorButton(City city) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.teal.shade200,
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Icon with teal accent for user action
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.teal.shade50,
+                  Colors.teal.shade100,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              FontAwesomeIcons.handshake,
+              color: Colors.teal.shade700,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Become a Moderator',
+                  style: TextStyle(
+                    color: Colors.blueGrey.shade800,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  'Help manage this city community',
+                  style: TextStyle(
+                    color: Colors.blueGrey.shade400,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Apply button - teal accent color
+          TextButton(
+            onPressed: () => _navigateToApplyModerator(city),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              backgroundColor: Colors.teal.shade600,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text(
+              'Apply',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 跳转到申请成为版主页面
+  void _navigateToApplyModerator(City city) async {
+    // 检查是否登录
+    final tokenService = TokenStorageService();
+    final token = await tokenService.getAccessToken();
+    final isLoggedIn = token != null && token.isNotEmpty;
+
+    if (!isLoggedIn) {
+      AppToast.info('Please login to apply as a moderator');
+      Get.toNamed(AppRoutes.login);
+      return;
+    }
+
+    // 检查会员等级（需要 Pro 或更高级别）
+    try {
+      final membershipController = Get.find<MembershipStateController>();
+      final accessCheck = membershipController.checkModeratorAccess();
+      
+      if (accessCheck != null) {
+        log('❌ [版主申请] 会员等级不足: $accessCheck');
+        _showModeratorUpgradeDialog(accessCheck);
+        return;
+      }
+    } catch (e) {
+      log('⚠️ [版主申请] 会员检查异常: $e');
+      // 如果会员控制器未注册，继续允许尝试申请
+    }
+
+    final result = await Get.to(() => ApplyModeratorPage(city: city));
+
+    // 如果申请提交成功
+    if (result == true) {
+      log('✅ [CityDetail] 版主申请提交成功');
+    }
+  }
+
+  /// 显示版主申请需要升级会员对话框
+  void _showModeratorUpgradeDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(
+                FontAwesomeIcons.crown,
+                color: Colors.amber[700],
+                size: 28,
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Pro 会员专属',
+                style: TextStyle(fontSize: 18),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                message,
+                style: const TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.teal.withValues(alpha: 0.1),
+                      Colors.cyan.withValues(alpha: 0.1),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      FontAwesomeIcons.userShield,
+                      color: Colors.teal[700],
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '成为 Pro 会员即可申请成为城市版主，管理社区内容！',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.teal[800],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('稍后再说'),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Get.toNamed(AppRoutes.membershipPlan);
+              },
+              icon: const Icon(FontAwesomeIcons.crown, size: 16),
+              label: const Text('立即升级'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.teal[600],
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildWeatherMetric({
     required IconData icon,
     required String label,
@@ -895,131 +1185,15 @@ class _CityDetailPageState extends State<CityDetailPage>
   }
 
   @override
-  @override
-  void initState() {
-    super.initState();
-
-    // 优先从 Get.arguments 获取参数,如果没有则使用构造函数参数
-    final args = Get.arguments as Map<String, dynamic>?;
-    cityId = args?['cityId'] ?? widget.cityId;
-    cityName = args?['cityName'] ?? widget.cityName;
-    cityImage = args?['cityImage'] ?? widget.cityImage;
-    overallScore = args?['overallScore'] ?? widget.overallScore;
-    reviewCount = args?['reviewCount'] ?? widget.reviewCount;
-    final initialTab = args?['initialTab'] as int? ?? 0; // 从通知跳转时的初始 Tab
-
-    _pageController = PageController();
-
-    // 初始化 TabController (10个tab,包含ProsCons), 设置初始索引
-    _tabController = TabController(
-      length: 10,
-      vsync: this,
-      initialIndex: initialTab,
-    );
-
-    // 监听 tab 切换
-    _tabController.addListener(() {
-      if (!_tabController.indexIsChanging) {
-        // Tab切换逻辑可以保留在UI层面,不需要通知controller
-        setState(() {
-          _currentPage = _tabController.index;
-        });
-
-        // 当切换到 Weather tab (索引 6) 时，加载天气数据（利用controller内部缓存）
-        if (_tabController.index == 6) {
-          final weatherController = Get.find<WeatherStateController>();
-          // 不使用forceRefresh，让controller内部缓存机制决定是否需要加载
-          weatherController.loadCityWeather(
-            cityId,
-            includeForecast: true,
-            days: 7,
-          );
-        }
-
-        // 当切换到 Coworking tab (索引 9) 时，检查缓存后再决定是否加载
-        if (_tabController.index == 9) {
-          final coworkingController = Get.find<CoworkingStateControllerV2>();
-          // 只有在城市ID不同或数据为空时才重新加载
-          if (coworkingController.currentCityId.value != cityId) {
-            coworkingController.loadCoworkingSpacesByCity(cityId);
-            log('🔄 [TabSwitch] 切换到 Coworking tab，加载新城市数据');
-          }
-        }
-      }
-    });
-
-    // 监听滚动，动态改变 AppBar 背景透明度
-    _scrollController.addListener(() {
-      // 当滚动超过 200 像素时，背景变为不透明
-      final offset = _scrollController.offset;
-      final newOpacity = (offset / 200).clamp(0.0, 1.0);
-
-      if (_appBarOpacity != newOpacity) {
-        setState(() {
-          _appBarOpacity = newOpacity;
-        });
-      }
-    });
-
-    // ✅ 异步初始化城市数据,不阻塞页面显示
-    Future.microtask(() async {
-      final cityDetailController = Get.find<CityDetailStateController>();
-      final userContentController = Get.find<UserCityContentStateController>();
-      final prosConsController = Get.find<ProsConsStateController>();
-
-      // 加载城市详情
-      cityDetailController.loadCityDetail(cityId);
-
-      // 检查登录状态
-      final tokenService = TokenStorageService();
-      final token = await tokenService.getAccessToken();
-      final isLoggedIn = token != null && token.isNotEmpty;
-
-      if (isLoggedIn) {
-        // 登录用户:加载所有用户生成内容
-        userContentController.loadCityPhotos(cityId);
-        userContentController.loadCityExpenses(cityId);
-        userContentController.loadCityReviews(cityId);
-        userContentController.loadCityCostSummary(cityId);
-        prosConsController.loadCityProsCons(cityId);
-      } else {
-        // 未登录用户:仅加载基本信息,跳过需要认证的内容
-        log('⚠️ [CityDetail] 用户未登录,跳过加载用户生成内容');
-      }
-    });
+  void dispose() {
+    // 删除带 tag 的控制器
+    Get.delete<CityDetailPageController>(tag: widget.tag);
+    super.dispose();
   }
 
   /// 当页面重新可见时重新加载数据
   Future<void> reloadCityData() async {
-    log('🔄 [CityDetail] 重新加载城市数据: $cityId');
-
-    final cityDetailController = Get.find<CityDetailStateController>();
-    final userContentController = Get.find<UserCityContentStateController>();
-    final prosConsController = Get.find<ProsConsStateController>();
-
-    // 重新加载城市详情（强制刷新）
-    await cityDetailController.loadCityDetail(cityId);
-
-    // 检查登录状态
-    final tokenService = TokenStorageService();
-    final token = await tokenService.getAccessToken();
-    final isLoggedIn = token != null && token.isNotEmpty;
-
-    if (isLoggedIn) {
-      // 登录用户:加载所有用户生成内容
-      userContentController.loadCityPhotos(cityId);
-      userContentController.loadCityExpenses(cityId);
-      userContentController.loadCityReviews(cityId);
-      userContentController.loadCityCostSummary(cityId);
-      prosConsController.loadCityProsCons(cityId);
-    } else {
-      log('⚠️ [CityDetail] 用户未登录,跳过加载用户生成内容');
-    }
-  }
-
-  @override
-  Future<void> onRouteResume() async {
-    await reloadCityData();
+    await _pageController.refreshCityDetail();
   }
 
   /// 检查用户是否有权限生成指南（仅根据会员级别限制 AI 使用次数）
@@ -1532,44 +1706,15 @@ class _CityDetailPageState extends State<CityDetailPage>
 
   // 刷新包装方法
   Future<void> _handleRefreshReviews(UserCityContentStateController controller) async {
-    _isRefreshingReviews = true;
+    _pageController.isRefreshingReviews.value = true;
     await controller.loadCityReviews(cityId);
-    _isRefreshingReviews = false;
+    _pageController.isRefreshingReviews.value = false;
   }
 
   Future<void> _handleRefreshPhotos(UserCityContentStateController controller) async {
-    _isRefreshingPhotos = true;
+    _pageController.isRefreshingPhotos.value = true;
     await controller.loadCityPhotos(cityId);
-    _isRefreshingPhotos = false;
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    _pageController.dispose();
-    _tabController.dispose();
-
-    // 🔥 页面销毁时清空指南状态,防止显示错误的城市指南
-    try {
-      final aiController = Get.find<AiStateController>();
-      aiController.resetGuideState();
-      log('🧹 [CityDetailPage] 页面销毁,已清空指南状态');
-    } catch (e) {
-      log('⚠️ [CityDetailPage] 清空指南状态失败: $e');
-    }
-
-    // 🔥 清空评分数据,防止跳转到其他城市时显示旧数据
-    try {
-      final ratingController = Get.find<CityRatingController>();
-      ratingController.statistics.clear();
-      ratingController.categories.clear();
-      ratingController.overallScore.value = 0.0;
-      log('🧹 [CityDetailPage] 页面销毁,已清空评分数据');
-    } catch (e) {
-      log('⚠️ [CityDetailPage] 清空评分数据失败: $e');
-    }
-
-    super.dispose();
+    _pageController.isRefreshingPhotos.value = false;
   }
 
   /// 检查用户是否为管理员或版主（用于区分跳转行为）
@@ -1776,7 +1921,9 @@ class _CityDetailPageState extends State<CityDetailPage>
                                   if (result == true) {
                                     // 刷新酒店列表
                                     log('✅ 酒店添加成功，正在刷新列表');
-                                    _hotelListKey.currentState?.refresh();
+                                    if (Get.isRegistered<HotelListPageController>(tag: _hotelListTag)) {
+                                      Get.find<HotelListPageController>(tag: _hotelListTag).refresh();
+                                    }
                                   }
                                 };
                               } else if (currentTab == 9) {
@@ -1866,22 +2013,18 @@ class _CityDetailPageState extends State<CityDetailPage>
                             if (_currentPage >= images.length && images.isNotEmpty) {
                               WidgetsBinding.instance.addPostFrameCallback((_) {
                                 if (mounted) {
-                                  setState(() {
                                     _currentPage = 0;
-                                  });
-                                  if (_pageController.hasClients) {
-                                    _pageController.jumpToPage(0);
+                                  if (_pageControllerWidget.hasClients) {
+                                    _pageControllerWidget.jumpToPage(0);
                                   }
                                 }
                               });
                             }
 
                             return PageView.builder(
-                              controller: _pageController,
+                              controller: _pageControllerWidget,
                               onPageChanged: (index) {
-                                setState(() {
                                   _currentPage = index;
-                                });
                               },
                               itemCount: images.length,
                               itemBuilder: (context, index) {
@@ -4875,7 +5018,6 @@ class _CityDetailPageState extends State<CityDetailPage>
     log('🏨 Hotels Tab - cityId: $cityId, cityName: $cityName, country: ${city?.country}');
 
     return HotelListPage(
-      key: _hotelListKey,
       cityId: cityId,
       cityName: cityName,
       countryName: city?.country,
