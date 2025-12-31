@@ -10,7 +10,7 @@ import 'package:df_admin_mobile/pages/add_innovation/add_innovation_page.dart';
 import 'package:df_admin_mobile/pages/add_review_page.dart';
 import 'package:df_admin_mobile/pages/ai_chat_page.dart';
 import 'package:df_admin_mobile/pages/city_chat_page.dart';
-import 'package:df_admin_mobile/pages/city_detail_page.dart';
+import 'package:df_admin_mobile/pages/city_detail/city_detail.dart';
 import 'package:df_admin_mobile/pages/city_list_page.dart';
 import 'package:df_admin_mobile/pages/city_search_page.dart';
 import 'package:df_admin_mobile/pages/community_page.dart';
@@ -45,7 +45,6 @@ import 'package:df_admin_mobile/pages/register_page.dart';
 import 'package:df_admin_mobile/pages/skills_interests_page.dart';
 import 'package:df_admin_mobile/pages/travel_plan_page.dart';
 import 'package:df_admin_mobile/pages/user_profile_page.dart';
-import 'package:df_admin_mobile/routes/bindings/city_detail_binding.dart';
 import 'package:get/get.dart';
 
 class AppRoutes {
