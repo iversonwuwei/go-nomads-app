@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/core/sync/sync.dart';
 import 'package:df_admin_mobile/features/innovation_project/domain/entities/innovation_project.dart';
@@ -15,15 +17,18 @@ class InnovationDetailPageController extends GetxController {
 
   // 完整项目数据
   final Rx<InnovationProject?> fullProject = Rx<InnovationProject?>(null);
-  
+
   // 加载状态
   final RxBool isLoading = true.obs;
-  
+
   // 关注状态
   final RxBool isFollowed = false.obs;
-  
+
   // 防止重复点击
   final RxBool isToggling = false.obs;
+
+  // 数据变更订阅
+  StreamSubscription<DataChangedEvent>? _dataChangedSubscription;
 
   /// 获取当前显示的项目（优先使用完整数据）
   InnovationProject get project => fullProject.value ?? initialProject;
@@ -40,10 +45,54 @@ class InnovationDetailPageController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    _setupDataChangeListeners();
     // 延迟加载数据
     WidgetsBinding.instance.addPostFrameCallback((_) {
       loadFullProject();
     });
+  }
+
+  @override
+  void onClose() {
+    // 取消数据变更订阅
+    _dataChangedSubscription?.cancel();
+    _dataChangedSubscription = null;
+    super.onClose();
+  }
+
+  /// 设置数据变更监听器
+  void _setupDataChangeListeners() {
+    _dataChangedSubscription = DataEventBus.instance.on('innovation_project', _handleDataChanged);
+    print('✅ [InnovationDetailPageController] 数据变更监听器已设置');
+  }
+
+  /// 处理数据变更事件
+  void _handleDataChanged(DataChangedEvent event) {
+    // 只处理当前项目的变更
+    final projectId = initialProject.uuid;
+    if (event.entityId != projectId) {
+      return;
+    }
+
+    print('🔔 [创新项目详情] 收到数据变更通知: ${event.entityId} (${event.changeType})');
+
+    switch (event.changeType) {
+      case DataChangeType.updated:
+        // 项目数据更新，重新加载详情
+        loadFullProject();
+        break;
+      case DataChangeType.deleted:
+        // 项目被删除
+        print('⚠️ [创新项目详情] 该项目已被删除');
+        break;
+      case DataChangeType.invalidated:
+        // 缓存失效，重新加载
+        loadFullProject();
+        break;
+      case DataChangeType.created:
+        // 新建项目通常不影响详情页
+        break;
+    }
   }
 
   /// 加载完整项目数据
@@ -55,7 +104,7 @@ class InnovationDetailPageController extends GetxController {
     if (controller != null && projectId != null) {
       await controller.getProjectById(projectId);
       print('📱 API返回: currentProject=${controller.currentProject.value?.projectName}');
-      
+
       fullProject.value = controller.currentProject.value;
       isLoading.value = false;
       // 从服务器数据初始化关注状态
@@ -97,7 +146,7 @@ class InnovationDetailPageController extends GetxController {
             version: DateTime.now().millisecondsSinceEpoch,
             changeType: DataChangeType.updated,
           ));
-          
+
           isFollowed.value = isLiked;
           isToggling.value = false;
           _showSnackBar(
@@ -105,7 +154,7 @@ class InnovationDetailPageController extends GetxController {
             isLiked ? '已关注项目' : '已取消关注',
             isLiked ? const Color(0xFF8B5CF6) : Colors.grey[700]!,
           );
-          
+
         case Failure(exception: final error):
           // API 失败，回滚状态
           isFollowed.value = previousState;
@@ -131,19 +180,19 @@ class InnovationDetailPageController extends GetxController {
 
   /// 创建发布者的 User 对象用于聊天
   User get creatorUser => User(
-    id: project.userId.toString(),
-    name: project.userName ?? 'Unknown',
-    username: (project.userName ?? 'unknown').toLowerCase().replaceAll(' ', '_'),
-    avatarUrl: project.userAvatar,
-    stats: TravelStats(
-      citiesVisited: 0,
-      countriesVisited: 0,
-      reviewsWritten: 0,
-      photosShared: 0,
-      totalDistanceTraveled: 0,
-    ),
-    joinedDate: DateTime.now(),
-  );
+        id: project.userId.toString(),
+        name: project.userName ?? 'Unknown',
+        username: (project.userName ?? 'unknown').toLowerCase().replaceAll(' ', '_'),
+        avatarUrl: project.userAvatar,
+        stats: TravelStats(
+          citiesVisited: 0,
+          countriesVisited: 0,
+          reviewsWritten: 0,
+          photosShared: 0,
+          totalDistanceTraveled: 0,
+        ),
+        joinedDate: DateTime.now(),
+      );
 
   /// 格式化日期
   String formatDate(DateTime date) {

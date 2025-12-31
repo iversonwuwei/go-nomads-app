@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:df_admin_mobile/core/sync/sync.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart' as models;
 import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller_v2.dart';
@@ -15,10 +18,13 @@ class MemberDetailPageController extends GetxController {
 
   late final UserStateControllerV2 _userController;
   late final AuthStateController _authController;
-  
+
   final Rxn<models.User> user = Rxn<models.User>();
   final RxBool isLoading = true.obs;
   final RxnString errorMessage = RxnString();
+
+  // 数据变更订阅
+  StreamSubscription<DataChangedEvent>? _dataChangedSubscription;
 
   /// 判断当前显示的是否是登录用户自己
   bool get isCurrentUser {
@@ -33,7 +39,49 @@ class MemberDetailPageController extends GetxController {
     _userController = Get.find<UserStateControllerV2>();
     _authController = Get.find<AuthStateController>();
     user.value = initialUser;
+    _setupDataChangeListeners();
     loadUserDetails();
+  }
+
+  @override
+  void onClose() {
+    // 取消数据变更订阅
+    _dataChangedSubscription?.cancel();
+    _dataChangedSubscription = null;
+    super.onClose();
+  }
+
+  /// 设置数据变更监听器
+  void _setupDataChangeListeners() {
+    _dataChangedSubscription = DataEventBus.instance.on('user', _handleDataChanged);
+    // 也监听 user_profile 事件
+    DataEventBus.instance.on('user_profile', _handleDataChanged);
+  }
+
+  /// 处理数据变更事件
+  void _handleDataChanged(DataChangedEvent event) {
+    // 只处理当前用户的变更
+    final targetUserId = userId ?? initialUser?.id;
+    if (event.entityId != targetUserId) {
+      return;
+    }
+
+    switch (event.changeType) {
+      case DataChangeType.updated:
+        // 用户数据更新，重新加载详情
+        loadUserDetails();
+        break;
+      case DataChangeType.deleted:
+        // 用户被删除
+        break;
+      case DataChangeType.invalidated:
+        // 缓存失效，重新加载
+        loadUserDetails();
+        break;
+      case DataChangeType.created:
+        // 新建用户通常不影响详情页
+        break;
+    }
   }
 
   /// 从后端获取完整的用户信息

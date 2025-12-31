@@ -117,6 +117,9 @@ class MeetupStateControllerV2 extends PaginatedRefreshableController {
     log('🎬 MeetupStateControllerV2 初始化...');
     _setupLoginStateListener();
     _setupDataChangeListeners();
+
+    // 初始加载 - 使用基类的智能加载（检查缓存有效性）
+    initialLoad();
   }
 
   @override
