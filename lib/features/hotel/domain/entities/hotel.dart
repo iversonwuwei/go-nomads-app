@@ -22,6 +22,9 @@ class Hotel {
   final DateTime createdAt;
   final DateTime? updatedAt;
 
+  // 创建者信息
+  final String? createdBy;
+
   // 联系方式
   final String? phone;
   final String? email;
@@ -68,6 +71,7 @@ class Hotel {
     required this.roomTypes,
     required this.createdAt,
     this.updatedAt,
+    this.createdBy,
     this.phone,
     this.email,
     this.website,

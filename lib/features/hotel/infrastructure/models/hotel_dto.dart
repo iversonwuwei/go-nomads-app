@@ -208,6 +208,7 @@ class HotelDto {
       isFeatured: isFeatured,
       roomTypes: roomTypes.map((rt) => rt.toDomain()).toList(),
       createdAt: createdAt,
+      createdBy: createdBy,
       phone: phone,
       email: email,
       website: website,

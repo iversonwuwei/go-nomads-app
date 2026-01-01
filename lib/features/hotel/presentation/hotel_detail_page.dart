@@ -9,6 +9,7 @@ import 'package:df_admin_mobile/features/hotel/domain/repositories/i_hotel_revie
 import 'package:df_admin_mobile/pages/add_hotel_page.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/edit_button.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -62,6 +63,23 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
   /// 统一处理返回逻辑
   void _handleBack() {
     Navigator.pop(context, _hasDataChanged ? _hotel : null);
+  }
+
+  /// 检查当前用户是否有权限编辑酒店
+  /// 只有酒店创建者或管理员可以编辑
+  bool _canEditHotel() {
+    final authController = Get.find<AuthStateController>();
+    final currentUser = authController.currentUser.value;
+    final currentUserId = currentUser?.id;
+    final isAdmin = currentUser?.role == 'admin';
+    
+    // 管理员可以编辑任何酒店
+    if (isAdmin) return true;
+    
+    // 创建者可以编辑自己的酒店
+    if (currentUserId != null && _hotel.createdBy == currentUserId) return true;
+    
+    return false;
   }
 
   /// 重新加载酒店详情数据
@@ -137,29 +155,30 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
       foregroundColor: hasImages ? Colors.white : null,
       leading: SliverBackButton(onPressed: _handleBack),
       actions: [
-        // 编辑按钮
-        SliverEditButton(
-          onPressed: () async {
-            final result = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => AddHotelPage(
-                  editingHotel: _hotel,
-                  cityId: _hotel.cityId,
-                  cityName: _hotel.cityName,
-                  countryName: _hotel.country,
+        // 编辑按钮 - 只有创建者或管理员可见
+        if (_canEditHotel())
+          SliverEditButton(
+            onPressed: () async {
+              final result = await Navigator.push<bool>(
+                context,
+                CupertinoPageRoute(
+                  builder: (context) => AddHotelPage(
+                    editingHotel: _hotel,
+                    cityId: _hotel.cityId,
+                    cityName: _hotel.cityName,
+                    countryName: _hotel.country,
+                  ),
                 ),
-              ),
-            );
-            if (result == true && mounted) {
-              // 标记数据已变更，下次返回时通知列表页面
-              _hasDataChanged = true;
-              // 重新加载酒店详情
-              await _reloadHotelDetail();
-            }
-          },
-          size: 18,
-        ),
+              );
+              if (result == true && mounted) {
+                // 标记数据已变更，下次返回时通知列表页面
+                _hasDataChanged = true;
+                // 重新加载酒店详情
+                await _reloadHotelDetail();
+              }
+            },
+            size: 18,
+          ),
         // 图片计数器
         if (images.length > 1)
           Container(
