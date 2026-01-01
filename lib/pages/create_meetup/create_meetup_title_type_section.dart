@@ -1,6 +1,6 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/controllers/create_meetup_page_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -109,15 +109,32 @@ class CreateMeetupTypeSection extends StatelessWidget {
             child: InputDecorator(
               decoration: InputDecoration(
                 hintText: l10n.meetupTypeHint,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.borderLight)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: AppColors.borderLight),
+                ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                filled: true,
+                fillColor: Colors.white,
                 suffixIcon: _c.isLoadingTypes.value
-                    ? const Padding(padding: EdgeInsets.all(8), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)))
-                    : const Icon(FontAwesomeIcons.chevronDown),
+                    ? const Padding(
+                        padding: EdgeInsets.all(8),
+                        child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                      )
+                    : const Icon(FontAwesomeIcons.chevronDown, size: 18),
                 errorText: field.errorText,
               ),
               isEmpty: displayType == null || displayType.isEmpty,
-              child: Text(displayType ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: displayType == null || displayType.isEmpty ? Theme.of(context).hintColor : Theme.of(context).textTheme.bodyMedium?.color)),
+              child: Text(
+                displayType ?? '',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: displayType == null || displayType.isEmpty
+                          ? Theme.of(context).hintColor
+                          : Theme.of(context).textTheme.bodyMedium?.color,
+                    ),
+              ),
             ),
           );
         });
