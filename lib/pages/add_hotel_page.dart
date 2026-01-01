@@ -1,7 +1,7 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/controllers/add_hotel_page_controller.dart';
 import 'package:df_admin_mobile/features/hotel/domain/entities/hotel.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/controllers/add_hotel_page_controller.dart';
 import 'package:df_admin_mobile/pages/flutter_map_picker_page.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
@@ -420,13 +420,11 @@ class AddHotelPage extends StatelessWidget {
           required: true,
         ),
         const SizedBox(height: 16),
-        Obx(() {
-          return _buildSwitchTile(
-            l10n.longStayDiscount,
-            controller.hasLongStayDiscount,
-            (value) => controller.hasLongStayDiscount.value = value,
-          );
-        }),
+        _buildSwitchTile(
+          l10n.longStayDiscount,
+          controller.hasLongStayDiscount,
+          (value) => controller.hasLongStayDiscount.value = value,
+        ),
       ],
     );
   }
@@ -785,26 +783,29 @@ class AddHotelPage extends StatelessWidget {
 
   // ============ 底部按钮 ============
   Widget _buildBottomBar(AddHotelPageController controller, AppLocalizations l10n) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -2))],
-      ),
-      child: SafeArea(
-        child: Obx(() {
-          return ElevatedButton(
-            onPressed: controller.isSubmitting.value
-                ? null
-                : () async {
-                    final success = await controller.submitHotel(
-                      l10n.selectCity,
-                      l10n.updateSuccess,
-                      l10n.hotelSubmittedSuccess,
-                      l10n.failedToSubmitHotel,
-                    );
-                    if (success) Get.back(result: true);
-                  },
+    return Builder(
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -2))],
+        ),
+        child: SafeArea(
+          child: Obx(() {
+            return ElevatedButton(
+              onPressed: controller.isSubmitting.value
+                  ? null
+                  : () async {
+                      final success = await controller.submitHotel(
+                        l10n.selectCity,
+                        l10n.updateSuccess,
+                        l10n.hotelSubmittedSuccess,
+                        l10n.failedToSubmitHotel,
+                      );
+                      if (success && context.mounted) {
+                        Navigator.pop(context, true);
+                      }
+                    },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFFF4458),
               foregroundColor: Colors.white,
@@ -830,6 +831,7 @@ class AddHotelPage extends StatelessWidget {
             ),
           );
         }),
+        ),
       ),
     );
   }
