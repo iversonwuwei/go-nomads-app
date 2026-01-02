@@ -4691,14 +4691,15 @@ class _CityDetailPageContentState extends State<_CityDetailPageContent> {
       // 显示空状态
       if (controller.coworkingSpaces.isEmpty) {
         return RefreshIndicator(
-          onRefresh: () => controller.loadCoworkingSpacesByCity(cityName),
+          onRefresh: () => controller.loadCoworkingSpacesByCity(cityId),
           child: LayoutBuilder(
             builder: (context, constraints) {
+              final minHeight = (constraints.maxHeight - 120).clamp(0.0, double.infinity);
               return SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 60),
                 child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight - 120),
+                  constraints: BoxConstraints(minHeight: minHeight),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -4826,7 +4827,7 @@ class _CityDetailPageContentState extends State<_CityDetailPageContent> {
 
       // 显示共享办公空间列表
       return RefreshIndicator(
-        onRefresh: () => controller.loadCoworkingSpacesByCity(cityName),
+        onRefresh: () => controller.loadCoworkingSpacesByCity(cityId),
         child: ListView.builder(
           padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
           itemCount: controller.coworkingSpaces.length,
