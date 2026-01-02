@@ -555,29 +555,72 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
 
                   const SizedBox(height: 12),
 
-                  // 关键指标
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 8,
-                    children: [
-                      _buildInfoChip(
-                        FontAwesomeIcons.sun,
-                        '${_truncateToOneDecimal(city.temperature ?? 0)}°',
-                        Colors.orange,
-                      ),
-                      // 使用后端返回的真实平均花费数据
-                      _buildInfoChip(
-                        FontAwesomeIcons.dollarSign,
-                        '${city.averageCost != null && city.averageCost! > 0 ? city.averageCost!.toInt() : 0}',
-                        city.averageCost != null && city.averageCost! > 0 ? Colors.green : Colors.grey,
-                      ),
-                      if (city.airQualityIndex != null)
+                  // 指标标签（单行可滚动）
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
                         _buildInfoChip(
-                          FontAwesomeIcons.wind,
-                          'AQI ${city.airQualityIndex}',
-                          _getAqiColor(city.airQualityIndex!),
+                          FontAwesomeIcons.sun,
+                          '${_truncateToOneDecimal(city.temperature ?? 0)}°',
+                          Colors.orange,
                         ),
-                    ],
+                        const SizedBox(width: 8),
+                        _buildInfoChip(
+                          FontAwesomeIcons.dollarSign,
+                          '${city.averageCost != null && city.averageCost! > 0 ? city.averageCost!.toInt() : 0}',
+                          city.averageCost != null && city.averageCost! > 0 ? Colors.green : Colors.grey,
+                        ),
+                        if (city.airQualityIndex != null) ...[
+                          const SizedBox(width: 8),
+                          _buildInfoChip(
+                            FontAwesomeIcons.wind,
+                            'AQI ${city.airQualityIndex}',
+                            _getAqiColor(city.airQualityIndex!),
+                          ),
+                        ],
+                        if (city.internetScore != null && city.internetScore! > 0) ...[
+                          const SizedBox(width: 8),
+                          _buildInfoChip(
+                            FontAwesomeIcons.wifi,
+                            city.internetScore!.toStringAsFixed(1),
+                            _getScoreColor(city.internetScore!),
+                          ),
+                        ],
+                        if (city.safetyScore != null && city.safetyScore! > 0) ...[
+                          const SizedBox(width: 8),
+                          _buildInfoChip(
+                            FontAwesomeIcons.shield,
+                            city.safetyScore!.toStringAsFixed(1),
+                            _getScoreColor(city.safetyScore!),
+                          ),
+                        ],
+                        if (city.coworkingCount != null && city.coworkingCount! > 0) ...[
+                          const SizedBox(width: 8),
+                          _buildInfoChip(
+                            FontAwesomeIcons.laptop,
+                            '${city.coworkingCount}',
+                            Colors.blue,
+                          ),
+                        ],
+                        if (city.meetupCount != null && city.meetupCount! > 0) ...[
+                          const SizedBox(width: 8),
+                          _buildInfoChip(
+                            FontAwesomeIcons.userGroup,
+                            '${city.meetupCount}',
+                            Colors.purple,
+                          ),
+                        ],
+                        if (city.reviewCount != null && city.reviewCount! > 0) ...[
+                          const SizedBox(width: 8),
+                          _buildInfoChip(
+                            FontAwesomeIcons.comments,
+                            '${city.reviewCount}',
+                            Colors.teal,
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -586,6 +629,13 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
         ),
       ),
     );
+  }
+
+  // 根据评分获取颜色
+  Color _getScoreColor(double score) {
+    if (score >= 4.0) return Colors.green;
+    if (score >= 3.0) return Colors.orange;
+    return Colors.red;
   }
 
   // 信息标签

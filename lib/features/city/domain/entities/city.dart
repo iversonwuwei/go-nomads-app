@@ -363,7 +363,7 @@ class City {
       airQualityIndex: weather?['airQualityIndex']?.toInt(),
       overallScore: json['overallScore']?.toDouble(),
       costScore: json['costScore']?.toDouble(),
-      internetScore: json['internetScore']?.toDouble(),
+      internetScore: json['internetQualityScore']?.toDouble() ?? json['internetScore']?.toDouble(),
       safetyScore: json['safetyScore']?.toDouble(),
       likedScore: json['likedScore']?.toDouble(),
       meetupCount: json['meetupCount']?.toInt(),
