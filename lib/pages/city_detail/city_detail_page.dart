@@ -98,43 +98,41 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
   }
 
   Widget _buildBody(BuildContext context) {
-    return Obx(() {
-      return NestedScrollView(
-        controller: controller.scrollController,
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
-          return [
-            // 自定义 AppBar
-            CityDetailAppBar(
-              controller: controller,
-              cityName: controller.cityName,
-              cityImage: controller.cityImage,
+    return NestedScrollView(
+      controller: controller.scrollController,
+      headerSliverBuilder: (context, innerBoxIsScrolled) {
+        return [
+          // 自定义 AppBar
+          CityDetailAppBar(
+            controller: controller,
+            cityName: controller.cityName,
+            cityImage: controller.cityImage,
+            overallScore: controller.overallScore,
+            reviewCount: controller.reviewCount,
+            onShare: () => _shareCityInfo(context),
+          ),
+          // 城市信息摘要卡片
+          SliverToBoxAdapter(
+            child: CityInfoSummaryCard(
+              cityId: controller.cityId,
               overallScore: controller.overallScore,
               reviewCount: controller.reviewCount,
-              onShare: () => _shareCityInfo(context),
             ),
-            // 城市信息摘要卡片
-            SliverToBoxAdapter(
-              child: CityInfoSummaryCard(
-                cityId: controller.cityId,
-                overallScore: controller.overallScore,
-                reviewCount: controller.reviewCount,
-              ),
+          ),
+          // 固定的 TabBar
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: CityDetailTabBarDelegate(
+              _buildTabBar(context),
             ),
-            // 固定的 TabBar
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: CityDetailTabBarDelegate(
-                _buildTabBar(context),
-              ),
-            ),
-          ];
-        },
-        body: TabBarView(
-          controller: controller.tabController,
-          children: _buildTabViews(context),
-        ),
-      );
-    });
+          ),
+        ];
+      },
+      body: TabBarView(
+        controller: controller.tabController,
+        children: _buildTabViews(context),
+      ),
+    );
   }
 
   TabBar _buildTabBar(BuildContext context) {

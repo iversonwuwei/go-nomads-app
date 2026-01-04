@@ -100,6 +100,31 @@ class TravelHistoryDao {
       )
     ''');
 
+    // 访问地点表 - 记录用户在旅行中访问过的具体地点（停留40分钟以上）
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS visited_places (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        trip_id TEXT NOT NULL,
+        backend_id TEXT,
+        latitude REAL NOT NULL,
+        longitude REAL NOT NULL,
+        place_name TEXT,
+        place_type TEXT,
+        address TEXT,
+        arrival_time TEXT NOT NULL,
+        departure_time TEXT NOT NULL,
+        duration_minutes INTEGER DEFAULT 0,
+        photo_url TEXT,
+        notes TEXT,
+        is_highlight INTEGER DEFAULT 0,
+        google_place_id TEXT,
+        client_id TEXT,
+        is_synced_to_backend INTEGER DEFAULT 0,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      )
+    ''');
+
     // 创建索引
     await db.execute('CREATE INDEX IF NOT EXISTS idx_location_points_timestamp ON location_points(timestamp DESC)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_location_points_is_processed ON location_points(is_processed)');
@@ -107,6 +132,8 @@ class TravelHistoryDao {
     await db.execute('CREATE INDEX IF NOT EXISTS idx_stay_points_is_processed ON stay_points(is_processed)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_candidate_trips_status ON candidate_trips(status)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_candidate_trips_created ON candidate_trips(created_at DESC)');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_visited_places_trip_id ON visited_places(trip_id)');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_visited_places_client_id ON visited_places(client_id)');
 
     // 旅行历史设置表
     await db.execute('''
@@ -535,8 +562,160 @@ class TravelHistoryDao {
       await txn.delete('stay_points');
       await txn.delete('candidate_trips');
       await txn.delete('home_locations');
+      await txn.delete('visited_places');
     });
     log('✅ 所有旅行历史数据已清除');
+  }
+
+  // ==================== 访问地点操作 ====================
+
+  /// 保存访问地点
+  Future<int> saveVisitedPlace(VisitedPlace place) async {
+    final db = await _db;
+    final now = DateTime.now().toIso8601String();
+    final placeMap = place.toMap();
+    placeMap['created_at'] = now;
+    placeMap['updated_at'] = now;
+    placeMap['is_synced_to_backend'] = 0;
+    return await db.insert('visited_places', placeMap);
+  }
+
+  /// 批量保存访问地点
+  Future<void> saveVisitedPlaces(List<VisitedPlace> places) async {
+    final db = await _db;
+    final now = DateTime.now().toIso8601String();
+    await db.transaction((txn) async {
+      for (final place in places) {
+        final placeMap = place.toMap();
+        placeMap['created_at'] = now;
+        placeMap['updated_at'] = now;
+        placeMap['is_synced_to_backend'] = 0;
+        await txn.insert('visited_places', placeMap);
+      }
+    });
+  }
+
+  /// 根据旅行 ID 获取访问地点
+  Future<List<VisitedPlace>> getVisitedPlacesByTripId(String tripId) async {
+    final db = await _db;
+    final maps = await db.query(
+      'visited_places',
+      where: 'trip_id = ?',
+      whereArgs: [tripId],
+      orderBy: 'arrival_time ASC',
+    );
+    return maps.map((map) => VisitedPlace.fromMap(map)).toList();
+  }
+
+  /// 获取未同步的访问地点
+  Future<List<VisitedPlace>> getUnsyncedVisitedPlaces() async {
+    final db = await _db;
+    final maps = await db.query(
+      'visited_places',
+      where: 'is_synced_to_backend = ?',
+      whereArgs: [0],
+      orderBy: 'arrival_time ASC',
+    );
+    return maps.map((map) => VisitedPlace.fromMap(map)).toList();
+  }
+
+  /// 根据 client_id 获取访问地点
+  Future<VisitedPlace?> getVisitedPlaceByClientId(String clientId) async {
+    final db = await _db;
+    final maps = await db.query(
+      'visited_places',
+      where: 'client_id = ?',
+      whereArgs: [clientId],
+      limit: 1,
+    );
+    if (maps.isEmpty) return null;
+    return VisitedPlace.fromMap(maps.first);
+  }
+
+  /// 更新访问地点
+  Future<int> updateVisitedPlace(VisitedPlace place) async {
+    final db = await _db;
+    final placeMap = place.toMap();
+    placeMap['updated_at'] = DateTime.now().toIso8601String();
+    return await db.update(
+      'visited_places',
+      placeMap,
+      where: 'id = ?',
+      whereArgs: [place.id],
+    );
+  }
+
+  /// 标记访问地点为已同步
+  Future<void> markVisitedPlaceAsSynced(int id, {String? backendId}) async {
+    final db = await _db;
+    final updates = <String, dynamic>{
+      'is_synced_to_backend': 1,
+      'updated_at': DateTime.now().toIso8601String(),
+    };
+    if (backendId != null) {
+      updates['backend_id'] = backendId;
+    }
+    await db.update(
+      'visited_places',
+      updates,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  /// 删除访问地点
+  Future<int> deleteVisitedPlace(int id) async {
+    final db = await _db;
+    return await db.delete(
+      'visited_places',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  /// 删除旅行的所有访问地点
+  Future<int> deleteVisitedPlacesByTripId(String tripId) async {
+    final db = await _db;
+    return await db.delete(
+      'visited_places',
+      where: 'trip_id = ?',
+      whereArgs: [tripId],
+    );
+  }
+
+  /// 检查是否存在相似的访问地点（用于去重）
+  Future<bool> existsSimilarVisitedPlace({
+    required String tripId,
+    required double latitude,
+    required double longitude,
+    required DateTime arrivalTime,
+    Duration tolerance = const Duration(minutes: 30),
+  }) async {
+    final db = await _db;
+    final startTime = arrivalTime.subtract(tolerance);
+    final endTime = arrivalTime.add(tolerance);
+    const locationTolerance = 0.001; // 约 100 米
+
+    final result = await db.rawQuery('''
+      SELECT COUNT(*) as count FROM visited_places
+      WHERE trip_id = ?
+        AND arrival_time >= ?
+        AND arrival_time <= ?
+        AND latitude >= ?
+        AND latitude <= ?
+        AND longitude >= ?
+        AND longitude <= ?
+    ''', [
+      tripId,
+      startTime.toIso8601String(),
+      endTime.toIso8601String(),
+      latitude - locationTolerance,
+      latitude + locationTolerance,
+      longitude - locationTolerance,
+      longitude + locationTolerance,
+    ]);
+
+    return (result.first['count'] as int) > 0;
   }
 
   // ==================== 设置操作 ====================
