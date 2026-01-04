@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import '../../../../config/app_colors.dart';
 import '../../../../routes/app_routes.dart';
 import '../../domain/entities/candidate_trip.dart';
+import '../../routes/travel_history_routes.dart';
 import '../controllers/travel_history_controller.dart';
 import '../widgets/trip_confirmation_card.dart';
 
@@ -309,6 +310,26 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
+            // 点击跳转到访问地点页面，与 profile 页面保持一致
+            if (trip.backendId != null && trip.backendId!.isNotEmpty) {
+              Get.toNamed(
+                TravelHistoryRoutes.visitedPlaces,
+                arguments: {
+                  'travelHistoryId': trip.backendId,
+                  'cityId': trip.cityId,
+                  'cityName': trip.cityName ?? '',
+                  'countryName': trip.countryName ?? '',
+                },
+              );
+            } else {
+              AppToast.info(
+                l10n.travelHistoryNoCityLink,
+                title: l10n.tip,
+              );
+            }
+          },
+          onLongPress: () {
+            // 长按跳转到城市详情页面
             if (trip.cityId != null && trip.cityId!.isNotEmpty) {
               Get.toNamed(
                 AppRoutes.cityDetail,
@@ -317,11 +338,6 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
                   'cityName': trip.cityName ?? '',
                   'cityImage': '',
                 },
-              );
-            } else {
-              AppToast.info(
-                l10n.travelHistoryNoCityLink,
-                title: l10n.tip,
               );
             }
           },
