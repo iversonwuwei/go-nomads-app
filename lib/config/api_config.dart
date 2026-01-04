@@ -25,7 +25,7 @@ class DeploymentConfig {
 
   /// Docker 部署配置
   static const docker = DeploymentConfig(
-    gatewayPort: 5000,
+    gatewayPort: 80,
     messageServicePort: 5005,
     coworkingServicePort: 8006,
   );

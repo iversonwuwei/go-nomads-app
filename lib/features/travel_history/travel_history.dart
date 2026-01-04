@@ -13,7 +13,9 @@ export 'services/travel_history_sync_service.dart';
 
 // Presentation
 export 'presentation/controllers/travel_history_controller.dart';
+export 'presentation/controllers/visited_places_controller.dart';
 export 'presentation/pages/travel_history_page.dart';
+export 'presentation/pages/visited_places_page.dart';
 export 'presentation/widgets/trip_confirmation_card.dart';
 
 // Routes

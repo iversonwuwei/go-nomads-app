@@ -388,6 +388,13 @@ class AppRoutes {
       binding: TravelHistoryBinding(),
       middlewares: [AuthMiddleware()],
     ),
+    // 访问地点路由
+    GetPage(
+      name: TravelHistoryRoutes.visitedPlaces,
+      page: () => const VisitedPlacesPage(),
+      binding: VisitedPlacesBinding(),
+      middlewares: [AuthMiddleware()],
+    ),
 
     // ============================================================================
     // 🔒 创新项目相关路由 - 需要认证

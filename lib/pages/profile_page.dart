@@ -1069,6 +1069,18 @@ class _ProfilePageState extends State<ProfilePage> with RouteAwareRefreshMixin<P
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
+            // 导航到访问地点页面，展示该旅行的所有地点
+            Get.toNamed(
+              TravelHistoryRoutes.visitedPlaces,
+              arguments: {
+                'travelHistoryId': trip.id,
+                'cityName': trip.city,
+                'countryName': trip.country,
+              },
+            );
+          },
+          onLongPress: () {
+            // 长按跳转到城市详情页面
             if (trip.canNavigateToCityDetail) {
               Get.toNamed(
                 AppRoutes.cityDetail,
@@ -1078,8 +1090,6 @@ class _ProfilePageState extends State<ProfilePage> with RouteAwareRefreshMixin<P
                   'cityImage': '',
                 },
               );
-            } else {
-              Get.toNamed(TravelHistoryRoutes.travelHistory);
             }
           },
           borderRadius: BorderRadius.circular(16),
