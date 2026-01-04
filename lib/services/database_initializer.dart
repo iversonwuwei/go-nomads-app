@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import '../features/travel_history/data/dao/travel_history_dao.dart';
 import 'database/user_profile_dao.dart';
 import 'database_service.dart';
 
@@ -11,6 +12,7 @@ import 'database_service.dart';
 class DatabaseInitializer {
   final DatabaseService _dbService = DatabaseService();
   final UserProfileDao _userProfileDao = UserProfileDao();
+  final TravelHistoryDao _travelHistoryDao = TravelHistoryDao();
 
   /// 初始化数据库表结构
   ///
@@ -29,6 +31,11 @@ class DatabaseInitializer {
     log('👤 初始化用户资料模块表...');
     await _userProfileDao.createUserProfileTables();
     log('✅ 用户资料模块表创建完成');
+
+    // 初始化旅行历史模块表
+    log('🗺️ 初始化旅行历史模块表...');
+    await _travelHistoryDao.ensureTables();
+    log('✅ 旅行历史模块表创建完成');
 
     log('✅ 数据库初始化完成！(仅表结构,无测试数据)');
   }

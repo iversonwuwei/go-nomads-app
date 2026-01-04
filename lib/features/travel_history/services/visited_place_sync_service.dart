@@ -172,6 +172,9 @@ class VisitedPlaceSyncService {
 
   /// 获取旅行的访问地点（优先使用本地缓存）
   Future<List<VisitedPlace>> getVisitedPlaces(String travelHistoryId) async {
+    // 先确保表存在
+    await _dao.ensureTables();
+
     // 先从本地获取
     var localPlaces = await _dao.getVisitedPlacesByTripId(travelHistoryId);
 
@@ -202,9 +205,7 @@ class VisitedPlaceSyncService {
       log('⚠️ 已存在相似的访问地点，跳过添加');
       final existing = await _dao.getVisitedPlacesByTripId(place.tripId);
       return existing.firstWhere(
-        (p) =>
-            (p.latitude - place.latitude).abs() < 0.001 &&
-            (p.longitude - place.longitude).abs() < 0.001,
+        (p) => (p.latitude - place.latitude).abs() < 0.001 && (p.longitude - place.longitude).abs() < 0.001,
         orElse: () => place,
       );
     }

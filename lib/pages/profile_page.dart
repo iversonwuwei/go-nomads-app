@@ -1074,6 +1074,7 @@ class _ProfilePageState extends State<ProfilePage> with RouteAwareRefreshMixin<P
               TravelHistoryRoutes.visitedPlaces,
               arguments: {
                 'travelHistoryId': trip.id,
+                'cityId': trip.cityId,
                 'cityName': trip.city,
                 'countryName': trip.country,
               },

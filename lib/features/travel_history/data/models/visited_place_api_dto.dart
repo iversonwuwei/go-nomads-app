@@ -186,9 +186,214 @@ class VisitedPlaceStatsDto {
       totalPlaces: json['totalPlaces'] as int,
       highlightPlaces: json['highlightPlaces'] as int,
       totalDurationMinutes: json['totalDurationMinutes'] as int,
-      placeTypeDistribution: (json['placeTypeDistribution'] as Map<String, dynamic>?)
-              ?.map((key, value) => MapEntry(key, value as int)) ??
-          {},
+      placeTypeDistribution:
+          (json['placeTypeDistribution'] as Map<String, dynamic>?)?.map((key, value) => MapEntry(key, value as int)) ??
+              {},
     );
   }
+}
+
+/// 城市访问摘要 DTO - 用于 Visited Places 页面头部信息
+/// 对应后端 VisitedPlacesCitySummaryDto
+class VisitedPlacesCitySummaryDto {
+  /// 城市 ID
+  final String cityId;
+
+  /// 城市名称（本地语言）
+  final String cityName;
+
+  /// 城市英文名称
+  final String? cityNameEn;
+
+  /// 国家名称
+  final String country;
+
+  /// 城市图片 URL
+  final String? imageUrl;
+
+  /// 旅行日期（第一次到达）
+  final DateTime? travelDate;
+
+  /// 最后访问日期
+  final DateTime? lastVisitDate;
+
+  /// 总停留天数
+  final int totalDurationDays;
+
+  /// 当前天气信息
+  final CityWeatherDto? weather;
+
+  /// 城市综合评分 (0-5)
+  final double? overallScore;
+
+  /// 平均每月花费（美元）
+  final double? averageMonthlyCost;
+
+  /// 共享办公空间数量
+  final int coworkingSpaceCount;
+
+  /// 访问地点分页列表
+  final PaginatedVisitedPlacesDto visitedPlaces;
+
+  VisitedPlacesCitySummaryDto({
+    required this.cityId,
+    required this.cityName,
+    this.cityNameEn,
+    required this.country,
+    this.imageUrl,
+    this.travelDate,
+    this.lastVisitDate,
+    required this.totalDurationDays,
+    this.weather,
+    this.overallScore,
+    this.averageMonthlyCost,
+    required this.coworkingSpaceCount,
+    required this.visitedPlaces,
+  });
+
+  factory VisitedPlacesCitySummaryDto.fromJson(Map<String, dynamic> json) {
+    return VisitedPlacesCitySummaryDto(
+      cityId: json['cityId'] as String? ?? '',
+      cityName: json['cityName'] as String? ?? '',
+      cityNameEn: json['cityNameEn'] as String?,
+      country: json['country'] as String? ?? '',
+      imageUrl: json['imageUrl'] as String?,
+      travelDate: json['travelDate'] != null ? DateTime.tryParse(json['travelDate'] as String) : null,
+      lastVisitDate: json['lastVisitDate'] != null ? DateTime.tryParse(json['lastVisitDate'] as String) : null,
+      totalDurationDays: json['totalDurationDays'] as int? ?? 0,
+      weather: json['weather'] != null ? CityWeatherDto.fromJson(json['weather'] as Map<String, dynamic>) : null,
+      overallScore: (json['overallScore'] as num?)?.toDouble(),
+      averageMonthlyCost: (json['averageMonthlyCost'] as num?)?.toDouble(),
+      coworkingSpaceCount: json['coworkingSpaceCount'] as int? ?? 0,
+      visitedPlaces: json['visitedPlaces'] != null
+          ? PaginatedVisitedPlacesDto.fromJson(json['visitedPlaces'] as Map<String, dynamic>)
+          : PaginatedVisitedPlacesDto.empty(),
+    );
+  }
+
+  /// 获取显示用的城市名称（优先英文名）
+  String get displayName => cityNameEn ?? cityName;
+
+  /// 格式化的停留时长
+  String get formattedDuration {
+    if (totalDurationDays == 0) return '当天';
+    if (totalDurationDays == 1) return '1 天';
+    return '$totalDurationDays 天';
+  }
+
+  /// 格式化的旅行日期范围
+  String get formattedDateRange {
+    if (travelDate == null) return '';
+    final start = _formatDate(travelDate!);
+    if (lastVisitDate == null || lastVisitDate == travelDate) {
+      return start;
+    }
+    return '$start - ${_formatDate(lastVisitDate!)}';
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.year}.${date.month.toString().padLeft(2, '0')}.${date.day.toString().padLeft(2, '0')}';
+  }
+}
+
+/// 城市天气 DTO
+/// 对应后端 CityWeatherDto
+class CityWeatherDto {
+  /// 当前温度（摄氏度）
+  final double temperature;
+
+  /// 体感温度
+  final double? feelsLike;
+
+  /// 天气状况描述
+  final String condition;
+
+  /// 天气图标代码
+  final String icon;
+
+  /// 湿度 (%)
+  final int? humidity;
+
+  /// 风速
+  final String? windSpeed;
+
+  CityWeatherDto({
+    required this.temperature,
+    this.feelsLike,
+    required this.condition,
+    required this.icon,
+    this.humidity,
+    this.windSpeed,
+  });
+
+  factory CityWeatherDto.fromJson(Map<String, dynamic> json) {
+    return CityWeatherDto(
+      temperature: (json['temperature'] as num?)?.toDouble() ?? 0.0,
+      feelsLike: (json['feelsLike'] as num?)?.toDouble(),
+      condition: json['condition'] as String? ?? '',
+      icon: json['icon'] as String? ?? '',
+      humidity: json['humidity'] as int?,
+      windSpeed: json['windSpeed'] as String?,
+    );
+  }
+
+  /// 格式化的温度显示
+  String get formattedTemperature => '${temperature.round()}°C';
+
+  /// 格式化的体感温度显示
+  String? get formattedFeelsLike => feelsLike != null ? '${feelsLike!.round()}°C' : null;
+}
+
+/// 分页访问地点列表 DTO
+/// 对应后端 PaginatedVisitedPlacesDto
+class PaginatedVisitedPlacesDto {
+  /// 访问地点列表
+  final List<VisitedPlaceApiDto> items;
+
+  /// 总数量
+  final int totalCount;
+
+  /// 当前页码
+  final int page;
+
+  /// 每页数量
+  final int pageSize;
+
+  PaginatedVisitedPlacesDto({
+    required this.items,
+    required this.totalCount,
+    required this.page,
+    required this.pageSize,
+  });
+
+  factory PaginatedVisitedPlacesDto.fromJson(Map<String, dynamic> json) {
+    return PaginatedVisitedPlacesDto(
+      items: (json['items'] as List<dynamic>?)
+              ?.map((e) => VisitedPlaceApiDto.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+      totalCount: json['totalCount'] as int? ?? 0,
+      page: json['page'] as int? ?? 1,
+      pageSize: json['pageSize'] as int? ?? 20,
+    );
+  }
+
+  /// 创建空的分页结果
+  factory PaginatedVisitedPlacesDto.empty() {
+    return PaginatedVisitedPlacesDto(
+      items: [],
+      totalCount: 0,
+      page: 1,
+      pageSize: 20,
+    );
+  }
+
+  /// 是否有更多数据
+  bool get hasMore => page * pageSize < totalCount;
+
+  /// 是否为空
+  bool get isEmpty => items.isEmpty;
+
+  /// 是否有数据
+  bool get isNotEmpty => items.isNotEmpty;
 }

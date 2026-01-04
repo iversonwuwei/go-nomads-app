@@ -1,4 +1,4 @@
-import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -8,69 +8,532 @@ import '../../domain/entities/visited_place.dart';
 import '../controllers/visited_places_controller.dart';
 
 /// 访问地点列表页面
-/// 展示某次旅行中用户停留超过40分钟的所有地点
+/// 两个卡片布局：城市信息卡片 + 访问地点列表卡片
 class VisitedPlacesPage extends GetView<VisitedPlacesController> {
   const VisitedPlacesPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: Obx(() => Text(
-              controller.tripTitle.value.isNotEmpty
-                  ? controller.tripTitle.value
-                  : 'Visited Places',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: theme.colorScheme.onSurface,
-              ),
-            )),
-        backgroundColor: theme.scaffoldBackgroundColor,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
-          onPressed: () => Get.back(),
-        ),
-        actions: [
-          Obx(() {
-            if (controller.places.isEmpty) return const SizedBox();
-            return IconButton(
-              icon: Icon(FontAwesomeIcons.map, color: theme.colorScheme.primary, size: 20),
-              onPressed: () {
-                // TODO: 打开地图视图
-                Get.snackbar(
-                  'Coming Soon',
-                  'Map view will be available soon',
-                  snackPosition: SnackPosition.BOTTOM,
-                );
-              },
-            );
-          }),
-        ],
-      ),
+      backgroundColor: theme.colorScheme.surfaceContainerLowest,
+      appBar: _buildAppBar(theme),
       body: Obx(() {
-        if (controller.isLoading.value) {
+        if (controller.isLoading.value && controller.isCityLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (controller.error.value.isNotEmpty) {
+        if (controller.error.value.isNotEmpty && controller.places.isEmpty) {
           return _buildErrorView(context, theme);
         }
 
-        if (controller.places.isEmpty) {
-          return _buildEmptyView(context, theme);
-        }
+        return RefreshIndicator(
+          onRefresh: controller.refresh,
+          child: CustomScrollView(
+            slivers: [
+              // 城市信息卡片
+              SliverToBoxAdapter(
+                child: _buildCityInfoCard(context, theme),
+              ),
 
-        return _buildPlacesList(context, theme);
+              // 间距
+              const SliverToBoxAdapter(
+                child: SizedBox(height: 16),
+              ),
+
+              // 访问地点列表卡片标题
+              SliverToBoxAdapter(
+                child: _buildVisitedPlacesHeader(theme),
+              ),
+
+              // 访问地点列表（无限滚动）
+              _buildPlacesListSliver(context, theme),
+
+              // 加载更多指示器
+              _buildLoadMoreIndicator(theme),
+
+              // 底部间距
+              const SliverToBoxAdapter(
+                child: SizedBox(height: 24),
+              ),
+            ],
+          ),
+        );
       }),
     );
   }
+
+  // ==================== AppBar ====================
+
+  PreferredSizeWidget _buildAppBar(ThemeData theme) {
+    return AppBar(
+      backgroundColor: theme.colorScheme.surfaceContainerLowest,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      leading: IconButton(
+        icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
+        onPressed: () => Get.back(),
+      ),
+      title: Obx(() => Text(
+            controller.tripTitle.value.isNotEmpty ? controller.tripTitle.value : 'Visited Places',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurface,
+            ),
+          )),
+      actions: [
+        if (controller.places.isNotEmpty)
+          IconButton(
+            icon: Icon(FontAwesomeIcons.map, size: 18, color: theme.colorScheme.onSurface),
+            onPressed: () {
+              Get.snackbar(
+                'Coming Soon',
+                'Map view will be available soon',
+                snackPosition: SnackPosition.BOTTOM,
+              );
+            },
+          ),
+      ],
+    );
+  }
+
+  // ==================== 城市信息卡片 ====================
+
+  Widget _buildCityInfoCard(BuildContext context, ThemeData theme) {
+    return Obx(() {
+      final citySummary = controller.citySummary.value;
+
+      return Container(
+        margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: theme.colorScheme.shadow.withValues(alpha: 0.08),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 城市图片
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              child: SizedBox(
+                height: 160,
+                width: double.infinity,
+                child: _buildCityImage(theme),
+              ),
+            ),
+
+            // 城市信息内容
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 城市名称和国家
+                  Text(
+                    controller.tripTitle.value.isNotEmpty ? controller.tripTitle.value : 'Unknown City',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // 城市实时信息行（天气、评分、花费、Coworking）
+                  if (citySummary != null || controller.isCityLoading.value) _buildCityMetrics(theme),
+
+                  // 旅行日期和停留时长
+                  if (controller.travelDate.value != null || controller.totalDurationDays.value > 0) ...[
+                    const SizedBox(height: 12),
+                    _buildTravelDateInfo(theme),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildCityImage(ThemeData theme) {
+    final imageUrl = controller.cityImageUrl.value;
+
+    if (imageUrl.isNotEmpty) {
+      return CachedNetworkImage(
+        imageUrl: imageUrl,
+        fit: BoxFit.cover,
+        placeholder: (context, url) => Container(
+          color: theme.colorScheme.surfaceContainerHighest,
+          child: Center(
+            child: Icon(
+              FontAwesomeIcons.city,
+              size: 48,
+              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
+            ),
+          ),
+        ),
+        errorWidget: (context, url, error) => Container(
+          color: theme.colorScheme.surfaceContainerHighest,
+          child: Center(
+            child: Icon(
+              FontAwesomeIcons.city,
+              size: 48,
+              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            theme.colorScheme.primary.withValues(alpha: 0.8),
+            theme.colorScheme.secondary.withValues(alpha: 0.6),
+          ],
+        ),
+      ),
+      child: Center(
+        child: Icon(
+          FontAwesomeIcons.city,
+          size: 48,
+          color: Colors.white.withValues(alpha: 0.3),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCityMetrics(ThemeData theme) {
+    if (controller.isCityLoading.value && controller.citySummary.value == null) {
+      return const Center(
+        child: SizedBox(
+          height: 20,
+          width: 20,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      );
+    }
+
+    final weather = controller.weather.value;
+    final overallScore = controller.overallScore.value;
+    final averageCost = controller.averageMonthlyCost.value;
+    final coworkingCount = controller.coworkingSpaceCount.value;
+
+    return Wrap(
+      spacing: 12,
+      runSpacing: 8,
+      children: [
+        // 温度
+        if (weather != null)
+          _buildMetricChip(
+            theme,
+            icon: FontAwesomeIcons.temperatureHalf,
+            value: weather.formattedTemperature,
+            iconColor: Colors.orange,
+          ),
+
+        // 天气
+        if (weather != null && weather.condition.isNotEmpty)
+          _buildMetricChip(
+            theme,
+            icon: _getWeatherIcon(weather.condition),
+            value: weather.condition,
+            iconColor: Colors.blue,
+          ),
+
+        // 评分
+        if (overallScore != null)
+          _buildMetricChip(
+            theme,
+            icon: FontAwesomeIcons.star,
+            value: overallScore.toStringAsFixed(1),
+            iconColor: Colors.amber,
+          ),
+
+        // 月均花费
+        if (averageCost != null)
+          _buildMetricChip(
+            theme,
+            icon: FontAwesomeIcons.dollarSign,
+            value: '\$${averageCost.round()}/mo',
+            iconColor: Colors.green,
+          ),
+
+        // 共享办公数量
+        if (coworkingCount > 0)
+          _buildMetricChip(
+            theme,
+            icon: FontAwesomeIcons.laptop,
+            value: '$coworkingCount coworking',
+            iconColor: Colors.purple,
+          ),
+      ],
+    );
+  }
+
+  Widget _buildMetricChip(
+    ThemeData theme, {
+    required IconData icon,
+    required String value,
+    required Color iconColor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: iconColor),
+          const SizedBox(width: 6),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: theme.colorScheme.onSurface,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTravelDateInfo(ThemeData theme) {
+    final travelDate = controller.travelDate.value;
+    final lastVisitDate = controller.lastVisitDate.value;
+    final durationDays = controller.totalDurationDays.value;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            FontAwesomeIcons.calendar,
+            size: 14,
+            color: theme.colorScheme.primary,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              _formatTravelDates(travelDate, lastVisitDate),
+              style: TextStyle(
+                fontSize: 13,
+                color: theme.colorScheme.onSurface,
+              ),
+            ),
+          ),
+          if (durationDays > 0)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                '$durationDays days',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // ==================== 访问地点列表卡片 ====================
+
+  Widget _buildVisitedPlacesHeader(ThemeData theme) {
+    return Obx(() {
+      if (controller.places.isEmpty && !controller.isLoading.value) {
+        return _buildEmptyView(theme);
+      }
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 列表标题行
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Visited Places',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${controller.totalCount.value} places',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 8),
+
+            // 统计摘要
+            Row(
+              children: [
+                Icon(
+                  FontAwesomeIcons.clock,
+                  size: 12,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  controller.formattedTotalDuration,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Icon(
+                  FontAwesomeIcons.solidStar,
+                  size: 12,
+                  color: const Color(0xFFF59E0B),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '${controller.highlightCount.value} highlights',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 12),
+          ],
+        ),
+      );
+    });
+  }
+
+  IconData _getWeatherIcon(String weather) {
+    final lower = weather.toLowerCase();
+    if (lower.contains('sun') || lower.contains('clear')) return FontAwesomeIcons.sun;
+    if (lower.contains('cloud')) return FontAwesomeIcons.cloud;
+    if (lower.contains('rain')) return FontAwesomeIcons.cloudRain;
+    if (lower.contains('snow')) return FontAwesomeIcons.snowflake;
+    if (lower.contains('thunder') || lower.contains('storm')) return FontAwesomeIcons.cloudBolt;
+    if (lower.contains('fog') || lower.contains('mist')) return FontAwesomeIcons.smog;
+    return FontAwesomeIcons.cloudSun;
+  }
+
+  String _formatTravelDates(DateTime? startDate, DateTime? endDate) {
+    final dateFormat = DateFormat('MMM d, yyyy');
+
+    if (startDate == null) {
+      return 'No date info';
+    }
+
+    final start = dateFormat.format(startDate);
+
+    if (endDate != null) {
+      final end = dateFormat.format(endDate);
+      // 如果是同一天
+      if (startDate.year == endDate.year && startDate.month == endDate.month && startDate.day == endDate.day) {
+        return start;
+      }
+      return '$start - $end';
+    }
+
+    return '$start - Present';
+  }
+
+  // ==================== 访问地点列表（无限滚动）====================
+
+  Widget _buildPlacesListSliver(BuildContext context, ThemeData theme) {
+    return Obx(() {
+      if (controller.places.isEmpty) {
+        return const SliverToBoxAdapter(child: SizedBox.shrink());
+      }
+
+      return SliverPadding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        sliver: SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              // 当滚动到接近底部时，触发加载更多
+              if (index == controller.places.length - 3 && controller.hasMore.value) {
+                controller.loadMore();
+              }
+
+              final place = controller.places[index];
+              return _buildPlaceCard(context, theme, place, index);
+            },
+            childCount: controller.places.length,
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _buildLoadMoreIndicator(ThemeData theme) {
+    return Obx(() {
+      if (!controller.isLoadingMore.value) {
+        return const SliverToBoxAdapter(child: SizedBox.shrink());
+      }
+
+      return SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Center(
+            child: SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          ),
+        ),
+      );
+    });
+  }
+
+  // ==================== 错误和空状态视图 ====================
 
   Widget _buildErrorView(BuildContext context, ThemeData theme) {
     return Center(
@@ -102,174 +565,46 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
     );
   }
 
-  Widget _buildEmptyView(BuildContext context, ThemeData theme) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHighest,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                FontAwesomeIcons.locationDot,
-                size: 48,
-                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'No visited places yet',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: theme.colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Places where you stayed for more than 40 minutes will appear here',
-              style: TextStyle(
-                fontSize: 14,
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlacesList(BuildContext context, ThemeData theme) {
-    return CustomScrollView(
-      slivers: [
-        // 统计信息头部
-        SliverToBoxAdapter(
-          child: _buildStatsHeader(context, theme),
-        ),
-
-        // 地点列表
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          sliver: SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final place = controller.places[index];
-                return _buildPlaceCard(context, theme, place, index);
-              },
-              childCount: controller.places.length,
-            ),
-          ),
-        ),
-
-        // 底部间距
-        const SliverToBoxAdapter(
-          child: SizedBox(height: 24),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatsHeader(BuildContext context, ThemeData theme) {
+  Widget _buildEmptyView(ThemeData theme) {
     return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              theme.colorScheme.primary.withValues(alpha: 0.08),
-              theme.colorScheme.primary.withValues(alpha: 0.04),
-            ],
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerHighest,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              FontAwesomeIcons.locationDot,
+              size: 40,
+              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+            ),
           ),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: theme.colorScheme.primary.withValues(alpha: 0.2),
-            width: 1,
+          const SizedBox(height: 20),
+          Text(
+            'No visited places yet',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurface,
+            ),
           ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildStatItem(
-              theme,
-              icon: FontAwesomeIcons.locationDot,
-              value: '${controller.places.length}',
-              label: 'Places',
+          const SizedBox(height: 8),
+          Text(
+            'Places where you stayed for more than 40 minutes will appear here',
+            style: TextStyle(
+              fontSize: 13,
+              color: theme.colorScheme.onSurfaceVariant,
             ),
-            Container(
-              width: 1,
-              height: 40,
-              color: theme.colorScheme.outlineVariant,
-            ),
-            _buildStatItem(
-              theme,
-              icon: FontAwesomeIcons.clock,
-              value: _formatTotalDuration(),
-              label: 'Total Time',
-            ),
-            Container(
-              width: 1,
-              height: 40,
-              color: theme.colorScheme.outlineVariant,
-            ),
-            _buildStatItem(
-              theme,
-              icon: FontAwesomeIcons.star,
-              value: '${controller.places.where((p) => p.isHighlight).length}',
-              label: 'Highlights',
-            ),
-          ],
-        ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
-  }
-
-  Widget _buildStatItem(
-    ThemeData theme, {
-    required IconData icon,
-    required String value,
-    required String label,
-  }) {
-    return Column(
-      children: [
-        Icon(icon, size: 18, color: theme.colorScheme.primary),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: theme.colorScheme.onSurface,
-          ),
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-      ],
-    );
-  }
-
-  String _formatTotalDuration() {
-    final totalMinutes = controller.places.fold<int>(0, (sum, p) => sum + p.durationMinutes);
-    final hours = totalMinutes ~/ 60;
-    final minutes = totalMinutes % 60;
-    if (hours > 0) {
-      return minutes > 0 ? '${hours}h ${minutes}m' : '${hours}h';
-    }
-    return '${minutes}m';
   }
 
   Widget _buildPlaceCard(BuildContext context, ThemeData theme, VisitedPlace place, int index) {
@@ -290,7 +625,7 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: () => _showPlaceDetails(context, theme, place),
+            onTap: () => _showPlaceDetails(context, theme, place, index),
             borderRadius: BorderRadius.circular(16),
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -303,9 +638,7 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
                         width: 12,
                         height: 12,
                         decoration: BoxDecoration(
-                          color: place.isHighlight
-                              ? const Color(0xFFF59E0B)
-                              : theme.colorScheme.primary,
+                          color: place.isHighlight ? const Color(0xFFF59E0B) : theme.colorScheme.primary,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -486,7 +819,7 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
     }
   }
 
-  void _showPlaceDetails(BuildContext context, ThemeData theme, VisitedPlace place) {
+  void _showPlaceDetails(BuildContext context, ThemeData theme, VisitedPlace place, int index) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -495,7 +828,7 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
         place: place,
         theme: theme,
         onToggleHighlight: () {
-          controller.toggleHighlight(place);
+          controller.toggleHighlightAtIndex(index);
           Navigator.pop(context);
         },
       ),
