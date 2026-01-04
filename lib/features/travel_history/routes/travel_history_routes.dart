@@ -44,6 +44,7 @@ class VisitedPlacesBinding extends Bindings {
     }
     Get.put<VisitedPlacesController>(VisitedPlacesController(
       travelHistoryId: args?['travelHistoryId'] ?? '',
+      cityId: args?['cityId'],
       cityName: args?['cityName'],
       countryName: args?['countryName'],
     ));

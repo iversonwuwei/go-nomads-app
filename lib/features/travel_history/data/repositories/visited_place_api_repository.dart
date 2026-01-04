@@ -13,7 +13,7 @@ class VisitedPlaceApiRepository extends BaseRepository {
   final Dio _dio;
   final TokenStorageService _tokenService;
 
-  static const String _basePath = '/api/v1/visited-places';
+  static const String _basePath = '/visited-places';
 
   VisitedPlaceApiRepository({
     required Dio dio,
@@ -21,7 +21,66 @@ class VisitedPlaceApiRepository extends BaseRepository {
   })  : _dio = dio,
         _tokenService = tokenService;
 
-  /// 获取旅行的访问地点列表
+  /// 获取旅行的访问地点列表（分页）
+  Future<Result<PaginatedResult<VisitedPlaceApiDto>>> getByTravelHistoryIdPaginated(
+    String travelHistoryId, {
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    return execute(() async {
+      final token = await _tokenService.getAccessToken();
+
+      final queryParams = <String, dynamic>{
+        'page': page.toString(),
+        'pageSize': pageSize.toString(),
+      };
+
+      final url = '${ApiConfig.currentApiBaseUrl}$_basePath/by-travel-history/$travelHistoryId';
+      log('🔗 [VisitedPlaceApi] GET $url');
+      log('🔗 [VisitedPlaceApi] Query: $queryParams');
+
+      final response = await _dio.get(
+        url,
+        queryParameters: queryParams,
+        options: Options(
+          headers: {
+            if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      if (response.data['success'] == true && response.data['data'] != null) {
+        final data = response.data['data'];
+
+        // 支持两种响应格式：分页格式和列表格式
+        if (data is List) {
+          // 旧的列表格式（向后兼容）
+          final items = data.map((e) => VisitedPlaceApiDto.fromJson(e as Map<String, dynamic>)).toList();
+          return PaginatedResult(
+            items: items,
+            totalCount: items.length,
+            page: page,
+            pageSize: pageSize,
+          );
+        } else {
+          // 新的分页格式
+          final items = (data['items'] as List<dynamic>)
+              .map((e) => VisitedPlaceApiDto.fromJson(e as Map<String, dynamic>))
+              .toList();
+          return PaginatedResult(
+            items: items,
+            totalCount: data['totalCount'] as int? ?? items.length,
+            page: data['page'] as int? ?? page,
+            pageSize: data['pageSize'] as int? ?? pageSize,
+          );
+        }
+      }
+
+      throw ServerException('获取访问地点列表失败', code: 'GET_VISITED_PLACES_FAILED');
+    });
+  }
+
+  /// 获取旅行的访问地点列表（全量，保留旧接口兼容）
   Future<Result<List<VisitedPlaceApiDto>>> getByTravelHistoryId(String travelHistoryId) async {
     return execute(() async {
       final token = await _tokenService.getAccessToken();
@@ -36,10 +95,16 @@ class VisitedPlaceApiRepository extends BaseRepository {
       );
 
       if (response.data['success'] == true && response.data['data'] != null) {
-        final items = (response.data['data'] as List<dynamic>)
-            .map((e) => VisitedPlaceApiDto.fromJson(e as Map<String, dynamic>))
-            .toList();
-        return items;
+        final data = response.data['data'];
+
+        // 支持两种响应格式
+        if (data is List) {
+          return data.map((e) => VisitedPlaceApiDto.fromJson(e as Map<String, dynamic>)).toList();
+        } else {
+          return (data['items'] as List<dynamic>)
+              .map((e) => VisitedPlaceApiDto.fromJson(e as Map<String, dynamic>))
+              .toList();
+        }
       }
 
       throw ServerException('获取访问地点列表失败', code: 'GET_VISITED_PLACES_FAILED');
@@ -255,6 +320,98 @@ class VisitedPlaceApiRepository extends BaseRepository {
       }
 
       throw ServerException('获取统计失败', code: 'GET_STATS_FAILED');
+    });
+  }
+
+  /// 获取城市访问摘要（用于 Visited Places 页面）
+  /// 包含：城市信息、天气、评分、花费、共享办公数量、访问地点列表（分页）
+  ///
+  /// [cityId] 城市 ID
+  /// [page] 页码，默认 1
+  /// [pageSize] 每页数量，默认 20
+  Future<Result<VisitedPlacesCitySummaryDto>> getCitySummary(
+    String cityId, {
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    return execute(() async {
+      final token = await _tokenService.getAccessToken();
+
+      final queryParams = <String, dynamic>{
+        'page': page.toString(),
+        'pageSize': pageSize.toString(),
+      };
+
+      final url = '${ApiConfig.currentApiBaseUrl}$_basePath/city-summary/$cityId';
+      log('🏙️ [VisitedPlaceApi] GET $url');
+      log('🏙️ [VisitedPlaceApi] Query: $queryParams');
+
+      final response = await _dio.get(
+        url,
+        queryParameters: queryParams,
+        options: Options(
+          headers: {
+            if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      if (response.data['success'] == true && response.data['data'] != null) {
+        final data = response.data['data'] as Map<String, dynamic>;
+        log('✅ [VisitedPlaceApi] 获取城市访问摘要成功: ${data['cityName']}');
+        return VisitedPlacesCitySummaryDto.fromJson(data);
+      }
+
+      throw ServerException(
+        response.data['message'] as String? ?? '获取城市访问摘要失败',
+        code: 'GET_CITY_SUMMARY_FAILED',
+      );
+    });
+  }
+
+  /// 获取城市访问地点列表（分页加载更多）
+  /// 这是 getCitySummary 的补充方法，用于无限滚动加载更多数据
+  ///
+  /// [cityId] 城市 ID
+  /// [page] 页码
+  /// [pageSize] 每页数量，默认 20
+  Future<Result<PaginatedVisitedPlacesDto>> getCityVisitedPlaces(
+    String cityId, {
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    return execute(() async {
+      final token = await _tokenService.getAccessToken();
+
+      final queryParams = <String, dynamic>{
+        'page': page.toString(),
+        'pageSize': pageSize.toString(),
+      };
+
+      final url = '${ApiConfig.currentApiBaseUrl}$_basePath/city-summary/$cityId';
+      log('📋 [VisitedPlaceApi] GET (load more) $url?page=$page');
+
+      final response = await _dio.get(
+        url,
+        queryParameters: queryParams,
+        options: Options(
+          headers: {
+            if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      if (response.data['success'] == true && response.data['data'] != null) {
+        final data = response.data['data'] as Map<String, dynamic>;
+        final visitedPlacesData = data['visitedPlaces'] as Map<String, dynamic>?;
+
+        if (visitedPlacesData != null) {
+          return PaginatedVisitedPlacesDto.fromJson(visitedPlacesData);
+        }
+        return PaginatedVisitedPlacesDto.empty();
+      }
+
+      throw ServerException('加载更多访问地点失败', code: 'LOAD_MORE_FAILED');
     });
   }
 }
