@@ -213,6 +213,9 @@ class City {
 
   /// Business Logic Methods
 
+  /// 是否有版主
+  bool get hasModerator => moderatorId != null && moderatorId!.isNotEmpty;
+
   /// 获取空气质量等级
   String get airQualityLevel {
     if (airQualityIndex == null) return 'Unknown';

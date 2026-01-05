@@ -619,6 +619,13 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
                             Colors.teal,
                           ),
                         ],
+                        // 版主状态
+                        const SizedBox(width: 8),
+                        _buildInfoChip(
+                          city.hasModerator ? FontAwesomeIcons.userShield : FontAwesomeIcons.userSlash,
+                          city.hasModerator ? 'Mod' : 'No Mod',
+                          city.hasModerator ? Colors.green : Colors.grey,
+                        ),
                       ],
                     ),
                   ),
