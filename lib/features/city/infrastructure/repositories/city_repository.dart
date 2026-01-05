@@ -1,6 +1,5 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/config/api_config.dart';
 import 'package:df_admin_mobile/core/core.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city_detail.dart';
@@ -209,7 +208,7 @@ class CityRepository implements ICityRepository {
   Future<Result<void>> favoriteCity(String cityId) async {
     try {
       await _httpService.post(
-        '${ApiConfig.apiBaseUrl}/user-favorite-cities',
+        '/user-favorite-cities',
         data: {'cityId': cityId},
       );
       return const Success(null);
@@ -223,7 +222,8 @@ class CityRepository implements ICityRepository {
   @override
   Future<Result<void>> unfavoriteCity(String cityId) async {
     try {
-      await _httpService.delete('${ApiConfig.apiBaseUrl}/user-favorite-cities/$cityId');
+      // 使用 POST 方法代替 DELETE，兼容某些不支持 DELETE 方法的网络环境
+      await _httpService.post('/user-favorite-cities/$cityId/remove');
       return const Success(null);
     } on HttpException catch (e) {
       return Failure(_convertHttpException(e));
@@ -235,7 +235,7 @@ class CityRepository implements ICityRepository {
   @override
   Future<Result<bool>> isCityFavorited(String cityId) async {
     try {
-      final response = await _httpService.get('${ApiConfig.apiBaseUrl}/user-favorite-cities/check/$cityId');
+      final response = await _httpService.get('/user-favorite-cities/check/$cityId');
       final data = response.data as Map<String, dynamic>;
       final isFavorited = data['isFavorited'] as bool? ?? false;
       return Success(isFavorited);
@@ -251,7 +251,7 @@ class CityRepository implements ICityRepository {
     try {
       // 使用新的 /details 端点获取完整城市信息
       final response = await _httpService.get(
-        '${ApiConfig.apiBaseUrl}/user-favorite-cities/details',
+        '/user-favorite-cities/details',
         queryParameters: {'page': 1, 'pageSize': 100},
       );
 
@@ -272,7 +272,7 @@ class CityRepository implements ICityRepository {
   Future<Result<List<String>>> getUserFavoriteCityIds() async {
     try {
       // 使用正确的 user-favorite-cities API 路径
-      final response = await _httpService.get('${ApiConfig.apiBaseUrl}/user-favorite-cities/ids');
+      final response = await _httpService.get('/user-favorite-cities/ids');
 
       final ids = (response.data as List<dynamic>?)?.map((id) => id.toString()).toList() ?? [];
 
