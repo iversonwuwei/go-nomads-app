@@ -191,7 +191,7 @@ class UserRepository extends BaseRepository implements IUserRepository {
       }
 
       final response = await _dio.get(
-        '${ApiConfig.apiBaseUrl}/user-favorite-cities/check/$cityId',
+        '${ApiConfig.currentApiBaseUrl}/user-favorite-cities/check/$cityId',
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
         ),
@@ -212,7 +212,7 @@ class UserRepository extends BaseRepository implements IUserRepository {
 
       try {
         await _dio.post(
-          '${ApiConfig.apiBaseUrl}/user-favorite-cities',
+          '${ApiConfig.currentApiBaseUrl}/user-favorite-cities',
           data: {'cityId': cityId},
           options: Options(
             headers: {'Authorization': 'Bearer $token'},
@@ -238,8 +238,9 @@ class UserRepository extends BaseRepository implements IUserRepository {
         throw UnauthorizedException('未登录', code: 'NOT_AUTHENTICATED');
       }
 
-      await _dio.delete(
-        '${ApiConfig.apiBaseUrl}/user-favorite-cities/$cityId',
+      // 使用 POST 方法代替 DELETE，兼容某些不支持 DELETE 方法的网络环境
+      await _dio.post(
+        '${ApiConfig.currentApiBaseUrl}/user-favorite-cities/$cityId/remove',
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
         ),
@@ -277,7 +278,7 @@ class UserRepository extends BaseRepository implements IUserRepository {
       }
 
       final response = await _dio.get(
-        '${ApiConfig.apiBaseUrl}/user-favorite-cities/ids',
+        '${ApiConfig.currentApiBaseUrl}/user-favorite-cities/ids',
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
         ),
