@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/controllers/add_review_page_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
@@ -8,8 +9,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-
-import 'package:df_admin_mobile/controllers/add_review_page_controller.dart';
 
 /// 添加 Review 页面 - 独立页面形式
 class AddReviewPage extends StatelessWidget {
@@ -350,24 +349,52 @@ class AddReviewPage extends StatelessWidget {
           ],
         ),
         SizedBox(height: 12.h),
-        Obx(() => Wrap(
-              spacing: 12.w,
-              runSpacing: 12.h,
-              children: [
-                ...controller.selectedImages.asMap().entries.map((entry) {
-                  return _buildImageThumbnail(entry.value, entry.key, controller);
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final availableWidth = constraints.maxWidth;
+            
+            return Obx(() {
+              // 如果没有图片，显示占满宽度的添加按钮
+              if (controller.selectedImages.isEmpty) {
+                return _buildFullWidthAddButton(context, controller, l10n, availableWidth);
+              }
+              
+              // 有图片时，固定每行显示5个图片
+              const itemCount = 5;
+              const spacing = 8.0;
+              final itemWidth = (availableWidth - (itemCount - 1) * spacing) / itemCount;
+              
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: List.generate(itemCount, (index) {
+                  if (index < controller.selectedImages.length) {
+                    // 显示已选择的图片
+                    return _buildImageThumbnail(
+                      controller.selectedImages[index], 
+                      index, 
+                      controller, 
+                      itemWidth,
+                    );
+                  } else if (index == controller.selectedImages.length && controller.selectedImages.length < 5) {
+                    // 显示添加按钮
+                    return _buildAddImageButton(context, controller, l10n, itemWidth);
+                  } else {
+                    // 显示占位框
+                    return _buildPlaceholder(itemWidth);
+                  }
                 }),
-                if (controller.selectedImages.length < 5) _buildAddImageButton(context, controller, l10n),
-              ],
-            )),
+              );
+            });
+          },
+        ),
       ],
     );
   }
 
-  Widget _buildImageThumbnail(XFile image, int index, AddReviewPageController controller) {
+  Widget _buildImageThumbnail(XFile image, int index, AddReviewPageController controller, double size) {
     return Container(
-      width: 100.w,
-      height: 100.w,
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: AppColors.borderLight, width: 1.w),
@@ -376,7 +403,7 @@ class AddReviewPage extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(12.r),
-            child: Image.file(File(image.path), width: 100.w, height: 100.w, fit: BoxFit.cover),
+            child: Image.file(File(image.path), width: size, height: size, fit: BoxFit.cover),
           ),
           Positioned(
             top: 4.h,
@@ -395,15 +422,15 @@ class AddReviewPage extends StatelessWidget {
     );
   }
 
-  Widget _buildAddImageButton(BuildContext context, AddReviewPageController controller, AppLocalizations l10n) {
+  Widget _buildAddImageButton(BuildContext context, AddReviewPageController controller, AppLocalizations l10n, double size) {
     return GestureDetector(
       onTap: () => controller.pickImages(
         errorTitle: l10n.error,
         failedToPickImages: l10n.failedToPickImages,
       ),
       child: Container(
-        width: 100.w,
-        height: 100.w,
+        width: size,
+        height: size,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12.r),
@@ -412,10 +439,49 @@ class AddReviewPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(FontAwesomeIcons.photoFilm, color: const Color(0xFFFF4458), size: 32.sp),
-            SizedBox(height: 4.h),
+            Icon(FontAwesomeIcons.photoFilm, color: const Color(0xFFFF4458), size: 24.sp),
+            SizedBox(height: 2.h),
             Text(l10n.addPhoto,
-                style: TextStyle(fontSize: 12.sp, color: const Color(0xFFFF4458), fontWeight: FontWeight.w600)),
+                style: TextStyle(fontSize: 10.sp, color: const Color(0xFFFF4458), fontWeight: FontWeight.w600)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholder(double size) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: AppColors.borderLight, width: 1.w, style: BorderStyle.solid),
+      ),
+    );
+  }
+
+  Widget _buildFullWidthAddButton(BuildContext context, AddReviewPageController controller, AppLocalizations l10n, double width) {
+    return GestureDetector(
+      onTap: () => controller.pickImages(
+        errorTitle: l10n.error,
+        failedToPickImages: l10n.failedToPickImages,
+      ),
+      child: Container(
+        width: width,
+        height: 120.h,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: const Color(0xFFFF4458), width: 2.w, style: BorderStyle.solid),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(FontAwesomeIcons.photoFilm, color: const Color(0xFFFF4458), size: 40.sp),
+            SizedBox(height: 8.h),
+            Text(l10n.addPhoto,
+                style: TextStyle(fontSize: 14.sp, color: const Color(0xFFFF4458), fontWeight: FontWeight.w600)),
           ],
         ),
       ),

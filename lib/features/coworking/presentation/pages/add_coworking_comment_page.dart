@@ -468,27 +468,44 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
 
   /// 构建图片网格
   Widget _buildImageGrid() {
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      children: [
-        // 已选择的图片
-        ..._selectedImages.asMap().entries.map((entry) {
-          final index = entry.key;
-          final image = entry.value;
-          return _buildImageItem(image, index);
-        }),
-        // 添加图片按钮
-        if (_selectedImages.length < 5) _buildAddImageButton(),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableWidth = constraints.maxWidth;
+
+        // 如果没有图片，显示占满宽度的添加按钮
+        if (_selectedImages.isEmpty) {
+          return _buildFullWidthAddButton(availableWidth);
+        }
+
+        // 有图片时，固定每行显示5个图片
+        const itemCount = 5;
+        const spacing = 8.0;
+        final itemSize = (availableWidth - (itemCount - 1) * spacing) / itemCount;
+
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: List.generate(itemCount, (index) {
+            if (index < _selectedImages.length) {
+              // 显示已选择的图片
+              return _buildImageItem(_selectedImages[index], index, itemSize);
+            } else if (index == _selectedImages.length && _selectedImages.length < 5) {
+              // 显示添加按钮
+              return _buildAddImageButton(itemSize);
+            } else {
+              // 显示占位框
+              return _buildPlaceholder(itemSize);
+            }
+          }),
+        );
+      },
     );
   }
 
   /// 构建单个图片项
-  Widget _buildImageItem(XFile image, int index) {
+  Widget _buildImageItem(XFile image, int index, double size) {
     return Container(
-      width: 100,
-      height: 100,
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey[300]!),
@@ -500,8 +517,8 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
             child: Image.file(
               File(image.path),
               fit: BoxFit.cover,
-              width: 100,
-              height: 100,
+              width: size,
+              height: size,
             ),
           ),
           if (!_isSubmitting)
@@ -530,12 +547,12 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
   }
 
   /// 构建添加图片按钮
-  Widget _buildAddImageButton() {
+  Widget _buildAddImageButton(double size) {
     return GestureDetector(
       onTap: _isSubmitting ? null : _pickImages,
       child: Container(
-        width: 100,
-        height: 100,
+        width: size,
+        height: size,
         decoration: BoxDecoration(
           color: Colors.grey[100],
           borderRadius: BorderRadius.circular(12),
@@ -549,14 +566,69 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
           children: [
             Icon(
               FontAwesomeIcons.photoFilm,
-              size: 32,
+              size: 24,
               color: Colors.grey[600],
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
+            Text(
+              '添加',
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 构建占位框
+  Widget _buildPlaceholder(double size) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.grey[200]!,
+          style: BorderStyle.solid,
+        ),
+      ),
+    );
+  }
+
+  /// 构建占满宽度的添加按钮（无图片时显示）
+  Widget _buildFullWidthAddButton(double width) {
+    return GestureDetector(
+      onTap: _isSubmitting ? null : _pickImages,
+      child: Container(
+        width: width,
+        height: 120,
+        decoration: BoxDecoration(
+          color: Colors.grey[50],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: Colors.grey[300]!,
+            width: 2,
+            style: BorderStyle.solid,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              FontAwesomeIcons.photoFilm,
+              size: 40,
+              color: Colors.grey[600],
+            ),
+            const SizedBox(height: 8),
             Text(
               '添加图片',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
                 color: Colors.grey[600],
               ),
             ),
