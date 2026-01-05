@@ -1,6 +1,6 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/controllers/nomads_login_page_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -15,20 +15,18 @@ class NomadsLoginPage extends StatelessWidget {
 
   // Nomads.com 品牌红色 (用于外部引用)
   static const Color nomadsRed = NomadsLoginPageController.nomadsRed;
+  static const String _controllerTag = 'nomads_login_controller';
 
   @override
   Widget build(BuildContext context) {
-    // 生成唯一 tag
-    final uniqueTag = 'nomads_login_${DateTime.now().millisecondsSinceEpoch}';
-
-    // 注册 controller
-    final controller = Get.put(NomadsLoginPageController(), tag: uniqueTag);
+    // 注册 controller（固定 tag，避免键盘弹出导致 MediaQuery 变化触发重建时创建新 controller 而丢失焦点）
+    final controller = Get.put(NomadsLoginPageController(), tag: _controllerTag);
 
     return PopScope(
       canPop: true,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) {
-          Get.delete<NomadsLoginPageController>(tag: uniqueTag);
+          Get.delete<NomadsLoginPageController>(tag: _controllerTag);
         }
       },
       child: Scaffold(
@@ -60,16 +58,16 @@ class NomadsLoginPage extends StatelessWidget {
                     // 登录表单 (根据模式切换)
                     Obx(() {
                       if (controller.loginMode.value == LoginMode.phone) {
-                        return PhoneLoginForm(controllerTag: uniqueTag);
+                        return PhoneLoginForm(controllerTag: _controllerTag);
                       } else {
-                        return EmailLoginForm(controllerTag: uniqueTag);
+                        return EmailLoginForm(controllerTag: _controllerTag);
                       }
                     }),
 
                     const SizedBox(height: 24),
 
                     // 社交登录
-                    SocialLoginSection(controllerTag: uniqueTag),
+                    SocialLoginSection(controllerTag: _controllerTag),
 
                     const SizedBox(height: 32),
 
