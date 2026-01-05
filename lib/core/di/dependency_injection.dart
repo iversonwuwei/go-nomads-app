@@ -513,6 +513,7 @@ class DependencyInjection {
       () => CityDetailStateController(
         getCityByIdUseCase: Get.find<GetCityByIdUseCase>(tag: 'city_domain'), // 使用tag获取City domain的UseCase
         toggleCityFavoriteUseCase: Get.find<ToggleCityFavoriteUseCase>(),
+        cityRepository: Get.find<ICityRepository>(),
       ),
       fenix: true, // 允许在删除后重新创建
     );

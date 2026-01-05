@@ -62,20 +62,24 @@ class InnovationListPage extends StatelessWidget {
       return _buildContent(controller, isMobile, controller.displayProjects);
     }
 
+    // 显式访问 projects.length 来确保响应式追踪
+    final projectCount = sc.projects.length;
+    debugPrint('📊 [InnovationListPage] 当前项目数量: $projectCount');
+
     // 首次加载中
-    if (sc.isLoading.value && sc.projects.isEmpty) {
+    if (sc.isLoading.value && projectCount == 0) {
       return const Center(child: CircularProgressIndicator());
     }
 
     // 错误状态
-    if (sc.errorMessage.value != null && sc.projects.isEmpty) {
+    if (sc.errorMessage.value != null && projectCount == 0) {
       return InnovationListErrorState(
         errorMessage: sc.errorMessage.value!,
         onRetry: () => controller.loadProjects(),
       );
     }
 
-    return _buildContent(controller, isMobile, controller.displayProjects);
+    return _buildContent(controller, isMobile, sc.projects.toList());
   }
 
   Widget _buildContent(

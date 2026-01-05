@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'dart:io';
 
 import 'package:add_2_calendar/add_2_calendar.dart';
@@ -728,7 +727,10 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
         });
       }
 
-      Get.back(result: true);
+      // 延迟导航以避免 widget 树重建时的状态问题
+      Future.delayed(const Duration(milliseconds: 100), () {
+        Get.back(result: true);
+      });
     } catch (e) {
       log('❌ 创建 meetup 失败: $e');
     } finally {

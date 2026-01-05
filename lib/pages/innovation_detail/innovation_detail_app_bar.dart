@@ -1,5 +1,6 @@
 import 'package:df_admin_mobile/controllers/innovation_detail_page_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/widgets/admin_delete_button.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -17,8 +18,7 @@ class InnovationDetailAppBar extends StatelessWidget {
     this.onEdit,
   });
 
-  InnovationDetailPageController get _c =>
-      Get.find<InnovationDetailPageController>(tag: controllerTag);
+  InnovationDetailPageController get _c => Get.find<InnovationDetailPageController>(tag: controllerTag);
 
   @override
   Widget build(BuildContext context) {
@@ -30,11 +30,17 @@ class InnovationDetailAppBar extends StatelessWidget {
           backgroundColor: const Color(0xFF8B5CF6),
           leading: const SliverBackButton(),
           actions: [
+            // 管理员删除按钮
+            if (_c.isAdmin.value)
+              AdminDeleteButton(
+                isAdmin: true,
+                entityName: '创新项目',
+                onDelete: () => _c.deleteInnovationProject(),
+              ),
             // 编辑按钮 - 仅当 canEdit 为 true 时显示
             if (_c.project.canEdit)
               IconButton(
-                icon: const Icon(FontAwesomeIcons.penToSquare,
-                    color: Colors.white, size: 20),
+                icon: const Icon(FontAwesomeIcons.penToSquare, color: Colors.white, size: 20),
                 onPressed: onEdit,
                 tooltip: l10n.edit,
               ),

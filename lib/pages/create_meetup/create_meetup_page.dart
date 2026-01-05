@@ -187,50 +187,51 @@ class CreateMeetupPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSubmitButton(BuildContext context, AppLocalizations l10n, CreateMeetupPageController controller, bool isEditMode) {
+  Widget _buildSubmitButton(
+      BuildContext context, AppLocalizations l10n, CreateMeetupPageController controller, bool isEditMode) {
     return Obx(() => SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: ElevatedButton(
-        onPressed: controller.isSubmitting.value || controller.isUploadingImages.value
-            ? null
-            : () => _handleSubmit(context, l10n, controller),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFFF4458),
-          disabledBackgroundColor: Colors.grey.shade300,
-          foregroundColor: Colors.white,
-          elevation: 2,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-        child: controller.isSubmitting.value || controller.isUploadingImages.value
-            ? Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+          width: double.infinity,
+          height: 52,
+          child: ElevatedButton(
+            onPressed: controller.isSubmitting.value || controller.isUploadingImages.value
+                ? null
+                : () => _handleSubmit(context, l10n, controller),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFF4458),
+              disabledBackgroundColor: Colors.grey.shade300,
+              foregroundColor: Colors.white,
+              elevation: 2,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: controller.isSubmitting.value || controller.isUploadingImages.value
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        l10n.submitting,
+                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(isEditMode ? FontAwesomeIcons.penToSquare : FontAwesomeIcons.calendarPlus, size: 18),
+                      const SizedBox(width: 10),
+                      Text(
+                        isEditMode ? l10n.editMeetup : l10n.createMeetup,
+                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 12),
-                  Text(
-                    l10n.submitting,
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-                  ),
-                ],
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(isEditMode ? FontAwesomeIcons.penToSquare : FontAwesomeIcons.calendarPlus, size: 18),
-                  const SizedBox(width: 10),
-                  Text(
-                    isEditMode ? l10n.editMeetup : l10n.createMeetup,
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-                  ),
-                ],
-              ),
-      ),
-    ));
+          ),
+        ));
   }
 
   Future<void> _handleSubmit(BuildContext context, AppLocalizations l10n, CreateMeetupPageController controller) async {
@@ -280,7 +281,10 @@ class CreateMeetupPage extends StatelessWidget {
     // Create meetup
     final success = await controller.createMeetup(context);
     if (success) {
-      Get.back(result: true);
+      // 延迟导航以避免 widget 树重建时的状态问题
+      Future.delayed(const Duration(milliseconds: 100), () {
+        Get.back(result: true);
+      });
     }
   }
 }

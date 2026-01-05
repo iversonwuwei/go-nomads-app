@@ -99,11 +99,14 @@ class AppToast {
     final effectiveDuration = duration ?? const Duration(seconds: 3);
     final content = _buildToastContent(title, message, config);
 
-    if (_tryShowRawSnackbar(content, config, effectiveDuration)) {
-      return;
-    }
-
-    _showFallbackSnackBar(content, config, effectiveDuration);
+    // 使用 addPostFrameCallback 确保在当前帧结束后显示 Toast
+    // 这样可以避免在 widget 重建/销毁过程中访问 context
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_tryShowRawSnackbar(content, config, effectiveDuration)) {
+        return;
+      }
+      _showFallbackSnackBar(content, config, effectiveDuration);
+    });
   }
 
   static bool _tryShowRawSnackbar(

@@ -182,6 +182,11 @@ abstract class IMeetupRepository {
   /// [meetupId] 活动ID
   Future<bool> cancelMeetup(String meetupId);
 
+  /// 删除活动（仅管理员）
+  ///
+  /// [meetupId] 活动ID
+  Future<bool> deleteMeetup(String meetupId);
+
   /// 获取当前用户创建的活动列表
   ///
   /// 返回用户作为组织者创建的所有活动

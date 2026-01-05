@@ -262,6 +262,7 @@ class AddInnovationPageController extends GetxController {
             return true;
           case Failure(:final exception):
             AppToast.error('${l10n.updateFailed}: ${exception.message}');
+            isSubmitting.value = false;
             return false;
         }
       } else {
@@ -287,24 +288,27 @@ class AddInnovationPageController extends GetxController {
         final result = await repository.createProject(request);
         switch (result) {
           case Success(:final data):
+            debugPrint('✅ [AddInnovationPageController] 项目创建成功: ${data.uuid ?? data.id}');
+            debugPrint('📤 [AddInnovationPageController] 发送 DataChangedEvent (created)...');
             DataEventBus.instance.emit(DataChangedEvent(
               entityType: 'innovation_project',
               entityId: data.uuid ?? data.id.toString(),
               version: DateTime.now().millisecondsSinceEpoch,
               changeType: DataChangeType.created,
             ));
+            debugPrint('📤 [AddInnovationPageController] DataChangedEvent 已发送');
             AppToast.success(l10n.projectCreatedSuccessfully);
             return true;
           case Failure(:final exception):
             AppToast.error('${l10n.creationFailed}: ${exception.message}');
+            isSubmitting.value = false;
             return false;
         }
       }
     } catch (e) {
       AppToast.error('${l10n.creationFailed}: $e');
-      return false;
-    } finally {
       isSubmitting.value = false;
+      return false;
     }
   }
 

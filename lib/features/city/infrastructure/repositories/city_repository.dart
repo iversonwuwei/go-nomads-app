@@ -569,4 +569,23 @@ class CityRepository implements ICityRepository {
       return Failure(UnknownException('创建图片生成任务失败: ${e.toString()}'));
     }
   }
+
+  @override
+  Future<Result<bool>> deleteCity(String cityId) async {
+    try {
+      log('🗑️ [CityRepository] 删除城市: cityId=$cityId');
+
+      await _httpService.delete('$_baseUrl/$cityId');
+
+      log('✅ [CityRepository] 城市删除成功: cityId=$cityId');
+      return const Success(true);
+    } on HttpException catch (e) {
+      log('❌ [CityRepository] HTTP异常: statusCode=${e.statusCode}, message=${e.message}');
+      return Failure(_convertHttpException(e));
+    } catch (e, stackTrace) {
+      log('💥 [CityRepository] 未知异常: $e');
+      log('📚 [CityRepository] StackTrace: $stackTrace');
+      return Failure(UnknownException('删除城市失败: ${e.toString()}'));
+    }
+  }
 }

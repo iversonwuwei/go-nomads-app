@@ -228,6 +228,18 @@ class CityDetailController extends GetxController with GetTickerProviderStateMix
   /// 酒店列表 tag
   String get hotelListTag => 'hotel_list_$cityId';
 
+  /// 删除城市（仅管理员）
+  Future<bool> deleteCity() async {
+    try {
+      final cityDetailController = Get.find<CityDetailStateController>();
+      final result = await cityDetailController.deleteCity(cityId);
+      return result;
+    } catch (e) {
+      log('❌ 删除城市失败: $e');
+      return false;
+    }
+  }
+
   @override
   void onClose() {
     pageController.dispose();

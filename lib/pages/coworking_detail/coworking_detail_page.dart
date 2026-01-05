@@ -1,8 +1,8 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/controllers/coworking_detail_page_controller.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/pages/add_coworking/add_coworking_page.dart';
-import 'package:df_admin_mobile/controllers/coworking_detail_page_controller.dart';
 import 'package:df_admin_mobile/pages/coworking_detail/coworking_detail_amenities_hours_section.dart';
 import 'package:df_admin_mobile/pages/coworking_detail/coworking_detail_comments_section.dart';
 import 'package:df_admin_mobile/pages/coworking_detail/coworking_detail_contact_section.dart';
@@ -10,6 +10,7 @@ import 'package:df_admin_mobile/pages/coworking_detail/coworking_detail_image_se
 import 'package:df_admin_mobile/pages/coworking_detail/coworking_detail_info_section.dart';
 import 'package:df_admin_mobile/pages/coworking_detail/coworking_detail_pricing_specs_section.dart';
 import 'package:df_admin_mobile/pages/osm_navigation_page.dart';
+import 'package:df_admin_mobile/widgets/admin_delete_button.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/edit_button.dart';
 import 'package:flutter/material.dart';
@@ -51,6 +52,17 @@ class CoworkingDetailPage extends StatelessWidget {
               iconTheme: const IconThemeData(color: Colors.black87),
               leading: SliverBackButton(onPressed: () => _handleBack(controller)),
               actions: [
+                // 管理员删除按钮
+                Obx(() {
+                  if (controller.isAdmin.value) {
+                    return AdminDeleteButton(
+                      isAdmin: true,
+                      entityName: 'Coworking空间',
+                      onDelete: () => controller.deleteCoworkingSpace(),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                }),
                 // 编辑按钮
                 Obx(() {
                   if (controller.space.value.isOwner) {
@@ -66,13 +78,13 @@ class CoworkingDetailPage extends StatelessWidget {
               ],
               flexibleSpace: FlexibleSpaceBar(
                 title: Obx(() => Text(
-                  controller.space.value.name,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    shadows: [Shadow(color: Colors.black54, blurRadius: 8)],
-                  ),
-                )),
+                      controller.space.value.name,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        shadows: [Shadow(color: Colors.black54, blurRadius: 8)],
+                      ),
+                    )),
                 background: CoworkingDetailImageSection(controllerTag: _controllerTag),
               ),
             ),
@@ -155,13 +167,13 @@ class CoworkingDetailPage extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: Obx(() => ElevatedButton.icon(
-              icon: const Icon(FontAwesomeIcons.globe),
-              label: Text(l10n.visitWebsite),
-              style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
-              onPressed: controller.space.value.contactInfo.hasWebsite
-                  ? () => controller.launchURL(controller.space.value.contactInfo.website)
-                  : null,
-            )),
+                  icon: const Icon(FontAwesomeIcons.globe),
+                  label: Text(l10n.visitWebsite),
+                  style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
+                  onPressed: controller.space.value.contactInfo.hasWebsite
+                      ? () => controller.launchURL(controller.space.value.contactInfo.website)
+                      : null,
+                )),
           ),
         ],
       ),

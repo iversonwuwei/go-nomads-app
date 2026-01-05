@@ -329,13 +329,16 @@ class AddHotelPageController extends GetxController {
         AppToast.error('$failedMsg: ${exception.message}');
       });
 
+      // 只在失败时重置状态，成功时页面会关闭，无需重置
+      if (!success) {
+        isSubmitting.value = false;
+      }
       return success;
     } catch (e) {
       log('❌ 酒店创建异常: $e');
       AppToast.error('$failedMsg: $e');
-      return false;
-    } finally {
       isSubmitting.value = false;
+      return false;
     }
   }
 }

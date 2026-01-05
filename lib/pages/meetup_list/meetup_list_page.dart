@@ -43,8 +43,12 @@ class MeetupListPage extends GetView<MeetupListController> {
         ),
       ),
       actions: [
-        // 筛选按钮
-        _FilterButton(),
+        // 筛选按钮 - 暂时隐藏，保留逻辑代码
+        const Visibility(
+          visible: false,
+          maintainState: true,
+          child: _FilterButton(),
+        ),
         // 创建按钮
         _CreateButton(),
         SizedBox(width: 8.w),
@@ -82,6 +86,8 @@ class MeetupListPage extends GetView<MeetupListController> {
 
 /// 筛选按钮组件
 class _FilterButton extends GetView<MeetupListController> {
+  const _FilterButton();
+
   @override
   Widget build(BuildContext context) {
     return Obx(() => Stack(

@@ -5,6 +5,7 @@ import 'package:df_admin_mobile/core/core.dart';
 import 'package:df_admin_mobile/core/sync/sync.dart';
 import 'package:df_admin_mobile/features/city/application/use_cases/city_use_cases.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
+import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
 import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:get/get.dart';
@@ -19,6 +20,7 @@ class CityDetailStateController extends GetxController {
   // ==================== Dependencies ====================
   final GetCityByIdUseCase _getCityByIdUseCase;
   final ToggleCityFavoriteUseCase _toggleCityFavoriteUseCase;
+  final ICityRepository _cityRepository;
 
   // ==================== Subscriptions ====================
   StreamSubscription<DataChangedEvent>? _dataChangedSubscription;
@@ -27,8 +29,10 @@ class CityDetailStateController extends GetxController {
   CityDetailStateController({
     required GetCityByIdUseCase getCityByIdUseCase,
     required ToggleCityFavoriteUseCase toggleCityFavoriteUseCase,
+    required ICityRepository cityRepository,
   })  : _getCityByIdUseCase = getCityByIdUseCase,
-        _toggleCityFavoriteUseCase = toggleCityFavoriteUseCase;
+        _toggleCityFavoriteUseCase = toggleCityFavoriteUseCase,
+        _cityRepository = cityRepository;
 
   // ==================== State ====================
 
@@ -250,6 +254,32 @@ class CityDetailStateController extends GetxController {
     if (currentCity.value != null) {
       await loadCityDetail(currentCity.value!.id);
     }
+  }
+
+  /// 删除城市（仅管理员）
+  Future<bool> deleteCity(String cityId) async {
+    log('🗑️ [CityDetailStateController] 删除城市: $cityId');
+
+    final result = await _cityRepository.deleteCity(cityId);
+
+    return result.fold(
+      onSuccess: (_) {
+        log('✅ [CityDetailStateController] 城市删除成功');
+        // 通知城市列表刷新
+        DataEventBus.instance.emit(DataChangedEvent(
+          entityType: 'city',
+          entityId: cityId,
+          version: DateTime.now().millisecondsSinceEpoch,
+          changeType: DataChangeType.deleted,
+        ));
+        return true;
+      },
+      onFailure: (error) {
+        log('❌ [CityDetailStateController] 删除城市失败: ${error.message}');
+        AppToast.error('删除失败: ${error.message}');
+        return false;
+      },
+    );
   }
 
   // ==================== Computed Properties ====================
