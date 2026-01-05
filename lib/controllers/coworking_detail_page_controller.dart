@@ -8,6 +8,7 @@ import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_spa
 import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_repository.dart';
 import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_review_repository.dart';
 import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
+import 'package:df_admin_mobile/services/token_storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -23,6 +24,7 @@ class CoworkingDetailPageController extends GetxController {
   final RxBool isLoadingComments = false.obs;
   final RxBool hasDataChanged = false.obs;
   final RxInt currentImageIndex = 0.obs;
+  final RxBool isAdmin = false.obs;
 
   final PageController pageController = PageController();
 
@@ -45,6 +47,48 @@ class CoworkingDetailPageController extends GetxController {
     _setupDataChangeListeners();
     _loadComments();
     _subscribeVerificationUpdates();
+    _checkAdminStatus();
+  }
+
+  /// 检查管理员状态
+  Future<void> _checkAdminStatus() async {
+    final tokenService = TokenStorageService();
+    final token = await tokenService.getAccessToken();
+    if (token != null && token.isNotEmpty) {
+      final role = await tokenService.getUserRole();
+      isAdmin.value = role == 'admin' || role == 'super_admin';
+    }
+  }
+
+  /// 删除 Coworking 空间（仅管理员）
+  Future<bool> deleteCoworkingSpace() async {
+    try {
+      log('🗑️ [CoworkingDetailPageController] 删除 Coworking: ${space.value.id}');
+
+      final repository = Get.find<ICoworkingRepository>();
+      final result = await repository.deleteCoworkingSpace(space.value.id);
+
+      return result.fold(
+        onSuccess: (_) {
+          log('✅ [CoworkingDetailPageController] Coworking 删除成功');
+          // 通知列表刷新
+          DataEventBus.instance.emit(DataChangedEvent(
+            entityType: 'coworking',
+            entityId: space.value.id,
+            version: DateTime.now().millisecondsSinceEpoch,
+            changeType: DataChangeType.deleted,
+          ));
+          return true;
+        },
+        onFailure: (error) {
+          log('❌ [CoworkingDetailPageController] 删除失败: ${error.message}');
+          return false;
+        },
+      );
+    } catch (e) {
+      log('❌ [CoworkingDetailPageController] 删除异常: $e');
+      return false;
+    }
   }
 
   /// 设置数据变更监听器

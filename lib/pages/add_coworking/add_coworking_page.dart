@@ -1,3 +1,4 @@
+import 'package:df_admin_mobile/controllers/add_coworking_page_controller.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/pages/add_coworking/add_coworking_amenities_section.dart';
@@ -7,7 +8,6 @@ import 'package:df_admin_mobile/pages/add_coworking/add_coworking_image_section.
 import 'package:df_admin_mobile/pages/add_coworking/add_coworking_location_section.dart';
 import 'package:df_admin_mobile/pages/add_coworking/add_coworking_pricing_section.dart';
 import 'package:df_admin_mobile/pages/add_coworking/add_coworking_specs_section.dart';
-import 'package:df_admin_mobile/controllers/add_coworking_page_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -102,7 +102,12 @@ class AddCoworkingPage extends StatelessWidget {
                       l10n.saveSuccess,
                       (e) => e,
                     );
-                    if (success) Get.back(result: true);
+                    if (success) {
+                      // 延迟导航以避免 widget 树重建时的状态问题
+                      Future.delayed(const Duration(milliseconds: 100), () {
+                        Get.back(result: true);
+                      });
+                    }
                   },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFFF4458),
@@ -110,7 +115,8 @@ class AddCoworkingPage extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: Text(controller.isSubmitting.value ? l10n.submitting : l10n.submit, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            child: Text(controller.isSubmitting.value ? l10n.submitting : l10n.submit,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           )),
     );
   }

@@ -124,4 +124,10 @@ abstract class ICityRepository implements IRepository {
   /// [cityId] 城市ID
   /// 返回生成结果，包含竖屏封面图和横屏图片的 URL
   Future<Result<Map<String, dynamic>>> generateCityImages(String cityId);
+
+  /// 删除城市（仅管理员）
+  ///
+  /// [cityId] 城市ID
+  /// 返回 true 表示删除成功
+  Future<Result<bool>> deleteCity(String cityId);
 }

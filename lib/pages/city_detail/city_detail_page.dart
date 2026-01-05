@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import '../../features/ai/presentation/controllers/ai_state_controller.dart';
 import '../../features/city/presentation/controllers/city_detail_state_controller.dart';
 import '../../features/membership/presentation/controllers/membership_state_controller.dart';
+import '../../widgets/admin_delete_button.dart';
 import '../../widgets/app_toast.dart';
 import '../add_coworking/add_coworking_page.dart';
 import 'city_detail_controller.dart';
@@ -103,14 +104,23 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
       headerSliverBuilder: (context, innerBoxIsScrolled) {
         return [
           // 自定义 AppBar
-          CityDetailAppBar(
-            controller: controller,
-            cityName: controller.cityName,
-            cityImage: controller.cityImage,
-            overallScore: controller.overallScore,
-            reviewCount: controller.reviewCount,
-            onShare: () => _shareCityInfo(context),
-          ),
+          Obx(() => CityDetailAppBar(
+                controller: controller,
+                cityName: controller.cityName,
+                cityImage: controller.cityImage,
+                overallScore: controller.overallScore,
+                reviewCount: controller.reviewCount,
+                onShare: () => _shareCityInfo(context),
+                actionButton: controller.isAdmin.value
+                    ? AdminDeleteButton(
+                        isAdmin: true,
+                        entityName: '城市',
+                        opacity: controller.appBarOpacity.value,
+                        onDelete: () => controller.deleteCity(),
+                        onDeleteSuccess: () => Get.back(),
+                      )
+                    : null,
+              )),
           // 城市信息摘要卡片
           SliverToBoxAdapter(
             child: CityInfoSummaryCard(

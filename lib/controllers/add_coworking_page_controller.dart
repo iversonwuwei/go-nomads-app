@@ -153,7 +153,8 @@ class AddCoworkingPageController extends GetxController {
 
     if (space.specs.wifiSpeed != null) wifiSpeedController.text = space.specs.wifiSpeed.toString();
     if (space.specs.numberOfDesks != null) numberOfDesksController.text = space.specs.numberOfDesks.toString();
-    if (space.specs.numberOfMeetingRooms != null) numberOfMeetingRoomsController.text = space.specs.numberOfMeetingRooms.toString();
+    if (space.specs.numberOfMeetingRooms != null)
+      numberOfMeetingRoomsController.text = space.specs.numberOfMeetingRooms.toString();
     if (space.specs.capacity != null) capacityController.text = space.specs.capacity.toString();
     noiseLevel.value = space.specs.noiseLevel?.name;
     hasNaturalLight.value = space.specs.hasNaturalLight;
@@ -179,7 +180,8 @@ class AddCoworkingPageController extends GetxController {
     coworkingImageUrls.addAll(space.spaceInfo.images);
   }
 
-  Future<void> _initializeFromCityId(String cityIdParam, {String? fallbackCityName, String? fallbackCountryName}) async {
+  Future<void> _initializeFromCityId(String cityIdParam,
+      {String? fallbackCityName, String? fallbackCountryName}) async {
     try {
       if (locationController.countries.isEmpty) {
         await locationController.loadCountries();
@@ -205,8 +207,11 @@ class AddCoworkingPageController extends GetxController {
           final name = c.name.toLowerCase().trim();
           final nameZh = (c.nameZh ?? '').toLowerCase().trim();
           final searchName = fallbackCountryName.toLowerCase().trim();
-          return displayName == searchName || name == searchName || nameZh == searchName ||
-                 displayName.contains(searchName) || name.contains(searchName);
+          return displayName == searchName ||
+              name == searchName ||
+              nameZh == searchName ||
+              displayName.contains(searchName) ||
+              name.contains(searchName);
         });
         if (country != null) {
           foundCountryId = country.id;
@@ -315,7 +320,8 @@ class AddCoworkingPageController extends GetxController {
   }
 
   // Submit
-  Future<bool> submitCoworking(String selectCityError, String updateSuccessMsg, String submitSuccessMsg, String Function(String) failedMsg) async {
+  Future<bool> submitCoworking(String selectCityError, String updateSuccessMsg, String submitSuccessMsg,
+      String Function(String) failedMsg) async {
     if (!formKey.currentState!.validate()) return false;
 
     if (selectedCityId.value == null || selectedCityId.value!.isEmpty) {
@@ -381,7 +387,8 @@ class AddCoworkingPageController extends GetxController {
         specs: Specifications(
           wifiSpeed: wifiSpeedController.text.isNotEmpty ? double.tryParse(wifiSpeedController.text) : null,
           numberOfDesks: numberOfDesksController.text.isNotEmpty ? int.tryParse(numberOfDesksController.text) : null,
-          numberOfMeetingRooms: numberOfMeetingRoomsController.text.isNotEmpty ? int.tryParse(numberOfMeetingRoomsController.text) : null,
+          numberOfMeetingRooms:
+              numberOfMeetingRoomsController.text.isNotEmpty ? int.tryParse(numberOfMeetingRoomsController.text) : null,
           capacity: capacityController.text.isNotEmpty ? int.tryParse(capacityController.text) : null,
           noiseLevel: NoiseLevel.fromString(noiseLevel.value),
           hasNaturalLight: hasNaturalLight.value,
@@ -417,12 +424,15 @@ class AddCoworkingPageController extends GetxController {
         },
       );
 
+      // 只在失败时重置状态，成功时页面会关闭，无需重置
+      if (!success) {
+        isSubmitting.value = false;
+      }
       return success;
     } catch (e) {
       AppToast.error(failedMsg(e.toString()));
-      return false;
-    } finally {
       isSubmitting.value = false;
+      return false;
     }
   }
 }

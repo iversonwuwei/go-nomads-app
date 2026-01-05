@@ -144,6 +144,19 @@ class HttpService {
             options.headers['X-User-Id'] = _userId;
           }
 
+          // HTTP 方法重写：将 PUT/DELETE/PATCH 转换为 POST + X-HTTP-Method-Override 头
+          // 用于解决某些网络环境（如部分 ISP、IDC 防火墙）不支持这些方法的问题
+          if (ApiConfig.useHttpMethodOverride) {
+            final method = options.method.toUpperCase();
+            if (method == 'PUT' || method == 'DELETE' || method == 'PATCH') {
+              if (kDebugMode) {
+                log('🔄 HTTP Method Override: $method -> POST (X-HTTP-Method-Override: $method)');
+              }
+              options.headers['X-HTTP-Method-Override'] = method;
+              options.method = 'POST';
+            }
+          }
+
           // 打印请求日志 (仅开发环境)
           if (kDebugMode) {
             log('🚀 REQUEST[${options.method}] => ${options.uri}');

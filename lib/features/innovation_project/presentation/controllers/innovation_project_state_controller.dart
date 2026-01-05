@@ -79,11 +79,12 @@ class InnovationProjectStateController extends GetxController {
   /// 处理数据变更事件
   void _handleDataChanged(DataChangedEvent event) {
     if (event.entityType == 'innovation_project') {
-      log('🔔 收到创新项目数据变更通知: ${event.changeType}');
+      log('🔔 [InnovationProjectStateController] 收到数据变更通知: ${event.changeType}, entityId: ${event.entityId}');
 
       switch (event.changeType) {
         case DataChangeType.created:
           // 创建新项目时刷新列表
+          log('🔔 [InnovationProjectStateController] 处理 created 事件，准备刷新列表');
           getProjects(forceRefresh: true);
           break;
         case DataChangeType.updated:
@@ -152,6 +153,7 @@ class InnovationProjectStateController extends GetxController {
 
     isLoading.value = true;
     errorMessage.value = null;
+    log('📱 [InnovationProjectStateController] getProjects 开始, forceRefresh: $forceRefresh');
 
     final result = await _getProjectsUseCase(
       page: page,
@@ -163,14 +165,18 @@ class InnovationProjectStateController extends GetxController {
 
     result.fold(
       onSuccess: (data) {
+        log('✅ [InnovationProjectStateController] 加载项目成功，数量: ${data.length}');
         projects.value = data;
+        projects.refresh(); // 强制刷新通知
       },
       onFailure: (exception) {
+        log('❌ [InnovationProjectStateController] 加载项目失败: ${exception.message}');
         errorMessage.value = exception.message;
       },
     );
 
     isLoading.value = false;
+    log('📱 [InnovationProjectStateController] getProjects 完成, 当前项目数: ${projects.length}');
   }
 
   /// 获取项目详情

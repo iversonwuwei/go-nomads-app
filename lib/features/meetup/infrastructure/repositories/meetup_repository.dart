@@ -354,6 +354,22 @@ class MeetupRepository implements IMeetupRepository {
   }
 
   @override
+  Future<bool> deleteMeetup(String meetupId) async {
+    try {
+      log('🗑️ 删除活动(管理员): $meetupId');
+
+      // 调用后端 DELETE /events/{id} API (逻辑删除)
+      await _httpService.delete('/events/$meetupId');
+
+      log('✅ 活动已删除');
+      return true;
+    } catch (e) {
+      log('❌ MeetupRepository.deleteMeetup 失败: $e');
+      rethrow;
+    }
+  }
+
+  @override
   Future<List<Meetup>> getMyCreatedMeetups() async {
     try {
       log('📡 调用 HttpService GET /events/me/created...');
@@ -417,7 +433,7 @@ class MeetupRepository implements IMeetupRepository {
 
       final data = response.data as Map<String, dynamic>;
       log('✅ 邀请发送成功: ${data['id']}');
-      
+
       return MeetupInvitation.fromJson(data);
     } catch (e, stackTrace) {
       log('❌ MeetupRepository.inviteToMeetup 失败: $e');
@@ -445,7 +461,7 @@ class MeetupRepository implements IMeetupRepository {
 
       final data = apiResponse.data as Map<String, dynamic>;
       log('✅ 邀请响应成功: $response');
-      
+
       return MeetupInvitation.fromJson(data);
     } catch (e, stackTrace) {
       log('❌ MeetupRepository.respondToInvitation 失败: $e');
@@ -458,7 +474,7 @@ class MeetupRepository implements IMeetupRepository {
   Future<List<MeetupInvitation>> getReceivedInvitations({String? status}) async {
     try {
       log('📡 调用 HttpService GET /events/invitations/received');
-      
+
       final queryParams = <String, dynamic>{};
       if (status != null) {
         queryParams['status'] = status;
@@ -471,7 +487,7 @@ class MeetupRepository implements IMeetupRepository {
 
       final data = response.data;
       List items;
-      
+
       if (data is List) {
         items = data;
       } else if (data is Map<String, dynamic>) {
@@ -481,10 +497,8 @@ class MeetupRepository implements IMeetupRepository {
       }
 
       log('✅ 获取到 ${items.length} 条收到的邀请');
-      
-      return items
-          .map((json) => MeetupInvitation.fromJson(json as Map<String, dynamic>))
-          .toList();
+
+      return items.map((json) => MeetupInvitation.fromJson(json as Map<String, dynamic>)).toList();
     } catch (e, stackTrace) {
       log('❌ MeetupRepository.getReceivedInvitations 失败: $e');
       log('   堆栈: $stackTrace');
@@ -496,7 +510,7 @@ class MeetupRepository implements IMeetupRepository {
   Future<List<MeetupInvitation>> getSentInvitations({String? status}) async {
     try {
       log('📡 调用 HttpService GET /events/invitations/sent');
-      
+
       final queryParams = <String, dynamic>{};
       if (status != null) {
         queryParams['status'] = status;
@@ -509,7 +523,7 @@ class MeetupRepository implements IMeetupRepository {
 
       final data = response.data;
       List items;
-      
+
       if (data is List) {
         items = data;
       } else if (data is Map<String, dynamic>) {
@@ -519,10 +533,8 @@ class MeetupRepository implements IMeetupRepository {
       }
 
       log('✅ 获取到 ${items.length} 条发出的邀请');
-      
-      return items
-          .map((json) => MeetupInvitation.fromJson(json as Map<String, dynamic>))
-          .toList();
+
+      return items.map((json) => MeetupInvitation.fromJson(json as Map<String, dynamic>)).toList();
     } catch (e, stackTrace) {
       log('❌ MeetupRepository.getSentInvitations 失败: $e');
       log('   堆栈: $stackTrace');

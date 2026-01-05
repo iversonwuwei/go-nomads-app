@@ -3,6 +3,7 @@ import 'package:df_admin_mobile/controllers/meetup_detail_page_controller.dart';
 import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/pages/create_meetup/create_meetup_page.dart';
+import 'package:df_admin_mobile/widgets/admin_delete_button.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/edit_button.dart';
 import 'package:df_admin_mobile/widgets/share_bottom_sheet.dart';
@@ -31,13 +32,13 @@ class MeetupDetailPage extends StatelessWidget {
   /// 导航到详情页的便捷方法
   static Future<Meetup?> navigateTo(Meetup meetup) async {
     final tag = _generateTag(meetup.id);
-    
+
     // 注册 Controller
     Get.put(
       MeetupDetailPageController(initialMeetup: meetup),
       tag: tag,
     );
-    
+
     final result = await Get.to<Meetup>(
       () => MeetupDetailPage(meetup: meetup),
     );
@@ -156,6 +157,17 @@ class _MeetupDetailAppBar extends StatelessWidget {
       backgroundColor: Colors.white,
       leading: SliverBackButton(onPressed: onBack),
       actions: [
+        // 管理员删除按钮
+        Obx(() {
+          if (_c.isAdmin.value) {
+            return AdminDeleteButton(
+              isAdmin: true,
+              entityName: '活动',
+              onDelete: () => _c.deleteMeetup(),
+            );
+          }
+          return const SizedBox.shrink();
+        }),
         // 编辑按钮 - 只有组织者可见
         Obx(() {
           if (_c.isOrganizer) {

@@ -6,6 +6,7 @@ import 'package:df_admin_mobile/features/innovation_project/domain/entities/inno
 import 'package:df_admin_mobile/features/innovation_project/domain/repositories/i_innovation_project_repository.dart';
 import 'package:df_admin_mobile/features/innovation_project/presentation/controllers/innovation_project_state_controller.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
+import 'package:df_admin_mobile/services/token_storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -27,6 +28,9 @@ class InnovationDetailPageController extends GetxController {
   // 防止重复点击
   final RxBool isToggling = false.obs;
 
+  // 管理员状态
+  final RxBool isAdmin = false.obs;
+
   // 数据变更订阅
   StreamSubscription<DataChangedEvent>? _dataChangedSubscription;
 
@@ -46,10 +50,53 @@ class InnovationDetailPageController extends GetxController {
   void onInit() {
     super.onInit();
     _setupDataChangeListeners();
+    _checkAdminStatus();
     // 延迟加载数据
     WidgetsBinding.instance.addPostFrameCallback((_) {
       loadFullProject();
     });
+  }
+
+  /// 检查管理员状态
+  Future<void> _checkAdminStatus() async {
+    final tokenService = TokenStorageService();
+    final token = await tokenService.getAccessToken();
+    if (token != null && token.isNotEmpty) {
+      final role = await tokenService.getUserRole();
+      isAdmin.value = role == 'admin' || role == 'super_admin';
+    }
+  }
+
+  /// 删除创新项目（管理员或所有者可删除）
+  Future<bool> deleteInnovationProject() async {
+    try {
+      final projectId = project.uuid ?? project.id.toString();
+      print('🗑️ [InnovationDetailPageController] 删除创新项目: $projectId');
+
+      final repository = Get.find<IInnovationProjectRepository>();
+      final result = await repository.deleteProject(projectId);
+
+      return result.fold(
+        onSuccess: (_) {
+          print('✅ [InnovationDetailPageController] 创新项目删除成功');
+          // 通知列表刷新
+          DataEventBus.instance.emit(DataChangedEvent(
+            entityType: 'innovation_project',
+            entityId: projectId,
+            version: DateTime.now().millisecondsSinceEpoch,
+            changeType: DataChangeType.deleted,
+          ));
+          return true;
+        },
+        onFailure: (error) {
+          print('❌ [InnovationDetailPageController] 删除失败: ${error.message}');
+          return false;
+        },
+      );
+    } catch (e) {
+      print('❌ [InnovationDetailPageController] 删除异常: $e');
+      return false;
+    }
   }
 
   @override
@@ -156,7 +203,7 @@ class InnovationDetailPageController extends GetxController {
         case Success(data: final isLiked):
           // API 成功，更新为服务器返回的状态
           isFollowed.value = isLiked;
-          
+
           // 通知其他组件数据变更（携带新的关注状态）
           DataEventBus.instance.emit(DataChangedEvent(
             entityType: 'innovation_project',

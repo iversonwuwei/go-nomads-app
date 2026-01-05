@@ -399,9 +399,8 @@ class CreateMeetupPageController extends GetxController {
       return true;
     } catch (e) {
       log('❌ 创建 meetup 失败: $e');
-      return false;
-    } finally {
       isSubmitting.value = false;
+      return false;
     }
   }
 

@@ -9,6 +9,7 @@ import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:df_admin_mobile/services/token_storage_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -25,6 +26,7 @@ class MeetupDetailPageController extends GetxController {
   final RxList<Map<String, dynamic>> participants = <Map<String, dynamic>>[].obs;
   final RxBool hasDataChanged = false.obs;
   final RxInt currentImageIndex = 0.obs;
+  final RxBool isAdmin = false.obs;
 
   final PageController imagePageController = PageController();
 
@@ -46,6 +48,42 @@ class MeetupDetailPageController extends GetxController {
     meetup = Rx<Meetup>(initialMeetup);
     _setupDataChangeListeners();
     _loadEventDetails();
+    _checkAdminStatus();
+  }
+
+  /// 检查管理员状态
+  Future<void> _checkAdminStatus() async {
+    final tokenService = TokenStorageService();
+    final token = await tokenService.getAccessToken();
+    if (token != null && token.isNotEmpty) {
+      final role = await tokenService.getUserRole();
+      isAdmin.value = role == 'admin' || role == 'super_admin';
+    }
+  }
+
+  /// 删除活动（仅管理员）
+  Future<bool> deleteMeetup() async {
+    try {
+      log('🗑️ [MeetupDetailPageController] 删除活动: ${meetup.value.id}');
+
+      final result = await _meetupRepository.deleteMeetup(meetup.value.id);
+
+      if (result) {
+        log('✅ [MeetupDetailPageController] 活动删除成功');
+        // 通知列表刷新
+        DataEventBus.instance.emit(DataChangedEvent(
+          entityType: 'meetup',
+          entityId: meetup.value.id,
+          version: DateTime.now().millisecondsSinceEpoch,
+          changeType: DataChangeType.deleted,
+        ));
+        return true;
+      }
+      return false;
+    } catch (e) {
+      log('❌ [MeetupDetailPageController] 删除异常: $e');
+      return false;
+    }
   }
 
   /// 设置数据变更监听器

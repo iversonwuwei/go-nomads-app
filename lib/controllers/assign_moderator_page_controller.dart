@@ -176,11 +176,15 @@ class AssignModeratorPageController extends GetxController {
         if (failCount > 0) {
           AppToast.warning('$failCount 个用户指定失败，请查看日志');
         }
-        Get.back(result: true);
+        // 成功时延迟导航，避免 widget 生命周期问题
+        Future.delayed(const Duration(milliseconds: 100), () {
+          Get.back(result: true);
+        });
       } else {
         AppToast.error('所有用户指定失败: ${errorMessages.isNotEmpty ? errorMessages.first : "请重试"}');
+        isSubmitting.value = false;
       }
-    } finally {
+    } catch (e) {
       isSubmitting.value = false;
     }
   }

@@ -39,6 +39,7 @@ class InnovationListHeader extends StatelessWidget {
       height: 56,
       child: ElevatedButton.icon(
         onPressed: () async {
+          debugPrint('🚀 [InnovationListHeader] 打开添加页面...');
           final result = await Navigator.push(
             context,
             MaterialPageRoute(
@@ -46,8 +47,10 @@ class InnovationListHeader extends StatelessWidget {
             ),
           );
 
+          debugPrint('🔙 [InnovationListHeader] 添加页面返回, result: $result');
           // 如果添加成功,刷新数据
           if (result == true) {
+            debugPrint('🔄 [InnovationListHeader] 调用 onRefresh 刷新数据...');
             onRefresh?.call();
           }
         },
@@ -145,8 +148,7 @@ class InnovationListErrorState extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(FontAwesomeIcons.circleExclamation,
-              size: 48, color: Colors.grey[400]),
+          Icon(FontAwesomeIcons.circleExclamation, size: 48, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
             errorMessage,

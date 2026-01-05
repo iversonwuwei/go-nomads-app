@@ -1,3 +1,4 @@
+import 'package:df_admin_mobile/controllers/add_innovation_page_controller.dart';
 import 'package:df_admin_mobile/features/innovation_project/domain/entities/innovation_project.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/pages/add_innovation/add_innovation_basic_info_section.dart';
@@ -7,7 +8,6 @@ import 'package:df_admin_mobile/pages/add_innovation/add_innovation_market_secti
 import 'package:df_admin_mobile/pages/add_innovation/add_innovation_problem_solution_section.dart';
 import 'package:df_admin_mobile/pages/add_innovation/add_innovation_progress_section.dart';
 import 'package:df_admin_mobile/pages/add_innovation/add_innovation_team_section.dart';
-import 'package:df_admin_mobile/controllers/add_innovation_page_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -36,7 +36,10 @@ class AddInnovationPage extends StatelessWidget {
     return PopScope(
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) {
-          _cleanupController(tag);
+          // 延迟清理，确保页面完全销毁后再删除 controller
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _cleanupController(tag);
+          });
         }
       },
       child: Scaffold(
@@ -198,12 +201,12 @@ class AddInnovationPage extends StatelessWidget {
 
   Future<void> _handleSubmit(BuildContext context, String tag) async {
     final controller = Get.find<AddInnovationPageController>(tag: tag);
+    
     final success = await controller.submitForm(context, isEditMode: isEditMode);
-    if (success) {
-      _cleanupController(tag);
-      if (context.mounted) {
-        Navigator.of(context).pop(true);
-      }
+    
+    if (success && context.mounted) {
+      // 只执行导航，controller 的清理由 PopScope.onPopInvokedWithResult 处理
+      Navigator.of(context).pop(true);
     }
   }
 }

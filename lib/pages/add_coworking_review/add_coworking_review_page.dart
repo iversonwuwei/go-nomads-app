@@ -1,10 +1,10 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/controllers/add_coworking_review_page_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/pages/add_coworking_review/bottom_submit_bar.dart';
 import 'package:df_admin_mobile/pages/add_coworking_review/form_section.dart';
 import 'package:df_admin_mobile/pages/add_coworking_review/photos_section.dart';
 import 'package:df_admin_mobile/pages/add_coworking_review/rating_section.dart';
-import 'package:df_admin_mobile/controllers/add_coworking_review_page_controller.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -118,7 +118,10 @@ class AddCoworkingReviewPage extends StatelessWidget {
 
     if (success) {
       AppToast.success(l10n.coworkingReviewSubmitSuccess);
-      Get.back(result: true);
+      // 延迟导航以避免 widget 树重建时的状态问题
+      Future.delayed(const Duration(milliseconds: 100), () {
+        Get.back(result: true);
+      });
     }
   }
 }
