@@ -40,7 +40,10 @@ class AddCoworkingReviewPage extends StatelessWidget {
     return PopScope(
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) {
-          Get.delete<AddCoworkingReviewPageController>(tag: _tag);
+          // 延迟清理，确保页面完全销毁后再删除 controller
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _cleanupController(_tag);
+          });
         }
       },
       child: Scaffold(
@@ -105,6 +108,12 @@ class AddCoworkingReviewPage extends StatelessWidget {
     );
   }
 
+  void _cleanupController(String tag) {
+    if (Get.isRegistered<AddCoworkingReviewPageController>(tag: tag)) {
+      Get.delete<AddCoworkingReviewPageController>(tag: tag);
+    }
+  }
+
   Future<void> _handleSubmit(
     BuildContext context,
     AddCoworkingReviewPageController controller,
@@ -116,12 +125,9 @@ class AddCoworkingReviewPage extends StatelessWidget {
       submitFailed: l10n.submitFailed,
     );
 
-    if (success) {
+    if (success && context.mounted) {
       AppToast.success(l10n.coworkingReviewSubmitSuccess);
-      // 延迟导航以避免 widget 树重建时的状态问题
-      Future.delayed(const Duration(milliseconds: 100), () {
-        Get.back(result: true);
-      });
+      Navigator.of(context).pop(true);
     }
   }
 }

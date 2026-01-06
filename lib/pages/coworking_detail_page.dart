@@ -8,6 +8,7 @@ import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworkin
 import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_review_repository.dart';
 import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/coworking_verification_badge.dart';
 import 'package:df_admin_mobile/widgets/edit_button.dart';
@@ -1424,67 +1425,13 @@ class _CoworkingDetailPageState extends State<CoworkingDetailPage> {
       } else {
         // 在模拟器上可能会失败，提供更友好的提示
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.cannotMakeCall,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    phoneNumber,
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    '💡 提示：在真机上可以正常拨打',
-                    style: TextStyle(fontSize: 11),
-                  ),
-                ],
-              ),
-              backgroundColor: Colors.orange,
-              behavior: SnackBarBehavior.floating,
-              duration: const Duration(seconds: 4),
-              action: SnackBarAction(
-                label: '复制',
-                textColor: Colors.white,
-                onPressed: () {
-                  // 这里可以添加复制到剪贴板的功能
-                },
-              ),
-            ),
-          );
+          AppToast.info('${l10n.cannotMakeCall}\n$phoneNumber\n💡 提示：在真机上可以正常拨打');
         }
       }
     } catch (e) {
       // 捕获异常并显示错误信息
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${l10n.error}: ${e.toString()}',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  phoneNumber,
-                  style: const TextStyle(fontSize: 12),
-                ),
-              ],
-            ),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 3),
-          ),
-        );
+        AppToast.error('${l10n.error}: ${e.toString()}\n$phoneNumber');
       }
     }
   }

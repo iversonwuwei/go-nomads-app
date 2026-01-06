@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:df_admin_mobile/core/sync/sync.dart';
 import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_review_repository.dart';
 import 'package:df_admin_mobile/services/image_upload_service.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -43,7 +44,7 @@ class AddCoworkingReviewPageController extends GetxController {
 
     if (images.isNotEmpty) {
       if (selectedImages.length + images.length > 5) {
-        Get.snackbar('', maxPhotosWarning);
+        AppToast.warning(maxPhotosWarning);
         return;
       }
       selectedImages.addAll(images);
@@ -53,7 +54,7 @@ class AddCoworkingReviewPageController extends GetxController {
   /// 拍照
   Future<void> takePhoto(String maxPhotosWarning) async {
     if (selectedImages.length >= 5) {
-      Get.snackbar('', maxPhotosWarning);
+      AppToast.warning(maxPhotosWarning);
       return;
     }
 
@@ -95,7 +96,7 @@ class AddCoworkingReviewPageController extends GetxController {
     }
 
     if (rating.value == 0) {
-      Get.snackbar('', pleaseSelectRating);
+      AppToast.warning(pleaseSelectRating);
       return false;
     }
 
@@ -156,12 +157,12 @@ class AddCoworkingReviewPageController extends GetxController {
 
       isSubmitting.value = false;
 
-      Get.snackbar('', submitSuccess);
+      // Toast 由页面处理
 
       return true;
     } catch (e) {
       log('❌ 提交评论失败: $e');
-      Get.snackbar('', submitFailed('$e'));
+      AppToast.error(submitFailed('$e'));
       isSubmitting.value = false;
       return false;
     }

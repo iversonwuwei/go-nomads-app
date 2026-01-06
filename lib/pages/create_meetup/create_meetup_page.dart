@@ -5,6 +5,7 @@ import 'package:df_admin_mobile/pages/create_meetup/create_meetup_datetime_secti
 import 'package:df_admin_mobile/pages/create_meetup/create_meetup_images_section.dart';
 import 'package:df_admin_mobile/pages/create_meetup/create_meetup_location_section.dart';
 import 'package:df_admin_mobile/pages/create_meetup/create_meetup_title_type_section.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -248,33 +249,18 @@ class CreateMeetupPage extends StatelessWidget {
 
     // Validate location
     if (controller.selectedCity.value == null || controller.selectedCountry.value == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.selectLocation),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AppToast.error(l10n.selectLocation);
       return;
     }
 
     // Validate date and time
     if (controller.selectedDate.value == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.selectDate),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AppToast.error(l10n.selectDate);
       return;
     }
 
     if (controller.selectedTime.value == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.selectTime),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AppToast.error(l10n.selectTime);
       return;
     }
 

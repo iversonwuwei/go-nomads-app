@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 
@@ -345,20 +346,12 @@ class VisitedPlacesController extends GetxController {
           places[index] = place;
           places.refresh();
           _updateStats();
-          Get.snackbar(
-            'Error',
-            'Failed to update: ${e.message}',
-            snackPosition: SnackPosition.BOTTOM,
-          );
+          AppToast.error('Failed to update: ${e.message}');
           log('❌ 切换精选状态失败: ${e.message}');
       }
     } catch (e) {
       log('❌ 切换精选状态异常: $e');
-      Get.snackbar(
-        'Error',
-        'Failed to update highlight status',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      AppToast.error('Failed to update highlight status');
     }
   }
 

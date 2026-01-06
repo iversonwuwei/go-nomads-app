@@ -120,10 +120,12 @@ class _ReviewCard extends StatelessWidget {
               review.content,
               style: TextStyle(fontSize: 14, color: Colors.grey[700]),
             ),
-            const SizedBox(height: 12),
 
-            // 图片
-            _ReviewPhotos(photoUrls: review.photoUrls),
+            // 图片 - 只有当有图片时才显示
+            if (review.photoUrls.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              _ReviewPhotos(photoUrls: review.photoUrls),
+            ],
             const SizedBox(height: 8),
 
             // 发布时间
@@ -205,39 +207,26 @@ class _ReviewPhotos extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 如果没有图片，不渲染任何内容
+    if (photoUrls.isEmpty) return const SizedBox.shrink();
+
     return SizedBox(
       height: 100,
-      child: photoUrls.isNotEmpty
-          ? ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: photoUrls.length,
-              itemBuilder: (context, index) => Container(
-                width: 100,
-                margin: const EdgeInsets.only(right: 8),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  image: DecorationImage(
-                    image: NetworkImage(photoUrls[index]),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-            )
-          : Container(
-              width: 100,
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey[300]!, width: 1),
-              ),
-              child: Center(
-                child: Icon(
-                  FontAwesomeIcons.imagePortrait,
-                  color: Colors.grey[400],
-                  size: 40,
-                ),
-              ),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: photoUrls.length,
+        itemBuilder: (context, index) => Container(
+          width: 100,
+          margin: const EdgeInsets.only(right: 8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            image: DecorationImage(
+              image: NetworkImage(photoUrls[index]),
+              fit: BoxFit.cover,
             ),
+          ),
+        ),
+      ),
     );
   }
 }

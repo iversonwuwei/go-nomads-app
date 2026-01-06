@@ -3394,47 +3394,30 @@ class _CityDetailPageContentState extends State<_CityDetailPageContent> {
                       review.content,
                       style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                     ),
-                    // ✅ 始终显示图片区域（有图显示图片，无图显示占位符）
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      height: 100,
-                      child: review.photoUrls.isNotEmpty
-                          ? ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: review.photoUrls.length,
-                              itemBuilder: (context, photoIndex) {
-                                return Container(
-                                  width: 100,
-                                  margin: const EdgeInsets.only(right: 8),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                    image: DecorationImage(
-                                      image: NetworkImage(review.photoUrls[photoIndex]),
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                );
-                              },
-                            )
-                          : Container(
+                    // 只有当有图片时才显示图片区域
+                    if (review.photoUrls.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        height: 100,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: review.photoUrls.length,
+                          itemBuilder: (context, photoIndex) {
+                            return Container(
                               width: 100,
+                              margin: const EdgeInsets.only(right: 8),
                               decoration: BoxDecoration(
-                                color: Colors.grey[200],
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: Colors.grey[300]!,
-                                  width: 1,
+                                image: DecorationImage(
+                                  image: NetworkImage(review.photoUrls[photoIndex]),
+                                  fit: BoxFit.cover,
                                 ),
                               ),
-                              child: Center(
-                                child: Icon(
-                                  FontAwesomeIcons.imagePortrait,
-                                  color: Colors.grey[400],
-                                  size: 40,
-                                ),
-                              ),
-                            ),
-                    ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 8),
                     Text(
                       '${l10n.posted} ${_formatDate(review.createdAt, l10n)}',

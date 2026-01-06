@@ -1,7 +1,8 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/controllers/osm_navigation_page_controller.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/controllers/osm_navigation_page_controller.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -777,13 +778,7 @@ class OSMNavigationPage extends StatelessWidget {
                           onTap: () {
                             controller.changeTileSource(entry.key);
                             Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('已切换到 ${entry.value['name']}'),
-                                duration: const Duration(seconds: 2),
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
+                            AppToast.success('已切换到 ${entry.value['name']}');
                           },
                         );
                       }).toList(),

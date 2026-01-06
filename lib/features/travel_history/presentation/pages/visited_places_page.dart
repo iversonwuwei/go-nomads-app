@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -88,11 +89,7 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
           IconButton(
             icon: Icon(FontAwesomeIcons.map, size: 18, color: theme.colorScheme.onSurface),
             onPressed: () {
-              Get.snackbar(
-                'Coming Soon',
-                'Map view will be available soon',
-                snackPosition: SnackPosition.BOTTOM,
-              );
+              AppToast.info('Map view will be available soon');
             },
           ),
       ],
@@ -976,11 +973,7 @@ class _PlaceDetailsSheet extends StatelessWidget {
                       child: OutlinedButton.icon(
                         onPressed: () {
                           // TODO: 在地图中查看
-                          Get.snackbar(
-                            'Coming Soon',
-                            'View on map will be available soon',
-                            snackPosition: SnackPosition.BOTTOM,
-                          );
+                          AppToast.info('View on map will be available soon');
                         },
                         icon: const Icon(FontAwesomeIcons.map, size: 16),
                         label: const Text('View on Map'),

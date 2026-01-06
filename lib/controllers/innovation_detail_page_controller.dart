@@ -7,6 +7,7 @@ import 'package:df_admin_mobile/features/innovation_project/domain/repositories/
 import 'package:df_admin_mobile/features/innovation_project/presentation/controllers/innovation_project_state_controller.dart';
 import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
 import 'package:df_admin_mobile/services/token_storage_service.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -264,14 +265,12 @@ class InnovationDetailPageController extends GetxController {
   }
 
   void _showSnackBar(BuildContext context, String message, Color backgroundColor) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message, style: const TextStyle(fontSize: 15)),
-        backgroundColor: backgroundColor,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    if (backgroundColor == Colors.red) {
+      AppToast.error(message);
+    } else if (backgroundColor == Colors.green) {
+      AppToast.success(message);
+    } else {
+      AppToast.info(message);
+    }
   }
 }

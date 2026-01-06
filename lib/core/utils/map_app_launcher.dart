@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -224,9 +225,7 @@ class MapAppLauncher {
                               destinationName: destinationName,
                             );
                             if (!success && context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('无法打开${app.name}')),
-                              );
+                              AppToast.error('无法打开${app.name}');
                             }
                           },
                         )),

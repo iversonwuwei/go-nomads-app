@@ -7,6 +7,7 @@ import 'package:df_admin_mobile/features/hotel/domain/entities/hotel_review.dart
 import 'package:df_admin_mobile/features/hotel/domain/repositories/i_hotel_repository.dart';
 import 'package:df_admin_mobile/features/hotel/domain/repositories/i_hotel_review_repository.dart';
 import 'package:df_admin_mobile/pages/add_hotel_page.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/edit_button.dart';
 import 'package:flutter/cupertino.dart';
@@ -1072,9 +1073,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
     // 检查用户是否已登录
     final authController = Get.find<AuthStateController>();
     if (!authController.isAuthenticated.value) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请先登录后再发表评论')),
-      );
+      AppToast.info('请先登录后再发表评论');
       return;
     }
 
@@ -1204,15 +1203,11 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                           ? null
                           : () async {
                               if (rating == 0) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('请选择评分')),
-                                );
+                                AppToast.info('请选择评分');
                                 return;
                               }
                               if (contentController.text.trim().isEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('请输入评论内容')),
-                                );
+                                AppToast.info('请输入评论内容');
                                 return;
                               }
 
@@ -1224,24 +1219,14 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                                 content: contentController.text.trim(),
                                 onSuccess: () {
                                   Navigator.pop(context);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('评论发表成功！'),
-                                      backgroundColor: Colors.green,
-                                    ),
-                                  );
+                                  AppToast.success('评论发表成功！');
                                   // 标记数据已变更并重新加载酒店详情
                                   _hasDataChanged = true;
                                   _reloadHotelDetail();
                                 },
                                 onError: (String message) {
                                   setModalState(() => isSubmitting = false);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(message),
-                                      backgroundColor: Colors.red,
-                                    ),
-                                  );
+                                  AppToast.error(message);
                                 },
                               );
                             },
