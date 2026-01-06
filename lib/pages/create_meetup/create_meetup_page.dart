@@ -5,6 +5,7 @@ import 'package:df_admin_mobile/pages/create_meetup/create_meetup_datetime_secti
 import 'package:df_admin_mobile/pages/create_meetup/create_meetup_images_section.dart';
 import 'package:df_admin_mobile/pages/create_meetup/create_meetup_location_section.dart';
 import 'package:df_admin_mobile/pages/create_meetup/create_meetup_title_type_section.dart';
+import 'package:df_admin_mobile/utils/navigation_util.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -267,10 +268,8 @@ class CreateMeetupPage extends StatelessWidget {
     // Create meetup
     final success = await controller.createMeetup(context);
     if (success) {
-      // 延迟导航以避免 widget 树重建时的状态问题
-      Future.delayed(const Duration(milliseconds: 100), () {
-        Get.back(result: true);
-      });
+      // 使用 NavigationUtil 确保在 iOS 上也能正确返回并传递结果
+      await NavigationUtil.popAfterSuccess(result: true, context: context);
     }
   }
 }

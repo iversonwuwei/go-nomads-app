@@ -1,12 +1,11 @@
-import 'package:get/get.dart';
-
 import 'package:df_admin_mobile/core/core.dart';
-import 'package:df_admin_mobile/services/http_service.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city_option.dart';
 import 'package:df_admin_mobile/features/country/domain/entities/country_option.dart';
 import 'package:df_admin_mobile/features/location/domain/repositories/ilocation_repository.dart';
 import 'package:df_admin_mobile/features/location/infrastructure/models/city_dto.dart';
 import 'package:df_admin_mobile/features/location/infrastructure/models/country_dto.dart';
+import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:get/get.dart';
 
 /// Location Repository 实现
 /// 使用 HttpService 直接访问城市数据 API
@@ -60,21 +59,19 @@ class LocationRepository implements ILocationRepository {
         return Result.success(_citiesByCountryCache[countryId]!);
       }
 
+      // 使用轻量级 API 获取城市列表（只返回 id, name, nameEn, region）
       final response = await _httpService.get(
-        '/cities',
-        queryParameters: {
-          'countryId': countryId,
-          'page': 1,
-          'pageSize': 1000, // 获取所有城市
-        },
+        '/cities/by-country/$countryId',
       );
 
-      final items = (response.data as Map<String, dynamic>)['items'] as List<dynamic>? ?? [];
-      final dtos = items
-          .map((json) => CityDto.fromJson(json as Map<String, dynamic>))
+      final dataList = response.data as List<dynamic>? ?? [];
+      final entities = dataList
+          .map((json) => CityOption(
+                id: json['id'] as String,
+                name: json['name'] as String,
+                region: json['region'] as String?,
+              ))
           .toList();
-
-      final entities = dtos.map((dto) => dto.toDomain()).toList();
       _citiesByCountryCache[countryId] = entities;
 
       return Result.success(entities);
