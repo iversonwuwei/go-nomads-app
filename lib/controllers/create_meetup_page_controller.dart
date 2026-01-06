@@ -396,6 +396,7 @@ class CreateMeetupPageController extends GetxController {
       }
 
       selectedImages.clear();
+      isSubmitting.value = false;
       return true;
     } catch (e) {
       log('❌ 创建 meetup 失败: $e');

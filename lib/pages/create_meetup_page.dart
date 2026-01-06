@@ -13,6 +13,7 @@ import 'package:df_admin_mobile/features/meetup/presentation/controllers/event_t
 import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/services/image_upload_service.dart';
+import 'package:df_admin_mobile/utils/navigation_util.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/location_picker_field.dart';
@@ -727,10 +728,10 @@ class _CreateMeetupPageState extends State<CreateMeetupPage> {
         });
       }
 
-      // 延迟导航以避免 widget 树重建时的状态问题
-      Future.delayed(const Duration(milliseconds: 100), () {
-        Get.back(result: true);
-      });
+      // 使用 NavigationUtil 确保在 iOS 上也能正确返回并传递结果
+      if (mounted) {
+        await NavigationUtil.popAfterSuccess(result: true, context: context);
+      }
     } catch (e) {
       log('❌ 创建 meetup 失败: $e');
     } finally {

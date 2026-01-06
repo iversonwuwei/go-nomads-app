@@ -923,6 +923,9 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
       // 使用 CityStateController 的 loadUserFavoriteCityIds 方法
       final result = await controller.loadUserFavoriteCityIds();
 
+      // 检查组件是否仍然挂载
+      if (!mounted) return;
+
       result.fold(
         onSuccess: (cityIds) {
           setState(() {

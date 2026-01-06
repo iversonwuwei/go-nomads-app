@@ -1,7 +1,7 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/controllers/my_meetups_page_controller.dart';
 import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/controllers/my_meetups_page_controller.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
@@ -62,7 +62,12 @@ class MyMeetupsPage extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(FontAwesomeIcons.plus, color: Colors.white, size: 20),
-            onPressed: () => Get.toNamed(AppRoutes.createMeetup),
+            onPressed: () async {
+              final result = await Get.toNamed(AppRoutes.createMeetup);
+              if (result == true) {
+                controller.refreshAll();
+              }
+            },
           ),
         ],
       ),
@@ -78,7 +83,7 @@ class MyMeetupsPage extends StatelessWidget {
         }
 
         if (controller.meetups.isEmpty) {
-          return _buildEmptyState(isMobile, l10n);
+          return _buildEmptyState(isMobile, l10n, controller);
         }
 
         final showFooter = controller.showFooter;
@@ -150,7 +155,7 @@ class MyMeetupsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState(bool isMobile, AppLocalizations l10n) {
+  Widget _buildEmptyState(bool isMobile, AppLocalizations l10n, MyMeetupsPageController controller) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -182,7 +187,12 @@ class MyMeetupsPage extends StatelessWidget {
             ),
             const SizedBox(height: 32),
             ElevatedButton.icon(
-              onPressed: () => Get.toNamed(AppRoutes.createMeetup),
+              onPressed: () async {
+                final result = await Get.toNamed(AppRoutes.createMeetup);
+                if (result == true) {
+                  controller.refreshAll();
+                }
+              },
               icon: const Icon(FontAwesomeIcons.plus, size: 16),
               label: Text(
                 l10n.createMeetup,
