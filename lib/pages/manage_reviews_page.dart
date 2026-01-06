@@ -1,6 +1,6 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
 import 'package:df_admin_mobile/controllers/manage_reviews_page_controller.dart';
+import 'package:df_admin_mobile/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -8,7 +8,7 @@ import 'package:get/get.dart';
 import 'add_review_page.dart';
 
 /// Reviews 数据管理列表页面
-class ManageReviewsPage extends StatelessWidget {
+class ManageReviewsPage extends StatefulWidget {
   final String cityId;
   final String cityName;
 
@@ -18,16 +18,32 @@ class ManageReviewsPage extends StatelessWidget {
     required this.cityName,
   });
 
-  String get _tag => 'ManageReviewsPage_$cityId';
+  @override
+  State<ManageReviewsPage> createState() => _ManageReviewsPageState();
+}
 
-  ManageReviewsPageController get _controller {
-    if (!Get.isRegistered<ManageReviewsPageController>(tag: _tag)) {
-      Get.put(
-        ManageReviewsPageController(cityId: cityId, cityName: cityName),
-        tag: _tag,
-      );
-    }
-    return Get.find<ManageReviewsPageController>(tag: _tag);
+class _ManageReviewsPageState extends State<ManageReviewsPage> {
+  late final String _tag;
+  late final ManageReviewsPageController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _tag = 'ManageReviewsPage_${widget.cityId}';
+    _controller = Get.put(
+      ManageReviewsPageController(cityId: widget.cityId, cityName: widget.cityName),
+      tag: _tag,
+    );
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (Get.isRegistered<ManageReviewsPageController>(tag: _tag)) {
+        Get.delete<ManageReviewsPageController>(tag: _tag);
+      }
+    });
+    super.dispose();
   }
 
   Future<void> _deleteReview(String reviewId) async {
@@ -55,25 +71,23 @@ class ManageReviewsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 确保控制器已初始化
-    final controller = _controller;
     final contentController = Get.find<UserCityContentStateController>();
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.cityPrimary,
         foregroundColor: Colors.white,
-        title: Text('$cityName - 评论管理'),
+        title: Text('${widget.cityName} - 评论管理'),
         actions: [
           IconButton(
             icon: const Icon(FontAwesomeIcons.plus),
             onPressed: () async {
               final result = await Get.to(() => AddReviewPage(
-                    cityId: cityId,
-                    cityName: cityName,
+                    cityId: widget.cityId,
+                    cityName: widget.cityName,
                   ));
               if (result != null && result['success'] == true) {
-                await controller.loadData();
+                await _controller.loadData();
               }
             },
             tooltip: '添加评论',
@@ -81,7 +95,7 @@ class ManageReviewsPage extends StatelessWidget {
         ],
       ),
       body: Obx(() {
-        if (controller.isLoading.value) {
+        if (_controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
 
@@ -101,11 +115,11 @@ class ManageReviewsPage extends StatelessWidget {
                 ElevatedButton.icon(
                   onPressed: () async {
                     final result = await Get.to(() => AddReviewPage(
-                          cityId: cityId,
-                          cityName: cityName,
+                          cityId: widget.cityId,
+                          cityName: widget.cityName,
                         ));
                     if (result != null && result['success'] == true) {
-                      await controller.loadData();
+                      await _controller.loadData();
                     }
                   },
                   icon: const Icon(FontAwesomeIcons.plus),
@@ -172,7 +186,7 @@ class ManageReviewsPage extends StatelessWidget {
                             size: 12, color: Colors.grey[600]),
                         const SizedBox(width: 4),
                         Text(
-                          controller.formatDate(review.createdAt),
+                          _controller.formatDate(review.createdAt),
                           style:
                               TextStyle(fontSize: 12, color: Colors.grey[600]),
                         ),
@@ -181,7 +195,7 @@ class ManageReviewsPage extends StatelessWidget {
                   ],
                 ),
                 isThreeLine: true,
-                trailing: Obx(() => controller.canDelete.value
+                trailing: Obx(() => _controller.canDelete.value
                     ? IconButton(
                         icon: const Icon(FontAwesomeIcons.trash,
                             color: Colors.red),

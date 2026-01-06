@@ -308,26 +308,72 @@ class HomeCityCard extends StatelessWidget {
               ],
             ),
             SizedBox(height: isMobile ? 4 : 8),
-            // 天气
+            // 数字游民核心指标 - Coworking & Meetup 数量
             Row(
               children: [
-                Text(
-                  city.weatherIcon,
-                  style: TextStyle(fontSize: isMobile ? 16 : 18),
+                // Coworking 数量
+                _buildStatChip(
+                  icon: FontAwesomeIcons.laptop,
+                  value: '${city.coworkingCount ?? 0}',
+                  color: Colors.blue,
+                  isMobile: isMobile,
                 ),
-                SizedBox(width: isMobile ? 3 : 6),
-                Text(
-                  '${city.displayTemperature}°',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: isMobile ? 13 : 15,
-                    fontWeight: FontWeight.w500,
+                SizedBox(width: isMobile ? 6 : 8),
+                // Meetup 数量
+                _buildStatChip(
+                  icon: FontAwesomeIcons.userGroup,
+                  value: '${city.meetupCount ?? 0}',
+                  color: Colors.purple,
+                  isMobile: isMobile,
+                ),
+                SizedBox(width: isMobile ? 6 : 8),
+                // 月均花费
+                if (city.averageCost != null && city.averageCost! > 0) ...[
+                  _buildStatChip(
+                    icon: FontAwesomeIcons.dollarSign,
+                    value: '\$${city.averageCost!.toInt()}',
+                    color: Colors.green,
+                    isMobile: isMobile,
                   ),
-                ),
+                ],
               ],
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// 构建统计小标签
+  Widget _buildStatChip({
+    required IconData icon,
+    required String value,
+    required Color color,
+    required bool isMobile,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 4 : 6,
+        vertical: isMobile ? 2 : 3,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.white, size: isMobile ? 10 : 12),
+          SizedBox(width: isMobile ? 2 : 4),
+          Text(
+            value,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: isMobile ? 10 : 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }

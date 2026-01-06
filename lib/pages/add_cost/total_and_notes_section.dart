@@ -1,5 +1,5 @@
-import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/controllers/add_cost_page_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -14,9 +14,10 @@ class TotalDisplaySection extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.find<AddCostPageController>(tag: controllerTag);
     final l10n = AppLocalizations.of(context)!;
-    final currencySymbol = _getCurrencySymbol(context, controller);
 
-    return Obx(() => Container(
+    return Obx(() {
+      final currencySymbol = _getCurrencySymbol(context, controller);
+      return Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -44,7 +45,7 @@ class TotalDisplaySection extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '$currencySymbol ${controller.totalCost.toStringAsFixed(2)}',
+                  '$currencySymbol ${controller.totalCost.value.toStringAsFixed(2)}',
                     style: const TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
@@ -67,7 +68,8 @@ class TotalDisplaySection extends StatelessWidget {
               ),
             ],
           ),
-        ));
+      );
+    });
   }
 
   String _getCurrencySymbol(BuildContext context, AddCostPageController controller) {

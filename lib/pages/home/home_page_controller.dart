@@ -46,6 +46,9 @@ class HomePageController extends GetxController with WidgetsBindingObserver {
   /// 是否显示网格视图
   final isGridView = true.obs;
 
+  /// 是否正在刷新
+  final isRefreshing = false.obs;
+
   // ==================== 私有变量 ====================
   Worker? _cityListWorker;
 
@@ -155,6 +158,31 @@ class HomePageController extends GetxController with WidgetsBindingObserver {
       loadHomeCities(),
       refreshMeetups(),
     ]);
+  }
+
+  /// 下拉刷新 - 刷新所有数据
+  Future<void> refreshAll() async {
+    if (isRefreshing.value) return;
+
+    log('🔄 HomePageController: 开始下拉刷新');
+    isRefreshing.value = true;
+
+    try {
+      // 清除搜索状态
+      clearSearchOnReturn();
+
+      // 并行刷新城市和 meetup 数据
+      await Future.wait([
+        loadHomeCities(),
+        refreshMeetups(),
+      ]);
+
+      log('✅ HomePageController: 下拉刷新完成');
+    } catch (e) {
+      log('⚠️ HomePageController: 下拉刷新失败: $e');
+    } finally {
+      isRefreshing.value = false;
+    }
   }
 
   // ==================== 搜索功能 ====================

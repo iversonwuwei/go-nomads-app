@@ -36,6 +36,7 @@ import 'package:df_admin_mobile/pages/meetup_detail/meetup_detail_page.dart';
 import 'package:df_admin_mobile/pages/meetup_list/meetup_list.dart';
 import 'package:df_admin_mobile/pages/member_detail_page.dart';
 import 'package:df_admin_mobile/pages/my_meetups_page.dart';
+import 'package:df_admin_mobile/pages/nomads_login/nomads_login_binding.dart';
 import 'package:df_admin_mobile/pages/nomads_login/nomads_login_page.dart';
 import 'package:df_admin_mobile/pages/notifications_page.dart';
 import 'package:df_admin_mobile/pages/profile_edit_page.dart';
@@ -156,6 +157,7 @@ class AppRoutes {
     GetPage(
       name: login,
       page: () => const NomadsLoginPage(),
+      binding: NomadsLoginBinding(),
       // 🚫 无 middleware - 登录页
     ),
     GetPage(

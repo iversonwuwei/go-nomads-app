@@ -29,104 +29,109 @@ class HomePage extends GetView<HomePageController> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: CustomScrollView(
-        controller: controller.scrollController,
-        slivers: [
-          // Hero区域
-          SliverToBoxAdapter(
-            child: HomeHeroSection(isMobile: isMobile),
-          ),
+      body: RefreshIndicator(
+        onRefresh: controller.refreshAll,
+        color: const Color(0xFFFF4458),
+        child: CustomScrollView(
+          controller: controller.scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            // Hero区域
+            SliverToBoxAdapter(
+              child: HomeHeroSection(isMobile: isMobile),
+            ),
 
-          // 搜索栏
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 16 : 32,
-                vertical: 20,
+            // 搜索栏
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isMobile ? 16 : 32,
+                  vertical: 20,
+                ),
+                child: HomeSearchBar(isMobile: isMobile),
               ),
-              child: HomeSearchBar(isMobile: isMobile),
             ),
-          ),
 
-          // 工具栏
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 32),
-              child: const HomeToolbar(),
-            ),
-          ),
-
-          const SliverToBoxAdapter(child: SizedBox(height: 8)),
-
-          // 搜索结果提示
-          SliverToBoxAdapter(
-            child: Obx(() {
-              if (controller.localSearchQuery.value.isEmpty) {
-                return const SizedBox.shrink();
-              }
-              return Padding(
+            // 工具栏
+            SliverToBoxAdapter(
+              child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 32),
-                child: HomeSearchResultHint(isMobile: isMobile),
-              );
-            }),
-          ),
-
-          // 搜索结果提示后的间距
-          SliverToBoxAdapter(
-            child: Obx(() {
-              if (controller.localSearchQuery.value.isEmpty) {
-                return const SizedBox.shrink();
-              }
-              return const SizedBox(height: 8);
-            }),
-          ),
-
-          // 城市列表锚点
-          SliverToBoxAdapter(
-            child: Container(key: controller.citiesListKey, height: 0),
-          ),
-
-          // 城市网格
-          SliverPadding(
-            padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 32),
-            sliver: SliverToBoxAdapter(
-              child: HomeCityGrid(isMobile: isMobile),
-            ),
-          ),
-
-          // 底部间距
-          const SliverToBoxAdapter(child: SizedBox(height: 40)),
-
-          // Meetups 区域
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 32),
-              child: HomeMeetupsSection(isMobile: isMobile),
-            ),
-          ),
-
-          const SliverToBoxAdapter(child: SizedBox(height: 60)),
-
-          // 特性列表
-          SliverToBoxAdapter(
-            child: Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 16 : 32,
-                vertical: isMobile ? 10 : 20,
+                child: const HomeToolbar(),
               ),
-              child: HomeFeatureHighlights(isMobile: isMobile),
             ),
-          ),
 
-          const SliverToBoxAdapter(child: SizedBox(height: 40)),
+            const SliverToBoxAdapter(child: SizedBox(height: 8)),
 
-          // 版权信息
-          const SliverToBoxAdapter(
-            child: CopyrightWidget(useTopMargin: false),
-          ),
+            // 搜索结果提示
+            SliverToBoxAdapter(
+              child: Obx(() {
+                if (controller.localSearchQuery.value.isEmpty) {
+                  return const SizedBox.shrink();
+                }
+                return Padding(
+                  padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 32),
+                  child: HomeSearchResultHint(isMobile: isMobile),
+                );
+              }),
+            ),
 
-          const SliverToBoxAdapter(child: SizedBox(height: 24)),
-        ],
+                // 搜索结果提示后的间距
+                SliverToBoxAdapter(
+                  child: Obx(() {
+                    if (controller.localSearchQuery.value.isEmpty) {
+                      return const SizedBox.shrink();
+                    }
+                    return const SizedBox(height: 8);
+                  }),
+                ),
+
+            // 城市列表锚点
+            SliverToBoxAdapter(
+              child: Container(key: controller.citiesListKey, height: 0),
+            ),
+
+            // 城市网格
+            SliverPadding(
+              padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 32),
+              sliver: SliverToBoxAdapter(
+                child: HomeCityGrid(isMobile: isMobile),
+              ),
+            ),
+
+            // 底部间距
+            const SliverToBoxAdapter(child: SizedBox(height: 40)),
+
+            // Meetups 区域
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 32),
+                child: HomeMeetupsSection(isMobile: isMobile),
+              ),
+            ),
+
+            const SliverToBoxAdapter(child: SizedBox(height: 60)),
+
+            // 特性列表
+            SliverToBoxAdapter(
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isMobile ? 16 : 32,
+                  vertical: isMobile ? 10 : 20,
+                ),
+                child: HomeFeatureHighlights(isMobile: isMobile),
+              ),
+            ),
+
+                const SliverToBoxAdapter(child: SizedBox(height: 40)),
+
+            // 版权信息
+            const SliverToBoxAdapter(
+              child: CopyrightWidget(useTopMargin: false),
+            ),
+
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+          ],
+        ),
       ),
     );
   }
