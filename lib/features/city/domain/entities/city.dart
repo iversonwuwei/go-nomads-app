@@ -138,20 +138,26 @@ class City {
   final String? description; // 描述
   final String? timezone; // 时区
   final String? population; // 人口
+  final String? currency; // 货币
 
-  // 天气相关
+  // 天气相关（实时数据，仅在详情页加载）
   final int? temperature; // 温度
   final int? feelsLike; // 体感温度
   final String? weather; // 天气状况
   final int? humidity; // 湿度
   final int? airQualityIndex; // 空气质量指数
 
-  // 评分相关
+  // 评分相关 - 数字游民核心关注指标
   final double? overallScore; // 总体评分
   final double? costScore; // 成本评分
   final double? internetScore; // 网速评分
   final double? safetyScore; // 安全评分
   final double? likedScore; // 喜爱度
+  final double? communityScore; // 社区活跃度评分
+  final double? weatherScore; // 天气评分（静态评分）
+
+  // 城市标签 - 快速了解城市特点
+  final List<String>? tags;
 
   // 统计数据
   final int? meetupCount; // Meetup 数量
@@ -188,6 +194,7 @@ class City {
     this.description,
     this.timezone,
     this.population,
+    this.currency,
     this.temperature,
     this.feelsLike,
     this.weather,
@@ -198,6 +205,9 @@ class City {
     this.internetScore,
     this.safetyScore,
     this.likedScore,
+    this.communityScore,
+    this.weatherScore,
+    this.tags,
     this.meetupCount,
     this.reviewCount,
     this.coworkingCount,
@@ -347,6 +357,13 @@ class City {
       }
     }
 
+    // 解析城市标签
+    final rawTags = json['tags'];
+    List<String>? tags;
+    if (rawTags != null && rawTags is List) {
+      tags = rawTags.map((e) => e.toString()).toList();
+    }
+
     return City(
       id: json['id'] as String,
       name: json['name'] as String? ?? 'Unknown',
@@ -357,8 +374,9 @@ class City {
       portraitImageUrl: json['portraitImageUrl'] as String?,
       landscapeImageUrls: landscapeImageUrls,
       description: json['description'] as String?,
-      timezone: json['timezone'] as String?,
+      timezone: json['timeZone'] as String? ?? json['timezone'] as String?,
       population: json['population'] as String?,
+      currency: json['currency'] as String?,
       temperature: weather?['temperature']?.toInt(),
       feelsLike: weather?['feelsLike']?.toInt(),
       weather: weather?['weather']?.toString(),
@@ -369,6 +387,9 @@ class City {
       internetScore: json['internetQualityScore']?.toDouble() ?? json['internetScore']?.toDouble(),
       safetyScore: json['safetyScore']?.toDouble(),
       likedScore: json['likedScore']?.toDouble(),
+      communityScore: json['communityScore']?.toDouble(),
+      weatherScore: json['weatherScore']?.toDouble(),
+      tags: tags,
       meetupCount: json['meetupCount']?.toInt(),
       reviewCount: json['reviewCount']?.toInt(),
       coworkingCount: json['coworkingCount']?.toInt(),
@@ -397,6 +418,7 @@ class City {
       if (description != null) 'description': description,
       if (timezone != null) 'timezone': timezone,
       if (population != null) 'population': population,
+      if (currency != null) 'currency': currency,
       if (temperature != null || feelsLike != null || weather != null || humidity != null || airQualityIndex != null)
         'weather': {
           if (temperature != null) 'temperature': temperature,
@@ -410,6 +432,9 @@ class City {
       if (internetScore != null) 'internetScore': internetScore,
       if (safetyScore != null) 'safetyScore': safetyScore,
       if (likedScore != null) 'likedScore': likedScore,
+      if (communityScore != null) 'communityScore': communityScore,
+      if (weatherScore != null) 'weatherScore': weatherScore,
+      if (tags != null && tags!.isNotEmpty) 'tags': tags,
       if (meetupCount != null) 'meetupCount': meetupCount,
       if (reviewCount != null) 'reviewCount': reviewCount,
       if (coworkingCount != null) 'coworkingCount': coworkingCount,
@@ -437,6 +462,7 @@ class City {
     String? description,
     String? timezone,
     String? population,
+    String? currency,
     int? temperature,
     int? feelsLike,
     String? weather,
@@ -447,6 +473,9 @@ class City {
     double? internetScore,
     double? safetyScore,
     double? likedScore,
+    double? communityScore,
+    double? weatherScore,
+    List<String>? tags,
     int? meetupCount,
     int? reviewCount,
     int? coworkingCount,
@@ -471,6 +500,7 @@ class City {
       description: description ?? this.description,
       timezone: timezone ?? this.timezone,
       population: population ?? this.population,
+      currency: currency ?? this.currency,
       temperature: temperature ?? this.temperature,
       feelsLike: feelsLike ?? this.feelsLike,
       weather: weather ?? this.weather,
@@ -481,6 +511,9 @@ class City {
       internetScore: internetScore ?? this.internetScore,
       safetyScore: safetyScore ?? this.safetyScore,
       likedScore: likedScore ?? this.likedScore,
+      communityScore: communityScore ?? this.communityScore,
+      weatherScore: weatherScore ?? this.weatherScore,
+      tags: tags ?? this.tags,
       meetupCount: meetupCount ?? this.meetupCount,
       reviewCount: reviewCount ?? this.reviewCount,
       coworkingCount: coworkingCount ?? this.coworkingCount,

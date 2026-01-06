@@ -96,13 +96,15 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
 
   @override
   Future<void> onRouteResume() async {
+    log('🔄 CityListPage: 页面返回，刷新数据');
     // 返回页面时清空搜索条件
     setState(() {
       _searchQuery = '';
       _searchController.clear();
     });
     controller.searchQuery.value = '';
-    await controller.loadInitialCities();
+    // 使用 refresh() 方法，会显示刷新状态
+    await controller.refresh();
     _syncFollowedStatusFromController();
   }
 
@@ -339,25 +341,33 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
   // 城市列表
   Widget _buildCityList(bool isMobile) {
     return Obx(() {
-      final cityList = controller.cities.toList(); // 使用 controller.cities，保持一致
-      return ListView.builder(
-        controller: _scrollController,
-        padding: EdgeInsets.fromLTRB(
-          isMobile ? 16 : 20,
-          isMobile ? 16 : 20,
-          isMobile ? 16 : 20,
-          100, // 底部留白给导航栏
-        ),
-        itemCount: cityList.length + (controller.hasMoreData ? 1 : 0), // +1 for loading indicator
-        itemBuilder: (context, index) {
-          // 加载指示器
-          if (index == cityList.length) {
-            return _buildLoadingIndicator();
-          }
-
-          final city = cityList[index];
-          return _buildCityCard(city, isMobile);
+      final cityList = controller.cities.toList();
+      
+      return RefreshIndicator(
+        onRefresh: () async {
+          await controller.refresh();
         },
+        color: const Color(0xFFFF4458),
+        child: ListView.builder(
+          controller: _scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.fromLTRB(
+            isMobile ? 16 : 20,
+            isMobile ? 16 : 20,
+            isMobile ? 16 : 20,
+            100, // 底部留白给导航栏
+          ),
+          itemCount: cityList.length + (controller.hasMoreData ? 1 : 0),
+          itemBuilder: (context, index) {
+            // 加载指示器
+            if (index == cityList.length) {
+              return _buildLoadingIndicator();
+            }
+
+            final city = cityList[index];
+            return _buildCityCard(city, isMobile);
+          },
+        ),
       );
     });
   }
@@ -555,30 +565,20 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
 
                   const SizedBox(height: 12),
 
-                  // 指标标签（单行可滚动）
+                  // 指标标签（单行可滚动）- 数字游民核心关注指标
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        _buildInfoChip(
-                          FontAwesomeIcons.sun,
-                          '${_truncateToOneDecimal(city.temperature ?? 0)}°',
-                          Colors.orange,
-                        ),
-                        const SizedBox(width: 8),
+                        // 💰 月均花费
                         _buildInfoChip(
                           FontAwesomeIcons.dollarSign,
-                          '${city.averageCost != null && city.averageCost! > 0 ? city.averageCost!.toInt() : 0}',
+                          city.averageCost != null && city.averageCost! > 0
+                              ? '\$${city.averageCost!.toInt()}/mo'
+                              : '\$0/mo',
                           city.averageCost != null && city.averageCost! > 0 ? Colors.green : Colors.grey,
                         ),
-                        if (city.airQualityIndex != null) ...[
-                          const SizedBox(width: 8),
-                          _buildInfoChip(
-                            FontAwesomeIcons.wind,
-                            'AQI ${city.airQualityIndex}',
-                            _getAqiColor(city.airQualityIndex!),
-                          ),
-                        ],
+                        // 📶 网络评分
                         if (city.internetScore != null && city.internetScore! > 0) ...[
                           const SizedBox(width: 8),
                           _buildInfoChip(
@@ -587,6 +587,7 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
                             _getScoreColor(city.internetScore!),
                           ),
                         ],
+                        // 🛡️ 安全评分
                         if (city.safetyScore != null && city.safetyScore! > 0) ...[
                           const SizedBox(width: 8),
                           _buildInfoChip(
@@ -595,22 +596,30 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
                             _getScoreColor(city.safetyScore!),
                           ),
                         ],
-                        if (city.coworkingCount != null && city.coworkingCount! > 0) ...[
+                        // 👥 社区活跃度
+                        if (city.communityScore != null && city.communityScore! > 0) ...[
                           const SizedBox(width: 8),
                           _buildInfoChip(
-                            FontAwesomeIcons.laptop,
-                            '${city.coworkingCount}',
-                            Colors.blue,
+                            FontAwesomeIcons.peopleGroup,
+                            city.communityScore!.toStringAsFixed(1),
+                            _getScoreColor(city.communityScore!),
                           ),
                         ],
-                        if (city.meetupCount != null && city.meetupCount! > 0) ...[
-                          const SizedBox(width: 8),
-                          _buildInfoChip(
-                            FontAwesomeIcons.userGroup,
-                            '${city.meetupCount}',
-                            Colors.purple,
-                          ),
-                        ],
+                        // 💻 Coworking 空间数量
+                        const SizedBox(width: 8),
+                        _buildInfoChip(
+                          FontAwesomeIcons.laptop,
+                          '${city.coworkingCount ?? 0}',
+                          (city.coworkingCount ?? 0) > 0 ? Colors.blue : Colors.grey,
+                        ),
+                        // 🎉 Meetup 数量
+                        const SizedBox(width: 8),
+                        _buildInfoChip(
+                          FontAwesomeIcons.userGroup,
+                          '${city.meetupCount ?? 0}',
+                          (city.meetupCount ?? 0) > 0 ? Colors.purple : Colors.grey,
+                        ),
+                        // 💬 评论数量
                         if (city.reviewCount != null && city.reviewCount! > 0) ...[
                           const SizedBox(width: 8),
                           _buildInfoChip(
@@ -619,7 +628,7 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
                             Colors.teal,
                           ),
                         ],
-                        // 版主状态
+                        // 👤 版主状态
                         const SizedBox(width: 8),
                         _buildInfoChip(
                           city.hasModerator ? FontAwesomeIcons.userShield : FontAwesomeIcons.userSlash,
@@ -669,15 +678,6 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
         ],
       ),
     );
-  }
-
-  // 获取AQI颜色
-  Color _getAqiColor(int aqi) {
-    if (aqi <= 50) return Colors.green;
-    if (aqi <= 100) return Colors.yellow.shade700;
-    if (aqi <= 150) return Colors.orange;
-    if (aqi <= 200) return Colors.red;
-    return Colors.purple;
   }
 
   // 错误状态
@@ -808,12 +808,6 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
         );
       },
     );
-  }
-
-  // 截断数字到小数点后一位(不四舍五入)
-  String _truncateToOneDecimal(num value) {
-    final truncated = (value * 10).truncate() / 10;
-    return truncated.toStringAsFixed(1);
   }
 
   // 构建关注按钮

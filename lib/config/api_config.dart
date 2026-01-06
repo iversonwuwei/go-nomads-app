@@ -228,6 +228,7 @@ class ApiConfig {
   // City Endpoints - /api/v1/cities
   // ============================================================
   static const String citiesEndpoint = '/cities';
+  static const String cityListEndpoint = '/cities/list'; // 轻量级城市列表（不含天气数据）
   static const String cityDetailEndpoint = '/cities/{id}';
   static const String cityRecommendedEndpoint = '/cities/recommended';
   static const String citySearchEndpoint = '/cities/search';

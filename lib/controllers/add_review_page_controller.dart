@@ -149,8 +149,12 @@ class AddReviewPageController extends GetxController {
           isSubmitting.value = false;
           AppToast.success(reviewSubmitted, title: successTitle);
 
-          await Future.delayed(const Duration(milliseconds: 800));
-
+          // 延迟一下确保 Toast 显示完成后再返回
+          await Future.delayed(const Duration(milliseconds: 300));
+          if (Get.isOverlaysOpen) {
+            Get.back(closeOverlays: true);
+            await Future.delayed(const Duration(milliseconds: 100));
+          }
           Get.back(result: {'success': true, 'review': data});
           return true;
 

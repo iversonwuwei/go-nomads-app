@@ -62,8 +62,9 @@ class CityRepository implements ICityRepository {
         queryParameters['countryId'] = countryId;
       }
 
+      // 使用轻量级城市列表 API（不含天气数据，性能更优）
       final response = await _httpService.get(
-        _baseUrl,
+        '$_baseUrl/list',
         queryParameters: queryParameters,
       );
 

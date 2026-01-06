@@ -24,6 +24,7 @@ class AddCostPageController extends GetxController {
   // 状态
   final RxBool isSubmitting = false.obs;
   final RxString selectedCurrency = 'USD'.obs;
+  final RxDouble totalCost = 0.0.obs; // Observable 总费用
 
   // Cost category controllers
   final Map<String, TextEditingController> controllers = {
@@ -45,11 +46,31 @@ class AddCostPageController extends GetxController {
   void onInit() {
     super.onInit();
     _validateCityId();
+    _setupCostListeners();
+  }
+
+  /// 设置费用输入监听器
+  void _setupCostListeners() {
+    for (var controller in controllers.values) {
+      controller.addListener(_updateTotalCost);
+    }
+  }
+
+  /// 更新总费用
+  void _updateTotalCost() {
+    double total = 0;
+    controllers.forEach((key, controller) {
+      if (controller.text.isNotEmpty) {
+        total += double.tryParse(controller.text) ?? 0;
+      }
+    });
+    totalCost.value = total;
   }
 
   @override
   void onClose() {
     for (var controller in controllers.values) {
+      controller.removeListener(_updateTotalCost);
       controller.dispose();
     }
     notesController.dispose();
@@ -73,17 +94,6 @@ class AddCostPageController extends GetxController {
       caseSensitive: false,
     );
     return uuidRegex.hasMatch(id);
-  }
-
-  /// 获取总费用
-  double get totalCost {
-    double total = 0;
-    controllers.forEach((key, controller) {
-      if (controller.text.isNotEmpty) {
-        total += double.tryParse(controller.text) ?? 0;
-      }
-    });
-    return total;
   }
 
   /// 提交费用

@@ -9,79 +9,71 @@ import 'package:get/get.dart';
 import 'login_form_section.dart';
 import 'social_login_section.dart';
 
-/// 登录页面 - 使用 GetX + 组件化架构重构
-class NomadsLoginPage extends StatelessWidget {
+/// 登录页面 - 使用 GetX GetView 标准模式
+class NomadsLoginPage extends GetView<NomadsLoginPageController> {
   const NomadsLoginPage({super.key});
 
   // Nomads.com 品牌红色 (用于外部引用)
   static const Color nomadsRed = NomadsLoginPageController.nomadsRed;
-  static const String _controllerTag = 'nomads_login_controller';
+  static const String controllerTag = 'nomads_login_controller';
+
+  @override
+  String? get tag => controllerTag;
 
   @override
   Widget build(BuildContext context) {
-    // 注册 controller（固定 tag，避免键盘弹出导致 MediaQuery 变化触发重建时创建新 controller 而丢失焦点）
-    final controller = Get.put(NomadsLoginPageController(), tag: _controllerTag);
-
-    return PopScope(
-      canPop: true,
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) {
-          Get.delete<NomadsLoginPageController>(tag: _controllerTag);
-        }
-      },
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        body: SafeArea(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Form(
-                key: controller.formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // 返回按钮
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: IconButton(
-                        icon: const Icon(FontAwesomeIcons.arrowLeft, color: nomadsRed),
-                        onPressed: () => Get.offAllNamed('/'),
-                      ),
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Form(
+              key: controller.formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // 返回按钮
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: IconButton(
+                      icon: const Icon(FontAwesomeIcons.arrowLeft, color: nomadsRed),
+                      onPressed: () => Get.offAllNamed('/'),
                     ),
-                    const SizedBox(height: 20),
+                  ),
+                  const SizedBox(height: 20),
 
-                    // Logo 和标题
-                    _buildHeader(context),
+                  // Logo 和标题
+                  _buildHeader(context),
 
-                    const SizedBox(height: 48),
+                  const SizedBox(height: 48),
 
-                    // 登录表单 (根据模式切换)
-                    Obx(() {
-                      if (controller.loginMode.value == LoginMode.phone) {
-                        return PhoneLoginForm(controllerTag: _controllerTag);
-                      } else {
-                        return EmailLoginForm(controllerTag: _controllerTag);
-                      }
-                    }),
+                  // 登录表单 (根据模式切换)
+                  Obx(() {
+                    if (controller.loginMode.value == LoginMode.phone) {
+                      return PhoneLoginForm(controllerTag: controllerTag);
+                    } else {
+                      return EmailLoginForm(controllerTag: controllerTag);
+                    }
+                  }),
 
-                    const SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
-                    // 社交登录
-                    SocialLoginSection(controllerTag: _controllerTag),
+                  // 社交登录
+                  SocialLoginSection(controllerTag: controllerTag),
 
-                    const SizedBox(height: 32),
+                  const SizedBox(height: 32),
 
-                    // 注册提示
-                    _buildRegisterPrompt(),
+                  // 注册提示
+                  _buildRegisterPrompt(),
 
-                    const SizedBox(height: 32),
+                  const SizedBox(height: 32),
 
-                    // 社区亮点
-                    const CommunityHighlightSection(),
+                  // 社区亮点
+                  const CommunityHighlightSection(),
 
-                    SizedBox(height: MediaQuery.of(context).padding.bottom + 32),
-                  ],
-                ),
+                  SizedBox(height: MediaQuery.of(context).padding.bottom + 32),
+                ],
               ),
             ),
           ),
