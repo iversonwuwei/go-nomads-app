@@ -1880,11 +1880,11 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
           ElevatedButton(
             onPressed: () {
               if (nameController.text.trim().isEmpty) {
-                Get.snackbar(l10n.error, l10n.pleaseEnterMemberName);
+                AppToast.error(l10n.pleaseEnterMemberName);
                 return;
               }
               if (roleController.text.trim().isEmpty) {
-                Get.snackbar(l10n.error, l10n.pleaseEnterMemberRole);
+                AppToast.error(l10n.pleaseEnterMemberRole);
                 return;
               }
 
@@ -1973,11 +1973,11 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
           ElevatedButton(
             onPressed: () {
               if (nameController.text.trim().isEmpty) {
-                Get.snackbar(l10n.error, l10n.pleaseEnterMemberName);
+                AppToast.error(l10n.pleaseEnterMemberName);
                 return;
               }
               if (roleController.text.trim().isEmpty) {
-                Get.snackbar(l10n.error, l10n.pleaseEnterMemberRole);
+                AppToast.error(l10n.pleaseEnterMemberRole);
                 return;
               }
 

@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:df_admin_mobile/features/user/domain/repositories/i_user_preferences_repository.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -182,19 +183,11 @@ class TravelHistoryController extends GetxController {
       confirmedTrips.value = await _detectionService.getConfirmedTrips();
       
       final l10n = AppLocalizations.of(Get.context!)!;
-      Get.snackbar(
-        l10n.success,
-        l10n.syncCompleted,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      AppToast.success(l10n.syncCompleted);
     } catch (e) {
       log('❌ 同步失败: $e');
       final l10n = AppLocalizations.of(Get.context!)!;
-      Get.snackbar(
-        l10n.error,
-        l10n.syncFailed,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      AppToast.error(l10n.syncFailed);
     }
   }
 
@@ -250,11 +243,7 @@ class TravelHistoryController extends GetxController {
       confirmedTrips.insert(0, confirmedTrip);
 
       final l10n = AppLocalizations.of(Get.context!)!;
-      Get.snackbar(
-        l10n.success,
-        l10n.travelSaved,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      AppToast.success(l10n.travelSaved);
 
       log('✅ 旅行已确认: ${trip.displayName}');
 
@@ -269,11 +258,7 @@ class TravelHistoryController extends GetxController {
     } catch (e) {
       log('❌ 确认旅行失败: $e');
       final l10n = AppLocalizations.of(Get.context!)!;
-      Get.snackbar(
-        l10n.error,
-        l10n.saveFailed,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      AppToast.error(l10n.saveFailed);
     }
   }
 
@@ -300,11 +285,7 @@ class TravelHistoryController extends GetxController {
       final position = await Get.find<dynamic>().getCurrentLocation();
       if (position == null) {
         final l10n = AppLocalizations.of(Get.context!)!;
-        Get.snackbar(
-          l10n.error,
-          l10n.locationUnavailable,
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        AppToast.error(l10n.locationUnavailable);
         return;
       }
 
@@ -331,21 +312,13 @@ class TravelHistoryController extends GetxController {
       }
 
       final l10n = AppLocalizations.of(Get.context!)!;
-      Get.snackbar(
-        l10n.success,
-        l10n.homeLocationSet,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      AppToast.success(l10n.homeLocationSet);
 
       log('🏠 常住地已设置');
     } catch (e) {
       log('❌ 设置常住地失败: $e');
       final l10n = AppLocalizations.of(Get.context!)!;
-      Get.snackbar(
-        l10n.error,
-        l10n.setHomeFailed,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      AppToast.error(l10n.setHomeFailed);
     } finally {
       isLoading.value = false;
     }

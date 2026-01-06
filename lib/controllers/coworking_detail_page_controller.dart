@@ -9,6 +9,7 @@ import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworkin
 import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_review_repository.dart';
 import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
 import 'package:df_admin_mobile/services/token_storage_service.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -209,38 +210,12 @@ class CoworkingDetailPageController extends GetxController {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    '无法拨打电话',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(phoneNumber, style: const TextStyle(fontSize: 12)),
-                  const SizedBox(height: 4),
-                  const Text('💡 提示：在真机上可以正常拨打', style: TextStyle(fontSize: 11)),
-                ],
-              ),
-              backgroundColor: Colors.orange,
-              behavior: SnackBarBehavior.floating,
-              duration: const Duration(seconds: 4),
-            ),
-          );
+          AppToast.info('无法拨打电话: $phoneNumber\n💡 提示：在真机上可以正常拨打');
         }
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('错误: ${e.toString()}'),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        AppToast.error('错误: ${e.toString()}');
       }
     }
   }

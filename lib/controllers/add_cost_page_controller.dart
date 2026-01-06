@@ -4,6 +4,7 @@ import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/core/sync/sync.dart';
 import 'package:df_admin_mobile/features/user_city_content/domain/entities/user_city_content.dart';
 import 'package:df_admin_mobile/features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -59,7 +60,7 @@ class AddCostPageController extends GetxController {
   void _validateCityId() {
     if (cityId.isEmpty || !_isValidUuid(cityId)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        Get.snackbar('错误', '城市ID无效,无法提交费用');
+        AppToast.error('城市ID无效,无法提交费用');
         Get.back();
       });
     }
@@ -99,7 +100,7 @@ class AddCostPageController extends GetxController {
     // 检查是否至少填写了一项费用
     bool hasAnyCost = controllers.values.any((c) => c.text.isNotEmpty);
     if (!hasAnyCost) {
-      Get.snackbar(errorTitle, pleaseEnterCost);
+      AppToast.warning(pleaseEnterCost);
       return false;
     }
 
@@ -148,12 +149,12 @@ class AddCostPageController extends GetxController {
       ));
       log('✅ [城市费用] 已发送数据变更事件');
 
-      Get.snackbar(successTitle, costShared);
+      AppToast.success(costShared);
 
       return true;
     } catch (e) {
       isSubmitting.value = false;
-      Get.snackbar(errorTitle, 'Failed to submit expenses: $e');
+      AppToast.error('Failed to submit expenses: $e');
       log('❌ 提交费用失败: $e');
       return false;
     }

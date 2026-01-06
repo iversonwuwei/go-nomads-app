@@ -5,6 +5,7 @@ import 'package:df_admin_mobile/features/ai/presentation/controllers/ai_state_co
 import 'package:df_admin_mobile/features/membership/presentation/controllers/membership_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/pages/city_detail/city_detail_controller.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -217,7 +218,7 @@ class _GuideActionBar extends StatelessWidget {
       final membershipController = Get.find<MembershipStateController>();
       final accessCheck = membershipController.checkAIAccess();
       if (accessCheck != null) {
-        Get.snackbar('会员功能', accessCheck);
+        AppToast.info(accessCheck, title: '会员功能');
         return false;
       }
     } catch (e) {
@@ -348,7 +349,7 @@ class _GuideEmptyState extends StatelessWidget {
       final membershipController = Get.find<MembershipStateController>();
       final accessCheck = membershipController.checkAIAccess();
       if (accessCheck != null) {
-        Get.snackbar('会员功能', accessCheck);
+        AppToast.info(accessCheck, title: '会员功能');
         return;
       }
     } catch (e) {

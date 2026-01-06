@@ -1,5 +1,6 @@
 import 'package:df_admin_mobile/services/amap_poi_service.dart';
 import 'package:df_admin_mobile/services/location_service.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:get/get.dart';
@@ -170,7 +171,7 @@ class VenueMapPickerPageController extends GetxController {
   Map<String, dynamic>? confirmSelection(String noSelectionTitle, String pleaseSelectVenue) {
     final name = selectedVenueName.value;
     if (name == null) {
-      Get.snackbar(noSelectionTitle, pleaseSelectVenue);
+      AppToast.warning(pleaseSelectVenue);
       return null;
     }
     final venues = filteredVenues;

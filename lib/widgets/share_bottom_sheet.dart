@@ -4,6 +4,7 @@ import 'package:df_admin_mobile/controllers/locale_controller.dart';
 import 'package:df_admin_mobile/services/social_sdk_service.dart';
 import 'package:df_admin_mobile/utils/qq_share_util.dart';
 import 'package:df_admin_mobile/utils/wechat_share_util.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -378,9 +379,7 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
       final shareText = '$title\n$description\n$shareUrl';
       await Share.share(shareText);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('微信未安装，已使用系统分享'), duration: Duration(seconds: 2)),
-        );
+        AppToast.info('微信未安装，已使用系统分享');
       }
     }
   }
@@ -404,9 +403,7 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
       final shareText = '$title\n$description\n$shareUrl';
       await Share.share(shareText);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('微信未安装，已使用系统分享'), duration: Duration(seconds: 2)),
-        );
+        AppToast.info('微信未安装，已使用系统分享');
       }
     }
   }
@@ -510,12 +507,7 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
   void _copyLink(BuildContext context) {
     Share.share(shareUrl);
     Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('链接已复制'),
-        duration: Duration(seconds: 2),
-      ),
-    );
+    AppToast.success('链接已复制');
   }
 
   /// 系统分享
@@ -613,23 +605,13 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
       } else {
         if (context.mounted) {
           Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('无法打开分享链接'),
-              duration: Duration(seconds: 2),
-            ),
-          );
+          AppToast.error('无法打开分享链接');
         }
       }
     } catch (e) {
       if (context.mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('分享失败: ${e.toString()}'),
-            duration: const Duration(seconds: 2),
-          ),
-        );
+        AppToast.error('分享失败: ${e.toString()}');
       }
     }
   }
