@@ -61,10 +61,10 @@ class NomadsLoginPageController extends GetxController {
 
   @override
   void onClose() {
-    emailController.dispose();
-    passwordController.dispose();
-    phoneController.dispose();
-    smsCodeController.dispose();
+    // 不要手动 dispose TextEditingController
+    // GetX 会自动管理 controller 生命周期，手动 dispose 会导致
+    // "TextEditingController was used after being disposed" 错误
+    // 因为 widget tree 可能还没完全卸载时 controller 已被销毁
     _countdownTimer?.cancel();
     super.onClose();
   }

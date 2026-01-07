@@ -44,6 +44,7 @@ dependencies:
   dio: ^5.4.3
   flutter_screenutil: ^5.9.0
   geolocator: ^14.0.2
+  geolocator_android: ^5.0.2  # Android 原生定位，不依赖 Google Play Services
   add_2_calendar: ^3.0.1
   image_picker: ^1.0.7
   file_picker: ^8.1.2
