@@ -12,7 +12,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 /// Reviews Tab - 评论标签页
-/// 使用 GetView 绑定 CityDetailController
+/// 只加载5条评论预览，header有跳转icon可查看全部
 class ReviewsTab extends GetView<CityDetailController> {
   @override
   final String? tag;
@@ -29,6 +29,7 @@ class ReviewsTab extends GetView<CityDetailController> {
 
     return Obx(() {
       final reviews = contentController.reviews;
+      final totalCount = contentController.reviewsTotalCount.value;
 
       // 首次加载
       if (contentController.isLoadingReviews.value && reviews.isEmpty && !controller.isRefreshingReviews.value) {
@@ -44,12 +45,55 @@ class ReviewsTab extends GetView<CityDetailController> {
 
       return RefreshIndicator(
         onRefresh: () => _handleRefresh(contentController),
-        child: ListView.builder(
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(16),
-          itemCount: reviews.length,
-          itemBuilder: (context, index) => _ReviewCard(
-            review: reviews[index],
-            l10n: l10n,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 标题、总数和跳转icon
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    l10n.reviews,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      if (totalCount > 0)
+                        Text(
+                          '$totalCount ${l10n.reviews.toLowerCase()}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      const SizedBox(width: 8),
+                      // 跳转到完整列表的icon
+                      GestureDetector(
+                        onTap: () => _navigateToReviewList(),
+                        child: Icon(
+                          FontAwesomeIcons.chevronRight,
+                          size: 16,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // 评论列表（最多5条）
+              ...reviews.map((review) => ReviewCard(
+                    review: review,
+                    l10n: l10n,
+                  )),
+            ],
           ),
         ),
       );
@@ -60,6 +104,17 @@ class ReviewsTab extends GetView<CityDetailController> {
     controller.isRefreshingReviews.value = true;
     await contentController.loadCityReviews(controller.cityId);
     controller.isRefreshingReviews.value = false;
+  }
+
+  /// 跳转到评论列表页面
+  void _navigateToReviewList() async {
+    final contentController = Get.find<UserCityContentStateController>();
+    await Get.to(() => ManageReviewsPage(
+          cityId: controller.cityId,
+          cityName: controller.cityName,
+        ));
+    // 返回后重新加载预览数据（5条）
+    contentController.loadCityReviews(controller.cityId);
   }
 
   /// 跳转到添加/管理评论页面
@@ -75,24 +130,29 @@ class ReviewsTab extends GetView<CityDetailController> {
             cityId: cityId,
             cityName: cityName,
           ));
+      // 从管理页面返回后，重新加载预览数据（5条）
+      contentController.loadCityReviews(cityId);
     } else {
       await Get.to(() => AddReviewPage(
             cityId: cityId,
             cityName: cityName,
           ));
+      contentController.loadCityReviews(cityId);
     }
-    contentController.loadCityReviews(cityId);
   }
 }
 
-/// 评论卡片
-class _ReviewCard extends StatelessWidget {
+/// 评论卡片（公开类，可在其他页面复用）
+class ReviewCard extends StatelessWidget {
   final UserCityReview review;
   final AppLocalizations l10n;
+  final VoidCallback? onDelete;
 
-  const _ReviewCard({
+  const ReviewCard({
+    super.key,
     required this.review,
     required this.l10n,
+    this.onDelete,
   });
 
   @override
@@ -104,8 +164,20 @@ class _ReviewCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 用户信息行
-            _UserInfoRow(review: review, l10n: l10n),
+            // 用户信息行（带删除按钮）
+            Row(
+              children: [
+                Expanded(child: _UserInfoRow(review: review, l10n: l10n)),
+                if (onDelete != null)
+                  IconButton(
+                    icon: Icon(FontAwesomeIcons.trash, color: Colors.red[300], size: 16),
+                    onPressed: onDelete,
+                    tooltip: '删除',
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+              ],
+            ),
             const SizedBox(height: 12),
 
             // 标题
@@ -121,11 +193,40 @@ class _ReviewCard extends StatelessWidget {
               style: TextStyle(fontSize: 14, color: Colors.grey[700]),
             ),
 
-            // 图片 - 只有当有图片时才显示
-            if (review.photoUrls.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              _ReviewPhotos(photoUrls: review.photoUrls),
-            ],
+            // 图片
+            if (review.photoUrls.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: List.generate(review.photoUrls.length, (index) {
+                    return InkWell(
+                      onTap: () {
+                        debugPrint('🖼️ 点击了图片 $index');
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => _FullscreenGalleryPage(
+                              imageUrls: review.photoUrls,
+                              initialIndex: index,
+                            ),
+                          ),
+                        );
+                      },
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          review.photoUrls[index],
+                          width: 100,
+                          height: 100,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              ),
             const SizedBox(height: 8),
 
             // 发布时间
@@ -199,32 +300,92 @@ class _UserInfoRow extends StatelessWidget {
   }
 }
 
-/// 评论图片
-class _ReviewPhotos extends StatelessWidget {
-  final List<String> photoUrls;
+/// 全屏图片画廊
+class _FullscreenGalleryPage extends StatefulWidget {
+  final List<String> imageUrls;
+  final int initialIndex;
 
-  const _ReviewPhotos({required this.photoUrls});
+  const _FullscreenGalleryPage({
+    required this.imageUrls,
+    required this.initialIndex,
+  });
+
+  @override
+  State<_FullscreenGalleryPage> createState() => _FullscreenGalleryPageState();
+}
+
+class _FullscreenGalleryPageState extends State<_FullscreenGalleryPage> {
+  late PageController _pageController;
+  late int _currentIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+    _pageController = PageController(initialPage: widget.initialIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    // 如果没有图片，不渲染任何内容
-    if (photoUrls.isEmpty) return const SizedBox.shrink();
-
-    return SizedBox(
-      height: 100,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: photoUrls.length,
-        itemBuilder: (context, index) => Container(
-          width: 100,
-          margin: const EdgeInsets.only(right: 8),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            image: DecorationImage(
-              image: NetworkImage(photoUrls[index]),
-              fit: BoxFit.cover,
+    return Material(
+      color: Colors.black,
+      child: SafeArea(
+        child: Stack(
+          children: [
+            // 图片轮播
+            PageView.builder(
+              controller: _pageController,
+              itemCount: widget.imageUrls.length,
+              onPageChanged: (index) => setState(() => _currentIndex = index),
+              itemBuilder: (context, index) {
+                return InteractiveViewer(
+                  minScale: 0.5,
+                  maxScale: 4.0,
+                  child: Center(
+                    child: Image.network(
+                      widget.imageUrls[index],
+                      fit: BoxFit.contain,
+                      loadingBuilder: (context, child, progress) {
+                        if (progress == null) return child;
+                        return const Center(
+                          child: CircularProgressIndicator(color: Colors.white),
+                        );
+                      },
+                    ),
+                  ),
+                );
+              },
             ),
-          ),
+            // 顶部栏
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                    Text(
+                      '${_currentIndex + 1} / ${widget.imageUrls.length}',
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                    const SizedBox(width: 48), // 占位保持居中
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

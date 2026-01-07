@@ -1,13 +1,14 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/controllers/manage_reviews_page_controller.dart';
-import 'package:df_admin_mobile/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/pages/city_detail/widgets/tabs/reviews_tab.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 import 'add_review_page.dart';
 
-/// Reviews 数据管理列表页面
+/// Reviews 数据管理列表页面 - 使用独立数据集
 class ManageReviewsPage extends StatefulWidget {
   final String cityId;
   final String cityName;
@@ -71,7 +72,7 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final contentController = Get.find<UserCityContentStateController>();
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
@@ -99,13 +100,12 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (contentController.reviews.isEmpty) {
+        if (_controller.reviews.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(FontAwesomeIcons.commentDots,
-                    size: 80, color: Colors.grey[300]),
+                Icon(FontAwesomeIcons.commentDots, size: 80, color: Colors.grey[300]),
                 const SizedBox(height: 16),
                 Text(
                   '暂无评论数据',
@@ -131,79 +131,39 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
         }
 
         return ListView.builder(
+          controller: _controller.scrollController,
           padding: const EdgeInsets.all(16),
-          itemCount: contentController.reviews.length,
+          itemCount: _controller.reviews.length + 1,
           itemBuilder: (context, index) {
-            final review = contentController.reviews[index];
-            return Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              elevation: 2,
-              child: ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Colors.orange,
-                  child: Text(
-                    '${review.rating}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+            // 底部加载指示器
+            if (index == _controller.reviews.length) {
+              return Obx(() {
+                if (_controller.isLoadingMore.value) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+                if (!_controller.hasMore.value) {
+                  return Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Center(
+                      child: Text(
+                        '已加载全部 ${_controller.reviews.length} 条评论',
+                        style: TextStyle(color: Colors.grey[500], fontSize: 14),
+                      ),
                     ),
-                  ),
-                ),
-                title: Text(
-                  review.title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 8),
-                    Text(
-                      review.content,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Icon(FontAwesomeIcons.star,
-                            size: 14, color: Colors.orange[700]),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${review.rating}/5',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Icon(FontAwesomeIcons.calendar,
-                            size: 12, color: Colors.grey[600]),
-                        const SizedBox(width: 4),
-                        Text(
-                          _controller.formatDate(review.createdAt),
-                          style:
-                              TextStyle(fontSize: 12, color: Colors.grey[600]),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                isThreeLine: true,
-                trailing: Obx(() => _controller.canDelete.value
-                    ? IconButton(
-                        icon: const Icon(FontAwesomeIcons.trash,
-                            color: Colors.red),
-                        onPressed: () => _deleteReview(review.id),
-                        tooltip: '删除',
-                      )
-                    : const SizedBox.shrink()),
-              ),
+                  );
+                }
+                return const SizedBox.shrink();
+              });
+            }
+
+            final review = _controller.reviews[index];
+            return ReviewCard(
+              review: review,
+              l10n: l10n,
+              onDelete: _controller.canDelete.value ? () => _deleteReview(review.id) : null,
             );
           },
         );

@@ -113,6 +113,18 @@ class TokenStorageService {
     return role == 'admin';
   }
 
+  /// 检查用户是否为版主
+  Future<bool> isModerator() async {
+    final role = await getUserRole();
+    return role == 'moderator' || role == 'admin';
+  }
+
+  /// 检查用户是否为管理员或版主
+  Future<bool> isAdminOrModerator() async {
+    final role = await getUserRole();
+    return role == 'admin' || role == 'moderator';
+  }
+
   /// 清除本地保存的令牌和用户信息
   Future<void> clearTokens() async {
     final prefs = await SharedPreferences.getInstance();

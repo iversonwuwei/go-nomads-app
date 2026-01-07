@@ -6,15 +6,13 @@ import 'package:df_admin_mobile/features/user_city_content/domain/repositories/i
 // ==================== Photo Use Cases ====================
 
 /// Add City Photo Use Case
-class AddCityPhotoUseCase
-    extends UseCase<UserCityPhoto, AddCityPhotoUseCaseParams> {
+class AddCityPhotoUseCase extends UseCase<UserCityPhoto, AddCityPhotoUseCaseParams> {
   final IUserCityContentRepository _repository;
 
   AddCityPhotoUseCase(this._repository);
 
   @override
-  Future<Result<UserCityPhoto>> execute(
-      AddCityPhotoUseCaseParams params) async {
+  Future<Result<UserCityPhoto>> execute(AddCityPhotoUseCaseParams params) async {
     return await _repository.addCityPhoto(
       cityId: params.cityId,
       imageUrl: params.imageUrl,
@@ -26,15 +24,13 @@ class AddCityPhotoUseCase
 }
 
 /// Submit multiple photos with metadata
-class SubmitCityPhotosUseCase
-    extends UseCase<List<UserCityPhoto>, SubmitCityPhotosParams> {
+class SubmitCityPhotosUseCase extends UseCase<List<UserCityPhoto>, SubmitCityPhotosParams> {
   final IUserCityContentRepository _repository;
 
   SubmitCityPhotosUseCase(this._repository);
 
   @override
-  Future<Result<List<UserCityPhoto>>> execute(
-      SubmitCityPhotosParams params) async {
+  Future<Result<List<UserCityPhoto>>> execute(SubmitCityPhotosParams params) async {
     return await _repository.submitCityPhotoCollection(
       cityId: params.cityId,
       title: params.title,
@@ -78,15 +74,13 @@ class AddCityPhotoUseCaseParams {
 }
 
 /// Get City Photos Use Case
-class GetCityPhotosUseCase
-    extends UseCase<List<UserCityPhoto>, GetCityPhotosUseCaseParams> {
+class GetCityPhotosUseCase extends UseCase<List<UserCityPhoto>, GetCityPhotosUseCaseParams> {
   final IUserCityContentRepository _repository;
 
   GetCityPhotosUseCase(this._repository);
 
   @override
-  Future<Result<List<UserCityPhoto>>> execute(
-      GetCityPhotosUseCaseParams params) async {
+  Future<Result<List<UserCityPhoto>>> execute(GetCityPhotosUseCaseParams params) async {
     return await _repository.getCityPhotos(
       cityId: params.cityId,
       onlyMine: params.onlyMine,
@@ -105,8 +99,7 @@ class GetCityPhotosUseCaseParams {
 }
 
 /// Delete City Photo Use Case
-class DeleteCityPhotoUseCase
-    extends UseCase<void, DeleteCityPhotoUseCaseParams> {
+class DeleteCityPhotoUseCase extends UseCase<void, DeleteCityPhotoUseCaseParams> {
   final IUserCityContentRepository _repository;
 
   DeleteCityPhotoUseCase(this._repository);
@@ -145,15 +138,13 @@ class GetMyPhotosUseCase extends UseCase<List<UserCityPhoto>, NoParams> {
 // ==================== Expense Use Cases ====================
 
 /// Add City Expense Use Case
-class AddCityExpenseUseCase
-    extends UseCase<UserCityExpense, AddCityExpenseUseCaseParams> {
+class AddCityExpenseUseCase extends UseCase<UserCityExpense, AddCityExpenseUseCaseParams> {
   final IUserCityContentRepository _repository;
 
   AddCityExpenseUseCase(this._repository);
 
   @override
-  Future<Result<UserCityExpense>> execute(
-      AddCityExpenseUseCaseParams params) async {
+  Future<Result<UserCityExpense>> execute(AddCityExpenseUseCaseParams params) async {
     return await _repository.addCityExpense(
       cityId: params.cityId,
       category: params.category,
@@ -184,15 +175,13 @@ class AddCityExpenseUseCaseParams {
 }
 
 /// Get City Expenses Use Case
-class GetCityExpensesUseCase
-    extends UseCase<List<UserCityExpense>, GetCityExpensesUseCaseParams> {
+class GetCityExpensesUseCase extends UseCase<List<UserCityExpense>, GetCityExpensesUseCaseParams> {
   final IUserCityContentRepository _repository;
 
   GetCityExpensesUseCase(this._repository);
 
   @override
-  Future<Result<List<UserCityExpense>>> execute(
-      GetCityExpensesUseCaseParams params) async {
+  Future<Result<List<UserCityExpense>>> execute(GetCityExpensesUseCaseParams params) async {
     return await _repository.getCityExpenses(
       cityId: params.cityId,
       onlyMine: params.onlyMine,
@@ -211,8 +200,7 @@ class GetCityExpensesUseCaseParams {
 }
 
 /// Delete City Expense Use Case
-class DeleteCityExpenseUseCase
-    extends UseCase<void, DeleteCityExpenseUseCaseParams> {
+class DeleteCityExpenseUseCase extends UseCase<void, DeleteCityExpenseUseCaseParams> {
   final IUserCityContentRepository _repository;
 
   DeleteCityExpenseUseCase(this._repository);
@@ -251,15 +239,13 @@ class GetMyExpensesUseCase extends UseCase<List<UserCityExpense>, NoParams> {
 // ==================== Review Use Cases ====================
 
 /// Upsert City Review Use Case
-class UpsertCityReviewUseCase
-    extends UseCase<UserCityReview, UpsertCityReviewUseCaseParams> {
+class UpsertCityReviewUseCase extends UseCase<UserCityReview, UpsertCityReviewUseCaseParams> {
   final IUserCityContentRepository _repository;
 
   UpsertCityReviewUseCase(this._repository);
 
   @override
-  Future<Result<UserCityReview>> execute(
-      UpsertCityReviewUseCaseParams params) async {
+  Future<Result<UserCityReview>> execute(UpsertCityReviewUseCaseParams params) async {
     return await _repository.upsertCityReview(
       cityId: params.cityId,
       rating: params.rating,
@@ -272,6 +258,7 @@ class UpsertCityReviewUseCase
       communityScore: params.communityScore,
       weatherScore: params.weatherScore,
       reviewText: params.reviewText,
+      photoUrls: params.photoUrls, // ✅ 传递照片 URL
     );
   }
 }
@@ -288,6 +275,7 @@ class UpsertCityReviewUseCaseParams {
   final int? communityScore;
   final int? weatherScore;
   final String? reviewText;
+  final List<String>? photoUrls; // ✅ 添加评论关联照片
 
   UpsertCityReviewUseCaseParams({
     required this.cityId,
@@ -301,19 +289,18 @@ class UpsertCityReviewUseCaseParams {
     this.communityScore,
     this.weatherScore,
     this.reviewText,
+    this.photoUrls, // ✅ 添加参数
   });
 }
 
 /// Get City Reviews Use Case
-class GetCityReviewsUseCase
-    extends UseCase<List<UserCityReview>, GetCityReviewsUseCaseParams> {
+class GetCityReviewsUseCase extends UseCase<List<UserCityReview>, GetCityReviewsUseCaseParams> {
   final IUserCityContentRepository _repository;
 
   GetCityReviewsUseCase(this._repository);
 
   @override
-  Future<Result<List<UserCityReview>>> execute(
-      GetCityReviewsUseCaseParams params) async {
+  Future<Result<List<UserCityReview>>> execute(GetCityReviewsUseCaseParams params) async {
     return await _repository.getCityReviews(params.cityId);
   }
 }
@@ -324,16 +311,42 @@ class GetCityReviewsUseCaseParams {
   GetCityReviewsUseCaseParams({required this.cityId});
 }
 
+/// Get City Reviews Paged Use Case - 分页获取评论
+class GetCityReviewsPagedUseCase extends UseCase<PagedResult<UserCityReview>, GetCityReviewsPagedUseCaseParams> {
+  final IUserCityContentRepository _repository;
+
+  GetCityReviewsPagedUseCase(this._repository);
+
+  @override
+  Future<Result<PagedResult<UserCityReview>>> execute(GetCityReviewsPagedUseCaseParams params) async {
+    return await _repository.getCityReviewsPaged(
+      params.cityId,
+      page: params.page,
+      pageSize: params.pageSize,
+    );
+  }
+}
+
+class GetCityReviewsPagedUseCaseParams {
+  final String cityId;
+  final int page;
+  final int pageSize;
+
+  GetCityReviewsPagedUseCaseParams({
+    required this.cityId,
+    this.page = 1,
+    this.pageSize = 10,
+  });
+}
+
 /// Get My City Review Use Case
-class GetMyCityReviewUseCase
-    extends UseCase<UserCityReview?, GetMyCityReviewUseCaseParams> {
+class GetMyCityReviewUseCase extends UseCase<UserCityReview?, GetMyCityReviewUseCaseParams> {
   final IUserCityContentRepository _repository;
 
   GetMyCityReviewUseCase(this._repository);
 
   @override
-  Future<Result<UserCityReview?>> execute(
-      GetMyCityReviewUseCaseParams params) async {
+  Future<Result<UserCityReview?>> execute(GetMyCityReviewUseCaseParams params) async {
     return await _repository.getMyCityReview(params.cityId);
   }
 }
@@ -345,8 +358,7 @@ class GetMyCityReviewUseCaseParams {
 }
 
 /// Delete My City Review Use Case
-class DeleteMyCityReviewUseCase
-    extends UseCase<void, DeleteMyCityReviewUseCaseParams> {
+class DeleteMyCityReviewUseCase extends UseCase<void, DeleteMyCityReviewUseCaseParams> {
   final IUserCityContentRepository _repository;
 
   DeleteMyCityReviewUseCase(this._repository);
@@ -363,18 +375,35 @@ class DeleteMyCityReviewUseCaseParams {
   DeleteMyCityReviewUseCaseParams({required this.cityId});
 }
 
+/// Delete City Review Use Case (admin/moderator)
+class DeleteCityReviewUseCase extends UseCase<void, DeleteCityReviewUseCaseParams> {
+  final IUserCityContentRepository _repository;
+
+  DeleteCityReviewUseCase(this._repository);
+
+  @override
+  Future<Result<void>> execute(DeleteCityReviewUseCaseParams params) async {
+    return await _repository.deleteCityReview(params.cityId, params.reviewId);
+  }
+}
+
+class DeleteCityReviewUseCaseParams {
+  final String cityId;
+  final String reviewId;
+
+  DeleteCityReviewUseCaseParams({required this.cityId, required this.reviewId});
+}
+
 // ==================== Statistics Use Cases ====================
 
 /// Get City Stats Use Case
-class GetCityStatsUseCase
-    extends UseCase<CityUserContentStats, GetCityStatsUseCaseParams> {
+class GetCityStatsUseCase extends UseCase<CityUserContentStats, GetCityStatsUseCaseParams> {
   final IUserCityContentRepository _repository;
 
   GetCityStatsUseCase(this._repository);
 
   @override
-  Future<Result<CityUserContentStats>> execute(
-      GetCityStatsUseCaseParams params) async {
+  Future<Result<CityUserContentStats>> execute(GetCityStatsUseCaseParams params) async {
     return await _repository.getCityStats(params.cityId);
   }
 }
@@ -386,15 +415,13 @@ class GetCityStatsUseCaseParams {
 }
 
 /// Get City Cost Summary Use Case
-class GetCityCostSummaryUseCase
-    extends UseCase<CityCostSummary, GetCityCostSummaryUseCaseParams> {
+class GetCityCostSummaryUseCase extends UseCase<CityCostSummary, GetCityCostSummaryUseCaseParams> {
   final IUserCityContentRepository _repository;
 
   GetCityCostSummaryUseCase(this._repository);
 
   @override
-  Future<Result<CityCostSummary>> execute(
-      GetCityCostSummaryUseCaseParams params) async {
+  Future<Result<CityCostSummary>> execute(GetCityCostSummaryUseCaseParams params) async {
     return await _repository.getCityCostSummary(params.cityId);
   }
 }

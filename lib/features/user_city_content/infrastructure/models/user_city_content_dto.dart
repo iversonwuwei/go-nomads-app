@@ -1,6 +1,47 @@
 // import 'package:df_admin_mobile/models/user_city_content_models.dart' as legacy;
-import 'package:df_admin_mobile/features/user_city_content/domain/entities/user_city_content.dart'
-    as domain;
+import 'package:df_admin_mobile/features/user_city_content/domain/entities/user_city_content.dart' as domain;
+
+/// 分页结果 DTO
+class PagedResultDto<T> {
+  final List<T> items;
+  final int totalCount;
+  final int page;
+  final int pageSize;
+  final int totalPages;
+  final bool hasMore;
+
+  PagedResultDto({
+    required this.items,
+    required this.totalCount,
+    required this.page,
+    required this.pageSize,
+    required this.totalPages,
+    required this.hasMore,
+  });
+
+  factory PagedResultDto.fromJson(
+    Map<String, dynamic> json,
+    T Function(Map<String, dynamic>) fromJsonT,
+  ) {
+    return PagedResultDto(
+      items: (json['items'] as List<dynamic>).map((e) => fromJsonT(e as Map<String, dynamic>)).toList(),
+      totalCount: json['totalCount'] ?? 0,
+      page: json['page'] ?? 1,
+      pageSize: json['pageSize'] ?? 10,
+      totalPages: json['totalPages'] ?? 1,
+      hasMore: json['hasMore'] ?? false,
+    );
+  }
+
+  domain.PagedResult<R> toDomain<R>(R Function(T) mapper) {
+    return domain.PagedResult(
+      items: items.map(mapper).toList(),
+      totalCount: totalCount,
+      page: page,
+      pageSize: pageSize,
+    );
+  }
+}
 
 /// UserCityPhoto DTO
 class UserCityPhotoDto {
@@ -247,15 +288,13 @@ class UserCityReviewDto {
     return UserCityReviewDto(
       id: json['id'],
       userId: json['userId'],
-      username: json['username'] ??
-          'User ${json['userId'].toString().substring(0, 8)}',
+      username: json['username'] ?? 'User ${json['userId'].toString().substring(0, 8)}',
       userAvatar: json['userAvatar'],
       cityId: json['cityId'],
       rating: json['rating'],
       title: json['title'],
       content: json['content'],
-      visitDate:
-          json['visitDate'] != null ? DateTime.parse(json['visitDate']) : null,
+      visitDate: json['visitDate'] != null ? DateTime.parse(json['visitDate']) : null,
       internetQualityScore: json['internetQualityScore'],
       safetyScore: json['safetyScore'],
       costScore: json['costScore'],
@@ -263,12 +302,8 @@ class UserCityReviewDto {
       weatherScore: json['weatherScore'],
       reviewText: json['reviewText'],
       createdAt: DateTime.parse(json['createdAt']),
-      updatedAt:
-          json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
-      photoUrls: (json['photoUrls'] as List<dynamic>?)
-              ?.map((e) => e.toString())
-              .toList() ??
-          [],
+      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
+      photoUrls: (json['photoUrls'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
     );
   }
 
@@ -458,9 +493,7 @@ class CityCostSummaryDto {
       contributorCount: json['contributorCount'] ?? 0,
       totalExpenseCount: json['totalExpenseCount'] ?? 0,
       currency: json['currency'] ?? 'USD',
-      updatedAt: json['updatedAt'] != null
-          ? DateTime.parse(json['updatedAt'])
-          : DateTime.now(),
+      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : DateTime.now(),
     );
   }
 

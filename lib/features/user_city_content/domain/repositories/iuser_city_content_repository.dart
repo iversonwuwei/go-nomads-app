@@ -80,16 +80,27 @@ abstract class IUserCityContentRepository {
     int? communityScore,
     int? weatherScore,
     String? reviewText,
+    List<String>? photoUrls, // ✅ 添加评论关联照片
   });
 
   /// Get all reviews for a city (public access)
   Future<Result<List<UserCityReview>>> getCityReviews(String cityId);
+
+  /// Get reviews for a city with pagination
+  Future<Result<PagedResult<UserCityReview>>> getCityReviewsPaged(
+    String cityId, {
+    int page = 1,
+    int pageSize = 10,
+  });
 
   /// Get my review for a specific city
   Future<Result<UserCityReview?>> getMyCityReview(String cityId);
 
   /// Delete my review for a city
   Future<Result<void>> deleteMyCityReview(String cityId);
+
+  /// Delete a review by reviewId (admin/moderator)
+  Future<Result<void>> deleteCityReview(String cityId, String reviewId);
 
   // ==================== Statistics Operations ====================
 

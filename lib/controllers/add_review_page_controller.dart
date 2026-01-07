@@ -1,8 +1,10 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/core/sync/sync.dart';
 import 'package:df_admin_mobile/features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
+import 'package:df_admin_mobile/services/image_upload_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -104,6 +106,7 @@ class AddReviewPageController extends GetxController {
     required String successTitle,
     required String errorTitle,
     required String Function(String) failedToSubmitReview,
+    String? uploadingPhotosMessage,
   }) async {
     // 验证评分
     if (rating.value == 0) {
@@ -124,12 +127,45 @@ class AddReviewPageController extends GetxController {
       log('🔄 Submitting review for city: $cityId');
       log('   Rating: ${rating.value.round()}');
       log('   Title: ${titleController.text.trim()}');
+      log('   Photos: ${selectedImages.length} images selected');
 
+      // 1. 如果有选择图片，先上传图片到 Storage
+      List<String> uploadedPhotoUrls = [];
+      if (selectedImages.isNotEmpty) {
+        log('📤 Uploading ${selectedImages.length} photos...');
+
+        try {
+          // 使用单例模式获取 ImageUploadService（不是通过 GetX）
+          final imageUploadService = ImageUploadService();
+          final imageFiles = selectedImages.map((xFile) => File(xFile.path)).toList();
+
+          // 上传图片到 Supabase Storage
+          uploadedPhotoUrls = await imageUploadService.uploadMultipleImages(
+            imageFiles: imageFiles,
+            bucket: 'user-uploads',
+            folder: 'city-reviews/$cityId',
+            compress: true,
+            quality: 85,
+            onProgress: (current, total) {
+              log('📤 Uploading photo $current/$total');
+            },
+          );
+
+          log('✅ Uploaded ${uploadedPhotoUrls.length} photos to storage');
+        } catch (e, stackTrace) {
+          log('❌ Photo upload failed: $e');
+          log('Stack trace: $stackTrace');
+          // 图片上传失败不阻止评论提交，但 photoUrls 为空
+        }
+      }
+
+      // 2. 提交评论（包含照片 URL）
       final result = await apiService.upsertCityReview(
         cityId: cityId,
         rating: rating.value.round(),
         title: titleController.text.trim(),
         content: contentController.text.trim(),
+        photoUrls: uploadedPhotoUrls.isNotEmpty ? uploadedPhotoUrls : null, // ✅ 直接传递照片 URL 到评论 API
       );
 
       log('✅ API Response: ${result.runtimeType}');
