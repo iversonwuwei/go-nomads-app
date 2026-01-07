@@ -10,7 +10,22 @@ import 'package:get/get.dart';
 class AddressSearchSection extends GetView<VenueMapPickerPageController> {
   final String controllerTag;
 
-  const AddressSearchSection({super.key, required this.controllerTag});
+  /// 是否只显示搜索框（不显示结果）
+  final bool showResults;
+
+  /// 是否只显示输入框
+  final bool showInputOnly;
+
+  /// 是否只显示搜索结果（用于悬浮层）
+  final bool showResultsOnly;
+
+  const AddressSearchSection({
+    super.key,
+    required this.controllerTag,
+    this.showResults = true,
+    this.showInputOnly = false,
+    this.showResultsOnly = false,
+  });
 
   @override
   String? get tag => controllerTag;
@@ -19,6 +34,12 @@ class AddressSearchSection extends GetView<VenueMapPickerPageController> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
+    // 只显示搜索结果（用于悬浮层）
+    if (showResultsOnly) {
+      return Obx(() => controller.showSearchResults.value ? _buildSearchResults(l10n) : const SizedBox.shrink());
+    }
+
+    // 只显示输入框或完整组件
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Column(
@@ -26,8 +47,9 @@ class AddressSearchSection extends GetView<VenueMapPickerPageController> {
         children: [
           // 搜索输入框
           _buildSearchInput(l10n),
-          // 搜索结果列表
-          Obx(() => controller.showSearchResults.value ? _buildSearchResults(l10n) : const SizedBox.shrink()),
+          // 搜索结果列表（仅当 showResults 为 true 时显示）
+          if (showResults)
+            Obx(() => controller.showSearchResults.value ? _buildSearchResults(l10n) : const SizedBox.shrink()),
         ],
       ),
     );

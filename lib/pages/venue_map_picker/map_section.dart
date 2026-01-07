@@ -1,5 +1,5 @@
-import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/controllers/venue_map_picker_page_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/services/amap_poi_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -19,9 +19,9 @@ class MapSection extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.4,
+      height: MediaQuery.of(context).size.height * 0.25,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Obx(() => _buildMapContent(context, controller, l10n)),
       ),
     );

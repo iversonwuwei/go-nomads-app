@@ -77,13 +77,25 @@ class VenueMapPickerPage extends StatelessWidget {
             FocusScope.of(context).unfocus();
           },
           behavior: HitTestBehavior.translucent,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Stack(
             children: [
-              AddressSearchSection(controllerTag: _tag),
-              FilterChipsSection(controllerTag: _tag),
-              MapSection(controllerTag: _tag),
-              Expanded(child: VenueListSection(controllerTag: _tag)),
+              // 主布局
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AddressSearchSection(controllerTag: _tag, showResults: false),
+                  FilterChipsSection(controllerTag: _tag),
+                  MapSection(controllerTag: _tag),
+                  Expanded(child: VenueListSection(controllerTag: _tag)),
+                ],
+              ),
+              // 搜索结果浮层
+              Positioned(
+                top: 56, // 搜索框高度 + padding
+                left: 16,
+                right: 16,
+                child: AddressSearchSection(controllerTag: _tag, showInputOnly: false, showResultsOnly: true),
+              ),
             ],
           ),
         ),

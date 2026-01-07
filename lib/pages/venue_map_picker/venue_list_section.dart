@@ -1,5 +1,5 @@
-import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/controllers/venue_map_picker_page_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/services/amap_poi_service.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -24,8 +24,7 @@ class VenueListSection extends StatelessWidget {
       final selectedVenue = selectedName != null ? allVenues.firstWhereOrNull((v) => v.name == selectedName) : null;
 
       // 如果只显示选中项且有选中的场地
-      final displayVenues =
-          (controller.showOnlySelected.value && selectedVenue != null) ? [selectedVenue] : allVenues;
+      final displayVenues = (controller.showOnlySelected.value && selectedVenue != null) ? [selectedVenue] : allVenues;
 
       return Container(
         decoration: BoxDecoration(
@@ -44,7 +43,7 @@ class VenueListSection extends StatelessWidget {
           children: [
             Center(
               child: Container(
-                margin: const EdgeInsets.symmetric(vertical: 12),
+                margin: const EdgeInsets.symmetric(vertical: 6),
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
@@ -93,7 +92,7 @@ class VenueListSection extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             Expanded(
               child: displayVenues.isEmpty
                   ? Center(child: Text(controller.isLoadingPoi.value ? l10n.loading : l10n.noData))

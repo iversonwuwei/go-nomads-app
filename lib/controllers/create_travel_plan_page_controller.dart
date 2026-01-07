@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:df_admin_mobile/services/amap_poi_service.dart';
@@ -5,6 +6,7 @@ import 'package:df_admin_mobile/services/location_service.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 
 class CreateTravelPlanPageController extends GetxController {
   final String cityId;
@@ -60,9 +62,14 @@ class CreateTravelPlanPageController extends GetxController {
     try {
       final locationService = Get.find<LocationService>();
 
-      // 添加超时机制，防止无限等待
+      log('📍 开始获取位置... (最多等待60秒)');
+
+      // 增加超时时间，首次GPS定位可能需要较长时间
       final position =
-          await locationService.getCurrentLocation().timeout(const Duration(seconds: 10), onTimeout: () => null);
+          await locationService.getCurrentLocation().timeout(const Duration(seconds: 60), onTimeout: () {
+        log('⏱️ 定位超时（60秒）');
+        return null;
+      });
 
       if (position == null) {
         log('❌ 无法获取位置或超时，使用默认值');
@@ -73,7 +80,7 @@ class CreateTravelPlanPageController extends GetxController {
 
       log('📍 获取到位置: ${position.latitude}, ${position.longitude}');
 
-      // 使用高德逆地理编码获取地址，同样添加超时
+      // 先尝试高德逆地理编码（中国大陆）
       final geoResult = await AmapPoiService.instance
           .reverseGeocode(
             latitude: position.latitude,
@@ -81,13 +88,22 @@ class CreateTravelPlanPageController extends GetxController {
           )
           .timeout(const Duration(seconds: 5), onTimeout: () => null);
 
-      if (geoResult != null) {
+      if (geoResult != null && geoResult.formattedAddress.isNotEmpty) {
         departureLocation.value =
             geoResult.shortAddress.isNotEmpty ? geoResult.shortAddress : geoResult.formattedAddress;
-        log('✅ 逆地理编码成功: ${departureLocation.value}');
+        log('✅ 高德逆地理编码成功: ${departureLocation.value}');
       } else {
-        departureLocation.value = '';
-        log('❌ 逆地理编码失败或超时');
+        // 高德失败，尝试使用 Nominatim（OpenStreetMap）作为备用
+        log('⚠️ 高德逆地理编码失败，尝试 Nominatim...');
+        final nominatimResult = await _reverseGeocodeWithNominatim(position.latitude, position.longitude);
+        if (nominatimResult != null && nominatimResult.isNotEmpty) {
+          departureLocation.value = nominatimResult;
+          log('✅ Nominatim 逆地理编码成功: ${departureLocation.value}');
+        } else {
+          // 都失败了，显示坐标
+          departureLocation.value = '${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)}';
+          log('⚠️ 使用坐标作为出发地: ${departureLocation.value}');
+        }
       }
     } catch (e) {
       log('❌ 获取位置异常: $e');
@@ -95,6 +111,54 @@ class CreateTravelPlanPageController extends GetxController {
     } finally {
       isLoadingLocation.value = false;
     }
+  }
+
+  /// 使用 Nominatim (OpenStreetMap) 进行逆地理编码
+  /// 适用于全球范围，但请注意遵守使用限制
+  Future<String?> _reverseGeocodeWithNominatim(double latitude, double longitude) async {
+    try {
+      final uri = Uri.https('nominatim.openstreetmap.org', '/reverse', {
+        'lat': latitude.toString(),
+        'lon': longitude.toString(),
+        'format': 'json',
+        'addressdetails': '1',
+        'accept-language': 'zh-CN,en', // 优先中文
+      });
+
+      final response = await http.get(
+        uri,
+        headers: {'User-Agent': 'GoNomads/1.0'},
+      ).timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final address = data['address'] as Map<String, dynamic>?;
+
+        if (address != null) {
+          // 构建简短地址
+          final parts = <String>[];
+          if (address['suburb'] != null) parts.add(address['suburb'].toString());
+          if (address['city'] != null) {
+            parts.add(address['city'].toString());
+          } else if (address['town'] != null) {
+            parts.add(address['town'].toString());
+          } else if (address['county'] != null) {
+            parts.add(address['county'].toString());
+          }
+          if (address['country'] != null) parts.add(address['country'].toString());
+
+          if (parts.isNotEmpty) {
+            return parts.join(', ');
+          }
+        }
+
+        // 使用 display_name 作为备用
+        return data['display_name'] as String?;
+      }
+    } catch (e) {
+      log('❌ Nominatim 逆地理编码失败: $e');
+    }
+    return null;
   }
 
   void setDuration(int value) => duration.value = value;
