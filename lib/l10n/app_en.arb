@@ -2138,7 +2138,9 @@
   "pleaseEnterMemberRole": "Please enter member role",
   "founder": "Founder",
   "name": "Name",
-  "role": "Role"
+  "role": "Role",
+  "searchAddress": "Search address or place",
+  "noResults": "No results found"
 }
 
 

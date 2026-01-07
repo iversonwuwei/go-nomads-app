@@ -634,7 +634,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchResults => 'Search Results';
 
   @override
-  String get noResults => 'NO RESULTS';
+  String get noResults => 'No results found';
 
   @override
   String get tryAgain => 'Try Again';
@@ -4186,4 +4186,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get role => 'Role';
+
+  @override
+  String get searchAddress => 'Search address or place';
 }

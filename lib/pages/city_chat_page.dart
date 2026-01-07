@@ -63,6 +63,9 @@ class _CityChatPageState extends State<CityChatPage> {
       }
     }
 
+    // 检查 widget 是否仍然挂载在树中
+    if (!mounted) return;
+
     setState(() {
       _initialized = true;
     });

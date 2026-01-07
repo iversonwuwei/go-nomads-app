@@ -1,6 +1,7 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/controllers/venue_map_picker_page_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/pages/venue_map_picker/address_search_section.dart';
 import 'package:df_admin_mobile/pages/venue_map_picker/filter_chips_section.dart';
 import 'package:df_admin_mobile/pages/venue_map_picker/map_section.dart';
 import 'package:df_admin_mobile/pages/venue_map_picker/venue_list_section.dart';
@@ -11,8 +12,13 @@ import 'package:get/get.dart';
 /// 场地地图选择器页面
 class VenueMapPickerPage extends StatelessWidget {
   final String? cityName;
+  final String? initialVenueAddress;
 
-  const VenueMapPickerPage({super.key, this.cityName});
+  const VenueMapPickerPage({
+    super.key,
+    this.cityName,
+    this.initialVenueAddress,
+  });
 
   String get _tag => 'venue_map_picker_${cityName ?? 'default'}';
 
@@ -20,7 +26,10 @@ class VenueMapPickerPage extends StatelessWidget {
   Widget build(BuildContext context) {
     // 注册 Controller
     Get.put(
-      VenueMapPickerPageController(cityName: cityName),
+      VenueMapPickerPageController(
+        cityName: cityName,
+        initialVenueAddress: initialVenueAddress,
+      ),
       tag: _tag,
     );
 
@@ -60,13 +69,23 @@ class VenueMapPickerPage extends StatelessWidget {
             ),
           ],
         ),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            FilterChipsSection(controllerTag: _tag),
-            MapSection(controllerTag: _tag),
-            Expanded(child: VenueListSection(controllerTag: _tag)),
-          ],
+        body: GestureDetector(
+          onTap: () {
+            // 点击其他区域时隐藏搜索结果
+            final controller = Get.find<VenueMapPickerPageController>(tag: _tag);
+            controller.hideSearchResults();
+            FocusScope.of(context).unfocus();
+          },
+          behavior: HitTestBehavior.translucent,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AddressSearchSection(controllerTag: _tag),
+              FilterChipsSection(controllerTag: _tag),
+              MapSection(controllerTag: _tag),
+              Expanded(child: VenueListSection(controllerTag: _tag)),
+            ],
+          ),
         ),
       ),
     );

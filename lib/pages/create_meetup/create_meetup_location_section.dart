@@ -1,6 +1,6 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/controllers/create_meetup_page_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/pages/venue_map_picker/venue_map_picker_page.dart';
 import 'package:df_admin_mobile/widgets/location_picker_field.dart';
 import 'package:flutter/material.dart';
@@ -23,18 +23,18 @@ class CreateMeetupLocationSection extends StatelessWidget {
       children: [
         // City picker
         Obx(() => LocationPickerField(
-          initialCountryId: _c.selectedCountryId.value,
-          initialCountryName: _c.selectedCountry.value,
-          initialCityId: _c.selectedCityId.value,
-          initialCityName: _c.selectedCity.value,
-          required: true,
-          onChanged: (result) {
-            _c.selectedCountryId.value = result.countryId;
-            _c.selectedCountry.value = result.countryName;
-            _c.selectedCityId.value = result.cityId;
-            _c.selectedCity.value = result.cityName;
-          },
-        )),
+              initialCountryId: _c.selectedCountryId.value,
+              initialCountryName: _c.selectedCountry.value,
+              initialCityId: _c.selectedCityId.value,
+              initialCityName: _c.selectedCity.value,
+              required: true,
+              onChanged: (result) {
+                _c.selectedCountryId.value = result.countryId;
+                _c.selectedCountry.value = result.countryName;
+                _c.selectedCityId.value = result.cityId;
+                _c.selectedCity.value = result.cityName;
+              },
+            )),
 
         const SizedBox(height: 20),
 
@@ -55,29 +55,37 @@ class CreateMeetupLocationSection extends StatelessWidget {
           children: [
             Expanded(
               child: Obx(() => TextFormField(
-                controller: _c.venueController,
-                decoration: InputDecoration(
-                  hintText: l10n.enterVenue,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.borderLight)),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: _c.venueErrorText.value != null && _c.venueErrorText.value!.isNotEmpty ? Theme.of(context).colorScheme.error : AppColors.borderLight),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: _c.venueErrorText.value != null && _c.venueErrorText.value!.isNotEmpty ? Theme.of(context).colorScheme.error : const Color(0xFFFF4458)),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    _c.venueErrorText.value = l10n.pleaseEnterVenue;
-                    return '';
-                  }
-                  _c.venueErrorText.value = null;
-                  return null;
-                },
-              )),
+                    controller: _c.venueController,
+                    decoration: InputDecoration(
+                      hintText: l10n.enterVenue,
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: AppColors.borderLight)),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(
+                            color: _c.venueErrorText.value != null && _c.venueErrorText.value!.isNotEmpty
+                                ? Theme.of(context).colorScheme.error
+                                : AppColors.borderLight),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(
+                            color: _c.venueErrorText.value != null && _c.venueErrorText.value!.isNotEmpty
+                                ? Theme.of(context).colorScheme.error
+                                : const Color(0xFFFF4458)),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        _c.venueErrorText.value = l10n.pleaseEnterVenue;
+                        return '';
+                      }
+                      _c.venueErrorText.value = null;
+                      return null;
+                    },
+                  )),
             ),
             const SizedBox(width: 12),
             SizedBox(
@@ -100,7 +108,8 @@ class CreateMeetupLocationSection extends StatelessWidget {
           if (_c.venueErrorText.value != null && _c.venueErrorText.value!.isNotEmpty) {
             return Padding(
               padding: const EdgeInsets.only(left: 8, top: 4),
-              child: Text(_c.venueErrorText.value!, style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12)),
+              child: Text(_c.venueErrorText.value!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12)),
             );
           }
           return const SizedBox.shrink();
@@ -110,8 +119,14 @@ class CreateMeetupLocationSection extends StatelessWidget {
   }
 
   void _selectVenueFromMap(BuildContext context) async {
+    // 获取用户已输入的场地地址
+    final venueAddress = _c.venueController.text.trim();
+
     final result = await Get.to<Map<String, dynamic>>(
-      () => VenueMapPickerPage(cityName: _c.selectedCity.value ?? 'Bangkok'),
+      () => VenueMapPickerPage(
+        cityName: _c.selectedCity.value ?? 'Bangkok',
+        initialVenueAddress: venueAddress.isNotEmpty ? venueAddress : null,
+      ),
     );
 
     if (result != null) {

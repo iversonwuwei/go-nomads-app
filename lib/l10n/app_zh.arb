@@ -2122,7 +2122,9 @@
   "pleaseEnterMemberRole": "请输入成员职位",
   "founder": "创始人",
   "name": "姓名",
-  "role": "职位"
+  "role": "职位",
+  "searchAddress": "搜索地址或地点",
+  "noResults": "未找到结果"
 }
 
 
