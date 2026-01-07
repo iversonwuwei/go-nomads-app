@@ -217,8 +217,7 @@ class CityUserContentStats {
   // Business logic methods
   int get totalContributions => photoCount + expenseCount + reviewCount;
 
-  int get totalContributors =>
-      {photoContributors, expenseContributors, reviewContributors}.length;
+  int get totalContributors => {photoContributors, expenseContributors, reviewContributors}.length;
 
   bool get hasPhotos => photoCount > 0;
   bool get hasExpenses => expenseCount > 0;
@@ -286,4 +285,22 @@ class CityCostSummary {
     if (contributorCount == 0) return 0.0;
     return total / contributorCount;
   }
+}
+
+/// PagedResult Domain Entity - 分页结果
+class PagedResult<T> {
+  final List<T> items;
+  final int totalCount;
+  final int page;
+  final int pageSize;
+
+  PagedResult({
+    required this.items,
+    required this.totalCount,
+    required this.page,
+    required this.pageSize,
+  });
+
+  int get totalPages => (totalCount / pageSize).ceil();
+  bool get hasMore => page < totalPages;
 }

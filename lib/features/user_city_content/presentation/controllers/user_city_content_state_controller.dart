@@ -36,8 +36,10 @@ class UserCityContentStateController extends GetxController {
 
   final UpsertCityReviewUseCase _upsertCityReviewUseCase;
   final GetCityReviewsUseCase _getCityReviewsUseCase;
+  final GetCityReviewsPagedUseCase _getCityReviewsPagedUseCase;
   final GetMyCityReviewUseCase _getMyCityReviewUseCase;
   final DeleteMyCityReviewUseCase _deleteMyCityReviewUseCase;
+  final DeleteCityReviewUseCase _deleteCityReviewUseCase;
 
   final GetCityStatsUseCase _getCityStatsUseCase;
   final GetCityCostSummaryUseCase _getCityCostSummaryUseCase;
@@ -49,6 +51,13 @@ class UserCityContentStateController extends GetxController {
   final myReview = Rxn<UserCityReview>();
   final stats = Rxn<CityUserContentStats>();
   final costSummary = Rxn<CityCostSummary>();
+
+  // Reviews pagination state
+  final reviewsCurrentPage = 1.obs;
+  final reviewsTotalCount = 0.obs;
+  final reviewsHasMore = true.obs;
+  final isLoadingMoreReviews = false.obs;
+  String? _currentReviewsCityId;
 
   final RxMap<String, String> photoUploaderNames = <String, String>{}.obs;
   final Set<String> _pendingUserNameFetches = <String>{};
@@ -72,8 +81,10 @@ class UserCityContentStateController extends GetxController {
     required GetMyExpensesUseCase getMyExpensesUseCase,
     required UpsertCityReviewUseCase upsertCityReviewUseCase,
     required GetCityReviewsUseCase getCityReviewsUseCase,
+    required GetCityReviewsPagedUseCase getCityReviewsPagedUseCase,
     required GetMyCityReviewUseCase getMyCityReviewUseCase,
     required DeleteMyCityReviewUseCase deleteMyCityReviewUseCase,
+    required DeleteCityReviewUseCase deleteCityReviewUseCase,
     required GetCityStatsUseCase getCityStatsUseCase,
     required GetCityCostSummaryUseCase getCityCostSummaryUseCase,
   })  : _addCityPhotoUseCase = addCityPhotoUseCase,
@@ -88,8 +99,10 @@ class UserCityContentStateController extends GetxController {
         _getMyExpensesUseCase = getMyExpensesUseCase,
         _upsertCityReviewUseCase = upsertCityReviewUseCase,
         _getCityReviewsUseCase = getCityReviewsUseCase,
+        _getCityReviewsPagedUseCase = getCityReviewsPagedUseCase,
         _getMyCityReviewUseCase = getMyCityReviewUseCase,
         _deleteMyCityReviewUseCase = deleteMyCityReviewUseCase,
+        _deleteCityReviewUseCase = deleteCityReviewUseCase,
         _getCityStatsUseCase = getCityStatsUseCase,
         _getCityCostSummaryUseCase = getCityCostSummaryUseCase;
 
@@ -357,6 +370,7 @@ class UserCityContentStateController extends GetxController {
 
   // ==================== Review Methods ====================
 
+  /// 加载城市评论（预览模式，只加载5条）
   Future<void> loadCityReviews(String cityId) async {
     // 如果用户未登录,跳过加载
     if (!_isUserLoggedIn()) {
@@ -365,21 +379,92 @@ class UserCityContentStateController extends GetxController {
     }
 
     isLoadingReviews.value = true;
+    _currentReviewsCityId = cityId;
+    reviewsCurrentPage.value = 1;
 
-    final result = await _getCityReviewsUseCase.execute(
-      GetCityReviewsUseCaseParams(cityId: cityId),
+    final result = await _getCityReviewsPagedUseCase.execute(
+      GetCityReviewsPagedUseCaseParams(cityId: cityId, page: 1, pageSize: 5),
     );
 
     result.fold(
-      onSuccess: (data) {
-        reviews.value = data;
+      onSuccess: (pagedResult) {
+        reviews.value = pagedResult.items;
+        reviewsTotalCount.value = pagedResult.totalCount;
+        reviewsHasMore.value = pagedResult.hasMore;
+        log('✅ 加载评论成功: ${pagedResult.items.length}条, 总计${pagedResult.totalCount}, hasMore=${pagedResult.hasMore}');
       },
       onFailure: (exception) {
-        // log('Failed to load reviews: ${exception.message}');
+        log('Failed to load reviews: ${exception.message}');
       },
     );
 
     isLoadingReviews.value = false;
+  }
+
+  /// 加载城市评论（分页模式，每页10条，用于管理页面）
+  Future<void> loadCityReviewsPaged(String cityId, {int pageSize = 10}) async {
+    if (!_isUserLoggedIn()) {
+      log('⚠️ 用户未登录,跳过加载城市评论');
+      return;
+    }
+
+    log('📋 [loadCityReviewsPaged] 开始加载: cityId=$cityId, pageSize=$pageSize');
+    isLoadingReviews.value = true;
+    _currentReviewsCityId = cityId;
+    reviewsCurrentPage.value = 1;
+
+    final result = await _getCityReviewsPagedUseCase.execute(
+      GetCityReviewsPagedUseCaseParams(cityId: cityId, page: 1, pageSize: pageSize),
+    );
+
+    result.fold(
+      onSuccess: (pagedResult) {
+        log('📋 [loadCityReviewsPaged] API返回: ${pagedResult.items.length}条, 总计${pagedResult.totalCount}');
+        reviews.value = pagedResult.items;
+        reviewsTotalCount.value = pagedResult.totalCount;
+        reviewsHasMore.value = pagedResult.hasMore;
+        log('✅ 分页加载评论成功: reviews.length=${reviews.length}, totalCount=${reviewsTotalCount.value}, hasMore=${reviewsHasMore.value}');
+      },
+      onFailure: (exception) {
+        log('❌ Failed to load reviews paged: ${exception.message}');
+      },
+    );
+
+    isLoadingReviews.value = false;
+  }
+
+  /// 加载更多评论（无限滚动）
+  Future<void> loadMoreReviews() async {
+    if (_currentReviewsCityId == null || !reviewsHasMore.value || isLoadingMoreReviews.value) {
+      log('⚠️ 跳过加载更多: cityId=$_currentReviewsCityId, hasMore=${reviewsHasMore.value}, isLoading=${isLoadingMoreReviews.value}');
+      return;
+    }
+
+    isLoadingMoreReviews.value = true;
+    final nextPage = reviewsCurrentPage.value + 1;
+    log('📜 开始加载第 $nextPage 页评论...');
+
+    final result = await _getCityReviewsPagedUseCase.execute(
+      GetCityReviewsPagedUseCaseParams(
+        cityId: _currentReviewsCityId!,
+        page: nextPage,
+        pageSize: 10,
+      ),
+    );
+
+    result.fold(
+      onSuccess: (pagedResult) {
+        reviews.addAll(pagedResult.items);
+        reviewsCurrentPage.value = nextPage;
+        reviewsHasMore.value = pagedResult.hasMore;
+        log('✅ 加载更多成功: +${pagedResult.items.length}条, 当前共${reviews.length}条, hasMore=${pagedResult.hasMore}');
+      },
+      onFailure: (exception) {
+        log('Failed to load more reviews: ${exception.message}');
+      },
+    );
+
+    isLoadingMoreReviews.value = false;
   }
 
   Future<void> loadMyCityReview(String cityId) async {
@@ -462,6 +547,25 @@ class UserCityContentStateController extends GetxController {
       },
       onFailure: (exception) {
         // log('Failed to delete my review: ${exception.message}');
+        return false;
+      },
+    );
+  }
+
+  /// 删除评论（管理员/版主）
+  Future<bool> deleteCityReview(String cityId, String reviewId) async {
+    final result = await _deleteCityReviewUseCase.execute(
+      DeleteCityReviewUseCaseParams(cityId: cityId, reviewId: reviewId),
+    );
+
+    return result.fold(
+      onSuccess: (_) {
+        reviews.removeWhere((review) => review.id == reviewId);
+        reviewsTotalCount.value = reviewsTotalCount.value - 1;
+        return true;
+      },
+      onFailure: (exception) {
+        log('Failed to delete city review: ${exception.message}');
         return false;
       },
     );

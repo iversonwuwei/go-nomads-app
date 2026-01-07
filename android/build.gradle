@@ -5,7 +5,7 @@ if (localPropertiesFile.exists()) {
 }
 def flutterSdkPath = localProperties.getProperty("flutter.sdk")
 def flutterMavenUri = flutterSdkPath != null
-    ? uri("file://${flutterSdkPath.replace('\\', '/')}/bin/cache/artifacts/engine/android")
+    ? uri("file:///${flutterSdkPath.replace('\\', '/')}/bin/cache/artifacts/engine/android")
     : null
 
 allprojects {

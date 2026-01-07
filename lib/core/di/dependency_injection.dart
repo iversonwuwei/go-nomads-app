@@ -709,12 +709,22 @@ class DependencyInjection {
             ),
         fenix: true);
     Get.lazyPut(
+        () => GetCityReviewsPagedUseCase(
+              Get.find<IUserCityContentRepository>(),
+            ),
+        fenix: true);
+    Get.lazyPut(
         () => GetMyCityReviewUseCase(
               Get.find<IUserCityContentRepository>(),
             ),
         fenix: true);
     Get.lazyPut(
         () => DeleteMyCityReviewUseCase(
+              Get.find<IUserCityContentRepository>(),
+            ),
+        fenix: true);
+    Get.lazyPut(
+        () => DeleteCityReviewUseCase(
               Get.find<IUserCityContentRepository>(),
             ),
         fenix: true);
@@ -746,8 +756,10 @@ class DependencyInjection {
         getMyExpensesUseCase: Get.find<GetMyExpensesUseCase>(),
         upsertCityReviewUseCase: Get.find<UpsertCityReviewUseCase>(),
         getCityReviewsUseCase: Get.find<GetCityReviewsUseCase>(),
+        getCityReviewsPagedUseCase: Get.find<GetCityReviewsPagedUseCase>(),
         getMyCityReviewUseCase: Get.find<GetMyCityReviewUseCase>(),
         deleteMyCityReviewUseCase: Get.find<DeleteMyCityReviewUseCase>(),
+        deleteCityReviewUseCase: Get.find<DeleteCityReviewUseCase>(),
         getCityStatsUseCase: Get.find<GetCityStatsUseCase>(),
         getCityCostSummaryUseCase: Get.find<GetCityCostSummaryUseCase>(),
       ),
