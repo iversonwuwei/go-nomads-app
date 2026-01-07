@@ -9,8 +9,12 @@ import 'package:latlong2/latlong.dart';
 /// VenueMapPickerPage 控制器
 class VenueMapPickerPageController extends GetxController {
   final String? cityName;
+  final String? initialVenueAddress;
 
-  VenueMapPickerPageController({this.cityName});
+  VenueMapPickerPageController({
+    this.cityName,
+    this.initialVenueAddress,
+  });
 
   // 高德地图瓦片 - 使用多个服务器提高加载速度
   static const tileUrl =
@@ -38,6 +42,15 @@ class VenueMapPickerPageController extends GetxController {
   // 地图是否已初始化（位置已获取）
   final RxBool isInitialized = false.obs;
 
+  // ========== 地址搜索相关 ==========
+  final TextEditingController searchController = TextEditingController();
+  final RxList<PoiResult> searchResults = <PoiResult>[].obs;
+  final RxBool isSearching = false.obs;
+  final RxBool showSearchResults = false.obs;
+  final FocusNode searchFocusNode = FocusNode();
+  final RxString _searchKeyword = ''.obs;
+  Worker? _debounceWorker;
+
   // ========== 测试模式开关 ==========
   static const bool useTestLocation = true;
 
@@ -57,6 +70,14 @@ class VenueMapPickerPageController extends GetxController {
     super.onInit();
     mapController = MapController();
     initialCenter = const LatLng(13.7563, 100.5018); // 默认曼谷
+
+    // 设置搜索防抖
+    _debounceWorker = debounce(
+      _searchKeyword,
+      (String keyword) => searchAddress(keyword),
+      time: const Duration(milliseconds: 500),
+    );
+
     // 延迟初始化，等待地图渲染完成
     WidgetsBinding.instance.addPostFrameCallback((_) {
       initializeLocation();
@@ -65,7 +86,10 @@ class VenueMapPickerPageController extends GetxController {
 
   @override
   void onClose() {
+    _debounceWorker?.dispose();
     listScrollController.dispose();
+    searchController.dispose();
+    searchFocusNode.dispose();
     super.onClose();
   }
 
@@ -76,7 +100,28 @@ class VenueMapPickerPageController extends GetxController {
     try {
       double lat, lng;
 
-      if (useTestLocation) {
+      // 优先使用传入的地址进行地理编码
+      if (initialVenueAddress != null && initialVenueAddress!.isNotEmpty) {
+        debugPrint('📍 尝试将地址转换为坐标: $cityName $initialVenueAddress');
+        final geocodeResult = await AmapPoiService.instance.geocode(
+          address: initialVenueAddress!,
+          city: cityName,
+        );
+
+        if (geocodeResult != null && geocodeResult.hasValidLocation) {
+          lat = geocodeResult.latitude;
+          lng = geocodeResult.longitude;
+          currentCityName.value = cityName ?? geocodeResult.city ?? '';
+          debugPrint('✅ 地址地理编码成功: $lat, $lng');
+          debugPrint('📍 地址: ${geocodeResult.formattedAddress}');
+        } else {
+          debugPrint('⚠️ 地址地理编码失败，将使用备用方式定位');
+          // 地址编码失败，回退到城市定位或用户位置
+          final coords = await _getFallbackLocation();
+          lat = coords.$1;
+          lng = coords.$2;
+        }
+      } else if (useTestLocation) {
         // 使用测试坐标
         final testLoc = testLocations[testLocationIndex];
         lat = testLoc['lat'] as double;
@@ -85,16 +130,9 @@ class VenueMapPickerPageController extends GetxController {
         debugPrint('📍 使用测试位置: ${testLoc['name']} ($lat, $lng)');
       } else {
         // 使用真实定位
-        final locationService = Get.find<LocationService>();
-        final position = await locationService.getCurrentLocation();
-        if (position == null) {
-          debugPrint('❌ 无法获取位置');
-          isInitialized.value = true;
-          isLoadingLocation.value = false;
-          return;
-        }
-        lat = position.latitude;
-        lng = position.longitude;
+        final coords = await _getFallbackLocation();
+        lat = coords.$1;
+        lng = coords.$2;
       }
 
       final userLatLng = LatLng(lat, lng);
@@ -109,6 +147,35 @@ class VenueMapPickerPageController extends GetxController {
     } finally {
       isLoadingLocation.value = false;
     }
+  }
+
+  /// 获取备用位置（当地址编码失败时使用）
+  Future<(double, double)> _getFallbackLocation() async {
+    // 首先尝试对城市名称进行地理编码
+    if (cityName != null && cityName!.isNotEmpty) {
+      debugPrint('🌍 尝试对城市进行地理编码: $cityName');
+      final cityGeocode = await AmapPoiService.instance.geocode(
+        address: cityName!,
+      );
+      if (cityGeocode != null && cityGeocode.hasValidLocation) {
+        currentCityName.value = cityName!;
+        debugPrint('✅ 城市地理编码成功: ${cityGeocode.latitude}, ${cityGeocode.longitude}');
+        return (cityGeocode.latitude, cityGeocode.longitude);
+      }
+    }
+
+    // 城市编码失败，尝试获取用户实时位置
+    debugPrint('📱 尝试获取用户实时位置');
+    final locationService = Get.find<LocationService>();
+    final position = await locationService.getCurrentLocation();
+    if (position != null) {
+      debugPrint('✅ 用户位置获取成功: ${position.latitude}, ${position.longitude}');
+      return (position.latitude, position.longitude);
+    }
+
+    // 最后回退到默认位置（曼谷）
+    debugPrint('⚠️ 使用默认位置（曼谷）');
+    return (13.7563, 100.5018);
   }
 
   /// 加载周边 POI
@@ -185,6 +252,76 @@ class VenueMapPickerPageController extends GetxController {
       'latitude': venue.latitude,
       'longitude': venue.longitude,
     };
+  }
+
+  /// 搜索输入变化（带防抖）
+  void onSearchChanged(String value) {
+    _searchKeyword.value = value;
+  }
+
+  /// 搜索地址
+  Future<void> searchAddress(String keyword) async {
+    if (keyword.trim().isEmpty) {
+      searchResults.clear();
+      showSearchResults.value = false;
+      return;
+    }
+
+    isSearching.value = true;
+    showSearchResults.value = true;
+
+    try {
+      debugPrint('🔍 搜索地址: $keyword, 城市: $cityName');
+      final result = await AmapPoiService.instance.searchByKeyword(
+        keyword: keyword,
+        city: cityName,
+        pageSize: 15,
+      );
+
+      searchResults.value = result.items;
+      debugPrint('✅ 搜索到 ${result.items.length} 个结果');
+    } catch (e) {
+      debugPrint('❌ 搜索地址失败: $e');
+      searchResults.clear();
+    } finally {
+      isSearching.value = false;
+    }
+  }
+
+  /// 选择搜索结果
+  void selectSearchResult(PoiResult poi) {
+    // 隐藏搜索结果
+    showSearchResults.value = false;
+    searchFocusNode.unfocus();
+
+    // 更新搜索框文本
+    searchController.text = poi.name;
+
+    // 移动地图到该位置
+    final latLng = LatLng(poi.latitude, poi.longitude);
+    userLocation.value = latLng;
+    mapController.move(latLng, 15);
+
+    // 加载该位置周边的 POI
+    _loadNearbyPoi(poi.latitude, poi.longitude);
+
+    // 清空当前选择，让用户从新的周边列表中选择
+    selectedVenueName.value = null;
+    showOnlySelected.value = false;
+
+    debugPrint('📍 已定位到: ${poi.name} (${poi.latitude}, ${poi.longitude})');
+  }
+
+  /// 清除搜索
+  void clearSearch() {
+    searchController.clear();
+    searchResults.clear();
+    showSearchResults.value = false;
+  }
+
+  /// 隐藏搜索结果（点击其他区域时）
+  void hideSearchResults() {
+    showSearchResults.value = false;
   }
 
   Color markerColor(String type) {

@@ -633,7 +633,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get searchResults => '搜索结果';
 
   @override
-  String get noResults => '无结果';
+  String get noResults => '未找到结果';
 
   @override
   String get tryAgain => '重试';
@@ -4128,4 +4128,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get role => '职位';
+
+  @override
+  String get searchAddress => '搜索地址或地点';
 }

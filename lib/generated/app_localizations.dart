@@ -1349,7 +1349,7 @@ abstract class AppLocalizations {
   /// No description provided for @noResults.
   ///
   /// In zh, this message translates to:
-  /// **'无结果'**
+  /// **'未找到结果'**
   String get noResults;
 
   /// No description provided for @tryAgain.
@@ -8125,6 +8125,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'职位'**
   String get role;
+
+  /// No description provided for @searchAddress.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索地址或地点'**
+  String get searchAddress;
 }
 
 class _AppLocalizationsDelegate
