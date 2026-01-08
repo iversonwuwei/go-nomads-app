@@ -107,14 +107,24 @@ class MembershipStateController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // 加载会员计划列表（独立请求，不依赖用户信息）
-    loadPlans();
+    // ⚡ 优化：不在初始化时加载计划列表，改为按需加载
+    // 计划列表将在用户进入会员页面时加载
 
-    // 尝试从 UserStateController 获取会员信息
+    // 尝试从 UserStateController 获取会员信息（如果用户已登录）
     _syncFromUserState();
 
     // 监听用户状态变化，自动同步会员信息
     _setupUserStateListener();
+
+    log('🎬 MembershipStateController 初始化完成（延迟加载模式）');
+  }
+
+  /// 确保计划数据已加载（供页面调用）
+  Future<void> ensurePlansLoaded() async {
+    if (_plans.isEmpty && !_isLoadingPlans.value) {
+      log('📦 MembershipStateController: 触发计划列表加载');
+      await loadPlans();
+    }
   }
 
   @override
