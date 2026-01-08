@@ -118,8 +118,18 @@ class MeetupStateController extends PaginatedRefreshableController {
     _setupLoginStateListener();
     _setupDataChangeListeners();
 
-    // 初始加载 - 使用基类的智能加载（检查缓存有效性）
-    initialLoad();
+    // ⚡ 优化：延迟加载数据，避免启动时阻塞
+    // 数据将在活动页面显示时按需加载，或由 ensureDataLoaded() 触发
+    log('🎬 MeetupStateController 初始化完成（延迟加载模式）');
+  }
+
+  /// 确保数据已加载（供页面调用）
+  /// 如果数据未加载，则触发加载
+  Future<void> ensureDataLoaded() async {
+    if (meetups.isEmpty && !isLoading.value) {
+      log('📦 MeetupStateController: 触发首次数据加载');
+      await initialLoad();
+    }
   }
 
   @override
