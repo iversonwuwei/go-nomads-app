@@ -221,44 +221,41 @@ class DependencyInjection {
 
     // 其他领域...
 
-    // ⚠️ 强制初始化全局 Controllers，防止路由切换时被删除
+    // ⚡ 优化：仅初始化核心 Controllers，其他按需创建
     _initializeGlobalControllers();
   }
 
   /// 强制初始化全局 Controllers
   /// 必须在所有依赖注册完成后调用
+  /// ⚡ 优化：减少启动时强制初始化的 Controller 数量
   static void _initializeGlobalControllers() {
     // 确保关键依赖已创建
     Get.find<HttpService>();
     Get.find<ICityRepository>();
 
-    // 立即创建 Controller 实例，确保它们在整个应用生命周期中存活
-    // 使用 V2 版本的控制器
-    Get.find<CityStateController>();
-    Get.find<MeetupStateController>();
+    // ==================== 核心 Controllers（必须初始化） ====================
+    // 这些是应用运行必需的，或者需要监听全局状态的
+
+    // 用户状态控制器 - 需要监听认证状态
     Get.find<UserStateController>();
-    Get.find<CoworkingStateController>();
-    Get.find<SkillStateController>();
-    Get.find<InterestStateController>();
+
+    // 聊天控制器 - 需要初始化 SignalR 连接（可选延迟）
     Get.find<ChatStateController>();
-    Get.find<LocationStateController>(); // 添加 LocationStateController 初始化
 
-    // 初始化会员控制器（需要在 UserStateController 之后，以便监听用户状态）
-    Get.find<MembershipStateController>();
+    // ==================== 可选初始化（按需创建） ====================
+    // 以下 Controllers 采用懒加载，首次使用时自动创建
+    // 它们已通过 lazyPut 注册，会在首次 Get.find 时创建
 
-    log('🚀 开始强制初始化 NotificationStateController');
-    try {
-      final notificationController = Get.find<NotificationStateController>();
-      log('✅ NotificationStateController 初始化成功: $notificationController');
-    } catch (e) {
-      log('❌ NotificationStateController 初始化失败: $e');
-      log('❌ 异常堆栈: ${StackTrace.current}');
-    }
+    // CityStateController - 首页显示时按需加载
+    // MeetupStateController - 活动页显示时按需加载
+    // CoworkingStateController - 共享办公页显示时按需加载
+    // SkillStateController - 技能页显示时按需加载
+    // InterestStateController - 兴趣页显示时按需加载
+    // LocationStateController - 位置选择时按需加载
+    // MembershipStateController - 会员页显示时按需加载
+    // NotificationStateController - 通知页显示时按需加载
 
-    // 确保常用的 UseCase 也被初始化（防止 lazyPut 延迟导致找不到）
-    Get.find<GetCitiesWithCoworkingCountUseCase>();
-
-    log('✅ 全局 Controllers 已强制初始化');
+    log('✅ 核心 Controllers 已初始化（其他按需创建）');
   }
 
   /// 注册基础设施服务
