@@ -11,6 +11,9 @@ class MainActivity : FlutterActivity() {
     
     private val CHANNEL_NAME = "com.gonomads.df_admin_mobile/amap"
     
+    // 高德定位服务实例
+    private var amapLocationService: AmapLocationService? = null
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
@@ -29,29 +32,26 @@ class MainActivity : FlutterActivity() {
             AmapGlobalViewFactory(flutterEngine.dartExecutor.binaryMessenger)
         )
         
-        // 设置 MethodChannel
+        // 初始化高德定位服务（混合实现核心）
+        amapLocationService = AmapLocationService(this, flutterEngine.dartExecutor.binaryMessenger)
+        
+        // 设置原有的 MethodChannel（保持兼容性）
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL_NAME)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
                     "test" -> {
                         result.success("Native Android Amap connected ✅")
                     }
-                    "getCurrentLocation" -> {
-                        // 简单实现：返回北京天安门坐标
-                        // 后续可以集成 AMapLocationClient 获取真实位置
-                        val locationData = mapOf(
-                            "latitude" to 39.909187,
-                            "longitude" to 116.397451,
-                            "address" to "Tiananmen Square, Beijing",
-                            "city" to "Beijing",
-                            "province" to "Beijing"
-                        )
-                        result.success(locationData)
-                    }
                     else -> {
                         result.notImplemented()
                     }
                 }
             }
+    }
+    
+    override fun onDestroy() {
+        amapLocationService?.destroy()
+        amapLocationService = null
+        super.onDestroy()
     }
 }
