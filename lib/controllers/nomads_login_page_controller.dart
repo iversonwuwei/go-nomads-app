@@ -150,10 +150,9 @@ class NomadsLoginPageController extends GetxController {
       if (context.mounted) Navigator.pop(context);
 
       if (success) {
-        final user = authController.currentUser.value;
-        log('✅ 手机号登录成功: ${user?.name}');
+        log('✅ 手机号登录成功');
         AppToast.success('欢迎回来！', title: '登录成功');
-        await Future.delayed(const Duration(milliseconds: 500));
+        // ⭐ 优化：立即跳转，不等待数据加载
         Get.offAllNamed('/');
       } else {
         AppToast.error('登录失败，请重试', title: '错误');
@@ -191,21 +190,15 @@ class NomadsLoginPageController extends GetxController {
       if (context.mounted) Navigator.pop(context);
 
       if (success) {
-        final user = authController.currentUser.value;
-        if (user == null) {
-          AppToast.error('Failed to load user data', title: 'Login Failed');
-          return;
-        }
-
-        log('🎉 登录成功: ${user.name}');
+        log('🎉 邮箱登录成功');
 
         await _tokenStorageService.saveRememberMe(
           rememberMe: rememberMe.value,
           email: emailController.text.trim(),
         );
 
-        AppToast.success('Welcome back, ${user.name}!', title: 'Login Successful');
-        await Future.delayed(const Duration(milliseconds: 300));
+        AppToast.success('Welcome back!', title: 'Login Successful');
+        // ⭐ 优化：立即跳转，不等待数据加载
         Get.offAllNamed('/');
       } else {
         AppToast.error('Invalid email or password', title: 'Login Failed');
@@ -229,10 +222,9 @@ class NomadsLoginPageController extends GetxController {
       final success = await authController.socialLogin(type);
 
       if (success) {
-        final user = authController.currentUser.value;
-        log('✅ $platformName 登录成功: ${user?.name}');
+        log('✅ $platformName 登录成功');
         AppToast.success('欢迎回来！', title: '登录成功');
-        await Future.delayed(const Duration(milliseconds: 500));
+        // ⭐ 优化：立即跳转，不等待数据加载
         Get.offAllNamed('/');
       }
     } catch (e) {
