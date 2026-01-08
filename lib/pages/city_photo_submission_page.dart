@@ -1,9 +1,8 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/controllers/city_photo_submission_page_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import 'package:df_admin_mobile/controllers/city_photo_submission_page_controller.dart';
 
 /// 城市照片提交页面
 class CityPhotoSubmissionPage extends StatelessWidget {
@@ -32,7 +31,7 @@ class CityPhotoSubmissionPage extends StatelessWidget {
   Future<void> _showAddPhotoSheet(BuildContext context, CityPhotoSubmissionPageController controller) async {
     await showModalBottomSheet<void>(
       context: context,
-      builder: (context) {
+      builder: (ctx) {
         return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -41,7 +40,7 @@ class CityPhotoSubmissionPage extends StatelessWidget {
                 leading: const Icon(FontAwesomeIcons.images),
                 title: const Text('从相册选择 (可多选)'),
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.pop(ctx);
                   controller.pickFromGallery();
                 },
               ),
@@ -49,14 +48,14 @@ class CityPhotoSubmissionPage extends StatelessWidget {
                 leading: const Icon(FontAwesomeIcons.camera),
                 title: const Text('拍照上传'),
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.pop(ctx);
                   controller.capturePhoto();
                 },
               ),
               ListTile(
                 leading: const Icon(FontAwesomeIcons.xmark),
                 title: const Text('取消'),
-                onTap: () => Navigator.pop(context),
+                onTap: () => Navigator.pop(ctx),
               ),
             ],
           ),

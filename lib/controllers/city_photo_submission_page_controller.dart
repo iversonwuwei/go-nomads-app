@@ -3,6 +3,7 @@ import 'package:df_admin_mobile/pages/flutter_map_picker_page.dart';
 import 'package:df_admin_mobile/utils/image_upload_helper.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 /// 城市照片提交页面控制器
@@ -54,12 +55,23 @@ class CityPhotoSubmissionPageController extends GetxController {
     super.onClose();
   }
 
+  /// 强制隐藏键盘（使用系统级 API）
+  void _hideKeyboard() {
+    // 使用系统级 API 强制隐藏键盘，避免拍照/选图返回后键盘占位
+    SystemChannels.textInput.invokeMethod('TextInput.hide');
+    // 同时清除焦点
+    FocusManager.instance.primaryFocus?.unfocus();
+  }
+
   /// 从相册选择照片
   Future<void> pickFromGallery() async {
     if (remainingSlots <= 0) {
       AppToast.info('最多只能上传 $maxPhotoCount 张照片');
       return;
     }
+
+    // 在打开相册前强制隐藏键盘
+    _hideKeyboard();
 
     isUploadingImages.value = true;
     uploadStatus.value = null;
@@ -90,6 +102,9 @@ class CityPhotoSubmissionPageController extends GetxController {
       AppToast.info('最多只能上传 $maxPhotoCount 张照片');
       return;
     }
+
+    // 在打开相机前强制隐藏键盘
+    _hideKeyboard();
 
     isUploadingImages.value = true;
 

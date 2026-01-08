@@ -33,38 +33,49 @@ class HotelListPage extends StatelessWidget {
       tag: _tag,
     );
 
-    return Column(
-      children: [
-        // 搜索栏
-        HotelSearchBar(controllerTag: _tag),
+    return RefreshIndicator(
+      onRefresh: controller.loadHotels,
+      child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          // 搜索栏
+          SliverToBoxAdapter(
+            child: HotelSearchBar(controllerTag: _tag),
+          ),
 
-        // 酒店列表
-        Expanded(
-          child: Obx(() {
+          // 酒店列表或状态
+          Obx(() {
             if (controller.isLoading.value) {
-              return const Center(child: CircularProgressIndicator());
+              return const SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(child: CircularProgressIndicator()),
+              );
             }
 
             if (controller.hotels.isEmpty) {
-              return HotelEmptyState(controllerTag: _tag);
+              return SliverFillRemaining(
+                hasScrollBody: false,
+                child: HotelEmptyState(controllerTag: _tag),
+              );
             }
 
-            return RefreshIndicator(
-              onRefresh: controller.loadHotels,
-              child: ListView.builder(
-                padding: EdgeInsets.all(16.w),
-                itemCount: controller.hotels.length,
-                itemBuilder: (context, index) {
-                  return HotelCard(
-                    controllerTag: _tag,
-                    hotel: controller.hotels[index],
-                  );
-                },
+            return SliverPadding(
+              padding: EdgeInsets.all(16.w),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    return HotelCard(
+                      controllerTag: _tag,
+                      hotel: controller.hotels[index],
+                    );
+                  },
+                  childCount: controller.hotels.length,
+                ),
               ),
             );
           }),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
