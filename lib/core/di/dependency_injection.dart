@@ -862,19 +862,20 @@ class DependencyInjection {
 
   /// 注册活动领域依赖
   static void _registerMeetupDomain() {
-    // Repository
+    // Repository（fenix: true 允许删除后重新创建）
     Get.lazyPut<IMeetupRepository>(
       () => MeetupRepository(),
+      fenix: true,
     );
 
-    // Use Cases
-    Get.lazyPut(() => GetMeetupsUseCase(Get.find<IMeetupRepository>()));
-    Get.lazyPut(() => GetMeetupsByCityUseCase(Get.find<IMeetupRepository>()));
-    Get.lazyPut(() => CreateMeetupUseCase(Get.find<IMeetupRepository>()));
-    Get.lazyPut(() => RsvpToMeetupUseCase(Get.find<IMeetupRepository>()));
-    Get.lazyPut(() => CancelRsvpUseCase(Get.find<IMeetupRepository>()));
-    Get.lazyPut(() => CancelMeetupUseCase(Get.find<IMeetupRepository>()));
-    Get.lazyPut(() => UpdateMeetupUseCase(Get.find<IMeetupRepository>()));
+    // Use Cases（fenix: true 允许删除后重新创建）
+    Get.lazyPut(() => GetMeetupsUseCase(Get.find<IMeetupRepository>()), fenix: true);
+    Get.lazyPut(() => GetMeetupsByCityUseCase(Get.find<IMeetupRepository>()), fenix: true);
+    Get.lazyPut(() => CreateMeetupUseCase(Get.find<IMeetupRepository>()), fenix: true);
+    Get.lazyPut(() => RsvpToMeetupUseCase(Get.find<IMeetupRepository>()), fenix: true);
+    Get.lazyPut(() => CancelRsvpUseCase(Get.find<IMeetupRepository>()), fenix: true);
+    Get.lazyPut(() => CancelMeetupUseCase(Get.find<IMeetupRepository>()), fenix: true);
+    Get.lazyPut(() => UpdateMeetupUseCase(Get.find<IMeetupRepository>()), fenix: true);
 
     // Controller（fenix: true 允许删除后重新创建）
     Get.lazyPut(
@@ -955,6 +956,7 @@ class DependencyInjection {
         log('📦 创建 NotificationRepository 实例');
         return NotificationRepository(Get.find<HttpService>());
       },
+      fenix: true,
     );
 
     // Controller（fenix: true 允许删除后重新创建）

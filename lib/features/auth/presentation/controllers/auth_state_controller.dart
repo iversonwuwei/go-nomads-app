@@ -564,7 +564,8 @@ class AuthStateController extends GetxController {
 
     // 4. 断开 SignalR 连接
     try {
-      final signalRService = Get.find<SignalRService>();
+      // SignalRService 是单例，直接使用工厂构造函数获取实例
+      final signalRService = SignalRService();
       await signalRService.disconnect();
       log('   ✅ SignalR 已断开');
     } catch (e) {

@@ -32,6 +32,7 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
   final ScrollController _scrollController = ScrollController();
   final Map<String, bool> _followedCities = {}; // 城市关注状态
   bool _isLoadingFollowedCities = false;
+  final List<Worker> _workers = []; // 存储 ever 监听器
 
   String _searchQuery = '';
 
@@ -54,18 +55,35 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
     // 异步加载数据,不阻塞页面显示
     Future.microtask(() => _loadFollowedCities());
 
-    // 监听筛选器变化
-    ever(controller.selectedRegions, (_) => setState(() {}));
-    ever(controller.selectedCountries, (_) => setState(() {}));
-    ever(controller.minPrice, (_) => setState(() {}));
-    ever(controller.maxPrice, (_) => setState(() {}));
-    ever(controller.minInternet, (_) => setState(() {}));
-    ever(controller.minRating, (_) => setState(() {}));
-    ever(controller.cities, (_) => _syncFollowedStatusFromController());
+    // 监听筛选器变化，保存 Worker 以便在 dispose 时取消
+    _workers.add(ever(controller.selectedRegions, (_) {
+      if (mounted) setState(() {});
+    }));
+    _workers.add(ever(controller.selectedCountries, (_) {
+      if (mounted) setState(() {});
+    }));
+    _workers.add(ever(controller.minPrice, (_) {
+      if (mounted) setState(() {});
+    }));
+    _workers.add(ever(controller.maxPrice, (_) {
+      if (mounted) setState(() {});
+    }));
+    _workers.add(ever(controller.minInternet, (_) {
+      if (mounted) setState(() {});
+    }));
+    _workers.add(ever(controller.minRating, (_) {
+      if (mounted) setState(() {});
+    }));
+    _workers.add(ever(controller.cities, (_) => _syncFollowedStatusFromController()));
   }
 
   @override
   void dispose() {
+    // 取消所有 ever 监听器
+    for (final worker in _workers) {
+      worker.dispose();
+    }
+    _workers.clear();
     _searchController.dispose();
     _scrollController.dispose();
     // 注意：不再清除共享控制器的 searchQuery，每个页面管理自己的搜索状态
@@ -866,6 +884,7 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
     final previousState = _followedCities[cityId] ?? false;
 
     // 乐观更新 UI
+    if (!mounted) return;
     setState(() {
       _followedCities[cityId] = !previousState;
     });
@@ -882,9 +901,11 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
         },
         onFailure: (error) {
           // 操作失败,恢复之前的状态
-          setState(() {
-            _followedCities[cityId] = previousState;
-          });
+          if (mounted) {
+            setState(() {
+              _followedCities[cityId] = previousState;
+            });
+          }
           AppToast.error('操作失败，请重试');
           log('❌ 切换关注状态失败: $error');
         },
@@ -892,9 +913,11 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
     } catch (e) {
       log('❌ 切换关注状态失败: $e');
       // 发生错误,恢复之前的状态
-      setState(() {
-        _followedCities[cityId] = previousState;
-      });
+      if (mounted) {
+        setState(() {
+          _followedCities[cityId] = previousState;
+        });
+      }
       AppToast.error('操作失败: $e');
     }
   }
