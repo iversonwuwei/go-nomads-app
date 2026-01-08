@@ -68,13 +68,16 @@ extension PaymentMethodExtension on PaymentMethod {
 }
 
 /// 会员计划页面
-class MembershipPlanPage extends StatelessWidget {
+/// 使用 GetView 模式，符合 GetX 标准
+class MembershipPlanPage extends GetView<MembershipStateController> {
   const MembershipPlanPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<MembershipStateController>();
     final l10n = AppLocalizations.of(context)!;
+
+    // 页面首次构建时确保加载数据
+    _ensureDataLoaded();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
@@ -107,7 +110,7 @@ class MembershipPlanPage extends StatelessWidget {
 
         // 错误状态
         if (hasError) {
-          return _buildErrorState(controller);
+          return _buildErrorState();
         }
 
         return SingleChildScrollView(
@@ -115,7 +118,7 @@ class MembershipPlanPage extends StatelessWidget {
           child: Column(
             children: [
               // 当前会员状态
-              _buildCurrentStatus(context, controller),
+              _buildCurrentStatus(context),
               const SizedBox(height: 24),
 
               // 动态生成会员计划卡片
@@ -131,7 +134,7 @@ class MembershipPlanPage extends StatelessWidget {
                     isCurrentPlan: currentLevel.levelValue == plan.level,
                     isLoading: isLoading,
                     isPopular: isPopular,
-                    onSelect: () => _handleUpgrade(context, controller, plan),
+                    onSelect: () => _handleUpgrade(context, plan),
                   ),
                 );
               }),
@@ -147,8 +150,15 @@ class MembershipPlanPage extends StatelessWidget {
     );
   }
 
+  /// 确保数据已加载
+  void _ensureDataLoaded() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.ensurePlansLoaded();
+    });
+  }
+
   /// 错误状态视图
-  Widget _buildErrorState(MembershipStateController controller) {
+  Widget _buildErrorState() {
     return Builder(
       builder: (context) {
         final l10n = AppLocalizations.of(context)!;
@@ -209,7 +219,7 @@ class MembershipPlanPage extends StatelessWidget {
     );
   }
 
-  Widget _buildCurrentStatus(BuildContext context, MembershipStateController controller) {
+  Widget _buildCurrentStatus(BuildContext context) {
     final membership = controller.membership;
     final level = controller.level;
     final l10n = AppLocalizations.of(context)!;
@@ -322,7 +332,7 @@ class MembershipPlanPage extends StatelessWidget {
     );
   }
 
-  void _handleUpgrade(BuildContext context, MembershipStateController controller, MembershipPlan plan) async {
+  void _handleUpgrade(BuildContext context, MembershipPlan plan) async {
     final targetLevel = MembershipLevel.fromValue(plan.level);
     final l10n = AppLocalizations.of(context)!;
 
@@ -335,7 +345,7 @@ class MembershipPlanPage extends StatelessWidget {
     final selectedMethod = await _showPaymentMethodSheet(context, plan);
 
     if (selectedMethod != null) {
-      await _processPayment(context, controller, plan, targetLevel, selectedMethod);
+      await _processPayment(context, plan, targetLevel, selectedMethod);
     }
   }
 
@@ -498,20 +508,19 @@ class MembershipPlanPage extends StatelessWidget {
   /// 处理支付
   Future<void> _processPayment(
     BuildContext context,
-    MembershipStateController controller,
     MembershipPlan plan,
     MembershipLevel targetLevel,
     PaymentMethod method,
   ) async {
     switch (method) {
       case PaymentMethod.paypal:
-        await _processPayPalPayment(context, controller, plan, targetLevel);
+        await _processPayPalPayment(context, plan, targetLevel);
         break;
       case PaymentMethod.wechat:
-        await _processWeChatPayment(context, controller, plan, targetLevel);
+        await _processWeChatPayment(context, plan, targetLevel);
         break;
       case PaymentMethod.alipay:
-        await _processAlipayPayment(context, controller, plan, targetLevel);
+        await _processAlipayPayment(context, plan, targetLevel);
         break;
     }
   }
@@ -519,7 +528,6 @@ class MembershipPlanPage extends StatelessWidget {
   /// 处理 PayPal 支付
   Future<void> _processPayPalPayment(
     BuildContext context,
-    MembershipStateController controller,
     MembershipPlan plan,
     MembershipLevel targetLevel,
   ) async {
@@ -531,7 +539,7 @@ class MembershipPlanPage extends StatelessWidget {
     } catch (e) {
       // 如果服务未注册，提示并重新选择支付方式
       AppToast.warning(l10n.paymentServiceNotAvailable);
-      _retryPaymentMethodSelection(context, controller, plan, targetLevel);
+      _retryPaymentMethodSelection(context, plan, targetLevel);
       return;
     }
 
@@ -594,21 +602,20 @@ class MembershipPlanPage extends StatelessWidget {
     // 处理结果
     if (errorMessage != null) {
       AppToast.error(l10n.paymentError(errorMessage));
-      _retryPaymentMethodSelection(context, controller, plan, targetLevel);
+      _retryPaymentMethodSelection(context, plan, targetLevel);
     } else if (success) {
       AppToast.info(l10n.openingPaypal);
       // 支付页面已在外部浏览器中打开
       // 用户完成支付后会通过 deep link 返回
     } else {
       AppToast.error(l10n.failedToCreateOrder);
-      _retryPaymentMethodSelection(context, controller, plan, targetLevel);
+      _retryPaymentMethodSelection(context, plan, targetLevel);
     }
   }
 
   /// 处理微信支付
   Future<void> _processWeChatPayment(
     BuildContext context,
-    MembershipStateController controller,
     MembershipPlan plan,
     MembershipLevel targetLevel,
   ) async {
@@ -621,14 +628,14 @@ class MembershipPlanPage extends StatelessWidget {
       wechatService = Get.find<WeChatPayService>();
     } catch (e) {
       AppToast.warning(l10n.paymentServiceNotAvailable);
-      _retryPaymentMethodSelection(context, controller, plan, targetLevel);
+      _retryPaymentMethodSelection(context, plan, targetLevel);
       return;
     }
 
     // 检查微信是否已安装
     if (!await wechatService.isWeChatInstalled) {
       AppToast.error(l10n.wechatNotInstalled);
-      _retryPaymentMethodSelection(context, controller, plan, targetLevel);
+      _retryPaymentMethodSelection(context, plan, targetLevel);
       return;
     }
 
@@ -704,7 +711,6 @@ class MembershipPlanPage extends StatelessWidget {
   /// 处理支付宝支付
   Future<void> _processAlipayPayment(
     BuildContext context,
-    MembershipStateController controller,
     MembershipPlan plan,
     MembershipLevel targetLevel,
   ) async {
@@ -718,7 +724,7 @@ class MembershipPlanPage extends StatelessWidget {
     } catch (e) {
       AppToast.warning(l10n.paymentServiceNotAvailable);
       // 重新显示支付方式选择
-      _retryPaymentMethodSelection(context, controller, plan, targetLevel);
+      _retryPaymentMethodSelection(context, plan, targetLevel);
       return;
     }
 
@@ -726,7 +732,7 @@ class MembershipPlanPage extends StatelessWidget {
     if (!await alipayService.isAlipayInstalled) {
       AppToast.error(l10n.alipayNotInstalled);
       // 重新显示支付方式选择
-      _retryPaymentMethodSelection(context, controller, plan, targetLevel);
+      _retryPaymentMethodSelection(context, plan, targetLevel);
       return;
     }
 
@@ -802,7 +808,6 @@ class MembershipPlanPage extends StatelessWidget {
   /// 重新显示支付方式选择
   void _retryPaymentMethodSelection(
     BuildContext context,
-    MembershipStateController controller,
     MembershipPlan plan,
     MembershipLevel targetLevel,
   ) async {
@@ -812,7 +817,7 @@ class MembershipPlanPage extends StatelessWidget {
     // 重新显示支付方式选择底部弹窗
     final selectedMethod = await _showPaymentMethodSheet(context, plan);
     if (selectedMethod != null) {
-      await _processPayment(context, controller, plan, targetLevel, selectedMethod);
+      await _processPayment(context, plan, targetLevel, selectedMethod);
     }
   }
 }
