@@ -266,7 +266,7 @@ class AmapPoiService {
       final uri = Uri.https('restapi.amap.com', '/v3/geocode/regeo', {
         'key': _apiKey,
         'location': '$longitude,$latitude', // 高德使用 经度,纬度 格式
-        'extensions': 'base',
+        'extensions': 'all', // 使用 all 获取更详细的地址信息（包括 POI、道路等）
         'output': 'json',
       });
 
@@ -465,6 +465,8 @@ class ReverseGeoResult {
   final String? township; // 乡镇/街道
   final String? street; // 街道名
   final String? streetNumber; // 门牌号
+  final String? poiName; // 最近的 POI 名称
+  final String? aoiName; // 最近的 AOI 名称（区域兴趣点）
 
   const ReverseGeoResult({
     required this.formattedAddress,
@@ -474,6 +476,8 @@ class ReverseGeoResult {
     this.township,
     this.street,
     this.streetNumber,
+    this.poiName,
+    this.aoiName,
   });
 
   /// 从高德 API 响应解析
@@ -487,6 +491,26 @@ class ReverseGeoResult {
     }
 
     final addressComponent = json['addressComponent'] as Map<String, dynamic>?;
+    
+    // 解析最近的 POI（extensions=all 时返回）
+    String? poiName;
+    final pois = json['pois'];
+    if (pois is List && pois.isNotEmpty) {
+      final firstPoi = pois.first;
+      if (firstPoi is Map<String, dynamic>) {
+        poiName = safeString(firstPoi['name']);
+      }
+    }
+
+    // 解析最近的 AOI（extensions=all 时返回）
+    String? aoiName;
+    final aois = json['aois'];
+    if (aois is List && aois.isNotEmpty) {
+      final firstAoi = aois.first;
+      if (firstAoi is Map<String, dynamic>) {
+        aoiName = safeString(firstAoi['name']);
+      }
+    }
 
     return ReverseGeoResult(
       formattedAddress: safeString(json['formatted_address']) ?? '',
@@ -496,6 +520,8 @@ class ReverseGeoResult {
       township: safeString(addressComponent?['township']),
       street: safeString(addressComponent?['streetname']),
       streetNumber: safeString(addressComponent?['streetnumber']),
+      poiName: poiName,
+      aoiName: aoiName,
     );
   }
 
@@ -508,6 +534,45 @@ class ReverseGeoResult {
       return formattedAddress;
     }
     return parts.join('');
+  }
+
+  /// 获取详细地址（优先使用 POI 名称，其次街道门牌号）
+  String get detailedAddress {
+    // 优先使用 POI 名称（如：星巴克、肯德基等）
+    if (poiName != null && poiName!.isNotEmpty) {
+      final cityPart = (city != null && city!.isNotEmpty) ? city! : '';
+      final districtPart = (district != null && district!.isNotEmpty) ? district! : '';
+      return '$cityPart$districtPart$poiName';
+    }
+    // 其次使用 AOI 名称（如：中关村软件园）
+    if (aoiName != null && aoiName!.isNotEmpty) {
+      final cityPart = (city != null && city!.isNotEmpty) ? city! : '';
+      final districtPart = (district != null && district!.isNotEmpty) ? district! : '';
+      return '$cityPart$districtPart$aoiName';
+    }
+    // 如果有街道信息，组合更详细的地址
+    if (street != null && street!.isNotEmpty) {
+      final parts = <String>[];
+      if (district != null && district!.isNotEmpty) parts.add(district!);
+      parts.add(street!);
+      if (streetNumber != null && streetNumber!.isNotEmpty) parts.add(streetNumber!);
+      if (parts.isNotEmpty) {
+        final cityPrefix = (city != null && city!.isNotEmpty) ? city! : '';
+        return cityPrefix + parts.join('');
+      }
+    }
+    // 如果有乡镇信息
+    if (township != null && township!.isNotEmpty) {
+      final cityPart = (city != null && city!.isNotEmpty) ? city! : '';
+      final districtPart = (district != null && district!.isNotEmpty) ? district! : '';
+      return '$cityPart$districtPart$township';
+    }
+    // 回退到完整地址
+    if (formattedAddress.isNotEmpty) {
+      return formattedAddress;
+    }
+    // 最后回退到简短地址
+    return shortAddress;
   }
 
   /// 获取城市名

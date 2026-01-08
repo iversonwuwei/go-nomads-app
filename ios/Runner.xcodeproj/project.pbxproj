@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		05B5576C430915D6EB79130B /* AmapMapPickerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 260F442579B0ADC4F2305D85 /* AmapMapPickerController.swift */; };
+		AMAP10CA710126010900AABBCC /* AmapLocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AMAP10CA710126010900AABBCD /* AmapLocationService.swift */; };
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
 		331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C807B294A618700263BE5 /* RunnerTests.swift */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
@@ -48,6 +49,7 @@
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
 		1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratedPluginRegistrant.m; sourceTree = "<group>"; };
 		260F442579B0ADC4F2305D85 /* AmapMapPickerController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AmapMapPickerController.swift; path = AmapMapPickerController.swift; sourceTree = "<group>"; };
+		AMAP10CA710126010900AABBCD /* AmapLocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmapLocationService.swift; sourceTree = "<group>"; };
 		331C807B294A618700263BE5 /* RunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunnerTests.swift; sourceTree = "<group>"; };
 		331C8081294A63A400263BE5 /* RunnerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RunnerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = AppFrameworkInfo.plist; path = Flutter/AppFrameworkInfo.plist; sourceTree = "<group>"; };
@@ -170,6 +172,7 @@
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 				CF678BB7B7CACD97F2507332 /* AmapGlobalPlatformView.swift */,
 				260F442579B0ADC4F2305D85 /* AmapMapPickerController.swift */,
+				AMAP10CA710126010900AABBCD /* AmapLocationService.swift */,
 			);
 			path = Runner;
 			sourceTree = "<group>";
@@ -409,6 +412,7 @@
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 				84A4CD8D204CC188CFCE7E77 /* AmapGlobalPlatformView.swift in Sources */,
 				05B5576C430915D6EB79130B /* AmapMapPickerController.swift in Sources */,
+				AMAP10CA710126010900AABBCC /* AmapLocationService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

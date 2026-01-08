@@ -3,6 +3,7 @@ import UIKit
 import AMapFoundationKit
 import MAMapKit
 import AMapSearchKit
+import AMapLocationKit
 import CoreLocation
 
 @main
@@ -13,6 +14,9 @@ import CoreLocation
 
   // Amap API Key (iOS)
   private let AMAP_API_KEY = "6b053c71911726f46271e4b54124d35f"
+  
+  // 高德定位服务实例
+  private var amapLocationService: AmapLocationService?
 
   override func application(
     _ application: UIApplication,
@@ -27,6 +31,12 @@ import CoreLocation
     guard let flutterViewController = window?.rootViewController as? FlutterViewController else {
       fatalError("Unable to bootstrap Flutter root view controller")
     }
+    
+    // 初始化高德定位服务（混合实现核心）
+    amapLocationService = AmapLocationService()
+    amapLocationService?.setup(with: flutterViewController.binaryMessenger)
+    
+    // 设置原有的 MethodChannel（保持兼容性）
     let amapChannel = FlutterMethodChannel(
       name: CHANNEL_NAME,
       binaryMessenger: flutterViewController.binaryMessenger
@@ -41,9 +51,6 @@ import CoreLocation
 
       case "openMapPicker":
         self.openMapPicker(call: call, result: result, controller: flutterViewController)
-
-      case "getCurrentLocation":
-        self.getCurrentLocation(result: result)
 
       default:
         result(FlutterMethodNotImplemented)
@@ -84,20 +91,6 @@ import CoreLocation
     }
 
     controller.present(picker, animated: true, completion: nil)
-  }
-
-  /// 获取当前位置
-  private func getCurrentLocation(result: @escaping FlutterResult) {
-    // 简单实现：返回北京天安门坐标
-    // 后续可以集成 AMapLocationKit 获取真实位置
-    let locationData: [String: Any] = [
-      "latitude": 39.909187,
-      "longitude": 116.397451,
-      "address": "Tiananmen Square, Beijing",
-      "city": "Beijing",
-      "province": "Beijing",
-    ]
-    result(locationData)
   }
 
   /// Registers the iOS platform view factory for embedding AMap in Flutter.

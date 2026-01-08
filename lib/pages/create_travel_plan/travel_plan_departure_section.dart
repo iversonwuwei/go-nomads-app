@@ -1,5 +1,5 @@
-import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/controllers/create_travel_plan_page_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -114,8 +114,12 @@ class TravelPlanDepartureSection extends StatelessWidget {
                   try {
                     final result = await Get.to(() => const FlutterMapPickerPage());
                     if (result != null && result is Map) {
+                      // 优先使用完整地址，其次使用名称，最后使用简短地址
                       final address = result['address'] as String? ?? '';
-                      _c.setDepartureLocation(address);
+                      final name = result['name'] as String? ?? '';
+                      // 选择更详细的地址显示
+                      final displayAddress = address.isNotEmpty ? address : name;
+                      _c.setDepartureLocation(displayAddress);
                     }
                   } catch (e) {
                     AppToast.error('${l10n.failedToOpenMap}: $e', title: l10n.error);

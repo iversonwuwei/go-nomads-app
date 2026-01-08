@@ -426,7 +426,9 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage> with Single
 
       if (result != null) {
         setState(() {
-          _currentAddress = result.formattedAddress;
+          // 使用详细地址（包含 POI、街道等）
+          _currentAddress = result.detailedAddress.isNotEmpty ? result.detailedAddress : result.formattedAddress;
+          // name 使用简短地址供显示
           _currentName = result.shortAddress.isNotEmpty ? result.shortAddress : result.formattedAddress;
           _currentCity = (result.city?.isNotEmpty ?? false) ? result.city : null;
           _currentProvince = (result.province?.isNotEmpty ?? false) ? result.province : null;

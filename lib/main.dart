@@ -14,6 +14,7 @@ import 'core/utils/deep_link_handler.dart';
 import 'generated/app_localizations.dart';
 import 'routes/app_routes.dart';
 import 'routes/route_refresh_observer.dart';
+import 'services/amap_native_location_service.dart';
 import 'services/app_init_service.dart';
 import 'services/background_task_service.dart';
 import 'services/image_upload_service.dart';
@@ -58,7 +59,14 @@ void main() async {
 Future<void> _initializeBackgroundServices() async {
   log('🔄 开始后台初始化非关键服务...');
 
-  // 位置服务 - 后台初始化
+  // 高德原生定位服务 - 后台初始化（优先于通用位置服务）
+  Get.putAsync(() => AmapNativeLocationService().init()).then((_) {
+    log('✅ 高德原生定位服务初始化完成');
+  }).catchError((e) {
+    log('⚠️ 高德原生定位服务初始化失败: $e');
+  });
+
+  // 位置服务 - 后台初始化（作为备用）
   Get.putAsync(() => LocationService().init()).then((_) {
     log('✅ 位置服务初始化完成');
   }).catchError((e) {
