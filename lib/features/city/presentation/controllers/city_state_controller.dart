@@ -42,7 +42,7 @@ class CityStateController extends PaginatedRefreshableController {
         _cityRepository = cityRepository;
 
   // ==================== 继承配置 ====================
-  
+
   @override
   String get entityType => 'city_list';
 
@@ -53,7 +53,7 @@ class CityStateController extends PaginatedRefreshableController {
   Duration? get customCacheDuration => const Duration(minutes: 5);
 
   // ==================== State ====================
-  
+
   /// 城市列表数据
   final RxList<City> cities = <City>[].obs;
 
@@ -84,7 +84,7 @@ class CityStateController extends PaginatedRefreshableController {
 
   // SignalR 订阅
   StreamSubscription<Map<String, dynamic>>? _cityImageUpdatedSubscription;
-  
+
   // 数据变更事件订阅
   StreamSubscription<DataChangedEvent>? _dataChangedSubscription;
 
@@ -93,10 +93,10 @@ class CityStateController extends PaginatedRefreshableController {
   int get totalCitiesCount => cities.length;
   bool get hasCities => cities.isNotEmpty;
   bool get canLoadMore => hasMore.value && !isLoadingMore.value;
-  
+
   /// 是否有加载错误 - 兼容原控制器
   RxBool get hasError => RxBool(errorMessage.value != null);
-  
+
   /// 是否有活动的筛选条件 - 兼容原控制器
   bool get hasActiveFilters {
     return selectedRegions.isNotEmpty ||
@@ -137,13 +137,22 @@ class CityStateController extends PaginatedRefreshableController {
     super.onInit();
     _setupSignalRListeners();
     _setupDataChangeListeners();
-    
-    // 初始加载 - 使用基类的智能加载（检查缓存有效性）
-    initialLoad();
-    
-    // 加载推荐和热门城市
-    loadRecommendedCities();
-    loadPopularCities();
+
+    // ⚡ 优化：延迟加载数据，避免启动时阻塞
+    // 数据将在首页显示时按需加载，或由 ensureDataLoaded() 触发
+    log('🎬 CityStateController 初始化完成（延迟加载模式）');
+  }
+
+  /// 确保数据已加载（供页面调用）
+  /// 如果数据未加载，则触发加载
+  Future<void> ensureDataLoaded() async {
+    if (cities.isEmpty && !isLoading.value) {
+      log('📦 CityStateController: 触发首次数据加载');
+      await initialLoad();
+      // 并行加载推荐和热门城市
+      loadRecommendedCities();
+      loadPopularCities();
+    }
   }
 
   @override
@@ -152,14 +161,14 @@ class CityStateController extends PaginatedRefreshableController {
     _cityImageUpdatedSubscription = null;
     _dataChangedSubscription?.cancel();
     _dataChangedSubscription = null;
-    
+
     // 清理状态
     cities.clear();
     recommendedCities.clear();
     popularCities.clear();
     favoriteCities.clear();
     generatingImageCityIds.clear();
-    
+
     // 清理筛选条件
     searchQuery.value = '';
     selectedCountryId.value = null;
@@ -181,7 +190,7 @@ class CityStateController extends PaginatedRefreshableController {
   @override
   Future<PaginatedResult> loadPageData(int page, int pageSize) async {
     log('📄 CityController: 加载第 $page 页，每页 $pageSize 条');
-    
+
     final result = await _getCitiesUseCase.execute(
       GetCitiesParams(
         page: page,
@@ -202,12 +211,12 @@ class CityStateController extends PaginatedRefreshableController {
       },
       onFailure: (exception) {
         log('❌ 加载城市失败: ${exception.message}');
-        
+
         // 非授权错误才显示 Toast
         if (exception is! UnauthorizedException) {
           AppToast.error(exception.message, title: '加载失败');
         }
-        
+
         throw exception;
       },
     );
@@ -216,11 +225,11 @@ class CityStateController extends PaginatedRefreshableController {
   @override
   Future<void> onPageLoaded(List<dynamic> items, {required bool isRefresh}) async {
     final cityList = items.cast<City>();
-    
+
     if (isRefresh) {
       cities.clear();
     }
-    
+
     cities.addAll(cityList);
     log('📊 当前城市总数: ${cities.length}');
   }
@@ -230,7 +239,7 @@ class CityStateController extends PaginatedRefreshableController {
     // 处理城市数据变更
     if (event.entityType == 'city' || event.entityType == 'city_list') {
       log('🔔 收到城市数据变更通知: ${event.changeType}');
-      
+
       switch (event.changeType) {
         case DataChangeType.created:
           // 新城市创建，刷新列表
@@ -261,10 +270,10 @@ class CityStateController extends PaginatedRefreshableController {
   /// 设置数据变更监听器
   void _setupDataChangeListeners() {
     _dataChangedSubscription = DataEventBus.instance.on('city', _handleDataChanged);
-    
+
     // 也监听 city_list 事件
     DataEventBus.instance.on('city_list', _handleDataChanged);
-    
+
     // 监听收藏状态变更事件
     DataEventBus.instance.on('city_favorite', _handleFavoriteChanged);
   }
@@ -272,12 +281,12 @@ class CityStateController extends PaginatedRefreshableController {
   /// 处理收藏状态变更事件
   void _handleFavoriteChanged(DataChangedEvent event) {
     if (event.entityId == null) return;
-    
+
     final cityId = event.entityId!;
     final isFavorite = event.changeType == DataChangeType.created;
-    
+
     log('🔔 [城市列表] 收到收藏状态变更: $cityId -> $isFavorite');
-    
+
     // 更新主列表中的城市状态
     final index = cities.indexWhere((c) => c.id == cityId);
     if (index != -1) {
@@ -285,21 +294,21 @@ class CityStateController extends PaginatedRefreshableController {
       cities.refresh();
       log('✅ [城市列表] 已更新城市收藏状态: ${cities[index].name}');
     }
-    
+
     // 更新推荐城市列表
     final recIndex = recommendedCities.indexWhere((c) => c.id == cityId);
     if (recIndex != -1) {
       recommendedCities[recIndex] = recommendedCities[recIndex].copyWith(isFavorite: isFavorite);
       recommendedCities.refresh();
     }
-    
+
     // 更新热门城市列表
     final popIndex = popularCities.indexWhere((c) => c.id == cityId);
     if (popIndex != -1) {
       popularCities[popIndex] = popularCities[popIndex].copyWith(isFavorite: isFavorite);
       popularCities.refresh();
     }
-    
+
     // 更新收藏列表
     if (isFavorite) {
       // 添加到收藏列表（如果不存在）
@@ -423,7 +432,7 @@ class CityStateController extends PaginatedRefreshableController {
     minRating.value = 0.0;
     maxAqi.value = 500;
     selectedClimates.clear();
-    
+
     await forceRefresh();
   }
 
@@ -445,7 +454,7 @@ class CityStateController extends PaginatedRefreshableController {
   /// 获取筛选后的城市列表（兼容旧 API）
   List<City> get filteredCities {
     var result = cities.toList();
-    
+
     // 搜索过滤
     if (searchQuery.value.isNotEmpty) {
       final query = searchQuery.value.toLowerCase();
@@ -455,7 +464,7 @@ class CityStateController extends PaginatedRefreshableController {
             (city.country?.toLowerCase().contains(query) ?? false);
       }).toList();
     }
-    
+
     return result;
   }
 
@@ -507,7 +516,7 @@ class CityStateController extends PaginatedRefreshableController {
           cities[index] = cities[index].copyWith(isFavorite: isFavorited);
           cities.refresh();
         }
-        
+
         // 通知其他组件收藏状态变更
         DataEventBus.instance.emit(DataChangedEvent(
           entityType: 'city_favorite',
@@ -515,7 +524,7 @@ class CityStateController extends PaginatedRefreshableController {
           version: DateTime.now().millisecondsSinceEpoch,
           changeType: isFavorited ? DataChangeType.created : DataChangeType.deleted,
         ));
-        
+
         log('✅ 切换收藏成功: $isFavorited');
         return true;
       },
@@ -649,7 +658,7 @@ class CityStateController extends PaginatedRefreshableController {
   }
 
   // ==================== 兼容旧 API ====================
-  
+
   /// 兼容旧代码：初始加载城市
   Future<void> loadInitialCities({bool refresh = true}) async {
     if (refresh) {
