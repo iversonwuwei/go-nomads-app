@@ -184,12 +184,9 @@ class _NomadsLoginPageState extends State<NomadsLoginPage> {
       }
 
       if (success) {
-        final user = authController.currentUser.value;
-        log('✅ 手机号登录成功: ${user?.name}');
-
+        log('✅ 手机号登录成功');
         AppToast.success('欢迎回来！', title: '登录成功');
-
-        await Future.delayed(const Duration(milliseconds: 500));
+        // ⭐ 优化：立即跳转，不等待数据加载
         log('🚀 准备跳转到主页...');
         Get.offAllNamed('/');
         log('✅ 跳转命令已执行');

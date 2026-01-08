@@ -180,6 +180,7 @@ class AuthStateController extends GetxController {
   }
 
   /// 登录
+  /// 返回登录是否成功，成功后用户信息将在后台加载
   Future<bool> login({
     required String email,
     required String password,
@@ -197,28 +198,12 @@ class AuthStateController extends GetxController {
         currentToken.value = token;
         isAuthenticated.value = true;
 
-        // 设置 HttpService 的认证 token
+        // 设置 HttpService 的认证 token（必须立即执行）
         final httpService = Get.find<HttpService>();
         httpService.setAuthToken(token.accessToken);
 
-        // 加载当前用户
-        await _loadCurrentUser();
-
-        // 保存到数据库 (如果用户已加载)
-        if (currentUser.value != null) {
-          await _saveTokenToDatabaseUseCase.execute(
-            SaveTokenToDatabaseParams(
-              token: token,
-              user: currentUser.value!,
-            ),
-          );
-
-          // 设置用户ID到 HttpService
-          httpService.setUserId(currentUser.value!.id);
-
-          // 加入 SignalR 用户通知组
-          await _joinSignalRUserGroup(currentUser.value!.id);
-        }
+        // ⭐ 优化：将后续操作放到后台执行，不阻塞页面跳转
+        _completeLoginInBackground(token, httpService);
 
         return true;
       },
@@ -227,6 +212,34 @@ class AuthStateController extends GetxController {
         return false;
       },
     );
+  }
+
+  /// 在后台完成登录后的数据加载
+  Future<void> _completeLoginInBackground(AuthToken token, HttpService httpService) async {
+    try {
+      // 加载当前用户
+      await _loadCurrentUser();
+
+      // 保存到数据库 (如果用户已加载)
+      if (currentUser.value != null) {
+        await _saveTokenToDatabaseUseCase.execute(
+          SaveTokenToDatabaseParams(
+            token: token,
+            user: currentUser.value!,
+          ),
+        );
+
+        // 设置用户ID到 HttpService
+        httpService.setUserId(currentUser.value!.id);
+
+        // 加入 SignalR 用户通知组
+        await _joinSignalRUserGroup(currentUser.value!.id);
+      }
+
+      log('✅ 登录后台任务完成');
+    } catch (e) {
+      log('⚠️ 登录后台任务异常: $e');
+    }
   }
 
   /// 加入 SignalR 用户通知组
@@ -245,6 +258,7 @@ class AuthStateController extends GetxController {
   }
 
   /// 注册
+  /// 返回注册是否成功，成功后用户信息将在后台加载
   Future<bool> register({
     required String name,
     required String email,
@@ -271,28 +285,12 @@ class AuthStateController extends GetxController {
         currentToken.value = token;
         isAuthenticated.value = true;
 
-        // 设置 HttpService 的认证 token
+        // 设置 HttpService 的认证 token（必须立即执行）
         final httpService = Get.find<HttpService>();
         httpService.setAuthToken(token.accessToken);
 
-        // 加载当前用户
-        await _loadCurrentUser();
-
-        // 保存到数据库 (如果用户已加载)
-        if (currentUser.value != null) {
-          await _saveTokenToDatabaseUseCase.execute(
-            SaveTokenToDatabaseParams(
-              token: token,
-              user: currentUser.value!,
-            ),
-          );
-
-          // 设置用户ID到 HttpService
-          httpService.setUserId(currentUser.value!.id);
-
-          // 加入 SignalR 用户通知组
-          await _joinSignalRUserGroup(currentUser.value!.id);
-        }
+        // ⭐ 优化：将后续操作放到后台执行，不阻塞页面跳转
+        _completeLoginInBackground(token, httpService);
 
         return true;
       },
@@ -346,39 +344,8 @@ class AuthStateController extends GetxController {
           final httpService = Get.find<HttpService>();
           httpService.setAuthToken(token.accessToken);
 
-          // 加载当前用户
-          await _loadCurrentUser();
-
-          // 保存到数据库 (如果用户已加载)
-          if (currentUser.value != null) {
-            // 保存 token 到 SharedPreferences（HttpService 拦截器需要）
-            final tokenStorageService = TokenStorageService();
-            await tokenStorageService.saveTokens(
-              accessToken: token.accessToken,
-              refreshToken: token.refreshToken,
-              expiresAt: token.expiresAt,
-            );
-            await tokenStorageService.saveUserInfo(
-              userId: currentUser.value!.id,
-              userName: currentUser.value!.name,
-              userEmail: currentUser.value!.email,
-              userRole: currentUser.value!.role,
-            );
-            log('✅ Token 已保存到 SharedPreferences');
-
-            await _saveTokenToDatabaseUseCase.execute(
-              SaveTokenToDatabaseParams(
-                token: token,
-                user: currentUser.value!,
-              ),
-            );
-
-            // 设置用户ID到 HttpService
-            httpService.setUserId(currentUser.value!.id);
-
-            // 加入 SignalR 用户通知组
-            await _joinSignalRUserGroup(currentUser.value!.id);
-          }
+          // ⭐ 优化：将后续操作放到后台执行，不阻塞页面跳转
+          _completeSocialLoginInBackground(token, httpService);
 
           log('✅ 社交登录成功: $type');
           return true;
@@ -394,6 +361,49 @@ class AuthStateController extends GetxController {
       log('❌ 社交登录异常: $e');
       AppToast.error('社交登录失败: $e');
       return false;
+    }
+  }
+
+  /// 在后台完成社交登录后的数据加载
+  Future<void> _completeSocialLoginInBackground(AuthToken token, HttpService httpService) async {
+    try {
+      // 加载当前用户
+      await _loadCurrentUser();
+
+      // 保存到数据库 (如果用户已加载)
+      if (currentUser.value != null) {
+        // 保存 token 到 SharedPreferences（HttpService 拦截器需要）
+        final tokenStorageService = TokenStorageService();
+        await tokenStorageService.saveTokens(
+          accessToken: token.accessToken,
+          refreshToken: token.refreshToken,
+          expiresAt: token.expiresAt,
+        );
+        await tokenStorageService.saveUserInfo(
+          userId: currentUser.value!.id,
+          userName: currentUser.value!.name,
+          userEmail: currentUser.value!.email,
+          userRole: currentUser.value!.role,
+        );
+        log('✅ Token 已保存到 SharedPreferences');
+
+        await _saveTokenToDatabaseUseCase.execute(
+          SaveTokenToDatabaseParams(
+            token: token,
+            user: currentUser.value!,
+          ),
+        );
+
+        // 设置用户ID到 HttpService
+        httpService.setUserId(currentUser.value!.id);
+
+        // 加入 SignalR 用户通知组
+        await _joinSignalRUserGroup(currentUser.value!.id);
+      }
+
+      log('✅ 社交登录后台任务完成');
+    } catch (e) {
+      log('⚠️ 社交登录后台任务异常: $e');
     }
   }
 
