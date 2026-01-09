@@ -426,9 +426,10 @@ class _FlutterMapPickerPageState extends State<FlutterMapPickerPage> with Single
 
       if (result != null) {
         setState(() {
-          // 使用详细地址（包含 POI、街道等）
-          _currentAddress = result.detailedAddress.isNotEmpty ? result.detailedAddress : result.formattedAddress;
-          // name 使用简短地址供显示
+          // 优先使用 formattedAddress（高德返回的完整详细地址）
+          // formattedAddress 通常包含省市区街道门牌号等完整信息
+          _currentAddress = result.formattedAddress.isNotEmpty ? result.formattedAddress : result.detailedAddress;
+          // name 使用简短地址供显示（用于标题等场景）
           _currentName = result.shortAddress.isNotEmpty ? result.shortAddress : result.formattedAddress;
           _currentCity = (result.city?.isNotEmpty ?? false) ? result.city : null;
           _currentProvince = (result.province?.isNotEmpty ?? false) ? result.province : null;

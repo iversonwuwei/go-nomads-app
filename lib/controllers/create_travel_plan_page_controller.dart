@@ -69,9 +69,7 @@ class CreateTravelPlanPageController extends GetxController {
         final platformName = Platform.isAndroid ? 'Android' : 'iOS';
         log('📍 [$platformName] 使用原生高德 SDK 获取位置...');
 
-        final location = await amapService
-            .getCurrentLocation()
-            .timeout(const Duration(seconds: 30), onTimeout: () {
+        final location = await amapService.getCurrentLocation().timeout(const Duration(seconds: 30), onTimeout: () {
           log('⏱️ 原生高德定位超时（30秒）');
           return null;
         });
@@ -80,7 +78,8 @@ class CreateTravelPlanPageController extends GetxController {
           // 检查原生高德 SDK 是否返回了有效的地址信息
           if (location.hasValidAddress) {
             // 原生高德 SDK 已包含逆地理编码结果
-            departureLocation.value = location.shortAddress;
+            // ⭐ 使用完整地址而非简短地址
+            departureLocation.value = location.address ?? location.shortAddress;
             log('✅ 原生高德定位成功（含地址）: ${departureLocation.value}');
             log('   详细地址: ${location.address}');
             log('   坐标: ${location.latitude}, ${location.longitude}');
@@ -118,8 +117,8 @@ class CreateTravelPlanPageController extends GetxController {
         .timeout(const Duration(seconds: 5), onTimeout: () => null);
 
     if (geoResult != null && geoResult.formattedAddress.isNotEmpty) {
-      departureLocation.value =
-          geoResult.shortAddress.isNotEmpty ? geoResult.shortAddress : geoResult.formattedAddress;
+      // ⭐ 优先使用 formattedAddress（完整详细地址）
+      departureLocation.value = geoResult.formattedAddress;
       log('✅ 高德 Web API 逆地理编码成功: ${departureLocation.value}');
       return;
     }
@@ -167,8 +166,8 @@ class CreateTravelPlanPageController extends GetxController {
           .timeout(const Duration(seconds: 5), onTimeout: () => null);
 
       if (geoResult != null && geoResult.formattedAddress.isNotEmpty) {
-        departureLocation.value =
-            geoResult.shortAddress.isNotEmpty ? geoResult.shortAddress : geoResult.formattedAddress;
+        // ⭐ 优先使用 formattedAddress（完整详细地址）
+        departureLocation.value = geoResult.formattedAddress;
         log('✅ 高德逆地理编码成功: ${departureLocation.value}');
       } else {
         // 高德失败，尝试使用 Nominatim（OpenStreetMap）作为备用
