@@ -4,6 +4,7 @@ import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/core/core.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
+import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
 import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
@@ -19,6 +20,7 @@ import 'city_detail_page.dart';
 import 'global_map_page.dart';
 
 /// 城市列表页面 - 支持国家、城市和搜索筛选
+/// ⭐ 使用独立的本地数据列表，与首页数据完全独立
 class CityListPage extends StatefulWidget {
   const CityListPage({super.key});
 
@@ -27,7 +29,11 @@ class CityListPage extends StatefulWidget {
 }
 
 class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin<CityListPage> {
+  // ⭐ 继续使用全局控制器（用于复杂功能如收藏、筛选等）
+  // 但数据加载使用独立的 Repository 调用，不影响首页
   final CityStateController controller = Get.find<CityStateController>();
+  final ICityRepository _cityRepository = Get.find<ICityRepository>();
+
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final Map<String, bool> _followedCities = {}; // 城市关注状态
@@ -36,45 +42,31 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
 
   String _searchQuery = '';
 
+  // ⭐ 独立的本地数据状态
+  final RxList<City> _localCities = <City>[].obs;
+  final RxBool _isLocalLoading = false.obs;
+  final RxBool _isLocalLoadingMore = false.obs;
+  final RxBool _hasLocalMore = true.obs;
+  final Rx<String?> _localErrorMessage = Rx<String?>(null);
+  int _localCurrentPage = 1;
+  static const int _localPageSize = 20;
+
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
 
-    // 页面初始化时，清空搜索条件并从后端重新加载数据
+    // ⭐ 页面初始化时，独立加载数据
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      log('🏙️ CityListPage 初始化，清空搜索条件并加载最新城市数据');
-      // 清空搜索条件
-      _searchQuery = '';
-      _searchController.clear();
-      controller.searchQuery.value = '';
-      // 重新加载数据
-      controller.loadInitialCities(refresh: true);
+      log('🏙️ CityListPage 初始化，独立加载城市数据（不影响首页）');
+      _loadLocalCities(refresh: true);
     });
 
     // 异步加载数据,不阻塞页面显示
     Future.microtask(() => _loadFollowedCities());
 
-    // 监听筛选器变化，保存 Worker 以便在 dispose 时取消
-    _workers.add(ever(controller.selectedRegions, (_) {
-      if (mounted) setState(() {});
-    }));
-    _workers.add(ever(controller.selectedCountries, (_) {
-      if (mounted) setState(() {});
-    }));
-    _workers.add(ever(controller.minPrice, (_) {
-      if (mounted) setState(() {});
-    }));
-    _workers.add(ever(controller.maxPrice, (_) {
-      if (mounted) setState(() {});
-    }));
-    _workers.add(ever(controller.minInternet, (_) {
-      if (mounted) setState(() {});
-    }));
-    _workers.add(ever(controller.minRating, (_) {
-      if (mounted) setState(() {});
-    }));
-    _workers.add(ever(controller.cities, (_) => _syncFollowedStatusFromController()));
+    // 监听本地城市列表变化
+    _workers.add(ever(_localCities, (_) => _syncFollowedStatusFromController()));
   }
 
   @override
@@ -86,8 +78,80 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
     _workers.clear();
     _searchController.dispose();
     _scrollController.dispose();
-    // 注意：不再清除共享控制器的 searchQuery，每个页面管理自己的搜索状态
     super.dispose();
+  }
+
+  // ⭐ 独立加载城市数据
+  Future<void> _loadLocalCities({bool refresh = false}) async {
+    if (_isLocalLoading.value && !refresh) return;
+
+    log('🏙️ CityListPage: 独立加载城市数据, refresh=$refresh');
+
+    _isLocalLoading.value = true;
+    _localErrorMessage.value = null;
+    _localCurrentPage = 1;
+
+    try {
+      final result = await _cityRepository.getCities(
+        page: 1,
+        pageSize: _localPageSize,
+        search: _searchQuery.isEmpty ? null : _searchQuery,
+      );
+
+      result.fold(
+        onSuccess: (data) {
+          _localCities.assignAll(data);
+          _hasLocalMore.value = data.length >= _localPageSize;
+          log('✅ CityListPage: 独立加载了 ${data.length} 个城市');
+        },
+        onFailure: (error) {
+          _localErrorMessage.value = error.message;
+          log('❌ CityListPage: 独立加载失败 - ${error.message}');
+        },
+      );
+    } catch (e) {
+      _localErrorMessage.value = '加载失败: $e';
+      log('❌ CityListPage: 独立加载异常 - $e');
+    } finally {
+      _isLocalLoading.value = false;
+    }
+  }
+
+  // ⭐ 独立加载更多
+  Future<void> _loadMoreLocalCities() async {
+    if (_isLocalLoadingMore.value || !_hasLocalMore.value) return;
+
+    log('🏙️ CityListPage: 独立加载更多城市, page=${_localCurrentPage + 1}');
+
+    _isLocalLoadingMore.value = true;
+
+    try {
+      final result = await _cityRepository.getCities(
+        page: _localCurrentPage + 1,
+        pageSize: _localPageSize,
+        search: _searchQuery.isEmpty ? null : _searchQuery,
+      );
+
+      result.fold(
+        onSuccess: (data) {
+          if (data.isEmpty) {
+            _hasLocalMore.value = false;
+          } else {
+            _localCities.addAll(data);
+            _localCurrentPage++;
+            _hasLocalMore.value = data.length >= _localPageSize;
+          }
+          log('✅ CityListPage: 独立加载了更多 ${data.length} 个城市');
+        },
+        onFailure: (error) {
+          log('❌ CityListPage: 独立加载更多失败 - ${error.message}');
+        },
+      );
+    } catch (e) {
+      log('❌ CityListPage: 独立加载更多异常 - $e');
+    } finally {
+      _isLocalLoadingMore.value = false;
+    }
   }
 
   // 滚动监听
@@ -99,7 +163,7 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
 
     // 当滚动到距离底部300像素时开始加载更多
     if (currentScroll >= maxScroll - 300) {
-      controller.loadMoreCities();
+      _loadMoreLocalCities();
     }
   }
 
@@ -108,8 +172,8 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
       _searchQuery = '';
       _searchController.clear();
     });
-    // 清除所有筛选器并重新加载默认数据
-    controller.clearFilters();
+    // 重新加载默认数据
+    _loadLocalCities(refresh: true);
   }
 
   @override
@@ -120,9 +184,8 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
       _searchQuery = '';
       _searchController.clear();
     });
-    controller.searchQuery.value = '';
-    // 使用 refresh() 方法，会显示刷新状态
-    await controller.refresh();
+    // 使用独立的刷新方法
+    await _loadLocalCities(refresh: true);
     _syncFollowedStatusFromController();
   }
 
@@ -170,13 +233,13 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
       body: SafeArea(
         top: false, // AppBar 已经处理了顶部
         child: Obx(() {
-          // 加载中状态
-          if (controller.isLoading.value) {
+          // 加载中状态（使用本地状态）
+          if (_isLocalLoading.value) {
             return const CityListSkeleton();
           }
 
-          // 错误状态
-          if (controller.hasError.value) {
+          // 错误状态（使用本地状态）
+          if (_localErrorMessage.value != null) {
             return _buildErrorState();
           }
 
@@ -185,9 +248,9 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
               // 筛选栏
               _buildFilterBar(isMobile),
 
-              // 城市列表
+              // 城市列表（使用本地数据）
               Expanded(
-                child: controller.cities.isEmpty ? _buildEmptyState() : _buildCityList(isMobile),
+                child: _localCities.isEmpty ? _buildEmptyState() : _buildCityList(isMobile),
               ),
             ],
           );
@@ -215,7 +278,8 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Obx(() {
-                    final hasFilters = controller.hasActiveFilters || _searchQuery.isNotEmpty;
+                    // 使用本地搜索状态判断是否有筛选
+                    final hasFilters = _searchQuery.isNotEmpty;
                     if (!hasFilters) return const SizedBox.shrink();
                     return Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -289,12 +353,12 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
                     });
                   },
                   onSubmitted: (value) {
-                    // 按回车键触发搜索
+                    // 按回车键触发搜索（使用独立方法）
                     if (value.trim().isNotEmpty) {
-                      controller.searchCities(value.trim());
+                      _loadLocalCities(refresh: true);
                     } else {
-                      // 搜索框为空时，清除所有筛选器
-                      controller.clearFilters();
+                      // 搜索框为空时，清除搜索并刷新
+                      _clearFilters();
                     }
                   },
                 ),
@@ -308,8 +372,8 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
                       _searchQuery = '';
                       _searchController.clear();
                     });
-                    // 清除搜索和所有筛选器，重新加载默认数据
-                    controller.clearFilters();
+                    // 清除搜索并刷新
+                    _clearFilters();
                   },
                   borderRadius: BorderRadius.circular(4),
                   child: Padding(
@@ -326,10 +390,10 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
                 onTap: () {
                   final searchText = _searchController.text.trim();
                   if (searchText.isNotEmpty) {
-                    controller.searchCities(searchText);
+                    _loadLocalCities(refresh: true);
                   } else {
-                    // 搜索框为空时，清除所有筛选器
-                    controller.clearFilters();
+                    // 搜索框为空时，清除搜索并刷新
+                    _clearFilters();
                   }
                 },
                 borderRadius: BorderRadius.circular(6),
@@ -359,11 +423,12 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
   // 城市列表
   Widget _buildCityList(bool isMobile) {
     return Obx(() {
-      final cityList = controller.cities.toList();
-      
+      // ⭐ 使用本地数据列表
+      final cityList = _localCities.toList();
+
       return RefreshIndicator(
         onRefresh: () async {
-          await controller.refresh();
+          await _loadLocalCities(refresh: true);
         },
         color: const Color(0xFFFF4458),
         child: ListView.builder(
@@ -375,7 +440,7 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
             isMobile ? 16 : 20,
             100, // 底部留白给导航栏
           ),
-          itemCount: cityList.length + (controller.hasMoreData ? 1 : 0),
+          itemCount: cityList.length + (_hasLocalMore.value ? 1 : 0),
           itemBuilder: (context, index) {
             // 加载指示器
             if (index == cityList.length) {
@@ -393,7 +458,7 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
   // 加载指示器
   Widget _buildLoadingIndicator() {
     return Obx(() {
-      if (!controller.isLoadingMore.value) return const SizedBox.shrink();
+      if (!_isLocalLoadingMore.value) return const SizedBox.shrink();
 
       return Padding(
         padding: const EdgeInsets.all(16.0),
@@ -732,9 +797,7 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
                 ),
                 const SizedBox(height: 12),
                 Obx(() => Text(
-                      controller.errorMessage.value?.isNotEmpty == true
-                          ? controller.errorMessage.value!
-                          : l10n.networkError,
+                      _localErrorMessage.value?.isNotEmpty == true ? _localErrorMessage.value! : l10n.networkError,
                       style: const TextStyle(
                         fontSize: 14,
                         color: AppColors.textSecondary,
@@ -744,7 +807,7 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
                 const SizedBox(height: 24),
                 ElevatedButton.icon(
                   onPressed: () {
-                    controller.loadInitialCities();
+                    _loadLocalCities(refresh: true);
                   },
                   icon: const Icon(FontAwesomeIcons.arrowsRotate, size: 18),
                   label: Text(l10n.retry),
@@ -925,7 +988,8 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
   void _syncFollowedStatusFromController() {
     if (!mounted) return;
     setState(() {
-      for (final city in controller.cities) {
+      // ⭐ 使用本地数据列表
+      for (final city in _localCities) {
         _followedCities[city.id] = city.isFavorite;
       }
     });
