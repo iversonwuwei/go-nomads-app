@@ -58,6 +58,13 @@ abstract class IAuthDatabaseRepository {
   /// 返回: true=已过期, false=未过期
   Future<Result<bool>> isTokenExpired(String userId);
 
+  /// 更新指定用户的 Token
+  ///
+  /// 参数:
+  /// - userId: 用户ID
+  /// - token: 新的认证令牌
+  Future<Result<void>> updateTokenByUserId(String userId, AuthToken token);
+
   /// 删除所有 Token
   Future<Result<void>> deleteAllTokens();
 

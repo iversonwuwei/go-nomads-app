@@ -84,6 +84,18 @@ class AuthDatabaseRepository implements IAuthDatabaseRepository {
     });
   }
 
+  @override
+  Future<Result<void>> updateTokenByUserId(String userId, AuthToken token) async {
+    return _execute(() async {
+      await _tokenDao.updateToken(
+        userId: userId,
+        accessToken: token.accessToken,
+        refreshToken: token.refreshToken ?? '',
+        expiresIn: token.expiresIn,
+      );
+    });
+  }
+
   /// 映射数据库数据到领域对象
   TokenDatabaseData _mapToTokenDatabaseData(Map<String, dynamic> data) {
     return TokenDatabaseData(

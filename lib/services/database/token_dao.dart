@@ -107,4 +107,29 @@ class TokenDao {
       whereArgs: [userId],
     );
   }
+
+  /// 更新指定用户的token（刷新token后使用）
+  Future<void> updateToken({
+    required String userId,
+    required String accessToken,
+    required String refreshToken,
+    required int expiresIn,
+  }) async {
+    final db = await _dbService.database;
+    final now = DateTime.now().toIso8601String();
+    final expiresAt = DateTime.now().add(Duration(seconds: expiresIn)).toIso8601String();
+
+    await db.update(
+      'tokens',
+      {
+        'access_token': accessToken,
+        'refresh_token': refreshToken,
+        'expires_in': expiresIn,
+        'expires_at': expiresAt,
+        'updated_at': now,
+      },
+      where: 'user_id = ?',
+      whereArgs: [userId],
+    );
+  }
 }
