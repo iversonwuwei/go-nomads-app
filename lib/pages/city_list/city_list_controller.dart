@@ -1,0 +1,253 @@
+import 'dart:developer';
+
+import 'package:df_admin_mobile/core/core.dart';
+import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
+import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
+import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller.dart';
+import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+/// 城市列表页面控制器
+/// 使用独立的本地数据列表，与首页数据完全独立
+class CityListController extends GetxController {
+  final ICityRepository _cityRepository = Get.find<ICityRepository>();
+  final CityStateController _cityStateController = Get.find<CityStateController>();
+
+  // 文本控制器
+  final TextEditingController searchController = TextEditingController();
+  final ScrollController scrollController = ScrollController();
+
+  // 搜索状态
+  final RxString searchQuery = ''.obs;
+
+  // 城市数据状态
+  final RxList<City> cities = <City>[].obs;
+  final RxBool isLoading = false.obs;
+  final RxBool isLoadingMore = false.obs;
+  final RxBool hasMore = true.obs;
+  final Rx<String?> errorMessage = Rx<String?>(null);
+
+  // 关注状态
+  final RxMap<String, bool> followedCities = <String, bool>{}.obs;
+  final RxBool isLoadingFollowedCities = false.obs;
+
+  // 分页
+  int _currentPage = 1;
+  static const int _pageSize = 20;
+
+  @override
+  void onInit() {
+    super.onInit();
+    scrollController.addListener(_onScroll);
+
+    // 页面初始化时加载数据
+    log('🏙️ CityListController 初始化，独立加载城市数据（不影响首页）');
+    loadCities(refresh: true);
+
+    // 异步加载关注状态
+    _loadFollowedCities();
+
+    // 监听城市列表变化，同步关注状态
+    ever(cities, (_) => _syncFollowedStatusFromController());
+  }
+
+  @override
+  void onClose() {
+    searchController.dispose();
+    scrollController.dispose();
+    super.onClose();
+  }
+
+  /// 加载城市数据
+  Future<void> loadCities({bool refresh = false}) async {
+    if (isLoading.value && !refresh) return;
+
+    log('🏙️ CityListController: 独立加载城市数据, refresh=$refresh');
+
+    isLoading.value = true;
+    errorMessage.value = null;
+    _currentPage = 1;
+
+    try {
+      final result = await _cityRepository.getCities(
+        page: 1,
+        pageSize: _pageSize,
+        search: searchQuery.value.isEmpty ? null : searchQuery.value,
+      );
+
+      result.fold(
+        onSuccess: (data) {
+          cities.assignAll(data);
+          hasMore.value = data.length >= _pageSize;
+          log('✅ CityListController: 独立加载了 ${data.length} 个城市');
+        },
+        onFailure: (error) {
+          errorMessage.value = error.message;
+          log('❌ CityListController: 独立加载失败 - ${error.message}');
+        },
+      );
+    } catch (e) {
+      errorMessage.value = '加载失败: $e';
+      log('❌ CityListController: 独立加载异常 - $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// 加载更多城市
+  Future<void> loadMoreCities() async {
+    if (isLoadingMore.value || !hasMore.value) return;
+
+    log('🏙️ CityListController: 独立加载更多城市, page=${_currentPage + 1}');
+
+    isLoadingMore.value = true;
+
+    try {
+      final result = await _cityRepository.getCities(
+        page: _currentPage + 1,
+        pageSize: _pageSize,
+        search: searchQuery.value.isEmpty ? null : searchQuery.value,
+      );
+
+      result.fold(
+        onSuccess: (data) {
+          if (data.isEmpty) {
+            hasMore.value = false;
+          } else {
+            cities.addAll(data);
+            _currentPage++;
+            hasMore.value = data.length >= _pageSize;
+          }
+          log('✅ CityListController: 独立加载了更多 ${data.length} 个城市');
+        },
+        onFailure: (error) {
+          log('❌ CityListController: 独立加载更多失败 - ${error.message}');
+        },
+      );
+    } catch (e) {
+      log('❌ CityListController: 独立加载更多异常 - $e');
+    } finally {
+      isLoadingMore.value = false;
+    }
+  }
+
+  /// 滚动监听
+  void _onScroll() {
+    if (!scrollController.hasClients) return;
+
+    final maxScroll = scrollController.position.maxScrollExtent;
+    final currentScroll = scrollController.position.pixels;
+
+    // 当滚动到距离底部300像素时开始加载更多
+    if (currentScroll >= maxScroll - 300) {
+      loadMoreCities();
+    }
+  }
+
+  /// 更新搜索关键词
+  void updateSearchQuery(String value) {
+    searchQuery.value = value;
+  }
+
+  /// 执行搜索
+  void performSearch() {
+    final searchText = searchController.text.trim();
+    if (searchText.isNotEmpty) {
+      loadCities(refresh: true);
+    } else {
+      clearFilters();
+    }
+  }
+
+  /// 清除筛选
+  void clearFilters() {
+    searchQuery.value = '';
+    searchController.clear();
+    loadCities(refresh: true);
+  }
+
+  /// 页面返回时刷新数据
+  Future<void> onRouteResume() async {
+    log('🔄 CityListController: 页面返回，刷新数据');
+    searchQuery.value = '';
+    searchController.clear();
+    await loadCities(refresh: true);
+    _syncFollowedStatusFromController();
+  }
+
+  /// 判断城市是否已关注
+  bool isCityFollowed(City city) {
+    return followedCities[city.id] ?? city.isFavorite;
+  }
+
+  /// 切换关注状态
+  Future<void> toggleFollow(City city) async {
+    final cityId = city.id;
+    if (isLoadingFollowedCities.value) return;
+
+    final previousState = followedCities[cityId] ?? false;
+
+    // 乐观更新 UI
+    followedCities[cityId] = !previousState;
+
+    try {
+      final result = await _cityStateController.toggleCityFavorite(cityId);
+
+      result.fold(
+        onSuccess: (_) {
+          final isNowFollowed = followedCities[cityId] ?? false;
+          AppToast.success(isNowFollowed ? '已关注该城市' : '已取消关注');
+          log('✅ 城市关注状态切换成功: cityId=$cityId, followed=$isNowFollowed');
+        },
+        onFailure: (error) {
+          // 操作失败，恢复之前的状态
+          followedCities[cityId] = previousState;
+          AppToast.error('操作失败，请重试');
+          log('❌ 切换关注状态失败: $error');
+        },
+      );
+    } catch (e) {
+      log('❌ 切换关注状态失败: $e');
+      followedCities[cityId] = previousState;
+      AppToast.error('操作失败: $e');
+    }
+  }
+
+  /// 从控制器同步关注状态
+  void _syncFollowedStatusFromController() {
+    for (final city in cities) {
+      followedCities[city.id] = city.isFavorite;
+    }
+  }
+
+  /// 加载用户已关注的城市列表
+  Future<void> _loadFollowedCities() async {
+    if (isLoadingFollowedCities.value) return;
+
+    isLoadingFollowedCities.value = true;
+    try {
+      final result = await _cityStateController.loadUserFavoriteCityIds();
+
+      result.fold(
+        onSuccess: (cityIds) {
+          followedCities.clear();
+          for (var cityId in cityIds) {
+            followedCities[cityId] = true;
+          }
+          log('✅ 已加载 ${cityIds.length} 个关注的城市');
+        },
+        onFailure: (error) {
+          log('❌ 加载关注城市列表失败: $error');
+        },
+      );
+    } catch (e) {
+      log('❌ 加载关注城市列表失败: $e');
+    } finally {
+      isLoadingFollowedCities.value = false;
+    }
+  }
+
+  /// 获取全局 CityStateController（用于复杂功能）
+  CityStateController get cityStateController => _cityStateController;
+}

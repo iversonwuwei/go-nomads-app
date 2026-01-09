@@ -37,6 +37,9 @@ class HomePageController extends GetxController with WidgetsBindingObserver {
   /// 本地城市列表（独立于全局 CityStateController）
   final localCities = <City>[].obs;
 
+  /// 是否正在加载城市数据
+  final isLoadingLocalCities = true.obs;
+
   /// 是否正在进行本地搜索
   final isLocalSearching = false.obs;
 
@@ -64,8 +67,10 @@ class HomePageController extends GetxController with WidgetsBindingObserver {
     // ⭐ 首页使用独立的数据加载，不再监听全局 CityStateController
     // 这样首页和城市列表页面的数据完全独立，互不影响
 
-    // 初始化加载数据
-    _loadInitialData();
+    // ⭐ 延迟到下一帧再加载数据，避免在 build 期间触发 setState
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadInitialData();
+    });
   }
 
   @override
@@ -112,6 +117,10 @@ class HomePageController extends GetxController with WidgetsBindingObserver {
   /// 独立加载首页城市数据（不影响全局 CityStateController）
   Future<void> _loadHomeCitiesIndependent() async {
     log('🏠 HomePageController: 独立加载首页城市数据');
+    
+    // 设置加载状态
+    isLoadingLocalCities.value = true;
+    
     try {
       // 直接使用 Repository 加载数据，不经过全局控制器
       final result = await _cityRepository.getCities(
@@ -130,6 +139,8 @@ class HomePageController extends GetxController with WidgetsBindingObserver {
       );
     } catch (e) {
       log('⚠️ 首页城市数据加载异常: $e');
+    } finally {
+      isLoadingLocalCities.value = false;
     }
   }
 
@@ -138,11 +149,16 @@ class HomePageController extends GetxController with WidgetsBindingObserver {
     await _loadHomeCitiesIndependent();
   }
 
-  /// 刷新 meetup 数据
+  /// 刷新 meetup 数据（重新加载，显示加载状态）
+  /// 参照 city 的独立加载逻辑，使用 forceRefresh 让控制器正确管理状态
   Future<void> refreshMeetups() async {
     try {
       log('🔄 HomePageController: 刷新 meetup 数据');
-      await meetupController.loadMeetups(isForceRefresh: true);
+      // 使用 forceRefresh，让 MeetupStateController 正确管理状态
+      // forceRefresh 会: 1. 先 invalidateCache 2. 然后调用 refresh()
+      // refresh() 会设置 isRefreshing=true，然后调用 loadData()
+      // loadData() 会重置分页状态并重新加载第一页数据
+      await meetupController.forceRefresh();
     } catch (e) {
       log('⚠️ HomePageController: meetup 数据刷新失败: $e');
     }
@@ -151,9 +167,15 @@ class HomePageController extends GetxController with WidgetsBindingObserver {
   /// 从其他页面返回时重新加载数据
   Future<void> onRouteResume() async {
     log('🔄 HomePageController: 从其他页面返回，重新加载数据');
+    
+    // ⭐ 立即设置 city 加载状态
+    isLoadingLocalCities.value = true;
+    localCities.clear();
+    
     clearSearchOnReturn();
 
     // 并行加载城市和活动数据
+    // meetup 的状态由 forceRefresh 内部管理（设置 isRefreshing=true）
     await Future.wait([
       loadHomeCities(),
       refreshMeetups(),
@@ -328,5 +350,5 @@ class HomePageController extends GetxController with WidgetsBindingObserver {
   bool get hasMoreCities => localCities.length > 6;
 
   /// 是否正在加载城市
-  bool get isLoadingCities => cityController.isLoading.value;
+  bool get isLoadingCities => isLoadingLocalCities.value;
 }

@@ -277,11 +277,9 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Obx(() {
-                    // 使用本地搜索状态判断是否有筛选
-                    final hasFilters = _searchQuery.isNotEmpty;
-                    if (!hasFilters) return const SizedBox.shrink();
-                    return Container(
+                  // 使用本地搜索状态判断是否有筛选（不需要 Obx，因为 _searchQuery 通过 setState 更新）
+                  if (_searchQuery.isNotEmpty)
+                    Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFF4458).withValues(alpha: 0.1),
@@ -295,8 +293,7 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                    );
-                  }),
+                    ),
                 ],
               ),
             ],

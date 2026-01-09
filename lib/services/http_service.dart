@@ -205,8 +205,9 @@ class HttpService {
           return handler.next(response);
         },
         onError: (error, handler) async {
-          // 打印错误日志
-          if (kDebugMode) {
+          // 打印错误日志（排除 DELETE 请求的 404，这是正常的幂等删除场景）
+          final isDelete404 = error.requestOptions.method == 'DELETE' && error.response?.statusCode == 404;
+          if (kDebugMode && !isDelete404) {
             log('❌ ERROR[${error.response?.statusCode}] => ${error.requestOptions.uri}');
             log('Message: ${error.message}');
             if (error.response?.data != null) {

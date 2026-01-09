@@ -7,11 +7,11 @@ import 'package:get/get.dart';
 
 import 'config/api_config.dart';
 import 'config/supabase_config.dart';
-import 'controllers/bottom_nav_controller.dart';
 import 'controllers/locale_controller.dart';
 import 'core/di/dependency_injection.dart';
 import 'core/utils/deep_link_handler.dart';
 import 'generated/app_localizations.dart';
+import 'layouts/bottom_nav/bottom_nav.dart';
 import 'routes/app_routes.dart';
 import 'routes/route_refresh_observer.dart';
 import 'services/amap_native_location_service.dart';

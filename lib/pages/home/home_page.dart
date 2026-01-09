@@ -4,16 +4,30 @@ import 'package:df_admin_mobile/pages/home/widgets/home_city_grid.dart';
 import 'package:df_admin_mobile/pages/home/widgets/home_hero_section.dart';
 import 'package:df_admin_mobile/pages/home/widgets/home_meetups_section.dart';
 import 'package:df_admin_mobile/pages/home/widgets/home_search_bar.dart';
+import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
 import 'package:df_admin_mobile/widgets/copyright_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-/// 首页 - GetX 标准实现
-/// 使用 GetView 替代 StatefulWidget
-class HomePage extends GetView<HomePageController> {
+/// 首页 - 支持路由监听的实现
+/// 每次从其他页面返回时都会重新加载数据
+class HomePage extends StatefulWidget {
   final bool scrollToCities;
 
   const HomePage({super.key, this.scrollToCities = false});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> with RouteAwareRefreshMixin<HomePage> {
+  HomePageController get controller => Get.find<HomePageController>();
+
+  @override
+  Future<void> onRouteResume() async {
+    // 从其他页面返回时重新加载数据
+    await controller.onRouteResume();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +35,7 @@ class HomePage extends GetView<HomePageController> {
     final isMobile = screenWidth < 768;
 
     // 如果需要滚动到城市列表
-    if (scrollToCities) {
+    if (widget.scrollToCities) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         controller.scrollToCitiesList();
       });

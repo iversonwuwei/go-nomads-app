@@ -976,16 +976,17 @@ class DependencyInjection {
     // Repository
     Get.lazyPut<IInterestRepository>(
       () => InterestRepository(Get.find<HttpService>()),
+      fenix: true,
     );
 
     // Use Cases
-    Get.lazyPut(() => GetInterestsUseCase(Get.find<IInterestRepository>()));
-    Get.lazyPut(() => GetInterestsByCategoryUseCase(Get.find<IInterestRepository>()));
-    Get.lazyPut(() => GetUserInterestsUseCase(Get.find<IInterestRepository>()));
-    Get.lazyPut(() => AddUserInterestUseCase(Get.find<IInterestRepository>()));
-    Get.lazyPut(() => UpdateUserInterestIntensityUseCase(Get.find<IInterestRepository>()));
-    Get.lazyPut(() => RemoveUserInterestUseCase(Get.find<IInterestRepository>()));
-    Get.lazyPut(() => SearchInterestsUseCase(Get.find<IInterestRepository>()));
+    Get.lazyPut(() => GetInterestsUseCase(Get.find<IInterestRepository>()), fenix: true);
+    Get.lazyPut(() => GetInterestsByCategoryUseCase(Get.find<IInterestRepository>()), fenix: true);
+    Get.lazyPut(() => GetUserInterestsUseCase(Get.find<IInterestRepository>()), fenix: true);
+    Get.lazyPut(() => AddUserInterestUseCase(Get.find<IInterestRepository>()), fenix: true);
+    Get.lazyPut(() => UpdateUserInterestIntensityUseCase(Get.find<IInterestRepository>()), fenix: true);
+    Get.lazyPut(() => RemoveUserInterestUseCase(Get.find<IInterestRepository>()), fenix: true);
+    Get.lazyPut(() => SearchInterestsUseCase(Get.find<IInterestRepository>()), fenix: true);
 
     // Controller
     Get.lazyPut(
@@ -998,6 +999,7 @@ class DependencyInjection {
         removeUserInterestUseCase: Get.find<RemoveUserInterestUseCase>(),
         searchInterestsUseCase: Get.find<SearchInterestsUseCase>(),
       ),
+      fenix: true, // 允许重新创建
     );
   }
 
@@ -1006,16 +1008,17 @@ class DependencyInjection {
     // Repository
     Get.lazyPut<ISkillRepository>(
       () => SkillRepository(Get.find<HttpService>()),
+      fenix: true,
     );
 
     // Use Cases
-    Get.lazyPut(() => GetSkillsUseCase(Get.find<ISkillRepository>()));
-    Get.lazyPut(() => GetSkillsByCategoryUseCase(Get.find<ISkillRepository>()));
-    Get.lazyPut(() => GetUserSkillsUseCase(Get.find<ISkillRepository>()));
-    Get.lazyPut(() => AddUserSkillUseCase(Get.find<ISkillRepository>()));
-    Get.lazyPut(() => UpdateUserSkillProficiencyUseCase(Get.find<ISkillRepository>()));
-    Get.lazyPut(() => RemoveUserSkillUseCase(Get.find<ISkillRepository>()));
-    Get.lazyPut(() => SearchSkillsUseCase(Get.find<ISkillRepository>()));
+    Get.lazyPut(() => GetSkillsUseCase(Get.find<ISkillRepository>()), fenix: true);
+    Get.lazyPut(() => GetSkillsByCategoryUseCase(Get.find<ISkillRepository>()), fenix: true);
+    Get.lazyPut(() => GetUserSkillsUseCase(Get.find<ISkillRepository>()), fenix: true);
+    Get.lazyPut(() => AddUserSkillUseCase(Get.find<ISkillRepository>()), fenix: true);
+    Get.lazyPut(() => UpdateUserSkillProficiencyUseCase(Get.find<ISkillRepository>()), fenix: true);
+    Get.lazyPut(() => RemoveUserSkillUseCase(Get.find<ISkillRepository>()), fenix: true);
+    Get.lazyPut(() => SearchSkillsUseCase(Get.find<ISkillRepository>()), fenix: true);
 
     // Controller
     Get.lazyPut(
@@ -1028,6 +1031,7 @@ class DependencyInjection {
         removeUserSkillUseCase: Get.find<RemoveUserSkillUseCase>(),
         searchSkillsUseCase: Get.find<SearchSkillsUseCase>(),
       ),
+      fenix: true, // 允许重新创建
     );
   }
 
