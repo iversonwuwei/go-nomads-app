@@ -1,8 +1,8 @@
 import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/services/database/token_dao.dart';
 import 'package:df_admin_mobile/features/auth/domain/entities/auth_token.dart';
 import 'package:df_admin_mobile/features/auth/domain/entities/auth_user.dart';
 import 'package:df_admin_mobile/features/auth/domain/repositories/iauth_database_repository.dart';
+import 'package:df_admin_mobile/services/database/token_dao.dart';
 
 /// 认证数据库仓储实现
 ///
@@ -10,8 +10,7 @@ import 'package:df_admin_mobile/features/auth/domain/repositories/iauth_database
 class AuthDatabaseRepository implements IAuthDatabaseRepository {
   final TokenDao _tokenDao;
 
-  AuthDatabaseRepository({TokenDao? tokenDao})
-      : _tokenDao = tokenDao ?? TokenDao();
+  AuthDatabaseRepository({TokenDao? tokenDao}) : _tokenDao = tokenDao ?? TokenDao();
 
   /// 执行数据库操作的通用方法
   Future<Result<T>> _execute<T>(Future<T> Function() action) async {

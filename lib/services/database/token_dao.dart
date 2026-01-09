@@ -18,8 +18,7 @@ class TokenDao {
   }) async {
     final db = await _dbService.database;
     final now = DateTime.now().toIso8601String();
-    final expiresAt =
-        DateTime.now().add(Duration(seconds: expiresIn)).toIso8601String();
+    final expiresAt = DateTime.now().add(Duration(seconds: expiresIn)).toIso8601String();
 
     // 先删除该用户的旧token
     await db.delete(
