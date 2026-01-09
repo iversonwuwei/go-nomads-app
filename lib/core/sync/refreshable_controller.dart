@@ -259,8 +259,8 @@ abstract class RefreshableController extends GetxController {
       errorMessage.value = e.toString();
       loadState.value = LoadState.error;
 
-      // 重新抛出以便上层处理
-      rethrow;
+      // 不再 rethrow - 状态已更新，UI 层通过观察 loadState 和 errorMessage 处理错误
+      // 这样调用者不需要额外的 try-catch，错误会通过响应式状态传递给 UI
     } finally {
       isLoading.value = false;
       isRefreshing.value = false;

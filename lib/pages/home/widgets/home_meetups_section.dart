@@ -25,7 +25,8 @@ class HomeMeetupsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       final upcomingMeetups = _meetupController.upcomingMeetups;
-      final isLoading = _meetupController.isLoading.value;
+      // 检查加载或刷新状态
+      final isLoading = _meetupController.isLoading.value || _meetupController.isRefreshing.value;
 
       if (isLoading) {
         return _buildLoadingState(context);

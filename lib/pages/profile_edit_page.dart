@@ -1271,10 +1271,39 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
         skillController: skillController,
         currentSkills: currentSkills,
         onSave: (selectedSkills) async {
-          if (selectedSkills.isNotEmpty) {
-            try {
-              var successCount = 0;
-              for (final skill in selectedSkills) {
+          try {
+            var addedCount = 0;
+            var removedCount = 0;
+
+            // 用于乐观更新的新技能列表
+            final updatedSkills = List<UserSkillInfo>.from(currentSkills);
+
+            // 1. 找出需要删除的技能（原有但不在新选择中）
+            final selectedIds = selectedSkills.map((s) => s.skillId).toSet();
+            final originalIds = currentSkills.map((s) => s.id).toSet();
+            final toRemove = originalIds.difference(selectedIds);
+
+            // 2. 找出需要添加的技能（新选择但不在原有中）
+            final toAdd = selectedIds.difference(originalIds);
+
+            log('🔄 技能变更: 删除 ${toRemove.length} 个, 添加 ${toAdd.length} 个');
+
+            // 3. 执行删除
+            for (final skillId in toRemove) {
+              final success = await skillController.removeUserSkill(
+                currentUser.id,
+                skillId,
+              );
+              if (success) {
+                removedCount++;
+                // 立即从本地列表移除
+                updatedSkills.removeWhere((s) => s.id == skillId);
+              }
+            }
+
+            // 4. 执行添加
+            for (final skill in selectedSkills) {
+              if (toAdd.contains(skill.skillId)) {
                 final success = await skillController.addUserSkill(
                   currentUser.id,
                   AddUserSkillRequest(
@@ -1284,25 +1313,45 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
                   ),
                 );
                 if (success) {
-                  successCount++;
+                  addedCount++;
+                  // 立即添加到本地列表
+                  // 从全局技能列表中查找技能信息
+                  final skillInfo = skillController.skills.firstWhereOrNull(
+                    (s) => s.id == skill.skillId,
+                  );
+                  if (skillInfo != null) {
+                    updatedSkills.add(UserSkillInfo(
+                      id: skill.skillId,
+                      name: skillInfo.name,
+                      level: skill.proficiencyLevel ?? 'intermediate',
+                      icon: skillInfo.icon,
+                    ));
+                  }
                 }
               }
+            }
 
-              if (successCount > 0) {
-                AppToast.success(
-                  '已保存 $successCount 个技能',
-                  title: '保存成功',
-                );
+            // 5. 立即更新本地 currentUser 状态（乐观更新）
+            if (addedCount > 0 || removedCount > 0) {
+              profileController.currentUser.value = currentUser.copyWith(
+                skills: updatedSkills,
+              );
 
-                // 刷新用户资料数据
-                await profileController.loadUserProfile();
-              } else {
-                AppToast.error('保存失败，请稍后重试');
-              }
-            } catch (e) {
-              log('❌ 保存技能失败: $e');
+              final messages = <String>[];
+              if (addedCount > 0) messages.add('添加 $addedCount 个');
+              if (removedCount > 0) messages.add('移除 $removedCount 个');
+              AppToast.success(
+                messages.join(', '),
+                title: '保存成功',
+              );
+            } else if (toRemove.isEmpty && toAdd.isEmpty) {
+              // 没有变化，不需要提示
+            } else {
               AppToast.error('保存失败，请稍后重试');
             }
+          } catch (e) {
+            log('❌ 保存技能失败: $e');
+            AppToast.error('保存失败，请稍后重试');
           }
         },
       ),
@@ -1333,10 +1382,39 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
         interestController: interestController,
         currentInterests: currentInterests,
         onSave: (selectedInterests) async {
-          if (selectedInterests.isNotEmpty) {
-            try {
-              var successCount = 0;
-              for (final interest in selectedInterests) {
+          try {
+            var addedCount = 0;
+            var removedCount = 0;
+
+            // 用于乐观更新的新兴趣列表
+            final updatedInterests = List<UserInterestInfo>.from(currentInterests);
+
+            // 1. 找出需要删除的兴趣（原有但不在新选择中）
+            final selectedIds = selectedInterests.map((i) => i.interestId).toSet();
+            final originalIds = currentInterests.map((i) => i.id).toSet();
+            final toRemove = originalIds.difference(selectedIds);
+
+            // 2. 找出需要添加的兴趣（新选择但不在原有中）
+            final toAdd = selectedIds.difference(originalIds);
+
+            log('🔄 兴趣变更: 删除 ${toRemove.length} 个, 添加 ${toAdd.length} 个');
+
+            // 3. 执行删除
+            for (final interestId in toRemove) {
+              final success = await interestController.removeUserInterest(
+                currentUser.id,
+                interestId,
+              );
+              if (success) {
+                removedCount++;
+                // 立即从本地列表移除
+                updatedInterests.removeWhere((i) => i.id == interestId);
+              }
+            }
+
+            // 4. 执行添加
+            for (final interest in selectedInterests) {
+              if (toAdd.contains(interest.interestId)) {
                 final success = await interestController.addUserInterest(
                   currentUser.id,
                   AddUserInterestRequest(
@@ -1345,25 +1423,44 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
                   ),
                 );
                 if (success) {
-                  successCount++;
+                  addedCount++;
+                  // 立即添加到本地列表
+                  // 从全局兴趣列表中查找兴趣信息
+                  final interestInfo = interestController.interests.firstWhereOrNull(
+                    (i) => i.id == interest.interestId,
+                  );
+                  if (interestInfo != null) {
+                    updatedInterests.add(UserInterestInfo(
+                      id: interest.interestId,
+                      name: interestInfo.name,
+                      icon: interestInfo.icon,
+                    ));
+                  }
                 }
               }
+            }
 
-              if (successCount > 0) {
-                AppToast.success(
-                  '已保存 $successCount 个兴趣',
-                  title: '保存成功',
-                );
+            // 5. 立即更新本地 currentUser 状态（乐观更新）
+            if (addedCount > 0 || removedCount > 0) {
+              profileController.currentUser.value = currentUser.copyWith(
+                interests: updatedInterests,
+              );
 
-                // 刷新用户资料数据
-                await profileController.loadUserProfile();
-              } else {
-                AppToast.error('保存失败，请稍后重试');
-              }
-            } catch (e) {
-              log('❌ 保存兴趣失败: $e');
+              final messages = <String>[];
+              if (addedCount > 0) messages.add('添加 $addedCount 个');
+              if (removedCount > 0) messages.add('移除 $removedCount 个');
+              AppToast.success(
+                messages.join(', '),
+                title: '保存成功',
+              );
+            } else if (toRemove.isEmpty && toAdd.isEmpty) {
+              // 没有变化，不需要提示
+            } else {
               AppToast.error('保存失败，请稍后重试');
             }
+          } catch (e) {
+            log('❌ 保存兴趣失败: $e');
+            AppToast.error('保存失败，请稍后重试');
           }
         },
       ),
@@ -1802,6 +1899,8 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
     log('🔍 预选技能开始: currentSkills = ${widget.currentSkills.length} 个');
     for (var userSkill in widget.currentSkills) {
       log('  - 查找技能: id=${userSkill.id}, name=${userSkill.name}');
+      
+      bool found = false;
       for (var category in _skillsByCategory) {
         final skill = category.skills.firstWhere(
           (s) => s.id == userSkill.id,
@@ -1826,9 +1925,13 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
             yearsOfExperience: null,
             createdAt: DateTime.now(),
           ));
-        } else if (skill.id.isEmpty) {
-          log('  ❌ 未找到技能: ${userSkill.name}');
+          found = true;
+          break; // 找到后立即退出内层循环
         }
+      }
+
+      if (!found) {
+        log('  ❌ 未找到技能: ${userSkill.name}');
       }
     }
     log('🔍 预选完成: _selectedSkills = ${_selectedSkills.length} 个');
@@ -2199,6 +2302,8 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
     log('🔍 预选兴趣开始: currentInterests = ${widget.currentInterests.length} 个');
     for (var userInterest in widget.currentInterests) {
       log('  - 查找兴趣: id=${userInterest.id}, name=${userInterest.name}');
+      
+      bool found = false;
       for (var category in _interestsByCategory) {
         final interest = category.interests.firstWhere(
           (i) => i.id == userInterest.id,
@@ -2222,9 +2327,13 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
             intensityLevel: 'moderate',
             createdAt: DateTime.now(),
           ));
-        } else if (interest.id.isEmpty) {
-          log('  ❌ 未找到兴趣: ${userInterest.name}');
+          found = true;
+          break; // 找到后立即退出内层循环
         }
+      }
+
+      if (!found) {
+        log('  ❌ 未找到兴趣: ${userInterest.name}');
       }
     }
     log('🔍 预选完成: _selectedInterests = ${_selectedInterests.length} 个');

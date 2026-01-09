@@ -1,7 +1,7 @@
 import 'package:df_admin_mobile/features/membership/presentation/pages/membership_plan_page.dart';
 import 'package:df_admin_mobile/features/moderator/presentation/pages/moderator_application_detail_page.dart';
 import 'package:df_admin_mobile/features/travel_history/travel_history.dart';
-import 'package:df_admin_mobile/layouts/bottom_nav_layout.dart';
+import 'package:df_admin_mobile/layouts/bottom_nav/bottom_nav.dart';
 import 'package:df_admin_mobile/middlewares/auth_middleware.dart';
 import 'package:df_admin_mobile/pages/add_cost/add_cost_page.dart';
 import 'package:df_admin_mobile/pages/add_coworking/add_coworking_page.dart';
@@ -11,7 +11,7 @@ import 'package:df_admin_mobile/pages/add_review_page.dart';
 import 'package:df_admin_mobile/pages/ai_chat_page.dart';
 import 'package:df_admin_mobile/pages/city_chat_page.dart';
 import 'package:df_admin_mobile/pages/city_detail/city_detail.dart';
-import 'package:df_admin_mobile/pages/city_list_page.dart';
+import 'package:df_admin_mobile/pages/city_list/city_list.dart';
 import 'package:df_admin_mobile/pages/city_search_page.dart';
 import 'package:df_admin_mobile/pages/community_page.dart';
 import 'package:df_admin_mobile/pages/coworking_detail/coworking_detail_page.dart';
@@ -182,6 +182,7 @@ class AppRoutes {
     GetPage(
       name: cityList,
       page: () => const CityListPage(),
+      binding: CityListBinding(),
       middlewares: [AuthMiddleware()],
     ),
     GetPage(

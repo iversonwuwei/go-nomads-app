@@ -477,7 +477,7 @@ class UserStateController extends GetxController {
 
   // ==================== 技能和兴趣管理 ====================
 
-  /// 移除用户技能
+  /// 移除用户技能（乐观更新）
   Future<bool> removeSkill(String skillId) async {
     final user = currentUser.value;
     if (user == null) {
@@ -490,7 +490,10 @@ class UserStateController extends GetxController {
       final success = await skillController.removeUserSkill(user.id, skillId);
 
       if (success) {
-        await loadCurrentUser(forceRefresh: true);
+        // 乐观更新：立即从本地状态移除，无需等待网络刷新
+        final updatedSkills = user.skills.where((s) => s.id != skillId).toList();
+        currentUser.value = user.copyWith(skills: updatedSkills);
+        log('✅ 技能已从本地状态移除: $skillId');
       }
 
       return success;
@@ -501,7 +504,7 @@ class UserStateController extends GetxController {
     }
   }
 
-  /// 移除用户兴趣
+  /// 移除用户兴趣（乐观更新）
   Future<bool> removeInterest(String interestId) async {
     final user = currentUser.value;
     if (user == null) {
@@ -514,7 +517,10 @@ class UserStateController extends GetxController {
       final success = await interestController.removeUserInterest(user.id, interestId);
 
       if (success) {
-        await loadCurrentUser(forceRefresh: true);
+        // 乐观更新：立即从本地状态移除，无需等待网络刷新
+        final updatedInterests = user.interests.where((i) => i.id != interestId).toList();
+        currentUser.value = user.copyWith(interests: updatedInterests);
+        log('✅ 兴趣已从本地状态移除: $interestId');
       }
 
       return success;
