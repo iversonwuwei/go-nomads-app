@@ -57,6 +57,12 @@ class CreateTravelPlanPageController extends GetxController {
     super.onClose();
   }
 
+  /// 公开方法：重新获取当前位置
+  /// 供 UI 组件调用（如点击定位按钮）
+  Future<void> refreshCurrentLocation() async {
+    await _loadCurrentLocation();
+  }
+
   /// 获取当前位置并逆向解析地址
   /// 优先使用原生高德SDK（Android/iOS），其他平台回退到geolocator
   Future<void> _loadCurrentLocation() async {
