@@ -85,7 +85,7 @@ class CreateTravelPlanPageController extends GetxController {
           if (location.hasValidAddress) {
             // 原生高德 SDK 已包含逆地理编码结果
             // ⭐ 使用完整地址而非简短地址
-            departureLocation.value = location.address ?? location.shortAddress;
+            departureLocation.value = location.address.isNotEmpty ? location.address : location.shortAddress;
             log('✅ 原生高德定位成功（含地址）: ${departureLocation.value}');
             log('   详细地址: ${location.address}');
             log('   坐标: ${location.latitude}, ${location.longitude}');

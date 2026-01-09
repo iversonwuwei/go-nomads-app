@@ -50,7 +50,7 @@ class HomePageController extends GetxController with WidgetsBindingObserver {
   final isRefreshing = false.obs;
 
   // ==================== 私有变量 ====================
-  Worker? _cityListWorker;
+  // 已移除 _cityListWorker，首页数据完全独立
 
   // ==================== 生命周期 ====================
   @override
@@ -61,12 +61,8 @@ class HomePageController extends GetxController with WidgetsBindingObserver {
     // 添加生命周期监听
     WidgetsBinding.instance.addObserver(this);
 
-    // 监听全局城市列表变化，同步到本地（仅在非搜索状态时）
-    _cityListWorker = ever(cityController.cities, (cities) {
-      if (!isLocalSearching.value) {
-        localCities.assignAll(cities);
-      }
-    });
+    // ⭐ 首页使用独立的数据加载，不再监听全局 CityStateController
+    // 这样首页和城市列表页面的数据完全独立，互不影响
 
     // 初始化加载数据
     _loadInitialData();
@@ -82,7 +78,6 @@ class HomePageController extends GetxController with WidgetsBindingObserver {
     // 清理资源
     scrollController.dispose();
     searchController.dispose();
-    _cityListWorker?.dispose();
 
     super.onClose();
   }
@@ -91,14 +86,11 @@ class HomePageController extends GetxController with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
 
-    // 当应用回到前台时，仅在城市数据为空时刷新
+    // 当应用回到前台时，仅在首页城市数据为空时刷新
     if (state == AppLifecycleState.resumed) {
-      if (cityController.cities.isEmpty) {
-        log('📱 应用回到前台，城市数据为空，刷新数据');
-        cityController.loadInitialCities(refresh: true).catchError((e) {
-          log('⚠️ 城市数据加载失败: $e');
-          return null;
-        });
+      if (localCities.isEmpty) {
+        log('📱 应用回到前台，首页城市数据为空，刷新数据');
+        _loadHomeCitiesIndependent();
       } else {
         log('📱 应用回到前台，已有缓存数据，不刷新');
       }
@@ -108,29 +100,42 @@ class HomePageController extends GetxController with WidgetsBindingObserver {
   // ==================== 数据加载 ====================
   /// 初始化加载数据
   Future<void> _loadInitialData() async {
-    log('🏠 首页初始化，加载城市和活动数据');
+    log('🏠 首页初始化，独立加载城市和活动数据');
 
-    // ⚡ 使用 ensureDataLoaded 触发按需加载
-    // 这会触发 Controller 的首次数据加载
+    // ⭐ 并行加载：首页城市数据（独立）+ Meetup 数据
     await Future.wait([
-      cityController.ensureDataLoaded(),
+      _loadHomeCitiesIndependent(),
       meetupController.ensureDataLoaded(),
     ]);
-
-    // 同步到本地列表
-    localCities.assignAll(cityController.cities);
   }
 
-  /// 加载首页城市数据（不带搜索条件）
-  Future<void> loadHomeCities() async {
+  /// 独立加载首页城市数据（不影响全局 CityStateController）
+  Future<void> _loadHomeCitiesIndependent() async {
+    log('🏠 HomePageController: 独立加载首页城市数据');
     try {
-      // 首页加载时，清除控制器的搜索条件，确保加载全部城市
-      cityController.searchQuery.value = '';
-      await cityController.loadInitialCities(refresh: true);
-      localCities.assignAll(cityController.cities);
+      // 直接使用 Repository 加载数据，不经过全局控制器
+      final result = await _cityRepository.getCities(
+        page: 1,
+        pageSize: 20,
+      );
+
+      result.fold(
+        onSuccess: (data) {
+          localCities.assignAll(data);
+          log('✅ 首页城市数据加载完成: ${data.length} 个城市');
+        },
+        onFailure: (error) {
+          log('⚠️ 首页城市数据加载失败: ${error.message}');
+        },
+      );
     } catch (e) {
-      log('⚠️ 城市数据加载失败，使用缓存数据: $e');
+      log('⚠️ 首页城市数据加载异常: $e');
     }
+  }
+
+  /// 加载首页城市数据（公开方法，供下拉刷新使用）
+  Future<void> loadHomeCities() async {
+    await _loadHomeCitiesIndependent();
   }
 
   /// 刷新 meetup 数据
