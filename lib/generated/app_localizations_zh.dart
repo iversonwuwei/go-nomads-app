@@ -2940,7 +2940,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get personalizedForYou => '为您量身定制';
 
   @override
-  String get from => '出发地';
+  String get from => '来自';
 
   @override
   String get budgetBreakdown => '预算明细';
@@ -4131,4 +4131,19 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get searchAddress => '搜索地址或地点';
+
+  @override
+  String get eventInvitation => '活动邀请';
+
+  @override
+  String get inviteYouToJoin => '邀请你参加';
+
+  @override
+  String get moderatorTransfer => '版主转让';
+
+  @override
+  String get accept => '接受';
+
+  @override
+  String get decline => '拒绝';
 }

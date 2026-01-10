@@ -2124,7 +2124,13 @@
   "name": "姓名",
   "role": "职位",
   "searchAddress": "搜索地址或地点",
-  "noResults": "未找到结果"
+  "noResults": "未找到结果",
+  "eventInvitation": "活动邀请",
+  "inviteYouToJoin": "邀请你参加",
+  "moderatorTransfer": "版主转让",
+  "accept": "接受",
+  "decline": "拒绝",
+  "from": "来自"
 }
 
 

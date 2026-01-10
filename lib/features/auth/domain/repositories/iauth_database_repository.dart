@@ -9,6 +9,7 @@ class TokenDatabaseData {
   final String refreshToken;
   final String tokenType;
   final int expiresIn;
+  final DateTime? expiresAt;
   final String userName;
   final String userEmail;
 
@@ -18,9 +19,16 @@ class TokenDatabaseData {
     required this.refreshToken,
     required this.tokenType,
     required this.expiresIn,
+    this.expiresAt,
     required this.userName,
     required this.userEmail,
   });
+
+  /// 检查 token 是否已过期
+  bool get isExpired {
+    if (expiresAt == null) return true; // 没有过期时间视为需要刷新
+    return DateTime.now().isAfter(expiresAt!);
+  }
 }
 
 /// 认证数据库仓储接口

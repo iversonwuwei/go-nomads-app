@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:df_admin_mobile/config/api_config.dart';
 import 'package:df_admin_mobile/core/auth/token_manager.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
@@ -7,6 +9,7 @@ import 'package:df_admin_mobile/features/auth/domain/entities/auth_user.dart';
 import 'package:df_admin_mobile/features/auth/domain/repositories/iauth_repository.dart';
 import 'package:df_admin_mobile/features/auth/infrastructure/models/auth_token_dto.dart';
 import 'package:df_admin_mobile/features/auth/infrastructure/models/auth_user_dto.dart';
+import 'package:df_admin_mobile/services/database/token_dao.dart';
 import 'package:df_admin_mobile/services/http_service.dart';
 import 'package:df_admin_mobile/services/token_storage_service.dart';
 
@@ -17,14 +20,17 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
   final HttpService _httpService;
   final TokenStorageService _tokenStorage;
   final UserLocalRepository _userLocalRepo;
+  final TokenDao _tokenDao;
 
   AuthRepository({
     required HttpService httpService,
     required TokenStorageService tokenStorage,
     required UserLocalRepository userLocalRepo,
+    TokenDao? tokenDao,
   })  : _httpService = httpService,
         _tokenStorage = tokenStorage,
-        _userLocalRepo = userLocalRepo {
+        _userLocalRepo = userLocalRepo,
+        _tokenDao = tokenDao ?? TokenDao() {
     // 设置 token 刷新回调
     _httpService.setTokenRefreshCallback(_handleTokenRefresh);
   }
@@ -61,6 +67,7 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
     required String email,
     required String password,
   }) async {
+    log('🔐 [AuthRepository] 开始登录...');
     return execute(() async {
       final response = await _httpService.post(
         ApiConfig.loginEndpoint,
@@ -74,16 +81,20 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
         final data = response.data as Map<String, dynamic>;
         final tokenDto = AuthTokenDto.fromJson(data);
         final token = tokenDto.toDomain();
+        log('✅ [AuthRepository] 登录成功, expiresIn=${token.expiresIn}s, expiresAt=${token.expiresAt}');
 
         // 自动设置HTTP服务的token
         _httpService.setAuthToken(token.accessToken);
 
-        // 自动持久化token
+        // 自动持久化token 到 SharedPreferences
+        log('💾 [AuthRepository] 保存 Token 到 SharedPreferences...');
         await persistToken(token);
+        log('✅ [AuthRepository] SharedPreferences 保存成功');
 
         // 保存用户完整信息（使用 UserLocalRepository 协调存储）
         final userData = data['data']?['user'];
         if (userData != null) {
+          log('👤 [AuthRepository] 获取到用户数据: ${userData['id']}');
           final user = AuthUser(
             id: userData['id'] as String,
             name: userData['name'] as String,
@@ -93,8 +104,15 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
             role: userData['role'] as String? ?? 'user',
           );
 
-          // 保存到 SharedPreferences + SQLite
+          // 保存用户到 SharedPreferences + SQLite
           await _userLocalRepo.saveUser(user);
+
+          // ⭐ 关键：保存 Token 到 SQLite（用于 app 重启后恢复）
+          log('💾 [AuthRepository] 开始保存 Token 到 SQLite...');
+          await _saveTokenToDatabase(token, user);
+          log('✅ [AuthRepository] SQLite 保存完成');
+        } else {
+          log('⚠️ [AuthRepository] 登录响应中没有用户数据，无法保存到 SQLite');
         }
 
         return token;
@@ -130,7 +148,7 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
         // 自动设置HTTP服务的token
         _httpService.setAuthToken(token.accessToken);
 
-        // 自动持久化token
+        // 自动持久化token 到 SharedPreferences
         await persistToken(token);
 
         // 保存用户完整信息（使用 UserLocalRepository 协调存储）
@@ -145,8 +163,11 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
             role: userData['role'] as String? ?? 'user',
           );
 
-          // 保存到 SharedPreferences + SQLite
+          // 保存用户到 SharedPreferences + SQLite
           await _userLocalRepo.saveUser(user);
+
+          // ⭐ 关键：保存 Token 到 SQLite（用于 app 重启后恢复）
+          await _saveTokenToDatabase(token, user);
         }
 
         return token;
@@ -326,7 +347,7 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
         // 自动设置HTTP服务的token
         _httpService.setAuthToken(token.accessToken);
 
-        // 自动持久化token
+        // 自动持久化token 到 SharedPreferences
         await persistToken(token);
 
         // 保存用户完整信息
@@ -342,6 +363,9 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
           );
 
           await _userLocalRepo.saveUser(user);
+
+          // ⭐ 关键：保存 Token 到 SQLite（用于 app 重启后恢复）
+          await _saveTokenToDatabase(token, user);
         }
 
         return token;
@@ -349,5 +373,26 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
         throw ServerException('社交登录失败');
       }
     });
+  }
+
+  /// 保存 Token 到 SQLite 数据库
+  /// 
+  /// 用于 app 重启后恢复登录状态
+  Future<void> _saveTokenToDatabase(AuthToken token, AuthUser user) async {
+    try {
+      await _tokenDao.saveToken(
+        userId: user.id,
+        accessToken: token.accessToken,
+        refreshToken: token.refreshToken ?? '',
+        tokenType: token.tokenType,
+        expiresIn: token.expiresIn,
+        userName: user.name,
+        userEmail: user.email,
+      );
+      log('✅ Token 已保存到 SQLite: userId=${user.id}, expiresIn=${token.expiresIn}s');
+    } catch (e) {
+      log('⚠️ 保存 Token 到 SQLite 失败: $e');
+      // 不抛出异常，因为 SharedPreferences 已经保存成功
+    }
   }
 }

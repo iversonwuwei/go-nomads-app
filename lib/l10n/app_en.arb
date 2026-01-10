@@ -2140,7 +2140,13 @@
   "name": "Name",
   "role": "Role",
   "searchAddress": "Search address or place",
-  "noResults": "No results found"
+  "noResults": "No results found",
+  "eventInvitation": "Event Invitation",
+  "inviteYouToJoin": "invites you to join",
+  "moderatorTransfer": "Moderator Transfer",
+  "accept": "Accept",
+  "decline": "Decline",
+  "from": "From"
 }
 
 

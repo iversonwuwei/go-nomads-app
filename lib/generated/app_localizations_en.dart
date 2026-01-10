@@ -4189,4 +4189,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get searchAddress => 'Search address or place';
+
+  @override
+  String get eventInvitation => 'Event Invitation';
+
+  @override
+  String get inviteYouToJoin => 'invites you to join';
+
+  @override
+  String get moderatorTransfer => 'Moderator Transfer';
+
+  @override
+  String get accept => 'Accept';
+
+  @override
+  String get decline => 'Decline';
 }

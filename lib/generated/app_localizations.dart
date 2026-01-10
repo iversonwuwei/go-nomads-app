@@ -5873,7 +5873,7 @@ abstract class AppLocalizations {
   /// No description provided for @from.
   ///
   /// In zh, this message translates to:
-  /// **'出发地'**
+  /// **'来自'**
   String get from;
 
   /// No description provided for @budgetBreakdown.
@@ -8131,6 +8131,36 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'搜索地址或地点'**
   String get searchAddress;
+
+  /// No description provided for @eventInvitation.
+  ///
+  /// In zh, this message translates to:
+  /// **'活动邀请'**
+  String get eventInvitation;
+
+  /// No description provided for @inviteYouToJoin.
+  ///
+  /// In zh, this message translates to:
+  /// **'邀请你参加'**
+  String get inviteYouToJoin;
+
+  /// No description provided for @moderatorTransfer.
+  ///
+  /// In zh, this message translates to:
+  /// **'版主转让'**
+  String get moderatorTransfer;
+
+  /// No description provided for @accept.
+  ///
+  /// In zh, this message translates to:
+  /// **'接受'**
+  String get accept;
+
+  /// No description provided for @decline.
+  ///
+  /// In zh, this message translates to:
+  /// **'拒绝'**
+  String get decline;
 }
 
 class _AppLocalizationsDelegate

@@ -4,6 +4,7 @@ import 'package:df_admin_mobile/features/notification/domain/entities/app_notifi
 import 'package:df_admin_mobile/features/notification/presentation/controllers/notification_state_controller.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/dialogs/notification_dialogs.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -81,8 +82,12 @@ class NotificationsPageController extends GetxController {
     log('   relatedId: ${notification.relatedId}');
     log('   metadata: ${notification.metadata}');
 
+    // 先标记为已读
+    markAsRead(notification.id);
+
     switch (notification.type) {
       case NotificationType.moderatorApplication:
+        // 版主申请：跳转到审批详情页面
         final applicationId = notification.metadata?['applicationId'] ?? notification.relatedId;
         log('   applicationId to use: $applicationId');
 
@@ -98,6 +103,26 @@ class NotificationsPageController extends GetxController {
 
       case NotificationType.moderatorApproved:
       case NotificationType.moderatorRejected:
+        // 版主申请结果：只是通知消息，跳转到城市详情
+        final cityId = notification.metadata?['cityId'] ?? notification.relatedId;
+        if (cityId != null) {
+          Get.toNamed(
+            AppRoutes.cityDetail,
+            arguments: {
+              'cityId': cityId,
+              'cityName': notification.metadata?['cityName'] ?? '',
+            },
+          );
+        }
+        break;
+
+      case NotificationType.moderatorTransfer:
+        // 版主转让请求：弹出对话框，同意/拒绝
+        _showModeratorTransferDialog(notification);
+        break;
+
+      case NotificationType.moderatorTransferResult:
+        // 版主转让结果：只是通知消息，跳转到城市详情
         final cityId = notification.metadata?['cityId'] ?? notification.relatedId;
         if (cityId != null) {
           Get.toNamed(
@@ -127,28 +152,48 @@ class NotificationsPageController extends GetxController {
         break;
 
       case NotificationType.eventInvitation:
-        final eventId = notification.metadata?['eventId'] ?? notification.relatedId;
-        if (eventId != null) {
-          Get.toNamed(
-            AppRoutes.meetupDetail,
-            arguments: {'meetupId': eventId.toString()},
-          );
+        // 活动邀请：检查是否已经响应过
+        // 如果 metadata 中有 responded 字段或通知已读，说明已经处理过
+        final hasResponded = notification.metadata?['responded'] == true || notification.isRead;
+        if (hasResponded) {
+          // 已响应过，显示提示
+          final accepted = notification.metadata?['accepted'] == true;
+          AppToast.info(accepted ? '你已接受此邀请' : '你已处理此邀请');
+        } else {
+          // 未响应，弹出对话框
+          _showEventInvitationDialog(notification);
         }
         break;
 
       case NotificationType.eventInvitationResponse:
-        final eventId = notification.metadata?['eventId'] ?? notification.relatedId;
-        if (eventId != null) {
-          Get.toNamed(
-            AppRoutes.meetupDetail,
-            arguments: {'meetupId': eventId.toString()},
-          );
-        }
+        // 活动邀请响应：只是通知消息，用户点击后已通过 _markAsRead 标记已读，无需其他操作
         break;
 
       case NotificationType.other:
         break;
     }
+  }
+
+  /// 显示活动邀请对话框
+  void _showEventInvitationDialog(AppNotification notification) {
+    Get.dialog(
+      EventInvitationDialog(
+        notification: notification,
+        onResponse: () => handleRefresh(),
+      ),
+      barrierDismissible: false,
+    );
+  }
+
+  /// 显示版主转让对话框
+  void _showModeratorTransferDialog(AppNotification notification) {
+    Get.dialog(
+      ModeratorTransferDialog(
+        notification: notification,
+        onResponse: () => handleRefresh(),
+      ),
+      barrierDismissible: false,
+    );
   }
 
   void _showAnnouncementDialog(AppNotification notification) {
