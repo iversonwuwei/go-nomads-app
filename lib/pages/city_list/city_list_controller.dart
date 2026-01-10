@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:df_admin_mobile/core/core.dart';
+import 'package:df_admin_mobile/core/sync/data_sync_service.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
 import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
 import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller.dart';
@@ -32,6 +34,9 @@ class CityListController extends GetxController {
   final RxMap<String, bool> followedCities = <String, bool>{}.obs;
   final RxBool isLoadingFollowedCities = false.obs;
 
+  // 事件订阅
+  StreamSubscription<DataChangedEvent>? _favoriteChangedSubscription;
+
   // 分页
   int _currentPage = 1;
   static const int _pageSize = 20;
@@ -40,6 +45,9 @@ class CityListController extends GetxController {
   void onInit() {
     super.onInit();
     scrollController.addListener(_onScroll);
+
+    // 监听收藏状态变更事件（来自其他页面，如详情页）
+    _favoriteChangedSubscription = DataEventBus.instance.on('city_favorite', _handleFavoriteChanged);
 
     // 页面初始化时加载数据
     log('🏙️ CityListController 初始化，独立加载城市数据（不影响首页）');
@@ -54,9 +62,31 @@ class CityListController extends GetxController {
 
   @override
   void onClose() {
+    _favoriteChangedSubscription?.cancel();
     searchController.dispose();
     scrollController.dispose();
     super.onClose();
+  }
+
+  /// 处理收藏状态变更事件（来自其他页面，如详情页）
+  void _handleFavoriteChanged(DataChangedEvent event) {
+    if (event.entityId == null) return;
+
+    final cityId = event.entityId!;
+    final isFavorite = event.changeType == DataChangeType.created;
+
+    log('🔔 [CityListController] 收到收藏状态变更: $cityId -> $isFavorite');
+
+    // 更新 followedCities map
+    followedCities[cityId] = isFavorite;
+
+    // 同时更新 cities 列表中的状态
+    final index = cities.indexWhere((c) => c.id == cityId);
+    if (index != -1) {
+      cities[index] = cities[index].copyWith(isFavorite: isFavorite);
+      cities.refresh();
+      log('✅ [CityListController] 已更新城市收藏状态: ${cities[index].name}');
+    }
   }
 
   /// 加载城市数据
