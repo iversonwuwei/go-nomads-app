@@ -142,6 +142,26 @@ class NotificationRepository implements INotificationRepository {
   }
 
   @override
+  Future<Result<bool>> updateMetadata(String notificationId, Map<String, dynamic> metadata) async {
+    try {
+      final response = await _httpService.patch(
+        '${ApiConfig.apiBaseUrl}/notifications/$notificationId/metadata',
+        data: {
+          'metadata': metadata,
+        },
+      );
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        return Result.success(true);
+      } else {
+        return Result.failure(NetworkException(response.data['message'] ?? '更新元数据失败'));
+      }
+    } catch (e) {
+      return Result.failure(NetworkException('更新元数据失败: $e'));
+    }
+  }
+
+  @override
   Future<Result<bool>> markMultipleAsRead(List<String> notificationIds) async {
     try {
       final userId = _currentUserId;
@@ -292,6 +312,72 @@ class NotificationRepository implements INotificationRepository {
     }
   }
 
+  @override
+  Future<Result<bool>> respondToEventInvitation({
+    required String notificationId,
+    required String invitationId,
+    required bool accepted,
+  }) async {
+    try {
+      log('📤 响应活动邀请: notificationId=$notificationId, invitationId=$invitationId, accepted=$accepted');
+
+      final response = await _httpService.post(
+        '${ApiConfig.apiBaseUrl}/events/invitations/$invitationId/respond',
+        data: {
+          'response': accepted ? 'accept' : 'reject',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // 更新通知元数据，标记为已响应
+        await updateMetadata(notificationId, {
+          'responded': true,
+          'accepted': accepted,
+          'respondedAt': DateTime.now().toIso8601String(),
+        });
+        // 标记通知为已读
+        await markAsRead(notificationId);
+        log('✅ 响应活动邀请成功');
+        return Result.success(true);
+      } else {
+        return Result.failure(NetworkException(response.data?['message'] ?? '响应活动邀请失败'));
+      }
+    } catch (e) {
+      log('❌ 响应活动邀请异常: $e');
+      return Result.failure(NetworkException('响应活动邀请失败: $e'));
+    }
+  }
+
+  @override
+  Future<Result<bool>> respondToModeratorTransfer({
+    required String notificationId,
+    required String transferId,
+    required bool accepted,
+  }) async {
+    try {
+      log('📤 响应版主转让: notificationId=$notificationId, transferId=$transferId, accepted=$accepted');
+
+      final response = await _httpService.post(
+        '${ApiConfig.apiBaseUrl}/cities/moderator/transfers/$transferId/respond',
+        data: {
+          'action': accepted ? 'accept' : 'reject',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // 标记通知为已读
+        await markAsRead(notificationId);
+        log('✅ 响应版主转让成功');
+        return Result.success(true);
+      } else {
+        return Result.failure(NetworkException(response.data?['message'] ?? '响应版主转让失败'));
+      }
+    } catch (e) {
+      log('❌ 响应版主转让异常: $e');
+      return Result.failure(NetworkException('响应版主转让失败: $e'));
+    }
+  }
+
   /// 将 JSON 映射为 AppNotification 对象
   AppNotification _mapFromJson(Map<String, dynamic> json) {
     return AppNotification(
@@ -317,6 +403,10 @@ class NotificationRepository implements INotificationRepository {
         return 'moderator_approved';
       case NotificationType.moderatorRejected:
         return 'moderator_rejected';
+      case NotificationType.moderatorTransfer:
+        return 'moderator_transfer';
+      case NotificationType.moderatorTransferResult:
+        return 'moderator_transfer_result';
       case NotificationType.cityUpdate:
         return 'city_update';
       case NotificationType.systemAnnouncement:
@@ -339,6 +429,10 @@ class NotificationRepository implements INotificationRepository {
         return NotificationType.moderatorApproved;
       case 'moderator_rejected':
         return NotificationType.moderatorRejected;
+      case 'moderator_transfer':
+        return NotificationType.moderatorTransfer;
+      case 'moderator_transfer_result':
+        return NotificationType.moderatorTransferResult;
       case 'city_update':
         return NotificationType.cityUpdate;
       case 'system_announcement':

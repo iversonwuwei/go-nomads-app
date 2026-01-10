@@ -172,6 +172,76 @@ class NotificationStateController extends GetxController {
     );
   }
 
+  /// 响应活动邀请
+  Future<bool> respondToEventInvitation({
+    required String notificationId,
+    required String invitationId,
+    required bool accepted,
+  }) async {
+    log('🔔 响应活动邀请: invitationId=$invitationId, accepted=$accepted');
+    
+    final result = await _repository.respondToEventInvitation(
+      notificationId: notificationId,
+      invitationId: invitationId,
+      accepted: accepted,
+    );
+
+    return result.fold(
+      onSuccess: (_) {
+        log('✅ 响应活动邀请成功');
+        // 更新本地通知状态
+        final index = notifications.indexWhere((n) => n.id == notificationId);
+        if (index != -1) {
+          notifications[index] = notifications[index].markAsRead();
+          notifications.refresh();
+        }
+        if (unreadCount.value > 0) {
+          unreadCount.value--;
+        }
+        return true;
+      },
+      onFailure: (failure) {
+        log('❌ 响应活动邀请失败: ${failure.message}');
+        return false;
+      },
+    );
+  }
+
+  /// 响应版主转让请求
+  Future<bool> respondToModeratorTransfer({
+    required String notificationId,
+    required String transferId,
+    required bool accepted,
+  }) async {
+    log('🔔 响应版主转让: transferId=$transferId, accepted=$accepted');
+    
+    final result = await _repository.respondToModeratorTransfer(
+      notificationId: notificationId,
+      transferId: transferId,
+      accepted: accepted,
+    );
+
+    return result.fold(
+      onSuccess: (_) {
+        log('✅ 响应版主转让成功');
+        // 更新本地通知状态
+        final index = notifications.indexWhere((n) => n.id == notificationId);
+        if (index != -1) {
+          notifications[index] = notifications[index].markAsRead();
+          notifications.refresh();
+        }
+        if (unreadCount.value > 0) {
+          unreadCount.value--;
+        }
+        return true;
+      },
+      onFailure: (failure) {
+        log('❌ 响应版主转让失败: ${failure.message}');
+        return false;
+      },
+    );
+  }
+
   /// 刷新（下拉刷新）
   @override
   Future<void> refresh() async {

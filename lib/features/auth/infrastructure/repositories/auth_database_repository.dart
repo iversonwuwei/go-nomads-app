@@ -97,12 +97,23 @@ class AuthDatabaseRepository implements IAuthDatabaseRepository {
 
   /// 映射数据库数据到领域对象
   TokenDatabaseData _mapToTokenDatabaseData(Map<String, dynamic> data) {
+    DateTime? expiresAt;
+    final expiresAtStr = data['expires_at'] as String?;
+    if (expiresAtStr != null && expiresAtStr.isNotEmpty) {
+      try {
+        expiresAt = DateTime.parse(expiresAtStr);
+      } catch (e) {
+        // 解析失败，保持为 null
+      }
+    }
+
     return TokenDatabaseData(
       userId: data['user_id'] as String,
       accessToken: data['access_token'] as String,
       refreshToken: data['refresh_token'] as String? ?? '',
       tokenType: data['token_type'] as String? ?? 'Bearer',
       expiresIn: data['expires_in'] as int? ?? 3600,
+      expiresAt: expiresAt,
       userName: data['user_name'] as String? ?? '',
       userEmail: data['user_email'] as String? ?? '',
     );

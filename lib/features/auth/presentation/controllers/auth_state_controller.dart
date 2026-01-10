@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:df_admin_mobile/core/application/use_case.dart';
@@ -60,6 +61,10 @@ class AuthStateController extends GetxController {
   final RxBool isAuthenticated = false.obs;
   final RxBool isLoading = false.obs;
 
+  // Token 自动刷新定时器
+  Timer? _tokenRefreshTimer;
+  static const Duration _tokenCheckInterval = Duration(minutes: 5);
+
   @override
   void onInit() {
     super.onInit();
@@ -67,6 +72,54 @@ class AuthStateController extends GetxController {
     _checkLoginStatusWithDatabase();
     // 立即加载 token 到内存
     _loadTokenToMemory();
+    // 启动 token 自动刷新检查
+    _startTokenRefreshTimer();
+  }
+
+  @override
+  void onClose() {
+    _stopTokenRefreshTimer();
+    super.onClose();
+  }
+
+  /// 启动 Token 自动刷新定时器
+  void _startTokenRefreshTimer() {
+    _tokenRefreshTimer?.cancel();
+    _tokenRefreshTimer = Timer.periodic(_tokenCheckInterval, (_) async {
+      await _checkAndRefreshTokenIfNeeded();
+    });
+    log('🔄 Token 自动刷新定时器已启动（检查间隔: ${_tokenCheckInterval.inMinutes} 分钟）');
+  }
+
+  /// 停止 Token 自动刷新定时器
+  void _stopTokenRefreshTimer() {
+    _tokenRefreshTimer?.cancel();
+    _tokenRefreshTimer = null;
+    log('⏹️ Token 自动刷新定时器已停止');
+  }
+
+  /// 检查并在需要时刷新 Token
+  Future<void> _checkAndRefreshTokenIfNeeded() async {
+    if (!isAuthenticated.value) {
+      return; // 未登录，跳过
+    }
+
+    final token = currentToken.value;
+    if (token == null) {
+      return;
+    }
+
+    log('🔍 检查 Token 状态: needsRefresh=${token.needsRefresh}, isExpired=${token.isExpired}');
+
+    if (token.needsRefresh && token.hasValidRefreshToken) {
+      log('🔄 Token 即将过期，开始自动刷新...');
+      final success = await refreshToken();
+      if (success) {
+        log('✅ Token 自动刷新成功');
+      } else {
+        log('❌ Token 自动刷新失败');
+      }
+    }
   }
 
   /// 从存储加载 token 到内存（用于同步检查过期状态）
@@ -217,18 +270,12 @@ class AuthStateController extends GetxController {
   /// 在后台完成登录后的数据加载
   Future<void> _completeLoginInBackground(AuthToken token, HttpService httpService) async {
     try {
-      // 加载当前用户
+      // 加载当前用户（从服务器获取最新信息）
       await _loadCurrentUser();
 
-      // 保存到数据库 (如果用户已加载)
+      // Token 已经在 AuthRepository.login() 中保存到 SQLite
+      // 这里只需要设置 HttpService 的用户ID 和加入 SignalR 组
       if (currentUser.value != null) {
-        await _saveTokenToDatabaseUseCase.execute(
-          SaveTokenToDatabaseParams(
-            token: token,
-            user: currentUser.value!,
-          ),
-        );
-
         // 设置用户ID到 HttpService
         httpService.setUserId(currentUser.value!.id);
 
@@ -611,13 +658,5 @@ class AuthStateController extends GetxController {
   /// 刷新用户信息
   Future<void> refreshUser() async {
     await _loadCurrentUser();
-  }
-
-  @override
-  void onClose() {
-    // 注意: AuthStateController 通常是全局单例(permanent: true)
-    // 不会被 GetX 销毁,所以这里不需要清理数据
-    // 如果需要清理,应该调用 logout() 方法
-    super.onClose();
   }
 }
