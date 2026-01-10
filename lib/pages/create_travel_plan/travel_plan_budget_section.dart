@@ -10,26 +10,42 @@ class TravelPlanBudgetSection extends StatelessWidget {
 
   const TravelPlanBudgetSection({super.key, required this.controllerTag});
 
-  CreateTravelPlanPageController get _c => Get.find<CreateTravelPlanPageController>(tag: controllerTag);
+  CreateTravelPlanPageController? get _c {
+    try {
+      return Get.find<CreateTravelPlanPageController>(tag: controllerTag);
+    } catch (e) {
+      return null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final controller = _c;
+    
+    // 如果 controller 已被销毁，返回空容器
+    if (controller == null) {
+      return const SizedBox.shrink();
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle(l10n.budget, FontAwesomeIcons.dollarSign),
         const SizedBox(height: 12),
-        Obx(() => Row(
-              children: [
-                Expanded(child: _buildBudgetChip(l10n.low, 'low')),
-                const SizedBox(width: 12),
-                Expanded(child: _buildBudgetChip(l10n.medium, 'medium')),
-                const SizedBox(width: 12),
-                Expanded(child: _buildBudgetChip(l10n.high, 'high')),
-              ],
-            )),
+        Obx(() {
+          // 再次检查 controller 是否存在
+          if (_c == null) return const SizedBox.shrink();
+          return Row(
+            children: [
+              Expanded(child: _buildBudgetChip(l10n.low, 'low')),
+              const SizedBox(width: 12),
+              Expanded(child: _buildBudgetChip(l10n.medium, 'medium')),
+              const SizedBox(width: 12),
+              Expanded(child: _buildBudgetChip(l10n.high, 'high')),
+            ],
+          );
+        }),
         const SizedBox(height: 16),
         Text(
           l10n.enterBudget,
@@ -48,9 +64,12 @@ class TravelPlanBudgetSection extends StatelessWidget {
   }
 
   Widget _buildBudgetChip(String label, String value) {
-    final isSelected = _c.budget.value == value;
+    final controller = _c;
+    if (controller == null) return const SizedBox.shrink();
+    
+    final isSelected = controller.budget.value == value;
     return GestureDetector(
-      onTap: () => _c.setBudget(value),
+      onTap: () => controller.setBudget(value),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
@@ -92,39 +111,48 @@ class TravelPlanBudgetSection extends StatelessWidget {
   }
 
   Widget _buildCurrencyDropdown() {
-    return Obx(() => Container(
-          width: 100,
-          height: 56,
-          decoration: BoxDecoration(
-            color: Colors.grey[50],
+    final controller = _c;
+    if (controller == null) return const SizedBox.shrink();
+    
+    return Obx(() {
+      if (_c == null) return const SizedBox.shrink();
+      return Container(
+        width: 100,
+        height: 56,
+        decoration: BoxDecoration(
+          color: Colors.grey[50],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            value: controller.selectedCurrency.value,
+            isExpanded: true,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade200),
+            icon: const Icon(FontAwesomeIcons.chevronDown, color: Color(0xFFFF4458)),
+            items: const [
+              DropdownMenuItem(value: 'USD', child: _CurrencyItem(symbol: '\$', code: 'USD')),
+              DropdownMenuItem(value: 'CNY', child: _CurrencyItem(symbol: '¥', code: 'CNY')),
+              DropdownMenuItem(value: 'EUR', child: _CurrencyItem(symbol: '€', code: 'EUR')),
+              DropdownMenuItem(value: 'GBP', child: _CurrencyItem(symbol: '£', code: 'GBP')),
+              DropdownMenuItem(value: 'JPY', child: _CurrencyItem(symbol: '¥', code: 'JPY')),
+            ],
+            onChanged: (value) {
+              if (value != null) controller.setCurrency(value);
+            },
           ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: _c.selectedCurrency.value,
-              isExpanded: true,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              borderRadius: BorderRadius.circular(12),
-              icon: const Icon(FontAwesomeIcons.chevronDown, color: Color(0xFFFF4458)),
-              items: const [
-                DropdownMenuItem(value: 'USD', child: _CurrencyItem(symbol: '\$', code: 'USD')),
-                DropdownMenuItem(value: 'CNY', child: _CurrencyItem(symbol: '¥', code: 'CNY')),
-                DropdownMenuItem(value: 'EUR', child: _CurrencyItem(symbol: '€', code: 'EUR')),
-                DropdownMenuItem(value: 'GBP', child: _CurrencyItem(symbol: '£', code: 'GBP')),
-                DropdownMenuItem(value: 'JPY', child: _CurrencyItem(symbol: '¥', code: 'JPY')),
-              ],
-              onChanged: (value) {
-                if (value != null) _c.setCurrency(value);
-              },
-            ),
-          ),
-        ));
+        ),
+      );
+    });
   }
 
   Widget _buildCustomBudgetField() {
+    final controller = _c;
+    if (controller == null) return const SizedBox.shrink();
+    
     return TextFormField(
-      controller: _c.customBudgetController,
+      controller: controller.customBudgetController,
       keyboardType: TextInputType.number,
       decoration: InputDecoration(
         hintText: '0.00',
@@ -142,7 +170,7 @@ class TravelPlanBudgetSection extends StatelessWidget {
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
-      onChanged: _c.onCustomBudgetChanged,
+      onChanged: controller.onCustomBudgetChanged,
     );
   }
 

@@ -114,7 +114,9 @@ class NotificationRepository implements INotificationRepository {
       );
 
       if (response.statusCode == 200) {
-        final count = response.data['data']['unreadCount'] as int? ?? 0;
+        // HttpService 已经解包了外层的 {success, data} 结构
+        // 所以 response.data 直接是 {unreadCount: x, totalCount: y}
+        final count = response.data['unreadCount'] as int? ?? 0;
         return Result.success(count);
       } else {
         return Result.failure(NetworkException(response.data['message'] ?? '获取未读数量失败'));
