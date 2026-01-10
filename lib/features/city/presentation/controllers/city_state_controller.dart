@@ -687,6 +687,15 @@ class CityStateController extends PaginatedRefreshableController {
           cities[index] = cities[index].copyWith(isFavorite: isFavorited);
           cities.refresh();
         }
+
+        // 通知其他组件收藏状态变更
+        DataEventBus.instance.emit(DataChangedEvent(
+          entityType: 'city_favorite',
+          entityId: cityId,
+          version: DateTime.now().millisecondsSinceEpoch,
+          changeType: isFavorited ? DataChangeType.created : DataChangeType.deleted,
+        ));
+
         return const Success(null);
       },
       onFailure: (exception) {

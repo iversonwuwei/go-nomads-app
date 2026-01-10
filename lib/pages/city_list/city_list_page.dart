@@ -254,13 +254,14 @@ class CityListPage extends GetView<CityListController> {
             }
 
             final city = cityList[index];
-            return CityListCard(
+            // 使用 Obx 包裹以监听 followedCities 的变化
+            return Obx(() => CityListCard(
               city: city,
               isMobile: isMobile,
               isFollowed: controller.isCityFollowed(city),
               onTap: () => _navigateToCityDetail(context, city),
               onFollowTap: () => controller.toggleFollow(city),
-            );
+                ));
           },
         ),
       );

@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
@@ -89,27 +90,34 @@ class HomeCityCard extends StatelessWidget {
   Widget _buildBackgroundImage() {
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
-      child: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: NetworkImage(city.displayImageUrl),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          CachedNetworkImage(
+            imageUrl: city.displayImageUrl,
             fit: BoxFit.cover,
-          ),
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.black.withValues(alpha: 0.3),
-                Colors.black.withValues(alpha: 0.7),
-              ],
+            // 限制缓存尺寸，避免解码原始大图
+            memCacheWidth: 900,
+            memCacheHeight: 900,
+            placeholder: (_, __) => Container(color: Colors.grey[200]),
+            errorWidget: (_, __, ___) => Container(
+              color: Colors.grey[300],
+              child: const Icon(FontAwesomeIcons.image, color: Colors.white70),
             ),
           ),
-        ),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.3),
+                  Colors.black.withValues(alpha: 0.7),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -25,7 +25,7 @@ class DeploymentConfig {
 
   /// Docker 部署配置
   static const docker = DeploymentConfig(
-    gatewayPort: 5080,
+    gatewayPort: 80,
     messageServicePort: 5005,
     coworkingServicePort: 8006,
   );
@@ -81,7 +81,7 @@ class ApiConfig {
   // ============================================================
 
   /// 生产环境主机
-  static const String productionHost = '59.46.235.173';
+  static const String productionHost = 'api.go-nomads.com';
 
   /// 真机测试主机 - 使用电脑局域网 IP
   /// 通过 ipconfig (Windows) 或 ifconfig (Mac/Linux) 查看
@@ -96,7 +96,7 @@ class ApiConfig {
       // Android 模拟器使用特殊地址访问宿主机
       return '10.0.2.2';
     } else if (Platform.isIOS) {
-      return '127.0.0.1';
+      return 'api.go-nomads.com';
     } else {
       // 其他平台（Desktop等）
       return 'localhost';
@@ -110,7 +110,7 @@ class ApiConfig {
   /// 是否使用真机测试地址(手动切换)
   /// ⚠️ 雷电模拟器用户请设置为 true
   /// ⚠️ Android 官方模拟器用户请设置为 false
-  static const bool usePhysicalDevice = true;
+  static const bool usePhysicalDevice = false;
 
   /// 是否启用 HTTP 方法重写
   /// ⚠️ 当服务器/网络环境不支持 PUT/DELETE 方法时启用此选项

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/core/domain/result.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
@@ -57,15 +58,16 @@ class CityListCard extends StatelessWidget {
                   child: AspectRatio(
                     aspectRatio: 16 / 9,
                     child: city.imageUrl != null && city.imageUrl!.isNotEmpty
-                        ? Image.network(
-                            city.imageUrl!,
+                        ? CachedNetworkImage(
+                            imageUrl: city.imageUrl!,
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                color: Colors.grey[200],
-                                child: const Icon(FontAwesomeIcons.imagePortrait, size: 48),
-                              );
-                            },
+                            memCacheWidth: 900,
+                            memCacheHeight: 900,
+                            placeholder: (_, __) => Container(color: Colors.grey[200]),
+                            errorWidget: (_, __, ___) => Container(
+                              color: Colors.grey[200],
+                              child: const Icon(FontAwesomeIcons.imagePortrait, size: 48),
+                            ),
                           )
                         : Container(
                             color: Colors.grey[200],
@@ -257,6 +259,7 @@ class CityListCard extends StatelessWidget {
   // 关注按钮
   Widget _buildFollowButton() {
     return GestureDetector(
+      behavior: HitTestBehavior.opaque, // 阻止事件冒泡到外层 InkWell
       onTap: onFollowTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -396,6 +399,7 @@ class _GenerateImageButton extends StatelessWidget {
       final isGenerating = cityController.isGeneratingImages(cityId);
 
       return GestureDetector(
+        behavior: HitTestBehavior.opaque, // 阻止事件冒泡到外层 InkWell
         onTap: isGenerating ? null : _generateImages,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
