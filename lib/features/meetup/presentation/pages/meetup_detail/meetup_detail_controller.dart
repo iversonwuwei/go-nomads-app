@@ -294,12 +294,42 @@ class MeetupDetailController extends GetxController {
       await _meetupRepository.cancelMeetup(meetup.value!.id);
       log('✅ 成功取消活动: ${meetup.value!.title}');
       AppToast.success('活动已取消', title: '成功');
-      await loadEventDetails();
+
+      // 本地单点更新状态，而不是重新加载整个详情
+      _updateMeetupStatusLocally(MeetupStatus.cancelled);
+
       hasDataChanged.value = true;
     } catch (e) {
       log('❌ 取消活动失败: $e');
       AppToast.error('取消活动失败');
     }
+  }
+
+  /// 本地更新 Meetup 状态（单点更新）
+  void _updateMeetupStatusLocally(MeetupStatus newStatus) {
+    final currentMeetup = meetup.value!;
+
+    meetup.value = Meetup(
+      id: currentMeetup.id,
+      title: currentMeetup.title,
+      type: currentMeetup.type,
+      eventType: currentMeetup.eventType,
+      description: currentMeetup.description,
+      location: currentMeetup.location,
+      venue: currentMeetup.venue,
+      schedule: currentMeetup.schedule,
+      capacity: currentMeetup.capacity,
+      organizer: currentMeetup.organizer,
+      images: currentMeetup.images,
+      attendeeIds: currentMeetup.attendeeIds,
+      status: newStatus,
+      createdAt: currentMeetup.createdAt,
+      isJoined: currentMeetup.isJoined,
+      isOrganizer: currentMeetup.isOrganizer,
+    );
+
+    meetup.refresh();
+    log('📊 更新后状态 - status: ${meetup.value!.status.value}');
   }
 
   /// 删除活动（仅管理员）

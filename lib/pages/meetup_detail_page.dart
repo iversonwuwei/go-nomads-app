@@ -1007,8 +1007,28 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
         title: '成功',
       );
 
-      // 如果成功,重新加载活动详情以更新 UI
-      await _loadEventDetails();
+      // 本地单点更新状态，而不是重新加载整个详情
+      final currentMeetup = _meetup.value;
+      _meetup.value = Meetup(
+        id: currentMeetup.id,
+        title: currentMeetup.title,
+        type: currentMeetup.type,
+        eventType: currentMeetup.eventType,
+        description: currentMeetup.description,
+        location: currentMeetup.location,
+        venue: currentMeetup.venue,
+        schedule: currentMeetup.schedule,
+        capacity: currentMeetup.capacity,
+        organizer: currentMeetup.organizer,
+        images: currentMeetup.images,
+        attendeeIds: currentMeetup.attendeeIds,
+        status: MeetupStatus.cancelled,
+        createdAt: currentMeetup.createdAt,
+        isJoined: currentMeetup.isJoined,
+        isOrganizer: currentMeetup.isOrganizer,
+      );
+      _meetup.refresh();
+      log('📊 更新后状态 - status: ${_meetup.value.status.value}');
 
       // 标记数据已变更，返回时通知列表页面更新缓存
       _hasDataChanged = true;
