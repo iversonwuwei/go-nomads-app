@@ -1,3 +1,4 @@
+import 'package:df_admin_mobile/features/meetup/presentation/pages/meetup_detail/meetup_detail.dart';
 import 'package:df_admin_mobile/features/membership/presentation/pages/membership_plan_page.dart';
 import 'package:df_admin_mobile/features/moderator/presentation/pages/moderator_application_detail_page.dart';
 import 'package:df_admin_mobile/features/travel_history/travel_history.dart';
@@ -32,7 +33,6 @@ import 'package:df_admin_mobile/pages/hotel_list/hotel_list_page.dart';
 import 'package:df_admin_mobile/pages/innovation_detail/innovation_detail_page.dart';
 import 'package:df_admin_mobile/pages/innovation_list/innovation_list_page.dart';
 import 'package:df_admin_mobile/pages/invite_to_meetup_page.dart';
-import 'package:df_admin_mobile/pages/meetup_detail/meetup_detail_page.dart';
 import 'package:df_admin_mobile/pages/meetup_list/meetup_list.dart';
 import 'package:df_admin_mobile/pages/member_detail_page.dart';
 import 'package:df_admin_mobile/pages/my_meetups_page.dart';
@@ -270,6 +270,7 @@ class AppRoutes {
     GetPage(
       name: meetupDetail,
       page: () => MeetupDetailPage(meetup: Get.arguments),
+      binding: MeetupDetailBinding(),
       middlewares: [AuthMiddleware()],
     ),
     GetPage(

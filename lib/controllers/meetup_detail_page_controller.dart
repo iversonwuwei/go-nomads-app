@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:df_admin_mobile/core/sync/sync.dart';
+import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
 import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
 import 'package:df_admin_mobile/features/meetup/infrastructure/models/meetup_dto.dart';
@@ -169,31 +170,74 @@ class MeetupDetailPageController extends GetxController {
   }
 
   Future<void> toggleJoin(BuildContext context) async {
-    final l10n = AppLocalizations.of(context)!;
-
     try {
       final isJoining = !isJoined;
 
+      // 使用 MeetupStateController 的方法，已实现单点更新列表
+      bool success;
       if (isJoining) {
-        await _meetupRepository.rsvpToMeetup(meetup.value.id);
+        success = await _meetupController.rsvpToMeetup(meetup.value.id);
         log('✅ 成功加入活动: ${meetup.value.title}');
-        if (!_meetupController.rsvpedMeetupIds.contains(meetup.value.id)) {
-          _meetupController.rsvpedMeetupIds.add(meetup.value.id);
-        }
       } else {
-        await _meetupRepository.cancelRsvp(meetup.value.id);
+        success = await _meetupController.cancelRsvp(meetup.value.id);
         log('✅ 成功退出活动: ${meetup.value.title}');
-        _meetupController.rsvpedMeetupIds.remove(meetup.value.id);
       }
 
-      await _loadEventDetails();
-      hasDataChanged.value = true;
-      _meetupController.refreshMeetups();
+      if (success) {
+        // 本地单点更新详情页数据，而不是重新加载整个详情
+        final currentMeetup = meetup.value;
+        final newCount = isJoining
+            ? currentMeetup.capacity.currentAttendees + 1
+            : (currentMeetup.capacity.currentAttendees - 1).clamp(0, currentMeetup.capacity.maxAttendees);
+        final newCapacity = Capacity(
+          maxAttendees: currentMeetup.capacity.maxAttendees,
+          currentAttendees: newCount,
+        );
 
-      if (isJoining) {
-        AppToast.success(l10n.joinedSuccessfully, title: l10n.joined);
-      } else {
-        AppToast.info(l10n.youLeftMeetup, title: l10n.leftMeetup);
+        // 创建新的 Meetup 对象，只更新参与人数和加入状态
+        meetup.value = Meetup(
+          id: currentMeetup.id,
+          title: currentMeetup.title,
+          type: currentMeetup.type,
+          eventType: currentMeetup.eventType,
+          description: currentMeetup.description,
+          location: currentMeetup.location,
+          venue: currentMeetup.venue,
+          schedule: currentMeetup.schedule,
+          capacity: newCapacity,
+          organizer: currentMeetup.organizer,
+          images: currentMeetup.images,
+          attendeeIds: currentMeetup.attendeeIds,
+          status: currentMeetup.status,
+          createdAt: currentMeetup.createdAt,
+          isJoined: isJoining,
+          isOrganizer: currentMeetup.isOrganizer,
+        );
+
+        // 本地更新参与者列表
+        final authController = Get.find<AuthStateController>();
+        final currentUser = authController.currentUser.value;
+        if (isJoining) {
+          // 添加当前用户到参与者列表
+          if (currentUser != null) {
+            participants.add({
+              'id': currentUser.id,
+              'name': currentUser.name,
+              'avatarUrl': currentUser.avatar,
+            });
+          }
+        } else {
+          // 从参与者列表移除当前用户
+          if (currentUser != null) {
+            participants.removeWhere((p) => p['id'] == currentUser.id);
+          }
+        }
+
+        // 强制刷新 UI
+        meetup.refresh();
+
+        hasDataChanged.value = true;
+        // 无需调用 refreshMeetups()，rsvpToMeetup/cancelRsvp 已经单点更新了列表
       }
     } catch (e) {
       log('❌ 加入/退出活动失败: $e');

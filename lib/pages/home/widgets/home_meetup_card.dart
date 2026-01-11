@@ -3,8 +3,6 @@ import 'dart:developer';
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
-import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
-import 'package:df_admin_mobile/features/meetup/infrastructure/repositories/meetup_repository.dart';
 import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
@@ -494,23 +492,21 @@ class HomeMeetupCard extends StatelessWidget {
     final isJoining = !isCurrentlyJoined;
 
     try {
-      final meetupRepository = MeetupRepository();
-
+      // 使用 MeetupStateController 的方法，已实现单点更新
       if (isJoining) {
-        await meetupRepository.rsvpToMeetup(meetup.id);
-        if (!_meetupController.rsvpedMeetupIds.contains(meetup.id)) {
-          _meetupController.rsvpedMeetupIds.add(meetup.id);
+        final success = await _meetupController.rsvpToMeetup(meetup.id);
+        if (success) {
+          log('✅ 加入活动成功: ${meetup.id}');
         }
-        AppToast.success(l10n.youHaveJoined(meetup.title), title: l10n.joined);
       } else {
-        await meetupRepository.cancelRsvp(meetup.id);
-        _meetupController.rsvpedMeetupIds.remove(meetup.id);
-        AppToast.info(l10n.youLeft(meetup.title), title: l10n.leftMeetup);
+        final success = await _meetupController.cancelRsvp(meetup.id);
+        if (success) {
+          log('✅ 退出活动成功: ${meetup.id}');
+        }
       }
-
-      _meetupController.refreshMeetups();
+      // 无需调用 refreshMeetups()，rsvpToMeetup/cancelRsvp 已经单点更新了列表
     } catch (e) {
-      log('❌ API 调用失败: $e');
+      log('❌ 操作失败: $e');
       _handleJoinError(e.toString(), isCurrentlyJoined);
     }
   }
@@ -535,7 +531,6 @@ class HomeMeetupCard extends StatelessWidget {
 
   Future<void> _handleCancelMeetup(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
-    final meetupRepository = Get.find<IMeetupRepository>();
 
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
@@ -555,9 +550,12 @@ class HomeMeetupCard extends StatelessWidget {
     if (confirmed != true) return;
 
     try {
-      await meetupRepository.cancelMeetup(meetup.id);
-      AppToast.success('活动已取消', title: '成功');
-      _meetupController.refreshMeetups();
+      // 使用 MeetupStateController 的方法，已实现单点更新
+      final success = await _meetupController.cancelMeetup(meetup.id);
+      if (success) {
+        log('✅ 取消活动成功: ${meetup.id}');
+      }
+      // 无需调用 refreshMeetups()，cancelMeetup 已经单点更新了列表
     } catch (e) {
       log('❌ 取消活动失败: $e');
       AppToast.error('取消活动失败');

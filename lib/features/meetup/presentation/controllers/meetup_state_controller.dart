@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:df_admin_mobile/core/sync/sync.dart';
@@ -11,6 +12,8 @@ import 'package:df_admin_mobile/features/meetup/application/use_cases/rsvp_to_me
 import 'package:df_admin_mobile/features/meetup/application/use_cases/update_meetup_use_case.dart';
 import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
 import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
+import 'package:df_admin_mobile/features/meetup/infrastructure/models/meetup_dto.dart';
+import 'package:df_admin_mobile/features/meetup/infrastructure/services/meetup_signalr_service.dart';
 import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:df_admin_mobile/services/http_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
@@ -111,16 +114,212 @@ class MeetupStateController extends PaginatedRefreshableController {
 
   // ==================== 生命周期 ====================
 
+  // SignalR 订阅
+  final List<StreamSubscription> _signalRSubscriptions = [];
+
   @override
   void onInit() {
     super.onInit();
     log('🎬 MeetupStateController 初始化...');
     _setupLoginStateListener();
     _setupDataChangeListeners();
+    _setupSignalRListeners();
 
     // ⚡ 优化：延迟加载数据，避免启动时阻塞
     // 数据将在活动页面显示时按需加载，或由 ensureDataLoaded() 触发
     log('🎬 MeetupStateController 初始化完成（延迟加载模式）');
+  }
+
+  /// 设置 SignalR 实时推送监听
+  void _setupSignalRListeners() {
+    try {
+      // 获取或注册 SignalR 服务
+      MeetupSignalRService signalRService;
+      if (Get.isRegistered<MeetupSignalRService>()) {
+        signalRService = Get.find<MeetupSignalRService>();
+      } else {
+        signalRService = Get.put(MeetupSignalRService(), permanent: true);
+      }
+
+      // 连接到 SignalR Hub
+      signalRService.connect();
+
+      // 订阅事件 - 接收完整数据，支持单点更新
+      _signalRSubscriptions.add(
+        signalRService.onMeetupCreated.listen((meetupJson) {
+          log('📨 [SignalR] Meetup created with full data');
+          _handleSignalRMeetupCreated(meetupJson);
+        }),
+      );
+
+      _signalRSubscriptions.add(
+        signalRService.onMeetupUpdated.listen((meetupJson) {
+          log('📨 [SignalR] Meetup updated with full data');
+          _handleSignalRMeetupUpdated(meetupJson);
+        }),
+      );
+
+      _signalRSubscriptions.add(
+        signalRService.onMeetupDeleted.listen((meetupId) {
+          log('📨 [SignalR] Meetup deleted: $meetupId');
+          _handleSignalRMeetupDeleted(meetupId);
+        }),
+      );
+
+      _signalRSubscriptions.add(
+        signalRService.onMeetupCancelled.listen((meetupJson) {
+          log('📨 [SignalR] Meetup cancelled with full data');
+          _handleSignalRMeetupCancelled(meetupJson);
+        }),
+      );
+
+      _signalRSubscriptions.add(
+        signalRService.onParticipantJoined.listen((event) {
+          log('📨 [SignalR] Participant joined: meetup=${event.meetupId}, count=${event.newParticipantCount}');
+          _handleSignalRParticipantJoined(event);
+        }),
+      );
+
+      _signalRSubscriptions.add(
+        signalRService.onParticipantLeft.listen((event) {
+          log('📨 [SignalR] Participant left: meetup=${event.meetupId}, count=${event.newParticipantCount}');
+          _handleSignalRParticipantLeft(event);
+        }),
+      );
+
+      log('✅ [MeetupStateController] SignalR 监听器设置完成');
+    } catch (e) {
+      log('⚠️ [MeetupStateController] 设置 SignalR 监听失败: $e');
+    }
+  }
+
+  /// 处理 SignalR Meetup 创建事件 - 单点添加到列表
+  void _handleSignalRMeetupCreated(Map<String, dynamic> meetupJson) {
+    try {
+      final meetup = MeetupDto.fromJson(meetupJson).toDomain();
+      // 检查是否已存在
+      if (meetups.any((m) => m.id == meetup.id)) {
+        log('📨 [SignalR] Meetup ${meetup.id} already exists, updating instead');
+        _updateMeetupInList(meetup);
+      } else {
+        // 根据当前筛选条件决定是否添加
+        if (_shouldShowMeetup(meetup)) {
+          meetups.insert(0, meetup); // 新活动插入到列表头部
+          meetups.refresh();
+          log('✅ [SignalR] Meetup ${meetup.id} added to list');
+        } else {
+          log('📨 [SignalR] Meetup ${meetup.id} does not match current filter, skipped');
+        }
+      }
+    } catch (e) {
+      log('⚠️ [SignalR] Failed to handle MeetupCreated: $e');
+      // 失败时回退到刷新整个列表
+      refresh();
+    }
+  }
+
+  /// 处理 SignalR Meetup 更新事件 - 单点更新
+  void _handleSignalRMeetupUpdated(Map<String, dynamic> meetupJson) {
+    try {
+      final meetup = MeetupDto.fromJson(meetupJson).toDomain();
+      _updateMeetupInList(meetup);
+    } catch (e) {
+      log('⚠️ [SignalR] Failed to handle MeetupUpdated: $e');
+    }
+  }
+
+  /// 处理 SignalR Meetup 删除事件
+  void _handleSignalRMeetupDeleted(String meetupId) {
+    meetups.removeWhere((m) => m.id == meetupId);
+    meetups.refresh();
+    log('✅ [SignalR] Meetup $meetupId removed from list');
+  }
+
+  /// 处理 SignalR Meetup 取消事件 - 单点更新状态
+  void _handleSignalRMeetupCancelled(Map<String, dynamic> meetupJson) {
+    try {
+      final meetup = MeetupDto.fromJson(meetupJson).toDomain();
+      _updateMeetupInList(meetup);
+      log('✅ [SignalR] Meetup ${meetup.id} cancelled status updated');
+    } catch (e) {
+      log('⚠️ [SignalR] Failed to handle MeetupCancelled: $e');
+    }
+  }
+
+  /// 处理 SignalR 参与者加入事件 - 仅更新参与人数
+  void _handleSignalRParticipantJoined(ParticipantChangeEvent event) {
+    _updateMeetupParticipantCount(event.meetupId, event.newParticipantCount);
+  }
+
+  /// 处理 SignalR 参与者离开事件 - 仅更新参与人数
+  void _handleSignalRParticipantLeft(ParticipantChangeEvent event) {
+    _updateMeetupParticipantCount(event.meetupId, event.newParticipantCount);
+  }
+
+  /// 单点更新：更新列表中的单个 Meetup
+  void _updateMeetupInList(Meetup meetup) {
+    final index = meetups.indexWhere((m) => m.id == meetup.id);
+    if (index != -1) {
+      meetups[index] = meetup;
+      meetups.refresh();
+      log('✅ [SignalR] Meetup ${meetup.id} updated in list at index $index');
+    } else {
+      log('📨 [SignalR] Meetup ${meetup.id} not found in list');
+    }
+  }
+
+  /// 单点更新：仅更新 Meetup 的参与人数
+  void _updateMeetupParticipantCount(String meetupId, int newCount) {
+    final index = meetups.indexWhere((m) => m.id == meetupId);
+    if (index != -1) {
+      final oldMeetup = meetups[index];
+      // 创建新的 Meetup 对象，只更新参与人数
+      meetups[index] = Meetup(
+        id: oldMeetup.id,
+        title: oldMeetup.title,
+        type: oldMeetup.type,
+        eventType: oldMeetup.eventType,
+        description: oldMeetup.description,
+        location: oldMeetup.location,
+        venue: oldMeetup.venue,
+        schedule: oldMeetup.schedule,
+        capacity: Capacity(
+          maxAttendees: oldMeetup.capacity.maxAttendees,
+          currentAttendees: newCount,
+        ),
+        organizer: oldMeetup.organizer,
+        images: oldMeetup.images,
+        attendeeIds: oldMeetup.attendeeIds,
+        status: oldMeetup.status,
+        createdAt: oldMeetup.createdAt,
+        isJoined: oldMeetup.isJoined,
+        isOrganizer: oldMeetup.isOrganizer,
+      );
+      meetups.refresh();
+      log('✅ [SignalR] Meetup $meetupId participant count updated to $newCount');
+    }
+  }
+
+  /// 检查 Meetup 是否应该显示在当前筛选条件下
+  bool _shouldShowMeetup(Meetup meetup) {
+    // 如果有城市筛选，检查城市是否匹配
+    if (currentCityId.value.isNotEmpty && meetup.location.cityId != currentCityId.value) {
+      return false;
+    }
+    // 如果有状态筛选，检查状态是否匹配
+    if (currentStatus.value.isNotEmpty && meetup.status.value != currentStatus.value) {
+      return false;
+    }
+    return true;
+  }
+
+  /// 取消 SignalR 订阅
+  void _cancelSignalRSubscriptions() {
+    for (final subscription in _signalRSubscriptions) {
+      subscription.cancel();
+    }
+    _signalRSubscriptions.clear();
+    log('✅ [MeetupStateController] SignalR 订阅已取消');
   }
 
   /// 确保数据已加载（供页面调用）
@@ -135,6 +334,7 @@ class MeetupStateController extends PaginatedRefreshableController {
   @override
   void onClose() {
     log('👋 MeetupStateController 关闭');
+    _cancelSignalRSubscriptions();
     meetups.clear();
     rsvpedMeetupIds.clear();
     currentCityId.value = '';
@@ -208,22 +408,32 @@ class MeetupStateController extends PaginatedRefreshableController {
   }
 
   /// 处理数据变更事件
+  /// 注意：SignalR 推送已经实现了单点更新，这里主要处理本地操作后的同步
   void _handleDataChanged(DataChangedEvent event) {
-    log('🔔 收到 Meetup 数据变更通知: ${event.changeType}');
+    log('🔔 收到 Meetup 数据变更通知: ${event.changeType}, entityId: ${event.entityId}');
 
     switch (event.changeType) {
       case DataChangeType.created:
+        // 创建事件：本地 createMeetup 已经直接插入列表，无需再刷新
+        // SignalR 推送也已经处理，这里只做日志记录
+        log('📝 Meetup 创建事件，列表已更新');
+        break;
       case DataChangeType.invalidated:
+        // 缓存失效，需要刷新整个列表
         refresh();
         break;
       case DataChangeType.updated:
+        // 更新事件：本地 updateMeetup 已经直接更新列表项，无需再调用 API
+        // 只触发 UI 刷新
         if (event.entityId != null) {
-          _refreshSingleMeetup(event.entityId!);
+          log('📝 Meetup 更新事件: ${event.entityId}，列表已更新');
+          meetups.refresh(); // 确保 UI 刷新
         }
         break;
       case DataChangeType.deleted:
         if (event.entityId != null) {
           meetups.removeWhere((m) => m.id == event.entityId);
+          meetups.refresh();
         }
         break;
     }
@@ -249,7 +459,9 @@ class MeetupStateController extends PaginatedRefreshableController {
     log('✅ 已同步 ${rsvpedMeetupIds.length} 个已加入的活动');
   }
 
-  /// 刷新单个活动
+  /// 刷新单个活动（备用方法，当 SignalR 推送数据不完整时使用）
+  /// 目前 SignalR 推送完整数据，此方法暂不使用
+  // ignore: unused_element
   Future<void> _refreshSingleMeetup(String meetupId) async {
     try {
       final meetup = await _meetupRepository.getMeetupById(meetupId);
