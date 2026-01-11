@@ -404,6 +404,18 @@ abstract class AppLocalizations {
   /// **'发送邀请'**
   String get sendInvitation;
 
+  /// No description provided for @userIsOrganizer.
+  ///
+  /// In zh, this message translates to:
+  /// **'用户是活动创建者'**
+  String get userIsOrganizer;
+
+  /// No description provided for @userAlreadyJoined.
+  ///
+  /// In zh, this message translates to:
+  /// **'用户已加入'**
+  String get userAlreadyJoined;
+
   /// No description provided for @date.
   ///
   /// In zh, this message translates to:

@@ -54,6 +54,8 @@
   "inviteToMeetup": "Invite to Meetup",
   "selectMeetup": "Select Meetup",
   "sendInvitation": "Send Invitation",
+  "userIsOrganizer": "User is the organizer",
+  "userAlreadyJoined": "User already joined",
   "date": "Date",
   "time": "Time",
   "location": "Location",

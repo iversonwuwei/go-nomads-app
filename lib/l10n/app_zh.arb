@@ -54,6 +54,8 @@
   "inviteToMeetup": "邀请参加聚会",
   "selectMeetup": "选择聚会",
   "sendInvitation": "发送邀请",
+  "userIsOrganizer": "用户是活动创建者",
+  "userAlreadyJoined": "用户已加入",
   "date": "日期",
   "time": "时间",
   "location": "位置",
