@@ -9,6 +9,7 @@ import 'package:df_admin_mobile/features/city/presentation/controllers/city_stat
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
+import 'package:df_admin_mobile/services/search_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
@@ -33,6 +34,8 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
   // 但数据加载使用独立的 Repository 调用，不影响首页
   final CityStateController controller = Get.find<CityStateController>();
   final ICityRepository _cityRepository = Get.find<ICityRepository>();
+  // 🔍 搜索服务 - 通过 Elasticsearch 提供高效搜索
+  final SearchService _searchService = Get.find<SearchService>();
 
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -85,51 +88,150 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
   Future<void> _loadLocalCities({bool refresh = false}) async {
     if (_isLocalLoading.value && !refresh) return;
 
-    log('🏙️ CityListPage: 独立加载城市数据, refresh=$refresh');
-
     _isLocalLoading.value = true;
     _localErrorMessage.value = null;
     _localCurrentPage = 1;
 
     try {
-      final result = await _cityRepository.getCities(
-        page: 1,
-        pageSize: _localPageSize,
-        search: _searchQuery.isEmpty ? null : _searchQuery,
-      );
-
-      result.fold(
-        onSuccess: (data) {
-          _localCities.assignAll(data);
-          _hasLocalMore.value = data.length >= _localPageSize;
-          log('✅ CityListPage: 独立加载了 ${data.length} 个城市');
-        },
-        onFailure: (error) {
-          _localErrorMessage.value = error.message;
-          log('❌ CityListPage: 独立加载失败 - ${error.message}');
-        },
-      );
+      if (_searchQuery.isNotEmpty) {
+        // 有搜索词：先尝试 Elasticsearch，失败再用数据库
+        await _searchCities(_searchQuery);
+      } else {
+        // 无搜索词：直接从数据库加载
+        await _loadFromDatabase();
+      }
     } catch (e) {
       _localErrorMessage.value = '加载失败: $e';
-      log('❌ CityListPage: 独立加载异常 - $e');
+      log('❌ CityListPage: 加载异常 - $e');
     } finally {
       _isLocalLoading.value = false;
     }
+  }
+
+  /// 搜索城市：先 Elasticsearch，失败再数据库
+  Future<void> _searchCities(String query) async {
+    log('🔍 搜索城市: $query');
+
+    // 1. 先尝试 Elasticsearch
+    final esResult = await _searchService.searchCities(
+      query: query,
+      page: 1,
+      pageSize: _localPageSize,
+    );
+
+    if (esResult.isSuccess) {
+      final data = esResult.data!;
+      final cities = data.items.map((item) => _convertSearchDocToCity(item.document)).toList();
+      _localCities.assignAll(cities);
+      _hasLocalMore.value = data.totalCount > cities.length;
+      log('✅ ES搜索成功: ${cities.length} 个城市');
+      AppToast.success('Found ${cities.length} cities (ES)');
+      return;
+    }
+
+    // 2. Elasticsearch 失败，用数据库
+    log('⚠️ ES搜索失败，回退到数据库');
+    final dbResult = await _cityRepository.searchCities(name: query, pageSize: _localPageSize);
+
+    dbResult.fold(
+      onSuccess: (data) {
+        _localCities.assignAll(data);
+        _hasLocalMore.value = data.length >= _localPageSize;
+        log('✅ 数据库搜索成功: ${data.length} 个城市');
+        AppToast.warning('Found ${data.length} cities (DB fallback)');
+      },
+      onFailure: (error) {
+        _localErrorMessage.value = error.message;
+        log('❌ 数据库搜索失败: ${error.message}');
+      },
+    );
+  }
+
+  /// 从数据库加载城市（无搜索词时）
+  Future<void> _loadFromDatabase() async {
+    final result = await _cityRepository.getCities(page: 1, pageSize: _localPageSize);
+
+    result.fold(
+      onSuccess: (data) {
+        _localCities.assignAll(data);
+        _hasLocalMore.value = data.length >= _localPageSize;
+        log('✅ 加载了 ${data.length} 个城市');
+      },
+      onFailure: (error) {
+        _localErrorMessage.value = error.message;
+        log('❌ 加载失败: ${error.message}');
+      },
+    );
+  }
+
+  /// 将 CitySearchDocument 转换为 City 对象
+  City _convertSearchDocToCity(CitySearchDocument doc) {
+    return City(
+      id: doc.id,
+      name: doc.name,
+      nameEn: doc.nameEn,
+      country: doc.country,
+      region: doc.region,
+      description: doc.description,
+      latitude: doc.latitude ?? 0,
+      longitude: doc.longitude ?? 0,
+      imageUrl: doc.imageUrl,
+      portraitImageUrl: doc.portraitImageUrl,
+      timezone: doc.timeZone,
+      currency: doc.currency,
+      overallScore: doc.overallScore,
+      internetScore: doc.internetQualityScore,
+      safetyScore: doc.safetyScore,
+      costScore: doc.costScore,
+      communityScore: doc.communityScore,
+      weatherScore: doc.weatherScore,
+      tags: doc.tags,
+    );
+  }
+
+  /// 清除搜索
+  Future<void> _clearSearch() async {
+    _searchController.clear();
+    setState(() {
+      _searchQuery = '';
+    });
+    await _loadLocalCities(refresh: true);
   }
 
   // ⭐ 独立加载更多
   Future<void> _loadMoreLocalCities() async {
     if (_isLocalLoadingMore.value || !_hasLocalMore.value) return;
 
-    log('🏙️ CityListPage: 独立加载更多城市, page=${_localCurrentPage + 1}');
-
     _isLocalLoadingMore.value = true;
 
     try {
+      if (_searchQuery.isNotEmpty) {
+        // 有搜索词：先尝试 ES 加载更多
+        final esResult = await _searchService.searchCities(
+          query: _searchQuery,
+          page: _localCurrentPage + 1,
+          pageSize: _localPageSize,
+        );
+
+        if (esResult.isSuccess) {
+          final data = esResult.data!;
+          if (data.items.isEmpty) {
+            _hasLocalMore.value = false;
+          } else {
+            final cities = data.items.map((item) => _convertSearchDocToCity(item.document)).toList();
+            _localCities.addAll(cities);
+            _localCurrentPage++;
+            _hasLocalMore.value = _localCities.length < data.totalCount;
+          }
+          return;
+        }
+        // ES 失败则不加载更多（保持简单）
+      }
+
+      // 无搜索词或 ES 失败：从数据库加载更多
       final result = await _cityRepository.getCities(
         page: _localCurrentPage + 1,
         pageSize: _localPageSize,
-        search: _searchQuery.isEmpty ? null : _searchQuery,
       );
 
       result.fold(
@@ -141,14 +243,11 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
             _localCurrentPage++;
             _hasLocalMore.value = data.length >= _localPageSize;
           }
-          log('✅ CityListPage: 独立加载了更多 ${data.length} 个城市');
         },
         onFailure: (error) {
-          log('❌ CityListPage: 独立加载更多失败 - ${error.message}');
+          log('❌ 加载更多失败: ${error.message}');
         },
       );
-    } catch (e) {
-      log('❌ CityListPage: 独立加载更多异常 - $e');
     } finally {
       _isLocalLoadingMore.value = false;
     }
@@ -168,24 +267,14 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
   }
 
   void _clearFilters() {
-    setState(() {
-      _searchQuery = '';
-      _searchController.clear();
-    });
-    // 重新加载默认数据
-    _loadLocalCities(refresh: true);
+    _clearSearch();
   }
 
   @override
   Future<void> onRouteResume() async {
-    log('🔄 CityListPage: 页面返回，刷新数据');
+    log('🔄 [城市列表] 页面返回，刷新数据');
     // 返回页面时清空搜索条件
-    setState(() {
-      _searchQuery = '';
-      _searchController.clear();
-    });
-    // 使用独立的刷新方法
-    await _loadLocalCities(refresh: true);
+    await _clearSearch();
     _syncFollowedStatusFromController();
   }
 
@@ -350,12 +439,12 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
                     });
                   },
                   onSubmitted: (value) {
-                    // 按回车键触发搜索（使用独立方法）
+                    // 按回车键触发搜索
                     if (value.trim().isNotEmpty) {
                       _loadLocalCities(refresh: true);
                     } else {
                       // 搜索框为空时，清除搜索并刷新
-                      _clearFilters();
+                      _clearSearch();
                     }
                   },
                 ),
@@ -365,12 +454,7 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
               if (_searchQuery.isNotEmpty)
                 InkWell(
                   onTap: () {
-                    setState(() {
-                      _searchQuery = '';
-                      _searchController.clear();
-                    });
-                    // 清除搜索并刷新
-                    _clearFilters();
+                    _clearSearch();
                   },
                   borderRadius: BorderRadius.circular(4),
                   child: Padding(
@@ -390,7 +474,7 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
                     _loadLocalCities(refresh: true);
                   } else {
                     // 搜索框为空时，清除搜索并刷新
-                    _clearFilters();
+                    _clearSearch();
                   }
                 },
                 borderRadius: BorderRadius.circular(6),
