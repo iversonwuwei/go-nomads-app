@@ -1,6 +1,7 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/controllers/my_meetups_page_controller.dart';
 import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
+import 'package:df_admin_mobile/features/meetup/presentation/pages/meetup_detail/meetup_detail.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
@@ -9,8 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-
-import 'meetup_detail/meetup_detail_page.dart';
 
 /// 我的 Meetups 页面 - 显示用户创建的活动
 class MyMeetupsPage extends StatelessWidget {
@@ -234,7 +233,10 @@ class MyMeetupsPage extends StatelessWidget {
         ),
       ),
       child: InkWell(
-        onTap: () => Get.to(() => MeetupDetailPage(meetup: meetup)),
+        onTap: () => Get.to(
+          () => MeetupDetailPage(meetup: meetup),
+          binding: MeetupDetailBinding(),
+        ),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16),

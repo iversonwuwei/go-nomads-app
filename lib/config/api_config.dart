@@ -320,6 +320,21 @@ class ApiConfig {
   static const String meetupsEndpoint = '/meetups';
   static const String meetupDetailEndpoint = '/meetups/{id}';
   static const String meetupJoinEndpoint = '/meetups/{id}/join';
+  static const String meetupLeaveEndpoint = '/meetups/{id}/leave';
+  static const String meetupParticipantsEndpoint = '/meetups/{id}/participants';
+
+  // ============================================================
+  // SignalR Hub Endpoints
+  // ============================================================
+
+  /// Chat Hub URL (通过 Gateway 路由)
+  static String get chatHubUrl => '$baseUrl/hubs/chat';
+
+  /// Meetup/Event Hub URL (通过 Gateway 路由)
+  static String get meetupHubUrl => '$baseUrl/hubs/meetup';
+
+  /// Notification Hub URL (通过 Gateway 路由)
+  static String get notificationHubUrl => '$baseUrl/hubs/notification';
 
   // ============================================================
   // Chat Endpoints - /api/v1/chats (待后端实现)

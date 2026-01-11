@@ -1,7 +1,7 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
+import 'package:df_admin_mobile/features/meetup/presentation/pages/meetup_detail/meetup_detail.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/pages/meetup_detail/meetup_detail_page.dart';
 import 'package:df_admin_mobile/pages/meetup_list/meetup_list_controller.dart';
 import 'package:df_admin_mobile/pages/meetup_list/widgets/meetup_list_card.dart';
 import 'package:flutter/material.dart';
@@ -219,7 +219,10 @@ class MeetupListView extends GetView<MeetupListController> {
 
   /// 点击 Meetup 卡片
   Future<void> _onMeetupTap(Meetup meetup) async {
-    final result = await Get.to(() => MeetupDetailPage(meetup: meetup));
+    final result = await Get.to(
+      () => MeetupDetailPage(meetup: meetup),
+      binding: MeetupDetailBinding(),
+    );
     if (result is Meetup) {
       controller.updateMeetup(result);
     }

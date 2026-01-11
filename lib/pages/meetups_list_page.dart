@@ -6,7 +6,9 @@ import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_stat
 import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
 import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
 import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
+import 'package:df_admin_mobile/features/meetup/presentation/pages/meetup_detail/meetup_detail.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:df_admin_mobile/pages/create_meetup/create_meetup_page.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
@@ -18,9 +20,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-
-import 'package:df_admin_mobile/pages/create_meetup/create_meetup_page.dart';
-import 'meetup_detail/meetup_detail_page.dart';
 
 /// Meetups 列表页面
 class MeetupsListPage extends StatefulWidget {
@@ -839,7 +838,10 @@ class _MeetupListCardState extends State<_MeetupListCard> {
     return GestureDetector(
       onTap: () async {
         // 等待 detail 页面返回结果
-        final result = await Get.to(() => MeetupDetailPage(meetup: widget.meetup));
+        final result = await Get.to(
+          () => MeetupDetailPage(meetup: widget.meetup),
+          binding: MeetupDetailBinding(),
+        );
         if (result is Meetup) {
           // 如果返回了更新后的 meetup，直接更新缓存
           widget.onUpdated(result);
