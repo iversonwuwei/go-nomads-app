@@ -357,6 +357,16 @@ class CitySearchDocument {
   final bool isActive;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  
+  // 扩展字段 - 用于列表展示
+  final double? averageCost;
+  final int userCount;
+  final String? moderatorId;
+  final String? moderatorName;
+  final int moderatorCount;
+  final int coworkingCount;
+  final int meetupCount;
+  final int reviewCount;
 
   CitySearchDocument({
     required this.id,
@@ -385,6 +395,15 @@ class CitySearchDocument {
     this.isActive = true,
     this.createdAt,
     this.updatedAt,
+    // 扩展字段
+    this.averageCost,
+    this.userCount = 0,
+    this.moderatorId,
+    this.moderatorName,
+    this.moderatorCount = 0,
+    this.coworkingCount = 0,
+    this.meetupCount = 0,
+    this.reviewCount = 0,
   });
 
   factory CitySearchDocument.fromJson(Map<String, dynamic> json) {
@@ -415,6 +434,15 @@ class CitySearchDocument {
       isActive: json['isActive'] ?? true,
       createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
       updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
+      // 扩展字段
+      averageCost: (json['averageCost'] as num?)?.toDouble(),
+      userCount: json['userCount'] ?? 0,
+      moderatorId: json['moderatorId']?.toString(),
+      moderatorName: json['moderatorName'],
+      moderatorCount: json['moderatorCount'] ?? 0,
+      coworkingCount: json['coworkingCount'] ?? 0,
+      meetupCount: json['meetupCount'] ?? 0,
+      reviewCount: json['reviewCount'] ?? 0,
     );
   }
 }

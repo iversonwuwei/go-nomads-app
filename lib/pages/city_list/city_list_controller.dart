@@ -200,6 +200,12 @@ class CityListController extends GetxController {
       communityScore: doc.communityScore,
       weatherScore: doc.weatherScore,
       tags: doc.tags,
+      // 扩展字段 - 从 ES 同步
+      averageCost: doc.averageCost,
+      meetupCount: doc.meetupCount,
+      coworkingCount: doc.coworkingCount,
+      reviewCount: doc.reviewCount,
+      moderatorId: doc.moderatorId,
     );
   }
 

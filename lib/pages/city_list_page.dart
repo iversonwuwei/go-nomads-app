@@ -119,15 +119,22 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
       pageSize: _localPageSize,
     );
 
-    if (esResult.isSuccess) {
-      final data = esResult.data!;
-      final cities = data.items.map((item) => _convertSearchDocToCity(item.document)).toList();
-      _localCities.assignAll(cities);
-      _hasLocalMore.value = data.totalCount > cities.length;
-      log('✅ ES搜索成功: ${cities.length} 个城市');
-      AppToast.success('Found ${cities.length} cities (ES)');
-      return;
-    }
+    bool esSuccess = false;
+    esResult.fold(
+      onSuccess: (data) {
+        final cities = data.items.map((item) => _convertSearchDocToCity(item.document)).toList();
+        _localCities.assignAll(cities);
+        _hasLocalMore.value = data.totalCount > cities.length;
+        log('✅ ES搜索成功: ${cities.length} 个城市');
+        AppToast.success('Found ${cities.length} cities (ES)');
+        esSuccess = true;
+      },
+      onFailure: (error) {
+        log('⚠️ ES搜索失败: ${error.message}');
+      },
+    );
+    
+    if (esSuccess) return;
 
     // 2. Elasticsearch 失败，用数据库
     log('⚠️ ES搜索失败，回退到数据库');
@@ -186,6 +193,12 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
       communityScore: doc.communityScore,
       weatherScore: doc.weatherScore,
       tags: doc.tags,
+      // 扩展字段 - 从 ES 同步
+      averageCost: doc.averageCost,
+      meetupCount: doc.meetupCount,
+      coworkingCount: doc.coworkingCount,
+      reviewCount: doc.reviewCount,
+      moderatorId: doc.moderatorId,
     );
   }
 
@@ -213,18 +226,25 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
           pageSize: _localPageSize,
         );
 
-        if (esResult.isSuccess) {
-          final data = esResult.data!;
-          if (data.items.isEmpty) {
-            _hasLocalMore.value = false;
-          } else {
-            final cities = data.items.map((item) => _convertSearchDocToCity(item.document)).toList();
-            _localCities.addAll(cities);
-            _localCurrentPage++;
-            _hasLocalMore.value = _localCities.length < data.totalCount;
-          }
-          return;
-        }
+        bool esSuccess = false;
+        esResult.fold(
+          onSuccess: (data) {
+            if (data.items.isEmpty) {
+              _hasLocalMore.value = false;
+            } else {
+              final cities = data.items.map((item) => _convertSearchDocToCity(item.document)).toList();
+              _localCities.addAll(cities);
+              _localCurrentPage++;
+              _hasLocalMore.value = _localCities.length < data.totalCount;
+            }
+            esSuccess = true;
+          },
+          onFailure: (error) {
+            log('⚠️ ES加载更多失败: ${error.message}');
+          },
+        );
+        
+        if (esSuccess) return;
         // ES 失败则不加载更多（保持简单）
       }
 
