@@ -357,7 +357,7 @@ class CitySearchDocument {
   final bool isActive;
   final DateTime? createdAt;
   final DateTime? updatedAt;
-  
+
   // 扩展字段 - 用于列表展示
   final double? averageCost;
   final int userCount;
