@@ -9,6 +9,7 @@ import 'package:df_admin_mobile/features/city/presentation/controllers/city_stat
 import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
 import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
+import 'package:df_admin_mobile/services/search_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -18,6 +19,8 @@ import 'package:get/get.dart';
 class HomePageController extends GetxController with WidgetsBindingObserver {
   // ==================== 依赖注入 ====================
   final ICityRepository _cityRepository = Get.find<ICityRepository>();
+  // 🔍 搜索服务 - 通过 Elasticsearch 提供高效搜索
+  final SearchService _searchService = Get.find<SearchService>();
 
   // 延迟获取的控制器
   CityStateController get cityController => Get.find<CityStateController>();
@@ -117,10 +120,10 @@ class HomePageController extends GetxController with WidgetsBindingObserver {
   /// 独立加载首页城市数据（不影响全局 CityStateController）
   Future<void> _loadHomeCitiesIndependent() async {
     log('🏠 HomePageController: 独立加载首页城市数据');
-    
+
     // 设置加载状态
     isLoadingLocalCities.value = true;
-    
+
     try {
       // 直接使用 Repository 加载数据，不经过全局控制器
       final result = await _cityRepository.getCities(
@@ -167,11 +170,11 @@ class HomePageController extends GetxController with WidgetsBindingObserver {
   /// 从其他页面返回时重新加载数据
   Future<void> onRouteResume() async {
     log('🔄 HomePageController: 从其他页面返回，重新加载数据');
-    
+
     // ⭐ 立即设置 city 加载状态
     isLoadingLocalCities.value = true;
     localCities.clear();
-    
+
     clearSearchOnReturn();
 
     // 并行加载城市和活动数据
@@ -208,14 +211,66 @@ class HomePageController extends GetxController with WidgetsBindingObserver {
   }
 
   // ==================== 搜索功能 ====================
-  /// 执行城市搜索（本页面独立搜索，不影响 CityListPage）
+  /// 执行城市搜索（使用 Elasticsearch SearchService）
   Future<void> performSearch(String query) async {
-    log('🔍 [首页] 开始搜索城市: $query');
+    log('🔍 [首页] 开始使用 Elasticsearch 搜索城市: $query');
 
     localSearchQuery.value = query;
     isLocalSearching.value = true;
 
-    // 使用 Repository 直接搜索，不影响共享状态
+    // 🔍 使用 SearchService 进行 Elasticsearch 搜索
+    final searchResult = await _searchService.searchCities(
+      query: query,
+      pageSize: 20,
+    );
+
+    searchResult.fold(
+      onSuccess: (data) {
+        // 将 CitySearchDocument 转换为 City 对象
+        final cities = data.items.map((item) => _convertSearchDocToCity(item.document)).toList();
+        localCities.assignAll(cities);
+        log('✅ [首页] Elasticsearch 搜索成功: ${cities.length} 个城市 (共 ${data.totalCount} 个)');
+        AppToast.success(
+          'Found ${cities.length} cities',
+          title: 'Search',
+        );
+      },
+      onFailure: (exception) {
+        log('⚠️ [首页] Elasticsearch 搜索失败，回退到传统搜索: ${exception.message}');
+        // 搜索失败时回退到传统方式
+        _fallbackSearch(query);
+      },
+    );
+  }
+
+  /// 将 CitySearchDocument 转换为 City 对象
+  City _convertSearchDocToCity(CitySearchDocument doc) {
+    return City(
+      id: doc.id,
+      name: doc.name,
+      nameEn: doc.nameEn,
+      country: doc.country,
+      region: doc.region,
+      description: doc.description,
+      latitude: doc.latitude,
+      longitude: doc.longitude,
+      imageUrl: doc.imageUrl,
+      portraitImageUrl: doc.portraitImageUrl,
+      timezone: doc.timeZone,
+      currency: doc.currency,
+      overallScore: doc.overallScore,
+      internetScore: doc.internetQualityScore,
+      safetyScore: doc.safetyScore,
+      costScore: doc.costScore,
+      communityScore: doc.communityScore,
+      weatherScore: doc.weatherScore,
+      tags: doc.tags,
+    );
+  }
+
+  /// Elasticsearch 搜索失败时的回退方案
+  Future<void> _fallbackSearch(String query) async {
+    // 使用 Repository 直接搜索
     final result = await _cityRepository.searchCities(name: query, pageSize: 20);
 
     result.fold(

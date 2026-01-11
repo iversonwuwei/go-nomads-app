@@ -141,6 +141,8 @@ import 'package:df_admin_mobile/features/weather/presentation/controllers/weathe
 // Services
 import 'package:df_admin_mobile/services/database_service.dart';
 import 'package:df_admin_mobile/services/http_service.dart';
+// Search Service
+import 'package:df_admin_mobile/services/search_service.dart';
 // Social Login
 import 'package:df_admin_mobile/services/social_login_service.dart';
 import 'package:df_admin_mobile/services/token_storage_service.dart';
@@ -278,6 +280,11 @@ class DependencyInjection {
     // HttpService (单例)
     if (!Get.isRegistered<HttpService>()) {
       Get.lazyPut<HttpService>(() => HttpService());
+    }
+
+    // SearchService (搜索服务 - 基于Elasticsearch)
+    if (!Get.isRegistered<SearchService>()) {
+      Get.lazyPut<SearchService>(() => SearchService(Get.find<HttpService>()));
     }
   }
 
