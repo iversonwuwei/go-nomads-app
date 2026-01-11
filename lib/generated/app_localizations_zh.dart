@@ -162,6 +162,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get sendInvitation => '发送邀请';
 
   @override
+  String get userIsOrganizer => '用户是活动创建者';
+
+  @override
+  String get userAlreadyJoined => '用户已加入';
+
+  @override
   String get date => '日期';
 
   @override

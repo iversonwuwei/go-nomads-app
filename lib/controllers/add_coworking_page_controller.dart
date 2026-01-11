@@ -7,6 +7,10 @@ import 'package:df_admin_mobile/core/sync/sync.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city_option.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
 import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_repository.dart';
+import 'package:df_admin_mobile/features/location/application/use_cases/get_cities_by_country_use_case.dart';
+import 'package:df_admin_mobile/features/location/application/use_cases/get_city_by_id_use_case.dart';
+import 'package:df_admin_mobile/features/location/application/use_cases/get_countries_use_case.dart';
+import 'package:df_admin_mobile/features/location/application/use_cases/search_cities_use_case.dart';
 import 'package:df_admin_mobile/features/location/presentation/controllers/location_state_controller.dart';
 import 'package:df_admin_mobile/services/image_upload_service.dart';
 import 'package:df_admin_mobile/utils/image_upload_helper.dart';
@@ -110,6 +114,17 @@ class AddCoworkingPageController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    // Ensure LocationStateController is registered before use to avoid GetX lookup errors.
+    if (!Get.isRegistered<LocationStateController>()) {
+      Get.put(
+        LocationStateController(
+          getCountriesUseCase: Get.find<GetCountriesUseCase>(),
+          getCitiesByCountryUseCase: Get.find<GetCitiesByCountryUseCase>(),
+          getCityByIdUseCase: Get.find<GetCityByIdUseCase>(),
+          searchCitiesUseCase: Get.find<SearchCitiesUseCase>(),
+        ),
+      );
+    }
     locationController = Get.find<LocationStateController>();
 
     if (isEditMode) {

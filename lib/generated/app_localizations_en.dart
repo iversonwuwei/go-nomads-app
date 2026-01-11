@@ -162,6 +162,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sendInvitation => 'Send Invitation';
 
   @override
+  String get userIsOrganizer => 'User is the organizer';
+
+  @override
+  String get userAlreadyJoined => 'User already joined';
+
+  @override
   String get date => 'Date';
 
   @override
