@@ -133,7 +133,7 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
         log('⚠️ ES搜索失败: ${error.message}');
       },
     );
-    
+
     if (esSuccess) return;
 
     // 2. Elasticsearch 失败，用数据库
@@ -243,7 +243,7 @@ class _CityListPageState extends State<CityListPage> with RouteAwareRefreshMixin
             log('⚠️ ES加载更多失败: ${error.message}');
           },
         );
-        
+
         if (esSuccess) return;
         // ES 失败则不加载更多（保持简单）
       }
