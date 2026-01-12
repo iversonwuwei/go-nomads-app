@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/membership/domain/entities/ai_usage_check.dart';
 import 'package:df_admin_mobile/features/membership/domain/entities/membership_level.dart';
 import 'package:df_admin_mobile/features/membership/domain/entities/membership_plan.dart';
 import 'package:df_admin_mobile/features/membership/domain/entities/user_membership.dart';
@@ -138,10 +139,19 @@ class MembershipStateController extends GetxController {
     if (Get.isRegistered<UserStateController>()) {
       final userController = Get.find<UserStateController>();
       _userStateWorker = ever(userController.currentUser, (user) {
-        if (user != null && user.membership != null) {
+        if (user == null) {
+          // 用户登出，清除会员信息
+          _membership.value = null;
+          log('🚪 用户登出，清除会员状态');
+        } else if (user.membership != null) {
           // 用户信息中包含会员数据，直接使用
           _membership.value = user.membership;
           log('✅ 从用户信息同步会员状态: ${user.membership!.level.name}');
+        } else {
+          // 新用户登录但没有会员数据，清除旧数据并重新加载
+          _membership.value = null;
+          log('⚠️ 新用户无会员数据，尝试加载');
+          loadMembership();
         }
       });
     }
@@ -300,6 +310,34 @@ class MembershipStateController extends GetxController {
     result.onSuccess((membership) {
       _membership.value = membership;
     });
+  }
+
+  /// 检查 AI 配额（从后端获取最新状态）
+  Future<AiUsageCheck> checkAiQuota() async {
+    final result = await _repository.checkAiUsage();
+    return result.fold(
+      onSuccess: (check) {
+        log('✅ AI 配额检查: ${check.usageMessage}');
+        return check;
+      },
+      onFailure: (_) => AiUsageCheck.free(),
+    );
+  }
+
+  /// 尝试使用 AI（检查配额并记录使用）
+  /// 返回 true 表示可以继续，false 表示配额不足
+  Future<bool> tryUseAI() async {
+    // 先检查配额
+    final check = await checkAiQuota();
+
+    if (!check.canUse) {
+      log('❌ AI 配额不足: ${check.usageMessage}');
+      return false;
+    }
+
+    // 记录使用
+    await incrementAIUsage();
+    return true;
   }
 
   /// 缴纳版主保证金

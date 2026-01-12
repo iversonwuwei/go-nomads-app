@@ -1170,11 +1170,13 @@ class DependencyInjection {
     // Repository - 使用 TokenStorageService 获取用户 ID
     Get.lazyPut<MembershipRepository>(
       () => MembershipRepositoryImpl(Get.find<TokenStorageService>()),
+      fenix: true,
     );
 
-    // Controller
+    // Controller - 使用 fenix: true 确保登录切换后可以重新创建
     Get.lazyPut(
       () => MembershipStateController(Get.find<MembershipRepository>()),
+      fenix: true,
     );
   }
 

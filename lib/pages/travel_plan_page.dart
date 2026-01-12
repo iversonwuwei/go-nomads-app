@@ -1,5 +1,6 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/ai/presentation/controllers/ai_state_controller.dart';
+import 'package:df_admin_mobile/features/membership/presentation/services/ai_quota_service.dart';
 import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
@@ -128,6 +129,15 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
   /// 流程: Flutter -> AIService(创建任务) -> RabbitMQ -> MessageService -> SignalR -> Flutter
   Future<void> _generatePlanAsync() async {
     final aiController = Get.find<AiStateController>();
+    
+    // 检查 AI 配额
+    final canUse = await AiQuotaService().checkAndUseAI(featureName: '旅行计划生成');
+    if (!canUse) {
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+      return;
+    }
 
     try {
       setState(() {

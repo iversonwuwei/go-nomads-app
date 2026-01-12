@@ -7,6 +7,7 @@ import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
 import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
 import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller.dart';
 import 'package:df_admin_mobile/services/search_service.dart';
+import 'package:df_admin_mobile/services/signalr_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -38,6 +39,7 @@ class CityListController extends GetxController {
 
   // 事件订阅
   StreamSubscription<DataChangedEvent>? _favoriteChangedSubscription;
+  StreamSubscription<Map<String, dynamic>>? _cityImageUpdatedSubscription;
 
   // 分页
   int _currentPage = 1;
@@ -50,6 +52,9 @@ class CityListController extends GetxController {
 
     // 监听收藏状态变更事件（来自其他页面，如详情页）
     _favoriteChangedSubscription = DataEventBus.instance.on('city_favorite', _handleFavoriteChanged);
+
+    // 监听城市图片更新事件（来自 SignalR）
+    _setupSignalRListeners();
 
     // 页面初始化时加载数据
     log('🏙️ CityListController 初始化，独立加载城市数据（不影响首页）');
@@ -65,9 +70,69 @@ class CityListController extends GetxController {
   @override
   void onClose() {
     _favoriteChangedSubscription?.cancel();
+    _cityImageUpdatedSubscription?.cancel();
     searchController.dispose();
     scrollController.dispose();
     super.onClose();
+  }
+
+  /// 设置 SignalR 监听器
+  void _setupSignalRListeners() {
+    final signalRService = SignalRService();
+
+    // 监听城市图片更新事件
+    _cityImageUpdatedSubscription = signalRService.cityImageUpdatedStream.listen((data) {
+      log('🖼️ [CityListController] 收到城市图片更新通知: $data');
+
+      final cityId = data['cityId'] as String?;
+      final success = data['success'] as bool? ?? false;
+
+      if (cityId == null) {
+        log('⚠️ [CityListController] 城市ID为空，忽略通知');
+        return;
+      }
+
+      if (!success) {
+        log('❌ [CityListController] 城市图片生成失败，不更新列表');
+        return;
+      }
+
+      // 更新城市图片
+      _updateCityImages(cityId, data);
+    });
+
+    log('✅ [CityListController] SignalR 城市图片更新监听已设置');
+  }
+
+  /// 更新列表中指定城市的图片
+  void _updateCityImages(String cityId, Map<String, dynamic> data) {
+    final index = cities.indexWhere((c) => c.id == cityId);
+    if (index == -1) {
+      log('⚠️ [CityListController] 城市 $cityId 不在当前列表中');
+      return;
+    }
+
+    final portraitUrl = data['portraitImageUrl'] as String?;
+    final landscapeUrls = data['landscapeImageUrls'] as List?;
+
+    // 获取第一张横向图片作为封面
+    String? coverImageUrl;
+    List<String>? landscapeImageList;
+    if (landscapeUrls != null && landscapeUrls.isNotEmpty) {
+      landscapeImageList = landscapeUrls.cast<String>();
+      coverImageUrl = landscapeImageList.first;
+    }
+
+    // 更新城市对象
+    final city = cities[index];
+    cities[index] = city.copyWith(
+      portraitImageUrl: portraitUrl ?? city.portraitImageUrl,
+      imageUrl: coverImageUrl ?? city.imageUrl,
+      landscapeImageUrls: landscapeImageList ?? city.landscapeImageUrls,
+    );
+    cities.refresh();
+
+    log('✅ [CityListController] 已更新城市图片: ${city.name}');
   }
 
   /// 处理收藏状态变更事件（来自其他页面，如详情页）
