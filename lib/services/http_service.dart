@@ -128,6 +128,9 @@ class HttpService {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
+          // 记录请求开始时间用于耗时统计
+          options.extra['__startTime'] = DateTime.now().millisecondsSinceEpoch;
+
           // 从 SQLite/SharedPreferences 动态获取 token
           final tokenService = TokenStorageService();
           final token = await tokenService.getAccessToken();
@@ -174,7 +177,10 @@ class HttpService {
         onResponse: (response, handler) {
           // 打印响应日志 (仅开发环境)
           if (kDebugMode) {
-            log('✅ RESPONSE[${response.statusCode}] => ${response.requestOptions.uri}');
+            final start = response.requestOptions.extra['__startTime'] as int?;
+            final duration = start != null ? DateTime.now().millisecondsSinceEpoch - start : null;
+            final elapsed = duration != null ? ' (${duration}ms)' : '';
+            log('✅ RESPONSE[${response.statusCode}]$elapsed => ${response.requestOptions.uri}');
             log('Data: ${response.data}');
           }
 
@@ -208,7 +214,10 @@ class HttpService {
           // 打印错误日志（排除 DELETE 请求的 404，这是正常的幂等删除场景）
           final isDelete404 = error.requestOptions.method == 'DELETE' && error.response?.statusCode == 404;
           if (kDebugMode && !isDelete404) {
-            log('❌ ERROR[${error.response?.statusCode}] => ${error.requestOptions.uri}');
+            final start = error.requestOptions.extra['__startTime'] as int?;
+            final duration = start != null ? DateTime.now().millisecondsSinceEpoch - start : null;
+            final elapsed = duration != null ? ' (${duration}ms)' : '';
+            log('❌ ERROR[${error.response?.statusCode}]$elapsed => ${error.requestOptions.uri}');
             log('Message: ${error.message}');
             if (error.response?.data != null) {
               // 完整打印响应数据，包括错误详情

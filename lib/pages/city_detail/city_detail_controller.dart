@@ -54,6 +54,16 @@ class CityDetailController extends GetxController with GetTickerProviderStateMix
   static const int tabNeighborhoods = 8;
   static const int tabCoworking = 9;
 
+  // 首次加载标记，避免重复请求
+  bool _loadedGuide = false;
+  bool _loadedProsCons = false;
+  bool _loadedReviews = false;
+  bool _loadedPhotos = false;
+  bool _loadedCost = false;
+  bool _loadedStats = false;
+  bool _loadedWeather = false;
+  bool _loadedCoworking = false;
+
   // ==================== 初始化方法 ====================
 
   /// 使用参数初始化控制器
@@ -98,16 +108,7 @@ class CityDetailController extends GetxController with GetTickerProviderStateMix
   void _onTabChanged() {
     if (!tabController.indexIsChanging) {
       currentPage.value = tabController.index;
-
-      // Weather tab (索引 6)
-      if (tabController.index == tabWeather) {
-        _loadWeatherData();
-      }
-
-      // Coworking tab (索引 9)
-      if (tabController.index == tabCoworking) {
-        _loadCoworkingData();
-      }
+      _loadTabDataIfNeeded(tabController.index);
     }
   }
 
@@ -134,27 +135,63 @@ class CityDetailController extends GetxController with GetTickerProviderStateMix
 
   Future<void> _loadInitialData() async {
     final cityDetailController = Get.find<CityDetailStateController>();
-    final userContentController = Get.find<UserCityContentStateController>();
-    final prosConsController = Get.find<ProsConsStateController>();
 
     // 加载城市详情
     cityDetailController.loadCityDetail(cityId);
 
-    // 检查登录状态
-    final tokenService = TokenStorageService();
-    final token = await tokenService.getAccessToken();
-    final loggedIn = token != null && token.isNotEmpty;
+    // 首屏仅加载必要数据，其余按需加载
+    _loadTabDataIfNeeded(initialTab);
+  }
 
-    if (loggedIn) {
-      // 登录用户: 加载所有用户生成内容
-      userContentController.loadCityPhotos(cityId);
-      userContentController.loadCityExpenses(cityId);
-      userContentController.loadCityReviews(cityId);
-      userContentController.loadCityCostSummary(cityId);
-      prosConsController.loadCityProsCons(cityId);
-    } else {
-      // 游客用户: 只加载城市公开内容
-      prosConsController.loadCityProsCons(cityId);
+  void _loadTabDataIfNeeded(int index) async {
+    switch (index) {
+      case tabGuide:
+        if (!_loadedGuide) {
+          _loadedGuide = true;
+          Get.find<AiStateController>().loadCityGuide(cityId: cityId, cityName: cityName);
+        }
+        break;
+      case tabProsCons:
+        if (!_loadedProsCons) {
+          _loadedProsCons = true;
+          Get.find<ProsConsStateController>().loadCityProsCons(cityId);
+        }
+        break;
+      case tabReviews:
+        if (!_loadedReviews) {
+          _loadedReviews = true;
+          Get.find<UserCityContentStateController>().loadCityReviews(cityId);
+        }
+        break;
+      case tabCost:
+        if (!_loadedCost) {
+          _loadedCost = true;
+          final userContentController = Get.find<UserCityContentStateController>();
+          userContentController.loadCityExpenses(cityId);
+          userContentController.loadCityCostSummary(cityId);
+        }
+        break;
+      case tabPhotos:
+        if (!_loadedPhotos) {
+          _loadedPhotos = true;
+          Get.find<UserCityContentStateController>().loadCityPhotos(cityId);
+        }
+        break;
+      case tabWeather:
+        if (!_loadedWeather) {
+          _loadedWeather = true;
+          _loadWeatherData();
+        }
+        break;
+      case tabCoworking:
+        if (!_loadedCoworking) {
+          _loadedCoworking = true;
+          _loadCoworkingData();
+        }
+        break;
+      default:
+        // 评分/酒店/社区等保持现有懒加载行为
+        break;
     }
   }
 
