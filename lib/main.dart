@@ -10,6 +10,7 @@ import 'config/supabase_config.dart';
 import 'controllers/locale_controller.dart';
 import 'core/di/dependency_injection.dart';
 import 'core/utils/deep_link_handler.dart';
+import 'features/auth/presentation/controllers/auth_state_controller.dart';
 import 'generated/app_localizations.dart';
 import 'layouts/bottom_nav/bottom_nav.dart';
 import 'routes/app_routes.dart';
@@ -23,36 +24,56 @@ import 'services/notification_service.dart';
 import 'services/signalr_service.dart';
 import 'services/social_sdk_service.dart';
 
+/// 全局初始化完成状态
+final _initCompleter = ValueNotifier<bool>(false);
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   log('✅ 应用初始化');
 
-  // ==================== 第一阶段：关键初始化（阻塞） ====================
-  // 只保留必须在 UI 渲染前完成的初始化
-
-  // 🔥 关键：初始化DDD依赖注入
-  log('🎯 初始化DDD依赖注入...');
-  await DependencyInjection.init();
-  log('✅ DDD依赖注入初始化完成');
-
-  // 初始化全局控制器
-  log('🎯 初始化全局控制器...');
-  Get.put(BottomNavController(), permanent: true);
-  Get.put(BackgroundTaskService(), permanent: true);
-  log('✅ 全局控制器初始化完成');
-
-  // 恢复登录状态 (必须在 UI 前完成)
-  log('🔑 开始恢复登录状态...');
-  await AppInitService().initialize();
-  log('✅ 登录状态恢复完成');
-
-  // 先启动 UI，再在后台完成其他初始化
+  // 立即启动 UI（显示启动页）
   runApp(const MyApp());
 
-  // ==================== 第二阶段：后台初始化（非阻塞） ====================
-  // 这些服务可以在 UI 显示后再初始化，不影响用户体验
-  _initializeBackgroundServices();
+  // 在后台完成初始化
+  await _performInitialization();
+}
+
+/// 执行应用初始化
+Future<void> _performInitialization() async {
+  try {
+    // ==================== 第一阶段：关键初始化（阻塞） ====================
+    // 只保留必须在 UI 渲染前完成的初始化
+
+    // 🔥 关键：初始化DDD依赖注入
+    log('🎯 初始化DDD依赖注入...');
+    await DependencyInjection.init();
+    log('✅ DDD依赖注入初始化完成');
+
+    // 初始化全局控制器
+    log('🎯 初始化全局控制器...');
+    Get.put(BottomNavController(), permanent: true);
+    Get.put(BackgroundTaskService(), permanent: true);
+    log('✅ 全局控制器初始化完成');
+
+    // 恢复登录状态 (必须在 UI 前完成)
+    log('🔑 开始恢复登录状态...');
+    await AppInitService().initialize();
+    log('✅ 登录状态恢复完成');
+
+    // 标记初始化完成
+    log('🎉 标记初始化完成，准备导航...');
+    _initCompleter.value = true;
+
+    // ==================== 第二阶段：后台初始化（非阻塞） ====================
+    // 这些服务可以在 UI 显示后再初始化，不影响用户体验
+    _initializeBackgroundServices();
+  } catch (e, stack) {
+    log('❌ 初始化失败: $e');
+    log('Stack: $stack');
+    // 即使初始化失败也要允许进入应用
+    _initCompleter.value = true;
+  }
 }
 
 /// 后台初始化非关键服务
@@ -169,11 +190,292 @@ class MyApp extends StatelessWidget {
                 useMaterial3: true,
               ),
 
-              initialRoute: AppRoutes.home,
+              // 使用 AppWrapper 来控制启动页和主内容的切换
+              home: const AppWrapper(),
               getPages: AppRoutes.getPages,
               navigatorObservers: [appRouteObserver],
             ));
       },
+    );
+  }
+}
+
+/// 应用包装器 - 处理启动页到主页的过渡
+class AppWrapper extends StatefulWidget {
+  const AppWrapper({super.key});
+
+  @override
+  State<AppWrapper> createState() => _AppWrapperState();
+}
+
+class _AppWrapperState extends State<AppWrapper> {
+  bool _hasNavigated = false;
+
+  @override
+  void initState() {
+    super.initState();
+    log('📱 AppWrapper initState - _initCompleter.value = ${_initCompleter.value}');
+
+    // 监听初始化完成
+    _initCompleter.addListener(_onInitComplete);
+
+    // 如果初始化已经完成，立即导航
+    if (_initCompleter.value) {
+      log('📱 初始化已完成，立即导航');
+      _navigateToTargetPage();
+    }
+
+    // 添加超时保护：5秒后如果还没导航，强制导航
+    Future.delayed(const Duration(seconds: 5), () {
+      if (!_hasNavigated && mounted) {
+        log('⏰ 超时保护触发，强制导航');
+        _navigateToTargetPage();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _initCompleter.removeListener(_onInitComplete);
+    super.dispose();
+  }
+
+  void _onInitComplete() {
+    log('📱 _onInitComplete 被调用 - value=${_initCompleter.value}, hasNavigated=$_hasNavigated');
+    if (_initCompleter.value && !_hasNavigated && mounted) {
+      _navigateToTargetPage();
+    }
+  }
+
+  void _navigateToTargetPage() {
+    if (_hasNavigated || !mounted) {
+      log('📱 _navigateToTargetPage 跳过: hasNavigated=$_hasNavigated, mounted=$mounted');
+      return;
+    }
+    _hasNavigated = true;
+    log('📱 _navigateToTargetPage 执行导航...');
+
+    // 延迟一帧后导航，确保 UI 已完全构建
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        log('📱 postFrameCallback: widget 已销毁');
+        return;
+      }
+
+      // 检查认证状态来决定目标页面
+      String targetRoute;
+      try {
+        final authController = Get.find<AuthStateController>();
+        log('📱 AuthStateController found: isAuthenticated=${authController.isAuthenticated.value}');
+        if (authController.isAuthenticated.value &&
+            authController.currentToken.value != null &&
+            !authController.currentToken.value!.isExpired) {
+          targetRoute = AppRoutes.home;
+          log('🚀 已认证，导航到首页...');
+        } else {
+          targetRoute = AppRoutes.login;
+          log('🚀 未认证，导航到登录页...');
+        }
+      } catch (e) {
+        targetRoute = AppRoutes.login;
+        log('🚀 认证状态检查失败($e)，导航到登录页...');
+      }
+
+      log('📱 执行 Get.offNamed($targetRoute)');
+      Get.offNamed(targetRoute);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const SplashLoadingScreen();
+  }
+}
+
+/// 简化的启动加载页面
+class SplashLoadingScreen extends StatefulWidget {
+  const SplashLoadingScreen({super.key});
+
+  @override
+  State<SplashLoadingScreen> createState() => _SplashLoadingScreenState();
+}
+
+class _SplashLoadingScreenState extends State<SplashLoadingScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    );
+
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: const Interval(0.0, 0.6, curve: Curves.easeIn),
+      ),
+    );
+
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: const Interval(0.0, 0.7, curve: Curves.easeOutBack),
+      ),
+    );
+
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF6366F1), // Indigo
+              Color(0xFF8B5CF6), // Purple
+              Color(0xFFA855F7), // Violet
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: AnimatedBuilder(
+            animation: _animationController,
+            builder: (context, child) {
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Spacer(flex: 2),
+
+                  // Logo 图标带动画
+                  FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: ScaleTransition(
+                      scale: _scaleAnimation,
+                      child: Container(
+                        width: 140.w,
+                        height: 140.w,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(30.r),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 30,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(30.r),
+                          child: Image.asset(
+                            'assets/icon/app_icon.png',
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: 30.h),
+
+                  // 应用名称
+                  FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Text(
+                      '行途',
+                      style: TextStyle(
+                        fontSize: 36.sp,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: 4,
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: 8.h),
+
+                  // 副标题
+                  FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Text(
+                      'GO-NOMADS',
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white.withOpacity(0.9),
+                        letterSpacing: 6,
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: 12.h),
+
+                  // Slogan
+                  FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Text(
+                      '探索城市 · 发现生活',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: Colors.white.withOpacity(0.7),
+                        letterSpacing: 2,
+                      ),
+                    ),
+                  ),
+
+                  const Spacer(flex: 2),
+
+                  // 加载指示器
+                  FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          width: 24.w,
+                          height: 24.w,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white.withOpacity(0.8),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 16.h),
+                        Text(
+                          '正在加载...',
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            color: Colors.white.withOpacity(0.6),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  SizedBox(height: 60.h),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
     );
   }
 }

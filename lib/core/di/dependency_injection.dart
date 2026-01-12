@@ -452,13 +452,14 @@ class DependencyInjection {
     // Repository
     Get.lazyPut<ILocationRepository>(
       () => LocationRepository(),
+      fenix: true,
     );
 
     // Use Cases
-    Get.lazyPut(() => GetCountriesUseCase(Get.find<ILocationRepository>()));
-    Get.lazyPut(() => GetCitiesByCountryUseCase(Get.find<ILocationRepository>()));
-    Get.lazyPut(() => location_use_cases.GetCityByIdUseCase(Get.find<ILocationRepository>()));
-    Get.lazyPut(() => location_search_use_cases.SearchCitiesUseCase(Get.find<ILocationRepository>()));
+    Get.lazyPut(() => GetCountriesUseCase(Get.find<ILocationRepository>()), fenix: true);
+    Get.lazyPut(() => GetCitiesByCountryUseCase(Get.find<ILocationRepository>()), fenix: true);
+    Get.lazyPut(() => location_use_cases.GetCityByIdUseCase(Get.find<ILocationRepository>()), fenix: true);
+    Get.lazyPut(() => location_search_use_cases.SearchCitiesUseCase(Get.find<ILocationRepository>()), fenix: true);
 
     // Controller
     Get.lazyPut(
@@ -468,6 +469,7 @@ class DependencyInjection {
         getCityByIdUseCase: Get.find<location_use_cases.GetCityByIdUseCase>(),
         searchCitiesUseCase: Get.find<location_search_use_cases.SearchCitiesUseCase>(),
       ),
+      fenix: true, // 允许重新创建
     );
   }
 

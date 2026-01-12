@@ -106,6 +106,7 @@ flutter:
   assets:
     - lib/l10n/city_names_zh.json
     - lib/l10n/city_names_en.json
+    - assets/icon/
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
