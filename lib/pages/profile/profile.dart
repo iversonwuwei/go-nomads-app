@@ -1,6 +1,7 @@
 /// Profile 模块导出文件
 library;
 
+export 'profile_controller.dart';
 export 'profile_page.dart';
 export 'widgets/badges_section_widget.dart';
 export 'widgets/login_notice_widget.dart';

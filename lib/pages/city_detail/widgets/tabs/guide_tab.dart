@@ -2,10 +2,9 @@ import 'dart:developer';
 
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/ai/presentation/controllers/ai_state_controller.dart';
-import 'package:df_admin_mobile/features/membership/presentation/controllers/membership_state_controller.dart';
+import 'package:df_admin_mobile/features/membership/presentation/services/ai_quota_service.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/pages/city_detail/city_detail_controller.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -209,22 +208,14 @@ class _GuideActionBar extends StatelessWidget {
   }
 
   Future<void> _handleAIGenerate(BuildContext context) async {
-    if (!await _checkGeneratePermission()) return;
-    _showAIGenerateProgressDialog(context);
-  }
+    // 使用统一的 AiQuotaService 检查配额
+    final canUse = await AiQuotaService().checkAndUseAI(
+      featureName: '数字游民指南生成',
+      showUpgradeDialog: true,
+    );
 
-  Future<bool> _checkGeneratePermission() async {
-    try {
-      final membershipController = Get.find<MembershipStateController>();
-      final accessCheck = membershipController.checkAIAccess();
-      if (accessCheck != null) {
-        AppToast.info(accessCheck, title: '会员功能');
-        return false;
-      }
-    } catch (e) {
-      log('⚠️ 会员检查异常: $e');
-    }
-    return true;
+    if (!canUse) return;
+    _showAIGenerateProgressDialog(context);
   }
 
   void _showAIGenerateProgressDialog(BuildContext context) {
@@ -345,16 +336,13 @@ class _GuideEmptyState extends StatelessWidget {
   }
 
   Future<void> _handleAIGenerate(BuildContext context) async {
-    try {
-      final membershipController = Get.find<MembershipStateController>();
-      final accessCheck = membershipController.checkAIAccess();
-      if (accessCheck != null) {
-        AppToast.info(accessCheck, title: '会员功能');
-        return;
-      }
-    } catch (e) {
-      log('⚠️ 会员检查异常: $e');
-    }
+    // 使用统一的 AiQuotaService 检查配额
+    final canUse = await AiQuotaService().checkAndUseAI(
+      featureName: '数字游民指南生成',
+      showUpgradeDialog: true,
+    );
+
+    if (!canUse) return;
     
     aiController.generateDigitalNomadGuideStream(cityId: cityId, cityName: cityName);
   }

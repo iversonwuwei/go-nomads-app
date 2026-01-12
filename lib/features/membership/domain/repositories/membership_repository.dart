@@ -1,4 +1,5 @@
 import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/membership/domain/entities/ai_usage_check.dart';
 import 'package:df_admin_mobile/features/membership/domain/entities/membership_level.dart';
 import 'package:df_admin_mobile/features/membership/domain/entities/membership_plan.dart';
 import 'package:df_admin_mobile/features/membership/domain/entities/user_membership.dart';
@@ -25,6 +26,9 @@ abstract class MembershipRepository {
 
   /// 增加 AI 使用次数
   Future<Result<UserMembership>> incrementAiUsage();
+
+  /// 检查 AI 使用配额
+  Future<Result<AiUsageCheck>> checkAiUsage();
 
   /// 缴纳版主保证金
   Future<Result<UserMembership>> payModeratorDeposit(double amount);

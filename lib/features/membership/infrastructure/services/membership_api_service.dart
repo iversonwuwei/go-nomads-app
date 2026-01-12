@@ -140,6 +140,17 @@ class MembershipApiService {
     }
   }
 
+  /// 检查 AI 使用配额
+  Future<AiUsageCheckResponse> checkAiUsage() async {
+    try {
+      final response = await _dio.get('/v1/membership/ai-usage/check');
+      return AiUsageCheckResponse.fromJson(response.data);
+    } catch (e) {
+      log('❌ 检查 AI 配额失败: $e');
+      rethrow;
+    }
+  }
+
   /// 转换为 UserMembershipDto
   UserMembershipDto toUserMembershipDto(MembershipResponse response) {
     return UserMembershipDto(
@@ -326,5 +337,41 @@ class MembershipPlanResponse {
       'canApplyModerator': canApplyModerator,
       'moderatorDeposit': moderatorDeposit,
     };
+  }
+}
+
+/// AI 使用配额检查响应
+class AiUsageCheckResponse {
+  final bool canUse;
+  final int level;
+  final String levelName;
+  final int limit;
+  final int used;
+  final int remaining;
+  final bool isUnlimited;
+  final DateTime? resetDate;
+
+  AiUsageCheckResponse({
+    required this.canUse,
+    required this.level,
+    required this.levelName,
+    required this.limit,
+    required this.used,
+    required this.remaining,
+    required this.isUnlimited,
+    this.resetDate,
+  });
+
+  factory AiUsageCheckResponse.fromJson(Map<String, dynamic> json) {
+    return AiUsageCheckResponse(
+      canUse: json['canUse'] as bool? ?? false,
+      level: json['level'] as int? ?? 0,
+      levelName: json['levelName'] as String? ?? 'Free',
+      limit: json['limit'] as int? ?? 0,
+      used: json['used'] as int? ?? 0,
+      remaining: json['remaining'] as int? ?? 0,
+      isUnlimited: json['isUnlimited'] as bool? ?? false,
+      resetDate: json['resetDate'] != null ? DateTime.tryParse(json['resetDate'] as String) : null,
+    );
   }
 }

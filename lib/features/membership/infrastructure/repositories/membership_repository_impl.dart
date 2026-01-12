@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:df_admin_mobile/features/membership/domain/entities/ai_usage_check.dart';
 import 'package:df_admin_mobile/features/membership/domain/entities/membership_level.dart';
 import 'package:df_admin_mobile/features/membership/domain/entities/membership_plan.dart';
 import 'package:df_admin_mobile/features/membership/domain/entities/user_membership.dart';
@@ -183,6 +184,49 @@ class MembershipRepositoryImpl implements MembershipRepository {
       }
     } catch (e) {
       return Result.failure(BusinessLogicException('更新AI使用次数失败: $e'));
+    }
+  }
+
+  @override
+  Future<Result<AiUsageCheck>> checkAiUsage() async {
+    try {
+      final response = await _apiService.checkAiUsage();
+      final check = AiUsageCheck(
+        canUse: response.canUse,
+        level: MembershipLevel.fromValue(response.level),
+        limit: response.limit,
+        used: response.used,
+        remaining: response.remaining,
+        isUnlimited: response.isUnlimited,
+        resetDate: response.resetDate,
+      );
+      return Result.success(check);
+    } catch (e) {
+      log('⚠️ 检查 AI 配额失败，使用本地计算: $e');
+
+      // 降级到本地计算
+      try {
+        final membershipResult = await getCurrentMembership();
+        if (membershipResult.isSuccess) {
+          final membership = membershipResult.dataOrNull!;
+          final level = membership.level;
+          final limit = level.aiUsageLimit;
+          final used = membership.aiUsageThisMonth;
+          final remaining = limit < 0 ? -1 : (limit - used).clamp(0, limit);
+
+          return Result.success(AiUsageCheck(
+            canUse: membership.canUseAI,
+            level: level,
+            limit: limit,
+            used: used,
+            remaining: remaining,
+            isUnlimited: limit < 0,
+          ));
+        }
+      } catch (_) {}
+
+      // 最终返回默认值
+      return Result.success(AiUsageCheck.free());
     }
   }
 

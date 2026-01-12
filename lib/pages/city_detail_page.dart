@@ -18,6 +18,7 @@ import 'package:df_admin_mobile/features/city/presentation/widgets/city_ratings_
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart' as coworking;
 import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
 import 'package:df_admin_mobile/features/membership/presentation/controllers/membership_state_controller.dart';
+import 'package:df_admin_mobile/features/membership/presentation/services/ai_quota_service.dart';
 import 'package:df_admin_mobile/features/user_city_content/domain/entities/user_city_content.dart';
 import 'package:df_admin_mobile/features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
 import 'package:df_admin_mobile/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
@@ -1197,7 +1198,9 @@ class _CityDetailPageContentState extends State<_CityDetailPageContent> {
   }
 
   /// 检查用户是否有权限生成指南（仅根据会员级别限制 AI 使用次数）
-  Future<bool> _checkGeneratePermission() async {
+  /// 
+  /// 使用统一的 AiQuotaService 进行配额检查和扣减
+  Future<bool> _checkGeneratePermission({String? featureName}) async {
     log('🔐 [权限检查] 开始检查生成权限...');
 
     // 1. 首先检查是否是管理员（管理员无会员限制，直接放行）
@@ -1232,23 +1235,20 @@ class _CityDetailPageContentState extends State<_CityDetailPageContent> {
       return true;
     }
 
-    // 2. 非管理员用户只需检查会员权限（根据会员级别限制 AI 使用次数）
-    try {
-      final membershipController = Get.find<MembershipStateController>();
-      final accessCheck = membershipController.checkAIAccess();
-
-      if (accessCheck != null) {
-        log('❌ [权限检查] AI 使用次数限制: $accessCheck');
-        _showMembershipRequiredDialog(accessCheck);
-        return false;
-      }
-      log('✅ [权限检查] 会员权限检查通过，允许生成');
-      return true;
-    } catch (e) {
-      log('⚠️ [权限检查] 会员检查异常: $e，暂时允许生成');
-      // 如果会员控制器未注册，暂时允许生成
-      return true;
+    // 2. 非管理员用户使用 AiQuotaService 检查 AI 配额
+    log('🔐 [权限检查] 检查 AI 配额...');
+    final canUse = await AiQuotaService().checkAndUseAI(
+      featureName: featureName ?? 'AI 功能',
+      showUpgradeDialog: true,
+    );
+    
+    if (canUse) {
+      log('✅ [权限检查] AI 配额检查通过，允许生成');
+    } else {
+      log('❌ [权限检查] AI 配额不足');
     }
+    
+    return canUse;
   }
 
   /// 显示需要升级会员对话框
@@ -1346,7 +1346,7 @@ class _CityDetailPageContentState extends State<_CityDetailPageContent> {
   /// 显示 AI 生成进度对话框
   void _showAIGenerateProgressDialog(AiStateController controller) async {
     // 先检查权限
-    if (!await _checkGeneratePermission()) {
+    if (!await _checkGeneratePermission(featureName: '数字游民指南生成')) {
       return;
     }
 
@@ -2334,18 +2334,18 @@ class _CityDetailPageContentState extends State<_CityDetailPageContent> {
                 borderRadius: BorderRadius.circular(28),
                 child: InkWell(
                   onTap: () async {
-                    // 检查会员权限
+                    // 在进入创建页面前先检查配额是否足够（只检查不扣减）
                     try {
-                      final membershipController = Get.find<MembershipStateController>();
-                      final accessCheck = membershipController.checkAIAccess();
-
-                      if (accessCheck != null) {
-                        _showMembershipRequiredDialog(accessCheck);
+                      final check = await AiQuotaService().checkQuota();
+                      
+                      if (!check.canUse) {
+                        // 显示配额用尽提示对话框
+                        _showMembershipRequiredDialog(check.upgradeMessage);
                         return;
                       }
                     } catch (e) {
-                      log('⚠️ 会员检查异常: $e');
-                      // 如果会员控制器未注册，暂时跳过会员检查
+                      log('⚠️ AI 配额检查异常: $e');
+                      // 出错时继续，让后续实际调用时再检查
                     }
 
                     // 跳转到创建旅行计划页面
@@ -2568,10 +2568,6 @@ class _CityDetailPageContentState extends State<_CityDetailPageContent> {
                     onPressed: controller.isGeneratingGuide
                         ? null
                         : () async {
-                            // 先检查权限
-                            if (!await _checkGeneratePermission()) {
-                              return;
-                            }
                             _showAIGenerateProgressDialog(controller);
                           },
                     icon: const Icon(FontAwesomeIcons.wandMagicSparkles),
@@ -2651,9 +2647,6 @@ class _CityDetailPageContentState extends State<_CityDetailPageContent> {
                     onPressed: controller.isGeneratingGuide || controller.isLoadingGuide
                         ? null
                         : () async {
-                            if (!await _checkGeneratePermission()) {
-                              return;
-                            }
                             _showAIGenerateProgressDialog(controller);
                           },
                     icon: const Icon(FontAwesomeIcons.wandMagicSparkles, size: 18),
@@ -2784,7 +2777,7 @@ class _CityDetailPageContentState extends State<_CityDetailPageContent> {
                       onPressed: controller.isGeneratingNearbyCities || controller.isLoadingNearbyCities
                           ? null
                           : () async {
-                              if (!await _checkGeneratePermission()) {
+                              if (!await _checkGeneratePermission(featureName: '附近城市生成')) {
                                 return;
                               }
                               _showNearbyCitiesGenerateProgressDialog(controller);
@@ -4638,7 +4631,7 @@ class _CityDetailPageContentState extends State<_CityDetailPageContent> {
                     ? null
                     : () async {
                         // 先检查权限
-                        if (!await _checkGeneratePermission()) {
+                        if (!await _checkGeneratePermission(featureName: '附近城市生成')) {
                           return;
                         }
                         _showNearbyCitiesGenerateProgressDialog(controller);

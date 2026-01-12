@@ -137,9 +137,9 @@ extension MembershipLevelExtension on MembershipLevel {
       case MembershipLevel.free:
         return 3; // 免费用户每月3次
       case MembershipLevel.basic:
-        return 20; // 基础会员每月20次
+        return 30; // 基础会员每月30次
       case MembershipLevel.pro:
-        return 100; // 专业会员每月100次
+        return 60; // 专业会员每月60次
       case MembershipLevel.premium:
         return -1; // 高级会员无限制
     }
@@ -153,12 +153,12 @@ extension MembershipLevelExtension on MembershipLevel {
           'Browse cities and reviews',
           'View coworking spaces',
           'Basic city search',
-          'Limited AI travel plans (3/month)',
+          'Limited AI features (3/month)',
         ];
       case MembershipLevel.basic:
         return [
           'Everything in Free',
-          'AI travel plan generation (20/month)',
+          'AI travel plan generation (30/month)',
           'AI digital nomad guides',
           'Save favorite cities',
           'Create meetups',
@@ -167,7 +167,7 @@ extension MembershipLevelExtension on MembershipLevel {
       case MembershipLevel.pro:
         return [
           'Everything in Basic',
-          'Unlimited AI travel plans (100/month)',
+          'Extended AI usage (60/month)',
           'Priority AI generation',
           'Apply to become a moderator',
           'Advanced city analytics',
