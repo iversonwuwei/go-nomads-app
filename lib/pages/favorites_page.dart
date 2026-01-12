@@ -254,158 +254,317 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
       child: InkWell(
         onTap: () => _navigateToCityDetail(city),
         borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              // 城市图片
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: imageUrl.isNotEmpty
-                    ? Image.network(
-                        imageUrl,
-                        width: isMobile ? 80 : 120,
-                        height: isMobile ? 80 : 120,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return _buildPlaceholderImage(isMobile);
-                        },
-                      )
-                    : _buildPlaceholderImage(isMobile),
-              ),
-
-              const SizedBox(width: 16),
-
-              // 城市信息
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 城市名称和评分
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            city.name,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: isMobile ? 18 : 22,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        if (city.overallScore != null)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 顶部：图片 + 基本信息
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 城市图片（更大尺寸）
+                  Stack(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: imageUrl.isNotEmpty
+                            ? Image.network(
+                                imageUrl,
+                                width: isMobile ? 100 : 140,
+                                height: isMobile ? 100 : 140,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return _buildPlaceholderImage(isMobile);
+                                },
+                              )
+                            : _buildPlaceholderImage(isMobile),
+                      ),
+                      // 综合评分角标
+                      if (city.overallScore != null)
+                        Positioned(
+                          top: 6,
+                          left: 6,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                             decoration: BoxDecoration(
-                              color: Colors.orange.withValues(alpha: 0.2),
+                              color: Colors.black.withValues(alpha: 0.7),
                               borderRadius: BorderRadius.circular(4),
-                              border: Border.all(color: Colors.orange),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(
-                                  FontAwesomeIcons.solidStar,
-                                  color: Colors.orange,
-                                  size: 10,
-                                ),
-                                const SizedBox(width: 4),
+                                const Icon(FontAwesomeIcons.solidStar, color: Color(0xFFFBBF24), size: 10),
+                                const SizedBox(width: 3),
                                 Text(
                                   city.overallScore!.toStringAsFixed(1),
                                   style: const TextStyle(
-                                    color: Colors.orange,
-                                    fontSize: 12,
+                                    color: Colors.white,
+                                    fontSize: 11,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 4),
-
-                    // 国家
-                    if (city.country != null)
-                      Text(
-                        city.country!,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.7),
-                          fontSize: isMobile ? 14 : 16,
                         ),
-                      ),
+                    ],
+                  ),
 
-                    const SizedBox(height: 12),
+                  const SizedBox(width: 14),
 
-                    // 详细信息
-                    Wrap(
-                      spacing: 16,
-                      runSpacing: 8,
+                  // 城市基本信息
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (city.averageCost != null)
-                          _buildInfoChip(
-                            FontAwesomeIcons.dollarSign,
-                            '\$${city.averageCost!.toInt()}/mo',
-                            Colors.green,
-                            isMobile,
+                        // 城市名称
+                        Text(
+                          city.name,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: isMobile ? 18 : 22,
+                            fontWeight: FontWeight.bold,
                           ),
-                        if (city.internetScore != null)
-                          _buildInfoChip(
-                            FontAwesomeIcons.wifi,
-                            '${(city.internetScore! * 20).toInt()} Mbps',
-                            Colors.blue,
-                            isMobile,
-                          ),
-                        if (city.temperature != null)
-                          _buildInfoChip(
-                            FontAwesomeIcons.temperatureHalf,
-                            '${city.temperature}°C',
-                            Colors.orange,
-                            isMobile,
-                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+
+                        const SizedBox(height: 4),
+
+                        // 国家 + 版主状态
+                        Row(
+                          children: [
+                            if (city.country != null) ...[
+                              Flexible(
+                                child: Text(
+                                  city.country!,
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.7),
+                                    fontSize: isMobile ? 13 : 15,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                            ],
+                            // 版主状态徽章
+                            _buildModeratorBadge(city, isMobile),
+                          ],
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        // 核心指标行
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 6,
+                          children: [
+                            // 月均花费
+                            if (city.averageCost != null && city.averageCost! > 0)
+                              _buildStatChip(
+                                FontAwesomeIcons.dollarSign,
+                                '\$${city.averageCost!.toInt()}/mo',
+                                Colors.green,
+                                isMobile,
+                              ),
+                            // 网络评分
+                            if (city.internetScore != null)
+                              _buildStatChip(
+                                FontAwesomeIcons.wifi,
+                                city.internetScore!.toStringAsFixed(1),
+                                Colors.blue,
+                                isMobile,
+                              ),
+                            // 温度
+                            if (city.temperature != null)
+                              _buildStatChip(
+                                FontAwesomeIcons.temperatureHalf,
+                                '${city.temperature!.round()}°C',
+                                Colors.orange,
+                                isMobile,
+                              ),
+                          ],
+                        ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(width: 16),
-
-              // 操作按钮
-              Column(
-                children: [
-                  IconButton(
-                    icon: const Icon(FontAwesomeIcons.solidHeart, color: Colors.red),
-                    onPressed: () => _unfavoriteCity(city, l10n),
                   ),
-                  const SizedBox(height: 8),
+
+                  // 收藏按钮
                   IconButton(
-                    icon: const Icon(
-                      FontAwesomeIcons.arrowRight,
-                      color: Colors.white70,
-                    ),
-                    onPressed: () => _navigateToCityDetail(city),
+                    icon: const Icon(FontAwesomeIcons.solidHeart, color: Colors.red, size: 20),
+                    onPressed: () => _unfavoriteCity(city, l10n),
+                    tooltip: l10n.removeFromFavorites,
                   ),
                 ],
               ),
-            ],
-          ),
+            ),
+
+            // 底部：数字游民指标
+            Container(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+              child: Row(
+                children: [
+                  // 左侧统计信息
+                  _buildBottomStat(
+                    FontAwesomeIcons.laptop,
+                    '${city.coworkingCount ?? 0}',
+                    'Coworking',
+                    Colors.blue,
+                    isMobile,
+                  ),
+                  const SizedBox(width: 8),
+                  _buildBottomStat(
+                    FontAwesomeIcons.userGroup,
+                    '${city.meetupCount ?? 0}',
+                    'Meetups',
+                    Colors.purple,
+                    isMobile,
+                  ),
+                  const SizedBox(width: 8),
+                  _buildBottomStat(
+                    FontAwesomeIcons.comment,
+                    '${city.reviewCount ?? 0}',
+                    l10n.reviews,
+                    Colors.teal,
+                    isMobile,
+                  ),
+                  const Spacer(),
+                  // 进入详情按钮（居右）
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.orange.withValues(alpha: 0.5)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          l10n.viewDetails,
+                          style: TextStyle(
+                            color: Colors.orange,
+                            fontSize: isMobile ? 11 : 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(FontAwesomeIcons.arrowRight, color: Colors.orange, size: isMobile ? 10 : 12),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
+      ),
+    );
+  }
+
+  /// 版主状态徽章
+  Widget _buildModeratorBadge(City city, bool isMobile) {
+    final hasModerator = city.moderatorId != null;
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 5 : 6,
+        vertical: isMobile ? 2 : 3,
+      ),
+      decoration: BoxDecoration(
+        color: hasModerator ? const Color(0xFF10B981).withValues(alpha: 0.2) : Colors.orange.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(
+          color: hasModerator ? const Color(0xFF10B981) : Colors.orange,
+          width: 0.5,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            hasModerator ? FontAwesomeIcons.userCheck : FontAwesomeIcons.userXmark,
+            color: hasModerator ? const Color(0xFF10B981) : Colors.orange,
+            size: isMobile ? 8 : 10,
+          ),
+          SizedBox(width: isMobile ? 3 : 4),
+          Text(
+            hasModerator ? '版主' : '待版主',
+            style: TextStyle(
+              color: hasModerator ? const Color(0xFF10B981) : Colors.orange,
+              fontSize: isMobile ? 9 : 10,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 构建统计小标签
+  Widget _buildStatChip(IconData icon, String value, Color color, bool isMobile) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 6 : 8,
+        vertical: isMobile ? 3 : 4,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: isMobile ? 10 : 12),
+          SizedBox(width: isMobile ? 3 : 4),
+          Text(
+            value,
+            style: TextStyle(
+              color: color,
+              fontSize: isMobile ? 11 : 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 构建底部统计项（只显示图标和数字）
+  Widget _buildBottomStat(IconData icon, String value, String label, Color color, bool isMobile) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 8 : 10,
+        vertical: isMobile ? 4 : 6,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: isMobile ? 12 : 14),
+          const SizedBox(width: 4),
+          Text(
+            value,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: isMobile ? 12 : 14,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildPlaceholderImage(bool isMobile) {
     return Container(
-      width: isMobile ? 80 : 120,
-      height: isMobile ? 80 : 120,
+      width: isMobile ? 100 : 140,
+      height: isMobile ? 100 : 140,
       color: Colors.white.withValues(alpha: 0.1),
       child: const Icon(
         FontAwesomeIcons.city,
@@ -440,22 +599,5 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
         title: l10n.removeFromFavorites,
       );
     }
-  }
-
-  Widget _buildInfoChip(IconData icon, String label, Color color, bool isMobile) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, color: color, size: isMobile ? 14 : 16),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.8),
-            fontSize: isMobile ? 12 : 14,
-          ),
-        ),
-      ],
-    );
   }
 }
