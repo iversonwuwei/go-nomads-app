@@ -59,6 +59,12 @@ class UserCityContentStateController extends GetxController {
   final isLoadingMoreReviews = false.obs;
   String? _currentReviewsCityId;
 
+  // 缓存标记，避免同一城市重复拉取
+  String? _photosCityId;
+  String? _expensesCityId;
+  String? _statsCityId;
+  String? _costSummaryCityId;
+
   final RxMap<String, String> photoUploaderNames = <String, String>{}.obs;
   final Set<String> _pendingUserNameFetches = <String>{};
 
@@ -108,7 +114,11 @@ class UserCityContentStateController extends GetxController {
 
   // ==================== Photo Methods ====================
 
-  Future<void> loadCityPhotos(String cityId, {bool onlyMine = false}) async {
+  Future<void> loadCityPhotos(String cityId, {bool onlyMine = false, bool forceRefresh = false}) async {
+    if (!forceRefresh && !onlyMine && _photosCityId == cityId && photos.isNotEmpty) {
+      return;
+    }
+
     isLoadingPhotos.value = true;
 
     final result = await _getCityPhotosUseCase.execute(
@@ -118,6 +128,7 @@ class UserCityContentStateController extends GetxController {
     await result.fold(
       onSuccess: (data) async {
         photos.value = data;
+        _photosCityId = cityId;
         await _hydrateUploaderNamesFromPhotos(data);
       },
       onFailure: (exception) async {
@@ -284,7 +295,11 @@ class UserCityContentStateController extends GetxController {
 
   // ==================== Expense Methods ====================
 
-  Future<void> loadCityExpenses(String cityId, {bool onlyMine = false}) async {
+  Future<void> loadCityExpenses(String cityId, {bool onlyMine = false, bool forceRefresh = false}) async {
+    if (!forceRefresh && !onlyMine && _expensesCityId == cityId && expenses.isNotEmpty) {
+      return;
+    }
+
     isLoadingExpenses.value = true;
 
     final result = await _getCityExpensesUseCase.execute(
@@ -294,6 +309,7 @@ class UserCityContentStateController extends GetxController {
     result.fold(
       onSuccess: (data) {
         expenses.value = data;
+        _expensesCityId = cityId;
       },
       onFailure: (exception) {
         // log('Failed to load expenses: ${exception.message}');
@@ -371,10 +387,14 @@ class UserCityContentStateController extends GetxController {
   // ==================== Review Methods ====================
 
   /// 加载城市评论（预览模式，只加载5条）
-  Future<void> loadCityReviews(String cityId) async {
+  Future<void> loadCityReviews(String cityId, {bool forceRefresh = false}) async {
     // 如果用户未登录,跳过加载
     if (!_isUserLoggedIn()) {
       log('⚠️ 用户未登录,跳过加载城市评论');
+      return;
+    }
+
+    if (!forceRefresh && _currentReviewsCityId == cityId && reviews.isNotEmpty) {
       return;
     }
 
@@ -573,7 +593,11 @@ class UserCityContentStateController extends GetxController {
 
   // ==================== Statistics Methods ====================
 
-  Future<void> loadCityStats(String cityId) async {
+  Future<void> loadCityStats(String cityId, {bool forceRefresh = false}) async {
+    if (!forceRefresh && _statsCityId == cityId && stats.value != null) {
+      return;
+    }
+
     isLoadingStats.value = true;
 
     final result = await _getCityStatsUseCase.execute(
@@ -583,6 +607,7 @@ class UserCityContentStateController extends GetxController {
     result.fold(
       onSuccess: (data) {
         stats.value = data;
+        _statsCityId = cityId;
       },
       onFailure: (exception) {
         // log('Failed to load city stats: ${exception.message}');
@@ -592,10 +617,14 @@ class UserCityContentStateController extends GetxController {
     isLoadingStats.value = false;
   }
 
-  Future<void> loadCityCostSummary(String cityId) async {
+  Future<void> loadCityCostSummary(String cityId, {bool forceRefresh = false}) async {
     // 如果用户未登录,跳过加载
     if (!_isUserLoggedIn()) {
       log('⚠️ 用户未登录,跳过加载城市费用汇总');
+      return;
+    }
+
+    if (!forceRefresh && _costSummaryCityId == cityId && costSummary.value != null) {
       return;
     }
 
@@ -608,6 +637,7 @@ class UserCityContentStateController extends GetxController {
     result.fold(
       onSuccess: (data) {
         costSummary.value = data;
+        _costSummaryCityId = cityId;
       },
       onFailure: (exception) {
         // log('Failed to load cost summary: ${exception.message}');
