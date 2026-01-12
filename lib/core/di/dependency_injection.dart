@@ -233,6 +233,7 @@ class DependencyInjection {
   static void _initializeGlobalControllers() {
     // 确保关键依赖已创建
     Get.find<HttpService>();
+    Get.find<SearchService>(); // 搜索服务 - HomePageController 依赖
     Get.find<ICityRepository>();
 
     // ==================== 核心 Controllers（必须初始化） ====================
