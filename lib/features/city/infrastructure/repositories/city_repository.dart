@@ -559,7 +559,7 @@ class CityRepository implements ICityRepository {
 
       final data = response.data as Map<String, dynamic>;
       final items = data['items'] as List<dynamic>? ?? [];
-      
+
       final cities = items.map((item) {
         final cityData = item as Map<String, dynamic>;
         return City.fromJson(cityData);

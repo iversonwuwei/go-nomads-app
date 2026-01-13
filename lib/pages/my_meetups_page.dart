@@ -131,13 +131,13 @@ class MyMeetupsPage extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Obx(() => Text(
-              controller.errorMessage.value,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.6),
-                fontSize: isMobile ? 14 : 16,
-              ),
-            )),
+                  controller.errorMessage.value,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.6),
+                    fontSize: isMobile ? 14 : 16,
+                  ),
+                )),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: controller.refreshAll,

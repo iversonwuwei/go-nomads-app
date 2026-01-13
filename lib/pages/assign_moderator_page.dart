@@ -11,7 +11,7 @@ class AssignModeratorPage extends StatelessWidget {
   final String cityName;
   final String _tag;
 
-  AssignModeratorPage({
+  const AssignModeratorPage({
     super.key,
     required this.cityId,
     required this.cityName,
@@ -306,9 +306,7 @@ class AssignModeratorPage extends StatelessWidget {
                         )
                       : const Icon(FontAwesomeIcons.circleCheck),
                   label: Text(
-                    controller.isSubmitting.value
-                        ? '指定中...'
-                        : '确认指定 ${controller.selectedUserIds.length} 个版主',
+                    controller.isSubmitting.value ? '指定中...' : '确认指定 ${controller.selectedUserIds.length} 个版主',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,

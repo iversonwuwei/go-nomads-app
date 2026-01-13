@@ -11,7 +11,7 @@ import 'package:get/get.dart';
 
 /// 用户个人资料页面
 class UserProfilePage extends StatelessWidget {
-  UserProfilePage({super.key});
+  const UserProfilePage({super.key});
 
   static const bool _travelHistoryEnabled = true;
   static const String _tag = 'UserProfilePage';
@@ -694,7 +694,8 @@ class UserProfilePage extends StatelessWidget {
                       Text(
                         travel.isOngoing
                             ? 'Currently here'
-                            : controller.formatTravelDates(travel.arrivalTime, travel.departureTime, travel.durationDays),
+                            : controller.formatTravelDates(
+                                travel.arrivalTime, travel.departureTime, travel.durationDays),
                         style: TextStyle(
                           color: travel.isOngoing ? Colors.green : AppColors.textTertiary,
                           fontSize: isMobile ? 12 : 14,
