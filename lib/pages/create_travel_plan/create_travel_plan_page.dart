@@ -1,16 +1,13 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/controllers/create_travel_plan_page_controller.dart';
+import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../travel_plan_page.dart';
-import 'travel_plan_budget_section.dart';
-import 'travel_plan_departure_section.dart';
-import 'travel_plan_duration_section.dart';
-import 'travel_plan_style_section.dart';
+import '../travel_plan/travel_plan_page.dart';
+import 'widgets/widgets.dart';
 
 /// 创建旅行计划页面 - 使用 GetX + 组件化架构重构
 class CreateTravelPlanPage extends StatelessWidget {
@@ -25,7 +22,7 @@ class CreateTravelPlanPage extends StatelessWidget {
     final uniqueTag = 'create_travel_plan_${cityId}_${DateTime.now().millisecondsSinceEpoch}';
 
     // 注册 controller
-    final controller = Get.put(
+    Get.put(
       CreateTravelPlanPageController(cityId: cityId, cityName: cityName),
       tag: uniqueTag,
     );
@@ -34,7 +31,12 @@ class CreateTravelPlanPage extends StatelessWidget {
       canPop: true,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) {
-          Get.delete<CreateTravelPlanPageController>(tag: uniqueTag);
+          // 延迟删除控制器，等待当前帧渲染完成
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (Get.isRegistered<CreateTravelPlanPageController>(tag: uniqueTag)) {
+              Get.delete<CreateTravelPlanPageController>(tag: uniqueTag);
+            }
+          });
         }
       },
       child: Scaffold(
@@ -102,7 +104,7 @@ class CreateTravelPlanPage extends StatelessWidget {
             ],
           ),
         ),
-        bottomNavigationBar: _BottomBar(controllerTag: uniqueTag, controller: controller),
+        bottomNavigationBar: _BottomBar(controllerTag: uniqueTag),
       ),
     );
   }
@@ -216,9 +218,16 @@ class _HeaderCard extends StatelessWidget {
 
 class _BottomBar extends StatelessWidget {
   final String controllerTag;
-  final CreateTravelPlanPageController controller;
 
-  const _BottomBar({required this.controllerTag, required this.controller});
+  const _BottomBar({required this.controllerTag});
+
+  CreateTravelPlanPageController? get _controller {
+    try {
+      return Get.find<CreateTravelPlanPageController>(tag: controllerTag);
+    } catch (e) {
+      return null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -262,6 +271,9 @@ class _BottomBar extends StatelessWidget {
   }
 
   void _generatePlan() {
+    final controller = _controller;
+    if (controller == null) return;
+
     Get.to(
       () => TravelPlanPage(
         cityId: controller.cityId,
