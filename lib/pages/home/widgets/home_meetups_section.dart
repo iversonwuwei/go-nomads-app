@@ -8,6 +8,7 @@ import 'package:df_admin_mobile/pages/create_meetup_page.dart';
 import 'package:df_admin_mobile/pages/home/widgets/home_meetup_card.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -41,30 +42,9 @@ class HomeMeetupsSection extends StatelessWidget {
   }
 
   Widget _buildLoadingState(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 60),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(
-              width: 40,
-              height: 40,
-              child: CircularProgressIndicator(
-                strokeWidth: 3,
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              l10n.loading,
-              style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
-            ),
-          ],
-        ),
-      ),
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 20),
+      child: MeetupListSkeleton(itemCount: 2),
     );
   }
 

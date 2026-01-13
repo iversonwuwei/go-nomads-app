@@ -1,4 +1,5 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -97,7 +98,7 @@ class _ManageProsConsPageState extends State<ManageProsConsPage>
       ),
       body: Obx(() {
         if (_controller.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
+          return const ManageListSkeleton();
         }
 
         return TabBarView(

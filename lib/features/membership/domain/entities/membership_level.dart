@@ -153,35 +153,45 @@ extension MembershipLevelExtension on MembershipLevel {
           'Browse cities and reviews',
           'View coworking spaces',
           'Basic city search',
-          'Limited AI features (3/month)',
+          'AI travel plan generation (3/month)',
+          'Basic AI assistance',
+          'Community guidelines apply',
         ];
       case MembershipLevel.basic:
         return [
           'Everything in Free',
           'AI travel plan generation (30/month)',
           'AI digital nomad guides',
+          'AI city recommendations',
           'Save favorite cities',
           'Create meetups',
           'Join city chats',
+          'Content moderation protection',
         ];
       case MembershipLevel.pro:
         return [
           'Everything in Basic',
           'Extended AI usage (60/month)',
           'Priority AI generation',
-          'Apply to become a moderator',
+          'Apply to become city moderator',
+          'Manage city boards and content',
           'Advanced city analytics',
           'Export travel plans',
+          'Verified member badge',
+          'Priority content review',
         ];
       case MembershipLevel.premium:
         return [
           'Everything in Pro',
           'Unlimited AI usage',
           'Early access to new features',
-          'Priority support',
-          'Custom travel recommendations',
-          'API access',
-          'No ads',
+          'Priority 24/7 support',
+          'Custom AI travel recommendations',
+          'API access for developers',
+          'Ad-free experience',
+          'Premium member badge',
+          'Reduced moderator deposit',
+          'Exclusive community events',
         ];
     }
   }

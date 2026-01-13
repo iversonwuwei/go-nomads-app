@@ -2,6 +2,7 @@ import 'package:df_admin_mobile/features/city/presentation/controllers/city_deta
 import 'package:df_admin_mobile/features/city/presentation/widgets/city_ratings_card.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/pages/city_detail/city_detail_controller.dart';
+import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -24,7 +25,7 @@ class ScoresTab extends GetView<CityDetailController> {
     return Obx(() {
       // 显示加载状态
       if (cityDetailController.isLoading.value) {
-        return const Center(child: CircularProgressIndicator());
+        return const ScoresTabSkeleton();
       }
 
       final city = cityDetailController.currentCity.value;

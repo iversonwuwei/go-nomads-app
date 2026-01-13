@@ -4,6 +4,7 @@ import 'package:df_admin_mobile/features/city/domain/entities/city_detail.dart';
 import 'package:df_admin_mobile/pages/city_detail/city_detail_controller.dart';
 import 'package:df_admin_mobile/pages/manage_pros_cons_page.dart';
 import 'package:df_admin_mobile/pages/pros_and_cons_add_page.dart';
+import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -27,7 +28,7 @@ class ProsConsTab extends GetView<CityDetailController> {
       final isLoading = prosConsController.isLoadingPros.value || prosConsController.isLoadingCons.value;
 
       if (isLoading) {
-        return const Center(child: CircularProgressIndicator());
+        return const ProsConsTabSkeleton();
       }
 
       return RefreshIndicator(

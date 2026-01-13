@@ -1,5 +1,6 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/controllers/assign_moderator_page_controller.dart';
+import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -114,7 +115,7 @@ class AssignModeratorPage extends StatelessWidget {
   Widget _buildUserList(AssignModeratorPageController controller) {
     return Obx(() {
       if (controller.isLoading.value) {
-        return const Center(child: CircularProgressIndicator());
+        return const ManageListSkeleton();
       }
 
       if (controller.filteredUsers.isEmpty) {

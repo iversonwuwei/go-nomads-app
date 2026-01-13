@@ -4,6 +4,7 @@ import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/pages/add_cost/add_cost_page.dart';
 import 'package:df_admin_mobile/pages/city_detail/city_detail_controller.dart';
 import 'package:df_admin_mobile/pages/manage_cost_page.dart';
+import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -29,7 +30,7 @@ class CostTab extends GetView<CityDetailController> {
 
       // 加载中
       if (contentController.isLoadingCostSummary.value && communityCost == null) {
-        return const Center(child: CircularProgressIndicator());
+        return const CostTabSkeleton();
       }
 
       // 使用默认值

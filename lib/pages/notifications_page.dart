@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/controllers/notifications_page_controller.dart';
 import 'package:df_admin_mobile/features/notification/domain/entities/app_notification.dart';
+import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -117,7 +118,7 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
       if (notificationController.isLoading.value &&
           notificationController.notifications.isEmpty &&
           !_controller.isRefreshing.value) {
-        return const Center(child: CircularProgressIndicator());
+        return const NotificationListSkeleton();
       }
 
       if (notificationController.errorMessage.value.isNotEmpty) {

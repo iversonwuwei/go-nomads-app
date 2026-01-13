@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 
 import '../../../../../features/weather/presentation/controllers/weather_state_controller.dart';
 import '../../../city_detail_controller.dart';
@@ -29,7 +30,7 @@ class WeatherTab extends GetView<CityDetailController> {
     return Obx(() {
       // 显示加载状态
       if (weatherController.isLoading.value) {
-        return const Center(child: CircularProgressIndicator());
+        return const WeatherTabSkeleton();
       }
 
       final weather = weatherController.weather.value;

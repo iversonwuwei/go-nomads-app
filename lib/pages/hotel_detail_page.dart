@@ -1,5 +1,6 @@
 import 'package:df_admin_mobile/features/hotel/domain/entities/hotel.dart';
 import 'package:df_admin_mobile/controllers/hotel_detail_page_controller.dart';
+import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -31,7 +32,7 @@ class HotelDetailPage extends StatelessWidget {
     return Scaffold(
       body: Obx(() {
         if (controller.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
+          return const HotelDetailSkeleton();
         }
 
         if (controller.error.value.isNotEmpty) {

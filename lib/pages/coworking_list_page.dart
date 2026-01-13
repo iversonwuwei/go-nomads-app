@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
 import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
@@ -13,6 +14,7 @@ import 'package:df_admin_mobile/widgets/edit_button.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:df_admin_mobile/widgets/skeletons/base_skeleton.dart';
 
 /// Coworking List Page
 /// 共享办公空间列表页面
@@ -205,8 +207,9 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
         children: [
           Expanded(
             child: Obx(() {
-              if (controller.isLoading.value) {
-                return const Center(child: CircularProgressIndicator());
+              // 显示骨架屏加载效果
+              if (controller.isLoading.value && controller.filteredSpaces.isEmpty) {
+                return _buildSkeletonList();
               }
 
               if (controller.filteredSpaces.isEmpty) {
@@ -237,19 +240,23 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
                 );
               }
 
-              return ListView.builder(
-                controller: _scrollController, // 添加滚动控制器
-                padding: const EdgeInsets.all(16),
-                itemCount: controller.filteredSpaces.length + 1, // +1 用于底部加载指示器
-                itemBuilder: (context, index) {
-                  // 最后一项显示加载指示器
-                  if (index == controller.filteredSpaces.length) {
-                    return _buildLoadMoreIndicator();
-                  }
+              return RefreshIndicator(
+                onRefresh: _refreshData,
+                child: ListView.builder(
+                  controller: _scrollController, // 添加滚动控制器
+                  cacheExtent: 500, // 增加缓存范围，提升滚动性能
+                  padding: const EdgeInsets.all(16),
+                  itemCount: controller.filteredSpaces.length + 1, // +1 用于底部加载指示器
+                  itemBuilder: (context, index) {
+                    // 最后一项显示加载指示器
+                    if (index == controller.filteredSpaces.length) {
+                      return _buildLoadMoreIndicator();
+                    }
 
-                  final space = controller.filteredSpaces[index];
-                  return _buildCoworkingCard(context, space);
-                },
+                    final space = controller.filteredSpaces[index];
+                    return _buildCoworkingCard(context, space);
+                  },
+                ),
               );
             }),
           ),
@@ -303,11 +310,12 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
                 children: [
                   AspectRatio(
                     aspectRatio: 16 / 9,
-                    child: Image.network(
-                      space.spaceInfo.imageUrl,
+                    child: CachedNetworkImage(
+                      imageUrl: space.spaceInfo.imageUrl,
                       width: double.infinity,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
+                      placeholder: (context, url) => Container(color: Colors.grey[300]),
+                      errorWidget: (context, url, error) {
                         return Container(
                           color: Colors.grey[300],
                           child: const Icon(FontAwesomeIcons.building, size: 50),
@@ -578,5 +586,100 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
       // 其他情况不显示任何内容
       return const SizedBox.shrink();
     });
+  }
+
+  /// 骨架屏列表（加载时显示）
+  Widget _buildSkeletonList() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: 5, // 显示5个骨架项
+      itemBuilder: (context, index) => _buildSkeletonCard(),
+    );
+  }
+
+  /// 单个骨架屏卡片
+  Widget _buildSkeletonCard() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: SafeShimmer(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 图片骨架
+            AspectRatio(
+              aspectRatio: 16 / 9,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                ),
+              ),
+            ),
+            // 信息骨架
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 标题骨架
+                  Container(
+                    width: double.infinity,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // 地址骨架
+                  Container(
+                    width: 200,
+                    height: 14,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // 标签骨架
+                  Row(
+                    children: [
+                      Container(
+                        width: 80,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        width: 100,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

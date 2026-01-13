@@ -6,6 +6,7 @@ import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:df_admin_mobile/widgets/skeletons/base_skeleton.dart';
 
 /// 城市网格组件
 class HomeCityGrid extends GetView<HomePageController> {
@@ -21,9 +22,9 @@ class HomeCityGrid extends GetView<HomePageController> {
       final isLoading = controller.isLoadingCities;
       final cities = controller.localCities;
 
-      // 加载中状态
+      // 加载中状态 - 使用 shimmer 骨架屏
       if (isLoading) {
-        return _buildLoadingState(l10n);
+        return _buildLoadingState(l10n, isMobile);
       }
 
       // 空状态
@@ -40,31 +41,102 @@ class HomeCityGrid extends GetView<HomePageController> {
     });
   }
 
-  Widget _buildLoadingState(AppLocalizations l10n) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 60),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(
-              width: 40,
-              height: 40,
-              child: CircularProgressIndicator(
-                strokeWidth: 3,
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              l10n.loading,
-              style: const TextStyle(
-                fontSize: 14,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ],
+  Widget _buildLoadingState(AppLocalizations l10n, bool isMobile) {
+    final crossAxisCount = isMobile ? 2 : 4;
+
+    // 使用 shimmer 骨架屏网格
+    return SafeShimmer(
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: crossAxisCount,
+          childAspectRatio: isMobile ? 0.68 : 0.72,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
         ),
+        itemCount: isMobile ? 4 : 8,
+        itemBuilder: (context, index) {
+          return _buildSkeletonCityCard(isMobile);
+        },
+      ),
+    );
+  }
+
+  Widget _buildSkeletonCityCard(bool isMobile) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.borderLight, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 图片区域
+          Expanded(
+            flex: 3,
+            child: Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+              ),
+            ),
+          ),
+          // 内容区域
+          Expanded(
+            flex: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  // 城市名称
+                  Container(
+                    height: 16,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                  // 国家
+                  Container(
+                    height: 12,
+                    width: 80,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                  // 标签行
+                  Row(
+                    children: [
+                      Container(
+                        height: 10,
+                        width: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        height: 10,
+                        width: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

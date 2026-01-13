@@ -7,6 +7,7 @@ import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/services/http_service.dart';
 import 'package:df_admin_mobile/services/token_storage_service.dart';
+import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -144,7 +145,7 @@ class HotelListPageState extends State<HotelListPage> {
         Expanded(
           child: Obx(() {
             if (_isLoading.value) {
-              return const Center(child: CircularProgressIndicator());
+              return const HotelListSkeleton();
             }
 
             if (_hotels.isEmpty) {

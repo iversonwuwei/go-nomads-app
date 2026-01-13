@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/city/presentation/controllers/city_rating_controller.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
+import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -185,7 +186,7 @@ class ManageCityRatingsPage extends StatelessWidget {
           log('  - statistics: ${_controller.statistics.length} 项');
 
           if (_controller.isLoading.value) {
-            return const Center(child: CircularProgressIndicator());
+            return const ManageListSkeleton();
           }
 
           if (_controller.categories.isEmpty) {

@@ -7,6 +7,7 @@ import 'package:df_admin_mobile/features/moderator/infrastructure/repositories/m
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/safe_network_image.dart';
+import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -226,7 +227,7 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const UserProfileSkeleton();
     }
 
     if (_error != null) {

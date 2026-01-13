@@ -9,6 +9,7 @@ import 'package:df_admin_mobile/pages/innovation_detail/innovation_detail_creato
 import 'package:df_admin_mobile/pages/innovation_detail/innovation_detail_section.dart';
 import 'package:df_admin_mobile/pages/innovation_detail/innovation_detail_team_section.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
+import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -50,7 +51,7 @@ class InnovationDetailPage extends StatelessWidget {
               leading: SliverBackButton(onPressed: () => _handleBack(controller)),
               title: Text(project.projectName),
             ),
-            body: const Center(child: CircularProgressIndicator()),
+            body: const InnovationDetailSkeleton(),
           );
         }
 
