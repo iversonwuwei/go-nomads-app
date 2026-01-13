@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
@@ -29,6 +30,14 @@ class CreateTravelPlanPageController extends GetxController {
 
   final TextEditingController customBudgetController = TextEditingController();
 
+  // 出发地搜索相关状态
+  final TextEditingController departureSearchController = TextEditingController();
+  final FocusNode departureFocusNode = FocusNode();
+  final RxList<PoiResult> departureSuggestions = <PoiResult>[].obs;
+  final RxBool isDepartureSearching = false.obs;
+  final RxBool showDepartureSuggestions = false.obs;
+  Timer? _departureSearchDebounce;
+
   // 根据城市名称获取景点列表
   List<Map<String, dynamic>> get cityAttractions => [
         {'name': '历史古迹', 'icon': FontAwesomeIcons.landmark, 'id': 'historic'},
@@ -49,12 +58,94 @@ class CreateTravelPlanPageController extends GetxController {
   void onInit() {
     super.onInit();
     _loadCurrentLocation();
+
+    // 监听出发地位置变化，同步到搜索框
+    ever(departureLocation, (String value) {
+      if (departureSearchController.text != value) {
+        departureSearchController.text = value;
+      }
+    });
+
+    // 监听焦点变化
+    departureFocusNode.addListener(_onDepartureFocusChange);
   }
 
   @override
   void onClose() {
     customBudgetController.dispose();
+    departureSearchController.dispose();
+    departureFocusNode.removeListener(_onDepartureFocusChange);
+    departureFocusNode.dispose();
+    _departureSearchDebounce?.cancel();
     super.onClose();
+  }
+
+  void _onDepartureFocusChange() {
+    if (!departureFocusNode.hasFocus) {
+      // 延迟隐藏，以便用户可以点击建议项
+      Future.delayed(const Duration(milliseconds: 200), () {
+        if (!departureFocusNode.hasFocus) {
+          hideDepartureSuggestions();
+        }
+      });
+    }
+  }
+
+  /// 出发地搜索文本变化处理
+  void onDepartureSearchChanged(String value) {
+    _departureSearchDebounce?.cancel();
+
+    if (value.trim().isEmpty) {
+      hideDepartureSuggestions();
+      return;
+    }
+
+    _departureSearchDebounce = Timer(const Duration(milliseconds: 500), () {
+      searchDepartureAddress(value.trim());
+    });
+  }
+
+  /// 搜索出发地地址
+  Future<void> searchDepartureAddress(String keyword) async {
+    if (keyword.isEmpty) return;
+
+    isDepartureSearching.value = true;
+    showDepartureSuggestions.value = true;
+
+    try {
+      final result = await AmapPoiService.instance.searchByKeyword(
+        keyword: keyword,
+        pageSize: 10,
+      );
+
+      departureSuggestions.value = result.items;
+    } catch (e) {
+      debugPrint('搜索地址失败: $e');
+      departureSuggestions.clear();
+    } finally {
+      isDepartureSearching.value = false;
+    }
+  }
+
+  /// 选择出发地建议
+  void selectDepartureSuggestion(PoiResult poi) {
+    final displayAddress = poi.address.isNotEmpty ? poi.address : poi.name;
+    departureSearchController.text = displayAddress;
+    departureLocation.value = displayAddress;
+    hideDepartureSuggestions();
+    departureFocusNode.unfocus();
+  }
+
+  /// 隐藏出发地建议列表
+  void hideDepartureSuggestions() {
+    showDepartureSuggestions.value = false;
+  }
+
+  /// 清除出发地搜索
+  void clearDepartureSearch() {
+    departureSearchController.clear();
+    departureLocation.value = '';
+    hideDepartureSuggestions();
   }
 
   /// 公开方法：重新获取当前位置

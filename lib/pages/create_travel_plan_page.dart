@@ -9,7 +9,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 import 'flutter_map_picker_page.dart';
-import 'travel_plan_page.dart';
+import 'travel_plan/travel_plan_page.dart';
 
 /// 创建旅行计划页面 - 完整页面版本
 class CreateTravelPlanPage extends StatefulWidget {

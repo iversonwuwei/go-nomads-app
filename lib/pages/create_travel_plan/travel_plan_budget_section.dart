@@ -22,7 +22,7 @@ class TravelPlanBudgetSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final controller = _c;
-    
+
     // 如果 controller 已被销毁，返回空容器
     if (controller == null) {
       return const SizedBox.shrink();
@@ -52,13 +52,17 @@ class TravelPlanBudgetSection extends StatelessWidget {
           style: TextStyle(fontSize: 12, color: Colors.grey[600], fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 8),
-        Row(
-          children: [
-            _buildCurrencyDropdown(),
-            const SizedBox(width: 12),
-            Expanded(child: _buildCustomBudgetField()),
-          ],
-        ),
+        Builder(builder: (context) {
+          // 检查 controller 是否已销毁
+          if (_c == null) return const SizedBox.shrink();
+          return Row(
+            children: [
+              _buildCurrencyDropdown(),
+              const SizedBox(width: 12),
+              Expanded(child: _buildCustomBudgetField()),
+            ],
+          );
+        }),
       ],
     );
   }
@@ -66,7 +70,7 @@ class TravelPlanBudgetSection extends StatelessWidget {
   Widget _buildBudgetChip(String label, String value) {
     final controller = _c;
     if (controller == null) return const SizedBox.shrink();
-    
+
     final isSelected = controller.budget.value == value;
     return GestureDetector(
       onTap: () => controller.setBudget(value),
@@ -113,7 +117,7 @@ class TravelPlanBudgetSection extends StatelessWidget {
   Widget _buildCurrencyDropdown() {
     final controller = _c;
     if (controller == null) return const SizedBox.shrink();
-    
+
     return Obx(() {
       if (_c == null) return const SizedBox.shrink();
       return Container(
@@ -150,7 +154,7 @@ class TravelPlanBudgetSection extends StatelessWidget {
   Widget _buildCustomBudgetField() {
     final controller = _c;
     if (controller == null) return const SizedBox.shrink();
-    
+
     return TextFormField(
       controller: controller.customBudgetController,
       keyboardType: TextInputType.number,

@@ -44,7 +44,7 @@ import 'package:df_admin_mobile/pages/profile_page.dart';
 import 'package:df_admin_mobile/pages/pros_and_cons_add_page.dart';
 import 'package:df_admin_mobile/pages/register_page.dart';
 import 'package:df_admin_mobile/pages/skills_interests_page.dart';
-import 'package:df_admin_mobile/pages/travel_plan_page.dart';
+import 'package:df_admin_mobile/pages/travel_plan/travel_plan_page.dart';
 import 'package:df_admin_mobile/pages/user_profile_page.dart';
 import 'package:get/get.dart';
 
