@@ -72,6 +72,14 @@ class CityRepository implements ICityRepository {
       final data = response.data as Map<String, dynamic>;
       final items = data['items'] as List<dynamic>? ?? [];
 
+      // 调试：打印第一个城市的原始 JSON 数据
+      if (items.isNotEmpty) {
+        final firstItem = items.first as Map<String, dynamic>;
+        log('🔍 [getCities] First city raw JSON keys: ${firstItem.keys.toList()}');
+        log('🔍 [getCities] First city overallScore: ${firstItem['overallScore']}');
+        log('🔍 [getCities] First city name: ${firstItem['name']}');
+      }
+
       final cities = items.map((json) => City.fromJson(json as Map<String, dynamic>)).toList();
 
       return Success(cities);

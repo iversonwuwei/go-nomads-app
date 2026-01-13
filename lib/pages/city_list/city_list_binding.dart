@@ -1,11 +1,2 @@
-import 'package:get/get.dart';
-
-import 'city_list_controller.dart';
-
-/// CityList 页面绑定
-class CityListBinding extends Bindings {
-  @override
-  void dependencies() {
-    Get.lazyPut<CityListController>(() => CityListController());
-  }
-}
+// Deprecated shim: use features/city_list binding
+export 'package:df_admin_mobile/features/city_list/city_list_binding.dart';
