@@ -9,14 +9,16 @@ import 'package:df_admin_mobile/features/city/presentation/controllers/city_stat
 import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
 import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
+import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
 import 'package:df_admin_mobile/services/search_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-/// 首页控制器 - GetX 标准实现
+/// 首页控制器 - GetX 标准实现（支持 GetView）
 /// 管理首页的所有状态和业务逻辑
-class HomePageController extends GetxController with WidgetsBindingObserver {
+/// 内部实现路由监听，从其他页面返回时自动刷新数据
+class HomePageController extends GetxController with WidgetsBindingObserver implements RouteAware {
   // ==================== 依赖注入 ====================
   final ICityRepository _cityRepository = Get.find<ICityRepository>();
   // 🔍 搜索服务 - 通过 Elasticsearch 提供高效搜索
@@ -32,6 +34,9 @@ class HomePageController extends GetxController with WidgetsBindingObserver {
   final ScrollController scrollController = ScrollController();
   final TextEditingController searchController = TextEditingController();
   final GlobalKey citiesListKey = GlobalKey();
+
+  // ==================== 路由监听 ====================
+  PageRoute<dynamic>? _currentRoute;
 
   // ==================== 响应式状态 ====================
   /// 本地搜索关键词
@@ -73,6 +78,7 @@ class HomePageController extends GetxController with WidgetsBindingObserver {
     // ⭐ 延迟到下一帧再加载数据，避免在 build 期间触发 setState
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadInitialData();
+      _subscribeToRouteObserver();
     });
   }
 
@@ -83,12 +89,54 @@ class HomePageController extends GetxController with WidgetsBindingObserver {
     // 移除生命周期监听
     WidgetsBinding.instance.removeObserver(this);
 
+    // 取消路由订阅
+    _unsubscribeFromRouteObserver();
+
     // 清理资源
     scrollController.dispose();
     searchController.dispose();
 
     super.onClose();
   }
+
+  /// 订阅路由观察者
+  void _subscribeToRouteObserver() {
+    final context = Get.context;
+    if (context != null) {
+      final route = ModalRoute.of(context);
+      if (route is PageRoute && route != _currentRoute) {
+        _currentRoute = route;
+        appRouteObserver.subscribe(this, route);
+        log('🏠 HomePageController: 已订阅路由观察者');
+      }
+    }
+  }
+
+  /// 取消路由订阅
+  void _unsubscribeFromRouteObserver() {
+    if (_currentRoute != null) {
+      appRouteObserver.unsubscribe(this);
+      _currentRoute = null;
+      log('🏠 HomePageController: 已取消路由订阅');
+    }
+  }
+
+  // ==================== RouteAware 实现 ====================
+  @override
+  void didPopNext() {
+    // 从其他页面返回时重新加载数据
+    log('🏠 HomePageController: didPopNext - 从其他页面返回');
+    onRouteResume();
+  }
+
+  @override
+  void didPush() {}
+
+  @override
+  void didPop() {}
+
+  @override
+  void didPushNext() {}
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
