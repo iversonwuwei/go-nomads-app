@@ -424,7 +424,7 @@ class CitySearchDocument {
       currency: json['currency'],
       imageUrl: json['imageUrl'],
       portraitImageUrl: json['portraitImageUrl'],
-      overallScore: (json['overallScore'] as num?)?.toDouble(),
+      overallScore: (json['overallScore'] as num?)?.toDouble() ?? (json['overallRating'] as num?)?.toDouble(),
       internetQualityScore: (json['internetQualityScore'] as num?)?.toDouble(),
       safetyScore: (json['safetyScore'] as num?)?.toDouble(),
       costScore: (json['costScore'] as num?)?.toDouble(),

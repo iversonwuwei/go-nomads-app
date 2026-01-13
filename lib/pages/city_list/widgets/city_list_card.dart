@@ -29,7 +29,8 @@ class CityListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('🏙️ City: ${city.name}, ReviewCount: ${city.reviewCount}, AverageCost: ${city.averageCost}, OverallScore: ${city.overallScore}');
+    debugPrint(
+        '🏙️ City: ${city.name}, ReviewCount: ${city.reviewCount}, AverageCost: ${city.averageCost}, OverallScore: ${city.overallScore}');
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),

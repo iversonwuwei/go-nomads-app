@@ -382,7 +382,7 @@ class City {
       weather: weather?['weather']?.toString(),
       humidity: weather?['humidity']?.toInt(),
       airQualityIndex: weather?['airQualityIndex']?.toInt(),
-      overallScore: json['overallScore']?.toDouble(),
+      overallScore: json['overallScore']?.toDouble() ?? json['overallRating']?.toDouble(),
       costScore: json['costScore']?.toDouble(),
       internetScore: json['internetQualityScore']?.toDouble() ?? json['internetScore']?.toDouble(),
       safetyScore: json['safetyScore']?.toDouble(),
