@@ -69,6 +69,19 @@ class CityListController extends GetxController {
     // 监听 CityStateController 的城市列表变化，同步图片等数据更新
     ever(_cityStateController.cities, _syncCityUpdates);
 
+    // 监听全局 CityStateController 的生成中集合，保证本地集合同步移除已完成的 id
+    ever(_cityStateController.generatingImageCityIds, (Set<String> ids) {
+      // 移除本地集合中不在全局集合内的 id（即已完成或失败）
+      final toRemove = <String>[];
+      for (final id in generatingImageCityIds) {
+        if (!ids.contains(id)) toRemove.add(id);
+      }
+      if (toRemove.isNotEmpty) {
+        generatingImageCityIds.removeAll(toRemove);
+        log('🔁 [CityListController] 同步移除已完成的生成状态: $toRemove');
+      }
+    });
+
     // 设置 SignalR 监听器，直接处理图片更新事件
     _setupSignalRListeners();
 
@@ -121,12 +134,17 @@ class CityListController extends GetxController {
 
     final oldCity = cities[index];
 
-    // 提取图片 URL
-    final portraitUrl = data['portraitImageUrl'] as String?;
+    // 提取图片 URL 并添加缓存破坏参数
+    final cacheBuster = DateTime.now().millisecondsSinceEpoch.toString();
+    String? portraitUrl = data['portraitImageUrl'] as String?;
+    if (portraitUrl != null && portraitUrl.isNotEmpty) {
+      portraitUrl = _appendCacheBuster(portraitUrl, cacheBuster);
+    }
+
     List<String>? landscapeUrls;
     final landscapeImages = data['landscapeImageUrls'];
     if (landscapeImages is List && landscapeImages.isNotEmpty) {
-      landscapeUrls = landscapeImages.cast<String>();
+      landscapeUrls = landscapeImages.cast<String>().map((url) => _appendCacheBuster(url, cacheBuster)).toList();
     }
 
     // 使用 copyWith 更新图片字段
@@ -137,11 +155,15 @@ class CityListController extends GetxController {
     );
 
     cities[index] = updatedCity;
+    cities.refresh(); // 强制触发 Obx 更新
     log('✅ [CityListController] 城市图片已更新: ${updatedCity.name}, imageUrl: ${updatedCity.imageUrl}');
   }
 
   /// 同步 CityStateController 中的城市更新到本地列表
   void _syncCityUpdates(List<City> updatedCities) {
+    bool hasUpdates = false;
+    final cacheBuster = DateTime.now().millisecondsSinceEpoch.toString();
+
     for (final updatedCity in updatedCities) {
       final index = cities.indexWhere((c) => c.id == updatedCity.id);
       if (index != -1) {
@@ -150,15 +172,38 @@ class CityListController extends GetxController {
         if (localCity.imageUrl != updatedCity.imageUrl ||
             localCity.portraitImageUrl != updatedCity.portraitImageUrl ||
             localCity.landscapeImageUrls != updatedCity.landscapeImageUrls) {
+          // 添加缓存破坏参数
+          final newImageUrl = updatedCity.imageUrl != null
+              ? _appendCacheBuster(updatedCity.imageUrl!, cacheBuster)
+              : localCity.imageUrl;
+          final newPortraitUrl = updatedCity.portraitImageUrl != null
+              ? _appendCacheBuster(updatedCity.portraitImageUrl!, cacheBuster)
+              : localCity.portraitImageUrl;
+          final newLandscapeUrls = updatedCity.landscapeImageUrls != null
+              ? updatedCity.landscapeImageUrls!.map((url) => _appendCacheBuster(url, cacheBuster)).toList()
+              : localCity.landscapeImageUrls;
+
           cities[index] = localCity.copyWith(
-            imageUrl: updatedCity.imageUrl,
-            portraitImageUrl: updatedCity.portraitImageUrl,
-            landscapeImageUrls: updatedCity.landscapeImageUrls,
+            imageUrl: newImageUrl,
+            portraitImageUrl: newPortraitUrl,
+            landscapeImageUrls: newLandscapeUrls,
           );
+          hasUpdates = true;
           log('🔄 [CityListController] 同步城市图片更新: ${updatedCity.name}');
         }
       }
     }
+
+    if (hasUpdates) {
+      cities.refresh(); // 强制触发 Obx 更新
+    }
+  }
+
+  /// 添加缓存破坏参数到 URL
+  String _appendCacheBuster(String url, String cacheBuster) {
+    if (url.isEmpty) return url;
+    final separator = url.contains('?') ? '&' : '?';
+    return '$url${separator}v=$cacheBuster';
   }
 
   @override
