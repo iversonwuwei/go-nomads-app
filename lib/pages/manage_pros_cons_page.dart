@@ -23,8 +23,7 @@ class ManageProsConsPage extends StatefulWidget {
   State<ManageProsConsPage> createState() => _ManageProsConsPageState();
 }
 
-class _ManageProsConsPageState extends State<ManageProsConsPage>
-    with SingleTickerProviderStateMixin {
+class _ManageProsConsPageState extends State<ManageProsConsPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late final ManageProsConsPageController _controller;
 

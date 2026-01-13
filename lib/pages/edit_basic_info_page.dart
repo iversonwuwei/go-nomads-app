@@ -1,10 +1,9 @@
+import 'package:df_admin_mobile/controllers/edit_basic_info_page_controller.dart';
 import 'package:df_admin_mobile/widgets/safe_network_image.dart';
 import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import 'package:df_admin_mobile/controllers/edit_basic_info_page_controller.dart';
 
 /// 基本信息编辑页面
 class EditBasicInfoPage extends StatelessWidget {
@@ -132,7 +131,7 @@ class EditBasicInfoPage extends StatelessWidget {
 
                 // 性别
                 Obx(() => DropdownButtonFormField<String>(
-                      value: controller.gender.value,
+                      initialValue: controller.gender.value,
                       decoration: const InputDecoration(
                         labelText: '性别',
                         border: OutlineInputBorder(),

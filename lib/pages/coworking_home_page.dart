@@ -10,10 +10,10 @@ import 'package:df_admin_mobile/pages/coworking_list_page.dart';
 import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
+import 'package:df_admin_mobile/widgets/skeletons/base_skeleton.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:df_admin_mobile/widgets/skeletons/base_skeleton.dart';
 
 /// Coworking Home Page
 /// 共享办公空间首页 - 城市选择（无限滚动）
