@@ -9,6 +9,7 @@ import 'package:df_admin_mobile/features/payment/domain/entities/payment_method.
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
+import 'package:df_admin_mobile/widgets/skeletons/base_skeleton.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -103,9 +104,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
 
         // 加载中状态
         if (isLoadingPlans && paidPlans.isEmpty) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return _buildLoadingSkeleton();
         }
 
         // 错误状态
@@ -155,6 +154,30 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       controller.ensurePlansLoaded();
     });
+  }
+
+  /// 加载中骨架屏
+  Widget _buildLoadingSkeleton() {
+    return SafeShimmer(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            const _CurrentStatusSkeleton(),
+            const SizedBox(height: 24),
+            ...List.generate(3, (index) {
+              final hasSpacing = index < 2;
+              return Padding(
+                padding: EdgeInsets.only(bottom: hasSpacing ? 16 : 0),
+                child: const _MembershipPlanSkeleton(),
+              );
+            }),
+            const SizedBox(height: 32),
+            const _FooterSkeleton(),
+          ],
+        ),
+      ),
+    );
   }
 
   /// 错误状态视图
@@ -819,6 +842,151 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
     if (selectedMethod != null) {
       await _processPayment(context, plan, targetLevel, selectedMethod);
     }
+  }
+}
+
+/// 会员计划骨架卡片
+class _MembershipPlanSkeleton extends StatelessWidget {
+  const _MembershipPlanSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                SkeletonBox(width: 48, height: 48, borderRadius: 12),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      SkeletonBox(width: 140, height: 18),
+                      SizedBox(height: 6),
+                      SkeletonBox(width: 200, height: 14),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: const [
+                    SkeletonBox(width: 80, height: 22),
+                    SizedBox(height: 6),
+                    SkeletonBox(width: 50, height: 14),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Column(
+              children: const [
+                _PlanBenefitSkeleton(),
+                SizedBox(height: 8),
+                _PlanBenefitSkeleton(),
+                SizedBox(height: 8),
+                _PlanBenefitSkeleton(),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Container(
+              width: double.infinity,
+              height: 44,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PlanBenefitSkeleton extends StatelessWidget {
+  const _PlanBenefitSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: const [
+        SkeletonCircle(size: 12),
+        SizedBox(width: 8),
+        Expanded(child: SkeletonBox(height: 14)),
+      ],
+    );
+  }
+}
+
+/// 当前状态骨架
+class _CurrentStatusSkeleton extends StatelessWidget {
+  const _CurrentStatusSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const [
+            SkeletonBox(width: 160, height: 18),
+            SizedBox(height: 12),
+            SkeletonBox(width: 220, height: 16),
+            SizedBox(height: 12),
+            SkeletonBox(width: 120, height: 14),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 底部说明骨架
+class _FooterSkeleton extends StatelessWidget {
+  const _FooterSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: const [
+        SkeletonBox(width: 180, height: 16),
+        SizedBox(height: 8),
+        SkeletonBox(width: double.infinity, height: 14),
+        SizedBox(height: 6),
+        SkeletonBox(width: double.infinity, height: 14),
+      ],
+    );
   }
 }
 
