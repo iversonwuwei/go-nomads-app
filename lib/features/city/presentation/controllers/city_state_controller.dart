@@ -573,11 +573,17 @@ class CityStateController extends PaginatedRefreshableController {
       data = imageData;
     }
 
+    // 缓存破坏参数
+    final cacheBuster = DateTime.now().millisecondsSinceEpoch.toString();
+
     // 提取竖屏图片 URL
     String? portraitUrl;
     final portraitImage = data['portraitImage'];
     if (portraitImage is Map<String, dynamic>) {
       portraitUrl = portraitImage['url'] as String?;
+      if (portraitUrl != null && portraitUrl.isNotEmpty) {
+        portraitUrl = _appendCacheBuster(portraitUrl, cacheBuster);
+      }
     }
 
     // 提取横屏图片 URL 列表
@@ -586,7 +592,7 @@ class CityStateController extends PaginatedRefreshableController {
     if (landscapeImages is List && landscapeImages.isNotEmpty) {
       landscapeUrls = landscapeImages
           .where((img) => img is Map<String, dynamic> && img['url'] != null)
-          .map((img) => (img as Map<String, dynamic>)['url'] as String)
+          .map((img) => _appendCacheBuster((img as Map<String, dynamic>)['url'] as String, cacheBuster))
           .toList();
     }
 
@@ -606,6 +612,13 @@ class CityStateController extends PaginatedRefreshableController {
     cities[index] = updatedCity;
     cities.refresh();
     log('✅ [CityController] 城市图片已更新: portrait=$portraitUrl, landscape=${landscapeUrls?.length ?? 0}张');
+  }
+
+  /// 添加缓存破坏参数到 URL
+  String _appendCacheBuster(String url, String cacheBuster) {
+    if (url.isEmpty) return url;
+    final separator = url.contains('?') ? '&' : '?';
+    return '$url${separator}v=$cacheBuster';
   }
 
   /// 标记城市正在生成图片
