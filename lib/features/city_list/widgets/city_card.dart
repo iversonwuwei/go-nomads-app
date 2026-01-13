@@ -9,51 +9,69 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-/// 城市卡片组件
-class CityCard extends StatelessWidget {
-  final City city;
+/// 城市卡片组件 - 使用 GetView 符合 GetX 标准
+///
+/// 通过 cityId 从控制器获取响应式数据，确保图片更新后自动刷新
+class CityCard extends GetView<CityListController> {
+  final String cityId;
   final bool isMobile;
 
   const CityCard({
     super.key,
-    required this.city,
+    required this.cityId,
     this.isMobile = true,
   });
 
+  /// 便捷构造函数：从 City 对象创建
+  CityCard.fromCity({
+    super.key,
+    required City city,
+    this.isMobile = true,
+  }) : cityId = city.id;
+
   @override
   Widget build(BuildContext context) {
-    log('🏙️ City: ${city.name}, ReviewCount: ${city.reviewCount}, AverageCost: ${city.averageCost}, OverallScore: ${city.overallScore}');
+    return Obx(() {
+      // 从控制器获取最新的城市数据，确保响应式更新
+      final city = controller.getCityById(cityId);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: InkWell(
-        onTap: () => _navigateToDetail(context),
-        borderRadius: BorderRadius.circular(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 城市图片
-            _buildImageSection(),
-            // 城市信息
-            _buildInfoSection(),
+      if (city == null) {
+        return const SizedBox.shrink();
+      }
+
+      log('🏙️ City: ${city.name}, ReviewCount: ${city.reviewCount}, AverageCost: ${city.averageCost}, OverallScore: ${city.overallScore}');
+
+      return Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
           ],
         ),
-      ),
-    );
+        child: InkWell(
+          onTap: () => _navigateToDetail(context, city),
+          borderRadius: BorderRadius.circular(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 城市图片
+              _buildImageSection(city),
+              // 城市信息
+              _buildInfoSection(city),
+            ],
+          ),
+        ),
+      );
+    });
   }
 
-  void _navigateToDetail(BuildContext context) {
+  void _navigateToDetail(BuildContext context, City city) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -68,7 +86,7 @@ class CityCard extends StatelessWidget {
     );
   }
 
-  Widget _buildImageSection() {
+  Widget _buildImageSection(City city) {
     return Stack(
       children: [
         ClipRRect(
@@ -79,6 +97,8 @@ class CityCard extends StatelessWidget {
                 ? Image.network(
                     city.imageUrl!,
                     fit: BoxFit.cover,
+                    // 添加 key 确保图片 URL 变化时重新加载
+                    key: ValueKey(city.imageUrl),
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
                         color: Colors.grey[200],
@@ -93,18 +113,18 @@ class CityCard extends StatelessWidget {
           ),
         ),
         // 左上角：生成图片按钮（仅管理员可见）
-        _buildGenerateImageButton(),
+        _buildGenerateImageButton(city),
         // 右上角：关注按钮
         Positioned(
           top: 12,
           right: 12,
-          child: _CityFollowButton(city: city),
+          child: _CityFollowButton(cityId: city.id),
         ),
       ],
     );
   }
 
-  Widget _buildGenerateImageButton() {
+  Widget _buildGenerateImageButton(City city) {
     return Obx(() {
       final authController = Get.find<AuthStateController>();
       final user = authController.currentUser.value;
@@ -123,7 +143,7 @@ class CityCard extends StatelessWidget {
     });
   }
 
-  Widget _buildInfoSection() {
+  Widget _buildInfoSection(City city) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -166,18 +186,18 @@ class CityCard extends StatelessWidget {
                 ),
               ),
               // 评分
-              _buildScoreBadge(),
+              _buildScoreBadge(city),
             ],
           ),
           const SizedBox(height: 12),
           // 指标标签
-          _buildInfoChips(),
+          _buildInfoChips(city),
         ],
       ),
     );
   }
 
-  Widget _buildScoreBadge() {
+  Widget _buildScoreBadge(City city) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -206,7 +226,7 @@ class CityCard extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoChips() {
+  Widget _buildInfoChips(City city) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -325,21 +345,22 @@ class _InfoChip extends StatelessWidget {
   }
 }
 
-/// 关注按钮组件
+/// 关注按钮组件 - 使用 cityId 从控制器获取响应式数据
 class _CityFollowButton extends StatelessWidget {
-  final City city;
+  final String cityId;
 
-  const _CityFollowButton({required this.city});
+  const _CityFollowButton({required this.cityId});
 
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<CityListController>();
 
     return Obx(() {
-      final isFollowed = controller.isCityFollowed(city.id);
+      final isFollowed = controller.isCityFollowed(cityId);
+      final city = controller.getCityById(cityId);
 
       return GestureDetector(
-        onTap: () => controller.toggleFollow(city),
+        onTap: city != null ? () => controller.toggleFollow(city) : null,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
@@ -393,7 +414,8 @@ class _GenerateImageButton extends StatelessWidget {
     final controller = Get.find<CityListController>();
 
     return Obx(() {
-      final isGenerating = controller.isGeneratingImages(cityId);
+      // 直接访问响应式集合，确保 Obx 能正确订阅变化
+      final isGenerating = controller.generatingImageCityIds.contains(cityId);
 
       return GestureDetector(
         onTap: isGenerating ? null : () => controller.generateCityImages(cityId, cityName),

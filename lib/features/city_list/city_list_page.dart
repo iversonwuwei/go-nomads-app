@@ -122,7 +122,8 @@ class _CityListContent extends GetView<CityListController> {
             }
 
             final city = cityList[index];
-            return CityCard(city: city, isMobile: isMobile);
+            // 使用 cityId 构建 CityCard，确保响应式更新
+            return CityCard(cityId: city.id, isMobile: isMobile);
           },
         ),
       );

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:df_admin_mobile/core/core.dart';
@@ -8,6 +9,7 @@ import 'package:df_admin_mobile/features/city/domain/usecases/city_rating_usecas
 import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/services/search_service.dart';
+import 'package:df_admin_mobile/services/signalr_service.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -43,6 +45,12 @@ class CityListController extends GetxController {
   final searchQuery = ''.obs;
   final followedCities = <String, bool>{}.obs;
 
+  // 本地生成中状态（响应式）
+  final generatingImageCityIds = <String>{}.obs;
+
+  // SignalR 订阅
+  StreamSubscription<Map<String, dynamic>>? _cityImageUpdatedSubscription;
+
   // 分页配置
   int _currentPage = 1;
   static const int _pageSize = 20;
@@ -58,6 +66,12 @@ class CityListController extends GetxController {
     // 监听城市列表变化同步关注状态
     ever(cities, (_) => _syncFollowedStatusFromController());
 
+    // 监听 CityStateController 的城市列表变化，同步图片等数据更新
+    ever(_cityStateController.cities, _syncCityUpdates);
+
+    // 设置 SignalR 监听器，直接处理图片更新事件
+    _setupSignalRListeners();
+
     // 初始加载
     loadCities(refresh: true);
 
@@ -65,10 +79,94 @@ class CityListController extends GetxController {
     Future.microtask(() => _loadFollowedCities());
   }
 
+  /// 设置 SignalR 监听器
+  void _setupSignalRListeners() {
+    final signalRService = SignalRService();
+
+    // 监听城市图片更新事件
+    _cityImageUpdatedSubscription = signalRService.cityImageUpdatedStream.listen((data) {
+      log('🖼️ [CityListController] 收到城市图片更新通知: $data');
+
+      final cityId = data['cityId'] as String?;
+      final success = data['success'] as bool? ?? false;
+
+      if (cityId == null) {
+        log('⚠️ [CityListController] 城市ID为空，忽略通知');
+        return;
+      }
+
+      // 无论成功还是失败，都从生成中列表移除
+      generatingImageCityIds.remove(cityId);
+      log('✅ [CityListController] 已移除生成状态: $cityId, 当前生成中: ${generatingImageCityIds.length}');
+
+      if (!success) {
+        log('❌ [CityListController] 城市图片生成失败');
+        return;
+      }
+
+      // 更新本地城市列表中的图片
+      _updateCityImageFromSignalR(cityId, data);
+    });
+
+    log('✅ [CityListController] SignalR 城市图片更新监听已设置');
+  }
+
+  /// 从 SignalR 数据更新城市图片
+  void _updateCityImageFromSignalR(String cityId, Map<String, dynamic> data) {
+    final index = cities.indexWhere((c) => c.id == cityId);
+    if (index == -1) {
+      log('⚠️ [CityListController] 未找到城市: $cityId');
+      return;
+    }
+
+    final oldCity = cities[index];
+
+    // 提取图片 URL
+    final portraitUrl = data['portraitImageUrl'] as String?;
+    List<String>? landscapeUrls;
+    final landscapeImages = data['landscapeImageUrls'];
+    if (landscapeImages is List && landscapeImages.isNotEmpty) {
+      landscapeUrls = landscapeImages.cast<String>();
+    }
+
+    // 使用 copyWith 更新图片字段
+    final updatedCity = oldCity.copyWith(
+      portraitImageUrl: portraitUrl ?? oldCity.portraitImageUrl,
+      landscapeImageUrls: landscapeUrls ?? oldCity.landscapeImageUrls,
+      imageUrl: portraitUrl ?? oldCity.imageUrl,
+    );
+
+    cities[index] = updatedCity;
+    log('✅ [CityListController] 城市图片已更新: ${updatedCity.name}, imageUrl: ${updatedCity.imageUrl}');
+  }
+
+  /// 同步 CityStateController 中的城市更新到本地列表
+  void _syncCityUpdates(List<City> updatedCities) {
+    for (final updatedCity in updatedCities) {
+      final index = cities.indexWhere((c) => c.id == updatedCity.id);
+      if (index != -1) {
+        // 只同步图片相关字段更新
+        final localCity = cities[index];
+        if (localCity.imageUrl != updatedCity.imageUrl ||
+            localCity.portraitImageUrl != updatedCity.portraitImageUrl ||
+            localCity.landscapeImageUrls != updatedCity.landscapeImageUrls) {
+          cities[index] = localCity.copyWith(
+            imageUrl: updatedCity.imageUrl,
+            portraitImageUrl: updatedCity.portraitImageUrl,
+            landscapeImageUrls: updatedCity.landscapeImageUrls,
+          );
+          log('🔄 [CityListController] 同步城市图片更新: ${updatedCity.name}');
+        }
+      }
+    }
+  }
+
   @override
   void onClose() {
     searchTextController.dispose();
     scrollController.dispose();
+    _cityImageUpdatedSubscription?.cancel();
+    _cityImageUpdatedSubscription = null;
     super.onClose();
   }
 
@@ -345,6 +443,13 @@ class CityListController extends GetxController {
     }
   }
 
+  // ==================== 城市查询 ====================
+
+  /// 根据 ID 获取城市（从响应式列表中获取，确保数据更新时自动刷新）
+  City? getCityById(String cityId) {
+    return cities.firstWhereOrNull((city) => city.id == cityId);
+  }
+
   // ==================== 关注功能 ====================
 
   bool isCityFollowed(String cityId) {
@@ -416,12 +521,13 @@ class CityListController extends GetxController {
 
   // ==================== 图片生成 ====================
 
+  /// 检查城市是否正在生成图片（使用本地响应式状态）
   bool isGeneratingImages(String cityId) {
-    return _cityStateController.isGeneratingImages(cityId);
+    return generatingImageCityIds.contains(cityId);
   }
 
   Future<void> generateCityImages(String cityId, String cityName) async {
-    if (_cityStateController.isGeneratingImages(cityId)) return;
+    if (generatingImageCityIds.contains(cityId)) return;
 
     final authController = Get.find<AuthStateController>();
     if (!authController.isAuthenticated.value) {
@@ -437,6 +543,10 @@ class CityListController extends GetxController {
       return;
     }
 
+    // 标记为正在生成（使用本地状态）
+    generatingImageCityIds.add(cityId);
+    log('🖼️ [CityListController] 开始生成图片: $cityId, 当前生成中: ${generatingImageCityIds.length}');
+
     AppToast.info(
       'AI image generation task created for $cityName.\nYou will be notified when complete.',
       title: 'Task Created',
@@ -449,8 +559,11 @@ class CityListController extends GetxController {
         final taskData = data['data'] as Map<String, dynamic>?;
         final taskId = taskData?['taskId'] as String? ?? '';
         log('🖼️ Image generation task created: taskId=$taskId');
+        // 注意：不在这里移除 cityId，等待 SignalR 通知时再移除
       },
       onFailure: (exception) {
+        // 失败时移除生成状态
+        generatingImageCityIds.remove(cityId);
         AppToast.error(exception.message, title: 'Task Creation Failed');
       },
     );
