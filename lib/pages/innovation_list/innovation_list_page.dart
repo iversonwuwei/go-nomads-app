@@ -3,6 +3,7 @@ import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/pages/innovation_list/innovation_list_widgets.dart';
 import 'package:df_admin_mobile/pages/innovation_list/innovation_project_card.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
+import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -68,7 +69,7 @@ class InnovationListPage extends StatelessWidget {
 
     // 首次加载中
     if (sc.isLoading.value && projectCount == 0) {
-      return const Center(child: CircularProgressIndicator());
+      return const InnovationListSkeleton();
     }
 
     // 错误状态

@@ -5,6 +5,7 @@ import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
 import 'package:df_admin_mobile/features/user_city_content/domain/entities/user_city_content.dart';
+import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import '../../city_detail_controller.dart';
 
 /// Photos Tab - GetView 实现
@@ -24,9 +25,9 @@ class PhotosTab extends GetView<CityDetailController> {
       final isLoading = userContentController.isLoadingPhotos.value;
       final isRefreshing = controller.isRefreshingPhotos.value;
 
-      // 首次加载时显示中间加载指示器
+      // 首次加载时显示骨架屏
       if (isLoading && photos.isEmpty && !isRefreshing) {
-        return const Center(child: CircularProgressIndicator());
+        return const PhotosTabSkeleton();
       }
 
       // 如果为空

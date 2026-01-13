@@ -26,7 +26,6 @@ class _ChatListSkeletonState extends BaseSkeletonState<ChatListSkeleton> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: SkeletonCard(
-        shimmerController: shimmerController,
         height: 140,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -34,8 +33,7 @@ class _ChatListSkeletonState extends BaseSkeletonState<ChatListSkeleton> {
             // 聊天室头部
             Row(
               children: [
-                SkeletonCircle(
-                  shimmerController: shimmerController,
+                const SkeletonCircle(
                   size: 48,
                 ),
                 const SizedBox(width: 12),
@@ -43,15 +41,13 @@ class _ChatListSkeletonState extends BaseSkeletonState<ChatListSkeleton> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SkeletonBox(
-                        shimmerController: shimmerController,
+                      const SkeletonBox(
                         width: 150,
                         height: 16,
                         borderRadius: 4,
                       ),
                       const SizedBox(height: 6),
-                      SkeletonBox(
-                        shimmerController: shimmerController,
+                      const SkeletonBox(
                         width: 100,
                         height: 12,
                         borderRadius: 4,
@@ -59,8 +55,7 @@ class _ChatListSkeletonState extends BaseSkeletonState<ChatListSkeleton> {
                     ],
                   ),
                 ),
-                SkeletonBox(
-                  shimmerController: shimmerController,
+                const SkeletonBox(
                   width: 60,
                   height: 24,
                   borderRadius: 12,
@@ -70,15 +65,13 @@ class _ChatListSkeletonState extends BaseSkeletonState<ChatListSkeleton> {
             const SizedBox(height: 12),
 
             // 最后消息
-            SkeletonBox(
-              shimmerController: shimmerController,
+            const SkeletonBox(
               width: double.infinity,
               height: 14,
               borderRadius: 4,
             ),
             const SizedBox(height: 6),
-            SkeletonBox(
-              shimmerController: shimmerController,
+            const SkeletonBox(
               width: 200,
               height: 14,
               borderRadius: 4,
@@ -88,15 +81,13 @@ class _ChatListSkeletonState extends BaseSkeletonState<ChatListSkeleton> {
             // 底部信息
             Row(
               children: [
-                SkeletonBox(
-                  shimmerController: shimmerController,
+                const SkeletonBox(
                   width: 80,
                   height: 12,
                   borderRadius: 4,
                 ),
                 const Spacer(),
-                SkeletonBox(
-                  shimmerController: shimmerController,
+                const SkeletonBox(
                   width: 100,
                   height: 12,
                   borderRadius: 4,

@@ -5,6 +5,7 @@ import 'package:df_admin_mobile/controllers/member_detail_page_controller.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/safe_network_image.dart';
+import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -50,9 +51,7 @@ class MemberDetailPage extends StatelessWidget {
             elevation: 0,
             leading: const AppBackButton(),
           ),
-          body: const Center(
-            child: CircularProgressIndicator(),
-          ),
+          body: const UserProfileSkeleton(),
         );
       }
 

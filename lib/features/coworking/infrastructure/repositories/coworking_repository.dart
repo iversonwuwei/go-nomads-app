@@ -154,13 +154,25 @@ class CoworkingRepository implements ICoworkingRepository {
     try {
       final response = await _httpService.post(
         '/coworking/cities/counts',
-        data: {'cityIds': cityIds},
+        data: cityIds, // 直接发送 cityIds 数组
       );
 
-      // HTTP 拦截器已自动解包响应，response.data 直接就是 counts Map
+      // 后端返回格式: { counts: [{ cityId, count }, ...] }
       if (response.data is Map<String, dynamic>) {
-        final counts = response.data as Map<String, dynamic>;
-        return Result.success(counts.map((k, v) => MapEntry(k, v as int)));
+        final data = response.data as Map<String, dynamic>;
+        final countsList = data['counts'] as List<dynamic>? ?? [];
+        
+        final counts = <String, int>{};
+        for (final item in countsList) {
+          if (item is Map<String, dynamic>) {
+            final cityId = item['cityId'] as String?;
+            final count = item['count'] as int? ?? 0;
+            if (cityId != null) {
+              counts[cityId] = count;
+            }
+          }
+        }
+        return Result.success(counts);
       }
 
       throw ServerException('Failed to get coworking counts');

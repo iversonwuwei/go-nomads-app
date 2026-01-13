@@ -420,3 +420,50 @@ class GetCitiesWithCoworkingCountParams extends UseCaseParams {
     this.pageSize = 100,
   });
 }
+
+// ============================================================================
+// 获取有 Coworking 空间的城市列表（快速加载）Use Case
+// ============================================================================
+
+/// 获取有 Coworking 空间的城市列表用例（不含数量，用于快速加载）
+class GetCitiesWithCoworkingUseCase
+    extends UseCase<List<City>, GetCitiesWithCoworkingParams> {
+  final ICityRepository _repository;
+
+  GetCitiesWithCoworkingUseCase(this._repository);
+
+  @override
+  Future<Result<List<City>>> execute(
+    GetCitiesWithCoworkingParams params,
+  ) async {
+    // 参数验证
+    if (params.pageSize <= 0) {
+      return Failure(
+        ValidationException('页大小必须大于0', code: 'INVALID_PAGE_SIZE'),
+      );
+    }
+
+    if (params.page < 1) {
+      return Failure(
+        ValidationException('页码必须大于等于1', code: 'INVALID_PAGE'),
+      );
+    }
+
+    // 调用 Repository
+    return await _repository.getCitiesWithCoworking(
+      page: params.page,
+      pageSize: params.pageSize,
+    );
+  }
+}
+
+/// 获取有 Coworking 空间的城市列表参数
+class GetCitiesWithCoworkingParams extends UseCaseParams {
+  final int page;
+  final int pageSize;
+
+  const GetCitiesWithCoworkingParams({
+    this.page = 1,
+    this.pageSize = 20,
+  });
+}

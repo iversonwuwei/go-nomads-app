@@ -1,6 +1,7 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/pages/coworking_detail/coworking_detail_page.dart';
 import 'package:df_admin_mobile/widgets/coworking_verification_badge.dart';
+import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -30,7 +31,7 @@ class CoworkingTab extends GetView<CityDetailController> {
     return Obx(() {
       // 显示加载状态
       if (coworkingController.isLoading.value) {
-        return const Center(child: CircularProgressIndicator());
+        return const CoworkingTabSkeleton();
       }
 
       // 显示空状态

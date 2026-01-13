@@ -540,3 +540,45 @@ class City {
   @override
   String toString() => 'City(id: $id, name: $name, country: $country)';
 }
+
+/// 城市聚合数据 - 用于异步加载
+/// 包含需要单独查询的统计数据
+class CityCountsData {
+  final String cityId;
+  final int meetupCount;
+  final int coworkingCount;
+  final int reviewCount;
+  final double averageCost;
+
+  const CityCountsData({
+    required this.cityId,
+    this.meetupCount = 0,
+    this.coworkingCount = 0,
+    this.reviewCount = 0,
+    this.averageCost = 0,
+  });
+
+  factory CityCountsData.fromJson(Map<String, dynamic> json) {
+    return CityCountsData(
+      cityId: json['cityId'] as String,
+      meetupCount: json['meetupCount']?.toInt() ?? 0,
+      coworkingCount: json['coworkingCount']?.toInt() ?? 0,
+      reviewCount: json['reviewCount']?.toInt() ?? 0,
+      averageCost: json['averageCost']?.toDouble() ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'cityId': cityId,
+      'meetupCount': meetupCount,
+      'coworkingCount': coworkingCount,
+      'reviewCount': reviewCount,
+      'averageCost': averageCost,
+    };
+  }
+
+  @override
+  String toString() =>
+      'CityCountsData(cityId: $cityId, meetup: $meetupCount, coworking: $coworkingCount, review: $reviewCount, avgCost: $averageCost)';
+}

@@ -83,6 +83,87 @@ class CityRepository implements ICityRepository {
   }
 
   @override
+  Future<Result<List<City>>> getCitiesBasic({
+    int page = 1,
+    int pageSize = 20,
+    String? search,
+  }) async {
+    try {
+      final queryParameters = <String, dynamic>{
+        'pageNumber': page,
+        'pageSize': pageSize,
+      };
+
+      if (search != null && search.isNotEmpty) {
+        queryParameters['search'] = search;
+      }
+
+      // 使用轻量级 API，不包含聚合数据（meetup count, coworking count 等）
+      final response = await _httpService.get(
+        '$_baseUrl/list-basic',
+        queryParameters: queryParameters,
+      );
+
+      final data = response.data as Map<String, dynamic>;
+      final items = data['items'] as List<dynamic>? ?? [];
+
+      final cities = items.map((json) => City.fromJson(json as Map<String, dynamic>)).toList();
+
+      return Success(cities);
+    } on HttpException catch (e) {
+      return Failure(_convertHttpException(e));
+    } catch (e) {
+      return Failure(UnknownException('获取城市基础列表失败: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Result<Map<String, CityCountsData>>> getCityCountsBatch(List<String> cityIds) async {
+    try {
+      if (cityIds.isEmpty) {
+        return const Success({});
+      }
+
+      final response = await _httpService.post(
+        '$_baseUrl/counts',
+        data: {'cityIds': cityIds},
+      );
+
+      final responseData = response.data as Map<String, dynamic>;
+      final countsMap = <String, CityCountsData>{};
+
+      // 解析 ApiResponse<Dictionary<Guid, CityCountsDto>> 格式
+      // 后端返回: { "success": true, "data": { "guid-1": {...}, "guid-2": {...} } }
+      Map<String, dynamic> countsData;
+      if (responseData.containsKey('data') && responseData['data'] != null) {
+        countsData = responseData['data'] as Map<String, dynamic>;
+      } else {
+        // 直接是数据（非 ApiResponse 包装）
+        countsData = responseData;
+      }
+
+      for (final entry in countsData.entries) {
+        final cityId = entry.key;
+        if (entry.value is Map<String, dynamic>) {
+          final countData = entry.value as Map<String, dynamic>;
+          countsMap[cityId] = CityCountsData.fromJson({
+            'cityId': cityId,
+            ...countData,
+          });
+        }
+      }
+
+      log('✅ [getCityCountsBatch] 解析了 ${countsMap.length} 个城市的聚合数据');
+      return Success(countsMap);
+    } on HttpException catch (e) {
+      return Failure(_convertHttpException(e));
+    } catch (e) {
+      log('❌ [getCityCountsBatch] 解析失败: $e');
+      return Failure(UnknownException('获取城市聚合数据失败: ${e.toString()}'));
+    }
+  }
+
+  @override
   Future<Result<City>> getCityById(String cityId) async {
     try {
       final response = await _httpService.get('$_baseUrl/$cityId');
@@ -457,6 +538,38 @@ class CityRepository implements ICityRepository {
       return Failure(_convertHttpException(e));
     } catch (e) {
       return Failure(UnknownException('获取城市列表(含Coworking数量)失败: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Result<List<City>>> getCitiesWithCoworking({
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    try {
+      final queryParameters = <String, dynamic>{
+        'page': page,
+        'pageSize': pageSize,
+      };
+
+      final response = await _httpService.get(
+        '/cities/with-coworking',
+        queryParameters: queryParameters,
+      );
+
+      final data = response.data as Map<String, dynamic>;
+      final items = data['items'] as List<dynamic>? ?? [];
+      
+      final cities = items.map((item) {
+        final cityData = item as Map<String, dynamic>;
+        return City.fromJson(cityData);
+      }).toList();
+
+      return Success(cities);
+    } on HttpException catch (e) {
+      return Failure(_convertHttpException(e));
+    } catch (e) {
+      return Failure(UnknownException('获取有Coworking空间的城市列表失败: ${e.toString()}'));
     }
   }
 

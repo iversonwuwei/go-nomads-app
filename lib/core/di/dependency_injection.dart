@@ -500,6 +500,7 @@ class DependencyInjection {
     Get.lazyPut(() => GetUserFavoriteCityIdsUseCase(Get.find<ICityRepository>()), fenix: true);
     Get.lazyPut(() => GetCityProsConsUseCase(Get.find<ICityRepository>()), fenix: true);
     Get.lazyPut(() => GetCitiesWithCoworkingCountUseCase(Get.find<ICityRepository>()), fenix: true);
+    Get.lazyPut(() => GetCitiesWithCoworkingUseCase(Get.find<ICityRepository>()), fenix: true);
     Get.lazyPut(() => CityRatingUseCases(Get.find<ICityRatingRepository>()), fenix: true);
 
     // Controller

@@ -13,6 +13,17 @@ abstract class ICityRepository implements IRepository {
     String? countryId,
   });
 
+  /// 获取城市列表（基础版本，不包含聚合数据）
+  /// 用于快速首屏加载
+  Future<Result<List<City>>> getCitiesBasic({
+    int page = 1,
+    int pageSize = 20,
+    String? search,
+  });
+
+  /// 批量获取城市聚合数据
+  Future<Result<Map<String, CityCountsData>>> getCityCountsBatch(List<String> cityIds);
+
   /// 根据ID获取城市详情
   Future<Result<City>> getCityById(String cityId);
 
@@ -93,6 +104,13 @@ abstract class ICityRepository implements IRepository {
   Future<Result<Map<String, dynamic>>> getCitiesWithCoworkingCount({
     int page = 1,
     int pageSize = 100,
+  });
+
+  /// 获取有 Coworking 空间的城市列表（不含数量，用于快速加载）
+  /// coworking 数量由前端异步加载
+  Future<Result<List<City>>> getCitiesWithCoworking({
+    int page = 1,
+    int pageSize = 20,
   });
 
   /// 获取城市天气信息

@@ -4,6 +4,7 @@ import 'package:df_admin_mobile/features/meetup/presentation/pages/meetup_detail
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/pages/meetup_list/meetup_list_controller.dart';
 import 'package:df_admin_mobile/pages/meetup_list/widgets/meetup_list_card.dart';
+import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -24,14 +25,9 @@ class MeetupListView extends GetView<MeetupListController> {
       final meetups = controller.tabMeetups[tab]!;
       final isRefreshing = controller.isRefreshing.value;
 
-      // 首次加载时显示中间加载指示器
+      // 首次加载时显示骨架屏
       if (isLoading && meetups.isEmpty && !isRefreshing) {
-        return Center(
-          child: CircularProgressIndicator(
-            color: const Color(0xFFFF4458),
-            strokeWidth: 3.w,
-          ),
-        );
+        return const MeetupListSkeleton();
       }
 
       // 空状态

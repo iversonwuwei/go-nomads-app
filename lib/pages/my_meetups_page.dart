@@ -6,6 +6,7 @@ import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
+import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -72,9 +73,7 @@ class MyMeetupsPage extends StatelessWidget {
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
-          return const Center(
-            child: CircularProgressIndicator(color: Colors.orange),
-          );
+          return const MyMeetupsSkeleton();
         }
 
         if (controller.errorMessage.value.isNotEmpty) {

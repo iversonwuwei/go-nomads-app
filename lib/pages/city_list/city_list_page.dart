@@ -240,6 +240,8 @@ class CityListPage extends GetView<CityListController> {
         child: ListView.builder(
           controller: controller.scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
+          // 预加载更多卡片，优化滚动体验
+          cacheExtent: 500,
           padding: EdgeInsets.fromLTRB(
             isMobile ? 16 : 20,
             isMobile ? 16 : 20,

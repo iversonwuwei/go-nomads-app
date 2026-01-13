@@ -4,6 +4,7 @@ import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/safe_network_image.dart';
+import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart' hide Badge;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -36,7 +37,7 @@ class UserProfilePage extends StatelessWidget {
           final chatUser = controller.chatTargetUser;
 
           if (controller.shouldBlockForRemoteProfile) {
-            return const Center(child: CircularProgressIndicator());
+            return const UserProfileSkeleton();
           }
 
           final remoteError = controller.remoteProfileError.value;

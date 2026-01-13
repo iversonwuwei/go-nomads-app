@@ -4,6 +4,7 @@ import 'package:df_admin_mobile/features/user/domain/entities/user.dart' as mode
 import 'package:df_admin_mobile/generated/app_localizations.dart';
 import 'package:df_admin_mobile/pages/innovation_detail/innovation_detail_page.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
+import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -60,7 +61,7 @@ class InnovationListPage extends StatelessWidget {
           }
 
           if (stateController.isLoading.value && stateController.projects.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
+            return const InnovationListSkeleton();
           }
 
           if (stateController.errorMessage.value != null && stateController.projects.isEmpty) {

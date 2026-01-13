@@ -227,14 +227,72 @@ class CityListController extends GetxController {
   }
 
   /// 从数据库加载城市（无搜索词时）
+  /// 采用两阶段加载：先加载基础数据快速显示，然后异步加载聚合数据
   Future<void> _loadFromDatabase() async {
+    // 阶段1：快速加载基础数据
+    final result = await _cityRepository.getCitiesBasic(page: 1, pageSize: _pageSize);
+
+    result.fold(
+      onSuccess: (data) {
+        cities.assignAll(data);
+        hasMore.value = data.length >= _pageSize;
+        log('✅ 快速加载了 ${data.length} 个城市基础数据');
+        
+        // 阶段2：异步加载聚合数据（不阻塞UI）
+        if (data.isNotEmpty) {
+          _loadCityCountsAsync(data.map((c) => c.id).toList());
+        }
+      },
+      onFailure: (error) {
+        // 降级：尝试使用完整API
+        log('⚠️ 基础API失败，回退到完整API: ${error.message}');
+        _loadFromDatabaseFull();
+      },
+    );
+  }
+
+  /// 异步加载城市聚合数据（meetupCount, coworkingCount 等）
+  Future<void> _loadCityCountsAsync(List<String> cityIds) async {
+    try {
+      final result = await _cityRepository.getCityCountsBatch(cityIds);
+      
+      result.fold(
+        onSuccess: (countsMap) {
+          // 更新城市列表中的聚合数据
+          for (var i = 0; i < cities.length; i++) {
+            final city = cities[i];
+            final counts = countsMap[city.id];
+            if (counts != null) {
+              cities[i] = city.copyWith(
+                meetupCount: counts.meetupCount,
+                coworkingCount: counts.coworkingCount,
+                reviewCount: counts.reviewCount,
+                averageCost: counts.averageCost,
+              );
+            }
+          }
+          cities.refresh();
+          log('✅ 异步加载了 ${countsMap.length} 个城市的聚合数据');
+        },
+        onFailure: (error) {
+          log('⚠️ 异步加载聚合数据失败: ${error.message}');
+          // 不显示错误，聚合数据加载失败不影响主流程
+        },
+      );
+    } catch (e) {
+      log('⚠️ 异步加载聚合数据异常: $e');
+    }
+  }
+
+  /// 从数据库完整加载城市（降级方案）
+  Future<void> _loadFromDatabaseFull() async {
     final result = await _cityRepository.getCities(page: 1, pageSize: _pageSize);
 
     result.fold(
       onSuccess: (data) {
         cities.assignAll(data);
         hasMore.value = data.length >= _pageSize;
-        log('✅ 加载了 ${data.length} 个城市');
+        log('✅ 加载了 ${data.length} 个城市（完整数据）');
       },
       onFailure: (error) {
         errorMessage.value = error.message;
@@ -310,8 +368,8 @@ class CityListController extends GetxController {
         if (esSuccess) return;
       }
 
-      // 无搜索词或 ES 失败：从数据库加载更多
-      final result = await _cityRepository.getCities(
+      // 无搜索词或 ES 失败：使用基础API加载更多
+      final result = await _cityRepository.getCitiesBasic(
         page: _currentPage + 1,
         pageSize: _pageSize,
       );
@@ -324,15 +382,43 @@ class CityListController extends GetxController {
             cities.addAll(data);
             _currentPage++;
             hasMore.value = data.length >= _pageSize;
+            
+            // 异步加载新增城市的聚合数据
+            _loadCityCountsAsync(data.map((c) => c.id).toList());
           }
         },
         onFailure: (error) {
-          log('❌ 加载更多失败: ${error.message}');
+          log('❌ 基础API加载更多失败: ${error.message}');
+          // 降级到完整API
+          _loadMoreFromDatabaseFull();
         },
       );
     } finally {
       isLoadingMore.value = false;
     }
+  }
+
+  /// 从数据库完整加载更多城市（降级方案）
+  Future<void> _loadMoreFromDatabaseFull() async {
+    final result = await _cityRepository.getCities(
+      page: _currentPage + 1,
+      pageSize: _pageSize,
+    );
+
+    result.fold(
+      onSuccess: (data) {
+        if (data.isEmpty) {
+          hasMore.value = false;
+        } else {
+          cities.addAll(data);
+          _currentPage++;
+          hasMore.value = data.length >= _pageSize;
+        }
+      },
+      onFailure: (error) {
+        log('❌ 加载更多失败: ${error.message}');
+      },
+    );
   }
 
   /// 滚动监听

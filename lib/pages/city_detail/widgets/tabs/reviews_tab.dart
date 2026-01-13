@@ -6,6 +6,7 @@ import 'package:df_admin_mobile/pages/add_review_page.dart';
 import 'package:df_admin_mobile/pages/city_detail/city_detail_controller.dart';
 import 'package:df_admin_mobile/pages/manage_reviews_page.dart';
 import 'package:df_admin_mobile/widgets/safe_network_image.dart';
+import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -33,7 +34,7 @@ class ReviewsTab extends GetView<CityDetailController> {
 
       // 首次加载
       if (contentController.isLoadingReviews.value && reviews.isEmpty && !controller.isRefreshingReviews.value) {
-        return const Center(child: CircularProgressIndicator());
+        return const ReviewsTabSkeleton();
       }
 
       // 空状态
