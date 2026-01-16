@@ -60,7 +60,6 @@ class CityDetailController extends GetxController with GetTickerProviderStateMix
   bool _loadedReviews = false;
   bool _loadedPhotos = false;
   bool _loadedCost = false;
-  final bool _loadedStats = false;
   bool _loadedWeather = false;
   bool _loadedCoworking = false;
 

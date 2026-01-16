@@ -21,7 +21,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 import 'city_detail/city_detail.dart';
-import 'create_meetup_page.dart';
+import 'create_meetup/create_meetup_page.dart';
 
 class DataServicePage extends StatefulWidget {
   final bool scrollToCities;

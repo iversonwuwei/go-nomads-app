@@ -568,12 +568,6 @@ class CityListController extends GetxController {
     }
   }
 
-  void _syncFollowedStatusFromController() {
-    for (final city in cities) {
-      followedCities[city.id] = city.isFavorite;
-    }
-  }
-
   Future<void> _loadFollowedCities() async {
     if (_isLoadingFollowedCities) return;
 

@@ -20,66 +20,62 @@ class AiTravelPlanFab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Positioned(
-      bottom: 16,
-      right: 16,
-      child: Material(
-        elevation: 6,
-        shadowColor: AppColors.cityPrimary.withValues(alpha: 0.4),
+    return Material(
+      elevation: 6,
+      shadowColor: AppColors.cityPrimary.withValues(alpha: 0.4),
+      borderRadius: BorderRadius.circular(28),
+      child: InkWell(
+        onTap: () => _onTap(context),
         borderRadius: BorderRadius.circular(28),
-        child: InkWell(
-          onTap: () => _onTap(context),
-          borderRadius: BorderRadius.circular(28),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppColors.cityPrimary, Color(0xFFFF6B7A)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(28),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.cityPrimary.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
-                ),
-              ],
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [AppColors.cityPrimary, Color(0xFFFF6B7A)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.25),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    FontAwesomeIcons.wandMagicSparkles,
-                    color: Colors.white,
-                    size: 16,
-                  ),
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.cityPrimary.withValues(alpha: 0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.25),
+                  shape: BoxShape.circle,
                 ),
-                const SizedBox(width: 10),
-                const Text(
-                  'AI Travel Plan',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.3,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                const Icon(
-                  FontAwesomeIcons.arrowRight,
+                child: const Icon(
+                  FontAwesomeIcons.wandMagicSparkles,
                   color: Colors.white,
                   size: 16,
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 10),
+              const Text(
+                'AI Travel Plan',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.3,
+                ),
+              ),
+              const SizedBox(width: 4),
+              const Icon(
+                FontAwesomeIcons.arrowRight,
+                color: Colors.white,
+                size: 16,
+              ),
+            ],
           ),
         ),
       ),
@@ -90,7 +86,7 @@ class AiTravelPlanFab extends StatelessWidget {
     // 在进入创建页面前先检查配额是否足够（只检查不扣减）
     try {
       final check = await AiQuotaService().checkQuota();
-      
+
       if (!check.canUse) {
         // 显示配额用尽提示对话框
         _showQuotaExhaustedDialog(context, check);
@@ -107,7 +103,7 @@ class AiTravelPlanFab extends StatelessWidget {
           cityName: cityName,
         ));
   }
-  
+
   /// 显示配额用尽对话框
   void _showQuotaExhaustedDialog(BuildContext context, dynamic check) {
     showDialog(

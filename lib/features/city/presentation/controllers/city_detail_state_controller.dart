@@ -147,6 +147,13 @@ class CityDetailStateController extends GetxController {
       return;
     }
 
+    // 如果切换到不同城市，立即清除旧数据，避免显示上一个城市的信息
+    if (cityId != _lastLoadedCityId) {
+      currentCity.value = null;
+      isFavorited.value = false;
+      log('🔄 [城市详情] 切换城市，清除旧数据');
+    }
+
     _lastLoadedCityId = cityId;
 
     isLoading.value = true;

@@ -35,7 +35,6 @@ class UserCityContentStateController extends GetxController {
   final GetMyExpensesUseCase _getMyExpensesUseCase;
 
   final UpsertCityReviewUseCase _upsertCityReviewUseCase;
-  final GetCityReviewsUseCase _getCityReviewsUseCase;
   final GetCityReviewsPagedUseCase _getCityReviewsPagedUseCase;
   final GetMyCityReviewUseCase _getMyCityReviewUseCase;
   final DeleteMyCityReviewUseCase _deleteMyCityReviewUseCase;
@@ -86,7 +85,6 @@ class UserCityContentStateController extends GetxController {
     required DeleteCityExpenseUseCase deleteCityExpenseUseCase,
     required GetMyExpensesUseCase getMyExpensesUseCase,
     required UpsertCityReviewUseCase upsertCityReviewUseCase,
-    required GetCityReviewsUseCase getCityReviewsUseCase,
     required GetCityReviewsPagedUseCase getCityReviewsPagedUseCase,
     required GetMyCityReviewUseCase getMyCityReviewUseCase,
     required DeleteMyCityReviewUseCase deleteMyCityReviewUseCase,
@@ -104,7 +102,6 @@ class UserCityContentStateController extends GetxController {
         _deleteCityExpenseUseCase = deleteCityExpenseUseCase,
         _getMyExpensesUseCase = getMyExpensesUseCase,
         _upsertCityReviewUseCase = upsertCityReviewUseCase,
-        _getCityReviewsUseCase = getCityReviewsUseCase,
         _getCityReviewsPagedUseCase = getCityReviewsPagedUseCase,
         _getMyCityReviewUseCase = getMyCityReviewUseCase,
         _deleteMyCityReviewUseCase = deleteMyCityReviewUseCase,

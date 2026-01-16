@@ -32,4 +32,11 @@ abstract class IModeratorApplicationRepository {
 
   /// 撤销版主资格（管理员使用）
   Future<void> revokeModerator(String applicationId);
+
+  /// 发起版主转让
+  Future<void> initiateTransfer({
+    required String cityId,
+    required String toUserId,
+    String? message,
+  });
 }

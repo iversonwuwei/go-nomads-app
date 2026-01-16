@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import 'create_meetup_page.dart';
+import 'create_meetup/create_meetup_page.dart';
 
 class InviteToMeetupPage extends StatelessWidget {
   final User user;
@@ -156,7 +156,7 @@ class InviteToMeetupPage extends StatelessWidget {
   ) {
     final cannotInviteReason = _getCannotInviteReason(context, meetup);
     final canInvite = cannotInviteReason == null;
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(

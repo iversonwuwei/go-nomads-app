@@ -293,24 +293,6 @@ class UpsertCityReviewUseCaseParams {
   });
 }
 
-/// Get City Reviews Use Case
-class GetCityReviewsUseCase extends UseCase<List<UserCityReview>, GetCityReviewsUseCaseParams> {
-  final IUserCityContentRepository _repository;
-
-  GetCityReviewsUseCase(this._repository);
-
-  @override
-  Future<Result<List<UserCityReview>>> execute(GetCityReviewsUseCaseParams params) async {
-    return await _repository.getCityReviews(params.cityId);
-  }
-}
-
-class GetCityReviewsUseCaseParams {
-  final String cityId;
-
-  GetCityReviewsUseCaseParams({required this.cityId});
-}
-
 /// Get City Reviews Paged Use Case - 分页获取评论
 class GetCityReviewsPagedUseCase extends UseCase<PagedResult<UserCityReview>, GetCityReviewsPagedUseCaseParams> {
   final IUserCityContentRepository _repository;
