@@ -13,7 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import 'city_detail_page.dart';
+import 'city_detail/city_detail.dart';
 
 /// 收藏夹页面 - 管理收藏的城市
 class FavoritesPage extends StatefulWidget {

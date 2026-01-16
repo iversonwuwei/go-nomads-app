@@ -510,14 +510,8 @@ class CityStateController extends PaginatedRefreshableController {
 
     return result.fold(
       onSuccess: (isFavorited) {
-        // 更新列表中的城市状态
-        final index = cities.indexWhere((c) => c.id == cityId);
-        if (index != -1) {
-          cities[index] = cities[index].copyWith(isFavorite: isFavorited);
-          cities.refresh();
-        }
-
-        // 通知其他组件收藏状态变更
+        // 通知其他组件收藏状态变更（包括自己的 _handleFavoriteChanged）
+        // 不在这里直接更新列表，统一由 _handleFavoriteChanged 处理，避免二次更新
         DataEventBus.instance.emit(DataChangedEvent(
           entityType: 'city_favorite',
           entityId: cityId,
@@ -694,14 +688,8 @@ class CityStateController extends PaginatedRefreshableController {
 
     return result.fold(
       onSuccess: (isFavorited) {
-        // 更新列表中的城市状态
-        final index = cities.indexWhere((city) => city.id == cityId);
-        if (index != -1) {
-          cities[index] = cities[index].copyWith(isFavorite: isFavorited);
-          cities.refresh();
-        }
-
-        // 通知其他组件收藏状态变更
+        // 通知其他组件收藏状态变更（包括自己的 _handleFavoriteChanged）
+        // 不在这里直接更新列表，统一由 _handleFavoriteChanged 处理，避免二次更新
         DataEventBus.instance.emit(DataChangedEvent(
           entityType: 'city_favorite',
           entityId: cityId,

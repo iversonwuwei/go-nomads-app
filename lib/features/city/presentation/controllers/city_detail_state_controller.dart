@@ -108,6 +108,12 @@ class CityDetailStateController extends GetxController {
       return;
     }
 
+    // 如果正在切换收藏状态，忽略事件（避免与自己发出的事件冲突导致二次更新）
+    if (isTogglingFavorite.value) {
+      log('🔔 [城市详情] 正在切换收藏，忽略事件');
+      return;
+    }
+
     final isFavorite = event.changeType == DataChangeType.created;
 
     log('🔔 [城市详情] 收到收藏状态变更: ${event.entityId} -> $isFavorite');
@@ -136,6 +142,7 @@ class CityDetailStateController extends GetxController {
     // 如果不是强制刷新且是相同城市且已有数据，尝试同步列表状态后返回
     if (!forceRefresh && cityId == _lastLoadedCityId && currentCity.value != null) {
       // 尝试从列表控制器同步收藏状态
+      log('🔄 [城市详情] 相同城市，尝试同步收藏状态');
       _syncFavoriteStateFromList(cityId);
       return;
     }
@@ -170,8 +177,15 @@ class CityDetailStateController extends GetxController {
   void _syncFavoriteStateFromList(String cityId) {
     try {
       // 尝试获取列表控制器中的最新状态
+      if (!Get.isRegistered<CityStateController>()) {
+        log('⚠️ [城市详情] CityStateController 未注册，无法同步');
+        return;
+      }
+
       final cityListController = Get.find<CityStateController>();
       final cityInList = cityListController.cities.firstWhereOrNull((c) => c.id == cityId);
+
+      log('🔍 [城市详情] 同步检查 - 列表中城市: ${cityInList?.name ?? "未找到"}, 当前状态: ${isFavorited.value}');
 
       if (cityInList != null && currentCity.value != null) {
         // 如果列表中的收藏状态与详情不一致，同步更新
@@ -179,6 +193,18 @@ class CityDetailStateController extends GetxController {
           log('🔄 [城市详情] 同步列表收藏状态: ${isFavorited.value} -> ${cityInList.isFavorite}');
           isFavorited.value = cityInList.isFavorite;
           currentCity.value = currentCity.value!.copyWith(isFavorite: cityInList.isFavorite);
+        } else {
+          log('✅ [城市详情] 收藏状态已同步，无需更新: ${isFavorited.value}');
+        }
+      } else if (cityInList == null) {
+        // 城市不在列表中，可能需要检查收藏城市列表
+        final favoriteCity = cityListController.favoriteCities.firstWhereOrNull((c) => c.id == cityId);
+        if (favoriteCity != null && currentCity.value != null) {
+          if (!isFavorited.value) {
+            log('🔄 [城市详情] 从收藏列表同步状态: ${isFavorited.value} -> true');
+            isFavorited.value = true;
+            currentCity.value = currentCity.value!.copyWith(isFavorite: true);
+          }
         }
       }
     } catch (e) {

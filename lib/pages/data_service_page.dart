@@ -20,7 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import 'city_detail_page.dart';
+import 'city_detail/city_detail.dart';
 import 'create_meetup_page.dart';
 
 class DataServicePage extends StatefulWidget {

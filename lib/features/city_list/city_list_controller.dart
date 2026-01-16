@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:df_admin_mobile/core/core.dart';
+import 'package:df_admin_mobile/core/sync/sync.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
 import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
@@ -51,6 +52,9 @@ class CityListController extends GetxController {
   // SignalR 订阅
   StreamSubscription<Map<String, dynamic>>? _cityImageUpdatedSubscription;
 
+  // EventBus 订阅
+  StreamSubscription<DataChangedEvent>? _favoriteChangedSubscription;
+
   // 分页配置
   int _currentPage = 1;
   static const int _pageSize = 20;
@@ -63,8 +67,8 @@ class CityListController extends GetxController {
     super.onInit();
     scrollController.addListener(_onScroll);
 
-    // 监听城市列表变化同步关注状态
-    ever(cities, (_) => _syncFollowedStatusFromController());
+    // 注意：不再使用 ever(cities, ...) 同步收藏状态
+    // 收藏状态由 EventBus 监听器 _setupFavoriteChangedListener 统一管理
 
     // 监听 CityStateController 的城市列表变化，同步图片等数据更新
     ever(_cityStateController.cities, _syncCityUpdates);
@@ -85,11 +89,36 @@ class CityListController extends GetxController {
     // 设置 SignalR 监听器，直接处理图片更新事件
     _setupSignalRListeners();
 
+    // 设置收藏状态变更监听器
+    _setupFavoriteChangedListener();
+
     // 初始加载
     loadCities(refresh: true);
 
     // 异步加载关注状态
     Future.microtask(() => _loadFollowedCities());
+  }
+
+  /// 设置收藏状态变更监听器
+  void _setupFavoriteChangedListener() {
+    _favoriteChangedSubscription = DataEventBus.instance.on('city_favorite', (event) {
+      if (event.entityId == null) return;
+
+      final cityId = event.entityId!;
+      final isFavorite = event.changeType == DataChangeType.created;
+
+      log('🔔 [CityListController] 收到收藏状态变更: $cityId -> $isFavorite');
+
+      // 更新本地 followedCities 状态
+      followedCities[cityId] = isFavorite;
+
+      // 同时更新 cities 列表中的城市状态
+      final index = cities.indexWhere((c) => c.id == cityId);
+      if (index != -1) {
+        cities[index] = cities[index].copyWith(isFavorite: isFavorite);
+        // 不需要调用 cities.refresh()，因为 followedCities 已更新，UI 会响应
+      }
+    });
   }
 
   /// 设置 SignalR 监听器
@@ -212,6 +241,8 @@ class CityListController extends GetxController {
     scrollController.dispose();
     _cityImageUpdatedSubscription?.cancel();
     _cityImageUpdatedSubscription = null;
+    _favoriteChangedSubscription?.cancel();
+    _favoriteChangedSubscription = null;
     super.onClose();
   }
 
@@ -324,6 +355,11 @@ class CityListController extends GetxController {
         cities.assignAll(data);
         hasMore.value = data.length >= _pageSize;
         log('✅ 加载了 ${data.length} 个城市');
+
+        // 从城市数据初始化收藏状态
+        for (final city in data) {
+          followedCities[city.id] = city.isFavorite;
+        }
 
         // 异步补充数据
         if (data.isNotEmpty) {

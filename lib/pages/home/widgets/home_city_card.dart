@@ -7,7 +7,7 @@ import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_stat
 import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
 import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/pages/city_detail_page.dart';
+import 'package:df_admin_mobile/pages/city_detail/city_detail.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
