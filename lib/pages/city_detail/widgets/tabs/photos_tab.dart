@@ -2,14 +2,12 @@ import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/user_city_content/domain/entities/user_city_content.dart';
 import 'package:df_admin_mobile/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/pages/city_photo_submission_page.dart';
 import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 import '../../city_detail_controller.dart';
-import '../city_tab_cta_button.dart';
 
 /// Photos Tab - GetView 实现
 class PhotosTab extends GetView<CityDetailController> {
@@ -120,19 +118,6 @@ class _EmptyPhotosState extends GetView<CityDetailController> {
                     Text(
                       'Be the first to share a photo!',
                       style: TextStyle(fontSize: 13, color: Colors.grey[500]),
-                    ),
-                    const SizedBox(height: 16),
-                    CityTabCtaButton(
-                      icon: controller.isAdmin.value || controller.isModerator.value
-                          ? FontAwesomeIcons.gear
-                          : FontAwesomeIcons.camera,
-                      label: controller.isAdmin.value || controller.isModerator.value ? '管理' : '上传照片',
-                      onPressed: () => Get.to(
-                        () => CityPhotoSubmissionPage(
-                          cityId: controller.cityId,
-                          cityName: controller.cityName,
-                        ),
-                      ),
                     ),
                   ],
                 ),
