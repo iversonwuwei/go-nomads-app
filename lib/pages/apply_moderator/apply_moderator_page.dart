@@ -1,55 +1,12 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
-import 'package:df_admin_mobile/features/moderator/domain/repositories/i_moderator_application_repository.dart';
-import 'package:df_admin_mobile/features/moderator/infrastructure/repositories/moderator_application_repository.dart';
-import 'package:df_admin_mobile/features/moderator/presentation/controllers/moderator_application_controller.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:df_admin_mobile/pages/apply_moderator/apply_moderator_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-/// 申请成为版主页面
-class ApplyModeratorPage extends StatelessWidget {
-  final City city;
-
-  ApplyModeratorPage({
-    super.key,
-    required this.city,
-  });
-
-  final _formKey = GlobalKey<FormState>();
-  final _reasonController = TextEditingController();
-
-  ModeratorApplicationController get _controller {
-    // 确保 Repository 已注册
-    if (!Get.isRegistered<IModeratorApplicationRepository>()) {
-      Get.put<IModeratorApplicationRepository>(ModeratorApplicationRepository());
-    }
-    // 确保 Controller 已注册
-    if (!Get.isRegistered<ModeratorApplicationController>()) {
-      Get.put(ModeratorApplicationController(Get.find<IModeratorApplicationRepository>()));
-    }
-    return Get.find<ModeratorApplicationController>();
-  }
-
-  Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    try {
-      await _controller.applyForModerator(
-        cityId: city.id,
-        cityName: city.name,
-        reason: _reasonController.text,
-      );
-
-      AppToast.success('申请已提交，请等待管理员审核');
-      Get.back();
-    } catch (e) {
-      AppToast.error(e.toString());
-    }
-  }
+/// 申请成为版主页面 - GetView 重构版
+class ApplyModeratorPage extends GetView<ApplyModeratorController> {
+  const ApplyModeratorPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +21,7 @@ class ApplyModeratorPage extends StatelessWidget {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Form(
-          key: _formKey,
+          key: controller.formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -81,36 +38,7 @@ class ApplyModeratorPage extends StatelessWidget {
               const SizedBox(height: 32),
 
               // 提交按钮
-              Obx(() => SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: _controller.isLoading.value ? null : _submit,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.accent,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: _controller.isLoading.value
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text(
-                              '提交申请',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                    ),
-                  )),
+              _buildSubmitButton(),
             ],
           ),
         ),
@@ -119,6 +47,7 @@ class ApplyModeratorPage extends StatelessWidget {
   }
 
   Widget _buildCityCard() {
+    final city = controller.city;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -145,9 +74,7 @@ class ApplyModeratorPage extends StatelessWidget {
                       fit: BoxFit.cover,
                     )
                   : null,
-              color: city.imageUrl == null
-                  ? AppColors.accent.withValues(alpha: 0.1)
-                  : null,
+              color: city.imageUrl == null ? AppColors.accent.withValues(alpha: 0.1) : null,
             ),
             child: city.imageUrl == null
                 ? Icon(
@@ -277,7 +204,7 @@ class ApplyModeratorPage extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         TextFormField(
-          controller: _reasonController,
+          controller: controller.reasonController,
           maxLines: 6,
           maxLength: 500,
           decoration: InputDecoration(
@@ -310,5 +237,38 @@ class ApplyModeratorPage extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  Widget _buildSubmitButton() {
+    return Obx(() => SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: ElevatedButton(
+            onPressed: controller.isSubmitting.value ? null : controller.submit,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.accent,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: controller.isSubmitting.value
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Text(
+                    '提交申请',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+          ),
+        ));
   }
 }

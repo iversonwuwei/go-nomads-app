@@ -39,9 +39,7 @@ class ModeratorApplicationRepository implements IModeratorApplicationRepository 
       return [];
     }
 
-    return data
-        .map((json) => ModeratorApplication.fromJson(json as Map<String, dynamic>))
-        .toList();
+    return data.map((json) => ModeratorApplication.fromJson(json as Map<String, dynamic>)).toList();
   }
 
   @override
@@ -67,9 +65,7 @@ class ModeratorApplicationRepository implements IModeratorApplicationRepository 
       return [];
     }
 
-    return data
-        .map((json) => ModeratorApplication.fromJson(json as Map<String, dynamic>))
-        .toList();
+    return data.map((json) => ModeratorApplication.fromJson(json as Map<String, dynamic>)).toList();
   }
 
   @override
@@ -137,6 +133,26 @@ class ModeratorApplicationRepository implements IModeratorApplicationRepository 
 
     if (response.statusCode != 200) {
       throw Exception(response.data?['message'] ?? '撤销版主失败');
+    }
+  }
+
+  @override
+  Future<void> initiateTransfer({
+    required String cityId,
+    required String toUserId,
+    String? message,
+  }) async {
+    final response = await _httpService.post(
+      '/cities/moderator/transfers',
+      data: {
+        'cityId': cityId,
+        'toUserId': toUserId,
+        if (message != null && message.isNotEmpty) 'message': message,
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(response.data?['message'] ?? '发起转让失败');
     }
   }
 }

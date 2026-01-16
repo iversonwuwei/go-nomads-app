@@ -16,6 +16,7 @@ import 'widgets/ai_travel_plan_fab.dart';
 import 'widgets/city_detail_app_bar.dart';
 import 'widgets/city_detail_tab_bar.dart';
 import 'widgets/city_info_summary_card.dart';
+import 'widgets/moderator_info_card.dart';
 import 'widgets/tabs/cost_tab.dart';
 import 'widgets/tabs/coworking_tab.dart';
 import 'widgets/tabs/guide_tab.dart';
@@ -134,6 +135,10 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
               overallScore: controller.overallScore,
               reviewCount: controller.reviewCount,
             ),
+          ),
+          // 版主信息卡片
+          const SliverToBoxAdapter(
+            child: ModeratorInfoCard(),
           ),
           // 固定的 TabBar
           SliverPersistentHeader(

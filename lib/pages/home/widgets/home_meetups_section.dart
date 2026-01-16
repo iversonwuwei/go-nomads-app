@@ -4,7 +4,7 @@ import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
 import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/pages/create_meetup_page.dart';
+import 'package:df_admin_mobile/pages/create_meetup/create_meetup_page.dart';
 import 'package:df_admin_mobile/pages/home/widgets/home_meetup_card.dart';
 import 'package:df_admin_mobile/routes/app_routes.dart';
 import 'package:df_admin_mobile/widgets/app_toast.dart';
