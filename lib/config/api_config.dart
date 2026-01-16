@@ -25,7 +25,7 @@ class DeploymentConfig {
 
   /// Docker 部署配置
   static const docker = DeploymentConfig(
-    gatewayPort: 5080,
+    gatewayPort: 80,
     messageServicePort: 5005,
     coworkingServicePort: 8006,
   );
@@ -43,7 +43,7 @@ class ApiConfig {
   // ============================================================
   // 环境配置
   // ============================================================
-  static const bool kIsProduction = false;
+  static const bool kIsProduction = true;
 
   // ============================================================
   // 部署环境配置
@@ -81,12 +81,12 @@ class ApiConfig {
   // ============================================================
 
   /// 生产环境主机
-  static const String productionHost = 'api.go-nomads.com';
+  static const String productionHost = '39.96.201.126';
 
   /// 真机测试主机 - 使用电脑局域网 IP
   /// 通过 ipconfig (Windows) 或 ifconfig (Mac/Linux) 查看
   /// ⚠️ 雷电模拟器也需要使用这个地址(雷电使用 VirtualBox 网络,10.0.2.2 无效)
-  static const String physicalDeviceHost = '59.46.235.173';
+  static const String physicalDeviceHost = '192.168.110.67';
 
   /// 开发环境主机 - 根据平台自动选择
   static String get developmentHost {
@@ -134,7 +134,7 @@ class ApiConfig {
   }
 
   /// 生产环境基础 URL
-  static String get productionUrl => 'https://$productionHost';
+  static String get productionUrl => 'http://$productionHost';
 
   /// 开发环境基础 URL
   static String get developmentUrl => 'http://$developmentHost:$gatewayPort';

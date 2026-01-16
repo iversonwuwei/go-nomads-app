@@ -72,6 +72,12 @@ class CityDetailPage extends StatelessWidget {
         reviewCount: resolvedReviewCount is int ? resolvedReviewCount : (resolvedReviewCount as num?)?.toInt() ?? 0,
         initialTab: initialTab,
       );
+    } else {
+      // 控制器已存在，需要重新同步收藏状态
+      // 这解决了从列表页跳转到详情页时，收藏状态不同步的问题
+      final cityDetailController = Get.find<CityDetailStateController>();
+      cityDetailController.loadCityDetail(resolvedCityId);
+      log('🔄 [CityDetailPage] 控制器已存在，重新加载城市详情以同步状态');
     }
 
     return _CityDetailPageContent(controllerTag: tag);
