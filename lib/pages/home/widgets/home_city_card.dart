@@ -76,6 +76,7 @@ class HomeCityCard extends StatelessWidget {
         builder: (context) => CityDetailPage(
           cityId: city.id,
           cityName: city.name,
+          cityImages: city.landscapeImageUrls ?? [],
           cityImage: city.imageUrl?.toString() ?? '',
           overallScore: (city.overallScore as num?)?.toDouble() ?? 0.0,
           reviewCount: (city.reviewCount as num?)?.toInt() ?? 0,

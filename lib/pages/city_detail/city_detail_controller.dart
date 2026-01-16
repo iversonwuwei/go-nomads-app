@@ -18,7 +18,7 @@ class CityDetailController extends GetxController with GetTickerProviderStateMix
   // ==================== 页面参数 ====================
   late String cityId;
   late String cityName;
-  late String cityImage;
+  late List<String> cityImages;
   late double overallScore;
   late int reviewCount;
   late int initialTab;
@@ -69,14 +69,14 @@ class CityDetailController extends GetxController with GetTickerProviderStateMix
   void initWithParams({
     required String cityId,
     required String cityName,
-    required String cityImage,
+    required List<String> cityImages,
     required double overallScore,
     required int reviewCount,
     int initialTab = 0,
   }) {
     this.cityId = cityId;
     this.cityName = cityName;
-    this.cityImage = cityImage;
+    this.cityImages = cityImages.isNotEmpty ? cityImages : [''];
     this.overallScore = overallScore;
     this.reviewCount = reviewCount;
     this.initialTab = initialTab;

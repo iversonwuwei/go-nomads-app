@@ -58,24 +58,25 @@ class CityDetailTabBar extends StatelessWidget {
 
 /// Tab 导航 SliverPersistentHeader 委托
 class CityDetailTabBarDelegate extends SliverPersistentHeaderDelegate {
-  final TabBar tabBar;
+  final Widget tabBarWidget;
+  final double height;
 
-  CityDetailTabBarDelegate(this.tabBar);
+  CityDetailTabBarDelegate(this.tabBarWidget, {this.height = 52.0});
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
       color: Colors.white,
-      child: tabBar,
+      child: tabBarWidget,
     );
   }
 
   @override
-  double get maxExtent => tabBar.preferredSize.height;
+  double get maxExtent => height;
 
   @override
-  double get minExtent => tabBar.preferredSize.height;
+  double get minExtent => height;
 
   @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) => false;
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) => true;
 }

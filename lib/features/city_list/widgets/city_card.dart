@@ -78,6 +78,7 @@ class CityCard extends GetView<CityListController> {
         builder: (context) => CityDetailPage(
           cityId: city.id,
           cityName: city.name,
+          cityImages: city.landscapeImageUrls ?? [],
           cityImage: city.imageUrl ?? 'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=400',
           overallScore: city.overallScore ?? 0.0,
           reviewCount: city.reviewCount ?? 0,

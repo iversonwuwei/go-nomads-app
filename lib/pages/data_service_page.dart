@@ -1687,6 +1687,7 @@ class _DataCardState extends State<_DataCard> {
             builder: (context) => CityDetailPage(
               cityId: widget.data.id,
               cityName: widget.data.name,
+              cityImages: widget.data.landscapeImageUrls ?? [],
               cityImage: widget.data.imageUrl?.toString() ?? '',
               overallScore: (widget.data.overallScore as num?)?.toDouble() ?? 0.0,
               reviewCount: (widget.data.reviewCount as num?)?.toInt() ?? 0,
@@ -2132,6 +2133,7 @@ class _DataListItem extends StatelessWidget {
             builder: (context) => CityDetailPage(
               cityId: data.id,
               cityName: data.name,
+              cityImages: data.landscapeImageUrls ?? [],
               cityImage: data.displayImageUrl,
               overallScore: data.displayOverallScore,
               reviewCount: data.displayReviewCount,

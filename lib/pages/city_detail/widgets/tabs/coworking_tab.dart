@@ -46,6 +46,8 @@ class CoworkingTab extends GetView<CityDetailController> {
       return _CoworkingList(
         cityName: controller.cityName,
         spaces: coworkingController.coworkingSpaces,
+        isAdminOrModerator: controller.isAdmin.value || controller.isModerator.value,
+        onAddCoworkingPressed: onAddCoworkingPressed,
       );
     });
   }
@@ -202,10 +204,14 @@ class _CoworkingList extends StatelessWidget {
   const _CoworkingList({
     required this.cityName,
     required this.spaces,
+    required this.isAdminOrModerator,
+    required this.onAddCoworkingPressed,
   });
 
   final String cityName;
   final List<coworking.CoworkingSpace> spaces;
+  final bool isAdminOrModerator;
+  final VoidCallback onAddCoworkingPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -217,7 +223,8 @@ class _CoworkingList extends StatelessWidget {
         padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
         itemCount: spaces.length,
         itemBuilder: (context, index) {
-          return _CoworkingSpaceCard(space: spaces[index]);
+          final space = spaces[index];
+          return _CoworkingSpaceCard(space: space);
         },
       ),
     );

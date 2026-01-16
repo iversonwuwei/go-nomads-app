@@ -31,7 +31,7 @@ class GuideTab extends GetView<CityDetailController> {
       log('🔍 [GuideTab] Rebuilding... cityId=${controller.cityId}');
 
       final guide = aiController.currentGuide;
-      
+
       // 显示指南内容
       if (guide != null && guide.cityId == controller.cityId) {
         return _GuideContent(
@@ -57,8 +57,7 @@ class GuideTab extends GetView<CityDetailController> {
   }
 
   void _initializeGuideData(AiStateController aiController) {
-    if (!controller.hasInitializedGuide.value || 
-        controller.lastGuideLoadedCityId.value != controller.cityId) {
+    if (!controller.hasInitializedGuide.value || controller.lastGuideLoadedCityId.value != controller.cityId) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final currentGuide = aiController.currentGuide;
 
@@ -100,7 +99,7 @@ class _GuideContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return ListView(
       padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
       children: [
@@ -111,7 +110,7 @@ class _GuideContent extends StatelessWidget {
           cityName: cityName,
         ),
         const SizedBox(height: 16),
-        
+
         // 概述
         Text(
           l10n.overview,
@@ -123,7 +122,7 @@ class _GuideContent extends StatelessWidget {
           style: TextStyle(fontSize: 15, color: Colors.grey[700], height: 1.5),
         ),
         const SizedBox(height: 24),
-        
+
         // 最佳区域
         const Text(
           'Best Areas to Stay',
@@ -132,7 +131,7 @@ class _GuideContent extends StatelessWidget {
         const SizedBox(height: 12),
         ...guide.bestAreas.map((area) => _BestAreaCard(area: area)),
         const SizedBox(height: 24),
-        
+
         // 实用建议
         const Text(
           'Essential Tips',
@@ -176,32 +175,32 @@ class _GuideActionBar extends StatelessWidget {
             ),
           ),
           Obx(() => Row(
-            children: [
-              TextButton.icon(
-                onPressed: aiController.isGeneratingGuide || aiController.isLoadingGuide
-                    ? null
-                    : () => aiController.loadCityGuide(cityId: cityId, cityName: cityName),
-                icon: const Icon(FontAwesomeIcons.arrowsRotate, size: 18),
-                label: const Text('刷新'),
-                style: TextButton.styleFrom(
-                  foregroundColor: AppColors.cityPrimary,
-                  disabledForegroundColor: Colors.grey[400],
-                ),
-              ),
-              const SizedBox(width: 4),
-              TextButton.icon(
-                onPressed: aiController.isGeneratingGuide || aiController.isLoadingGuide
-                    ? null
-                    : () => _handleAIGenerate(context),
-                icon: const Icon(FontAwesomeIcons.wandMagicSparkles, size: 18),
-                label: const Text('AI 生成'),
-                style: TextButton.styleFrom(
-                  foregroundColor: AppColors.cityPrimary,
-                  disabledForegroundColor: Colors.grey[400],
-                ),
-              ),
-            ],
-          )),
+                children: [
+                  TextButton.icon(
+                    onPressed: aiController.isGeneratingGuide || aiController.isLoadingGuide
+                        ? null
+                        : () => aiController.loadCityGuide(cityId: cityId, cityName: cityName),
+                    icon: const Icon(FontAwesomeIcons.arrowsRotate, size: 18),
+                    label: const Text('刷新'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.cityPrimary,
+                      disabledForegroundColor: Colors.grey[400],
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  TextButton.icon(
+                    onPressed: aiController.isGeneratingGuide || aiController.isLoadingGuide
+                        ? null
+                        : () => _handleAIGenerate(context),
+                    icon: const Icon(FontAwesomeIcons.wandMagicSparkles, size: 18),
+                    label: const Text('AI 生成'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.cityPrimary,
+                      disabledForegroundColor: Colors.grey[400],
+                    ),
+                  ),
+                ],
+              )),
         ],
       ),
     );
@@ -224,25 +223,59 @@ class _GuideActionBar extends StatelessWidget {
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: const Text('AI 生成指南'),
-        content: Obx(() => Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const CircularProgressIndicator(),
-            const SizedBox(height: 16),
-            Text(aiController.guideGenerationMessage),
-            const SizedBox(height: 8),
-            Text('${aiController.guideGenerationProgress}%'),
-          ],
-        )),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
-          ),
-        ],
+        content: Obx(() {
+          final progress = aiController.guideGenerationProgress;
+          final message = aiController.guideGenerationMessage;
+          final isCompleted = aiController.isGuideCompleted;
+
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 使用带进度的圆形指示器
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  SizedBox(
+                    width: 60,
+                    height: 60,
+                    child: CircularProgressIndicator(
+                      value: progress > 0 ? progress / 100 : null,
+                      strokeWidth: 4,
+                      backgroundColor: Colors.grey[200],
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        isCompleted ? Colors.green : AppColors.cityPrimary,
+                      ),
+                    ),
+                  ),
+                  if (progress > 0)
+                    Text(
+                      '$progress%',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                message.isNotEmpty ? message : '后端运行中...',
+                style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '⏳ 请耐心等待，AI 正在生成内容',
+                style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+              ),
+            ],
+          );
+        }),
+        // 不显示取消按钮
+        actions: const [],
       ),
     );
-    
+
     aiController.generateDigitalNomadGuideStream(cityId: cityId, cityName: cityName).then((_) {
       Navigator.pop(context);
     });
@@ -264,25 +297,25 @@ class _GuideLoadingState extends StatelessWidget {
           const CircularProgressIndicator(),
           const SizedBox(height: 16),
           Obx(() => Text(
-            aiController.isGeneratingGuide ? '🤖 AI 正在生成旅游指南...' : '📖 正在加载旅游指南...',
-            style: const TextStyle(fontSize: 16, color: Colors.grey),
-          )),
+                aiController.isGeneratingGuide ? '🤖 AI 正在生成旅游指南...' : '📖 正在加载旅游指南...',
+                style: const TextStyle(fontSize: 16, color: Colors.grey),
+              )),
           if (aiController.isGeneratingGuide) ...[
             const SizedBox(height: 12),
             Obx(() => Text(
-              aiController.guideGenerationMessage,
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-              textAlign: TextAlign.center,
-            )),
+                  aiController.guideGenerationMessage,
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  textAlign: TextAlign.center,
+                )),
             const SizedBox(height: 8),
             Obx(() => Text(
-              '${aiController.guideGenerationProgress}%',
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: AppColors.cityPrimary,
-              ),
-            )),
+                  '${aiController.guideGenerationProgress}%',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.cityPrimary,
+                  ),
+                )),
           ],
         ],
       ),
@@ -305,7 +338,7 @@ class _GuideEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Center(
       child: SingleChildScrollView(
         child: Column(
@@ -316,19 +349,17 @@ class _GuideEmptyState extends StatelessWidget {
             Text(l10n.loadingGuide, style: const TextStyle(fontSize: 16, color: Colors.grey)),
             const SizedBox(height: 16),
             Obx(() => ElevatedButton.icon(
-              onPressed: aiController.isGeneratingGuide
-                  ? null
-                  : () => _handleAIGenerate(context),
-              icon: const Icon(FontAwesomeIcons.wandMagicSparkles),
-              label: const Text('AI 生成指南'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.cityPrimary,
-                foregroundColor: Colors.white,
-                disabledBackgroundColor: Colors.grey[300],
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-              ),
-            )),
+                  onPressed: aiController.isGeneratingGuide ? null : () => _handleAIGenerate(context),
+                  icon: const Icon(FontAwesomeIcons.wandMagicSparkles),
+                  label: const Text('AI 生成指南'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.cityPrimary,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: Colors.grey[300],
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                  ),
+                )),
           ],
         ),
       ),
@@ -343,7 +374,7 @@ class _GuideEmptyState extends StatelessWidget {
     );
 
     if (!canUse) return;
-    
+
     aiController.generateDigitalNomadGuideStream(cityId: cityId, cityName: cityName);
   }
 }
