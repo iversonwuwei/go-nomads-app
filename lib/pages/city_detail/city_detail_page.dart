@@ -6,16 +6,19 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 import '../../features/ai/presentation/controllers/ai_state_controller.dart';
+import '../../features/city/application/state_controllers/pros_cons_state_controller.dart';
 import '../../features/city/presentation/controllers/city_detail_state_controller.dart';
 import '../../features/membership/presentation/controllers/membership_state_controller.dart';
-import '../../widgets/admin_delete_button.dart';
+import '../../routes/app_routes.dart';
 import '../../widgets/app_toast.dart';
 import '../add_coworking/add_coworking_page.dart';
+import '../city_photo_submission_page.dart';
+import '../manage_pros_cons_page.dart';
+import '../pros_and_cons_add_page.dart';
 import 'city_detail_controller.dart';
 import 'widgets/ai_travel_plan_fab.dart';
 import 'widgets/city_detail_app_bar.dart';
 import 'widgets/city_detail_tab_bar.dart';
-import 'widgets/city_info_summary_card.dart';
 import 'widgets/moderator_info_card.dart';
 import 'widgets/tabs/cost_tab.dart';
 import 'widgets/tabs/coworking_tab.dart';
@@ -34,6 +37,7 @@ import 'widgets/tabs/weather/weather_tab.dart';
 class CityDetailPage extends StatelessWidget {
   final String cityId;
   final String cityName;
+  final List<String> cityImages;
   final String cityImage;
   final double overallScore;
   final int reviewCount;
@@ -42,6 +46,7 @@ class CityDetailPage extends StatelessWidget {
     super.key,
     this.cityId = '',
     this.cityName = '',
+    this.cityImages = const [],
     this.cityImage = '',
     this.overallScore = 0.0,
     this.reviewCount = 0,
@@ -53,7 +58,11 @@ class CityDetailPage extends StatelessWidget {
     final args = Get.arguments as Map<String, dynamic>?;
     final resolvedCityId = args?['cityId'] ?? cityId;
     final resolvedCityName = args?['cityName'] ?? cityName;
+    final List<String> resolvedCityImages = (args?['imageUrls'] as List?)?.whereType<String>().toList() ?? cityImages;
     final resolvedCityImage = args?['cityImage'] ?? cityImage;
+    final List<String> heroImages = resolvedCityImages.isNotEmpty
+        ? resolvedCityImages
+        : (resolvedCityImage.isNotEmpty ? [resolvedCityImage] : const <String>[]);
     final resolvedOverallScore = args?['overallScore'] ?? overallScore;
     final resolvedReviewCount = args?['reviewCount'] ?? reviewCount;
     final initialTab = args?['initialTab'] as int? ?? 0;
@@ -67,7 +76,7 @@ class CityDetailPage extends StatelessWidget {
       controller.initWithParams(
         cityId: resolvedCityId,
         cityName: resolvedCityName,
-        cityImage: resolvedCityImage,
+        cityImages: heroImages,
         overallScore:
             resolvedOverallScore is double ? resolvedOverallScore : (resolvedOverallScore as num?)?.toDouble() ?? 0.0,
         reviewCount: resolvedReviewCount is int ? resolvedReviewCount : (resolvedReviewCount as num?)?.toInt() ?? 0,
@@ -111,30 +120,13 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
       headerSliverBuilder: (context, innerBoxIsScrolled) {
         return [
           // 自定义 AppBar
-          Obx(() => CityDetailAppBar(
-                controller: controller,
-                cityName: controller.cityName,
-                cityImage: controller.cityImage,
-                overallScore: controller.overallScore,
-                reviewCount: controller.reviewCount,
-                onShare: () => _shareCityInfo(context),
-                actionButton: controller.isAdmin.value
-                    ? AdminDeleteButton(
-                        isAdmin: true,
-                        entityName: '城市',
-                        opacity: controller.appBarOpacity.value,
-                        onDelete: () => controller.deleteCity(),
-                        onDeleteSuccess: () => Get.back(),
-                      )
-                    : null,
-              )),
-          // 城市信息摘要卡片
-          SliverToBoxAdapter(
-            child: CityInfoSummaryCard(
-              cityId: controller.cityId,
-              overallScore: controller.overallScore,
-              reviewCount: controller.reviewCount,
-            ),
+          CityDetailAppBar(
+            controller: controller,
+            cityName: controller.cityName,
+            cityImages: controller.cityImages,
+            overallScore: controller.overallScore,
+            reviewCount: controller.reviewCount,
+            onShare: () => _shareCityInfo(context),
           ),
           // 版主信息卡片
           const SliverToBoxAdapter(
@@ -156,46 +148,191 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
     );
   }
 
-  TabBar _buildTabBar(BuildContext context) {
+  /// 构建 TabBar，支持可添加内容的 Tab 显示 + 图标
+  Widget _buildTabBar(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return TabBar(
+    // 定义哪些 tab 索引需要显示 + 图标及其点击回调
+    final addableTabs = {
+      // CityDetailController.tabScores: () => _onTabAddPressed(context, CityDetailController.tabScores), // 暂时隐藏
+      CityDetailController.tabProsCons: () => _onTabAddPressed(context, CityDetailController.tabProsCons),
+      CityDetailController.tabReviews: () => _onTabAddPressed(context, CityDetailController.tabReviews),
+      CityDetailController.tabCost: () => _onTabAddPressed(context, CityDetailController.tabCost),
+      CityDetailController.tabPhotos: () => _onTabAddPressed(context, CityDetailController.tabPhotos),
+      CityDetailController.tabHotels: () => _onTabAddPressed(context, CityDetailController.tabHotels),
+      CityDetailController.tabCoworking: () => _onTabAddPressed(context, CityDetailController.tabCoworking),
+    };
+
+    final tabLabels = [
+      l10n.scores,
+      l10n.guide,
+      l10n.prosAndCons,
+      l10n.reviews,
+      l10n.cost,
+      l10n.photos,
+      l10n.weather,
+      l10n.hotels,
+      l10n.neighborhoods,
+      l10n.coworking,
+    ];
+
+    final tabBar = TabBar(
       controller: controller.tabController,
       isScrollable: true,
       labelColor: const Color(0xFFFF4458),
       unselectedLabelColor: Colors.grey[600],
       labelStyle: const TextStyle(
         fontWeight: FontWeight.w600,
-        fontSize: 15,
+        fontSize: 14,
       ),
       unselectedLabelStyle: const TextStyle(
         fontWeight: FontWeight.w500,
-        fontSize: 15,
+        fontSize: 14,
       ),
       indicatorSize: TabBarIndicatorSize.label,
-      indicator: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        border: const Border(
-          bottom: BorderSide(
-            color: Color(0xFFFF4458),
-            width: 3,
+      indicator: const UnderlineTabIndicator(
+        borderSide: BorderSide(color: Color(0xFFFF4458), width: 2.5),
+        insets: EdgeInsets.symmetric(horizontal: 12),
+      ),
+      tabAlignment: TabAlignment.start,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      labelPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+      tabs: List.generate(tabLabels.length, (index) {
+        final hasAdd = addableTabs.containsKey(index);
+        return Tab(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(tabLabels[index]),
+              if (hasAdd) ...[
+                const SizedBox(width: 5),
+                GestureDetector(
+                  onTap: addableTabs[index],
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    width: 14,
+                    height: 14,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFFF6B7A), Color(0xFFFF4458)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(4),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFF4458).withValues(alpha: 0.25),
+                          blurRadius: 3,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      FontAwesomeIcons.plus,
+                      size: 7,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
+        );
+      }),
+    );
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          bottom: BorderSide(color: Color(0x11000000), width: 1),
         ),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      tabs: [
-        Tab(text: l10n.scores),
-        Tab(text: l10n.guide),
-        Tab(text: l10n.prosAndCons),
-        Tab(text: l10n.reviews),
-        Tab(text: l10n.cost),
-        Tab(text: l10n.photos),
-        Tab(text: l10n.weather),
-        Tab(text: l10n.hotels),
-        Tab(text: l10n.neighborhoods),
-        Tab(text: l10n.coworking),
-      ],
+      child: tabBar,
     );
+  }
+
+  /// Tab + 图标点击处理
+  void _onTabAddPressed(BuildContext context, int tabIndex) {
+    switch (tabIndex) {
+      case CityDetailController.tabScores:
+        _showRatingDialog(context);
+        break;
+      case CityDetailController.tabProsCons:
+        _showAddProsConsPage(context);
+        break;
+      case CityDetailController.tabReviews:
+        ReviewsTab.navigateToAddReview(
+          cityId: controller.cityId,
+          cityName: controller.cityName,
+          isAdminOrModerator: controller.isAdmin.value || controller.isModerator.value,
+        );
+        break;
+      case CityDetailController.tabCost:
+        CostTab.navigateToAddCost(
+          cityId: controller.cityId,
+          cityName: controller.cityName,
+          isAdminOrModerator: controller.isAdmin.value || controller.isModerator.value,
+        );
+        break;
+      case CityDetailController.tabPhotos:
+        Get.to(() => CityPhotoSubmissionPage(
+              cityId: controller.cityId,
+              cityName: controller.cityName,
+            ));
+        break;
+      case CityDetailController.tabHotels:
+        _navigateToAddHotel();
+        break;
+      case CityDetailController.tabCoworking:
+        _showAddCoworkingPage(context);
+        break;
+    }
+  }
+
+  /// 导航到添加酒店页面
+  Future<void> _navigateToAddHotel() async {
+    final cityDetailController = Get.find<CityDetailStateController>();
+    final city = cityDetailController.currentCity.value;
+
+    final result = await Get.toNamed(AppRoutes.addHotel, arguments: {
+      'cityId': controller.cityId,
+      'cityName': controller.cityName,
+      'countryName': city?.country,
+    });
+
+    if (result == true) {
+      AppToast.success('酒店将在审核后添加！');
+    }
+  }
+
+  /// 显示添加优缺点页面
+  void _showAddProsConsPage(BuildContext context) async {
+    final prosConsController = Get.find<ProsConsStateController>();
+
+    if (controller.isAdminOrModerator) {
+      await Get.to(() => ManageProsConsPage(
+            cityId: controller.cityId,
+            cityName: controller.cityName,
+          ));
+    } else {
+      await Get.to(() => ProsAndConsAddPage(
+            cityId: controller.cityId,
+            cityName: controller.cityName,
+          ));
+    }
+    prosConsController.loadCityProsCons(controller.cityId);
+  }
+
+  /// 显示评分对话框
+  void _showRatingDialog(BuildContext context) {
+    // 触发评分评价，滚动到第一个评分项并提示用户点击评分
+    AppToast.info('请点击下方评分项进行评分');
+    // 确保当前 tab 是 Scores
+    if (controller.tabController.index != CityDetailController.tabScores) {
+      controller.tabController.animateTo(CityDetailController.tabScores);
+    }
   }
 
   List<Widget> _buildTabViews(BuildContext context) {
@@ -219,8 +356,6 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
       ),
     ];
   }
-
-  // ==================== 导航方法 ====================
 
   void _shareCityInfo(BuildContext context) {
     final cityDetailController = Get.find<CityDetailStateController>();

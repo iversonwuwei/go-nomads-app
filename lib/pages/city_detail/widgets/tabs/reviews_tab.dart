@@ -52,7 +52,6 @@ class ReviewsTab extends GetView<CityDetailController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 标题、总数和跳转icon
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -74,7 +73,6 @@ class ReviewsTab extends GetView<CityDetailController> {
                           ),
                         ),
                       const SizedBox(width: 8),
-                      // 跳转到完整列表的icon
                       GestureDetector(
                         onTap: () => _navigateToReviewList(),
                         child: Icon(
@@ -88,8 +86,6 @@ class ReviewsTab extends GetView<CityDetailController> {
                 ],
               ),
               const SizedBox(height: 16),
-
-              // 评论列表（最多5条）
               ...reviews.map((review) => ReviewCard(
                     review: review,
                     l10n: l10n,
@@ -201,39 +197,44 @@ class ReviewCard extends StatelessWidget {
                 child: Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: List.generate(review.photoUrls.length, (index) {
-                    return InkWell(
-                      onTap: () {
-                        debugPrint('🖼️ 点击了图片 $index');
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => _FullscreenGalleryPage(
-                              imageUrls: review.photoUrls,
-                              initialIndex: index,
-                            ),
+                  children: review.photoUrls
+                      .map(
+                        (url) => ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: SafeNetworkImage(
+                            imageUrl: url,
+                            width: 80,
+                            height: 80,
+                            fit: BoxFit.cover,
                           ),
-                        );
-                      },
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          review.photoUrls[index],
-                          width: 100,
-                          height: 100,
-                          fit: BoxFit.cover,
                         ),
-                      ),
-                    );
-                  }),
+                      )
+                      .toList(),
                 ),
               ),
-            const SizedBox(height: 8),
 
-            // 发布时间
-            Text(
-              '${l10n.posted} ${_formatDate(review.createdAt)}',
-              style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+            // 评分与时间
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Icon(FontAwesomeIcons.solidStar, size: 14, color: Colors.amber[600]),
+                      const SizedBox(width: 6),
+                      Text(
+                        review.rating.toStringAsFixed(1),
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    _formatDate(review.createdAt),
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  ),
+                ],
+              ),
             ),
           ],
         ),

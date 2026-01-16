@@ -59,27 +59,43 @@ class MeetupListPage extends GetView<MeetupListController> {
 
   /// 构建 TabBar
   PreferredSizeWidget _buildTabBar(BuildContext context, AppLocalizations l10n) {
-    return TabBar(
-      controller: controller.tabController,
-      isScrollable: true,
-      labelColor: const Color(0xFFFF4458),
-      unselectedLabelColor: Colors.grey[600],
-      labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-      unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
-      indicatorSize: TabBarIndicatorSize.label,
-      indicator: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        border: const Border(
-          bottom: BorderSide(color: Color(0xFFFF4458), width: 3),
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(48),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 6),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border(
+            bottom: BorderSide(color: Color(0x11000000), width: 1),
+          ),
+        ),
+        child: TabBar(
+          controller: controller.tabController,
+          isScrollable: false,
+          labelColor: const Color(0xFFFF4458),
+          unselectedLabelColor: Colors.grey[600],
+          labelStyle: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+          ),
+          unselectedLabelStyle: const TextStyle(
+            fontWeight: FontWeight.w500,
+            fontSize: 13,
+          ),
+          indicatorSize: TabBarIndicatorSize.label,
+          indicator: const UnderlineTabIndicator(
+            borderSide: BorderSide(color: Color(0xFFFF4458), width: 2.5),
+            insets: EdgeInsets.symmetric(horizontal: 8),
+          ),
+          labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+          tabs: [
+            Tab(text: l10n.allMeetups),
+            Tab(text: l10n.joined),
+            Tab(text: l10n.past),
+            const Tab(text: '已取消'),
+          ],
         ),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      tabs: [
-        Tab(text: l10n.allMeetups),
-        Tab(text: l10n.joined),
-        Tab(text: l10n.past),
-        const Tab(text: '已取消'),
-      ],
     );
   }
 }

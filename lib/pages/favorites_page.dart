@@ -581,6 +581,7 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
         builder: (context) => CityDetailPage(
           cityId: city.id,
           cityName: city.name,
+          cityImages: city.landscapeImageUrls ?? [],
           cityImage: city.portraitImageUrl ?? city.imageUrl ?? '',
           overallScore: city.overallScore ?? 0.0,
           reviewCount: city.reviewCount ?? 0,

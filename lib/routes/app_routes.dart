@@ -197,6 +197,7 @@ class AppRoutes {
         return CityDetailPage(
           cityId: args['cityId'] ?? '',
           cityName: args['cityName'] ?? '',
+          cityImages: (args['imageUrls'] as List?)?.whereType<String>().toList() ?? [],
           cityImage: args['cityImage'] ?? '',
           overallScore: args['overallScore'] ?? 0.0,
           reviewCount: args['reviewCount'] ?? 0,

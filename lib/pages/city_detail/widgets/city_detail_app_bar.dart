@@ -1,4 +1,5 @@
 import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:df_admin_mobile/features/city/presentation/controllers/city_detail_state_controller.dart';
 import 'package:df_admin_mobile/pages/city_detail/city_detail_controller.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/safe_network_image.dart';
@@ -6,31 +7,49 @@ import 'package:df_admin_mobile/widgets/share_button.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-/// 城市详情页 SliverAppBar
-class CityDetailAppBar extends StatelessWidget {
+/// 城市详情页 SliverAppBar，支持顶部图片左右滑动
+class CityDetailAppBar extends StatefulWidget {
   final CityDetailController controller;
   final String cityName;
-  final String cityImage;
+  final List<String> cityImages;
   final double overallScore;
   final int reviewCount;
   final VoidCallback onShare;
-  final Widget? actionButton;
 
   const CityDetailAppBar({
     super.key,
     required this.controller,
     required this.cityName,
-    required this.cityImage,
+    required this.cityImages,
     required this.overallScore,
     required this.reviewCount,
     required this.onShare,
-    this.actionButton,
   });
+
+  @override
+  State<CityDetailAppBar> createState() => _CityDetailAppBarState();
+}
+
+class _CityDetailAppBarState extends State<CityDetailAppBar> {
+  late final PageController _pageController;
+  int _currentPage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final opacity = controller.appBarOpacity.value;
+      final opacity = widget.controller.appBarOpacity.value;
 
       return SliverAppBar(
         expandedHeight: 350,
@@ -44,118 +63,251 @@ class CityDetailAppBar extends StatelessWidget {
         ),
         leading: SliverBackButton(opacity: opacity),
         actions: [
-          if (actionButton != null) actionButton!,
-          const SizedBox(width: 4),
           SliverShareButton(
             opacity: opacity,
-            onPressed: onShare,
+            onPressed: widget.onShare,
           ),
         ],
         flexibleSpace: FlexibleSpaceBar(
           centerTitle: true,
           titlePadding: const EdgeInsets.only(bottom: 16),
-          title: _buildTitle(opacity),
-          background: _buildBackground(),
+          title: _buildCollapsedTitle(opacity),
+          background: _buildBackgroundWithOverlay(),
         ),
       );
     });
   }
 
-  Widget _buildTitle(double opacity) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        gradient: opacity > 0.5
-            ? null
-            : LinearGradient(
-                colors: [
-                  Colors.black.withValues(alpha: 0.6),
-                  Colors.black.withValues(alpha: 0.3),
-                ],
-              ),
-        color: opacity > 0.5 ? Colors.transparent : null,
-        borderRadius: BorderRadius.circular(20),
-      ),
+  Widget _buildCollapsedTitle(double opacity) {
+    // 从 opacity 0.6 开始渐显，到 0.9 完全显示
+    final titleOpacity = ((opacity - 0.6) / 0.3).clamp(0.0, 1.0);
+
+    if (titleOpacity <= 0) return const SizedBox.shrink();
+
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 150),
+      opacity: titleOpacity,
       child: Text(
-        cityName,
-        style: TextStyle(
+        widget.cityName,
+        style: const TextStyle(
           fontWeight: FontWeight.bold,
-          fontSize: 24,
-          color: opacity > 0.5 ? AppColors.cityPrimary : Colors.white,
-          shadows: opacity > 0.5
-              ? []
-              : const [
-                  Shadow(
-                    offset: Offset(0, 2),
-                    blurRadius: 4,
-                    color: Colors.black54,
-                  ),
-                ],
+          fontSize: 18,
+          color: AppColors.cityPrimary,
+          shadows: [],
         ),
       ),
     );
   }
 
-  Widget _buildBackground() {
+  Widget _buildBackgroundWithOverlay() {
+    final images = widget.cityImages.isNotEmpty ? widget.cityImages : const [''];
+
     return Stack(
       fit: StackFit.expand,
       children: [
-        // 背景图片
-        SafeNetworkImage(
-          imageUrl: cityImage,
-          fit: BoxFit.cover,
-          placeholder: Container(
-            color: Colors.grey[300],
-            child: const Center(
-              child: CircularProgressIndicator(),
+        PageView.builder(
+          controller: _pageController,
+          onPageChanged: (index) => setState(() => _currentPage = index),
+          itemCount: images.length,
+          itemBuilder: (context, index) {
+            final url = images[index];
+            return SafeNetworkImage(
+              imageUrl: url,
+              fit: BoxFit.cover,
+              placeholder: Container(
+                color: Colors.grey[300],
+                child: const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+            );
+          },
+        ),
+        // 渐变遮罩 - 忽略手势让触摸事件穿透到 PageView
+        IgnorePointer(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.3),
+                  Colors.transparent,
+                  Colors.black.withValues(alpha: 0.5),
+                ],
+                stops: const [0.0, 0.5, 1.0],
+              ),
             ),
           ),
         ),
-        // 渐变遮罩
-        Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.black.withValues(alpha: 0.3),
-                Colors.transparent,
-                Colors.black.withValues(alpha: 0.5),
-              ],
-              stops: const [0.0, 0.5, 1.0],
-            ),
+        // 底部信息面板 - 也忽略手势
+        Positioned(
+          left: 16,
+          right: 16,
+          bottom: 20,
+          child: IgnorePointer(
+            child: _buildHeroInfoPanel(),
           ),
         ),
+        if (images.length > 1)
+          Positioned(
+            bottom: 10,
+            left: 0,
+            right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(images.length, (index) {
+                final isActive = index == _currentPage;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  height: 6,
+                  width: isActive ? 18 : 8,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: isActive ? 0.9 : 0.4),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                );
+              }),
+            ),
+          ),
       ],
+    );
+  }
+
+  Widget _buildHeroInfoPanel() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.35),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.18),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            widget.cityName,
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              _StatPill(
+                label: '评分',
+                value: widget.overallScore.toStringAsFixed(1),
+              ),
+              const SizedBox(width: 10),
+              _StatPill(
+                label: '评论',
+                value: '${widget.reviewCount}',
+              ),
+              const Spacer(),
+              _FavoriteButton(cityId: widget.controller.cityId),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
 
-/// AppBar 操作按钮
-class SliverActionButton extends StatelessWidget {
-  final IconData icon;
-  final double opacity;
-  final VoidCallback? onPressed;
-  final String? tooltip;
+class _FavoriteButton extends StatelessWidget {
+  final String cityId;
 
-  const SliverActionButton({
-    super.key,
-    required this.icon,
-    required this.opacity,
-    this.onPressed,
-    this.tooltip,
+  const _FavoriteButton({required this.cityId});
+
+  @override
+  Widget build(BuildContext context) {
+    final cityController = Get.find<CityDetailStateController>();
+
+    return Obx(() {
+      final isFavorited = cityController.isFavorited.value;
+      final isToggling = cityController.isTogglingFavorite.value;
+
+      return Container(
+        height: 44,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+        ),
+        child: isToggling
+            ? const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 14),
+                child: Center(
+                  child: SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  ),
+                ),
+              )
+            : IconButton(
+                icon: Icon(
+                  isFavorited ? Icons.favorite : Icons.favorite_border,
+                  color: isFavorited ? AppColors.cityPrimary : Colors.white,
+                  size: 22,
+                ),
+                tooltip: isFavorited ? '已关注' : '关注',
+                onPressed: () => cityController.toggleFavorite(),
+              ),
+      );
+    });
+  }
+}
+
+class _StatPill extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _StatPill({
+    required this.label,
+    required this.value,
   });
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      icon: Icon(
-        icon,
-        color: opacity > 0.5 ? AppColors.cityPrimary : Colors.white,
-        size: 20,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.2),
+        ),
       ),
-      onPressed: onPressed,
-      tooltip: tooltip,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.white.withValues(alpha: 0.8),
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

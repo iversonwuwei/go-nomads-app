@@ -31,16 +31,17 @@ class ModeratorInfoCard extends StatelessWidget {
       }
 
       return Container(
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: Colors.black.withValues(alpha: 0.04)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
@@ -59,51 +60,12 @@ class ModeratorInfoCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // 标题行
-        Row(
-          children: [
-            Icon(
-              FontAwesomeIcons.userShield,
-              color: AppColors.cityPrimary,
-              size: 16,
-            ),
-            const SizedBox(width: 8),
-            const Text(
-              '城市版主',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const Spacer(),
-            // 版主状态徽章
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    FontAwesomeIcons.check,
-                    size: 10,
-                    color: const Color(0xFF10B981),
-                  ),
-                  const SizedBox(width: 4),
-                  const Text(
-                    '已认证',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF10B981),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+        _HeaderRow(
+          icon: FontAwesomeIcons.userShield,
+          iconColor: AppColors.cityPrimary,
+          title: '城市版主',
+          badgeLabel: '已认证',
+          badgeColor: const Color(0xFF10B981),
         ),
         const SizedBox(height: 12),
 
@@ -186,12 +148,13 @@ class ModeratorInfoCard extends StatelessWidget {
           ),
         ),
 
-        // 更换版主按钮（仅管理员或当前版主可见）
+        // 版主操作按钮
         if (isAdmin || isCurrentUserModerator) ...[
+          // 管理员或本城市版主：显示转让版主
           const SizedBox(height: 12),
           OutlinedButton.icon(
             onPressed: () => _showTransferModeratorDialog(context, city),
-            icon: Icon(
+            icon: const Icon(
               FontAwesomeIcons.arrowRightArrowLeft,
               size: 14,
             ),
@@ -199,9 +162,28 @@ class ModeratorInfoCard extends StatelessWidget {
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.orange,
               side: const BorderSide(color: Colors.orange),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          ),
+        ] else ...[
+          // 非本城市版主且非admin：显示申请成为版主
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: () => _navigateToApplyModerator(context, city),
+            icon: const Icon(
+              FontAwesomeIcons.userPlus,
+              size: 14,
+            ),
+            label: const Text('申请成为版主'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.cityPrimary,
+              side: BorderSide(color: AppColors.cityPrimary),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
               ),
             ),
           ),
@@ -212,55 +194,21 @@ class ModeratorInfoCard extends StatelessWidget {
 
   /// 构建申请版主区域（无版主）
   Widget _buildApplyModeratorSection(BuildContext context, City city) {
+    final isAdmin = city.isCurrentUserAdmin;
+    final isCurrentUserModerator = city.isCurrentUserModerator;
+    // 本城市版主或admin可以分配版主
+    final canAssign = isAdmin || isCurrentUserModerator;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // 标题行
-        Row(
-          children: [
-            Icon(
-              FontAwesomeIcons.userSlash,
-              color: Colors.orange,
-              size: 16,
-            ),
-            const SizedBox(width: 8),
-            const Text(
-              '城市版主',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const Spacer(),
-            // 无版主状态徽章
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.orange.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    FontAwesomeIcons.exclamation,
-                    size: 10,
-                    color: Colors.orange,
-                  ),
-                  const SizedBox(width: 4),
-                  const Text(
-                    '待认领',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.orange,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+        _HeaderRow(
+          icon: FontAwesomeIcons.userSlash,
+          iconColor: Colors.orange,
+          title: '城市版主',
+          badgeLabel: '待认领',
+          badgeColor: Colors.orange,
         ),
         const SizedBox(height: 12),
 
@@ -268,10 +216,10 @@ class ModeratorInfoCard extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.orange.withValues(alpha: 0.05),
+            color: Colors.orange.withValues(alpha: 0.04),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: Colors.orange.withValues(alpha: 0.2),
+              color: Colors.orange.withValues(alpha: 0.16),
             ),
           ),
           child: Row(
@@ -297,27 +245,46 @@ class ModeratorInfoCard extends StatelessWidget {
         ),
         const SizedBox(height: 16),
 
-        // 申请按钮
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton.icon(
-            onPressed: () => _navigateToApplyModerator(context, city),
-            icon: Icon(
-              FontAwesomeIcons.userPlus,
-              size: 14,
-            ),
-            label: const Text('申请成为版主'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.cityPrimary,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+        // 根据用户身份显示不同按钮
+        if (canAssign) ...[
+          // 本城市版主或管理员：显示分配版主按钮
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => _showTransferModeratorDialog(context, city),
+              icon: const Icon(FontAwesomeIcons.userGear, size: 14),
+              label: const Text('分配版主'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
               ),
-              elevation: 0,
             ),
           ),
-        ),
+        ] else ...[
+          // 普通用户：显示申请成为版主按钮
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => _navigateToApplyModerator(context, city),
+              icon: const Icon(FontAwesomeIcons.userPlus, size: 14),
+              label: const Text('申请成为版主'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.cityPrimary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -390,6 +357,67 @@ class ModeratorInfoCard extends StatelessWidget {
       () => const AssignModeratorPage(),
       binding: AssignModeratorBinding(),
       arguments: city,
+    );
+  }
+}
+
+class _HeaderRow extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String badgeLabel;
+  final Color badgeColor;
+
+  const _HeaderRow({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.badgeLabel,
+    required this.badgeColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, color: iconColor, size: 16),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const Spacer(),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: badgeColor.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                badgeLabel == '已认证' ? FontAwesomeIcons.check : FontAwesomeIcons.exclamation,
+                size: 10,
+                color: badgeColor,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                badgeLabel,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: badgeColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
