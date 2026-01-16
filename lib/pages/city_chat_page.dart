@@ -36,6 +36,7 @@ class _CityChatPageState extends State<CityChatPage> {
   late ChatStateController controller;
   bool _initialized = false;
   bool _isMeetupChat = false;
+  String? _meetupTitle;
 
   @override
   void initState() {
@@ -45,14 +46,21 @@ class _CityChatPageState extends State<CityChatPage> {
   }
 
   Future<void> _initializeChat() async {
-    final args = Get.arguments as Map<String, dynamic>?;
+    final args = Get.arguments;
+    Map<String, dynamic>? argsMap;
 
-    if (args != null && args['isMeetupChat'] == true) {
+    // 安全地获取参数
+    if (args is Map<String, dynamic>) {
+      argsMap = args;
+    }
+
+    if (argsMap != null && argsMap['isMeetupChat'] == true) {
       // 从 Meetup 进入的聊天
       _isMeetupChat = true;
-      final meetupId = args['meetupId'] as String?;
-      final meetupTitle = args['city'] as String? ?? 'Meetup Chat';
-      final meetupType = args['country'] as String?;
+      final meetupId = argsMap['meetupId'] as String?;
+      final meetupTitle = argsMap['city'] as String? ?? 'Meetup Chat';
+      final meetupType = argsMap['country'] as String?;
+      _meetupTitle = meetupTitle;
 
       if (meetupId != null) {
         await controller.joinMeetupRoom(
@@ -84,7 +92,7 @@ class _CityChatPageState extends State<CityChatPage> {
         // 显示加载状态
         if (!_initialized || room == null) {
           return _ChatLoadingView(
-            roomName: (Get.arguments as Map<String, dynamic>?)?['city'] as String? ?? '聊天室',
+            roomName: _meetupTitle ?? '聊天室',
             onBack: () async {
               await controller.leaveRoom();
               Get.back();
@@ -93,11 +101,10 @@ class _CityChatPageState extends State<CityChatPage> {
         }
 
         // 显示聊天视图
-        final meetupTitle = (Get.arguments as Map<String, dynamic>?)?['city'] as String?;
         return _ChatRoomView(
           controller: controller,
           isMeetupChat: true,
-          meetupTitle: meetupTitle,
+          meetupTitle: _meetupTitle,
         );
       });
     }
