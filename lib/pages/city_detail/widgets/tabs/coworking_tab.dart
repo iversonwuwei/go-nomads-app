@@ -71,11 +71,12 @@ class _EmptyCoworkingState extends StatelessWidget {
       onRefresh: () => coworkingController.loadCoworkingSpacesByCity(cityName),
       child: LayoutBuilder(
         builder: (context, constraints) {
+          final minHeight = (constraints.maxHeight - 120).clamp(0.0, double.infinity);
           return SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 60),
             child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight - 120),
+              constraints: BoxConstraints(minHeight: minHeight),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
