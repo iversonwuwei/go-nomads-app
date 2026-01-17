@@ -2,7 +2,6 @@ import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/controllers/coworking_detail_page_controller.dart';
 import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
 import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/pages/add_coworking/add_coworking_page.dart';
 import 'package:df_admin_mobile/pages/coworking_detail/coworking_detail_amenities_hours_section.dart';
 import 'package:df_admin_mobile/pages/coworking_detail/coworking_detail_comments_section.dart';
 import 'package:df_admin_mobile/pages/coworking_detail/coworking_detail_contact_section.dart';
@@ -10,9 +9,7 @@ import 'package:df_admin_mobile/pages/coworking_detail/coworking_detail_image_se
 import 'package:df_admin_mobile/pages/coworking_detail/coworking_detail_info_section.dart';
 import 'package:df_admin_mobile/pages/coworking_detail/coworking_detail_pricing_specs_section.dart';
 import 'package:df_admin_mobile/pages/osm_navigation_page.dart';
-import 'package:df_admin_mobile/widgets/admin_delete_button.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
-import 'package:df_admin_mobile/widgets/edit_button.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -52,39 +49,10 @@ class CoworkingDetailPage extends StatelessWidget {
               iconTheme: const IconThemeData(color: Colors.black87),
               leading: SliverBackButton(onPressed: () => _handleBack(controller)),
               actions: [
-                // 管理员删除按钮
-                Obx(() {
-                  if (controller.isAdmin.value) {
-                    return AdminDeleteButton(
-                      isAdmin: true,
-                      entityName: 'Coworking空间',
-                      onDelete: () => controller.deleteCoworkingSpace(),
-                    );
-                  }
-                  return const SizedBox.shrink();
-                }),
-                // 编辑按钮
-                Obx(() {
-                  if (controller.space.value.isOwner) {
-                    return SliverEditButton(
-                      onPressed: () => _navigateToEdit(context, controller),
-                      size: 18,
-                    );
-                  }
-                  return const SizedBox.shrink();
-                }),
                 // 图片计数器
                 CoworkingDetailImageCounterBadge(controllerTag: _controllerTag),
               ],
               flexibleSpace: FlexibleSpaceBar(
-                title: Obx(() => Text(
-                      controller.space.value.name,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        shadows: [Shadow(color: Colors.black54, blurRadius: 8)],
-                      ),
-                    )),
                 background: CoworkingDetailImageSection(controllerTag: _controllerTag),
               ),
             ),
@@ -94,10 +62,6 @@ class CoworkingDetailPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Badges section
-                  CoworkingDetailBadgesSection(controllerTag: _controllerTag),
-                  const Divider(),
-
                   // Address section
                   CoworkingDetailAddressSection(controllerTag: _controllerTag),
                   const Divider(),
@@ -184,19 +148,6 @@ class CoworkingDetailPage extends StatelessWidget {
     final result = controller.hasDataChanged.value ? controller.space.value : null;
     _cleanupController();
     Navigator.pop(Get.context!, result);
-  }
-
-  Future<void> _navigateToEdit(BuildContext context, CoworkingDetailPageController controller) async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AddCoworkingPage(editingSpace: controller.space.value),
-      ),
-    );
-    if (result == true) {
-      controller.markDataChanged();
-      await controller.reloadCoworkingDetail();
-    }
   }
 
   void _cleanupController() {

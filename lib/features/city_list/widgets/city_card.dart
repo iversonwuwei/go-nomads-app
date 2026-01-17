@@ -1,6 +1,5 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
 import 'package:df_admin_mobile/features/city_list/city_list_controller.dart';
@@ -44,27 +43,21 @@ class CityCard extends GetView<CityListController> {
       return Container(
         margin: const EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: InkWell(
-          onTap: () => _navigateToDetail(context, city),
-          borderRadius: BorderRadius.circular(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 城市图片
-              _buildImageSection(city),
-              // 城市信息
-              _buildInfoSection(city),
-            ],
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: InkWell(
+            onTap: () => _navigateToDetail(context, city),
+            borderRadius: BorderRadius.circular(16),
+            child: _buildImageWithOverlay(city),
           ),
         ),
       );
@@ -87,30 +80,48 @@ class CityCard extends GetView<CityListController> {
     );
   }
 
-  Widget _buildImageSection(City city) {
+  Widget _buildImageWithOverlay(City city) {
     return Stack(
       children: [
-        ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-          child: AspectRatio(
-            aspectRatio: 16 / 9,
-            child: city.imageUrl != null && city.imageUrl!.isNotEmpty
-                ? Image.network(
-                    city.imageUrl!,
-                    fit: BoxFit.cover,
-                    // 添加 key 确保图片 URL 变化时重新加载
-                    key: ValueKey(city.imageUrl),
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.grey[200],
-                        child: const Icon(FontAwesomeIcons.imagePortrait, size: 48),
-                      );
-                    },
-                  )
-                : Container(
-                    color: Colors.grey[200],
-                    child: const Icon(FontAwesomeIcons.imagePortrait, size: 48),
+        // 背景图片
+        AspectRatio(
+          aspectRatio: 16 / 10,
+          child: city.imageUrl != null && city.imageUrl!.isNotEmpty
+              ? Image.network(
+                  city.imageUrl!,
+                  fit: BoxFit.cover,
+                  key: ValueKey(city.imageUrl),
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: Colors.grey[300],
+                      child: const Center(
+                        child: Icon(FontAwesomeIcons.imagePortrait, size: 48, color: Colors.grey),
+                      ),
+                    );
+                  },
+                )
+              : Container(
+                  color: Colors.grey[300],
+                  child: const Center(
+                    child: Icon(FontAwesomeIcons.imagePortrait, size: 48, color: Colors.grey),
                   ),
+                ),
+        ),
+        // 渐变遮罩
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.1),
+                  Colors.transparent,
+                  Colors.black.withValues(alpha: 0.6),
+                ],
+                stops: const [0.0, 0.4, 1.0],
+              ),
+            ),
           ),
         ),
         // 左上角：生成图片按钮（仅管理员可见）
@@ -121,7 +132,127 @@ class CityCard extends GetView<CityListController> {
           right: 12,
           child: _CityFollowButton(cityId: city.id),
         ),
+        // 底部信息面板
+        Positioned(
+          left: 12,
+          right: 12,
+          bottom: 12,
+          child: _buildHeroInfoPanel(city),
+        ),
       ],
+    );
+  }
+
+  /// 底部信息面板 - 仿照 CityDetailAppBar 的样式
+  Widget _buildHeroInfoPanel(City city) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.35),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.18),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 城市名称和国家
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      city.name,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                    if (city.country != null && city.country!.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Icon(
+                            FontAwesomeIcons.locationDot,
+                            size: 11,
+                            color: Colors.white.withValues(alpha: 0.8),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            city.country!,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.white.withValues(alpha: 0.8),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          // 指标 Pills
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                // 评分
+                _HeroPill(
+                  icon: FontAwesomeIcons.star,
+                  value: (city.overallScore ?? 0.0).toStringAsFixed(1),
+                  color: const Color(0xFFFF4458),
+                ),
+                const SizedBox(width: 8),
+                // 月均花费
+                _HeroPill(
+                  icon: FontAwesomeIcons.dollarSign,
+                  value: city.averageCost != null && city.averageCost! > 0 ? '${city.averageCost!.toInt()}' : '0',
+                ),
+                // 网络评分
+                if (city.internetScore != null && city.internetScore! > 0) ...[
+                  const SizedBox(width: 8),
+                  _HeroPill(
+                    icon: FontAwesomeIcons.wifi,
+                    value: city.internetScore!.toStringAsFixed(1),
+                  ),
+                ],
+                // 安全评分
+                if (city.safetyScore != null && city.safetyScore! > 0) ...[
+                  const SizedBox(width: 8),
+                  _HeroPill(
+                    icon: FontAwesomeIcons.shield,
+                    value: city.safetyScore!.toStringAsFixed(1),
+                  ),
+                ],
+                // 评论数
+                if (city.reviewCount != null && city.reviewCount! > 0) ...[
+                  const SizedBox(width: 8),
+                  _HeroPill(
+                    icon: FontAwesomeIcons.comments,
+                    value: '${city.reviewCount}',
+                  ),
+                ],
+                // 版主状态
+                const SizedBox(width: 8),
+                _HeroPill(
+                  icon: city.hasModerator ? FontAwesomeIcons.userShield : FontAwesomeIcons.userSlash,
+                  value: city.hasModerator ? 'Mod' : 'No Mod',
+                  color: city.hasModerator ? Colors.green : Colors.grey,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -143,201 +274,49 @@ class CityCard extends GetView<CityListController> {
       );
     });
   }
-
-  Widget _buildInfoSection(City city) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 城市名和国家
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      city.name,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(
-                          FontAwesomeIcons.locationDot,
-                          size: 14,
-                          color: AppColors.textSecondary,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          city.country ?? '',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              // 评分
-              _buildScoreBadge(city),
-            ],
-          ),
-          const SizedBox(height: 12),
-          // 指标标签
-          _buildInfoChips(city),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildScoreBadge(City city) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(
-            FontAwesomeIcons.star,
-            size: 16,
-            color: Color(0xFFFF4458),
-          ),
-          const SizedBox(width: 4),
-          Text(
-            (city.overallScore ?? 0.0).toStringAsFixed(1),
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFFFF4458),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoChips(City city) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          // 💰 月均花费
-          _InfoChip(
-            icon: FontAwesomeIcons.dollarSign,
-            label: city.averageCost != null && city.averageCost! > 0 ? '\$${city.averageCost!.toInt()}/mo' : '\$0/mo',
-            color: city.averageCost != null && city.averageCost! > 0 ? Colors.green : Colors.grey,
-          ),
-          // 📶 网络评分
-          if (city.internetScore != null && city.internetScore! > 0) ...[
-            const SizedBox(width: 8),
-            _InfoChip(
-              icon: FontAwesomeIcons.wifi,
-              label: city.internetScore!.toStringAsFixed(1),
-              color: _getScoreColor(city.internetScore!),
-            ),
-          ],
-          // 🛡️ 安全评分
-          if (city.safetyScore != null && city.safetyScore! > 0) ...[
-            const SizedBox(width: 8),
-            _InfoChip(
-              icon: FontAwesomeIcons.shield,
-              label: city.safetyScore!.toStringAsFixed(1),
-              color: _getScoreColor(city.safetyScore!),
-            ),
-          ],
-          // 👥 社区活跃度
-          if (city.communityScore != null && city.communityScore! > 0) ...[
-            const SizedBox(width: 8),
-            _InfoChip(
-              icon: FontAwesomeIcons.peopleGroup,
-              label: city.communityScore!.toStringAsFixed(1),
-              color: _getScoreColor(city.communityScore!),
-            ),
-          ],
-          // 💻 Coworking 空间数量
-          const SizedBox(width: 8),
-          _InfoChip(
-            icon: FontAwesomeIcons.laptop,
-            label: '${city.coworkingCount ?? 0}',
-            color: (city.coworkingCount ?? 0) > 0 ? Colors.blue : Colors.grey,
-          ),
-          // 🎉 Meetup 数量
-          const SizedBox(width: 8),
-          _InfoChip(
-            icon: FontAwesomeIcons.userGroup,
-            label: '${city.meetupCount ?? 0}',
-            color: (city.meetupCount ?? 0) > 0 ? Colors.purple : Colors.grey,
-          ),
-          // 💬 评论数量
-          if (city.reviewCount != null && city.reviewCount! > 0) ...[
-            const SizedBox(width: 8),
-            _InfoChip(
-              icon: FontAwesomeIcons.comments,
-              label: '${city.reviewCount}',
-              color: Colors.teal,
-            ),
-          ],
-          // 👤 版主状态
-          const SizedBox(width: 8),
-          _InfoChip(
-            icon: city.hasModerator ? FontAwesomeIcons.userShield : FontAwesomeIcons.userSlash,
-            label: city.hasModerator ? 'Mod' : 'No Mod',
-            color: city.hasModerator ? Colors.green : Colors.grey,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Color _getScoreColor(double score) {
-    if (score >= 4.0) return Colors.green;
-    if (score >= 3.0) return Colors.orange;
-    return Colors.red;
-  }
 }
 
-/// 信息标签组件
-class _InfoChip extends StatelessWidget {
+/// Hero 样式的信息标签 - 用于图片上层显示
+class _HeroPill extends StatelessWidget {
   final IconData icon;
-  final String label;
-  final Color color;
+  final String value;
+  final Color? color;
 
-  const _InfoChip({
+  const _HeroPill({
     required this.icon,
-    required this.label,
-    required this.color,
+    required this.value,
+    this.color,
   });
 
   @override
   Widget build(BuildContext context) {
+    final pillColor = color ?? Colors.white;
+    final hasCustomColor = color != null;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(16),
+        color: hasCustomColor ? pillColor.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.2),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: color),
+          Icon(
+            icon,
+            size: 12,
+            color: hasCustomColor ? pillColor : Colors.white.withValues(alpha: 0.9),
+          ),
           const SizedBox(width: 4),
           Text(
-            label,
+            value,
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: color,
+              color: hasCustomColor ? pillColor : Colors.white,
             ),
           ),
         ],

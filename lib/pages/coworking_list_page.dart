@@ -11,10 +11,10 @@ import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
 import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:df_admin_mobile/widgets/coworking_verification_badge.dart';
 import 'package:df_admin_mobile/widgets/edit_button.dart';
+import 'package:df_admin_mobile/widgets/skeletons/base_skeleton.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:df_admin_mobile/widgets/skeletons/base_skeleton.dart';
 
 /// Coworking List Page
 /// 共享办公空间列表页面
@@ -265,288 +265,255 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
     );
   }
 
-  /// 共享办公空间卡片
+  /// 共享办公空间卡片 - Hero 风格（信息覆盖在图片上）
   Widget _buildCoworkingCard(BuildContext context, CoworkingSpace space) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () async {
-          // 等待详情页返回
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => CoworkingDetailPage(space: space),
-            ),
-          );
-
-          // 如果返回了更新后的 CoworkingSpace 对象，直接更新缓存
-          if (result is CoworkingSpace && mounted) {
-            final controller = Get.find<CoworkingStateController>();
-            controller.updateCoworkingInList(result);
-          } else if (result == true && mounted) {
-            // 向后兼容：如果返回 true，刷新整个列表
-            await _refreshData();
-          }
-        },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 图片
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-              child: Stack(
-                children: [
-                  AspectRatio(
-                    aspectRatio: 16 / 9,
-                    child: CachedNetworkImage(
-                      imageUrl: space.spaceInfo.imageUrl,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(color: Colors.grey[300]),
-                      errorWidget: (context, url, error) {
-                        return Container(
-                          color: Colors.grey[300],
-                          child: const Icon(FontAwesomeIcons.building, size: 50),
-                        );
-                      },
-                    ),
-                  ),
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: CoworkingVerificationBadge(space: space),
-                  ),
-                ],
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () async {
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CoworkingDetailPage(space: space),
               ),
-            ),
+            );
 
-            // 信息
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 名称和评分
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          space.name,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      // 编辑按钮（仅创建者可见）
-                      if (space.isOwner)
-                        AppEditButton(
-                          onPressed: () async {
-                            final result = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => AddCoworkingPage(
-                                  editingSpace: space,
-                                ),
-                              ),
-                            );
-                            if (result == true && mounted) {
-                              await _refreshData();
-                            }
-                          },
-                          size: 14,
-                          mini: true,
-                        ),
-                      if (space.isOwner) const SizedBox(width: 8),
-                      Row(
-                        children: [
-                          const Icon(
-                            FontAwesomeIcons.star,
-                            size: 16,
-                            color: Colors.amber,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            space.spaceInfo.rating.toStringAsFixed(1),
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          Text(
-                            ' (${space.spaceInfo.reviewCount})',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  // 地址
-                  Row(
-                    children: [
-                      Icon(FontAwesomeIcons.locationDot, size: 16, color: Colors.grey[600]),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          space.fullAddress,
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 14,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  // 创建者信息
-                  if (space.creatorName != null && space.creatorName!.isNotEmpty) ...[
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        Icon(FontAwesomeIcons.user, size: 14, color: Colors.grey[500]),
-                        const SizedBox(width: 4),
-                        Text(
-                          space.creatorName!,
-                          style: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-
-                  const SizedBox(height: 12),
-
-                  // 关键信息
-                  Row(
-                    children: [
-                      _buildInfoChip(
-                        FontAwesomeIcons.wifi,
-                        '${space.specs.wifiSpeed?.toStringAsFixed(0) ?? '0'} Mbps',
-                        Colors.blue,
-                      ),
-                      const SizedBox(width: 8),
-                      if (space.pricing.monthlyRate != null)
-                        Builder(
-                          builder: (context) {
-                            final l10n = AppLocalizations.of(context)!;
-                            return _buildInfoChip(
-                              FontAwesomeIcons.dollarSign,
-                              '${space.pricing.monthlyRate!.toStringAsFixed(0)}/${l10n.monthlyRate}',
-                              Colors.green,
-                            );
-                          },
-                        ),
-                      const SizedBox(width: 8),
-                      if (space.amenities.has24HourAccess)
-                        _buildInfoChip(
-                          FontAwesomeIcons.clock,
-                          '24/7',
-                          Colors.orange,
-                        ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // 设施
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 4,
-                    children: space.amenities
-                        .getAvailableAmenities()
-                        .take(4)
-                        .map(
-                          (amenity) => Chip(
-                            label: Text(
-                              amenity,
-                              style: const TextStyle(fontSize: 11),
-                            ),
-                            padding: EdgeInsets.zero,
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                        )
-                        .toList(),
-                  ),
-
-                  if (space.pricing.hasFreeTrial) ...[
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.green[50],
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.green[200]!),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(FontAwesomeIcons.tag, size: 16, color: Colors.green[700]),
-                          const SizedBox(width: 4),
-                          Text(
-                            space.pricing.trialDuration != null
-                                ? 'Free ${space.pricing.trialDuration} trial available'
-                                : 'Free trial available',
-                            style: TextStyle(
-                              color: Colors.green[700],
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
+            if (result is CoworkingSpace && mounted) {
+              final controller = Get.find<CoworkingStateController>();
+              controller.updateCoworkingInList(result);
+            } else if (result == true && mounted) {
+              await _refreshData();
+            }
+          },
+          child: _buildCoworkingCardContent(context, space),
         ),
       ),
     );
   }
 
-  Widget _buildInfoChip(IconData icon, String label, Color color) {
+  Widget _buildCoworkingCardContent(BuildContext context, CoworkingSpace space) {
+    return Stack(
+      children: [
+        // 背景图片
+        AspectRatio(
+          aspectRatio: 16 / 10,
+          child: CachedNetworkImage(
+            imageUrl: space.spaceInfo.imageUrl,
+            fit: BoxFit.cover,
+            placeholder: (context, url) => Container(color: Colors.grey[300]),
+            errorWidget: (context, url, error) {
+              return Container(
+                color: Colors.grey[300],
+                child: const Center(
+                  child: Icon(FontAwesomeIcons.building, size: 48, color: Colors.grey),
+                ),
+              );
+            },
+          ),
+        ),
+        // 渐变遮罩
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.1),
+                  Colors.transparent,
+                  Colors.black.withValues(alpha: 0.6),
+                ],
+                stops: const [0.0, 0.4, 1.0],
+              ),
+            ),
+          ),
+        ),
+        // 右上角：验证徽章
+        Positioned(
+          top: 12,
+          right: 12,
+          child: CoworkingVerificationBadge(space: space),
+        ),
+        // 左上角：编辑按钮（仅创建者可见）
+        if (space.isOwner)
+          Positioned(
+            top: 12,
+            left: 12,
+            child: AppEditButton(
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AddCoworkingPage(editingSpace: space),
+                  ),
+                );
+                if (result == true && mounted) {
+                  await _refreshData();
+                }
+              },
+              size: 14,
+              mini: true,
+            ),
+          ),
+        // 底部信息面板
+        Positioned(
+          left: 12,
+          right: 12,
+          bottom: 12,
+          child: _buildHeroInfoPanel(context, space),
+        ),
+      ],
+    );
+  }
+
+  /// 底部信息面板 - Hero 风格
+  Widget _buildHeroInfoPanel(BuildContext context, CoworkingSpace space) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withAlpha(26),
+        color: Colors.black.withValues(alpha: 0.35),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.18),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 名称
+          Text(
+            space.name,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          // 地址
+          if (space.fullAddress.isNotEmpty) ...[
+            const SizedBox(height: 2),
+            Row(
+              children: [
+                Icon(
+                  FontAwesomeIcons.locationDot,
+                  size: 11,
+                  color: Colors.white.withValues(alpha: 0.8),
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    space.fullAddress,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white.withValues(alpha: 0.8),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ],
+          const SizedBox(height: 10),
+          // 指标 Pills
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                // 评分
+                _buildHeroPill(
+                  FontAwesomeIcons.star,
+                  space.spaceInfo.rating.toStringAsFixed(1),
+                  color: Colors.amber,
+                ),
+                const SizedBox(width: 8),
+                // WiFi 速度
+                _buildHeroPill(
+                  FontAwesomeIcons.wifi,
+                  '${space.specs.wifiSpeed?.toStringAsFixed(0) ?? '0'} Mbps',
+                ),
+                // 月租价格
+                if (space.pricing.monthlyRate != null) ...[
+                  const SizedBox(width: 8),
+                  _buildHeroPill(
+                    FontAwesomeIcons.dollarSign,
+                    '${space.pricing.monthlyRate!.toStringAsFixed(0)}/${l10n.monthlyRate}',
+                  ),
+                ],
+                // 24/7 开放
+                if (space.amenities.has24HourAccess) ...[
+                  const SizedBox(width: 8),
+                  _buildHeroPill(
+                    FontAwesomeIcons.clock,
+                    '24/7',
+                    color: Colors.orange,
+                  ),
+                ],
+                // 免费试用
+                if (space.pricing.hasFreeTrial) ...[
+                  const SizedBox(width: 8),
+                  _buildHeroPill(
+                    FontAwesomeIcons.tag,
+                    'Free Trial',
+                    color: const Color(0xFFFF4458),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Hero 样式的信息标签
+  Widget _buildHeroPill(IconData icon, String value, {Color? color}) {
+    final pillColor = color ?? Colors.white;
+    final hasCustomColor = color != null;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: hasCustomColor ? pillColor.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.2),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: color),
+          Icon(
+            icon,
+            size: 12,
+            color: hasCustomColor ? pillColor : Colors.white.withValues(alpha: 0.9),
+          ),
           const SizedBox(width: 4),
           Text(
-            label,
+            value,
             style: TextStyle(
-              color: color,
               fontSize: 12,
               fontWeight: FontWeight.w600,
+              color: hasCustomColor ? pillColor : Colors.white,
             ),
           ),
         ],
