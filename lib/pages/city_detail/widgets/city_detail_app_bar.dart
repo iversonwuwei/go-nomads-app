@@ -140,14 +140,12 @@ class _CityDetailAppBarState extends State<CityDetailAppBar> {
             ),
           ),
         ),
-        // 底部信息面板 - 也忽略手势
+        // 底部信息面板
         Positioned(
           left: 16,
           right: 16,
           bottom: 20,
-          child: IgnorePointer(
-            child: _buildHeroInfoPanel(),
-          ),
+          child: _buildHeroInfoPanel(),
         ),
         if (images.length > 1)
           Positioned(
@@ -176,45 +174,67 @@ class _CityDetailAppBarState extends State<CityDetailAppBar> {
   }
 
   Widget _buildHeroInfoPanel() {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.35),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.18),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            widget.cityName,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
+    // 使用 Stack 分离背景和内容，让手势可以穿透到 PageView
+    // 关注按钮单独处理，允许点击
+    return Stack(
+      children: [
+        // 背景装饰 - 忽略手势让滑动穿透
+        Positioned.fill(
+          child: IgnorePointer(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.35),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.18),
+                  width: 1,
+                ),
+              ),
             ),
           ),
-          const SizedBox(height: 8),
-          Row(
+        ),
+        // 内容区域
+        Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              _StatPill(
-                label: '评分',
-                value: widget.overallScore.toStringAsFixed(1),
+              IgnorePointer(
+                child: Text(
+                  widget.cityName,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
               ),
-              const SizedBox(width: 10),
-              _StatPill(
-                label: '评论',
-                value: '${widget.reviewCount}',
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  IgnorePointer(
+                    child: _StatPill(
+                      label: '评分',
+                      value: widget.overallScore.toStringAsFixed(1),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  IgnorePointer(
+                    child: _StatPill(
+                      label: '评论',
+                      value: '${widget.reviewCount}',
+                    ),
+                  ),
+                  const Spacer(),
+                  // 关注按钮不包裹 IgnorePointer，允许点击
+                  _FavoriteButton(cityId: widget.controller.cityId),
+                ],
               ),
-              const Spacer(),
-              _FavoriteButton(cityId: widget.controller.cityId),
             ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

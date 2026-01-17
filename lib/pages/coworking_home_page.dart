@@ -93,41 +93,6 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> with RouteAwareRe
     }
   }
 
-  /// 根据天气代码返回对应的图标颜色
-  Color _getWeatherIconColor(String? weatherIcon) {
-    if (weatherIcon == null) return const Color(0xFFFF9800); // 鲜艳橙色
-
-    final code = weatherIcon.replaceAll(RegExp(r'[dn]$'), '');
-    final isNight = weatherIcon.endsWith('n');
-
-    switch (code) {
-      case '01': // clear sky - 晴天
-        return isNight
-            ? const Color(0xFF5C6BC0) // 鲜艳靛蓝 (夜晚)
-            : const Color(0xFFFFA726); // 鲜艳橙色 (白天)
-      case '02': // few clouds - 少云
-        return isNight
-            ? const Color(0xFF7E57C2) // 鲜艳紫色 (夜晚)
-            : const Color(0xFF42A5F5); // 鲜艳蓝色 (白天)
-      case '03': // scattered clouds - 多云
-        return const Color(0xFF66BB6A); // 鲜艳绿色
-      case '04': // broken clouds - 阴天
-        return const Color(0xFF78909C); // 蓝灰色
-      case '09': // shower rain - 阵雨
-        return const Color(0xFF29B6F6); // 鲜艳浅蓝
-      case '10': // rain - 雨
-        return const Color(0xFF1E88E5); // 鲜艳蓝色
-      case '11': // thunderstorm - 雷暴
-        return const Color(0xFF9C27B0); // 鲜艳紫色
-      case '13': // snow - 雪
-        return const Color(0xFF26C6DA); // 鲜艳青色
-      case '50': // mist - 雾霾
-        return const Color(0xFF8D6E63); // 棕色
-      default:
-        return const Color(0xFFFFA726); // 默认鲜艳橙色
-    }
-  }
-
   /// 刷新数据 - 重置分页从第一页开始
   Future<void> _refreshData() async {
     setState(() {
@@ -451,177 +416,192 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> with RouteAwareRe
     return Container(
       margin: const EdgeInsets.only(bottom: 0),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () async {
-          // 添加调试日志
-          log('🏙️ 点击城市卡片:');
-          log('   城市ID: ${city['id']}');
-          log('   城市名称: ${city['name']}');
-          log('   Coworking数量: $spacesCount');
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () async {
+            // 添加调试日志
+            log('🏙️ 点击城市卡片:');
+            log('   城市ID: ${city['id']}');
+            log('   城市名称: ${city['name']}');
+            log('   Coworking数量: $spacesCount');
 
-          // 等待列表页返回,如果返回 true 则刷新城市列表
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => CoworkingListPage(
-                cityId: city['id'],
-                cityName: city['name'],
-                countryName: city['country'] as String?,
+            // 等待列表页返回,如果返回 true 则刷新城市列表
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CoworkingListPage(
+                  cityId: city['id'],
+                  cityName: city['name'],
+                  countryName: city['country'] as String?,
+                ),
+              ),
+            );
+
+            // 如果在列表页添加了新的 Coworking,刷新城市列表
+            if (result == true && mounted) {
+              await _refreshData();
+            }
+          },
+          child: _buildCityCardContent(context, city, spacesCount, l10n),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCityCardContent(
+    BuildContext context,
+    Map<String, dynamic> city,
+    int spacesCount,
+    AppLocalizations l10n,
+  ) {
+    return Stack(
+      children: [
+        // 背景图片 - 填满整个卡片
+        Positioned.fill(
+          child: CachedNetworkImage(
+            imageUrl: city['image'] ?? '',
+            fit: BoxFit.cover,
+            placeholder: (context, url) => Container(color: Colors.grey[300]),
+            errorWidget: (context, url, error) {
+              return Container(
+                color: Colors.grey[300],
+                child: const Center(
+                  child: Icon(FontAwesomeIcons.city, size: 48, color: Colors.grey),
+                ),
+              );
+            },
+          ),
+        ),
+        // 渐变遮罩
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.1),
+                  Colors.transparent,
+                  Colors.black.withValues(alpha: 0.6),
+                ],
+                stops: const [0.0, 0.3, 1.0],
               ),
             ),
-          );
+          ),
+        ),
+        // 底部信息面板
+        Positioned(
+          left: 10,
+          right: 10,
+          bottom: 10,
+          child: _buildHeroInfoPanel(city, spacesCount, l10n),
+        ),
+      ],
+    );
+  }
 
-          // 如果在列表页添加了新的 Coworking,刷新城市列表
-          if (result == true && mounted) {
-            await _refreshData();
-          }
-        },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Image
-            Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                  child: AspectRatio(
-                    aspectRatio: 1.5,
-                    child: CachedNetworkImage(
-                      imageUrl: city['image'] ?? '',
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(color: Colors.grey[300]),
-                      errorWidget: (context, url, error) {
-                        return Container(
-                          color: Colors.grey[300],
-                          child: const Icon(FontAwesomeIcons.city, size: 50),
-                        );
-                      },
-                    ),
+  Widget _buildHeroInfoPanel(Map<String, dynamic> city, int spacesCount, AppLocalizations l10n) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.35),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.18),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 第一行：城市名称 + Coworking 数量徽章
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  city['name'],
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Coworking 数量徽章 - 醒目显示
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF6366F1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '$spacesCount 空间',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
                   ),
                 ),
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withAlpha(179),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '$spacesCount ${l10n.coworkingSpaces}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          // 国家和天气信息
+          Row(
+            children: [
+              Icon(
+                FontAwesomeIcons.locationDot,
+                size: 10,
+                color: Colors.white.withValues(alpha: 0.8),
+              ),
+              const SizedBox(width: 3),
+              Expanded(
+                child: Text(
+                  city['country'],
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.white.withValues(alpha: 0.8),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              // 天气信息
+              if (city['temperature'] != null) ...[
+                const SizedBox(width: 6),
+                Icon(
+                  _getWeatherIcon(city['weatherIcon']),
+                  size: 11,
+                  color: Colors.white.withValues(alpha: 0.9),
+                ),
+                const SizedBox(width: 3),
+                Text(
+                  '${city['temperature']?.toStringAsFixed(0)}°',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white.withValues(alpha: 0.9),
                   ),
                 ),
               ],
-            ),
-
-            // Info
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    city['name'],
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      FaIcon(
-                        FontAwesomeIcons.locationDot,
-                        size: 13,
-                        color: const Color(0xFFEF5350), // 鲜艳红色
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          city['country'],
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey[600],
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                  // 天气信息
-                  if (city['temperature'] != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Row(
-                        children: [
-                          FaIcon(
-                            _getWeatherIcon(city['weatherIcon']),
-                            size: 14,
-                            color: _getWeatherIconColor(city['weatherIcon']),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${city['temperature']?.toStringAsFixed(1)}°C',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.grey[700],
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          if (city['weatherDescription'] != null) ...[
-                            const SizedBox(width: 4),
-                            Text(
-                              '·',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey[500],
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: Text(
-                                city['weatherDescription'],
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey[600],
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -684,68 +664,73 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> with RouteAwareRe
     );
   }
 
-  /// 单个城市卡片骨架屏
+  /// 单个城市卡片骨架屏 - Hero 风格
   Widget _buildSkeletonCityCard() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.grey[300],
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: SafeShimmer(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Stack(
           children: [
-            // 图片骨架
-            Expanded(
-              flex: 3,
+            // 背景骨架
+            Positioned.fill(
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.grey[300],
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                  borderRadius: BorderRadius.circular(16),
                 ),
               ),
             ),
-            // 信息骨架
-            Expanded(
-              flex: 2,
-              child: Padding(
+            // 右上角徽章骨架
+            Positioned(
+              top: 10,
+              right: 10,
+              child: Container(
+                width: 50,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: Colors.grey[400],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            // 底部信息面板骨架
+            Positioned(
+              left: 10,
+              right: 10,
+              bottom: 10,
+              child: Container(
                 padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.grey[400],
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 城市名骨架
                     Container(
                       width: double.infinity,
-                      height: 16,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    // 国家名骨架
-                    Container(
-                      width: 80,
-                      height: 12,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                    const Spacer(),
-                    // 底部信息骨架
-                    Container(
-                      width: 100,
                       height: 14,
                       decoration: BoxDecoration(
-                        color: Colors.grey[300],
+                        color: Colors.grey[500],
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      width: 80,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[500],
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),

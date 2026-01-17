@@ -1,4 +1,3 @@
-import 'package:df_admin_mobile/config/app_colors.dart';
 import 'package:df_admin_mobile/pages/coworking_detail/coworking_detail_page.dart';
 import 'package:df_admin_mobile/widgets/coworking_verification_badge.dart';
 import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
@@ -232,7 +231,7 @@ class _CoworkingList extends StatelessWidget {
   }
 }
 
-/// 共享办公空间卡片
+/// 共享办公空间卡片 - Hero 风格（信息覆盖在图片上）
 class _CoworkingSpaceCard extends StatelessWidget {
   const _CoworkingSpaceCard({required this.space});
 
@@ -243,49 +242,63 @@ class _CoworkingSpaceCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: InkWell(
-        onTap: () => Get.to(() => CoworkingDetailPage(space: space)),
-        borderRadius: BorderRadius.circular(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSpaceImage(),
-            _buildSpaceInfo(),
-          ],
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: () => Get.to(() => CoworkingDetailPage(space: space)),
+          borderRadius: BorderRadius.circular(16),
+          child: _buildCardContent(context),
         ),
       ),
     );
   }
 
-  Widget _buildSpaceImage() {
+  Widget _buildCardContent(BuildContext context) {
     return Stack(
       children: [
-        ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-          child: AspectRatio(
-            aspectRatio: 16 / 9,
-            child: Image.network(
-              space.spaceInfo.imageUrl,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  color: Colors.grey[200],
-                  child: const Icon(FontAwesomeIcons.building, size: 48),
-                );
-              },
+        // 背景图片
+        AspectRatio(
+          aspectRatio: 16 / 10,
+          child: Image.network(
+            space.spaceInfo.imageUrl,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                color: Colors.grey[300],
+                child: const Center(
+                  child: Icon(FontAwesomeIcons.building, size: 48, color: Colors.grey),
+                ),
+              );
+            },
+          ),
+        ),
+        // 渐变遮罩
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.1),
+                  Colors.transparent,
+                  Colors.black.withValues(alpha: 0.6),
+                ],
+                stops: const [0.0, 0.4, 1.0],
+              ),
             ),
           ),
         ),
+        // 右上角：验证徽章
         Positioned(
           top: 12,
           right: 12,
@@ -294,149 +307,162 @@ class _CoworkingSpaceCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           ),
         ),
+        // 底部信息面板
+        Positioned(
+          left: 12,
+          right: 12,
+          bottom: 12,
+          child: _buildHeroInfoPanel(),
+        ),
       ],
     );
   }
 
-  Widget _buildSpaceInfo() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
+  Widget _buildHeroInfoPanel() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.35),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.18),
+          width: 1,
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          _buildNameAndRating(),
-          const SizedBox(height: 8),
-          _buildAddress(),
-          const SizedBox(height: 12),
-          _buildInfoChips(),
+          // 名称
+          Text(
+            space.name,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          // 地址
+          if (space.location.address.isNotEmpty) ...[
+            const SizedBox(height: 2),
+            Row(
+              children: [
+                Icon(
+                  FontAwesomeIcons.locationDot,
+                  size: 11,
+                  color: Colors.white.withValues(alpha: 0.8),
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    space.location.address,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white.withValues(alpha: 0.8),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ],
+          const SizedBox(height: 10),
+          // 指标 Pills
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                // 评分
+                _HeroPill(
+                  icon: FontAwesomeIcons.star,
+                  value: space.spaceInfo.rating.toStringAsFixed(1),
+                  color: Colors.amber,
+                ),
+                const SizedBox(width: 8),
+                // WiFi 速度
+                _HeroPill(
+                  icon: FontAwesomeIcons.wifi,
+                  value: '${space.specs.wifiSpeed?.toStringAsFixed(0) ?? '0'} Mbps',
+                ),
+                // 月租价格
+                if (space.pricing.monthlyRate != null) ...[
+                  const SizedBox(width: 8),
+                  _HeroPill(
+                    icon: FontAwesomeIcons.dollarSign,
+                    value: '${space.pricing.monthlyRate!.toStringAsFixed(0)}/mo',
+                  ),
+                ],
+                // 24/7 开放
+                if (space.amenities.has24HourAccess) ...[
+                  const SizedBox(width: 8),
+                  const _HeroPill(
+                    icon: FontAwesomeIcons.clock,
+                    value: '24/7',
+                    color: Colors.orange,
+                  ),
+                ],
+                // 免费试用
+                if (space.pricing.hasFreeTrial) ...[
+                  const SizedBox(width: 8),
+                  const _HeroPill(
+                    icon: FontAwesomeIcons.tag,
+                    value: 'Free Trial',
+                    color: Color(0xFFFF4458),
+                  ),
+                ],
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
-
-  Widget _buildNameAndRating() {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            space.name,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(
-            color: Colors.amber.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(FontAwesomeIcons.star, size: 14, color: Colors.amber),
-              const SizedBox(width: 4),
-              Text(
-                space.spaceInfo.rating.toStringAsFixed(1),
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAddress() {
-    return Row(
-      children: [
-        const Icon(FontAwesomeIcons.locationDot, size: 14, color: AppColors.textSecondary),
-        const SizedBox(width: 4),
-        Expanded(
-          child: Text(
-            space.location.address,
-            style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildInfoChips() {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        _InfoChip(
-          icon: FontAwesomeIcons.wifi,
-          label: '${space.specs.wifiSpeed?.toStringAsFixed(0) ?? '0'} Mbps',
-          color: Colors.blue,
-        ),
-        if (space.pricing.monthlyRate != null)
-          _InfoChip(
-            icon: FontAwesomeIcons.dollarSign,
-            label: '\$${space.pricing.monthlyRate!.toStringAsFixed(0)}/mo',
-            color: Colors.green,
-          ),
-        if (space.amenities.has24HourAccess)
-          const _InfoChip(
-            icon: FontAwesomeIcons.clock,
-            label: '24/7',
-            color: Colors.orange,
-          ),
-        if (space.pricing.hasFreeTrial)
-          const _InfoChip(
-            icon: FontAwesomeIcons.tag,
-            label: 'Free Trial',
-            color: Color(0xFFFF4458),
-          ),
-      ],
-    );
-  }
 }
 
-/// 信息标签组件
-class _InfoChip extends StatelessWidget {
-  const _InfoChip({
+/// Hero 样式的信息标签
+class _HeroPill extends StatelessWidget {
+  const _HeroPill({
     required this.icon,
-    required this.label,
-    required this.color,
+    required this.value,
+    this.color,
   });
 
   final IconData icon;
-  final String label;
-  final Color color;
+  final String value;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
+    final pillColor = color ?? Colors.white;
+    final hasCustomColor = color != null;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(16),
+        color: hasCustomColor ? pillColor.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.2),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: color),
+          Icon(
+            icon,
+            size: 12,
+            color: hasCustomColor ? pillColor : Colors.white.withValues(alpha: 0.9),
+          ),
           const SizedBox(width: 4),
           Text(
-            label,
+            value,
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: color,
+              color: hasCustomColor ? pillColor : Colors.white,
             ),
           ),
         ],
