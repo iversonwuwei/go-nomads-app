@@ -138,6 +138,74 @@ class ImageUploadService {
     }
   }
 
+  /// 上传任意文件到 Supabase Storage
+  ///
+  /// [file] 要上传的文件
+  /// [bucket] 存储桶名称，默认 'user-uploads'
+  /// [folder] 文件夹路径
+  /// [fileName] 指定文件名（可选，默认使用原始文件名）
+  ///
+  /// 返回文件的公开访问 URL
+  Future<String> uploadFile({
+    required File file,
+    String bucket = 'user-uploads',
+    String? folder,
+    String? fileName,
+  }) async {
+    try {
+      // 验证文件
+      if (!file.existsSync()) {
+        throw Exception('文件不存在');
+      }
+
+      // 检查文件大小（限制 100MB）
+      final fileSize = file.lengthSync();
+      if (fileSize > 100 * 1024 * 1024) {
+        throw Exception('文件过大，请选择小于 100MB 的文件');
+      }
+
+      // 生成文件路径
+      final userId = await _getUserId();
+      final uploadFolder = folder ?? userId;
+      final uploadFileName = fileName ?? _generateUniqueFileName(file);
+      final filePath = '$uploadFolder/$uploadFileName';
+
+      debugPrint('📤 开始上传文件: $filePath');
+      debugPrint('📦 文件大小: ${(fileSize / 1024).toStringAsFixed(2)} KB');
+
+      // 上传到 Supabase
+      final storageResponse = await client.storage.from(bucket).upload(
+            filePath,
+            file,
+            fileOptions: FileOptions(
+              cacheControl: '3600',
+              upsert: false,
+              contentType: _getMimeType(file),
+            ),
+          );
+
+      debugPrint('✅ 文件上传成功: $storageResponse');
+
+      // 获取公开 URL
+      final publicUrl = client.storage.from(bucket).getPublicUrl(filePath);
+
+      debugPrint('🔗 文件 URL: $publicUrl');
+
+      return publicUrl;
+    } catch (e) {
+      debugPrint('❌ 文件上传失败: $e');
+      rethrow;
+    }
+  }
+
+  /// 生成唯一文件名（保留原扩展名）
+  String _generateUniqueFileName(File file) {
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final ext = path.extension(file.path);
+    final random = DateTime.now().microsecondsSinceEpoch % 10000;
+    return 'file_${timestamp}_$random$ext';
+  }
+
   /// 上传多张图片
   ///
   /// 返回所有图片的 URL 列表
