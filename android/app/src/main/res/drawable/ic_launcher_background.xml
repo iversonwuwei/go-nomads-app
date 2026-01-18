@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- 渐变背景 - 从青色到蓝色 -->
+    <path
+        android:pathData="M0,0 L108,0 L108,108 L0,108 Z"
+        android:fillColor="#00BCD4"/>
+    
+    <!-- 使用多个矩形模拟渐变效果 -->
+    <path
+        android:pathData="M0,0 L108,0 L108,18 L0,18 Z"
+        android:fillColor="#26C6DA"/>
+    
+    <path
+        android:pathData="M0,18 L108,18 L108,36 L0,36 Z"
+        android:fillColor="#00BCD4"/>
+    
+    <path
+        android:pathData="M0,36 L108,36 L108,54 L0,54 Z"
+        android:fillColor="#00ACC1"/>
+    
+    <path
+        android:pathData="M0,54 L108,54 L108,72 L0,72 Z"
+        android:fillColor="#0097A7"/>
+    
+    <path
+        android:pathData="M0,72 L108,72 L108,90 L0,90 Z"
+        android:fillColor="#0288D1"/>
+    
+    <path
+        android:pathData="M0,90 L108,90 L108,108 L0,108 Z"
+        android:fillColor="#1976D2"/>
+</vector>

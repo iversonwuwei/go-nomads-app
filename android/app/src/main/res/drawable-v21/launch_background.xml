@@ -5,17 +5,12 @@
     <item>
         <shape android:shape="rectangle">
             <gradient
-                android:startColor="#6366F1"
-                android:centerColor="#8B5CF6"
-                android:endColor="#A855F7"
+android:startColor="#26C6DA" android:centerColor="#00ACC1" android:endColor="#1976D2"
                 android:angle="270" />
         </shape>
     </item>
 
-    <!-- 应用图标 -->
-    <item>
-        <bitmap
-            android:gravity="center"
-            android:src="@mipmap/go_nomads" />
-    </item>
+<!-- 应用图标 - 使用矢量图 -->
+<item android:width="120dp" android:height="120dp" android:gravity="center"
+android:drawable="@drawable/ic_launcher_foreground" />
 </layer-list>
