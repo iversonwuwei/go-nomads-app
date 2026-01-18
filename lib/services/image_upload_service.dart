@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:df_admin_mobile/config/api_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:http/http.dart' as http;
@@ -8,7 +9,6 @@ import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'package:df_admin_mobile/config/api_config.dart';
 import 'token_storage_service.dart';
 
 /// 图片上传服务
