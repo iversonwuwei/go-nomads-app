@@ -78,6 +78,9 @@ dependencies:
   # 系统设置
   app_settings: ^5.1.1  # 打开系统设置页面
   
+  # 音频录制
+  record: ^6.0.0  # 语音录制
+  
   # UI 增强
   shimmer: ^3.0.0  # 骨架屏加载效果
 
