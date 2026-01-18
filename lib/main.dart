@@ -303,28 +303,20 @@ class SplashLoadingScreen extends StatefulWidget {
 class _SplashLoadingScreenState extends State<SplashLoadingScreen> with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
     super.initState();
 
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 800),
       vsync: this,
     );
 
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+    _fadeAnimation = Tween<double>(begin: 1.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _animationController,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeIn),
-      ),
-    );
-
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: const Interval(0.0, 0.7, curve: Curves.easeOutBack),
+        curve: Curves.easeIn,
       ),
     );
 
@@ -343,134 +335,25 @@ class _SplashLoadingScreenState extends State<SplashLoadingScreen> with SingleTi
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF6366F1), // Indigo
-              Color(0xFF8B5CF6), // Purple
-              Color(0xFFA855F7), // Violet
-            ],
-          ),
-        ),
+        // 青蓝色背景，与原生启动页一致
+        color: const Color(0xFF0891B2),
         child: SafeArea(
           child: AnimatedBuilder(
             animation: _animationController,
             builder: (context, child) {
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Spacer(flex: 2),
-
-                  // Logo 图标带动画
-                  FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: ScaleTransition(
-                      scale: _scaleAnimation,
-                      child: Container(
-                        width: 140.w,
-                        height: 140.w,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(30.r),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 30,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(30.r),
-                          child: Image.asset(
-                            'assets/icon/app_icon.png',
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
+              return Center(
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Text(
+                    'GO NOMADS',
+                    style: TextStyle(
+                      fontSize: 42.sp,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: 2,
                     ),
                   ),
-
-                  SizedBox(height: 30.h),
-
-                  // 应用名称
-                  FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: Text(
-                      '行途',
-                      style: TextStyle(
-                        fontSize: 36.sp,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: 4,
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(height: 8.h),
-
-                  // 副标题
-                  FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: Text(
-                      'GO-NOMADS',
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white.withOpacity(0.9),
-                        letterSpacing: 6,
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(height: 12.h),
-
-                  // Slogan
-                  FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: Text(
-                      '探索城市 · 发现生活',
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        color: Colors.white.withOpacity(0.7),
-                        letterSpacing: 2,
-                      ),
-                    ),
-                  ),
-
-                  const Spacer(flex: 2),
-
-                  // 加载指示器
-                  FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          width: 24.w,
-                          height: 24.w,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white.withOpacity(0.8),
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 16.h),
-                        Text(
-                          '正在加载...',
-                          style: TextStyle(
-                            fontSize: 13.sp,
-                            color: Colors.white.withOpacity(0.6),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  SizedBox(height: 60.h),
-                ],
+                ),
               );
             },
           ),
