@@ -362,11 +362,12 @@ class ImageUploadService {
   String? _getMimeType(File file) {
     final ext = path.extension(file.path).toLowerCase();
 
-    // 处理音频文件的 MIME 类型（Supabase 对音频格式支持有限）
+    // 音频文件 MIME 类型映射
     switch (ext) {
       case '.m4a':
+        return 'audio/mp4'; // M4A 是 MP4 容器中的 AAC 音频
       case '.aac':
-        return 'application/octet-stream'; // Supabase 不支持 audio/mp4，使用通用类型
+        return 'audio/aac';
       case '.mp3':
         return 'audio/mpeg';
       case '.wav':
@@ -377,6 +378,8 @@ class ImageUploadService {
         return 'audio/flac';
       case '.webm':
         return 'audio/webm';
+      case '.opus':
+        return 'audio/opus';
       default:
         return lookupMimeType(file.path);
     }
