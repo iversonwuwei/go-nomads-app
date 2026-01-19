@@ -55,8 +55,7 @@ class ChatVoiceRecorderButton extends StatefulWidget {
   State<ChatVoiceRecorderButton> createState() => _ChatVoiceRecorderButtonState();
 }
 
-class _ChatVoiceRecorderButtonState extends State<ChatVoiceRecorderButton>
-    with SingleTickerProviderStateMixin {
+class _ChatVoiceRecorderButtonState extends State<ChatVoiceRecorderButton> with SingleTickerProviderStateMixin {
   final AudioRecorder _recorder = AudioRecorder();
   bool _isRecording = false;
   bool _isCancelArea = false;
@@ -230,9 +229,7 @@ class _ChatVoiceRecorderButtonState extends State<ChatVoiceRecorderButton>
             height: 36,
             decoration: BoxDecoration(
               color: _isRecording
-                  ? (_isCancelArea
-                      ? Colors.red.withValues(alpha: 0.15)
-                      : primaryColor.withValues(alpha: 0.15))
+                  ? (_isCancelArea ? Colors.red.withValues(alpha: 0.15) : primaryColor.withValues(alpha: 0.15))
                   : Colors.white,
               borderRadius: BorderRadius.circular(6),
               border: _isRecording
@@ -334,8 +331,7 @@ class ChatVoiceRecorderPanel extends StatefulWidget {
   State<ChatVoiceRecorderPanel> createState() => _ChatVoiceRecorderPanelState();
 }
 
-class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel>
-    with SingleTickerProviderStateMixin {
+class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with SingleTickerProviderStateMixin {
   final AudioRecorder _recorder = AudioRecorder();
   bool _isRecording = false;
   bool _isCancelArea = false;
@@ -509,13 +505,9 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel>
                         ),
                         child: Center(
                           child: Icon(
-                            _isCancelArea
-                                ? FontAwesomeIcons.trash
-                                : FontAwesomeIcons.microphone,
+                            _isCancelArea ? FontAwesomeIcons.trash : FontAwesomeIcons.microphone,
                             size: 32,
-                            color: _isRecording
-                                ? (_isCancelArea ? Colors.red : primaryColor)
-                                : Colors.grey,
+                            color: _isRecording ? (_isCancelArea ? Colors.red : primaryColor) : Colors.grey,
                           ),
                         ),
                       );
@@ -524,15 +516,11 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel>
                   const SizedBox(height: 16),
                   // 时间显示
                   Text(
-                    _isRecording
-                        ? _formatDuration(_recordDuration)
-                        : '按住下方按钮开始录音',
+                    _isRecording ? _formatDuration(_recordDuration) : '按住下方按钮开始录音',
                     style: TextStyle(
                       fontSize: _isRecording ? 24 : 14,
                       fontWeight: _isRecording ? FontWeight.bold : FontWeight.normal,
-                      color: _isRecording
-                          ? (_isCancelArea ? Colors.red : primaryColor)
-                          : const Color(0xFF999999),
+                      color: _isRecording ? (_isCancelArea ? Colors.red : primaryColor) : const Color(0xFF999999),
                     ),
                   ),
                   if (_isRecording) ...[
@@ -578,9 +566,7 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel>
                   margin: const EdgeInsets.symmetric(horizontal: 20),
                   decoration: BoxDecoration(
                     color: _isRecording
-                        ? (_isCancelArea
-                            ? Colors.red.withValues(alpha: 0.15)
-                            : primaryColor.withValues(alpha: 0.15))
+                        ? (_isCancelArea ? Colors.red.withValues(alpha: 0.15) : primaryColor.withValues(alpha: 0.15))
                         : const Color(0xFFF5F5F5),
                     borderRadius: BorderRadius.circular(25),
                     border: _isRecording
@@ -596,26 +582,18 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel>
                       children: [
                         Icon(
                           _isRecording
-                              ? (_isCancelArea
-                                  ? FontAwesomeIcons.xmark
-                                  : FontAwesomeIcons.microphone)
+                              ? (_isCancelArea ? FontAwesomeIcons.xmark : FontAwesomeIcons.microphone)
                               : FontAwesomeIcons.microphone,
-                          color: _isRecording
-                              ? (_isCancelArea ? Colors.red : primaryColor)
-                              : const Color(0xFF666666),
+                          color: _isRecording ? (_isCancelArea ? Colors.red : primaryColor) : const Color(0xFF666666),
                           size: 18,
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          _isRecording
-                              ? (_isCancelArea ? '松开取消' : '正在录音...')
-                              : '按住说话',
+                          _isRecording ? (_isCancelArea ? '松开取消' : '正在录音...') : '按住说话',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
-                            color: _isRecording
-                                ? (_isCancelArea ? Colors.red : primaryColor)
-                                : const Color(0xFF666666),
+                            color: _isRecording ? (_isCancelArea ? Colors.red : primaryColor) : const Color(0xFF666666),
                           ),
                         ),
                       ],

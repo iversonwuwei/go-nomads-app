@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
 /// 语音消息播放器
-/// 
+///
 /// 全局单例管理，确保同时只有一个语音在播放
 /// 支持下载缓存，解决 Supabase Storage 流式播放问题
 class VoicePlayerManager {
@@ -20,10 +20,10 @@ class VoicePlayerManager {
   String? _currentPlayingUrl;
   final _playingUrlNotifier = ValueNotifier<String?>(null);
   final _loadingUrlNotifier = ValueNotifier<String?>(null);
-  
+
   // 本地缓存目录
   Directory? _cacheDir;
-  
+
   // 已缓存的文件映射 (url -> localPath)
   final Map<String, String> _cachedFiles = {};
 
@@ -55,7 +55,7 @@ class VoicePlayerManager {
   Future<String?> _downloadAndCache(String url) async {
     try {
       await _ensureCacheDir();
-      
+
       // 检查是否已缓存
       if (_cachedFiles.containsKey(url)) {
         final cachedPath = _cachedFiles[url]!;
@@ -63,11 +63,11 @@ class VoicePlayerManager {
           return cachedPath;
         }
       }
-      
+
       // 下载文件
       debugPrint('📥 下载语音文件: $url');
       final response = await http.get(Uri.parse(url));
-      
+
       if (response.statusCode == 200) {
         final localPath = _getCacheFilePath(url);
         final file = File(localPath);
@@ -101,10 +101,10 @@ class VoicePlayerManager {
 
       // 下载并缓存语音文件
       final localPath = await _downloadAndCache(url);
-      
+
       // 清除加载状态
       _loadingUrlNotifier.value = null;
-      
+
       if (localPath == null) {
         debugPrint('❌ 无法播放语音：下载失败');
         return;
@@ -134,7 +134,7 @@ class VoicePlayerManager {
     _currentPlayingUrl = null;
     _playingUrlNotifier.value = null;
   }
-  
+
   /// 清理缓存
   Future<void> clearCache() async {
     try {
@@ -185,8 +185,7 @@ class ChatVoiceMessageBubble extends StatefulWidget {
   State<ChatVoiceMessageBubble> createState() => _ChatVoiceMessageBubbleState();
 }
 
-class _ChatVoiceMessageBubbleState extends State<ChatVoiceMessageBubble>
-    with SingleTickerProviderStateMixin {
+class _ChatVoiceMessageBubbleState extends State<ChatVoiceMessageBubble> with SingleTickerProviderStateMixin {
   final _playerManager = VoicePlayerManager();
   late AnimationController _waveController;
   bool _isPlaying = false;
@@ -233,8 +232,7 @@ class _ChatVoiceMessageBubbleState extends State<ChatVoiceMessageBubble>
   Widget build(BuildContext context) {
     // 根据时长计算宽度
     final width = (80 + widget.duration * 3).clamp(80, 200).toDouble();
-    final bgColor = widget.backgroundColor ??
-        (widget.isMe ? widget.primaryColor : const Color(0xFFF5F5F5));
+    final bgColor = widget.backgroundColor ?? (widget.isMe ? widget.primaryColor : const Color(0xFFF5F5F5));
     final contentColor = widget.isMe ? Colors.white : const Color(0xFF333333);
     final iconColor = widget.isMe ? Colors.white70 : widget.primaryColor;
 
@@ -363,8 +361,7 @@ class ChatVoiceMessageSimple extends StatefulWidget {
   State<ChatVoiceMessageSimple> createState() => _ChatVoiceMessageSimpleState();
 }
 
-class _ChatVoiceMessageSimpleState extends State<ChatVoiceMessageSimple>
-    with SingleTickerProviderStateMixin {
+class _ChatVoiceMessageSimpleState extends State<ChatVoiceMessageSimple> with SingleTickerProviderStateMixin {
   final _playerManager = VoicePlayerManager();
   late AnimationController _animController;
   bool _isPlaying = false;
