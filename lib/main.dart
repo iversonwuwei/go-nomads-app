@@ -292,42 +292,9 @@ class _AppWrapperState extends State<AppWrapper> {
   }
 }
 
-/// 简化的启动加载页面
-class SplashLoadingScreen extends StatefulWidget {
+/// 简化的启动加载页面 - 仅显示背景色，文字由原生层显示
+class SplashLoadingScreen extends StatelessWidget {
   const SplashLoadingScreen({super.key});
-
-  @override
-  State<SplashLoadingScreen> createState() => _SplashLoadingScreenState();
-}
-
-class _SplashLoadingScreenState extends State<SplashLoadingScreen> with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-
-    _fadeAnimation = Tween<double>(begin: 1.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeIn,
-      ),
-    );
-
-    _animationController.forward();
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -336,28 +303,8 @@ class _SplashLoadingScreenState extends State<SplashLoadingScreen> with SingleTi
         width: double.infinity,
         height: double.infinity,
         // 青蓝色背景，与原生启动页一致
+        // 不显示文字，避免与原生启动页文字大小不一致的问题
         color: const Color(0xFF0891B2),
-        child: SafeArea(
-          child: AnimatedBuilder(
-            animation: _animationController,
-            builder: (context, child) {
-              return Center(
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: Text(
-                    'GO NOMADS',
-                    style: TextStyle(
-                      fontSize: 42.sp,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: 2,
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
       ),
     );
   }
