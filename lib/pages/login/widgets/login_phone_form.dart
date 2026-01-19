@@ -28,14 +28,19 @@ class LoginPhoneForm extends GetView<LoginController> {
     return Column(
       children: [
         // 手机号输入
-        Obx(() => LoginFormField(
-              controller: controller.phoneController,
-              labelText: '手机号',
-              hintText: '请输入手机号',
-              prefixIcon: FontAwesomeIcons.phone,
-              keyboardType: TextInputType.phone,
-              errorText: controller.showValidationErrors.value ? _getErrorText(controller.phoneError.value) : null,
-            )),
+        Obx(() {
+          // 访问响应式变量以确保 Obx 能正确追踪，同时检查控制器状态
+          final disposed = controller.isDisposedRx.value;
+          if (disposed) return const SizedBox.shrink();
+          return LoginFormField(
+            controller: controller.phoneController,
+            labelText: '手机号',
+            hintText: '请输入手机号',
+            prefixIcon: FontAwesomeIcons.phone,
+            keyboardType: TextInputType.phone,
+            errorText: controller.showValidationErrors.value ? _getErrorText(controller.phoneError.value) : null,
+          );
+        }),
 
         const SizedBox(height: 20),
 
@@ -68,34 +73,43 @@ class _SmsCodeRow extends GetView<LoginController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
-          child: Obx(() => LoginFormField(
-                controller: controller.smsCodeController,
-                labelText: '验证码',
-                hintText: '请输入验证码',
-                prefixIcon: FontAwesomeIcons.message,
-                keyboardType: TextInputType.number,
-                maxLength: 6,
-                errorText: controller.showValidationErrors.value ? getErrorText(controller.smsCodeError.value) : null,
-              )),
+          child: Obx(() {
+            // 访问响应式变量以确保 Obx 能正确追踪，同时检查控制器状态
+            final disposed = controller.isDisposedRx.value;
+            if (disposed) return const SizedBox.shrink();
+            return LoginFormField(
+              controller: controller.smsCodeController,
+              labelText: '验证码',
+              hintText: '请输入验证码',
+              prefixIcon: FontAwesomeIcons.message,
+              keyboardType: TextInputType.number,
+              maxLength: 6,
+              errorText: controller.showValidationErrors.value ? getErrorText(controller.smsCodeError.value) : null,
+            );
+          }),
         ),
         const SizedBox(width: 12),
         SizedBox(
           height: 56,
-          child: Obx(() => ElevatedButton(
-                onPressed: controller.countdown.value > 0 ? null : controller.sendSmsCode,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: LoginConstants.primaryColor,
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: Colors.grey.shade300,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(LoginConstants.buttonBorderRadius),
-                  ),
+          child: Obx(() {
+            final disposed = controller.isDisposedRx.value;
+            if (disposed) return const SizedBox.shrink();
+            return ElevatedButton(
+              onPressed: controller.countdown.value > 0 ? null : controller.sendSmsCode,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: LoginConstants.primaryColor,
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: Colors.grey.shade300,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(LoginConstants.buttonBorderRadius),
                 ),
-                child: Text(
-                  controller.countdown.value > 0 ? '${controller.countdown.value}s' : '发送验证码',
-                  style: const TextStyle(fontSize: 14),
-                ),
-              )),
+              ),
+              child: Text(
+                controller.countdown.value > 0 ? '${controller.countdown.value}s' : '发送验证码',
+                style: const TextStyle(fontSize: 14),
+              ),
+            );
+          }),
         ),
       ],
     );

@@ -3,7 +3,7 @@ import 'package:go_nomads_app/pages/login/login_constants.dart';
 
 /// 登录页面通用输入框 - 使用响应式错误显示，无需 Form/GlobalKey
 class LoginFormField extends StatelessWidget {
-  final TextEditingController controller;
+  final TextEditingController? controller;
   final String labelText;
   final String hintText;
   final IconData prefixIcon;
@@ -26,8 +26,35 @@ class LoginFormField extends StatelessWidget {
     this.maxLength,
   });
 
+  /// 检查 TextEditingController 是否仍然有效（未被 dispose）
+  bool _isControllerValid(TextEditingController? ctrl) {
+    if (ctrl == null) return false;
+    try {
+      // 尝试访问 text 属性，如果已被 dispose 会抛出异常
+      ctrl.text;
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // 如果控制器无效，返回禁用状态的输入框
+    if (!_isControllerValid(controller)) {
+      return TextField(
+        enabled: false,
+        decoration: InputDecoration(
+          labelText: labelText,
+          hintText: hintText,
+          prefixIcon: Icon(prefixIcon),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(LoginConstants.inputBorderRadius),
+          ),
+        ),
+      );
+    }
+
     final hasError = errorText != null && errorText!.isNotEmpty;
 
     return TextField(
