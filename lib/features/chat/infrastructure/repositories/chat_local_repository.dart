@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:developer';
 
-import 'package:df_admin_mobile/features/chat/domain/entities/chat.dart';
-import 'package:df_admin_mobile/features/chat/domain/repositories/i_chat_local_repository.dart';
-import 'package:df_admin_mobile/services/database_service.dart';
+import 'package:go_nomads_app/features/chat/domain/entities/chat.dart';
+import 'package:go_nomads_app/features/chat/domain/repositories/i_chat_local_repository.dart';
+import 'package:go_nomads_app/services/database_service.dart';
 import 'package:sqflite/sqflite.dart';
 
 /// 聊天消息本地仓储实现

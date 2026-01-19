@@ -1,16 +1,16 @@
 import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/core/core.dart';
-import 'package:df_admin_mobile/features/city/application/use_cases/city_use_cases.dart';
-import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/pages/add_coworking/add_coworking_page.dart';
-import 'package:df_admin_mobile/pages/coworking_list_page.dart';
-import 'package:df_admin_mobile/routes/route_refresh_observer.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
-import 'package:df_admin_mobile/widgets/back_button.dart';
-import 'package:df_admin_mobile/widgets/skeletons/base_skeleton.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/core/core.dart';
+import 'package:go_nomads_app/features/city/application/use_cases/city_use_cases.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/pages/add_coworking/add_coworking_page.dart';
+import 'package:go_nomads_app/pages/coworking_list_page.dart';
+import 'package:go_nomads_app/routes/route_refresh_observer.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/back_button.dart';
+import 'package:go_nomads_app/widgets/skeletons/base_skeleton.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';

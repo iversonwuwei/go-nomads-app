@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/ai/application/use_cases/ai_use_cases.dart';
-import 'package:df_admin_mobile/features/city/domain/entities/digital_nomad_guide.dart';
-import 'package:df_admin_mobile/features/city/infrastructure/models/city_detail_dto.dart';
-import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan.dart';
-import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan_summary.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/ai/application/use_cases/ai_use_cases.dart';
+import 'package:go_nomads_app/features/city/domain/entities/digital_nomad_guide.dart';
+import 'package:go_nomads_app/features/city/infrastructure/models/city_detail_dto.dart';
+import 'package:go_nomads_app/features/travel_plan/domain/entities/travel_plan.dart';
+import 'package:go_nomads_app/features/travel_plan/domain/entities/travel_plan_summary.dart';
 import 'package:get/get.dart';
 
 /// AI功能状态控制器

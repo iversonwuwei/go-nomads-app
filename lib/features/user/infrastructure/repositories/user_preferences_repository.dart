@@ -1,9 +1,9 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/config/api_config.dart';
-import 'package:df_admin_mobile/features/user/domain/entities/user_preferences.dart';
-import 'package:df_admin_mobile/features/user/domain/repositories/i_user_preferences_repository.dart';
-import 'package:df_admin_mobile/services/token_storage_service.dart';
+import 'package:go_nomads_app/config/api_config.dart';
+import 'package:go_nomads_app/features/user/domain/entities/user_preferences.dart';
+import 'package:go_nomads_app/features/user/domain/repositories/i_user_preferences_repository.dart';
+import 'package:go_nomads_app/services/token_storage_service.dart';
 import 'package:dio/dio.dart';
 
 /// 用户偏好设置仓储实现

@@ -1,7 +1,7 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/features/moderator/domain/entities/moderator_application.dart';
-import 'package:df_admin_mobile/features/moderator/domain/repositories/i_moderator_application_repository.dart';
+import 'package:go_nomads_app/features/moderator/domain/entities/moderator_application.dart';
+import 'package:go_nomads_app/features/moderator/domain/repositories/i_moderator_application_repository.dart';
 import 'package:get/get.dart';
 
 /// 版主申请控制器

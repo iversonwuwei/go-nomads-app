@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:df_admin_mobile/core/application/use_case.dart';
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/chat/application/use_cases/chat_use_cases.dart';
-import 'package:df_admin_mobile/features/chat/domain/entities/chat.dart';
-import 'package:df_admin_mobile/features/chat/domain/repositories/i_chat_repository.dart';
-import 'package:df_admin_mobile/features/chat/infrastructure/services/chat_file_storage_service.dart';
-import 'package:df_admin_mobile/features/chat/infrastructure/services/signalr_chat_service.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:go_nomads_app/core/application/use_case.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/chat/application/use_cases/chat_use_cases.dart';
+import 'package:go_nomads_app/features/chat/domain/entities/chat.dart';
+import 'package:go_nomads_app/features/chat/domain/repositories/i_chat_repository.dart';
+import 'package:go_nomads_app/features/chat/infrastructure/services/chat_file_storage_service.dart';
+import 'package:go_nomads_app/features/chat/infrastructure/services/signalr_chat_service.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:get/get.dart';
 
 /// Chat State Controller

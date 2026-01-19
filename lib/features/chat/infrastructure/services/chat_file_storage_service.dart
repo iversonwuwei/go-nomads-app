@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:df_admin_mobile/features/chat/domain/entities/chat.dart';
+import 'package:go_nomads_app/features/chat/domain/entities/chat.dart';
 import 'package:path_provider/path_provider.dart';
 
 /// 聊天记录文件存储服务

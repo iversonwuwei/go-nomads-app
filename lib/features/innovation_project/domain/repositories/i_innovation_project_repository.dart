@@ -1,6 +1,6 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/innovation_project/domain/entities/innovation_project.dart';
-import 'package:df_admin_mobile/features/innovation_project/infrastructure/models/innovation_project_dto.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/innovation_project/domain/entities/innovation_project.dart';
+import 'package:go_nomads_app/features/innovation_project/infrastructure/models/innovation_project_dto.dart';
 
 /// 创新项目仓储接口
 abstract class IInnovationProjectRepository {

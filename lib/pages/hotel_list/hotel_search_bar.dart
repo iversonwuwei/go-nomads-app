@@ -1,4 +1,4 @@
-import 'package:df_admin_mobile/controllers/hotel_list_page_controller.dart';
+import 'package:go_nomads_app/controllers/hotel_list_page_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';

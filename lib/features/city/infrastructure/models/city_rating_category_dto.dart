@@ -1,4 +1,4 @@
-import 'package:df_admin_mobile/features/city/domain/entities/city_rating_category.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city_rating_category.dart';
 
 /// 城市评分项 DTO
 class CityRatingCategoryDto {

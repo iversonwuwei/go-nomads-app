@@ -1,22 +1,22 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:df_admin_mobile/core/sync/sync.dart';
-import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
-import 'package:df_admin_mobile/features/meetup/application/use_cases/cancel_meetup_use_case.dart';
-import 'package:df_admin_mobile/features/meetup/application/use_cases/cancel_rsvp_use_case.dart';
-import 'package:df_admin_mobile/features/meetup/application/use_cases/create_meetup_use_case.dart';
-import 'package:df_admin_mobile/features/meetup/application/use_cases/get_meetups_by_city_use_case.dart';
-import 'package:df_admin_mobile/features/meetup/application/use_cases/get_meetups_use_case.dart';
-import 'package:df_admin_mobile/features/meetup/application/use_cases/rsvp_to_meetup_use_case.dart';
-import 'package:df_admin_mobile/features/meetup/application/use_cases/update_meetup_use_case.dart';
-import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
-import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
-import 'package:df_admin_mobile/features/meetup/infrastructure/models/meetup_dto.dart';
-import 'package:df_admin_mobile/features/meetup/infrastructure/services/meetup_signalr_service.dart';
-import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
-import 'package:df_admin_mobile/services/http_service.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:go_nomads_app/core/sync/sync.dart';
+import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:go_nomads_app/features/meetup/application/use_cases/cancel_meetup_use_case.dart';
+import 'package:go_nomads_app/features/meetup/application/use_cases/cancel_rsvp_use_case.dart';
+import 'package:go_nomads_app/features/meetup/application/use_cases/create_meetup_use_case.dart';
+import 'package:go_nomads_app/features/meetup/application/use_cases/get_meetups_by_city_use_case.dart';
+import 'package:go_nomads_app/features/meetup/application/use_cases/get_meetups_use_case.dart';
+import 'package:go_nomads_app/features/meetup/application/use_cases/rsvp_to_meetup_use_case.dart';
+import 'package:go_nomads_app/features/meetup/application/use_cases/update_meetup_use_case.dart';
+import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
+import 'package:go_nomads_app/features/meetup/domain/repositories/i_meetup_repository.dart';
+import 'package:go_nomads_app/features/meetup/infrastructure/models/meetup_dto.dart';
+import 'package:go_nomads_app/features/meetup/infrastructure/services/meetup_signalr_service.dart';
+import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:go_nomads_app/services/http_service.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:get/get.dart';
 
 /// Meetup 状态管理 Controller V2

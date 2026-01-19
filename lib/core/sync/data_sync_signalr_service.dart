@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:df_admin_mobile/config/api_config.dart';
-import 'package:df_admin_mobile/core/sync/data_sync_service.dart';
-import 'package:df_admin_mobile/services/token_storage_service.dart';
+import 'package:go_nomads_app/config/api_config.dart';
+import 'package:go_nomads_app/core/sync/data_sync_service.dart';
+import 'package:go_nomads_app/services/token_storage_service.dart';
 import 'package:signalr_netcore/signalr_client.dart';
 
 /// 数据同步 SignalR 服务

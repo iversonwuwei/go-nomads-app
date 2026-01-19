@@ -1,6 +1,6 @@
 // Legacy import removed - old weather_model.dart no longer exists
-// import 'package:df_admin_mobile/models/weather_model.dart' as legacy;
-import 'package:df_admin_mobile/features/weather/domain/entities/weather.dart'
+// import 'package:go_nomads_app/models/weather_model.dart' as legacy;
+import 'package:go_nomads_app/features/weather/domain/entities/weather.dart'
     as entity;
 
 // ============================================================

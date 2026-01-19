@@ -1,10 +1,10 @@
-import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
-import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/pages/add_cost/add_cost_page.dart';
-import 'package:df_admin_mobile/pages/city_detail/city_detail_controller.dart';
-import 'package:df_admin_mobile/pages/manage_cost_page.dart';
-import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/pages/add_cost/add_cost_page.dart';
+import 'package:go_nomads_app/pages/city_detail/city_detail_controller.dart';
+import 'package:go_nomads_app/pages/manage_cost_page.dart';
+import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';

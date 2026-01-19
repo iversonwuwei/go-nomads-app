@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
 import 'base_skeleton.dart';
 
 /// 数据服务页面骨架屏组件 - 匹配实际页面结构

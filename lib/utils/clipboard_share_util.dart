@@ -1,4 +1,4 @@
-import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:flutter/services.dart';
 
 class ClipboardShareUtil {

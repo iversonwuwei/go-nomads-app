@@ -1,5 +1,5 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/hotel/domain/entities/hotel_review.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/hotel/domain/entities/hotel_review.dart';
 
 /// Hotel Review Repository Interface - 酒店评论仓储接口
 abstract class IHotelReviewRepository {

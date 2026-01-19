@@ -1,15 +1,15 @@
 import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
-import 'package:df_admin_mobile/features/hotel/domain/entities/hotel_review.dart';
-import 'package:df_admin_mobile/features/hotel/domain/repositories/i_hotel_repository.dart';
-import 'package:df_admin_mobile/features/hotel/domain/repositories/i_hotel_review_repository.dart';
-import 'package:df_admin_mobile/pages/add_hotel_page.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
-import 'package:df_admin_mobile/widgets/back_button.dart';
-import 'package:df_admin_mobile/widgets/edit_button.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:go_nomads_app/features/hotel/domain/entities/hotel_review.dart';
+import 'package:go_nomads_app/features/hotel/domain/repositories/i_hotel_repository.dart';
+import 'package:go_nomads_app/features/hotel/domain/repositories/i_hotel_review_repository.dart';
+import 'package:go_nomads_app/pages/add_hotel_page.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/back_button.dart';
+import 'package:go_nomads_app/widgets/edit_button.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';

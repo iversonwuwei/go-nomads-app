@@ -1,6 +1,6 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/auth/domain/entities/auth_token.dart';
-import 'package:df_admin_mobile/features/auth/domain/entities/auth_user.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/auth/domain/entities/auth_token.dart';
+import 'package:go_nomads_app/features/auth/domain/entities/auth_user.dart';
 
 /// 社交登录类型
 enum SocialAuthProvider {

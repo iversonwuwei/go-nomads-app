@@ -1,9 +1,9 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/hotel/domain/entities/hotel_review.dart';
-import 'package:df_admin_mobile/features/hotel/domain/repositories/i_hotel_review_repository.dart';
-import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/hotel/domain/entities/hotel_review.dart';
+import 'package:go_nomads_app/features/hotel/domain/repositories/i_hotel_review_repository.dart';
+import 'package:go_nomads_app/services/http_service.dart';
 
 /// Hotel Review Repository - 酒店评论数据仓储
 /// 对接后端 AccommodationService API

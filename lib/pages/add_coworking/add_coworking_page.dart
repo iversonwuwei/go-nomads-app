@@ -1,14 +1,14 @@
-import 'package:df_admin_mobile/controllers/add_coworking_page_controller.dart';
-import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
-import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/pages/add_coworking/add_coworking_amenities_section.dart';
-import 'package:df_admin_mobile/pages/add_coworking/add_coworking_basic_info_section.dart';
-import 'package:df_admin_mobile/pages/add_coworking/add_coworking_contact_section.dart';
-import 'package:df_admin_mobile/pages/add_coworking/add_coworking_image_section.dart';
-import 'package:df_admin_mobile/pages/add_coworking/add_coworking_location_section.dart';
-import 'package:df_admin_mobile/pages/add_coworking/add_coworking_pricing_section.dart';
-import 'package:df_admin_mobile/pages/add_coworking/add_coworking_specs_section.dart';
-import 'package:df_admin_mobile/utils/navigation_util.dart';
+import 'package:go_nomads_app/controllers/add_coworking_page_controller.dart';
+import 'package:go_nomads_app/features/coworking/domain/entities/coworking_space.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/pages/add_coworking/add_coworking_amenities_section.dart';
+import 'package:go_nomads_app/pages/add_coworking/add_coworking_basic_info_section.dart';
+import 'package:go_nomads_app/pages/add_coworking/add_coworking_contact_section.dart';
+import 'package:go_nomads_app/pages/add_coworking/add_coworking_image_section.dart';
+import 'package:go_nomads_app/pages/add_coworking/add_coworking_location_section.dart';
+import 'package:go_nomads_app/pages/add_coworking/add_coworking_pricing_section.dart';
+import 'package:go_nomads_app/pages/add_coworking/add_coworking_specs_section.dart';
+import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

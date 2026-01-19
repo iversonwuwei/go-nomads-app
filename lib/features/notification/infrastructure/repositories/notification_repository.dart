@@ -1,11 +1,11 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/config/api_config.dart';
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/notification/domain/entities/app_notification.dart';
-import 'package:df_admin_mobile/features/notification/domain/repositories/i_notification_repository.dart';
-import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
-import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:go_nomads_app/config/api_config.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/notification/domain/entities/app_notification.dart';
+import 'package:go_nomads_app/features/notification/domain/repositories/i_notification_repository.dart';
+import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:go_nomads_app/services/http_service.dart';
 import 'package:get/get.dart';
 
 /// 通知仓储实现

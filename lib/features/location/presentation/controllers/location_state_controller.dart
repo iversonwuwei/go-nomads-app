@@ -1,12 +1,12 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/city/domain/entities/city_option.dart';
-import 'package:df_admin_mobile/features/country/domain/entities/country_option.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city_option.dart';
+import 'package:go_nomads_app/features/country/domain/entities/country_option.dart';
 import 'package:get/get.dart';
 
-import 'package:df_admin_mobile/features/location/application/use_cases/get_cities_by_country_use_case.dart';
-import 'package:df_admin_mobile/features/location/application/use_cases/get_city_by_id_use_case.dart';
-import 'package:df_admin_mobile/features/location/application/use_cases/get_countries_use_case.dart';
-import 'package:df_admin_mobile/features/location/application/use_cases/search_cities_use_case.dart';
+import 'package:go_nomads_app/features/location/application/use_cases/get_cities_by_country_use_case.dart';
+import 'package:go_nomads_app/features/location/application/use_cases/get_city_by_id_use_case.dart';
+import 'package:go_nomads_app/features/location/application/use_cases/get_countries_use_case.dart';
+import 'package:go_nomads_app/features/location/application/use_cases/search_cities_use_case.dart';
 
 /// Location State Controller
 /// 管理国家和城市数据的状态

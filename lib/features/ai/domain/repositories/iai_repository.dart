@@ -1,9 +1,9 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/async_task/domain/entities/async_task.dart';
-import 'package:df_admin_mobile/features/city/domain/entities/digital_nomad_guide.dart';
-import 'package:df_admin_mobile/features/city/infrastructure/models/city_detail_dto.dart';
-import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan.dart';
-import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan_summary.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/async_task/domain/entities/async_task.dart';
+import 'package:go_nomads_app/features/city/domain/entities/digital_nomad_guide.dart';
+import 'package:go_nomads_app/features/city/infrastructure/models/city_detail_dto.dart';
+import 'package:go_nomads_app/features/travel_plan/domain/entities/travel_plan.dart';
+import 'package:go_nomads_app/features/travel_plan/domain/entities/travel_plan_summary.dart';
 
 /// AI服务Repository接口
 ///

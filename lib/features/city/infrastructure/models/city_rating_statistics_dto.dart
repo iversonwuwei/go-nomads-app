@@ -1,4 +1,4 @@
-import 'package:df_admin_mobile/features/city/domain/entities/city_rating_statistics.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city_rating_statistics.dart';
 
 /// 城市评分统计 DTO
 class CityRatingStatisticsDto {

@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:df_admin_mobile/core/core.dart';
-import 'package:df_admin_mobile/core/sync/sync.dart';
-import 'package:df_admin_mobile/features/city/application/use_cases/city_use_cases.dart';
-import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
-import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
-import 'package:df_admin_mobile/services/signalr_service.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:go_nomads_app/core/core.dart';
+import 'package:go_nomads_app/core/sync/sync.dart';
+import 'package:go_nomads_app/features/city/application/use_cases/city_use_cases.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city.dart';
+import 'package:go_nomads_app/features/city/domain/repositories/i_city_repository.dart';
+import 'package:go_nomads_app/services/signalr_service.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:get/get.dart';
 
 /// 城市列表控制器 - 使用新的数据同步框架优化版本

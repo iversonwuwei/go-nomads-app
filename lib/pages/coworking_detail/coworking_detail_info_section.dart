@@ -1,5 +1,5 @@
-import 'package:df_admin_mobile/controllers/coworking_detail_page_controller.dart';
-import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:go_nomads_app/controllers/coworking_detail_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';

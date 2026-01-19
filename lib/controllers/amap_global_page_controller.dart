@@ -1,7 +1,7 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
-import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city.dart';
+import 'package:go_nomads_app/features/city/presentation/controllers/city_state_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

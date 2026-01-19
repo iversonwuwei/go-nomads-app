@@ -1,8 +1,8 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
 import 'package:get/get.dart';
 
-import 'package:df_admin_mobile/features/skill/application/use_cases/skill_use_cases.dart';
-import 'package:df_admin_mobile/features/skill/domain/entities/skill.dart';
+import 'package:go_nomads_app/features/skill/application/use_cases/skill_use_cases.dart';
+import 'package:go_nomads_app/features/skill/domain/entities/skill.dart';
 
 /// SkillStateController - 技能状态控制器
 class SkillStateController extends GetxController {

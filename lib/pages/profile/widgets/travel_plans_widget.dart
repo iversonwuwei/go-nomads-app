@@ -1,7 +1,7 @@
-import 'package:df_admin_mobile/features/ai/presentation/controllers/ai_state_controller.dart';
-import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan_summary.dart';
-import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/routes/app_routes.dart';
+import 'package:go_nomads_app/features/ai/presentation/controllers/ai_state_controller.dart';
+import 'package:go_nomads_app/features/travel_plan/domain/entities/travel_plan_summary.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';

@@ -1,6 +1,6 @@
-import 'package:df_admin_mobile/controllers/nomads_login_page_controller.dart';
-import 'package:df_admin_mobile/services/social_login_service.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:go_nomads_app/controllers/nomads_login_page_controller.dart';
+import 'package:go_nomads_app/services/social_login_service.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';

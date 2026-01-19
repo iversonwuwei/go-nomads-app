@@ -1,6 +1,6 @@
 // Legacy model import removed - model no longer exists
-// import 'package:df_admin_mobile/models/city_detail_model.dart' as legacy;
-import 'package:df_admin_mobile/features/city/domain/entities/city_detail.dart'
+// import 'package:go_nomads_app/models/city_detail_model.dart' as legacy;
+import 'package:go_nomads_app/features/city/domain/entities/city_detail.dart'
     as entity;
 
 // ============================================================

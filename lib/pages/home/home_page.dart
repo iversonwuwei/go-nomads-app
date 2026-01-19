@@ -1,10 +1,10 @@
-import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/pages/home/home_page_controller.dart';
-import 'package:df_admin_mobile/pages/home/widgets/home_city_grid.dart';
-import 'package:df_admin_mobile/pages/home/widgets/home_hero_section.dart';
-import 'package:df_admin_mobile/pages/home/widgets/home_meetups_section.dart';
-import 'package:df_admin_mobile/pages/home/widgets/home_search_bar.dart';
-import 'package:df_admin_mobile/widgets/copyright_widget.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/pages/home/home_page_controller.dart';
+import 'package:go_nomads_app/pages/home/widgets/home_city_grid.dart';
+import 'package:go_nomads_app/pages/home/widgets/home_hero_section.dart';
+import 'package:go_nomads_app/pages/home/widgets/home_meetups_section.dart';
+import 'package:go_nomads_app/pages/home/widgets/home_search_bar.dart';
+import 'package:go_nomads_app/widgets/copyright_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

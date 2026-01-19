@@ -1,4 +1,4 @@
-import 'package:df_admin_mobile/features/hotel/domain/entities/hotel.dart' as domain;
+import 'package:go_nomads_app/features/hotel/domain/entities/hotel.dart' as domain;
 
 /// Hotel DTO - 匹配后端 AccommodationService API 返回格式
 class HotelDto {

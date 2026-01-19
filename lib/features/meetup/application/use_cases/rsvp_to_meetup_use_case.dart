@@ -1,6 +1,6 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
+import 'package:go_nomads_app/features/meetup/domain/repositories/i_meetup_repository.dart';
 
 /// RSVP 活动 Use Case
 class RsvpToMeetupUseCase {

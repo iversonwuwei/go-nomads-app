@@ -1,5 +1,5 @@
-import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
-import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:go_nomads_app/features/user/domain/entities/user.dart';
+import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:get/get.dart';
 
 class UserProfilePageController extends GetxController {

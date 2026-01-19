@@ -1,13 +1,13 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/config/api_config.dart';
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/chat/domain/entities/chat.dart';
-import 'package:df_admin_mobile/features/chat/domain/repositories/i_chat_local_repository.dart';
-import 'package:df_admin_mobile/features/chat/domain/repositories/i_chat_repository.dart';
-import 'package:df_admin_mobile/features/chat/infrastructure/models/chat_dto.dart';
-import 'package:df_admin_mobile/features/chat/infrastructure/services/chat_file_storage_service.dart';
-import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:go_nomads_app/config/api_config.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/chat/domain/entities/chat.dart';
+import 'package:go_nomads_app/features/chat/domain/repositories/i_chat_local_repository.dart';
+import 'package:go_nomads_app/features/chat/domain/repositories/i_chat_repository.dart';
+import 'package:go_nomads_app/features/chat/infrastructure/models/chat_dto.dart';
+import 'package:go_nomads_app/features/chat/infrastructure/services/chat_file_storage_service.dart';
+import 'package:go_nomads_app/services/http_service.dart';
 
 /// Chat Repository 实现
 ///

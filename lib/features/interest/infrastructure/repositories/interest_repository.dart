@@ -1,8 +1,8 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/interest/domain/entities/interest.dart';
-import 'package:df_admin_mobile/features/interest/domain/repositories/i_interest_repository.dart';
-import 'package:df_admin_mobile/features/interest/infrastructure/models/interest_dto.dart';
-import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/interest/domain/entities/interest.dart';
+import 'package:go_nomads_app/features/interest/domain/repositories/i_interest_repository.dart';
+import 'package:go_nomads_app/features/interest/infrastructure/models/interest_dto.dart';
+import 'package:go_nomads_app/services/http_service.dart';
 
 /// Interest Repository Implementation - 兴趣仓储实现
 class InterestRepository implements IInterestRepository {

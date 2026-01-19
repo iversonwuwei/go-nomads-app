@@ -1,4 +1,4 @@
-import 'package:df_admin_mobile/features/membership/domain/entities/membership_level.dart';
+import 'package:go_nomads_app/features/membership/domain/entities/membership_level.dart';
 
 /// 用户会员信息实体
 class UserMembership {

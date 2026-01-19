@@ -1,4 +1,4 @@
-import 'package:df_admin_mobile/features/chat/domain/entities/chat.dart';
+import 'package:go_nomads_app/features/chat/domain/entities/chat.dart';
 
 /// 聊天消息本地仓储接口
 ///

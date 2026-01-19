@@ -1,4 +1,4 @@
-import 'package:df_admin_mobile/features/user/domain/entities/user_preferences.dart';
+import 'package:go_nomads_app/features/user/domain/entities/user_preferences.dart';
 
 /// 用户偏好设置仓储接口
 abstract class IUserPreferencesRepository {

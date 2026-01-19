@@ -1,11 +1,11 @@
-import 'package:df_admin_mobile/widgets/app_toast.dart';
-import 'package:df_admin_mobile/widgets/safe_network_image.dart';
-import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/safe_network_image.dart';
+import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import 'package:df_admin_mobile/controllers/modular_user_profile_page_controller.dart';
+import 'package:go_nomads_app/controllers/modular_user_profile_page_controller.dart';
 import 'edit_basic_info_page.dart';
 import 'edit_interests_page.dart';
 import 'edit_skills_page.dart';

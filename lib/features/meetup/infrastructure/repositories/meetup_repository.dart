@@ -1,9 +1,9 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
-import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
-import 'package:df_admin_mobile/features/meetup/infrastructure/models/meetup_dto.dart';
-import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
+import 'package:go_nomads_app/features/meetup/domain/repositories/i_meetup_repository.dart';
+import 'package:go_nomads_app/features/meetup/infrastructure/models/meetup_dto.dart';
+import 'package:go_nomads_app/services/http_service.dart';
 import 'package:get/get.dart';
 
 /// Meetup Repository 实现

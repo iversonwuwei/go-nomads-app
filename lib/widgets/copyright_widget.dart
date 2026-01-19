@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
 
 /// 统一版权信息组件
 /// 用于在各个页面底部显示版权信息，保持品牌一致性

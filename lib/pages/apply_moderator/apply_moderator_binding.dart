@@ -1,6 +1,6 @@
-import 'package:df_admin_mobile/features/moderator/domain/repositories/i_moderator_application_repository.dart';
-import 'package:df_admin_mobile/features/moderator/infrastructure/repositories/moderator_application_repository.dart';
-import 'package:df_admin_mobile/pages/apply_moderator/apply_moderator_controller.dart';
+import 'package:go_nomads_app/features/moderator/domain/repositories/i_moderator_application_repository.dart';
+import 'package:go_nomads_app/features/moderator/infrastructure/repositories/moderator_application_repository.dart';
+import 'package:go_nomads_app/pages/apply_moderator/apply_moderator_controller.dart';
 import 'package:get/get.dart';
 
 /// 申请成为版主页面 Binding

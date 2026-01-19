@@ -1,4 +1,4 @@
-import 'package:df_admin_mobile/features/innovation_project/domain/entities/innovation_project.dart';
+import 'package:go_nomads_app/features/innovation_project/domain/entities/innovation_project.dart';
 
 /// 创新项目数据传输对象（匹配后端API响应）
 class InnovationProjectDto {

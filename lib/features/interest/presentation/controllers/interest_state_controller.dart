@@ -1,8 +1,8 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
 import 'package:get/get.dart';
 
-import 'package:df_admin_mobile/features/interest/application/use_cases/interest_use_cases.dart';
-import 'package:df_admin_mobile/features/interest/domain/entities/interest.dart';
+import 'package:go_nomads_app/features/interest/application/use_cases/interest_use_cases.dart';
+import 'package:go_nomads_app/features/interest/domain/entities/interest.dart';
 
 /// InterestStateController - 兴趣状态控制器
 class InterestStateController extends GetxController {

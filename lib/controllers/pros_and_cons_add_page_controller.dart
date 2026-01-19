@@ -1,6 +1,6 @@
-import 'package:df_admin_mobile/features/city/application/state_controllers/pros_cons_state_controller.dart';
-import 'package:df_admin_mobile/services/token_storage_service.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:go_nomads_app/features/city/application/state_controllers/pros_cons_state_controller.dart';
+import 'package:go_nomads_app/services/token_storage_service.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

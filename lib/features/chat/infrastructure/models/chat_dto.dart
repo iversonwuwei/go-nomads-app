@@ -1,4 +1,4 @@
-import 'package:df_admin_mobile/features/chat/domain/entities/chat.dart';
+import 'package:go_nomads_app/features/chat/domain/entities/chat.dart';
 
 /// AuthorDto - 消息作者 DTO
 class AuthorDto {

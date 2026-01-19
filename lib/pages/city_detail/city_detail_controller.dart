@@ -1,13 +1,13 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/features/ai/presentation/controllers/ai_state_controller.dart';
-import 'package:df_admin_mobile/features/city/application/state_controllers/pros_cons_state_controller.dart';
-import 'package:df_admin_mobile/features/city/domain/entities/city_rating_item.dart';
-import 'package:df_admin_mobile/features/city/presentation/controllers/city_detail_state_controller.dart';
-import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
-import 'package:df_admin_mobile/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
-import 'package:df_admin_mobile/features/weather/presentation/controllers/weather_state_controller.dart';
-import 'package:df_admin_mobile/services/token_storage_service.dart';
+import 'package:go_nomads_app/features/ai/presentation/controllers/ai_state_controller.dart';
+import 'package:go_nomads_app/features/city/application/state_controllers/pros_cons_state_controller.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city_rating_item.dart';
+import 'package:go_nomads_app/features/city/presentation/controllers/city_detail_state_controller.dart';
+import 'package:go_nomads_app/features/coworking/presentation/controllers/coworking_state_controller.dart';
+import 'package:go_nomads_app/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
+import 'package:go_nomads_app/features/weather/presentation/controllers/weather_state_controller.dart';
+import 'package:go_nomads_app/services/token_storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

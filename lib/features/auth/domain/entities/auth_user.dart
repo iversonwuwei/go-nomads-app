@@ -1,4 +1,4 @@
-import 'package:df_admin_mobile/features/membership/domain/entities/user_membership.dart';
+import 'package:go_nomads_app/features/membership/domain/entities/user_membership.dart';
 
 /// 认证用户实体
 class AuthUser {

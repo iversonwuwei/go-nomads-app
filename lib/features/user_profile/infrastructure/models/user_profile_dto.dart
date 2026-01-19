@@ -1,5 +1,5 @@
-// import 'package:df_admin_mobile/models/user_profile_models.dart' as legacy; // Legacy model removed
-import 'package:df_admin_mobile/features/user_profile/domain/entities/user_profile.dart'
+// import 'package:go_nomads_app/models/user_profile_models.dart' as legacy; // Legacy model removed
+import 'package:go_nomads_app/features/user_profile/domain/entities/user_profile.dart'
     as domain;
 
 /// UserProfile DTO - 基础设施层数据传输对象

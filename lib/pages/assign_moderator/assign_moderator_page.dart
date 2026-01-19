@@ -1,8 +1,8 @@
-import 'package:df_admin_mobile/pages/assign_moderator/assign_moderator_controller.dart';
-import 'package:df_admin_mobile/pages/assign_moderator/widgets/assign_moderator_app_bar.dart';
-import 'package:df_admin_mobile/pages/assign_moderator/widgets/assign_moderator_bottom_bar.dart';
-import 'package:df_admin_mobile/pages/assign_moderator/widgets/assign_moderator_search_bar.dart';
-import 'package:df_admin_mobile/pages/assign_moderator/widgets/assign_moderator_user_list.dart';
+import 'package:go_nomads_app/pages/assign_moderator/assign_moderator_controller.dart';
+import 'package:go_nomads_app/pages/assign_moderator/widgets/assign_moderator_app_bar.dart';
+import 'package:go_nomads_app/pages/assign_moderator/widgets/assign_moderator_bottom_bar.dart';
+import 'package:go_nomads_app/pages/assign_moderator/widgets/assign_moderator_search_bar.dart';
+import 'package:go_nomads_app/pages/assign_moderator/widgets/assign_moderator_user_list.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

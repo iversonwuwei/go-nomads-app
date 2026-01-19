@@ -1,4 +1,4 @@
-package com.gonomads.df_admin_mobile
+package com.gonomads.go_nomads_app
 
 import android.os.Bundle
 import com.amap.api.maps.MapsInitializer
@@ -9,7 +9,7 @@ import io.flutter.plugins.GeneratedPluginRegistrant
 
 class MainActivity : FlutterActivity() {
     
-    private val CHANNEL_NAME = "com.gonomads.df_admin_mobile/amap"
+    private val CHANNEL_NAME = "com.gonomads.go_nomads_app/amap"
     
     // 高德定位服务实例
     private var amapLocationService: AmapLocationService? = null

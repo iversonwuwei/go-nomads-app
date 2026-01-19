@@ -1,4 +1,4 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
 
 /// UseCase基类
 ///

@@ -1,7 +1,7 @@
-import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
-import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
-import 'package:df_admin_mobile/features/user_management/domain/repositories/iuser_management_repository.dart';
-import 'package:df_admin_mobile/pages/assign_moderator/assign_moderator_controller.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city.dart';
+import 'package:go_nomads_app/features/city/domain/repositories/i_city_repository.dart';
+import 'package:go_nomads_app/features/user_management/domain/repositories/iuser_management_repository.dart';
+import 'package:go_nomads_app/pages/assign_moderator/assign_moderator_controller.dart';
 import 'package:get/get.dart';
 
 /// 指定版主页面绑定

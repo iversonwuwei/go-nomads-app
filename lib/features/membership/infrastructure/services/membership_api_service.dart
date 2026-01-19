@@ -1,9 +1,9 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/config/api_config.dart';
-import 'package:df_admin_mobile/features/membership/domain/entities/membership_plan.dart';
-import 'package:df_admin_mobile/features/membership/infrastructure/dtos/user_membership_dto.dart';
-import 'package:df_admin_mobile/services/token_storage_service.dart';
+import 'package:go_nomads_app/config/api_config.dart';
+import 'package:go_nomads_app/features/membership/domain/entities/membership_plan.dart';
+import 'package:go_nomads_app/features/membership/infrastructure/dtos/user_membership_dto.dart';
+import 'package:go_nomads_app/services/token_storage_service.dart';
 import 'package:dio/dio.dart';
 
 /// 会员服务 API 客户端

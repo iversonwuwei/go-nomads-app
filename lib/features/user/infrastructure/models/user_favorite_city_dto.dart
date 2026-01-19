@@ -1,4 +1,4 @@
-import 'package:df_admin_mobile/features/user/domain/entities/user_favorite_city.dart'
+import 'package:go_nomads_app/features/user/domain/entities/user_favorite_city.dart'
     as domain;
 
 // Type alias for backward compatibility

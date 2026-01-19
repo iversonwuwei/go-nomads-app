@@ -1,7 +1,7 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/innovation_project/domain/entities/innovation_project.dart';
-import 'package:df_admin_mobile/features/innovation_project/domain/repositories/i_innovation_project_repository.dart';
-import 'package:df_admin_mobile/features/innovation_project/infrastructure/models/innovation_project_dto.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/innovation_project/domain/entities/innovation_project.dart';
+import 'package:go_nomads_app/features/innovation_project/domain/repositories/i_innovation_project_repository.dart';
+import 'package:go_nomads_app/features/innovation_project/infrastructure/models/innovation_project_dto.dart';
 
 /// 获取所有项目用例
 class GetProjectsUseCase {

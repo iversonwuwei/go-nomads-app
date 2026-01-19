@@ -1,9 +1,9 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/features/meetup/domain/entities/event_type.dart';
-import 'package:df_admin_mobile/features/meetup/domain/repositories/i_event_type_repository.dart';
-import 'package:df_admin_mobile/features/meetup/infrastructure/repositories/event_type_repository.dart';
-import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:go_nomads_app/features/meetup/domain/entities/event_type.dart';
+import 'package:go_nomads_app/features/meetup/domain/repositories/i_event_type_repository.dart';
+import 'package:go_nomads_app/features/meetup/infrastructure/repositories/event_type_repository.dart';
+import 'package:go_nomads_app/services/http_service.dart';
 import 'package:get/get.dart';
 
 /// 事件类型状态控制器

@@ -1,4 +1,4 @@
-import 'package:df_admin_mobile/features/payment/domain/entities/order.dart';
+import 'package:go_nomads_app/features/payment/domain/entities/order.dart';
 
 /// 支付仓储接口
 abstract class IPaymentRepository {

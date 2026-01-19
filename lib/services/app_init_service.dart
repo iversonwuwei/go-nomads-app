@@ -1,9 +1,9 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/core/application/use_case.dart';
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/auth/application/use_cases/auth_database_use_cases.dart';
-import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:go_nomads_app/core/application/use_case.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/auth/application/use_cases/auth_database_use_cases.dart';
+import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

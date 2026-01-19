@@ -1,10 +1,10 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/controllers/locale_controller.dart';
-import 'package:df_admin_mobile/services/social_sdk_service.dart';
-import 'package:df_admin_mobile/utils/qq_share_util.dart';
-import 'package:df_admin_mobile/utils/wechat_share_util.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:go_nomads_app/controllers/locale_controller.dart';
+import 'package:go_nomads_app/services/social_sdk_service.dart';
+import 'package:go_nomads_app/utils/qq_share_util.dart';
+import 'package:go_nomads_app/utils/wechat_share_util.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';

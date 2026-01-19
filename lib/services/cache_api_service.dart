@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'package:dio/dio.dart';
 
-import 'package:df_admin_mobile/config/api_config.dart';
+import 'package:go_nomads_app/config/api_config.dart';
 
 /// Cache Service API 客户端
 /// 用于获取城市和共享办公空间的评分缓存数据

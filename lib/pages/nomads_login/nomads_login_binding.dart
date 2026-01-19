@@ -1,5 +1,5 @@
-import 'package:df_admin_mobile/controllers/nomads_login_page_controller.dart';
-import 'package:df_admin_mobile/pages/nomads_login/nomads_login_page.dart';
+import 'package:go_nomads_app/controllers/nomads_login_page_controller.dart';
+import 'package:go_nomads_app/pages/nomads_login/nomads_login_page.dart';
 import 'package:get/get.dart';
 
 /// NomadsLoginPage 的 Binding

@@ -1,6 +1,6 @@
-import 'package:df_admin_mobile/pages/assign_moderator/assign_moderator_controller.dart';
-import 'package:df_admin_mobile/pages/assign_moderator/widgets/assign_moderator_user_tile.dart';
-import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
+import 'package:go_nomads_app/pages/assign_moderator/assign_moderator_controller.dart';
+import 'package:go_nomads_app/pages/assign_moderator/widgets/assign_moderator_user_tile.dart';
+import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';

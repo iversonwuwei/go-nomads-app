@@ -1,4 +1,4 @@
-import 'package:df_admin_mobile/layouts/bottom_nav/bottom_nav_controller.dart';
+import 'package:go_nomads_app/layouts/bottom_nav/bottom_nav_controller.dart';
 import 'package:get/get.dart';
 
 /// 底部导航 Binding - GetX 依赖注入

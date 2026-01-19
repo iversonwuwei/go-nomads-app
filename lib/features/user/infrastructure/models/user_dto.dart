@@ -1,9 +1,9 @@
-// import 'package:df_admin_mobile/models/user_model.dart' as legacy; // Legacy model removed
+// import 'package:go_nomads_app/models/user_model.dart' as legacy; // Legacy model removed
 import 'dart:developer';
 
-import 'package:df_admin_mobile/features/membership/domain/entities/membership_level.dart';
-import 'package:df_admin_mobile/features/membership/domain/entities/user_membership.dart';
-import 'package:df_admin_mobile/features/user/domain/entities/user.dart' as entity;
+import 'package:go_nomads_app/features/membership/domain/entities/membership_level.dart';
+import 'package:go_nomads_app/features/membership/domain/entities/user_membership.dart';
+import 'package:go_nomads_app/features/user/domain/entities/user.dart' as entity;
 
 /// User DTO - 基础设施层数据传输对象
 class UserDto {

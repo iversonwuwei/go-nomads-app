@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
 
 /// 天气指标卡片 - 显示单个天气指标（如湿度、风速等）
 class WeatherMetricCard extends StatelessWidget {

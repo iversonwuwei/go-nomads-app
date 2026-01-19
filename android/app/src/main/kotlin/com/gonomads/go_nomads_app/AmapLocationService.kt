@@ -1,4 +1,4 @@
-package com.gonomads.df_admin_mobile
+package com.gonomads.go_nomads_app
 
 import android.Manifest
 import android.content.Context

@@ -1,4 +1,4 @@
-import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
+import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
 
 /// Meetup 辅助工具类
 /// 从 DataServiceController 迁移的辅助方法

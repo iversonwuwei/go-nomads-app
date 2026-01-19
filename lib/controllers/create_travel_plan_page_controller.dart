@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:df_admin_mobile/services/amap_native_location_service.dart';
-import 'package:df_admin_mobile/services/amap_poi_service.dart';
-import 'package:df_admin_mobile/services/location_service.dart';
+import 'package:go_nomads_app/services/amap_native_location_service.dart';
+import 'package:go_nomads_app/services/amap_poi_service.dart';
+import 'package:go_nomads_app/services/location_service.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';

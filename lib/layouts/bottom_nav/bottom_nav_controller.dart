@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:df_admin_mobile/core/sync/refreshable_controller.dart';
-import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
-import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
-import 'package:df_admin_mobile/features/notification/presentation/controllers/notification_state_controller.dart';
-import 'package:df_admin_mobile/pages/home/home_page_controller.dart';
-import 'package:df_admin_mobile/routes/app_routes.dart';
-import 'package:df_admin_mobile/services/signalr_service.dart';
-import 'package:df_admin_mobile/services/token_storage_service.dart';
+import 'package:go_nomads_app/core/sync/refreshable_controller.dart';
+import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:go_nomads_app/features/meetup/presentation/controllers/meetup_state_controller.dart';
+import 'package:go_nomads_app/features/notification/presentation/controllers/notification_state_controller.dart';
+import 'package:go_nomads_app/pages/home/home_page_controller.dart';
+import 'package:go_nomads_app/routes/app_routes.dart';
+import 'package:go_nomads_app/services/signalr_service.dart';
+import 'package:go_nomads_app/services/token_storage_service.dart';
 import 'package:get/get.dart';
 
 /// 底部导航控制器

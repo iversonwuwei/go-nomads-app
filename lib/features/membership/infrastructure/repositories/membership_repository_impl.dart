@@ -1,15 +1,15 @@
 import 'dart:convert';
 import 'dart:developer';
 
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/membership/domain/entities/ai_usage_check.dart';
-import 'package:df_admin_mobile/features/membership/domain/entities/membership_level.dart';
-import 'package:df_admin_mobile/features/membership/domain/entities/membership_plan.dart';
-import 'package:df_admin_mobile/features/membership/domain/entities/user_membership.dart';
-import 'package:df_admin_mobile/features/membership/domain/repositories/membership_repository.dart';
-import 'package:df_admin_mobile/features/membership/infrastructure/dtos/user_membership_dto.dart';
-import 'package:df_admin_mobile/features/membership/infrastructure/services/membership_api_service.dart';
-import 'package:df_admin_mobile/services/token_storage_service.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/membership/domain/entities/ai_usage_check.dart';
+import 'package:go_nomads_app/features/membership/domain/entities/membership_level.dart';
+import 'package:go_nomads_app/features/membership/domain/entities/membership_plan.dart';
+import 'package:go_nomads_app/features/membership/domain/entities/user_membership.dart';
+import 'package:go_nomads_app/features/membership/domain/repositories/membership_repository.dart';
+import 'package:go_nomads_app/features/membership/infrastructure/dtos/user_membership_dto.dart';
+import 'package:go_nomads_app/features/membership/infrastructure/services/membership_api_service.dart';
+import 'package:go_nomads_app/services/token_storage_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// 会员仓库实现

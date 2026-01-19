@@ -1,9 +1,9 @@
 import 'package:get/get.dart';
 
-import 'package:df_admin_mobile/services/http_service.dart';
-import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_comment.dart';
-import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_comment_repository.dart';
-import 'package:df_admin_mobile/features/coworking/infrastructure/models/coworking_comment_dto.dart';
+import 'package:go_nomads_app/services/http_service.dart';
+import 'package:go_nomads_app/features/coworking/domain/entities/coworking_comment.dart';
+import 'package:go_nomads_app/features/coworking/domain/repositories/icoworking_comment_repository.dart';
+import 'package:go_nomads_app/features/coworking/infrastructure/models/coworking_comment_dto.dart';
 
 /// Coworking 评论仓储实现
 class CoworkingCommentRepository implements ICoworkingCommentRepository {

@@ -1,7 +1,7 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/features/user_profile/infrastructure/models/user_profile_dto.dart';
-import 'package:df_admin_mobile/services/database_service.dart';
+import 'package:go_nomads_app/features/user_profile/infrastructure/models/user_profile_dto.dart';
+import 'package:go_nomads_app/services/database_service.dart';
 
 /// 用户资料模块数据访问对象
 class UserProfileDao {

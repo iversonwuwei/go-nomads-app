@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:df_admin_mobile/core/sync/sync.dart';
-import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
-import 'package:df_admin_mobile/features/user/domain/entities/user.dart' as models;
-import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:go_nomads_app/core/sync/sync.dart';
+import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:go_nomads_app/features/user/domain/entities/user.dart' as models;
+import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:get/get.dart';
 
 /// MemberDetailPage 控制器

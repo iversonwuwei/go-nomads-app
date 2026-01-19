@@ -1,12 +1,12 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart'
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/coworking/domain/entities/coworking_space.dart'
     as entity;
-import 'package:df_admin_mobile/features/coworking/domain/entities/verification_eligibility.dart';
-import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_repository.dart';
-import 'package:df_admin_mobile/features/coworking/infrastructure/models/coworking_space_dto.dart';
-import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:go_nomads_app/features/coworking/domain/entities/verification_eligibility.dart';
+import 'package:go_nomads_app/features/coworking/domain/repositories/icoworking_repository.dart';
+import 'package:go_nomads_app/features/coworking/infrastructure/models/coworking_space_dto.dart';
+import 'package:go_nomads_app/services/http_service.dart';
 import 'package:get/get.dart';
 
 /// Coworking Repository 实现

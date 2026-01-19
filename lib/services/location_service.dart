@@ -1,7 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 

@@ -1,8 +1,8 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/hotel/domain/entities/hotel.dart';
-import 'package:df_admin_mobile/features/hotel/infrastructure/repositories/hotel_repository.dart';
-import 'package:df_admin_mobile/services/http_service.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/hotel/domain/entities/hotel.dart';
+import 'package:go_nomads_app/features/hotel/infrastructure/repositories/hotel_repository.dart';
+import 'package:go_nomads_app/services/http_service.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:get/get.dart';
 
 /// RoomTypeListPage 控制器

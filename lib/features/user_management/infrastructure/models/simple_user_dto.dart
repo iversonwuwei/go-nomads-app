@@ -1,4 +1,4 @@
-import 'package:df_admin_mobile/features/user_management/domain/entities/simple_user.dart';
+import 'package:go_nomads_app/features/user_management/domain/entities/simple_user.dart';
 
 /// Simple User DTO for API communication
 class SimpleUserDto {

@@ -1,10 +1,10 @@
-import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/pages/create_meetup/create_meetup_page.dart';
-import 'package:df_admin_mobile/pages/meetup_list/meetup_list_controller.dart';
-import 'package:df_admin_mobile/pages/meetup_list/widgets/meetup_filter_drawer.dart';
-import 'package:df_admin_mobile/pages/meetup_list/widgets/meetup_list_view.dart';
-import 'package:df_admin_mobile/widgets/back_button.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/pages/create_meetup/create_meetup_page.dart';
+import 'package:go_nomads_app/pages/meetup_list/meetup_list_controller.dart';
+import 'package:go_nomads_app/pages/meetup_list/widgets/meetup_filter_drawer.dart';
+import 'package:go_nomads_app/pages/meetup_list/widgets/meetup_list_view.dart';
+import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';

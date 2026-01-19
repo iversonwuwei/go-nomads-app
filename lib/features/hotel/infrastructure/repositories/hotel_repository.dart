@@ -1,10 +1,10 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/hotel/domain/entities/hotel.dart';
-import 'package:df_admin_mobile/features/hotel/domain/repositories/i_hotel_repository.dart';
-import 'package:df_admin_mobile/features/hotel/infrastructure/models/hotel_dto.dart';
-import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/hotel/domain/entities/hotel.dart';
+import 'package:go_nomads_app/features/hotel/domain/repositories/i_hotel_repository.dart';
+import 'package:go_nomads_app/features/hotel/infrastructure/models/hotel_dto.dart';
+import 'package:go_nomads_app/services/http_service.dart';
 
 /// Hotel Repository - 酒店数据仓储
 /// 对接后端 AccommodationService API

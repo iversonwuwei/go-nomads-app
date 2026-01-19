@@ -1,15 +1,15 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/config/supabase_config.dart';
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/core/sync/sync.dart';
-import 'package:df_admin_mobile/features/hotel/domain/entities/hotel.dart';
-import 'package:df_admin_mobile/features/hotel/infrastructure/repositories/hotel_repository.dart';
-import 'package:df_admin_mobile/features/location/presentation/controllers/location_state_controller.dart';
-import 'package:df_admin_mobile/services/http_service.dart';
-import 'package:df_admin_mobile/services/image_upload_service.dart';
-import 'package:df_admin_mobile/utils/image_upload_helper.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:go_nomads_app/config/supabase_config.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/core/sync/sync.dart';
+import 'package:go_nomads_app/features/hotel/domain/entities/hotel.dart';
+import 'package:go_nomads_app/features/hotel/infrastructure/repositories/hotel_repository.dart';
+import 'package:go_nomads_app/features/location/presentation/controllers/location_state_controller.dart';
+import 'package:go_nomads_app/services/http_service.dart';
+import 'package:go_nomads_app/services/image_upload_service.dart';
+import 'package:go_nomads_app/utils/image_upload_helper.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

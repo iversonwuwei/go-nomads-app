@@ -1,13 +1,13 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/features/ai/presentation/controllers/ai_state_controller.dart';
-import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
-import 'package:df_admin_mobile/features/membership/presentation/controllers/membership_state_controller.dart';
-import 'package:df_admin_mobile/features/notification/presentation/controllers/notification_state_controller.dart';
-import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
-import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
-import 'package:df_admin_mobile/routes/app_routes.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:go_nomads_app/features/ai/presentation/controllers/ai_state_controller.dart';
+import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:go_nomads_app/features/membership/presentation/controllers/membership_state_controller.dart';
+import 'package:go_nomads_app/features/notification/presentation/controllers/notification_state_controller.dart';
+import 'package:go_nomads_app/features/user/domain/entities/user.dart';
+import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:go_nomads_app/routes/app_routes.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:get/get.dart';
 
 /// Profile 页面控制器

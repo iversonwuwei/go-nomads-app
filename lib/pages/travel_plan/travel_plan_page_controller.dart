@@ -1,10 +1,10 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/features/ai/presentation/controllers/ai_state_controller.dart';
-import 'package:df_admin_mobile/features/membership/presentation/services/ai_quota_service.dart';
-import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
-import 'package:df_admin_mobile/widgets/async_task_progress_dialog.dart';
+import 'package:go_nomads_app/features/ai/presentation/controllers/ai_state_controller.dart';
+import 'package:go_nomads_app/features/membership/presentation/services/ai_quota_service.dart';
+import 'package:go_nomads_app/features/travel_plan/domain/entities/travel_plan.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/async_task_progress_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

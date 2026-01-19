@@ -1,11 +1,11 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/features/interest/domain/entities/interest.dart';
-import 'package:df_admin_mobile/features/interest/presentation/controllers/interest_state_controller.dart';
-import 'package:df_admin_mobile/features/skill/domain/entities/skill.dart';
-import 'package:df_admin_mobile/features/skill/presentation/controllers/skill_state_controller.dart';
-import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:go_nomads_app/features/interest/domain/entities/interest.dart';
+import 'package:go_nomads_app/features/interest/presentation/controllers/interest_state_controller.dart';
+import 'package:go_nomads_app/features/skill/domain/entities/skill.dart';
+import 'package:go_nomads_app/features/skill/presentation/controllers/skill_state_controller.dart';
+import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:get/get.dart';
 
 /// 技能和兴趣选择页面控制器

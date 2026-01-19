@@ -1,7 +1,7 @@
-import 'package:df_admin_mobile/pages/add_coworking_review/add_coworking_review_page.dart';
-import 'package:df_admin_mobile/controllers/coworking_detail_page_controller.dart';
-import 'package:df_admin_mobile/pages/coworking_reviews_page.dart';
-import 'package:df_admin_mobile/widgets/safe_network_image.dart';
+import 'package:go_nomads_app/pages/add_coworking_review/add_coworking_review_page.dart';
+import 'package:go_nomads_app/controllers/coworking_detail_page_controller.dart';
+import 'package:go_nomads_app/pages/coworking_reviews_page.dart';
+import 'package:go_nomads_app/widgets/safe_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';

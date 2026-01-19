@@ -1,5 +1,5 @@
-import 'package:df_admin_mobile/controllers/global_map_page_controller.dart';
-import 'package:df_admin_mobile/widgets/back_button.dart';
+import 'package:go_nomads_app/controllers/global_map_page_controller.dart';
+import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:get/get.dart';

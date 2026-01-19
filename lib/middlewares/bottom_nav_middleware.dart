@@ -1,4 +1,4 @@
-import 'package:df_admin_mobile/layouts/bottom_nav/bottom_nav.dart';
+import 'package:go_nomads_app/layouts/bottom_nav/bottom_nav.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

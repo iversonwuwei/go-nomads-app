@@ -44,7 +44,7 @@ def convert_import_path(file_path, import_line):
     package_path = current_dir.replace('\\', '/')
     
     # 构造新的import语句
-    new_import = f"import 'package:df_admin_mobile/{package_path}';"
+    new_import = f"import 'package:go_nomads_app/{package_path}';"
     
     return new_import
 

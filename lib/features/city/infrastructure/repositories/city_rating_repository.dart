@@ -1,11 +1,11 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/features/city/domain/entities/city_rating_category.dart';
-import 'package:df_admin_mobile/features/city/domain/entities/city_rating_info.dart';
-import 'package:df_admin_mobile/features/city/domain/repositories/icity_rating_repository.dart';
-import 'package:df_admin_mobile/features/city/infrastructure/models/city_rating_category_dto.dart';
-import 'package:df_admin_mobile/features/city/infrastructure/models/city_rating_info_dto.dart';
-import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city_rating_category.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city_rating_info.dart';
+import 'package:go_nomads_app/features/city/domain/repositories/icity_rating_repository.dart';
+import 'package:go_nomads_app/features/city/infrastructure/models/city_rating_category_dto.dart';
+import 'package:go_nomads_app/features/city/infrastructure/models/city_rating_info_dto.dart';
+import 'package:go_nomads_app/services/http_service.dart';
 import 'package:get/get.dart';
 
 /// 城市评分仓储实现

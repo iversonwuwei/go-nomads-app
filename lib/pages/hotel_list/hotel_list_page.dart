@@ -1,8 +1,8 @@
-import 'package:df_admin_mobile/controllers/hotel_list_page_controller.dart';
-import 'package:df_admin_mobile/pages/hotel_list/hotel_card.dart';
-import 'package:df_admin_mobile/pages/hotel_list/hotel_empty_state.dart';
-import 'package:df_admin_mobile/pages/hotel_list/hotel_search_bar.dart';
-import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
+import 'package:go_nomads_app/controllers/hotel_list_page_controller.dart';
+import 'package:go_nomads_app/pages/hotel_list/hotel_card.dart';
+import 'package:go_nomads_app/pages/hotel_list/hotel_empty_state.dart';
+import 'package:go_nomads_app/pages/hotel_list/hotel_search_bar.dart';
+import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';

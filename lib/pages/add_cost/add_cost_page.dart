@@ -1,10 +1,10 @@
-import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/controllers/add_cost_page_controller.dart';
-import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/pages/add_cost/cost_categories_section.dart';
-import 'package:df_admin_mobile/pages/add_cost/currency_section.dart';
-import 'package:df_admin_mobile/pages/add_cost/total_and_notes_section.dart';
-import 'package:df_admin_mobile/utils/navigation_util.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/controllers/add_cost_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/pages/add_cost/cost_categories_section.dart';
+import 'package:go_nomads_app/pages/add_cost/currency_section.dart';
+import 'package:go_nomads_app/pages/add_cost/total_and_notes_section.dart';
+import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
