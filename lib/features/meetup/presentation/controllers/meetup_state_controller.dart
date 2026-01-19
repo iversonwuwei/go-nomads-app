@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:get/get.dart';
 import 'package:go_nomads_app/core/sync/sync.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/meetup/application/use_cases/cancel_meetup_use_case.dart';
@@ -17,7 +18,6 @@ import 'package:go_nomads_app/features/meetup/infrastructure/services/meetup_sig
 import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:go_nomads_app/services/http_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:get/get.dart';
 
 /// Meetup 状态管理 Controller V2
 ///
@@ -738,6 +738,14 @@ class MeetupStateController extends PaginatedRefreshableController {
         meetups.refresh();
       }
 
+      // 通知其他组件（用于更新用户统计数据）
+      DataEventBus.instance.emit(DataChangedEvent(
+        entityType: 'meetup_rsvp',
+        entityId: meetupId,
+        version: DateTime.now().millisecondsSinceEpoch,
+        changeType: DataChangeType.created,
+      ));
+
       log('✅ RSVP 成功');
       AppToast.success('报名成功!');
       return result;
@@ -789,6 +797,14 @@ class MeetupStateController extends PaginatedRefreshableController {
         // 强制刷新列表，确保 UI 更新
         meetups.refresh();
       }
+
+      // 通知其他组件（用于更新用户统计数据）
+      DataEventBus.instance.emit(DataChangedEvent(
+        entityType: 'meetup_rsvp',
+        entityId: meetupId,
+        version: DateTime.now().millisecondsSinceEpoch,
+        changeType: DataChangeType.deleted,
+      ));
 
       log('✅ 取消 RSVP 成功');
       AppToast.success('已取消报名');

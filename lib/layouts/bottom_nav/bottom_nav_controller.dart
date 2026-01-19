@@ -1,21 +1,22 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:get/get.dart';
 import 'package:go_nomads_app/core/sync/refreshable_controller.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/meetup/presentation/controllers/meetup_state_controller.dart';
 import 'package:go_nomads_app/features/notification/presentation/controllers/notification_state_controller.dart';
 import 'package:go_nomads_app/pages/home/home_page_controller.dart';
+import 'package:go_nomads_app/pages/profile/profile_controller.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/services/signalr_service.dart';
 import 'package:go_nomads_app/services/token_storage_service.dart';
-import 'package:get/get.dart';
 
 /// 底部导航控制器
 /// 管理底部导航栏的状态和页面切换
 class BottomNavController extends GetxController {
   // ==================== 状态 ====================
-  
+
   /// 当前选中的标签索引
   final currentIndex = 0.obs;
 
@@ -26,7 +27,7 @@ class BottomNavController extends GetxController {
   final unreadCount = 0.obs;
 
   // ==================== 私有变量 ====================
-  
+
   /// Worker 用于监听通知控制器的未读数量变化
   Worker? _unreadCountWorker;
 
@@ -39,7 +40,7 @@ class BottomNavController extends GetxController {
   void onInit() {
     super.onInit();
     log('🔘 BottomNavController: onInit');
-    
+
     // 延迟初始化，确保其他控制器已注册
     Future.delayed(const Duration(milliseconds: 500), () {
       _setupUnreadCountListener();
@@ -82,7 +83,7 @@ class BottomNavController extends GetxController {
     switch (index) {
       case 1: // Profile
         log('   → Profile 页面');
-        Get.toNamed(AppRoutes.profile);
+        _navigateToProfile();
         break;
       case 2: // 用户消息列表
         log('   → 用户消息列表页面');
@@ -91,10 +92,22 @@ class BottomNavController extends GetxController {
     }
   }
 
+  /// 导航到 Profile 页面并触发数据同步
+  Future<void> _navigateToProfile() async {
+    // 如果 ProfileController 已存在，触发数据同步
+    if (Get.isRegistered<ProfileController>()) {
+      final profileController = Get.find<ProfileController>();
+      // 触发数据同步
+      profileController.onRouteResume();
+    }
+
+    Get.toNamed(AppRoutes.profile);
+  }
+
   /// 导航到首页
   Future<void> _navigateToHome() async {
     changeTab(0);
-    
+
     // 如果 HomePageController 已存在，触发数据刷新
     if (Get.isRegistered<HomePageController>()) {
       final homeController = Get.find<HomePageController>();
@@ -108,7 +121,7 @@ class BottomNavController extends GetxController {
       // 触发数据刷新
       homeController.onRouteResume();
     }
-    
+
     Get.offAllNamed(AppRoutes.home);
   }
 

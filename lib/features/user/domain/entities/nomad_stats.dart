@@ -4,25 +4,28 @@
 class NomadStats {
   final String id;
   final String userId;
-  
+
   /// 访问过的国家数量
   final int countriesVisited;
-  
+
   /// 居住过的城市数量
   final int citiesLived;
-  
+
   /// 游牧天数
   final int daysNomading;
-  
+
   /// 用户创建的 Meetup 数量
   final int meetupsCreated;
-  
+
+  /// 用户参加的未结束 Meetup 数量
+  final int meetupsJoined;
+
   /// 完成的旅行数量
   final int tripsCompleted;
-  
+
   /// 收藏的城市数量
   final int favoriteCitiesCount;
-  
+
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -33,6 +36,7 @@ class NomadStats {
     this.citiesLived = 0,
     this.daysNomading = 0,
     this.meetupsCreated = 0,
+    this.meetupsJoined = 0,
     this.tripsCompleted = 0,
     this.favoriteCitiesCount = 0,
     required this.createdAt,
@@ -49,6 +53,7 @@ class NomadStats {
       citiesLived: 0,
       daysNomading: 0,
       meetupsCreated: 0,
+      meetupsJoined: 0,
       tripsCompleted: 0,
       favoriteCitiesCount: 0,
       createdAt: now,
@@ -65,16 +70,17 @@ class NomadStats {
       citiesLived: json['citiesLived'] as int? ?? json['cities_lived'] as int? ?? 0,
       daysNomading: json['daysNomading'] as int? ?? json['days_nomading'] as int? ?? 0,
       meetupsCreated: json['meetupsCreated'] as int? ?? json['meetups_created'] as int? ?? 0,
+      meetupsJoined: json['meetupsJoined'] as int? ?? json['meetups_joined'] as int? ?? 0,
       tripsCompleted: json['tripsCompleted'] as int? ?? json['trips_completed'] as int? ?? 0,
       favoriteCitiesCount: json['favoriteCitiesCount'] as int? ?? json['favorite_cities_count'] as int? ?? 0,
-      createdAt: json['createdAt'] != null 
-          ? DateTime.parse(json['createdAt'] as String) 
-          : json['created_at'] != null 
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'] as String)
+          : json['created_at'] != null
               ? DateTime.parse(json['created_at'] as String)
               : DateTime.now(),
-      updatedAt: json['updatedAt'] != null 
+      updatedAt: json['updatedAt'] != null
           ? DateTime.parse(json['updatedAt'] as String)
-          : json['updated_at'] != null 
+          : json['updated_at'] != null
               ? DateTime.parse(json['updated_at'] as String)
               : DateTime.now(),
     );
@@ -89,6 +95,7 @@ class NomadStats {
       'citiesLived': citiesLived,
       'daysNomading': daysNomading,
       'meetupsCreated': meetupsCreated,
+      'meetupsJoined': meetupsJoined,
       'tripsCompleted': tripsCompleted,
       'favoriteCitiesCount': favoriteCitiesCount,
       'createdAt': createdAt.toIso8601String(),
@@ -104,6 +111,7 @@ class NomadStats {
     int? citiesLived,
     int? daysNomading,
     int? meetupsCreated,
+    int? meetupsJoined,
     int? tripsCompleted,
     int? favoriteCitiesCount,
     DateTime? createdAt,
@@ -116,6 +124,7 @@ class NomadStats {
       citiesLived: citiesLived ?? this.citiesLived,
       daysNomading: daysNomading ?? this.daysNomading,
       meetupsCreated: meetupsCreated ?? this.meetupsCreated,
+      meetupsJoined: meetupsJoined ?? this.meetupsJoined,
       tripsCompleted: tripsCompleted ?? this.tripsCompleted,
       favoriteCitiesCount: favoriteCitiesCount ?? this.favoriteCitiesCount,
       createdAt: createdAt ?? this.createdAt,
@@ -124,22 +133,16 @@ class NomadStats {
   }
 
   /// 是否是新手（所有统计都是0）
-  bool get isNewbie => 
-      countriesVisited == 0 && 
-      citiesLived == 0 && 
-      daysNomading == 0;
+  bool get isNewbie => countriesVisited == 0 && citiesLived == 0 && daysNomading == 0;
 
   /// 游牧等级
   int get nomadLevel {
-    final totalScore = countriesVisited * 10 + 
-        citiesLived * 5 + 
-        (daysNomading ~/ 30) * 3 + 
-        tripsCompleted * 2;
-    
+    final totalScore = countriesVisited * 10 + citiesLived * 5 + (daysNomading ~/ 30) * 3 + tripsCompleted * 2;
+
     if (totalScore >= 500) return 5; // Master Nomad
     if (totalScore >= 200) return 4; // Expert Nomad
     if (totalScore >= 100) return 3; // Seasoned Nomad
-    if (totalScore >= 30) return 2;  // Aspiring Nomad
+    if (totalScore >= 30) return 2; // Aspiring Nomad
     return 1; // Newbie
   }
 

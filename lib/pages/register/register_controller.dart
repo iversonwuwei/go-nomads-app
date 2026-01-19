@@ -1,0 +1,212 @@
+import 'dart:developer';
+
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:go_nomads_app/services/http_service.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
+
+/// 注册页面控制器 - 使用响应式验证，无需 GlobalKey
+class RegisterController extends GetxController {
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
+  final usernameController = TextEditingController();
+
+  final RxBool obscurePassword = true.obs;
+  final RxBool obscureConfirmPassword = true.obs;
+  final RxBool agreeToTerms = false.obs;
+  final RxBool isRegistering = false.obs;
+
+  // 响应式错误信息 - 替代 GlobalKey + FormState
+  final RxnString usernameError = RxnString(null);
+  final RxnString emailError = RxnString(null);
+  final RxnString passwordError = RxnString(null);
+  final RxnString confirmPasswordError = RxnString(null);
+
+  // 是否显示验证错误（首次提交后才显示）
+  final RxBool showValidationErrors = false.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    // 监听输入变化，实时验证（仅在首次提交后）
+    ever(showValidationErrors, (_) {
+      if (showValidationErrors.value) {
+        _setupValidationListeners();
+      }
+    });
+  }
+
+  void _setupValidationListeners() {
+    // 当显示验证错误后，实时验证输入
+    usernameController.addListener(_validateUsername);
+    emailController.addListener(_validateEmail);
+    passwordController.addListener(_validatePassword);
+    confirmPasswordController.addListener(_validateConfirmPassword);
+  }
+
+  @override
+  void onClose() {
+    usernameController.removeListener(_validateUsername);
+    emailController.removeListener(_validateEmail);
+    passwordController.removeListener(_validatePassword);
+    confirmPasswordController.removeListener(_validateConfirmPassword);
+    emailController.dispose();
+    passwordController.dispose();
+    confirmPasswordController.dispose();
+    usernameController.dispose();
+    super.onClose();
+  }
+
+  // 验证方法
+  void _validateUsername() {
+    final value = usernameController.text;
+    if (value.isEmpty) {
+      usernameError.value = 'usernameRequired';
+    } else if (value.length < 3) {
+      usernameError.value = 'usernameMinLength';
+    } else {
+      usernameError.value = null;
+    }
+  }
+
+  void _validateEmail() {
+    final value = emailController.text;
+    if (value.isEmpty) {
+      emailError.value = 'emailRequired';
+    } else if (!GetUtils.isEmail(value)) {
+      emailError.value = 'emailInvalid';
+    } else {
+      emailError.value = null;
+    }
+  }
+
+  void _validatePassword() {
+    final value = passwordController.text;
+    if (value.isEmpty) {
+      passwordError.value = 'passwordRequired';
+    } else if (value.length < 6) {
+      passwordError.value = 'passwordMinLength';
+    } else {
+      passwordError.value = null;
+    }
+    // 密码变化时也要验证确认密码
+    if (confirmPasswordController.text.isNotEmpty) {
+      _validateConfirmPassword();
+    }
+  }
+
+  void _validateConfirmPassword() {
+    final value = confirmPasswordController.text;
+    if (value.isEmpty) {
+      confirmPasswordError.value = 'confirmPasswordRequired';
+    } else if (value != passwordController.text) {
+      confirmPasswordError.value = 'passwordsNotMatch';
+    } else {
+      confirmPasswordError.value = null;
+    }
+  }
+
+  /// 验证所有字段
+  bool _validateAll() {
+    _validateUsername();
+    _validateEmail();
+    _validatePassword();
+    _validateConfirmPassword();
+
+    return usernameError.value == null &&
+        emailError.value == null &&
+        passwordError.value == null &&
+        confirmPasswordError.value == null;
+  }
+
+  /// 清除所有错误
+  void clearErrors() {
+    usernameError.value = null;
+    emailError.value = null;
+    passwordError.value = null;
+    confirmPasswordError.value = null;
+    showValidationErrors.value = false;
+  }
+
+  void toggleObscurePassword() {
+    obscurePassword.value = !obscurePassword.value;
+  }
+
+  void toggleObscureConfirmPassword() {
+    obscureConfirmPassword.value = !obscureConfirmPassword.value;
+  }
+
+  void toggleAgreeToTerms([bool? value]) {
+    agreeToTerms.value = value ?? !agreeToTerms.value;
+  }
+
+  /// 注册
+  Future<void> register({
+    required String termsRequiredTitle,
+    required String pleaseAgreeToTerms,
+    required String welcomeToCommunity,
+    required String successTitle,
+  }) async {
+    // 标记开始验证，后续输入会实时验证
+    showValidationErrors.value = true;
+
+    if (!_validateAll()) {
+      return;
+    }
+
+    if (!agreeToTerms.value) {
+      AppToast.warning(
+        pleaseAgreeToTerms,
+        title: termsRequiredTitle,
+      );
+      return;
+    }
+
+    isRegistering.value = true;
+
+    try {
+      final authController = Get.find<AuthStateController>();
+      final success = await authController.register(
+        name: usernameController.text.trim(),
+        email: emailController.text.trim(),
+        password: passwordController.text,
+        confirmPassword: confirmPasswordController.text,
+      );
+
+      if (success) {
+        final user = authController.currentUser.value;
+        log('✅ 注册成功: ${user?.name}');
+
+        AppToast.success(
+          welcomeToCommunity,
+          title: successTitle,
+        );
+
+        await Future.delayed(const Duration(milliseconds: 500));
+        Get.offAllNamed('/');
+      } else {
+        log('❌ 注册失败');
+        AppToast.error(
+          '注册失败,请检查输入信息',
+          title: '注册失败',
+        );
+      }
+    } on HttpException catch (e) {
+      log('❌ 注册失败 (HttpException): ${e.message}');
+      AppToast.error(
+        e.message,
+        title: '注册失败',
+      );
+    } catch (e) {
+      log('❌ 注册错误: $e');
+      AppToast.error(
+        '注册过程中发生错误，请稍后重试',
+        title: '注册失败',
+      );
+    } finally {
+      isRegistering.value = false;
+    }
+  }
+}
