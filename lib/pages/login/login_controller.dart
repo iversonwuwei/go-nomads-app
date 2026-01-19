@@ -17,11 +17,15 @@ enum LoginMode { email, phone }
 
 /// 登录页面控制器 - 使用响应式验证，无需 GlobalKey
 class LoginController extends GetxController {
-  // Controllers
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
-  final phoneController = TextEditingController();
-  final smsCodeController = TextEditingController();
+  // Controllers - 使用 late 以便在 dispose 后可以安全检查
+  late final TextEditingController emailController;
+  late final TextEditingController passwordController;
+  late final TextEditingController phoneController;
+  late final TextEditingController smsCodeController;
+
+  // 标记控制器是否已被销毁 - 使用响应式变量以便 Obx 能正确追踪
+  final RxBool isDisposedRx = false.obs;
+  bool get isDisposed => isDisposedRx.value;
 
   final _tokenStorageService = TokenStorageService();
 
@@ -62,6 +66,12 @@ class LoginController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    // 初始化 TextEditingController
+    emailController = TextEditingController();
+    passwordController = TextEditingController();
+    phoneController = TextEditingController();
+    smsCodeController = TextEditingController();
+    
     _loadRememberMe();
     // 监听输入变化，实时验证
     ever(showValidationErrors, (_) {
@@ -80,6 +90,7 @@ class LoginController extends GetxController {
 
   @override
   void onClose() {
+    isDisposedRx.value = true;
     emailController.removeListener(_validateEmail);
     passwordController.removeListener(_validatePassword);
     phoneController.removeListener(_validatePhone);
