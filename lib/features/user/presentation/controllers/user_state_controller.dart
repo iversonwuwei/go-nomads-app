@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:get/get.dart';
 import 'package:go_nomads_app/core/core.dart';
 import 'package:go_nomads_app/core/sync/sync.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
@@ -11,7 +12,6 @@ import 'package:go_nomads_app/features/user/application/use_cases/user_use_cases
 import 'package:go_nomads_app/features/user/domain/entities/nomad_stats.dart';
 import 'package:go_nomads_app/features/user/domain/entities/user.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:get/get.dart';
 
 /// 用户状态控制器 V2 (优化版)
 ///
@@ -127,8 +127,14 @@ class UserStateController extends GetxController {
     DataEventBus.instance.on('user', _handleUserDataChanged);
     DataEventBus.instance.on('user_profile', _handleUserDataChanged);
     DataEventBus.instance.on('favorite_city', _handleFavoriteChanged);
+    // 同时监听 city_favorite 事件（由城市详情页发送）
+    DataEventBus.instance.on('city_favorite', _handleFavoriteChanged);
     DataEventBus.instance.on('skill', _handleSkillInterestChanged);
     DataEventBus.instance.on('interest', _handleSkillInterestChanged);
+    // 监听 meetup 变更（影响用户统计数据）
+    DataEventBus.instance.on('meetup', _handleMeetupChanged);
+    // 监听 meetup RSVP 变更（加入/退出活动）
+    DataEventBus.instance.on('meetup_rsvp', _handleMeetupRsvpChanged);
   }
 
   void _handleUserDataChanged(DataChangedEvent event) {
@@ -143,6 +149,9 @@ class UserStateController extends GetxController {
     log('🔔 收到收藏数据变更通知: ${event.changeType}');
     _invalidateFavoritesCache();
     loadFavoriteCityIds(forceRefresh: true);
+    // 收藏变更也会影响统计数据
+    _invalidateStatsCache();
+    loadNomadStats(forceRefresh: true);
   }
 
   void _handleSkillInterestChanged(DataChangedEvent event) {
@@ -150,6 +159,28 @@ class UserStateController extends GetxController {
     // 技能或兴趣变更后刷新用户数据
     _invalidateUserCache();
     loadCurrentUser(forceRefresh: true);
+  }
+
+  void _handleMeetupChanged(DataChangedEvent event) {
+    log('🔔 收到 Meetup 变更通知: ${event.changeType}');
+    // Meetup 创建/删除会影响用户统计数据
+    if (event.changeType == DataChangeType.created || event.changeType == DataChangeType.deleted) {
+      _invalidateStatsCache();
+      // 立即重新加载统计数据
+      loadNomadStats(forceRefresh: true);
+    }
+  }
+
+  void _handleMeetupRsvpChanged(DataChangedEvent event) {
+    log('🔔 收到 Meetup RSVP 变更通知: ${event.changeType}');
+    // 加入/退出活动会影响用户统计数据
+    _invalidateStatsCache();
+    // 立即重新加载统计数据
+    loadNomadStats(forceRefresh: true);
+  }
+
+  void _invalidateStatsCache() {
+    _lastStatsLoadTime = null;
   }
 
   void _initializeIfLoggedIn() {
@@ -262,6 +293,7 @@ class UserStateController extends GetxController {
     }
 
     isLoadingStats.value = true;
+    log('📊 开始加载用户统计数据 (forceRefresh: $forceRefresh)');
 
     final result = await _getCurrentUserStatsUseCase(const NoParams());
 
@@ -269,7 +301,7 @@ class UserStateController extends GetxController {
       onSuccess: (stats) {
         nomadStats.value = stats;
         _lastStatsLoadTime = DateTime.now();
-        log('✅ 成功加载用户统计数据');
+        log('✅ 成功加载用户统计数据: countries=${stats.countriesVisited}, cities=${stats.citiesLived}, meetups=${stats.meetupsCreated}, favorites=${stats.favoriteCitiesCount}');
       },
       onFailure: (exception) {
         log('⚠️ 加载用户统计数据失败: ${exception.message}');

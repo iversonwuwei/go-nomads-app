@@ -1,3 +1,4 @@
+import 'package:get/get.dart';
 import 'package:go_nomads_app/features/city_list/city_list.dart';
 import 'package:go_nomads_app/features/meetup/presentation/pages/meetup_detail/meetup_detail.dart';
 import 'package:go_nomads_app/features/membership/presentation/pages/membership_plan_page.dart';
@@ -33,20 +34,18 @@ import 'package:go_nomads_app/pages/hotel_list/hotel_list_page.dart';
 import 'package:go_nomads_app/pages/innovation_detail/innovation_detail_page.dart';
 import 'package:go_nomads_app/pages/innovation_list/innovation_list_page.dart';
 import 'package:go_nomads_app/pages/invite_to_meetup_page.dart';
+import 'package:go_nomads_app/pages/login/login.dart';
 import 'package:go_nomads_app/pages/meetup_list/meetup_list.dart';
 import 'package:go_nomads_app/pages/member_detail_page.dart';
 import 'package:go_nomads_app/pages/my_meetups_page.dart';
-import 'package:go_nomads_app/pages/nomads_login/nomads_login_binding.dart';
-import 'package:go_nomads_app/pages/nomads_login/nomads_login_page.dart';
 import 'package:go_nomads_app/pages/notifications_page.dart';
 import 'package:go_nomads_app/pages/profile_edit_page.dart';
 import 'package:go_nomads_app/pages/profile_page.dart';
 import 'package:go_nomads_app/pages/pros_and_cons_add_page.dart';
-import 'package:go_nomads_app/pages/register_page.dart';
+import 'package:go_nomads_app/pages/register/register.dart';
 import 'package:go_nomads_app/pages/skills_interests_page.dart';
 import 'package:go_nomads_app/pages/travel_plan/travel_plan_page.dart';
 import 'package:go_nomads_app/pages/user_profile_page.dart';
-import 'package:get/get.dart';
 
 class AppRoutes {
   // ============================================================================
@@ -161,13 +160,14 @@ class AppRoutes {
     // ============================================================================
     GetPage(
       name: login,
-      page: () => const NomadsLoginPage(),
-      binding: NomadsLoginBinding(),
+      page: () => const LoginPage(),
+      binding: LoginBinding(),
       // 🚫 无 middleware - 登录页
     ),
     GetPage(
       name: register,
       page: () => const RegisterPage(),
+      binding: RegisterBinding(),
       // 🚫 无 middleware - 注册页
     ),
 

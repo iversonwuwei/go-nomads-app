@@ -1,8 +1,8 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 /// 统计数据部分组件
 class NomadStatsWidget extends StatelessWidget {
@@ -58,7 +58,7 @@ class NomadStatsWidget extends StatelessWidget {
               ),
               _ClickableStatCard(
                 emoji: '🤝',
-                value: (stats?.meetupsCreated ?? 0).toString(),
+                value: (stats?.meetupsJoined ?? 0).toString(),
                 label: 'Meetups',
                 isMobile: isMobile,
                 onTap: () => Get.toNamed(AppRoutes.myMeetups),

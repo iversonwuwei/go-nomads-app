@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:dio/dio.dart';
 import 'package:go_nomads_app/config/api_config.dart';
 import 'package:go_nomads_app/core/core.dart';
 import 'package:go_nomads_app/features/user/domain/entities/nomad_stats.dart';
@@ -7,7 +8,6 @@ import 'package:go_nomads_app/features/user/domain/entities/user.dart';
 import 'package:go_nomads_app/features/user/domain/repositories/iuser_repository.dart';
 import 'package:go_nomads_app/features/user/infrastructure/models/user_dto.dart';
 import 'package:go_nomads_app/services/token_storage_service.dart';
-import 'package:dio/dio.dart';
 
 /// 用户仓储实现
 class UserRepository extends BaseRepository implements IUserRepository {
@@ -37,8 +37,7 @@ class UserRepository extends BaseRepository implements IUserRepository {
         data: {'userIds': userIds},
         options: Options(
           headers: {
-            if (token != null && token.isNotEmpty)
-              'Authorization': 'Bearer $token',
+            if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
           },
         ),
       );
@@ -66,15 +65,13 @@ class UserRepository extends BaseRepository implements IUserRepository {
         '${ApiConfig.currentApiBaseUrl}$endpoint',
         options: Options(
           headers: {
-            if (token != null && token.isNotEmpty)
-              'Authorization': 'Bearer $token',
+            if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
           },
         ),
       );
 
       if (response.data['success'] == true && response.data['data'] != null) {
-        final userDto =
-            UserDto.fromJson(response.data['data'] as Map<String, dynamic>);
+        final userDto = UserDto.fromJson(response.data['data'] as Map<String, dynamic>);
         return userDto.toDomain();
       }
 
@@ -114,8 +111,7 @@ class UserRepository extends BaseRepository implements IUserRepository {
   }
 
   @override
-  Future<Result<User>> updateUser(
-      String userId, Map<String, dynamic> updates) async {
+  Future<Result<User>> updateUser(String userId, Map<String, dynamic> updates) async {
     return execute(() async {
       final token = await _tokenService.getAccessToken();
 
@@ -133,8 +129,7 @@ class UserRepository extends BaseRepository implements IUserRepository {
       );
 
       if (response.data['success'] == true && response.data['data'] != null) {
-        final userDto =
-            UserDto.fromJson(response.data['data'] as Map<String, dynamic>);
+        final userDto = UserDto.fromJson(response.data['data'] as Map<String, dynamic>);
         return userDto.toDomain();
       }
 
@@ -160,8 +155,7 @@ class UserRepository extends BaseRepository implements IUserRepository {
         },
         options: Options(
           headers: {
-            if (token != null && token.isNotEmpty)
-              'Authorization': 'Bearer $token',
+            if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
           },
         ),
       );
@@ -284,9 +278,7 @@ class UserRepository extends BaseRepository implements IUserRepository {
         ),
       );
 
-      return (response.data as List<dynamic>)
-          .map((id) => id as String)
-          .toList();
+      return (response.data as List<dynamic>).map((id) => id as String).toList();
     });
   }
 
@@ -308,8 +300,12 @@ class UserRepository extends BaseRepository implements IUserRepository {
         ),
       );
 
+      log('📊 用户统计数据响应: ${response.data}');
+
       if (response.data['success'] == true && response.data['data'] != null) {
-        return NomadStats.fromJson(response.data['data'] as Map<String, dynamic>);
+        final data = response.data['data'] as Map<String, dynamic>;
+        log('📊 解析统计数据: meetupsCreated=${data['meetupsCreated']}, favoriteCitiesCount=${data['favoriteCitiesCount']}');
+        return NomadStats.fromJson(data);
       }
 
       throw ServerException('获取用户统计数据失败', code: 'GET_USER_STATS_FAILED');

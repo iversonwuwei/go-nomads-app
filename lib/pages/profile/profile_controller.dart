@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:get/get.dart';
 import 'package:go_nomads_app/features/ai/presentation/controllers/ai_state_controller.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/membership/presentation/controllers/membership_state_controller.dart';
@@ -8,24 +9,23 @@ import 'package:go_nomads_app/features/user/domain/entities/user.dart';
 import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:get/get.dart';
 
 /// Profile 页面控制器
-/// 
+///
 /// 负责协调用户、会员、旅行计划等状态
 class ProfileController extends GetxController {
   // ==================== 依赖控制器 ====================
-  
+
   UserStateController get userController => Get.find<UserStateController>();
   AuthStateController get authController => Get.find<AuthStateController>();
-  
+
   MembershipStateController? get membershipController {
     if (Get.isRegistered<MembershipStateController>()) {
       return Get.find<MembershipStateController>();
     }
     return null;
   }
-  
+
   AiStateController? get aiController {
     if (Get.isRegistered<AiStateController>()) {
       return Get.find<AiStateController>();
@@ -34,30 +34,30 @@ class ProfileController extends GetxController {
   }
 
   // ==================== 可观察状态 ====================
-  
+
   /// 页面是否正在加载
   final _isPageLoading = true.obs;
-  
+
   /// 是否已初始化
   final _isInitialized = false.obs;
 
   // ==================== Getters ====================
-  
+
   /// 当前用户
   User? get currentUser => userController.currentUser.value;
   Rx<User?> get currentUserRx => userController.currentUser;
-  
+
   /// 用户是否已登录
   bool get isLoggedIn => userController.isLoggedIn;
-  
+
   /// 是否正在加载用户数据
   bool get isLoadingUser => userController.isLoading.value;
   RxBool get isLoadingUserRx => userController.isLoading;
-  
+
   /// 页面是否正在加载
   bool get isPageLoading => _isPageLoading.value;
   RxBool get isPageLoadingRx => _isPageLoading;
-  
+
   /// 是否已认证
   bool get isAuthenticated => authController.isAuthenticated.value;
 
@@ -105,9 +105,13 @@ class ProfileController extends GetxController {
       // 并行加载其他数据
       await Future.wait([
         _loadNomadStats(),
+        _loadFavoriteCityIds(),
         _loadTravelPlans(),
         _ensureMembershipLoaded(),
       ]);
+
+      // 后端已经在 /users/me/stats 接口中返回 meetupsJoined
+      // 无需前端单独获取
 
       _isInitialized.value = true;
       log('✅ ProfileController: 数据加载完成');
@@ -124,12 +128,64 @@ class ProfileController extends GetxController {
     await loadProfileData();
   }
 
+  /// 路由恢复时调用 - 强制刷新关键数据
+  ///
+  /// 当用户从其他页面返回 Profile 时调用此方法，
+  /// 确保收藏、统计等数据与服务器同步
+  Future<void> onRouteResume() async {
+    log('🔄 ProfileController: 路由恢复，同步数据');
+
+    // 只有在已初始化的情况下才执行刷新
+    if (!_isInitialized.value) {
+      log('⚠️ ProfileController 未初始化，跳过 onRouteResume');
+      return;
+    }
+
+    // 并行刷新可能变化的数据（强制刷新）
+    await Future.wait([
+      _refreshNomadStats(),
+      _refreshFavoriteCities(),
+    ]);
+
+    // 后端已经在 /users/me/stats 接口中返回 meetupsJoined
+    // 无需前端单独获取
+
+    log('✅ ProfileController: 数据同步完成');
+  }
+
+  /// 强制刷新 Nomad 统计数据
+  Future<void> _refreshNomadStats() async {
+    try {
+      await userController.loadNomadStats(forceRefresh: true);
+    } catch (e) {
+      log('⚠️ 刷新 Nomad 统计失败: $e');
+    }
+  }
+
+  /// 强制刷新收藏城市数据
+  Future<void> _refreshFavoriteCities() async {
+    try {
+      await userController.loadFavoriteCityIds(forceRefresh: true);
+    } catch (e) {
+      log('⚠️ 刷新收藏城市失败: $e');
+    }
+  }
+
   /// 加载 Nomad 统计
   Future<void> _loadNomadStats() async {
     try {
       await userController.loadNomadStats();
     } catch (e) {
       log('⚠️ 加载 Nomad 统计失败: $e');
+    }
+  }
+
+  /// 加载收藏城市ID列表
+  Future<void> _loadFavoriteCityIds() async {
+    try {
+      await userController.loadFavoriteCityIds();
+    } catch (e) {
+      log('⚠️ 加载收藏城市失败: $e');
     }
   }
 
@@ -164,7 +220,7 @@ class ProfileController extends GetxController {
 
       // 执行登出
       await authController.logout();
-      
+
       // 清除用户数据
       userController.clearUser();
 
