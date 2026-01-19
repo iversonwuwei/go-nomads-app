@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/api_config.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/chat/domain/entities/chat.dart';
-import 'package:get/get.dart';
 import 'package:signalr_netcore/signalr_client.dart';
 
 /// SignalR 聊天服务
@@ -372,6 +372,7 @@ class SignalRChatService extends GetxService {
               duration: attachment['duration'] as int?,
               width: attachment['width'] as int?,
               height: attachment['height'] as int?,
+              localPath: attachment['localPath']?.toString(),
             )
           : null,
     );

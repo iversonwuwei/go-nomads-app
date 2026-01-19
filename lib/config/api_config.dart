@@ -25,7 +25,7 @@ class DeploymentConfig {
 
   /// Docker 部署配置
   static const docker = DeploymentConfig(
-    gatewayPort: 5080,
+    gatewayPort: 80,
     messageServicePort: 5005,
     coworkingServicePort: 8006,
   );
@@ -43,7 +43,7 @@ class ApiConfig {
   // ============================================================
   // 环境配置
   // ============================================================
-  static const bool kIsProduction = false;
+  static const bool kIsProduction = true;
 
   // ============================================================
   // 部署环境配置

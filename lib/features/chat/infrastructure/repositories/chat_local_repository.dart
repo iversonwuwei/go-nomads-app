@@ -764,6 +764,7 @@ class ChatLocalRepository implements IChatLocalRepository {
       'duration': attachment.duration,
       'width': attachment.width,
       'height': attachment.height,
+      'localPath': attachment.localPath,
     });
   }
 
@@ -782,6 +783,7 @@ class ChatLocalRepository implements IChatLocalRepository {
         duration: map['duration'] as int?,
         width: map['width'] as int?,
         height: map['height'] as int?,
+        localPath: map['localPath'] as String?,
       );
     } catch (e) {
       log('⚠️ 反序列化附件失败: $e');
