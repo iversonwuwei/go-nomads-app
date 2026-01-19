@@ -119,7 +119,7 @@
     
     <application
         android:label="行途"
-android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round"
+        android:icon="@mipmap/ic_launcher"
         android:networkSecurityConfig="@xml/network_security_config">
 
 <!-- 高德地图 API Key -->

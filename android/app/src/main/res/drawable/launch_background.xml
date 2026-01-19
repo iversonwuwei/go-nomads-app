@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- GO NOMADS 启动页 - 青蓝色纯色背景 -->
+<!-- GO NOMADS 启动页 - 青蓝色背景 + 白色文字 -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-<item android:drawable="@color/splash_background"/>
-
+    <!-- 背景色 -->
+    <item android:drawable="@color/splash_background"/>
+    
+    <!-- 居中显示 GO NOMADS 文字图片 -->
+    <item>
+        <bitmap
+            android:gravity="center"
+            android:src="@drawable/splash_logo"/>
+    </item>
 </layer-list>

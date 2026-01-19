@@ -2,4 +2,5 @@
 <resources>
     <!-- 启动页背景色 - 青蓝色 #0891B2 -->
     <color name="splash_background">#0891B2</color>
+	<color name="ic_launcher_background">#00000000</color>
 </resources>
