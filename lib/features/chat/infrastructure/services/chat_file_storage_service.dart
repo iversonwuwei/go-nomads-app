@@ -101,7 +101,7 @@ class ChatFileStorageService {
 
     try {
       log('💾 正在批量保存 ${messages.length} 条消息到文件, roomId: $roomId');
-      
+
       // 按日期分组
       final Map<String, List<ChatMessage>> groupedByDate = {};
       for (final message in messages) {
@@ -117,7 +117,7 @@ class ChatFileStorageService {
         final date = DateTime.parse(entry.key);
         final dayMessages = entry.value;
         final file = await _getDayFile(roomId, date);
-        
+
         log('💾 保存到文件: ${file.path}');
 
         List<Map<String, dynamic>> existingMessages = [];
@@ -176,11 +176,8 @@ class ChatFileStorageService {
       }
 
       // 获取所有日期文件并排序（最新的在前）
-      final files = await roomDir
-          .list()
-          .where((entity) => entity is File && entity.path.endsWith('.json'))
-          .cast<File>()
-          .toList();
+      final files =
+          await roomDir.list().where((entity) => entity is File && entity.path.endsWith('.json')).cast<File>().toList();
 
       files.sort((a, b) => b.path.compareTo(a.path)); // 降序排列
 
@@ -224,7 +221,7 @@ class ChatFileStorageService {
     try {
       final List<ChatMessage> results = [];
       final lowerKeyword = keyword.toLowerCase();
-      
+
       log('🔍 开始搜索，关键词: $keyword, roomId: $roomId');
 
       if (roomId != null) {
@@ -272,20 +269,17 @@ class ChatFileStorageService {
       // 将 roomId 中的特殊字符替换为下划线，保持与保存时一致
       final safeRoomId = roomId.replaceAll(RegExp(r'[^\w\-]'), '_');
       final roomDir = Directory('${chatDir.path}/$safeRoomId');
-      
+
       log('🔍 搜索聊天室: $roomId -> $safeRoomId');
       log('🔍 目录路径: ${roomDir.path}');
-      
+
       if (!await roomDir.exists()) {
         log('⚠️ 聊天室目录不存在: ${roomDir.path}');
         return results;
       }
 
-      final files = await roomDir
-          .list()
-          .where((entity) => entity is File && entity.path.endsWith('.json'))
-          .cast<File>()
-          .toList();
+      final files =
+          await roomDir.list().where((entity) => entity is File && entity.path.endsWith('.json')).cast<File>().toList();
 
       log('🔍 找到 ${files.length} 个日期文件');
 
@@ -306,7 +300,7 @@ class ChatFileStorageService {
           }
         }
       }
-      
+
       log('🔍 在聊天室 $roomId 中找到 ${results.length} 条匹配结果');
     } catch (e) {
       log('⚠️ 搜索聊天室 $roomId 失败: $e');
@@ -385,7 +379,7 @@ class ChatFileStorageService {
     try {
       final chatDir = await _getChatHistoryDir();
       log('📊 聊天存储目录: ${chatDir.path}');
-      
+
       if (!await chatDir.exists()) {
         log('📊 聊天存储目录不存在');
         return {'totalFiles': 0, 'totalSize': 0, 'roomCount': 0, 'rooms': []};
@@ -405,15 +399,15 @@ class ChatFileStorageService {
         final roomName = roomDir.path.split('/').last;
         final files = await roomDir.list().where((e) => e is File && e.path.endsWith('.json')).cast<File>().toList();
         totalFiles += files.length;
-        
+
         int roomMessages = 0;
         int roomSize = 0;
-        
+
         for (final file in files) {
           final fileSize = await file.length();
           roomSize += fileSize;
           totalSize += fileSize;
-          
+
           // 统计消息数量
           try {
             final content = await file.readAsString();
@@ -424,14 +418,14 @@ class ChatFileStorageService {
             }
           } catch (_) {}
         }
-        
+
         rooms.add({
           'roomId': roomName,
           'files': files.length,
           'messages': roomMessages,
           'size': _formatFileSize(roomSize),
         });
-        
+
         log('📊 聊天室 $roomName: ${files.length} 个文件, $roomMessages 条消息');
       }
 
@@ -516,6 +510,7 @@ class ChatFileStorageService {
         duration: att['duration'] as int?,
         width: att['width'] as int?,
         height: att['height'] as int?,
+        localPath: att['localPath'] as String?,
       );
     }
 

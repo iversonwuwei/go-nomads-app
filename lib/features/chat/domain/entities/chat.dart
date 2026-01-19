@@ -108,6 +108,7 @@ class MessageAttachment {
   final int? duration; // 语音/视频时长(秒)
   final int? width;
   final int? height;
+  final String? localPath; // 本地文件路径（用于优先显示本地图片，避免闪烁）
 
   MessageAttachment({
     required this.url,
@@ -120,6 +121,7 @@ class MessageAttachment {
     this.duration,
     this.width,
     this.height,
+    this.localPath,
   });
 
   /// 是否是位置消息

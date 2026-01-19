@@ -70,6 +70,7 @@ class AttachmentDto {
   final int? duration;
   final int? width;
   final int? height;
+  final String? localPath; // 本地文件路径
 
   AttachmentDto({
     required this.url,
@@ -82,6 +83,7 @@ class AttachmentDto {
     this.duration,
     this.width,
     this.height,
+    this.localPath,
   });
 
   factory AttachmentDto.fromJson(Map<String, dynamic> json) {
@@ -96,6 +98,7 @@ class AttachmentDto {
       duration: json['duration'] as int?,
       width: json['width'] as int?,
       height: json['height'] as int?,
+      localPath: json['localPath'] as String?,
     );
   }
 
@@ -111,6 +114,7 @@ class AttachmentDto {
       'duration': duration,
       'width': width,
       'height': height,
+      'localPath': localPath,
     };
   }
 
@@ -126,6 +130,7 @@ class AttachmentDto {
       duration: duration,
       width: width,
       height: height,
+      localPath: localPath,
     );
   }
 }

@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:go_nomads_app/config/api_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:go_nomads_app/config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'package:mime/mime.dart';
 import 'package:path/path.dart' as path;
@@ -101,8 +101,7 @@ class ImageUploadService {
       final filePath = '$uploadFolder/$fileName';
 
       debugPrint('📤 开始上传图片: $filePath');
-      debugPrint(
-          '📦 文件大小: ${(fileToUpload.lengthSync() / 1024).toStringAsFixed(2)} KB');
+      debugPrint('📦 文件大小: ${(fileToUpload.lengthSync() / 1024).toStringAsFixed(2)} KB');
 
       // 4. 上传到 Supabase
       final storageResponse = await client.storage.from(bucket).upload(
@@ -273,8 +272,7 @@ class ImageUploadService {
     String bucket = 'user-uploads',
   }) async {
     try {
-      final filePaths =
-          imageUrls.map((url) => _extractFilePathFromUrl(url, bucket)).toList();
+      final filePaths = imageUrls.map((url) => _extractFilePathFromUrl(url, bucket)).toList();
 
       debugPrint('🗑️ 批量删除 ${filePaths.length} 张图片');
 
@@ -317,8 +315,7 @@ class ImageUploadService {
 
       final originalSize = file.lengthSync();
       final compressedSize = File(result.path).lengthSync();
-      final ratio =
-          ((1 - compressedSize / originalSize) * 100).toStringAsFixed(1);
+      final ratio = ((1 - compressedSize / originalSize) * 100).toStringAsFixed(1);
 
       debugPrint('🗜️ 图片压缩完成:');
       debugPrint('   原始: ${(originalSize / 1024).toStringAsFixed(2)} KB');
@@ -347,14 +344,7 @@ class ImageUploadService {
 
     // 检查文件类型
     final ext = path.extension(file.path).toLowerCase();
-    const allowedExtensions = [
-      '.jpg',
-      '.jpeg',
-      '.png',
-      '.gif',
-      '.webp',
-      '.heic'
-    ];
+    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic'];
     if (!allowedExtensions.contains(ext)) {
       throw Exception('不支持的图片格式，仅支持: ${allowedExtensions.join(", ")}');
     }
@@ -370,7 +360,26 @@ class ImageUploadService {
 
   /// 获取 MIME 类型
   String? _getMimeType(File file) {
-    return lookupMimeType(file.path);
+    final ext = path.extension(file.path).toLowerCase();
+
+    // 处理音频文件的 MIME 类型（Supabase 对音频格式支持有限）
+    switch (ext) {
+      case '.m4a':
+      case '.aac':
+        return 'application/octet-stream'; // Supabase 不支持 audio/mp4，使用通用类型
+      case '.mp3':
+        return 'audio/mpeg';
+      case '.wav':
+        return 'audio/wav';
+      case '.ogg':
+        return 'audio/ogg';
+      case '.flac':
+        return 'audio/flac';
+      case '.webm':
+        return 'audio/webm';
+      default:
+        return lookupMimeType(file.path);
+    }
   }
 
   /// 获取压缩格式

@@ -2,6 +2,11 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/chat/domain/entities/chat.dart';
 import 'package:go_nomads_app/features/chat/presentation/controllers/chat_state_controller.dart';
@@ -11,13 +16,9 @@ import 'package:go_nomads_app/pages/flutter_map_picker_page.dart';
 import 'package:go_nomads_app/services/image_upload_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
+import 'package:go_nomads_app/widgets/chat_more_options_sheet.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
@@ -435,6 +436,9 @@ class _DirectChatViewState extends State<_DirectChatView> {
   final _messageController = TextEditingController();
   final _inputFocusNode = FocusNode();
   bool _showEmojiPanel = false;
+
+  // 语音输入模式状态
+  bool _isVoiceMode = false;
 
   /// 正在上传的图片列表
   final List<_UploadingImage> _uploadingImages = [];
@@ -1047,160 +1051,158 @@ class _DirectChatViewState extends State<_DirectChatView> {
       builder: (context) {
         final l10n = AppLocalizations.of(context)!;
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 8,
-                offset: const Offset(0, -2),
-              ),
-            ],
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: const BoxDecoration(
+            color: Color(0xFFF7F7F7),
+            border: Border(top: BorderSide(color: Color(0xFFE5E5E5))),
           ),
           child: SafeArea(
             top: false,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // 更多选项按钮（替代单纯的相机按钮）
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Color(0xFFFFFC00), Color(0xFFFFD700)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(22),
-                      onTap: () => _showMoreOptions(context),
-                      child: const Center(
-                        child: FaIcon(FontAwesomeIcons.plus, color: Colors.black, size: 18),
-                      ),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(width: 8),
-
-                // Text field
-                Expanded(
-                  child: Container(
-                    height: 44,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF5F5F5),
-                      borderRadius: BorderRadius.circular(22),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _messageController,
-                            focusNode: _inputFocusNode,
-                            onTap: () {
-                              // 点击输入框时收起表情面板
-                              if (_showEmojiPanel) {
-                                setState(() => _showEmojiPanel = false);
-                              }
-                            },
-                            decoration: InputDecoration(
-                              hintText: l10n.typeMessage,
-                              hintStyle: const TextStyle(
-                                color: Color(0xFF999999),
-                                fontSize: 16,
-                              ),
-                              border: InputBorder.none,
-                              isDense: true,
-                              contentPadding: EdgeInsets.zero,
-                            ),
-                            maxLines: 1,
-                            textCapitalization: TextCapitalization.sentences,
-                            style: const TextStyle(fontSize: 16),
-                          ),
-                        ),
-                        // Emoji button
-                        GestureDetector(
-                          onTap: _toggleEmojiPanel,
-                          child: FaIcon(
-                            _showEmojiPanel ? FontAwesomeIcons.keyboard : FontAwesomeIcons.faceSmile,
-                            color: const Color(0xFF999999),
-                            size: 20,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(width: 8),
-
-                // Send button
-                AnimatedBuilder(
-                  animation: _messageController,
-                  builder: (context, child) {
-                    final hasText = _messageController.text.trim().isNotEmpty;
-                    return Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        gradient: hasText
-                            ? const LinearGradient(
-                                colors: [Color(0xFFFF5E62), Color(0xFFFF3838)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              )
-                            : null,
-                        color: hasText ? null : const Color(0xFFE5E5E5),
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: hasText
-                            ? [
-                                BoxShadow(
-                                  color: const Color(0xFFFF3838).withValues(alpha: 0.3),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ]
-                            : null,
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(12),
-                          onTap: hasText
-                              ? () {
-                                  final text = _messageController.text;
-                                  if (text.trim().isNotEmpty) {
-                                    controller.sendMessage(text);
-                                    _messageController.clear();
-                                  }
-                                }
-                              : () {
-                                  AppToast.info('语音功能即将推出');
-                                },
-                          child: Center(
-                            child: FaIcon(
-                              hasText ? FontAwesomeIcons.paperPlane : FontAwesomeIcons.microphone,
-                              color: Colors.white,
-                              size: 18,
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
+                // 语音/键盘切换按钮
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _isVoiceMode = !_isVoiceMode;
+                      if (_isVoiceMode) {
+                        _inputFocusNode.unfocus();
+                        _showEmojiPanel = false;
+                      }
+                    });
                   },
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: _isVoiceMode ? const Color(0xFFFF3838) : Colors.white,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Icon(
+                      _isVoiceMode ? FontAwesomeIcons.keyboard : FontAwesomeIcons.microphone,
+                      color: _isVoiceMode ? Colors.white : const Color(0xFF666666),
+                      size: 16,
+                    ),
+                  ),
                 ),
+                const SizedBox(width: 8),
+                // 输入框或录音按钮
+                Expanded(
+                  child: _isVoiceMode
+                      ? _DirectInlineVoiceRecordButton(
+                          onSendVoice: (path, duration) => _sendVoiceMessage(path, duration),
+                        )
+                      : _buildTextInputField(l10n, controller),
+                ),
+                const SizedBox(width: 8),
+                // 表情按钮（非语音模式且无文字时显示）
+                if (!_isVoiceMode && _messageController.text.trim().isEmpty) ...[
+                  GestureDetector(
+                    onTap: _toggleEmojiPanel,
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Icon(
+                        _showEmojiPanel ? FontAwesomeIcons.keyboard : FontAwesomeIcons.faceSmile,
+                        color: const Color(0xFF666666),
+                        size: 16,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                // 发送按钮或更多按钮
+                if (!_isVoiceMode && _messageController.text.trim().isNotEmpty)
+                  GestureDetector(
+                    onTap: () {
+                      final text = _messageController.text;
+                      if (text.trim().isNotEmpty) {
+                        controller.sendMessage(text);
+                        _messageController.clear();
+                      }
+                    },
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF3838),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Icon(
+                        FontAwesomeIcons.paperPlane,
+                        color: Colors.white,
+                        size: 14,
+                      ),
+                    ),
+                  )
+                else
+                  GestureDetector(
+                    onTap: () => ChatMoreOptionsSheet.show(
+                      config: ChatMoreOptionsConfig(
+                        onImagePicked: _sendImage,
+                        onLocationPicked: _pickLocation,
+                        onFilePicked: _sendFile,
+                      ),
+                    ),
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Icon(
+                        FontAwesomeIcons.plus,
+                        color: Color(0xFF666666),
+                        size: 16,
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
         );
       },
+    );
+  }
+
+  /// 构建文字输入框
+  Widget _buildTextInputField(AppLocalizations l10n, ChatStateController controller) {
+    return Container(
+      height: 36,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: TextField(
+        controller: _messageController,
+        focusNode: _inputFocusNode,
+        onTap: () {
+          if (_showEmojiPanel) {
+            setState(() => _showEmojiPanel = false);
+          }
+        },
+        onChanged: (_) => setState(() {}),
+        decoration: InputDecoration(
+          hintText: l10n.typeMessage,
+          hintStyle: const TextStyle(
+            color: Color(0xFF999999),
+            fontSize: 15,
+          ),
+          border: InputBorder.none,
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(vertical: 8),
+        ),
+        maxLines: 1,
+        textCapitalization: TextCapitalization.sentences,
+        style: const TextStyle(fontSize: 15),
+      ),
     );
   }
 
@@ -1249,118 +1251,8 @@ class _DirectChatViewState extends State<_DirectChatView> {
     );
   }
 
-  /// 显示更多选项菜单（图片、位置、文件、语音）
-  void _showMoreOptions(BuildContext context) {
-    Get.bottomSheet(
-      Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // 顶部拖动条
-                Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE0E0E0),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                // 功能选项网格
-                GridView.count(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  crossAxisCount: 4,
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                  childAspectRatio: 0.9,
-                  children: [
-                    _buildMoreOption(
-                      icon: FontAwesomeIcons.image,
-                      label: '照片',
-                      color: const Color(0xFF10B981),
-                      onTap: () => _pickImage(ImageSource.gallery),
-                    ),
-                    _buildMoreOption(
-                      icon: FontAwesomeIcons.camera,
-                      label: '拍摄',
-                      color: const Color(0xFFFFAA00),
-                      onTap: () => _pickImage(ImageSource.camera),
-                    ),
-                    _buildMoreOption(
-                      icon: FontAwesomeIcons.locationDot,
-                      label: '位置',
-                      color: const Color(0xFFEF4444),
-                      onTap: () => _pickLocation(),
-                    ),
-                    _buildMoreOption(
-                      icon: FontAwesomeIcons.folder,
-                      label: '文件',
-                      color: const Color(0xFF3B82F6),
-                      onTap: () => _pickFile(),
-                    ),
-                    _buildMoreOption(
-                      icon: FontAwesomeIcons.microphone,
-                      label: '语音',
-                      color: const Color(0xFF8B5CF6),
-                      onTap: () {
-                        Get.back();
-                        _showVoiceRecordPanel();
-                      },
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMoreOption({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(icon, color: color, size: 24),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Color(0xFF666666),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   /// 选择位置
   Future<void> _pickLocation() async {
-    Get.back();
     try {
       final result = await Get.to<Map<String, dynamic>>(
         () => const FlutterMapPickerPage(),
@@ -1386,31 +1278,12 @@ class _DirectChatViewState extends State<_DirectChatView> {
     }
   }
 
-  /// 选择文件
-  Future<void> _pickFile() async {
-    Get.back();
-    try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.any,
-        allowMultiple: false,
-      );
-      if (result != null && result.files.isNotEmpty) {
-        final platformFile = result.files.first;
-        if (platformFile.path != null) {
-          _sendFile(platformFile);
-        }
-      }
-    } catch (e) {
-      AppToast.error('选择文件失败: $e');
-    }
-  }
-
   /// 发送文件消息
   Future<void> _sendFile(PlatformFile platformFile) async {
     try {
       final file = File(platformFile.path!);
       final imageUploadService = ImageUploadService();
-      
+
       final fileUrl = await imageUploadService.uploadFile(
         file: file,
         bucket: 'user-uploads',
@@ -1500,25 +1373,6 @@ class _DirectChatViewState extends State<_DirectChatView> {
     }
   }
 
-  /// 选择图片（相册/相机）
-  Future<void> _pickImage(ImageSource source) async {
-    Get.back(); // 关闭底部菜单
-    try {
-      final picker = ImagePicker();
-      final XFile? image = await picker.pickImage(
-        source: source,
-        maxWidth: 1920,
-        maxHeight: 1920,
-        imageQuality: 85,
-      );
-      if (image != null) {
-        _sendImage(image);
-      }
-    } catch (e) {
-      AppToast.error('选择图片失败: $e');
-    }
-  }
-
   /// 发送图片消息
   Future<void> _sendImage(XFile image) async {
     // 创建上传中图片的唯一 ID
@@ -1555,14 +1409,9 @@ class _DirectChatViewState extends State<_DirectChatView> {
 
       debugPrint('✅ 图片上传成功: $imageUrl');
 
-      // 2. 上传完成，从上传列表移除
-      setState(() {
-        _uploadingImages.removeWhere((img) => img.id == uploadId);
-      });
-
-      // 3. 发送图片消息（使用返回的 URL）
+      // 2. 先发送图片消息
       widget.controller.sendMessage(
-        imageUrl, // 发送图片 URL 作为消息内容
+        imageUrl,
         messageType: 'image',
         attachment: {
           'url': imageUrl,
@@ -1571,6 +1420,9 @@ class _DirectChatViewState extends State<_DirectChatView> {
           'mimeType': 'image/jpeg',
         },
       );
+
+      // 3. 预加载网络图片，加载完成后再移除上传中的预览
+      _preloadAndRemoveUploadingImage(imageUrl, uploadId);
     } catch (e) {
       debugPrint('❌ 图片上传失败: $e');
       // 标记上传失败
@@ -1610,6 +1462,27 @@ class _DirectChatViewState extends State<_DirectChatView> {
         return true;
       }
       return false;
+    });
+  }
+
+  /// 预加载网络图片，加载完成后移除上传中的预览
+  void _preloadAndRemoveUploadingImage(String imageUrl, String uploadId) {
+    // 使用 precacheImage 预加载图片
+    final imageProvider = NetworkImage(imageUrl);
+    precacheImage(imageProvider, context).then((_) {
+      // 图片预加载完成，移除上传中的预览
+      if (mounted) {
+        setState(() {
+          _uploadingImages.removeWhere((img) => img.id == uploadId);
+        });
+      }
+    }).catchError((_) {
+      // 预加载失败，仍然移除上传中的预览（网络图片会显示加载状态）
+      if (mounted) {
+        setState(() {
+          _uploadingImages.removeWhere((img) => img.id == uploadId);
+        });
+      }
     });
   }
 
@@ -1692,8 +1565,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
           children: [
             // 地图预览
             ClipRRect(
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(12)),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
               child: Container(
                 width: 200,
                 height: 100,
@@ -1765,7 +1637,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
     final duration = message.attachment?.duration ?? 0;
     final width = (80 + duration * 3).clamp(80, 160).toDouble();
 
-    return Container(
+    return SizedBox(
       width: width,
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1794,7 +1666,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
           ),
           const SizedBox(width: 6),
           Text(
-            '${duration}"',
+            '$duration"',
             style: TextStyle(
               fontSize: 14,
               color: isMe ? Colors.white : Colors.black87,
@@ -1814,8 +1686,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
     return GestureDetector(
       onTap: () {
         if (attachment?.url.isNotEmpty == true) {
-          launchUrl(Uri.parse(attachment!.url),
-              mode: LaunchMode.externalApplication);
+          launchUrl(Uri.parse(attachment!.url), mode: LaunchMode.externalApplication);
         }
       },
       child: Row(
@@ -1956,11 +1827,9 @@ class _DirectChatViewState extends State<_DirectChatView> {
     );
   }
 
-  Future<void> _openAppleMaps(
-      double latitude, double longitude, String name) async {
+  Future<void> _openAppleMaps(double latitude, double longitude, String name) async {
     Navigator.pop(context);
-    final url = Uri.parse(
-        'maps://?q=${Uri.encodeComponent(name)}&ll=$latitude,$longitude');
+    final url = Uri.parse('maps://?q=${Uri.encodeComponent(name)}&ll=$latitude,$longitude');
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
@@ -1968,11 +1837,9 @@ class _DirectChatViewState extends State<_DirectChatView> {
     }
   }
 
-  Future<void> _openGoogleMaps(
-      double latitude, double longitude, String name) async {
+  Future<void> _openGoogleMaps(double latitude, double longitude, String name) async {
     Navigator.pop(context);
-    final url = Uri.parse(
-        'comgooglemaps://?q=$latitude,$longitude&center=$latitude,$longitude');
+    final url = Uri.parse('comgooglemaps://?q=$latitude,$longitude&center=$latitude,$longitude');
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
@@ -1991,8 +1858,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
     }
   }
 
-  Future<void> _openBaiduMap(
-      double latitude, double longitude, String name) async {
+  Future<void> _openBaiduMap(double latitude, double longitude, String name) async {
     Navigator.pop(context);
     final url = Uri.parse(
         'baidumap://map/marker?location=$latitude,$longitude&title=${Uri.encodeComponent(name)}&coord_type=gcj02&src=GoNomads');
@@ -2003,11 +1869,9 @@ class _DirectChatViewState extends State<_DirectChatView> {
     }
   }
 
-  Future<void> _openTencentMap(
-      double latitude, double longitude, String name) async {
+  Future<void> _openTencentMap(double latitude, double longitude, String name) async {
     Navigator.pop(context);
-    final url = Uri.parse(
-        'qqmap://map/marker?marker=coord:$latitude,$longitude;title:${Uri.encodeComponent(name)}');
+    final url = Uri.parse('qqmap://map/marker?marker=coord:$latitude,$longitude;title:${Uri.encodeComponent(name)}');
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
@@ -2036,14 +1900,14 @@ class _DirectChatViewState extends State<_DirectChatView> {
 
   /// 构建图片消息
   Widget _buildImageMessage(ChatMessage message, bool isMe) {
-    // 获取图片路径或URL
-    String? imagePath = message.attachment?.url;
-    if (imagePath == null || imagePath.isEmpty) {
-      imagePath = message.message;
+    // 获取图片URL
+    String? imageUrl = message.attachment?.url;
+    if (imageUrl == null || imageUrl.isEmpty) {
+      imageUrl = message.message;
     }
 
     return GestureDetector(
-      onTap: () => _showFullScreenImage(imagePath!),
+      onTap: () => _showFullScreenImage(imageUrl!),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: Container(
@@ -2051,14 +1915,14 @@ class _DirectChatViewState extends State<_DirectChatView> {
             maxWidth: 200,
             maxHeight: 200,
           ),
-          child: _buildImageWidget(imagePath),
+          child: _buildNetworkImage(imageUrl),
         ),
       ),
     );
   }
 
-  /// 构建图片组件（主要支持网络图片 URL）
-  Widget _buildImageWidget(String imageUrl) {
+  /// 构建网络图片（加载时显示灰色占位框）（加载时显示灰色占位框）
+  Widget _buildNetworkImage(String imageUrl) {
     // 网络图片
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
       return Image.network(
@@ -2066,17 +1930,19 @@ class _DirectChatViewState extends State<_DirectChatView> {
         fit: BoxFit.cover,
         loadingBuilder: (context, child, loadingProgress) {
           if (loadingProgress == null) return child;
+          // 显示灰色占位框，带图片图标
           return Container(
             width: 150,
             height: 150,
-            color: Colors.grey[200],
-            child: Center(
-              child: CircularProgressIndicator(
-                value: loadingProgress.expectedTotalBytes != null
-                    ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                    : null,
-                strokeWidth: 2,
-                color: const Color(0xFFFF3838),
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Center(
+              child: Icon(
+                FontAwesomeIcons.image,
+                color: Colors.grey,
+                size: 40,
               ),
             ),
           );
@@ -2477,17 +2343,17 @@ class _FullScreenImageViewerState extends State<_FullScreenImageViewer> {
   }
 }
 
-/// 私聊语音录制面板
-class _DirectVoiceRecordPanel extends StatefulWidget {
+/// 内联语音录制按钮（Snapchat风格）- 私聊
+class _DirectInlineVoiceRecordButton extends StatefulWidget {
   final void Function(String path, int duration) onSendVoice;
 
-  const _DirectVoiceRecordPanel({required this.onSendVoice});
+  const _DirectInlineVoiceRecordButton({required this.onSendVoice});
 
   @override
-  State<_DirectVoiceRecordPanel> createState() => _DirectVoiceRecordPanelState();
+  State<_DirectInlineVoiceRecordButton> createState() => _DirectInlineVoiceRecordButtonState();
 }
 
-class _DirectVoiceRecordPanelState extends State<_DirectVoiceRecordPanel> {
+class _DirectInlineVoiceRecordButtonState extends State<_DirectInlineVoiceRecordButton> {
   final AudioRecorder _recorder = AudioRecorder();
   bool _isRecording = false;
   bool _isCancelArea = false;
@@ -2508,7 +2374,7 @@ class _DirectVoiceRecordPanelState extends State<_DirectVoiceRecordPanel> {
       if (await _recorder.hasPermission()) {
         final dir = await getTemporaryDirectory();
         _recordingPath = '${dir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
-        
+
         await _recorder.start(
           const RecordConfig(
             encoder: AudioEncoder.aacLc,
@@ -2543,12 +2409,204 @@ class _DirectVoiceRecordPanelState extends State<_DirectVoiceRecordPanel> {
 
   Future<void> _stopRecording({bool send = false}) async {
     _recordTimer?.cancel();
-    
+
     if (!_isRecording) return;
 
     try {
       final path = await _recorder.stop();
-      
+
+      setState(() {
+        _isRecording = false;
+        _isCancelArea = false;
+      });
+
+      if (send && path != null && _recordDuration >= 1) {
+        widget.onSendVoice(path, _recordDuration);
+      } else if (_recordDuration < 1) {
+        AppToast.info('说话时间太短');
+        if (path != null) {
+          try {
+            await File(path).delete();
+          } catch (_) {}
+        }
+      }
+    } catch (e) {
+      debugPrint('停止录音失败: $e');
+    }
+  }
+
+  Future<void> _cancelRecording() async {
+    _recordTimer?.cancel();
+
+    if (!_isRecording) return;
+
+    try {
+      final path = await _recorder.stop();
+
+      setState(() {
+        _isRecording = false;
+        _isCancelArea = false;
+      });
+
+      if (path != null) {
+        try {
+          await File(path).delete();
+        } catch (_) {}
+      }
+    } catch (e) {
+      debugPrint('取消录音失败: $e');
+    }
+  }
+
+  String _formatDuration(int seconds) {
+    final mins = seconds ~/ 60;
+    final secs = seconds % 60;
+    return '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onLongPressStart: (details) {
+        _startY = details.globalPosition.dy;
+        _startRecording();
+      },
+      onLongPressMoveUpdate: (details) {
+        final deltaY = _startY - details.globalPosition.dy;
+        setState(() {
+          _isCancelArea = deltaY > 50;
+        });
+      },
+      onLongPressEnd: (details) {
+        if (_isCancelArea) {
+          _cancelRecording();
+        } else {
+          _stopRecording(send: true);
+        }
+      },
+      onLongPressCancel: () {
+        _cancelRecording();
+      },
+      child: Container(
+        height: 36,
+        decoration: BoxDecoration(
+          color: _isRecording
+              ? (_isCancelArea ? Colors.red.withValues(alpha: 0.15) : const Color(0xFFFF3838).withValues(alpha: 0.15))
+              : Colors.white,
+          borderRadius: BorderRadius.circular(6),
+          border: _isRecording
+              ? Border.all(
+                  color: _isCancelArea ? Colors.red : const Color(0xFFFF3838),
+                  width: 1,
+                )
+              : null,
+        ),
+        child: Center(
+          child: _isRecording
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      _isCancelArea ? FontAwesomeIcons.trash : FontAwesomeIcons.microphone,
+                      color: _isCancelArea ? Colors.red : const Color(0xFFFF3838),
+                      size: 14,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      _isCancelArea ? '松开取消' : '${_formatDuration(_recordDuration)} ↑ 取消',
+                      style: TextStyle(
+                        color: _isCancelArea ? Colors.red : const Color(0xFFFF3838),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                )
+              : const Text(
+                  '按住 说话',
+                  style: TextStyle(
+                    color: Color(0xFF999999),
+                    fontSize: 15,
+                  ),
+                ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 私聊语音录制面板
+class _DirectVoiceRecordPanel extends StatefulWidget {
+  final void Function(String path, int duration) onSendVoice;
+
+  const _DirectVoiceRecordPanel({required this.onSendVoice});
+
+  @override
+  State<_DirectVoiceRecordPanel> createState() => _DirectVoiceRecordPanelState();
+}
+
+class _DirectVoiceRecordPanelState extends State<_DirectVoiceRecordPanel> {
+  final AudioRecorder _recorder = AudioRecorder();
+  bool _isRecording = false;
+  bool _isCancelArea = false;
+  int _recordDuration = 0;
+  Timer? _recordTimer;
+  String? _recordingPath;
+  double _startY = 0;
+
+  @override
+  void dispose() {
+    _recordTimer?.cancel();
+    _recorder.dispose();
+    super.dispose();
+  }
+
+  Future<void> _startRecording() async {
+    try {
+      if (await _recorder.hasPermission()) {
+        final dir = await getTemporaryDirectory();
+        _recordingPath = '${dir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
+
+        await _recorder.start(
+          const RecordConfig(
+            encoder: AudioEncoder.aacLc,
+            bitRate: 128000,
+            sampleRate: 44100,
+          ),
+          path: _recordingPath!,
+        );
+
+        setState(() {
+          _isRecording = true;
+          _recordDuration = 0;
+        });
+
+        _recordTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+          setState(() {
+            _recordDuration++;
+          });
+          if (_recordDuration >= 60) {
+            _stopRecording(send: true);
+          }
+        });
+
+        HapticFeedback.mediumImpact();
+      } else {
+        AppToast.error('请允许录音权限');
+      }
+    } catch (e) {
+      AppToast.error('录音失败: $e');
+    }
+  }
+
+  Future<void> _stopRecording({bool send = false}) async {
+    _recordTimer?.cancel();
+
+    if (!_isRecording) return;
+
+    try {
+      final path = await _recorder.stop();
+
       setState(() {
         _isRecording = false;
       });
@@ -2571,12 +2629,12 @@ class _DirectVoiceRecordPanelState extends State<_DirectVoiceRecordPanel> {
 
   Future<void> _cancelRecording() async {
     _recordTimer?.cancel();
-    
+
     if (!_isRecording) return;
 
     try {
       final path = await _recorder.stop();
-      
+
       setState(() {
         _isRecording = false;
       });
@@ -2618,9 +2676,7 @@ class _DirectVoiceRecordPanelState extends State<_DirectVoiceRecordPanel> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          
           const SizedBox(height: 20),
-          
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -2652,9 +2708,7 @@ class _DirectVoiceRecordPanelState extends State<_DirectVoiceRecordPanel> {
                       ],
                     ),
                   ),
-                
                 const SizedBox(height: 20),
-                
                 if (_isRecording)
                   Text(
                     _formatDuration(_recordDuration),
@@ -2672,15 +2726,11 @@ class _DirectVoiceRecordPanelState extends State<_DirectVoiceRecordPanel> {
                       fontSize: 16,
                     ),
                   ),
-                
                 const SizedBox(height: 10),
-                
-                if (_isRecording)
-                  _buildSoundWave(),
+                if (_isRecording) _buildSoundWave(),
               ],
             ),
           ),
-          
           GestureDetector(
             onLongPressStart: (details) {
               _startY = details.globalPosition.dy;
@@ -2708,8 +2758,10 @@ class _DirectVoiceRecordPanelState extends State<_DirectVoiceRecordPanel> {
               height: 80,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: _isRecording 
-                      ? (_isCancelArea ? [Colors.red, Colors.red.shade700] : [const Color(0xFFFF5E62), const Color(0xFFFF3838)])
+                  colors: _isRecording
+                      ? (_isCancelArea
+                          ? [Colors.red, Colors.red.shade700]
+                          : [const Color(0xFFFF5E62), const Color(0xFFFF3838)])
                       : [const Color(0xFFFF5E62), const Color(0xFFFF3838)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -2724,7 +2776,7 @@ class _DirectVoiceRecordPanelState extends State<_DirectVoiceRecordPanel> {
                 ],
               ),
               child: Icon(
-                _isRecording 
+                _isRecording
                     ? (_isCancelArea ? FontAwesomeIcons.xmark : FontAwesomeIcons.microphone)
                     : FontAwesomeIcons.microphone,
                 color: Colors.white,

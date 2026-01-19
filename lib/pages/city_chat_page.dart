@@ -2,6 +2,11 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/chat/domain/entities/chat.dart';
 import 'package:go_nomads_app/features/chat/presentation/controllers/chat_state_controller.dart';
@@ -11,12 +16,8 @@ import 'package:go_nomads_app/pages/member_detail_page.dart';
 import 'package:go_nomads_app/services/image_upload_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
+import 'package:go_nomads_app/widgets/chat_more_options_sheet.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
@@ -685,6 +686,9 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
   // 表情面板显示状态
   bool _showEmojiPanel = false;
 
+  // 语音输入模式状态
+  bool _isVoiceMode = false;
+
   /// 正在上传的图片列表
   final List<_UploadingImageGroup> _uploadingImages = [];
 
@@ -921,90 +925,136 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
 
   Widget _buildInputBar() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFFF7F7F7),
         border: Border(top: BorderSide(color: const Color(0xFFE5E5E5))),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 4,
-            offset: const Offset(0, -2),
-          ),
-        ],
       ),
       child: SafeArea(
         top: false,
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // 语音按钮
-            Container(
-              margin: const EdgeInsets.only(bottom: 6),
-              child: IconButton(
-                icon: const Icon(FontAwesomeIcons.microphone, color: Color(0xFF666666), size: 26),
-                onPressed: () => _showMoreOptions(),
-              ),
-            ),
-            // 输入框
-            Expanded(
+            // 语音/键盘切换按钮
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  _isVoiceMode = !_isVoiceMode;
+                  if (_isVoiceMode) {
+                    _inputFocusNode.unfocus();
+                    _showEmojiPanel = false;
+                  }
+                });
+              },
               child: Container(
-                constraints: const BoxConstraints(maxHeight: 120),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF7F7F7),
-                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(6),
                 ),
-                child: TextField(
-                  controller: _textController,
-                  focusNode: _inputFocusNode,
-                  decoration: const InputDecoration(
-                    hintText: '说点什么...',
-                    hintStyle: TextStyle(color: Color(0xFFBBBBBB), fontSize: 16),
-                    border: InputBorder.none,
-                    isDense: true,
-                    contentPadding: EdgeInsets.symmetric(vertical: 8),
-                  ),
-                  maxLines: null,
-                  textCapitalization: TextCapitalization.sentences,
-                  style: const TextStyle(fontSize: 16, height: 1.5),
-                  onChanged: (_) => setState(() {}),
-                  onTap: () {
-                    // 点击输入框时收起表情面板
-                    if (_showEmojiPanel) {
-                      setState(() => _showEmojiPanel = false);
-                    }
-                  },
+                child: Icon(
+                  _isVoiceMode ? FontAwesomeIcons.keyboard : FontAwesomeIcons.microphone,
+                  color: const Color(0xFF666666),
+                  size: 18,
                 ),
               ),
             ),
             const SizedBox(width: 8),
-            // 表情/更多按钮
-            if (_textController.text.trim().isEmpty)
-              Container(
-                margin: const EdgeInsets.only(bottom: 6),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: Icon(
-                        _showEmojiPanel ? FontAwesomeIcons.keyboard : FontAwesomeIcons.faceSmile,
-                        color: const Color(0xFF666666),
-                        size: 26,
-                      ),
-                      onPressed: _toggleEmojiPanel,
-                    ),
-                    IconButton(
-                      icon: const Icon(FontAwesomeIcons.circlePlus, color: Color(0xFF666666), size: 26),
-                      onPressed: () => _showMoreOptions(),
-                    ),
-                  ],
+            // 输入框或录音按钮
+            Expanded(
+              child: _isVoiceMode ? _buildVoiceRecordButton() : _buildTextInput(),
+            ),
+            const SizedBox(width: 8),
+            // 表情按钮（非语音模式且无文字时显示）
+            if (!_isVoiceMode && _textController.text.trim().isEmpty) ...[
+              GestureDetector(
+                onTap: _toggleEmojiPanel,
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Icon(
+                    _showEmojiPanel ? FontAwesomeIcons.keyboard : FontAwesomeIcons.faceSmile,
+                    color: const Color(0xFF666666),
+                    size: 18,
+                  ),
                 ),
-              )
+              ),
+              const SizedBox(width: 8),
+            ],
+            // 发送按钮或更多按钮
+            if (!_isVoiceMode && _textController.text.trim().isNotEmpty)
+              _buildSendButton()
             else
-              _buildSendButton(),
+              GestureDetector(
+                onTap: () => ChatMoreOptionsSheet.show(
+                  config: ChatMoreOptionsConfig(
+                    onImagePicked: _sendImage,
+                    onLocationPicked: _pickLocation,
+                    onFilePicked: _sendFile,
+                  ),
+                ),
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Icon(
+                    FontAwesomeIcons.plus,
+                    color: Color(0xFF666666),
+                    size: 18,
+                  ),
+                ),
+              ),
           ],
         ),
       ),
+    );
+  }
+
+  /// 构建文字输入框
+  Widget _buildTextInput() {
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 120, minHeight: 36),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: TextField(
+        controller: _textController,
+        focusNode: _inputFocusNode,
+        decoration: const InputDecoration(
+          hintText: '说点什么...',
+          hintStyle: TextStyle(color: Color(0xFFBBBBBB), fontSize: 16),
+          border: InputBorder.none,
+          isDense: true,
+          contentPadding: EdgeInsets.zero,
+        ),
+        maxLines: null,
+        textCapitalization: TextCapitalization.sentences,
+        style: const TextStyle(fontSize: 16, height: 1.3),
+        onChanged: (_) => setState(() {}),
+        onTap: () {
+          // 点击输入框时收起表情面板
+          if (_showEmojiPanel) {
+            setState(() => _showEmojiPanel = false);
+          }
+        },
+      ),
+    );
+  }
+
+  /// 构建语音录制按钮
+  Widget _buildVoiceRecordButton() {
+    return _InlineVoiceRecordButton(
+      onSendVoice: (path, duration) => _sendVoiceMessage(path, duration),
     );
   }
 
@@ -1013,12 +1063,13 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
     return GestureDetector(
       onTap: hasText ? _sendMessage : null,
       child: Container(
-        padding: const EdgeInsets.all(8),
+        width: 36,
+        height: 36,
         decoration: BoxDecoration(
           color: hasText ? const Color(0xFF07C160) : const Color(0xFFE5E5E5),
           borderRadius: BorderRadius.circular(6),
         ),
-        child: const Icon(FontAwesomeIcons.paperPlane, color: Colors.white, size: 20),
+        child: const Icon(FontAwesomeIcons.paperPlane, color: Colors.white, size: 16),
       ),
     );
   }
@@ -1593,94 +1644,6 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
     );
   }
 
-  void _showMoreOptions() {
-    Get.bottomSheet(
-      Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFFF5F5F5),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // 拖动条
-                Container(
-                  margin: const EdgeInsets.only(bottom: 20),
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFCCCCCC),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                // 功能网格
-                GridView.count(
-                  shrinkWrap: true,
-                  crossAxisCount: 4,
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                  childAspectRatio: 0.85,
-                  children: [
-                    _buildMoreOption(
-                      icon: FontAwesomeIcons.images,
-                      label: '相册',
-                      onTap: () => _pickImage(ImageSource.gallery),
-                    ),
-                    _buildMoreOption(
-                      icon: FontAwesomeIcons.camera,
-                      label: '拍摄',
-                      onTap: () => _pickImage(ImageSource.camera),
-                    ),
-                    _buildMoreOption(
-                      icon: FontAwesomeIcons.locationDot,
-                      label: '位置',
-                      onTap: () => _pickLocation(),
-                    ),
-                    _buildMoreOption(
-                      icon: FontAwesomeIcons.folder,
-                      label: '文件',
-                      onTap: () => _pickFile(),
-                    ),
-                    _buildMoreOption(
-                      icon: FontAwesomeIcons.microphone,
-                      label: '语音',
-                      onTap: () {
-                        Get.back();
-                        _showVoiceRecordPanel();
-                      },
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// 选择图片（相册/相机）
-  Future<void> _pickImage(ImageSource source) async {
-    Get.back(); // 关闭底部菜单
-    try {
-      final picker = ImagePicker();
-      final XFile? image = await picker.pickImage(
-        source: source,
-        maxWidth: 1920,
-        maxHeight: 1920,
-        imageQuality: 85,
-      );
-      if (image != null) {
-        _sendImage(image);
-      }
-    } catch (e) {
-      AppToast.error('选择图片失败: $e');
-    }
-  }
-
   /// 发送图片消息
   Future<void> _sendImage(XFile image) async {
     // 创建上传中图片的唯一 ID
@@ -1717,12 +1680,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
 
       debugPrint('✅ 图片上传成功: $imageUrl');
 
-      // 2. 上传完成，从上传列表移除
-      setState(() {
-        _uploadingImages.removeWhere((img) => img.id == uploadId);
-      });
-
-      // 3. 发送图片消息（使用返回的 URL）
+      // 2. 先发送图片消息
       widget.controller.sendMessage(
         imageUrl,
         messageType: 'image',
@@ -1733,6 +1691,9 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
           'mimeType': 'image/jpeg',
         },
       );
+
+      // 3. 预加载网络图片，加载完成后再移除上传中的预览
+      _preloadAndRemoveUploadingImage(imageUrl, uploadId);
     } catch (e) {
       debugPrint('❌ 图片上传失败: $e');
       // 标记上传失败
@@ -1772,6 +1733,27 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
         return true;
       }
       return false;
+    });
+  }
+
+  /// 预加载网络图片，加载完成后移除上传中的预览
+  void _preloadAndRemoveUploadingImage(String imageUrl, String uploadId) {
+    // 使用 precacheImage 预加载图片
+    final imageProvider = NetworkImage(imageUrl);
+    precacheImage(imageProvider, context).then((_) {
+      // 图片预加载完成，移除上传中的预览
+      if (mounted) {
+        setState(() {
+          _uploadingImages.removeWhere((img) => img.id == uploadId);
+        });
+      }
+    }).catchError((_) {
+      // 预加载失败，仍然移除上传中的预览（网络图片会显示加载状态）
+      if (mounted) {
+        setState(() {
+          _uploadingImages.removeWhere((img) => img.id == uploadId);
+        });
+      }
     });
   }
 
@@ -1967,27 +1949,6 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
     );
   }
 
-  /// 选择文件
-  Future<void> _pickFile() async {
-    Get.back(); // 关闭底部菜单
-    try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.any,
-        allowMultiple: false,
-      );
-      if (result != null && result.files.isNotEmpty) {
-        final platformFile = result.files.first;
-        if (platformFile.path != null) {
-          _sendFile(platformFile);
-        } else {
-          AppToast.error('无法获取文件路径');
-        }
-      }
-    } catch (e) {
-      AppToast.error('选择文件失败: $e');
-    }
-  }
-
   /// 发送文件消息
   Future<void> _sendFile(PlatformFile platformFile) async {
     final uploadId = DateTime.now().millisecondsSinceEpoch.toString();
@@ -2097,7 +2058,6 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
 
   /// 选择位置
   Future<void> _pickLocation() async {
-    Get.back(); // 关闭底部菜单
     try {
       // 跳转到地图选择页面
       final result = await Get.to<Map<String, dynamic>>(
@@ -2179,46 +2139,6 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
     } catch (e) {
       AppToast.error('发送语音失败: $e');
     }
-  }
-
-  Widget _buildMoreOption({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Icon(icon, color: const Color(0xFF666666), size: 28),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Color(0xFF666666),
-              height: 1.0,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 
@@ -2477,45 +2397,55 @@ class _MessageBubble extends StatelessWidget {
               maxWidth: 200,
               maxHeight: 300,
             ),
-            child: Image.network(
-              attachment.url,
-              fit: BoxFit.cover,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return Container(
-                  width: 200,
-                  height: 150,
-                  color: Colors.grey[200],
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      value: loadingProgress.expectedTotalBytes != null
-                          ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                          : null,
-                      strokeWidth: 2,
-                      color: const Color(0xFF07C160),
-                    ),
-                  ),
-                );
-              },
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  width: 200,
-                  height: 150,
-                  color: Colors.grey[200],
-                  child: const Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(FontAwesomeIcons.image, color: Colors.grey, size: 40),
-                      SizedBox(height: 8),
-                      Text('加载失败', style: TextStyle(color: Colors.grey)),
-                    ],
-                  ),
-                );
-              },
-            ),
+            child: _buildNetworkImage(attachment.url),
           ),
         ),
       ),
+    );
+  }
+
+  /// 构建网络图片（加载时显示灰色占位框）
+  Widget _buildNetworkImage(String imageUrl) {
+    return Image.network(
+      imageUrl,
+      fit: BoxFit.cover,
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        // 显示灰色占位框，带图片图标
+        return Container(
+          width: 200,
+          height: 150,
+          decoration: BoxDecoration(
+            color: Colors.grey[300],
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Center(
+            child: Icon(
+              FontAwesomeIcons.image,
+              color: Colors.grey,
+              size: 40,
+            ),
+          ),
+        );
+      },
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          width: 200,
+          height: 150,
+          decoration: BoxDecoration(
+            color: Colors.grey[300],
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(FontAwesomeIcons.image, color: Colors.grey, size: 40),
+              SizedBox(height: 8),
+              Text('加载失败', style: TextStyle(color: Colors.grey)),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -2810,11 +2740,9 @@ class _MessageBubble extends StatelessWidget {
   }
 
   /// 打开 Apple 地图
-  Future<void> _openAppleMaps(
-      BuildContext context, double latitude, double longitude, String name) async {
+  Future<void> _openAppleMaps(BuildContext context, double latitude, double longitude, String name) async {
     Navigator.pop(context);
-    final url = Uri.parse(
-        'maps://?q=${Uri.encodeComponent(name)}&ll=$latitude,$longitude');
+    final url = Uri.parse('maps://?q=${Uri.encodeComponent(name)}&ll=$latitude,$longitude');
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
@@ -2823,11 +2751,9 @@ class _MessageBubble extends StatelessWidget {
   }
 
   /// 打开 Google 地图
-  Future<void> _openGoogleMaps(
-      BuildContext context, double latitude, double longitude, String name) async {
+  Future<void> _openGoogleMaps(BuildContext context, double latitude, double longitude, String name) async {
     Navigator.pop(context);
-    final url = Uri.parse(
-        'comgooglemaps://?q=$latitude,$longitude&center=$latitude,$longitude');
+    final url = Uri.parse('comgooglemaps://?q=$latitude,$longitude&center=$latitude,$longitude');
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
@@ -2836,8 +2762,7 @@ class _MessageBubble extends StatelessWidget {
   }
 
   /// 打开高德地图
-  Future<void> _openAmap(
-      BuildContext context, double latitude, double longitude, String name) async {
+  Future<void> _openAmap(BuildContext context, double latitude, double longitude, String name) async {
     Navigator.pop(context);
     final url = Uri.parse(
         'iosamap://viewMap?sourceApplication=GoNomads&poiname=${Uri.encodeComponent(name)}&lat=$latitude&lon=$longitude&dev=0');
@@ -2849,8 +2774,7 @@ class _MessageBubble extends StatelessWidget {
   }
 
   /// 打开百度地图
-  Future<void> _openBaiduMap(
-      BuildContext context, double latitude, double longitude, String name) async {
+  Future<void> _openBaiduMap(BuildContext context, double latitude, double longitude, String name) async {
     Navigator.pop(context);
     final url = Uri.parse(
         'baidumap://map/marker?location=$latitude,$longitude&title=${Uri.encodeComponent(name)}&coord_type=gcj02&src=GoNomads');
@@ -2862,11 +2786,9 @@ class _MessageBubble extends StatelessWidget {
   }
 
   /// 打开腾讯地图
-  Future<void> _openTencentMap(
-      BuildContext context, double latitude, double longitude, String name) async {
+  Future<void> _openTencentMap(BuildContext context, double latitude, double longitude, String name) async {
     Navigator.pop(context);
-    final url = Uri.parse(
-        'qqmap://map/marker?marker=coord:$latitude,$longitude;title:${Uri.encodeComponent(name)}');
+    final url = Uri.parse('qqmap://map/marker?marker=coord:$latitude,$longitude;title:${Uri.encodeComponent(name)}');
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
@@ -3530,6 +3452,198 @@ class _FullScreenImageViewerState extends State<_FullScreenImageViewer> {
   }
 }
 
+/// 内联语音录制按钮（微信风格）- 群聊
+class _InlineVoiceRecordButton extends StatefulWidget {
+  final void Function(String path, int duration) onSendVoice;
+
+  const _InlineVoiceRecordButton({required this.onSendVoice});
+
+  @override
+  State<_InlineVoiceRecordButton> createState() => _InlineVoiceRecordButtonState();
+}
+
+class _InlineVoiceRecordButtonState extends State<_InlineVoiceRecordButton> {
+  final AudioRecorder _recorder = AudioRecorder();
+  bool _isRecording = false;
+  bool _isCancelArea = false;
+  int _recordDuration = 0;
+  Timer? _recordTimer;
+  String? _recordingPath;
+  double _startY = 0;
+
+  @override
+  void dispose() {
+    _recordTimer?.cancel();
+    _recorder.dispose();
+    super.dispose();
+  }
+
+  Future<void> _startRecording() async {
+    try {
+      if (await _recorder.hasPermission()) {
+        final dir = await getTemporaryDirectory();
+        _recordingPath = '${dir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
+
+        await _recorder.start(
+          const RecordConfig(
+            encoder: AudioEncoder.aacLc,
+            bitRate: 128000,
+            sampleRate: 44100,
+          ),
+          path: _recordingPath!,
+        );
+
+        setState(() {
+          _isRecording = true;
+          _recordDuration = 0;
+        });
+
+        _recordTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+          setState(() {
+            _recordDuration++;
+          });
+          if (_recordDuration >= 60) {
+            _stopRecording(send: true);
+          }
+        });
+
+        HapticFeedback.mediumImpact();
+      } else {
+        AppToast.error('请允许录音权限');
+      }
+    } catch (e) {
+      AppToast.error('录音失败: $e');
+    }
+  }
+
+  Future<void> _stopRecording({bool send = false}) async {
+    _recordTimer?.cancel();
+
+    if (!_isRecording) return;
+
+    try {
+      final path = await _recorder.stop();
+
+      setState(() {
+        _isRecording = false;
+        _isCancelArea = false;
+      });
+
+      if (send && path != null && _recordDuration >= 1) {
+        widget.onSendVoice(path, _recordDuration);
+      } else if (_recordDuration < 1) {
+        AppToast.info('说话时间太短');
+        if (path != null) {
+          try {
+            await File(path).delete();
+          } catch (_) {}
+        }
+      }
+    } catch (e) {
+      debugPrint('停止录音失败: $e');
+    }
+  }
+
+  Future<void> _cancelRecording() async {
+    _recordTimer?.cancel();
+
+    if (!_isRecording) return;
+
+    try {
+      final path = await _recorder.stop();
+
+      setState(() {
+        _isRecording = false;
+        _isCancelArea = false;
+      });
+
+      if (path != null) {
+        try {
+          await File(path).delete();
+        } catch (_) {}
+      }
+    } catch (e) {
+      debugPrint('取消录音失败: $e');
+    }
+  }
+
+  String _formatDuration(int seconds) {
+    final mins = seconds ~/ 60;
+    final secs = seconds % 60;
+    return '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onLongPressStart: (details) {
+        _startY = details.globalPosition.dy;
+        _startRecording();
+      },
+      onLongPressMoveUpdate: (details) {
+        final deltaY = _startY - details.globalPosition.dy;
+        setState(() {
+          _isCancelArea = deltaY > 50;
+        });
+      },
+      onLongPressEnd: (details) {
+        if (_isCancelArea) {
+          _cancelRecording();
+        } else {
+          _stopRecording(send: true);
+        }
+      },
+      onLongPressCancel: () {
+        _cancelRecording();
+      },
+      child: Container(
+        height: 36,
+        decoration: BoxDecoration(
+          color: _isRecording
+              ? (_isCancelArea ? Colors.red.withValues(alpha: 0.15) : const Color(0xFF07C160).withValues(alpha: 0.15))
+              : Colors.white,
+          borderRadius: BorderRadius.circular(6),
+          border: _isRecording
+              ? Border.all(
+                  color: _isCancelArea ? Colors.red : const Color(0xFF07C160),
+                  width: 1,
+                )
+              : null,
+        ),
+        child: Center(
+          child: _isRecording
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      _isCancelArea ? FontAwesomeIcons.trash : FontAwesomeIcons.microphone,
+                      color: _isCancelArea ? Colors.red : const Color(0xFF07C160),
+                      size: 14,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      _isCancelArea ? '松开取消' : '${_formatDuration(_recordDuration)} ↑ 取消',
+                      style: TextStyle(
+                        color: _isCancelArea ? Colors.red : const Color(0xFF07C160),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                )
+              : const Text(
+                  '按住 说话',
+                  style: TextStyle(
+                    color: Color(0xFF999999),
+                    fontSize: 15,
+                  ),
+                ),
+        ),
+      ),
+    );
+  }
+}
+
 /// 微信风格语音录制面板
 class _VoiceRecordPanel extends StatefulWidget {
   final void Function(String path, int duration) onSendVoice;
@@ -3561,7 +3675,7 @@ class _VoiceRecordPanelState extends State<_VoiceRecordPanel> {
       if (await _recorder.hasPermission()) {
         final dir = await getTemporaryDirectory();
         _recordingPath = '${dir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
-        
+
         await _recorder.start(
           const RecordConfig(
             encoder: AudioEncoder.aacLc,
@@ -3599,12 +3713,12 @@ class _VoiceRecordPanelState extends State<_VoiceRecordPanel> {
 
   Future<void> _stopRecording({bool send = false}) async {
     _recordTimer?.cancel();
-    
+
     if (!_isRecording) return;
 
     try {
       final path = await _recorder.stop();
-      
+
       setState(() {
         _isRecording = false;
       });
@@ -3628,12 +3742,12 @@ class _VoiceRecordPanelState extends State<_VoiceRecordPanel> {
 
   Future<void> _cancelRecording() async {
     _recordTimer?.cancel();
-    
+
     if (!_isRecording) return;
 
     try {
       final path = await _recorder.stop();
-      
+
       setState(() {
         _isRecording = false;
       });
@@ -3677,9 +3791,9 @@ class _VoiceRecordPanelState extends State<_VoiceRecordPanel> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           // 录音状态指示
           Expanded(
             child: Column(
@@ -3713,9 +3827,9 @@ class _VoiceRecordPanelState extends State<_VoiceRecordPanel> {
                       ],
                     ),
                   ),
-                
+
                 const SizedBox(height: 20),
-                
+
                 // 录音时长
                 if (_isRecording)
                   Text(
@@ -3734,16 +3848,15 @@ class _VoiceRecordPanelState extends State<_VoiceRecordPanel> {
                       fontSize: 16,
                     ),
                   ),
-                
+
                 const SizedBox(height: 10),
-                
+
                 // 声波动画
-                if (_isRecording)
-                  _buildSoundWave(),
+                if (_isRecording) _buildSoundWave(),
               ],
             ),
           ),
-          
+
           // 录音按钮
           GestureDetector(
             onLongPressStart: (details) {
@@ -3771,22 +3884,21 @@ class _VoiceRecordPanelState extends State<_VoiceRecordPanel> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: _isRecording 
-                    ? (_isCancelArea ? Colors.red : const Color(0xFF07C160))
-                    : const Color(0xFF07C160),
+                color: _isRecording ? (_isCancelArea ? Colors.red : const Color(0xFF07C160)) : const Color(0xFF07C160),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: (_isRecording 
-                        ? (_isCancelArea ? Colors.red : const Color(0xFF07C160))
-                        : const Color(0xFF07C160)).withValues(alpha: 0.4),
+                    color: (_isRecording
+                            ? (_isCancelArea ? Colors.red : const Color(0xFF07C160))
+                            : const Color(0xFF07C160))
+                        .withValues(alpha: 0.4),
                     blurRadius: 20,
                     spreadRadius: 2,
                   ),
                 ],
               ),
               child: Icon(
-                _isRecording 
+                _isRecording
                     ? (_isCancelArea ? FontAwesomeIcons.xmark : FontAwesomeIcons.microphone)
                     : FontAwesomeIcons.microphone,
                 color: Colors.white,
