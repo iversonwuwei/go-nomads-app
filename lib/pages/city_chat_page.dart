@@ -20,8 +20,6 @@ import 'package:go_nomads_app/widgets/chat_more_options_sheet.dart';
 import 'package:go_nomads_app/widgets/chat_voice.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:record/record.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// 城市聊天室页面 - WeChat 风格设计
