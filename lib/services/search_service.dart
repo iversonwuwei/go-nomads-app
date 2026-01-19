@@ -1,7 +1,7 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/core/core.dart';
-import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:go_nomads_app/core/core.dart';
+import 'package:go_nomads_app/services/http_service.dart';
 
 /// 搜索服务 - 通过Elasticsearch提供统一搜索功能
 class SearchService {

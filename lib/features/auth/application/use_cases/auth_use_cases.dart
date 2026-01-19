@@ -1,8 +1,8 @@
-import 'package:df_admin_mobile/core/application/use_case.dart';
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/auth/domain/entities/auth_token.dart';
-import 'package:df_admin_mobile/features/auth/domain/entities/auth_user.dart';
-import 'package:df_admin_mobile/features/auth/domain/repositories/iauth_repository.dart';
+import 'package:go_nomads_app/core/application/use_case.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/auth/domain/entities/auth_token.dart';
+import 'package:go_nomads_app/features/auth/domain/entities/auth_user.dart';
+import 'package:go_nomads_app/features/auth/domain/repositories/iauth_repository.dart';
 
 /// 登录用例
 class LoginUseCase extends UseCase<AuthToken, LoginParams> {

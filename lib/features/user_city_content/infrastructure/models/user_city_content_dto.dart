@@ -1,5 +1,5 @@
-// import 'package:df_admin_mobile/models/user_city_content_models.dart' as legacy;
-import 'package:df_admin_mobile/features/user_city_content/domain/entities/user_city_content.dart' as domain;
+// import 'package:go_nomads_app/models/user_city_content_models.dart' as legacy;
+import 'package:go_nomads_app/features/user_city_content/domain/entities/user_city_content.dart' as domain;
 
 /// 分页结果 DTO
 class PagedResultDto<T> {

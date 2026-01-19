@@ -2,16 +2,16 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
-import 'package:df_admin_mobile/features/chat/domain/entities/chat.dart';
-import 'package:df_admin_mobile/features/chat/presentation/controllers/chat_state_controller.dart';
-import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/pages/flutter_map_picker_page.dart';
-import 'package:df_admin_mobile/pages/member_detail_page.dart';
-import 'package:df_admin_mobile/services/image_upload_service.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
-import 'package:df_admin_mobile/widgets/back_button.dart';
-import 'package:df_admin_mobile/widgets/safe_network_image.dart';
+import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:go_nomads_app/features/chat/domain/entities/chat.dart';
+import 'package:go_nomads_app/features/chat/presentation/controllers/chat_state_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/pages/flutter_map_picker_page.dart';
+import 'package:go_nomads_app/pages/member_detail_page.dart';
+import 'package:go_nomads_app/services/image_upload_service.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/back_button.dart';
+import 'package:go_nomads_app/widgets/safe_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

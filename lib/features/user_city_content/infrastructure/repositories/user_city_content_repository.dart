@@ -1,9 +1,9 @@
-import 'package:df_admin_mobile/config/api_config.dart';
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/user_city_content/domain/entities/user_city_content.dart' as entity;
-import 'package:df_admin_mobile/features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
-import 'package:df_admin_mobile/features/user_city_content/infrastructure/models/user_city_content_dto.dart';
-import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:go_nomads_app/config/api_config.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/user_city_content/domain/entities/user_city_content.dart' as entity;
+import 'package:go_nomads_app/features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
+import 'package:go_nomads_app/features/user_city_content/infrastructure/models/user_city_content_dto.dart';
+import 'package:go_nomads_app/services/http_service.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';

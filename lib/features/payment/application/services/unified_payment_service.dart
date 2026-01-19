@@ -1,10 +1,10 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/features/payment/application/services/alipay_service.dart';
-import 'package:df_admin_mobile/features/payment/application/services/paypal_service.dart';
-import 'package:df_admin_mobile/features/payment/application/services/wechat_pay_service.dart';
-import 'package:df_admin_mobile/features/payment/domain/entities/payment_method.dart';
-import 'package:df_admin_mobile/features/payment/presentation/controllers/payment_state_controller.dart';
+import 'package:go_nomads_app/features/payment/application/services/alipay_service.dart';
+import 'package:go_nomads_app/features/payment/application/services/paypal_service.dart';
+import 'package:go_nomads_app/features/payment/application/services/wechat_pay_service.dart';
+import 'package:go_nomads_app/features/payment/domain/entities/payment_method.dart';
+import 'package:go_nomads_app/features/payment/presentation/controllers/payment_state_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';

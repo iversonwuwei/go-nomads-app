@@ -8,7 +8,7 @@ from pathlib import Path
 
 def has_app_toast_import(content: str) -> bool:
     """检查文件是否已有 AppToast 导入"""
-    return "import 'package:df_admin_mobile/widgets/app_toast.dart';" in content
+    return "import 'package:go_nomads_app/widgets/app_toast.dart';" in content
 
 def add_app_toast_import(content: str) -> str:
     """添加 AppToast 导入到文件中"""
@@ -26,7 +26,7 @@ def add_app_toast_import(content: str) -> str:
     
     if last_import_idx >= 0:
         # 在最后一个 import 之后插入 AppToast import
-        lines.insert(last_import_idx + 1, "import 'package:df_admin_mobile/widgets/app_toast.dart';")
+        lines.insert(last_import_idx + 1, "import 'package:go_nomads_app/widgets/app_toast.dart';")
         return '\n'.join(lines)
     
     return content

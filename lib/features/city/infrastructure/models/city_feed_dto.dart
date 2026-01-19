@@ -1,6 +1,6 @@
 // Legacy model import removed - model no longer exists
-// import 'package:df_admin_mobile/models/city_feed_model.dart' as legacy;
-import 'package:df_admin_mobile/features/weather/infrastructure/models/weather_dto.dart';
+// import 'package:go_nomads_app/models/city_feed_model.dart' as legacy;
+import 'package:go_nomads_app/features/weather/infrastructure/models/weather_dto.dart';
 
 /// CityFeed DTO - ??????(?????>feed)
 class CityFeedDto {

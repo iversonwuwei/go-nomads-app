@@ -1,4 +1,4 @@
-import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
+import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
 
 /// 活动邀请实体
 class MeetupInvitation {

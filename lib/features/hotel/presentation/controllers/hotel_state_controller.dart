@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/core/sync/sync.dart';
-import 'package:df_admin_mobile/features/hotel/application/use_cases/hotel_use_cases.dart';
-import 'package:df_admin_mobile/features/hotel/domain/entities/hotel.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/core/sync/sync.dart';
+import 'package:go_nomads_app/features/hotel/application/use_cases/hotel_use_cases.dart';
+import 'package:go_nomads_app/features/hotel/domain/entities/hotel.dart';
 import 'package:get/get.dart';
 
 /// Hotel State Controller

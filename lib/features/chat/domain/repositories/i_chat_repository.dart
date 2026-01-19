@@ -1,5 +1,5 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/chat/domain/entities/chat.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/chat/domain/entities/chat.dart';
 
 /// Chat Repository 接口
 ///

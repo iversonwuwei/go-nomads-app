@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:df_admin_mobile/config/supabase_config.dart';
-import 'package:df_admin_mobile/services/image_upload_service.dart';
+import 'package:go_nomads_app/config/supabase_config.dart';
+import 'package:go_nomads_app/services/image_upload_service.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';

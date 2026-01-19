@@ -1,8 +1,8 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/membership/domain/entities/ai_usage_check.dart';
-import 'package:df_admin_mobile/features/membership/domain/entities/membership_level.dart';
-import 'package:df_admin_mobile/features/membership/domain/entities/membership_plan.dart';
-import 'package:df_admin_mobile/features/membership/domain/entities/user_membership.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/membership/domain/entities/ai_usage_check.dart';
+import 'package:go_nomads_app/features/membership/domain/entities/membership_level.dart';
+import 'package:go_nomads_app/features/membership/domain/entities/membership_plan.dart';
+import 'package:go_nomads_app/features/membership/domain/entities/user_membership.dart';
 
 /// 会员仓库接口
 abstract class MembershipRepository {

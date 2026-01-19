@@ -1,7 +1,7 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
-import 'package:df_admin_mobile/features/meetup/infrastructure/models/event_type_dto.dart';
+import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
+import 'package:go_nomads_app/features/meetup/infrastructure/models/event_type_dto.dart';
 
 /// Meetup DTO - 基础设施层数据传输对象
 class MeetupDto {

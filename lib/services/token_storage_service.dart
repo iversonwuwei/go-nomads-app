@@ -1,6 +1,6 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/config/api_config.dart';
+import 'package:go_nomads_app/config/api_config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Token 持久化服务

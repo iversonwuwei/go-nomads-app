@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:df_admin_mobile/config/api_config.dart';
-import 'package:df_admin_mobile/features/async_task/domain/entities/async_task.dart';
-import 'package:df_admin_mobile/features/async_task/infrastructure/models/async_task_dto.dart';
+import 'package:go_nomads_app/config/api_config.dart';
+import 'package:go_nomads_app/features/async_task/domain/entities/async_task.dart';
+import 'package:go_nomads_app/features/async_task/infrastructure/models/async_task_dto.dart';
 import 'package:signalr_netcore/signalr_client.dart';
 
 import 'token_storage_service.dart';

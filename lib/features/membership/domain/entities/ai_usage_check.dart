@@ -1,4 +1,4 @@
-import 'package:df_admin_mobile/features/membership/domain/entities/membership_level.dart';
+import 'package:go_nomads_app/features/membership/domain/entities/membership_level.dart';
 
 /// AI 使用配额检查结果
 class AiUsageCheck {

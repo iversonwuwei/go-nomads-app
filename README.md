@@ -1,3 +1,3 @@
-# df_admin_mobile
+# go-nomads-app
 
 A new Flutter project.

@@ -55,7 +55,7 @@ def process_file(file_path):
             
             # 构造新的import语句
             package_path = current_dir
-            new_import = f"import 'package:df_admin_mobile/{package_path}'{as_clause};"
+            new_import = f"import 'package:go_nomads_app/{package_path}'{as_clause};"
             
             return new_import
         

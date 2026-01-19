@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:path_provider/path_provider.dart';
 
 class ImageSaveUtil {

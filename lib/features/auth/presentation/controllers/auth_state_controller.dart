@@ -1,19 +1,19 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:df_admin_mobile/core/application/use_case.dart';
-import 'package:df_admin_mobile/core/auth/token_manager.dart';
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/auth/application/use_cases/auth_database_use_cases.dart';
-import 'package:df_admin_mobile/features/auth/application/use_cases/auth_use_cases.dart';
-import 'package:df_admin_mobile/features/auth/domain/entities/auth_token.dart';
-import 'package:df_admin_mobile/features/auth/domain/entities/auth_user.dart';
-import 'package:df_admin_mobile/features/auth/domain/repositories/iauth_repository.dart';
-import 'package:df_admin_mobile/services/http_service.dart';
-import 'package:df_admin_mobile/services/signalr_service.dart';
-import 'package:df_admin_mobile/services/social_login_service.dart';
-import 'package:df_admin_mobile/services/token_storage_service.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:go_nomads_app/core/application/use_case.dart';
+import 'package:go_nomads_app/core/auth/token_manager.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/auth/application/use_cases/auth_database_use_cases.dart';
+import 'package:go_nomads_app/features/auth/application/use_cases/auth_use_cases.dart';
+import 'package:go_nomads_app/features/auth/domain/entities/auth_token.dart';
+import 'package:go_nomads_app/features/auth/domain/entities/auth_user.dart';
+import 'package:go_nomads_app/features/auth/domain/repositories/iauth_repository.dart';
+import 'package:go_nomads_app/services/http_service.dart';
+import 'package:go_nomads_app/services/signalr_service.dart';
+import 'package:go_nomads_app/services/social_login_service.dart';
+import 'package:go_nomads_app/services/token_storage_service.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:get/get.dart';
 
 /// 认证状态控制器

@@ -1,9 +1,9 @@
-import 'package:df_admin_mobile/controllers/innovation_list_page_controller.dart';
-import 'package:df_admin_mobile/features/innovation_project/domain/entities/innovation_project.dart';
-import 'package:df_admin_mobile/features/user/domain/entities/user.dart' as models;
-import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/pages/direct_chat_page.dart';
-import 'package:df_admin_mobile/pages/innovation_detail/innovation_detail_page.dart';
+import 'package:go_nomads_app/controllers/innovation_list_page_controller.dart';
+import 'package:go_nomads_app/features/innovation_project/domain/entities/innovation_project.dart';
+import 'package:go_nomads_app/features/user/domain/entities/user.dart' as models;
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/pages/direct_chat_page.dart';
+import 'package:go_nomads_app/pages/innovation_detail/innovation_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';

@@ -1,10 +1,10 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/user_city_content/application/use_cases/user_city_content_use_cases.dart';
-import 'package:df_admin_mobile/features/user_city_content/domain/entities/user_city_content.dart';
-import 'package:df_admin_mobile/services/token_storage_service.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/user_city_content/application/use_cases/user_city_content_use_cases.dart';
+import 'package:go_nomads_app/features/user_city_content/domain/entities/user_city_content.dart';
+import 'package:go_nomads_app/services/token_storage_service.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

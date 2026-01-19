@@ -1,8 +1,8 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/skill/domain/entities/skill.dart';
-import 'package:df_admin_mobile/features/skill/domain/repositories/i_skill_repository.dart';
-import 'package:df_admin_mobile/features/skill/infrastructure/models/skill_dto.dart';
-import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/skill/domain/entities/skill.dart';
+import 'package:go_nomads_app/features/skill/domain/repositories/i_skill_repository.dart';
+import 'package:go_nomads_app/features/skill/infrastructure/models/skill_dto.dart';
+import 'package:go_nomads_app/services/http_service.dart';
 
 /// Skill Repository Implementation - 技能仓储实现
 class SkillRepository implements ISkillRepository {

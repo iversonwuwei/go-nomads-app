@@ -1,4 +1,4 @@
-import 'package:df_admin_mobile/features/skill/domain/entities/skill.dart'
+import 'package:go_nomads_app/features/skill/domain/entities/skill.dart'
     as domain;
 
 /// Skill DTO

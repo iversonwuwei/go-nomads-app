@@ -1,151 +1,151 @@
 // AI Domain
 import 'dart:developer';
 
-import 'package:df_admin_mobile/core/sync/data_sync_service.dart';
-import 'package:df_admin_mobile/features/ai/application/use_cases/ai_use_cases.dart';
-import 'package:df_admin_mobile/features/ai/domain/repositories/iai_repository.dart';
-import 'package:df_admin_mobile/features/ai/infrastructure/repositories/ai_repository.dart';
-import 'package:df_admin_mobile/features/ai/presentation/controllers/ai_state_controller.dart';
-import 'package:df_admin_mobile/features/auth/application/use_cases/auth_database_use_cases.dart' as auth_db_use_cases;
-import 'package:df_admin_mobile/features/auth/application/use_cases/auth_use_cases.dart' as auth_use_cases;
-import 'package:df_admin_mobile/features/auth/domain/repositories/iauth_database_repository.dart';
+import 'package:go_nomads_app/core/sync/data_sync_service.dart';
+import 'package:go_nomads_app/features/ai/application/use_cases/ai_use_cases.dart';
+import 'package:go_nomads_app/features/ai/domain/repositories/iai_repository.dart';
+import 'package:go_nomads_app/features/ai/infrastructure/repositories/ai_repository.dart';
+import 'package:go_nomads_app/features/ai/presentation/controllers/ai_state_controller.dart';
+import 'package:go_nomads_app/features/auth/application/use_cases/auth_database_use_cases.dart' as auth_db_use_cases;
+import 'package:go_nomads_app/features/auth/application/use_cases/auth_use_cases.dart' as auth_use_cases;
+import 'package:go_nomads_app/features/auth/domain/repositories/iauth_database_repository.dart';
 // Auth Domain
-import 'package:df_admin_mobile/features/auth/domain/repositories/iauth_repository.dart';
-import 'package:df_admin_mobile/features/auth/infrastructure/repositories/auth_database_repository.dart';
-import 'package:df_admin_mobile/features/auth/infrastructure/repositories/auth_repository.dart';
-import 'package:df_admin_mobile/features/auth/infrastructure/repositories/user_local_repository.dart';
-import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:go_nomads_app/features/auth/domain/repositories/iauth_repository.dart';
+import 'package:go_nomads_app/features/auth/infrastructure/repositories/auth_database_repository.dart';
+import 'package:go_nomads_app/features/auth/infrastructure/repositories/auth_repository.dart';
+import 'package:go_nomads_app/features/auth/infrastructure/repositories/user_local_repository.dart';
+import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 // Chat Domain
-import 'package:df_admin_mobile/features/chat/application/use_cases/chat_use_cases.dart';
-import 'package:df_admin_mobile/features/chat/domain/repositories/i_chat_local_repository.dart';
-import 'package:df_admin_mobile/features/chat/domain/repositories/i_chat_repository.dart';
-import 'package:df_admin_mobile/features/chat/infrastructure/repositories/chat_local_repository.dart';
-import 'package:df_admin_mobile/features/chat/infrastructure/repositories/chat_repository.dart';
-import 'package:df_admin_mobile/features/chat/infrastructure/services/chat_file_storage_service.dart';
-import 'package:df_admin_mobile/features/chat/presentation/controllers/chat_state_controller.dart';
-import 'package:df_admin_mobile/features/city/application/state_controllers/pros_cons_state_controller.dart';
-import 'package:df_admin_mobile/features/city/application/use_cases/city_use_cases.dart';
+import 'package:go_nomads_app/features/chat/application/use_cases/chat_use_cases.dart';
+import 'package:go_nomads_app/features/chat/domain/repositories/i_chat_local_repository.dart';
+import 'package:go_nomads_app/features/chat/domain/repositories/i_chat_repository.dart';
+import 'package:go_nomads_app/features/chat/infrastructure/repositories/chat_local_repository.dart';
+import 'package:go_nomads_app/features/chat/infrastructure/repositories/chat_repository.dart';
+import 'package:go_nomads_app/features/chat/infrastructure/services/chat_file_storage_service.dart';
+import 'package:go_nomads_app/features/chat/presentation/controllers/chat_state_controller.dart';
+import 'package:go_nomads_app/features/city/application/state_controllers/pros_cons_state_controller.dart';
+import 'package:go_nomads_app/features/city/application/use_cases/city_use_cases.dart';
 // City Domain
-import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
-import 'package:df_admin_mobile/features/city/domain/repositories/icity_rating_repository.dart';
-import 'package:df_admin_mobile/features/city/domain/usecases/city_rating_usecases.dart';
-import 'package:df_admin_mobile/features/city/infrastructure/repositories/city_rating_repository.dart';
-import 'package:df_admin_mobile/features/city/infrastructure/repositories/city_repository.dart';
-import 'package:df_admin_mobile/features/city/presentation/controllers/city_detail_state_controller.dart';
-import 'package:df_admin_mobile/features/city/presentation/controllers/city_rating_controller.dart';
-import 'package:df_admin_mobile/features/city/presentation/controllers/city_state_controller.dart';
+import 'package:go_nomads_app/features/city/domain/repositories/i_city_repository.dart';
+import 'package:go_nomads_app/features/city/domain/repositories/icity_rating_repository.dart';
+import 'package:go_nomads_app/features/city/domain/usecases/city_rating_usecases.dart';
+import 'package:go_nomads_app/features/city/infrastructure/repositories/city_rating_repository.dart';
+import 'package:go_nomads_app/features/city/infrastructure/repositories/city_repository.dart';
+import 'package:go_nomads_app/features/city/presentation/controllers/city_detail_state_controller.dart';
+import 'package:go_nomads_app/features/city/presentation/controllers/city_rating_controller.dart';
+import 'package:go_nomads_app/features/city/presentation/controllers/city_state_controller.dart';
 // Community Domain
-import 'package:df_admin_mobile/features/community/domain/repositories/i_community_repository.dart';
-import 'package:df_admin_mobile/features/community/infrastructure/repositories/community_repository.dart';
-import 'package:df_admin_mobile/features/community/presentation/controllers/community_state_controller.dart';
-import 'package:df_admin_mobile/features/coworking/application/use_cases/coworking_comment_use_cases.dart';
+import 'package:go_nomads_app/features/community/domain/repositories/i_community_repository.dart';
+import 'package:go_nomads_app/features/community/infrastructure/repositories/community_repository.dart';
+import 'package:go_nomads_app/features/community/presentation/controllers/community_state_controller.dart';
+import 'package:go_nomads_app/features/coworking/application/use_cases/coworking_comment_use_cases.dart';
 // Coworking Domain
-import 'package:df_admin_mobile/features/coworking/application/use_cases/coworking_use_cases.dart';
-import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_comment_repository.dart';
-import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_repository.dart';
-import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_review_repository.dart';
-import 'package:df_admin_mobile/features/coworking/infrastructure/repositories/coworking_comment_repository.dart';
-import 'package:df_admin_mobile/features/coworking/infrastructure/repositories/coworking_repository.dart';
-import 'package:df_admin_mobile/features/coworking/infrastructure/repositories/coworking_review_repository.dart';
-import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
+import 'package:go_nomads_app/features/coworking/application/use_cases/coworking_use_cases.dart';
+import 'package:go_nomads_app/features/coworking/domain/repositories/icoworking_comment_repository.dart';
+import 'package:go_nomads_app/features/coworking/domain/repositories/icoworking_repository.dart';
+import 'package:go_nomads_app/features/coworking/domain/repositories/icoworking_review_repository.dart';
+import 'package:go_nomads_app/features/coworking/infrastructure/repositories/coworking_comment_repository.dart';
+import 'package:go_nomads_app/features/coworking/infrastructure/repositories/coworking_repository.dart';
+import 'package:go_nomads_app/features/coworking/infrastructure/repositories/coworking_review_repository.dart';
+import 'package:go_nomads_app/features/coworking/presentation/controllers/coworking_state_controller.dart';
 // Hotel Domain
-import 'package:df_admin_mobile/features/hotel/application/use_cases/hotel_use_cases.dart';
-import 'package:df_admin_mobile/features/hotel/domain/repositories/i_hotel_repository.dart';
-import 'package:df_admin_mobile/features/hotel/domain/repositories/i_hotel_review_repository.dart';
-import 'package:df_admin_mobile/features/hotel/infrastructure/repositories/hotel_repository.dart';
-import 'package:df_admin_mobile/features/hotel/infrastructure/repositories/hotel_review_repository.dart';
-import 'package:df_admin_mobile/features/hotel/presentation/controllers/hotel_state_controller.dart';
+import 'package:go_nomads_app/features/hotel/application/use_cases/hotel_use_cases.dart';
+import 'package:go_nomads_app/features/hotel/domain/repositories/i_hotel_repository.dart';
+import 'package:go_nomads_app/features/hotel/domain/repositories/i_hotel_review_repository.dart';
+import 'package:go_nomads_app/features/hotel/infrastructure/repositories/hotel_repository.dart';
+import 'package:go_nomads_app/features/hotel/infrastructure/repositories/hotel_review_repository.dart';
+import 'package:go_nomads_app/features/hotel/presentation/controllers/hotel_state_controller.dart';
 // InnovationProject Domain
-import 'package:df_admin_mobile/features/innovation_project/application/use_cases/innovation_project_use_cases.dart';
-import 'package:df_admin_mobile/features/innovation_project/domain/repositories/i_innovation_project_repository.dart';
-import 'package:df_admin_mobile/features/innovation_project/infrastructure/repositories/innovation_project_repository.dart';
-import 'package:df_admin_mobile/features/innovation_project/presentation/controllers/innovation_project_state_controller.dart';
+import 'package:go_nomads_app/features/innovation_project/application/use_cases/innovation_project_use_cases.dart';
+import 'package:go_nomads_app/features/innovation_project/domain/repositories/i_innovation_project_repository.dart';
+import 'package:go_nomads_app/features/innovation_project/infrastructure/repositories/innovation_project_repository.dart';
+import 'package:go_nomads_app/features/innovation_project/presentation/controllers/innovation_project_state_controller.dart';
 // Interest Domain
-import 'package:df_admin_mobile/features/interest/application/use_cases/interest_use_cases.dart';
-import 'package:df_admin_mobile/features/interest/domain/repositories/i_interest_repository.dart';
-import 'package:df_admin_mobile/features/interest/infrastructure/repositories/interest_repository.dart';
-import 'package:df_admin_mobile/features/interest/presentation/controllers/interest_state_controller.dart';
+import 'package:go_nomads_app/features/interest/application/use_cases/interest_use_cases.dart';
+import 'package:go_nomads_app/features/interest/domain/repositories/i_interest_repository.dart';
+import 'package:go_nomads_app/features/interest/infrastructure/repositories/interest_repository.dart';
+import 'package:go_nomads_app/features/interest/presentation/controllers/interest_state_controller.dart';
 // Location Domain
-import 'package:df_admin_mobile/features/location/application/use_cases/get_cities_by_country_use_case.dart';
-import 'package:df_admin_mobile/features/location/application/use_cases/get_city_by_id_use_case.dart'
+import 'package:go_nomads_app/features/location/application/use_cases/get_cities_by_country_use_case.dart';
+import 'package:go_nomads_app/features/location/application/use_cases/get_city_by_id_use_case.dart'
     as location_use_cases;
-import 'package:df_admin_mobile/features/location/application/use_cases/get_countries_use_case.dart';
-import 'package:df_admin_mobile/features/location/application/use_cases/search_cities_use_case.dart'
+import 'package:go_nomads_app/features/location/application/use_cases/get_countries_use_case.dart';
+import 'package:go_nomads_app/features/location/application/use_cases/search_cities_use_case.dart'
     as location_search_use_cases;
-import 'package:df_admin_mobile/features/location/domain/repositories/ilocation_repository.dart';
-import 'package:df_admin_mobile/features/location/infrastructure/repositories/location_repository.dart';
-import 'package:df_admin_mobile/features/location/presentation/controllers/location_state_controller.dart';
-import 'package:df_admin_mobile/features/meetup/application/use_cases/cancel_meetup_use_case.dart';
-import 'package:df_admin_mobile/features/meetup/application/use_cases/cancel_rsvp_use_case.dart';
-import 'package:df_admin_mobile/features/meetup/application/use_cases/create_meetup_use_case.dart';
-import 'package:df_admin_mobile/features/meetup/application/use_cases/get_meetups_by_city_use_case.dart';
-import 'package:df_admin_mobile/features/meetup/application/use_cases/get_meetups_use_case.dart';
-import 'package:df_admin_mobile/features/meetup/application/use_cases/rsvp_to_meetup_use_case.dart';
-import 'package:df_admin_mobile/features/meetup/application/use_cases/update_meetup_use_case.dart';
+import 'package:go_nomads_app/features/location/domain/repositories/ilocation_repository.dart';
+import 'package:go_nomads_app/features/location/infrastructure/repositories/location_repository.dart';
+import 'package:go_nomads_app/features/location/presentation/controllers/location_state_controller.dart';
+import 'package:go_nomads_app/features/meetup/application/use_cases/cancel_meetup_use_case.dart';
+import 'package:go_nomads_app/features/meetup/application/use_cases/cancel_rsvp_use_case.dart';
+import 'package:go_nomads_app/features/meetup/application/use_cases/create_meetup_use_case.dart';
+import 'package:go_nomads_app/features/meetup/application/use_cases/get_meetups_by_city_use_case.dart';
+import 'package:go_nomads_app/features/meetup/application/use_cases/get_meetups_use_case.dart';
+import 'package:go_nomads_app/features/meetup/application/use_cases/rsvp_to_meetup_use_case.dart';
+import 'package:go_nomads_app/features/meetup/application/use_cases/update_meetup_use_case.dart';
 // Meetup Domain
-import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
-import 'package:df_admin_mobile/features/meetup/infrastructure/repositories/meetup_repository.dart';
-import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
+import 'package:go_nomads_app/features/meetup/domain/repositories/i_meetup_repository.dart';
+import 'package:go_nomads_app/features/meetup/infrastructure/repositories/meetup_repository.dart';
+import 'package:go_nomads_app/features/meetup/presentation/controllers/meetup_state_controller.dart';
 // Membership Domain
-import 'package:df_admin_mobile/features/membership/domain/repositories/membership_repository.dart';
-import 'package:df_admin_mobile/features/membership/infrastructure/repositories/membership_repository_impl.dart';
-import 'package:df_admin_mobile/features/membership/presentation/controllers/membership_state_controller.dart';
+import 'package:go_nomads_app/features/membership/domain/repositories/membership_repository.dart';
+import 'package:go_nomads_app/features/membership/infrastructure/repositories/membership_repository_impl.dart';
+import 'package:go_nomads_app/features/membership/presentation/controllers/membership_state_controller.dart';
 // Moderator Domain
-import 'package:df_admin_mobile/features/moderator/domain/repositories/i_moderator_application_repository.dart';
-import 'package:df_admin_mobile/features/moderator/infrastructure/repositories/moderator_application_repository.dart';
-import 'package:df_admin_mobile/features/moderator/presentation/controllers/moderator_application_controller.dart';
+import 'package:go_nomads_app/features/moderator/domain/repositories/i_moderator_application_repository.dart';
+import 'package:go_nomads_app/features/moderator/infrastructure/repositories/moderator_application_repository.dart';
+import 'package:go_nomads_app/features/moderator/presentation/controllers/moderator_application_controller.dart';
 // Notification Domain
-import 'package:df_admin_mobile/features/notification/domain/repositories/i_notification_repository.dart';
-import 'package:df_admin_mobile/features/notification/infrastructure/repositories/notification_repository.dart';
-import 'package:df_admin_mobile/features/notification/presentation/controllers/notification_state_controller.dart';
+import 'package:go_nomads_app/features/notification/domain/repositories/i_notification_repository.dart';
+import 'package:go_nomads_app/features/notification/infrastructure/repositories/notification_repository.dart';
+import 'package:go_nomads_app/features/notification/presentation/controllers/notification_state_controller.dart';
 // Payment Domain
-import 'package:df_admin_mobile/features/payment/application/services/alipay_service.dart';
-import 'package:df_admin_mobile/features/payment/application/services/payment_service.dart';
-import 'package:df_admin_mobile/features/payment/application/services/paypal_service.dart';
-import 'package:df_admin_mobile/features/payment/application/services/unified_payment_service.dart';
-import 'package:df_admin_mobile/features/payment/application/services/wechat_pay_service.dart';
-import 'package:df_admin_mobile/features/payment/domain/repositories/i_payment_repository.dart';
-import 'package:df_admin_mobile/features/payment/infrastructure/repositories/payment_repository.dart';
-import 'package:df_admin_mobile/features/payment/presentation/controllers/payment_state_controller.dart';
+import 'package:go_nomads_app/features/payment/application/services/alipay_service.dart';
+import 'package:go_nomads_app/features/payment/application/services/payment_service.dart';
+import 'package:go_nomads_app/features/payment/application/services/paypal_service.dart';
+import 'package:go_nomads_app/features/payment/application/services/unified_payment_service.dart';
+import 'package:go_nomads_app/features/payment/application/services/wechat_pay_service.dart';
+import 'package:go_nomads_app/features/payment/domain/repositories/i_payment_repository.dart';
+import 'package:go_nomads_app/features/payment/infrastructure/repositories/payment_repository.dart';
+import 'package:go_nomads_app/features/payment/presentation/controllers/payment_state_controller.dart';
 // Skill Domain
-import 'package:df_admin_mobile/features/skill/application/use_cases/skill_use_cases.dart';
-import 'package:df_admin_mobile/features/skill/domain/repositories/i_skill_repository.dart';
-import 'package:df_admin_mobile/features/skill/infrastructure/repositories/skill_repository.dart';
-import 'package:df_admin_mobile/features/skill/presentation/controllers/skill_state_controller.dart';
+import 'package:go_nomads_app/features/skill/application/use_cases/skill_use_cases.dart';
+import 'package:go_nomads_app/features/skill/domain/repositories/i_skill_repository.dart';
+import 'package:go_nomads_app/features/skill/infrastructure/repositories/skill_repository.dart';
+import 'package:go_nomads_app/features/skill/presentation/controllers/skill_state_controller.dart';
 // Travel History Domain
-import 'package:df_admin_mobile/features/travel_history/data/dao/travel_history_dao.dart';
-import 'package:df_admin_mobile/features/travel_history/services/travel_detection_service.dart';
-import 'package:df_admin_mobile/features/user/application/use_cases/favorite_city_use_cases.dart';
-import 'package:df_admin_mobile/features/user/application/use_cases/user_use_cases.dart' as user_use_cases;
+import 'package:go_nomads_app/features/travel_history/data/dao/travel_history_dao.dart';
+import 'package:go_nomads_app/features/travel_history/services/travel_detection_service.dart';
+import 'package:go_nomads_app/features/user/application/use_cases/favorite_city_use_cases.dart';
+import 'package:go_nomads_app/features/user/application/use_cases/user_use_cases.dart' as user_use_cases;
 // User Preferences Domain
-import 'package:df_admin_mobile/features/user/domain/repositories/i_user_preferences_repository.dart';
+import 'package:go_nomads_app/features/user/domain/repositories/i_user_preferences_repository.dart';
 // User Domain
-import 'package:df_admin_mobile/features/user/domain/repositories/iuser_repository.dart';
-import 'package:df_admin_mobile/features/user/infrastructure/repositories/user_preferences_repository.dart';
-import 'package:df_admin_mobile/features/user/infrastructure/repositories/user_repository.dart';
-import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:go_nomads_app/features/user/domain/repositories/iuser_repository.dart';
+import 'package:go_nomads_app/features/user/infrastructure/repositories/user_preferences_repository.dart';
+import 'package:go_nomads_app/features/user/infrastructure/repositories/user_repository.dart';
+import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
 // User City Content Domain
-import 'package:df_admin_mobile/features/user_city_content/application/use_cases/user_city_content_use_cases.dart';
-import 'package:df_admin_mobile/features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
-import 'package:df_admin_mobile/features/user_city_content/infrastructure/repositories/user_city_content_repository.dart';
-import 'package:df_admin_mobile/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
+import 'package:go_nomads_app/features/user_city_content/application/use_cases/user_city_content_use_cases.dart';
+import 'package:go_nomads_app/features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
+import 'package:go_nomads_app/features/user_city_content/infrastructure/repositories/user_city_content_repository.dart';
+import 'package:go_nomads_app/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
 // User Management Domain
-import 'package:df_admin_mobile/features/user_management/domain/repositories/iuser_management_repository.dart';
-import 'package:df_admin_mobile/features/user_management/infrastructure/repositories/user_management_repository.dart';
-import 'package:df_admin_mobile/features/user_management/presentation/controllers/user_management_state_controller.dart';
-import 'package:df_admin_mobile/features/weather/application/use_cases/get_city_weather_use_case.dart';
+import 'package:go_nomads_app/features/user_management/domain/repositories/iuser_management_repository.dart';
+import 'package:go_nomads_app/features/user_management/infrastructure/repositories/user_management_repository.dart';
+import 'package:go_nomads_app/features/user_management/presentation/controllers/user_management_state_controller.dart';
+import 'package:go_nomads_app/features/weather/application/use_cases/get_city_weather_use_case.dart';
 // Weather Domain
-import 'package:df_admin_mobile/features/weather/domain/repositories/iweather_repository.dart';
-import 'package:df_admin_mobile/features/weather/infrastructure/repositories/weather_repository.dart';
-import 'package:df_admin_mobile/features/weather/presentation/controllers/weather_state_controller.dart';
+import 'package:go_nomads_app/features/weather/domain/repositories/iweather_repository.dart';
+import 'package:go_nomads_app/features/weather/infrastructure/repositories/weather_repository.dart';
+import 'package:go_nomads_app/features/weather/presentation/controllers/weather_state_controller.dart';
 // Services
-import 'package:df_admin_mobile/services/database_service.dart';
-import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:go_nomads_app/services/database_service.dart';
+import 'package:go_nomads_app/services/http_service.dart';
 // Search Service
-import 'package:df_admin_mobile/services/search_service.dart';
+import 'package:go_nomads_app/services/search_service.dart';
 // Social Login
-import 'package:df_admin_mobile/services/social_login_service.dart';
-import 'package:df_admin_mobile/services/token_storage_service.dart';
+import 'package:go_nomads_app/services/social_login_service.dart';
+import 'package:go_nomads_app/services/token_storage_service.dart';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 

@@ -1,8 +1,8 @@
-import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/pages/home/home_page_controller.dart';
-import 'package:df_admin_mobile/pages/home/widgets/home_city_card.dart';
-import 'package:df_admin_mobile/routes/app_routes.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/pages/home/home_page_controller.dart';
+import 'package:go_nomads_app/pages/home/widgets/home_city_card.dart';
+import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';

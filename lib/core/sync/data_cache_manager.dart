@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:df_admin_mobile/core/sync/data_sync_service.dart';
+import 'package:go_nomads_app/core/sync/data_sync_service.dart';
 
 /// 缓存条目
 class CacheEntry<T> {

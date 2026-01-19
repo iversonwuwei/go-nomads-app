@@ -1,6 +1,6 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/features/city/presentation/controllers/city_rating_controller.dart';
+import 'package:go_nomads_app/features/city/presentation/controllers/city_rating_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';

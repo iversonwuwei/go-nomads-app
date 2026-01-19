@@ -1,20 +1,20 @@
 import 'dart:developer';
 import 'dart:ui' as ui;
 
-import 'package:df_admin_mobile/config/supabase_config.dart';
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/core/sync/sync.dart';
-import 'package:df_admin_mobile/features/city/domain/entities/city_option.dart';
-import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
-import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_repository.dart';
-import 'package:df_admin_mobile/features/location/application/use_cases/get_cities_by_country_use_case.dart';
-import 'package:df_admin_mobile/features/location/application/use_cases/get_city_by_id_use_case.dart';
-import 'package:df_admin_mobile/features/location/application/use_cases/get_countries_use_case.dart';
-import 'package:df_admin_mobile/features/location/application/use_cases/search_cities_use_case.dart';
-import 'package:df_admin_mobile/features/location/presentation/controllers/location_state_controller.dart';
-import 'package:df_admin_mobile/services/image_upload_service.dart';
-import 'package:df_admin_mobile/utils/image_upload_helper.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:go_nomads_app/config/supabase_config.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/core/sync/sync.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city_option.dart';
+import 'package:go_nomads_app/features/coworking/domain/entities/coworking_space.dart';
+import 'package:go_nomads_app/features/coworking/domain/repositories/icoworking_repository.dart';
+import 'package:go_nomads_app/features/location/application/use_cases/get_cities_by_country_use_case.dart';
+import 'package:go_nomads_app/features/location/application/use_cases/get_city_by_id_use_case.dart';
+import 'package:go_nomads_app/features/location/application/use_cases/get_countries_use_case.dart';
+import 'package:go_nomads_app/features/location/application/use_cases/search_cities_use_case.dart';
+import 'package:go_nomads_app/features/location/presentation/controllers/location_state_controller.dart';
+import 'package:go_nomads_app/services/image_upload_service.dart';
+import 'package:go_nomads_app/utils/image_upload_helper.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

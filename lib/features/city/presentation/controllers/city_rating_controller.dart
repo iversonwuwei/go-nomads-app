@@ -1,9 +1,9 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/features/city/domain/entities/city_rating_category.dart';
-import 'package:df_admin_mobile/features/city/domain/entities/city_rating_statistics.dart';
-import 'package:df_admin_mobile/features/city/domain/usecases/city_rating_usecases.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city_rating_category.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city_rating_statistics.dart';
+import 'package:go_nomads_app/features/city/domain/usecases/city_rating_usecases.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:get/get.dart';
 
 /// 城市评分控制器

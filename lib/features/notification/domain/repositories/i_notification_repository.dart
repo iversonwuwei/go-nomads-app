@@ -1,5 +1,5 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/notification/domain/entities/app_notification.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/notification/domain/entities/app_notification.dart';
 
 /// 通知数据响应（包含列表和未读数量）
 class NotificationDataResponse {

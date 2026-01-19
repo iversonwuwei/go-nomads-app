@@ -1,13 +1,13 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/features/ai/presentation/controllers/ai_state_controller.dart';
-import 'package:df_admin_mobile/features/city/application/state_controllers/pros_cons_state_controller.dart';
-import 'package:df_admin_mobile/features/city/presentation/controllers/city_detail_state_controller.dart';
-import 'package:df_admin_mobile/features/city/presentation/controllers/city_rating_controller.dart';
-import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
-import 'package:df_admin_mobile/features/membership/presentation/controllers/membership_state_controller.dart';
-import 'package:df_admin_mobile/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
-import 'package:df_admin_mobile/features/weather/presentation/controllers/weather_state_controller.dart';
+import 'package:go_nomads_app/features/ai/presentation/controllers/ai_state_controller.dart';
+import 'package:go_nomads_app/features/city/application/state_controllers/pros_cons_state_controller.dart';
+import 'package:go_nomads_app/features/city/presentation/controllers/city_detail_state_controller.dart';
+import 'package:go_nomads_app/features/city/presentation/controllers/city_rating_controller.dart';
+import 'package:go_nomads_app/features/coworking/presentation/controllers/coworking_state_controller.dart';
+import 'package:go_nomads_app/features/membership/presentation/controllers/membership_state_controller.dart';
+import 'package:go_nomads_app/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
+import 'package:go_nomads_app/features/weather/presentation/controllers/weather_state_controller.dart';
 import 'package:get/get.dart';
 
 /// 城市详情页 Binding

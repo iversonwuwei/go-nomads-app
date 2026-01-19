@@ -1,6 +1,6 @@
-import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/layouts/bottom_nav/bottom_nav_controller.dart';
-import 'package:df_admin_mobile/layouts/bottom_nav/widgets/modern_bottom_nav_bar.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/layouts/bottom_nav/bottom_nav_controller.dart';
+import 'package:go_nomads_app/layouts/bottom_nav/widgets/modern_bottom_nav_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';

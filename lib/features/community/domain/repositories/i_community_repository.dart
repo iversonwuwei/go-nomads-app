@@ -1,5 +1,5 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/community/domain/entities/trip_report.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/community/domain/entities/trip_report.dart';
 
 /// Community Repository Interface - 社区功能仓储接口
 abstract class ICommunityRepository {

@@ -1,6 +1,6 @@
-import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/pages/city_detail/city_detail_controller.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/pages/city_detail/city_detail_controller.dart';
 import 'package:flutter/material.dart';
 
 /// 城市详情页 Tab 导航

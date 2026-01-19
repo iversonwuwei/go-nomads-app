@@ -1,6 +1,6 @@
-import 'package:df_admin_mobile/features/hotel/domain/entities/hotel.dart';
-import 'package:df_admin_mobile/features/hotel/presentation/hotel_detail_page.dart' as hotel_detail;
-import 'package:df_admin_mobile/controllers/hotel_list_page_controller.dart';
+import 'package:go_nomads_app/features/hotel/domain/entities/hotel.dart';
+import 'package:go_nomads_app/features/hotel/presentation/hotel_detail_page.dart' as hotel_detail;
+import 'package:go_nomads_app/controllers/hotel_list_page_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';

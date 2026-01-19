@@ -1,5 +1,5 @@
-import 'package:df_admin_mobile/features/payment/domain/entities/order.dart';
-import 'package:df_admin_mobile/features/payment/domain/repositories/i_payment_repository.dart';
+import 'package:go_nomads_app/features/payment/domain/entities/order.dart';
+import 'package:go_nomads_app/features/payment/domain/repositories/i_payment_repository.dart';
 import 'package:get/get.dart';
 
 /// 支付状态控制器

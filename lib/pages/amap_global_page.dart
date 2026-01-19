@@ -1,13 +1,13 @@
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/generated/app_localizations.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
-import 'package:df_admin_mobile/controllers/amap_global_page_controller.dart';
+import 'package:go_nomads_app/controllers/amap_global_page_controller.dart';
 
 /// 高德地图全球页面 - 展示全球城市分布
 /// 使用原生 Platform View 嵌入高德地图

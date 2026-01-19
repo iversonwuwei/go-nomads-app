@@ -1,6 +1,6 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/utils/token_util.dart';
+import 'package:go_nomads_app/utils/token_util.dart';
 import 'package:dio/dio.dart';
 
 class HttpUtil {

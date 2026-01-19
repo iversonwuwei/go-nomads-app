@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:df_admin_mobile/config/api_config.dart';
+import 'package:go_nomads_app/config/api_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:http/http.dart' as http;

@@ -1,4 +1,4 @@
-import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan.dart';
+import 'package:go_nomads_app/features/travel_plan/domain/entities/travel_plan.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 

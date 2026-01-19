@@ -1,7 +1,7 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/features/payment/domain/entities/order.dart';
-import 'package:df_admin_mobile/features/payment/presentation/controllers/payment_state_controller.dart';
+import 'package:go_nomads_app/features/payment/domain/entities/order.dart';
+import 'package:go_nomads_app/features/payment/presentation/controllers/payment_state_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';

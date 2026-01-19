@@ -1,8 +1,8 @@
-import 'package:df_admin_mobile/features/city/presentation/controllers/city_detail_state_controller.dart';
-import 'package:df_admin_mobile/features/city/presentation/widgets/city_ratings_card.dart';
-import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/pages/city_detail/city_detail_controller.dart';
-import 'package:df_admin_mobile/widgets/skeletons/skeletons.dart';
+import 'package:go_nomads_app/features/city/presentation/controllers/city_detail_state_controller.dart';
+import 'package:go_nomads_app/features/city/presentation/widgets/city_ratings_card.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/pages/city_detail/city_detail_controller.dart';
+import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

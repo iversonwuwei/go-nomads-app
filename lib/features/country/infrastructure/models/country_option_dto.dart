@@ -1,4 +1,4 @@
-import 'package:df_admin_mobile/features/country/domain/entities/country_option.dart'
+import 'package:go_nomads_app/features/country/domain/entities/country_option.dart'
     as domain;
 
 /// CountryOption DTO

@@ -1,8 +1,8 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/notification/domain/entities/app_notification.dart';
-import 'package:df_admin_mobile/features/notification/domain/repositories/i_notification_repository.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/notification/domain/entities/app_notification.dart';
+import 'package:go_nomads_app/features/notification/domain/repositories/i_notification_repository.dart';
 import 'package:get/get.dart';
 
 /// 通知状态控制器

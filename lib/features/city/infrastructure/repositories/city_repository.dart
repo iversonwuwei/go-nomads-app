@@ -1,11 +1,11 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/core/core.dart';
-import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
-import 'package:df_admin_mobile/features/city/domain/entities/city_detail.dart';
-import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
-import 'package:df_admin_mobile/features/city/infrastructure/models/city_detail_dto.dart' as dto;
-import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:go_nomads_app/core/core.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city_detail.dart';
+import 'package:go_nomads_app/features/city/domain/repositories/i_city_repository.dart';
+import 'package:go_nomads_app/features/city/infrastructure/models/city_detail_dto.dart' as dto;
+import 'package:go_nomads_app/services/http_service.dart';
 import 'package:dio/dio.dart';
 
 /// 城市仓储实现 (Infrastructure Layer)

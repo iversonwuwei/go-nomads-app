@@ -1,11 +1,11 @@
-import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/controllers/venue_map_picker_page_controller.dart';
-import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/pages/venue_map_picker/address_search_section.dart';
-import 'package:df_admin_mobile/pages/venue_map_picker/filter_chips_section.dart';
-import 'package:df_admin_mobile/pages/venue_map_picker/map_section.dart';
-import 'package:df_admin_mobile/pages/venue_map_picker/venue_list_section.dart';
-import 'package:df_admin_mobile/widgets/back_button.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/controllers/venue_map_picker_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/pages/venue_map_picker/address_search_section.dart';
+import 'package:go_nomads_app/pages/venue_map_picker/filter_chips_section.dart';
+import 'package:go_nomads_app/pages/venue_map_picker/map_section.dart';
+import 'package:go_nomads_app/pages/venue_map_picker/venue_list_section.dart';
+import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

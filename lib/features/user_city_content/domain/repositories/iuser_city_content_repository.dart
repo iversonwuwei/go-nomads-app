@@ -1,5 +1,5 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/user_city_content/domain/entities/user_city_content.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/user_city_content/domain/entities/user_city_content.dart';
 
 /// User City Content Repository Interface - DDD Domain Layer
 abstract class IUserCityContentRepository {

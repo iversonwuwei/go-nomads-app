@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/core/sync/sync.dart';
-import 'package:df_admin_mobile/features/innovation_project/application/use_cases/innovation_project_use_cases.dart';
-import 'package:df_admin_mobile/features/innovation_project/domain/entities/innovation_project.dart';
-import 'package:df_admin_mobile/features/innovation_project/infrastructure/models/innovation_project_dto.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/core/sync/sync.dart';
+import 'package:go_nomads_app/features/innovation_project/application/use_cases/innovation_project_use_cases.dart';
+import 'package:go_nomads_app/features/innovation_project/domain/entities/innovation_project.dart';
+import 'package:go_nomads_app/features/innovation_project/infrastructure/models/innovation_project_dto.dart';
 import 'package:get/get.dart';
 
 /// 创新项目状态控制器

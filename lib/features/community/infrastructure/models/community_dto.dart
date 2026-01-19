@@ -1,4 +1,4 @@
-import 'package:df_admin_mobile/features/community/domain/entities/trip_report.dart'
+import 'package:go_nomads_app/features/community/domain/entities/trip_report.dart'
     as domain;
 
 /// TripReport DTO

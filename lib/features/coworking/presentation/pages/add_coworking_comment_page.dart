@@ -1,10 +1,10 @@
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:df_admin_mobile/config/supabase_config.dart';
-import 'package:df_admin_mobile/features/coworking/infrastructure/repositories/coworking_review_repository.dart';
-import 'package:df_admin_mobile/services/image_upload_service.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:go_nomads_app/config/supabase_config.dart';
+import 'package:go_nomads_app/features/coworking/infrastructure/repositories/coworking_review_repository.dart';
+import 'package:go_nomads_app/services/image_upload_service.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';

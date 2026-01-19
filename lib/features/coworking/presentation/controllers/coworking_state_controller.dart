@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:df_admin_mobile/core/core.dart';
-import 'package:df_admin_mobile/core/sync/sync.dart';
-import 'package:df_admin_mobile/features/coworking/application/use_cases/coworking_use_cases.dart';
-import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
-import 'package:df_admin_mobile/features/coworking/domain/entities/verification_eligibility.dart';
-import 'package:df_admin_mobile/features/coworking/infrastructure/services/signalr_coworking_service.dart';
+import 'package:go_nomads_app/core/core.dart';
+import 'package:go_nomads_app/core/sync/sync.dart';
+import 'package:go_nomads_app/features/coworking/application/use_cases/coworking_use_cases.dart';
+import 'package:go_nomads_app/features/coworking/domain/entities/coworking_space.dart';
+import 'package:go_nomads_app/features/coworking/domain/entities/verification_eligibility.dart';
+import 'package:go_nomads_app/features/coworking/infrastructure/services/signalr_coworking_service.dart';
 import 'package:get/get.dart';
 
 /// Coworking State Controller V2

@@ -1,7 +1,7 @@
-import 'package:df_admin_mobile/core/core.dart';
-import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
-import 'package:df_admin_mobile/features/city/domain/entities/city_detail.dart';
-import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
+import 'package:go_nomads_app/core/core.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city_detail.dart';
+import 'package:go_nomads_app/features/city/domain/repositories/i_city_repository.dart';
 
 // ============================================================================
 // 获取城市列表 Use Case

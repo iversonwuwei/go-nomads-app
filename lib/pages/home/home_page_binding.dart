@@ -1,4 +1,4 @@
-import 'package:df_admin_mobile/pages/home/home_page_controller.dart';
+import 'package:go_nomads_app/pages/home/home_page_controller.dart';
 import 'package:get/get.dart';
 
 /// 首页 Binding - GetX 依赖注入

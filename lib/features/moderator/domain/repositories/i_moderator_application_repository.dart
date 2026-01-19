@@ -1,4 +1,4 @@
-import 'package:df_admin_mobile/features/moderator/domain/entities/moderator_application.dart';
+import 'package:go_nomads_app/features/moderator/domain/entities/moderator_application.dart';
 
 /// 版主申请仓储接口
 abstract class IModeratorApplicationRepository {

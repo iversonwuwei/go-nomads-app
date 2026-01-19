@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'dart:convert';
 
-import 'package:df_admin_mobile/features/async_task/domain/entities/async_task.dart';
+import 'package:go_nomads_app/features/async_task/domain/entities/async_task.dart';
 
 /// AsyncTask DTO - 基础设施层数据传输对象
 class AsyncTaskDto {

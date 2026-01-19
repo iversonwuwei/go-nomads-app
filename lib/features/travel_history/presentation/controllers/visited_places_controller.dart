@@ -1,6 +1,6 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 

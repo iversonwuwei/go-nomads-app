@@ -1,4 +1,4 @@
-import 'package:df_admin_mobile/features/city/domain/entities/city_option.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city_option.dart';
 
 /// City DTO - 基础设施层数据传输对象
 class CityDto {

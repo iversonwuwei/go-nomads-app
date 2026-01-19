@@ -1,4 +1,4 @@
-package com.gonomads.df_admin_mobile
+package com.gonomads.go_nomads_app
 
 import android.content.Context
 import android.graphics.BitmapFactory

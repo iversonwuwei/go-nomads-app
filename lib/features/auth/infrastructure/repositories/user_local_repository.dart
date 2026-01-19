@@ -1,8 +1,8 @@
 import 'dart:developer';
 
-import 'package:df_admin_mobile/features/auth/domain/entities/auth_user.dart';
-import 'package:df_admin_mobile/services/database_service.dart';
-import 'package:df_admin_mobile/services/token_storage_service.dart';
+import 'package:go_nomads_app/features/auth/domain/entities/auth_user.dart';
+import 'package:go_nomads_app/services/database_service.dart';
+import 'package:go_nomads_app/services/token_storage_service.dart';
 import 'package:sqflite/sqflite.dart';
 
 /// 用户本地数据仓储

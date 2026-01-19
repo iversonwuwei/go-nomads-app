@@ -1,19 +1,19 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:df_admin_mobile/config/api_config.dart';
-import 'package:df_admin_mobile/core/core.dart';
-import 'package:df_admin_mobile/features/ai/domain/repositories/iai_repository.dart';
-import 'package:df_admin_mobile/features/async_task/domain/entities/async_task.dart';
-import 'package:df_admin_mobile/features/city/domain/entities/digital_nomad_guide.dart';
-import 'package:df_admin_mobile/features/city/infrastructure/models/city_detail_dto.dart';
-import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan.dart' as entity;
-import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan_summary.dart';
-import 'package:df_admin_mobile/features/travel_plan/infrastructure/models/travel_plan_dto.dart';
-import 'package:df_admin_mobile/services/database/digital_nomad_guide_dao.dart';
-import 'package:df_admin_mobile/services/database_service.dart';
-import 'package:df_admin_mobile/services/http_service.dart';
-import 'package:df_admin_mobile/services/signalr_service.dart';
+import 'package:go_nomads_app/config/api_config.dart';
+import 'package:go_nomads_app/core/core.dart';
+import 'package:go_nomads_app/features/ai/domain/repositories/iai_repository.dart';
+import 'package:go_nomads_app/features/async_task/domain/entities/async_task.dart';
+import 'package:go_nomads_app/features/city/domain/entities/digital_nomad_guide.dart';
+import 'package:go_nomads_app/features/city/infrastructure/models/city_detail_dto.dart';
+import 'package:go_nomads_app/features/travel_plan/domain/entities/travel_plan.dart' as entity;
+import 'package:go_nomads_app/features/travel_plan/domain/entities/travel_plan_summary.dart';
+import 'package:go_nomads_app/features/travel_plan/infrastructure/models/travel_plan_dto.dart';
+import 'package:go_nomads_app/services/database/digital_nomad_guide_dao.dart';
+import 'package:go_nomads_app/services/database_service.dart';
+import 'package:go_nomads_app/services/http_service.dart';
+import 'package:go_nomads_app/services/signalr_service.dart';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 
