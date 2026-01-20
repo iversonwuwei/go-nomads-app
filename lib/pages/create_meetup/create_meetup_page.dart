@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/create_meetup_page_controller.dart';
 import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
@@ -7,9 +10,6 @@ import 'package:go_nomads_app/pages/create_meetup/create_meetup_location_section
 import 'package:go_nomads_app/pages/create_meetup/create_meetup_title_type_section.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 class CreateMeetupPage extends StatelessWidget {
   final Meetup? editingMeetup;
@@ -237,6 +237,11 @@ class CreateMeetupPage extends StatelessWidget {
   }
 
   Future<void> _handleSubmit(BuildContext context, AppLocalizations l10n, CreateMeetupPageController controller) async {
+    // 防止重复提交 - 在任何操作之前立即检查
+    if (controller.isSubmitting.value || controller.isUploadingImages.value) {
+      return;
+    }
+
     // Validate venue
     if (controller.venueController.text.trim().isEmpty) {
       controller.venueErrorText.value = l10n.pleaseEnterVenue;
