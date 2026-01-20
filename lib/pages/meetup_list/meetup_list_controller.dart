@@ -1,13 +1,15 @@
+import 'dart:async';
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/location_controller.dart';
+import 'package:go_nomads_app/core/sync/sync.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
 import 'package:go_nomads_app/features/meetup/domain/repositories/i_meetup_repository.dart';
 import 'package:go_nomads_app/features/meetup/presentation/controllers/meetup_state_controller.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 /// Meetup List Tab 枚举
 enum MeetupListTab {
@@ -81,6 +83,9 @@ class MeetupListController extends GetxController with GetSingleTickerProviderSt
   // 当前 Tab 索引
   final currentTabIndex = 0.obs;
 
+  // DataEventBus 订阅
+  StreamSubscription<DataChangedEvent>? _rsvpChangedSubscription;
+
   // 当前用户ID
   String? get currentUserId => _authController.currentUser.value?.id;
 
@@ -109,6 +114,9 @@ class MeetupListController extends GetxController with GetSingleTickerProviderSt
     // 监听 Tab 切换
     tabController.addListener(_onTabChanged);
 
+    // 设置 RSVP 变更监听
+    _setupRsvpChangeListener();
+
     // 加载初始数据
     loadTabData(MeetupListTab.upcoming);
     _autoSelectCurrentCountry();
@@ -121,6 +129,8 @@ class MeetupListController extends GetxController with GetSingleTickerProviderSt
     for (var controller in tabScrollControllers.values) {
       controller.dispose();
     }
+    _rsvpChangedSubscription?.cancel();
+    _rsvpChangedSubscription = null;
     super.onClose();
   }
 
@@ -132,6 +142,70 @@ class MeetupListController extends GetxController with GetSingleTickerProviderSt
         loadMoreData(tab);
       }
     });
+  }
+
+  /// 设置 RSVP 变更监听器
+  void _setupRsvpChangeListener() {
+    _rsvpChangedSubscription = DataEventBus.instance.on('meetup_rsvp', (event) {
+      log('🔔 [MeetupListController] 收到 RSVP 变更: ${event.entityId}, ${event.changeType}');
+
+      final meetupId = event.entityId;
+      final isJoining = event.changeType == DataChangeType.created;
+
+      // 刷新 "已加入" tab（如果当前不在该 tab 则刷新，否则由 handleToggleJoin 已刷新）
+      if (currentTab != MeetupListTab.joined) {
+        loadTabData(MeetupListTab.joined, refresh: true);
+      }
+
+      // 更新所有 tab 中对应活动的状态（除了已加入 tab，因为已刷新）
+      if (meetupId != null) {
+        for (final tab in MeetupListTab.values) {
+          if (tab != MeetupListTab.joined) {
+            _updateMeetupJoinStatus(tab, meetupId, isJoining);
+          }
+        }
+      }
+    });
+
+    log('✅ [MeetupListController] RSVP 变更监听已设置');
+  }
+
+  /// 更新指定 tab 中活动的加入状态
+  void _updateMeetupJoinStatus(MeetupListTab tab, String meetupId, bool isJoined) {
+    final meetups = tabMeetups[tab]!;
+    final index = meetups.indexWhere((m) => m.id == meetupId);
+
+    if (index != -1) {
+      final oldMeetup = meetups[index];
+      final newCount = isJoined
+          ? oldMeetup.capacity.currentAttendees + 1
+          : (oldMeetup.capacity.currentAttendees - 1).clamp(0, oldMeetup.capacity.maxAttendees);
+
+      meetups[index] = Meetup(
+        id: oldMeetup.id,
+        title: oldMeetup.title,
+        type: oldMeetup.type,
+        eventType: oldMeetup.eventType,
+        description: oldMeetup.description,
+        location: oldMeetup.location,
+        venue: oldMeetup.venue,
+        schedule: oldMeetup.schedule,
+        capacity: Capacity(
+          maxAttendees: oldMeetup.capacity.maxAttendees,
+          currentAttendees: newCount,
+        ),
+        organizer: oldMeetup.organizer,
+        images: oldMeetup.images,
+        attendeeIds: oldMeetup.attendeeIds,
+        status: oldMeetup.status,
+        createdAt: oldMeetup.createdAt,
+        isJoined: isJoined,
+        isOrganizer: oldMeetup.isOrganizer,
+      );
+
+      meetups.refresh();
+      log('✅ [MeetupListController] 已更新 $tab 中活动 $meetupId 的加入状态: $isJoined');
+    }
   }
 
   /// Tab 切换事件处理
@@ -315,13 +389,23 @@ class MeetupListController extends GetxController with GetSingleTickerProviderSt
         if (!_meetupStateController.rsvpedMeetupIds.contains(meetup.id)) {
           _meetupStateController.rsvpedMeetupIds.add(meetup.id);
         }
+        AppToast.success('报名成功!');
       } else {
         await _meetupRepository.cancelRsvp(meetup.id);
         log('✅ 成功退出活动: ${meetup.title}');
         _meetupStateController.rsvpedMeetupIds.remove(meetup.id);
+        AppToast.success('已取消报名');
       }
 
-      // 刷新数据
+      // 发送 RSVP 变更事件，通知其他 tab 更新
+      DataEventBus.instance.emit(DataChangedEvent(
+        entityType: 'meetup_rsvp',
+        entityId: meetup.id,
+        version: DateTime.now().millisecondsSinceEpoch,
+        changeType: isJoining ? DataChangeType.created : DataChangeType.deleted,
+      ));
+
+      // 刷新当前 tab
       await refreshCurrentTab();
     } catch (e) {
       log('❌ 加入/退出活动失败: $e');

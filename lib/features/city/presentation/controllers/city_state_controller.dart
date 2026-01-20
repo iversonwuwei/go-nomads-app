@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:get/get.dart';
 import 'package:go_nomads_app/core/core.dart';
 import 'package:go_nomads_app/core/sync/sync.dart';
 import 'package:go_nomads_app/features/city/application/use_cases/city_use_cases.dart';
@@ -8,7 +9,6 @@ import 'package:go_nomads_app/features/city/domain/entities/city.dart';
 import 'package:go_nomads_app/features/city/domain/repositories/i_city_repository.dart';
 import 'package:go_nomads_app/services/signalr_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:get/get.dart';
 
 /// 城市列表控制器 - 使用新的数据同步框架优化版本
 ///
@@ -276,6 +276,75 @@ class CityStateController extends PaginatedRefreshableController {
 
     // 监听收藏状态变更事件
     DataEventBus.instance.on('city_favorite', _handleFavoriteChanged);
+
+    // 监听评论变更事件（评论数和评分会影响城市列表显示）
+    DataEventBus.instance.on('city_review', _handleReviewChanged);
+
+    // 监听评分变更事件（静默更新列表中的城市评分）
+    DataEventBus.instance.on('city_rating', _handleRatingChanged);
+  }
+
+  /// 处理评分变更事件（静默更新，不请求后端）
+  void _handleRatingChanged(DataChangedEvent event) {
+    log('🔔 [城市列表] _handleRatingChanged 被调用: entityId=${event.entityId}, metadata=${event.metadata}');
+
+    if (event.entityId == null) return;
+
+    final rawScore = event.metadata?['overallScore'];
+    final newScore = rawScore is num ? rawScore.toDouble() : null;
+    if (newScore == null) {
+      log('⚠️ [城市列表] newScore 为 null，跳过');
+      return;
+    }
+
+    log('🔔 [城市列表] 收到评分变更通知: ${event.entityId}, newScore=$newScore');
+
+    // 更新主列表
+    final index = cities.indexWhere((c) => c.id == event.entityId);
+    if (index != -1) {
+      cities[index] = cities[index].copyWith(overallScore: newScore);
+      cities.refresh();
+      log('✅ [城市列表] 已静默更新城市评分: ${cities[index].name} -> $newScore');
+    }
+
+    // 更新推荐列表
+    final recIndex = recommendedCities.indexWhere((c) => c.id == event.entityId);
+    if (recIndex != -1) {
+      recommendedCities[recIndex] = recommendedCities[recIndex].copyWith(overallScore: newScore);
+      recommendedCities.refresh();
+    }
+
+    // 更新热门列表
+    final popIndex = popularCities.indexWhere((c) => c.id == event.entityId);
+    if (popIndex != -1) {
+      popularCities[popIndex] = popularCities[popIndex].copyWith(overallScore: newScore);
+      popularCities.refresh();
+    }
+
+    // 更新收藏列表
+    final favIndex = favoriteCities.indexWhere((c) => c.id == event.entityId);
+    if (favIndex != -1) {
+      favoriteCities[favIndex] = favoriteCities[favIndex].copyWith(overallScore: newScore);
+      favoriteCities.refresh();
+    }
+  }
+
+  /// 处理评论变更事件
+  void _handleReviewChanged(DataChangedEvent event) {
+    if (event.entityId == null) return;
+
+    log('🔔 [城市列表] 收到评论变更通知: ${event.entityId} (${event.changeType})');
+
+    // 检查城市是否在列表中
+    final index = cities.indexWhere((c) => c.id == event.entityId);
+    log('🔍 [城市列表] 城市在列表中的索引: $index (总数: ${cities.length})');
+
+    if (index != -1) {
+      log('🔍 [城市列表] 更新前: ${cities[index].name}, score=${cities[index].overallScore}, reviewCount=${cities[index].reviewCount}');
+    }
+
+    // 评论变更会影响城市的评分和评论数，需要更新该城市在列表中的数据
+    _updateCityInList(event.entityId!);
   }
 
   /// 处理收藏状态变更事件
@@ -379,22 +448,27 @@ class CityStateController extends PaginatedRefreshableController {
   /// 更新列表中的单个城市
   Future<void> _updateCityInList(String cityId) async {
     try {
+      log('📡 [城市列表] 开始获取城市最新数据: $cityId');
       final result = await _cityRepository.getCityById(cityId);
       result.fold(
         onSuccess: (updatedCity) {
+          log('📦 [城市列表] 获取到城市数据: ${updatedCity.name}, score=${updatedCity.overallScore}, reviewCount=${updatedCity.reviewCount}');
           final index = cities.indexWhere((c) => c.id == cityId);
           if (index != -1) {
+            log('🔄 [城市列表] 更新前: score=${cities[index].overallScore}, reviewCount=${cities[index].reviewCount}');
             cities[index] = updatedCity;
             cities.refresh(); // 触发 Obx 更新
-            log('✅ 已更新城市: ${updatedCity.name}');
+            log('✅ [城市列表] 更新后: score=${cities[index].overallScore}, reviewCount=${cities[index].reviewCount}');
+          } else {
+            log('⚠️ [城市列表] 城市不在列表中: $cityId');
           }
         },
         onFailure: (e) {
-          log('⚠️ 更新城市失败: ${e.message}');
+          log('⚠️ [城市列表] 更新城市失败: ${e.message}');
         },
       );
     } catch (e) {
-      log('⚠️ 更新城市异常: $e');
+      log('⚠️ [城市列表] 更新城市异常: $e');
     }
   }
 

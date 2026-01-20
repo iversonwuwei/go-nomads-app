@@ -1,10 +1,12 @@
+import 'dart:async';
 import 'dart:developer';
 
+import 'package:get/get.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/core/sync/data_sync_service.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city_detail.dart';
 import 'package:go_nomads_app/features/city/domain/repositories/i_city_repository.dart';
-import 'package:get/get.dart';
 
 /// ProsCons State Controller - 城市优缺点状态管理
 ///
@@ -31,6 +33,44 @@ class ProsConsStateController extends GetxController {
 
   // 记录当前会话用户已投票的条目（仅用于会话内跟踪新投票）
   final RxSet<String> votedItemIds = <String>{}.obs;
+
+  // 当前加载的城市ID
+  String? _currentCityId;
+
+  // 数据变更订阅
+  StreamSubscription<DataChangedEvent>? _dataChangedSubscription;
+
+  @override
+  void onInit() {
+    super.onInit();
+    _setupDataChangeListeners();
+  }
+
+  /// 设置数据变更监听器
+  void _setupDataChangeListeners() {
+    _dataChangedSubscription = DataEventBus.instance.on('city_pros_cons', _handleDataChanged);
+    log('✅ [ProsConsStateController] 数据变更监听器已设置');
+  }
+
+  /// 处理数据变更事件
+  void _handleDataChanged(DataChangedEvent event) {
+    log('🔔 [ProsCons] 收到数据变更通知: ${event.changeType}, cityId: ${event.entityId}');
+
+    // 只处理当前城市的变更
+    if (event.entityId != null && event.entityId == _currentCityId) {
+      switch (event.changeType) {
+        case DataChangeType.created:
+        case DataChangeType.updated:
+        case DataChangeType.invalidated:
+          // 重新加载优缺点列表
+          loadCityProsCons(event.entityId!);
+          break;
+        case DataChangeType.deleted:
+          // 删除操作已在本地处理
+          break;
+      }
+    }
+  }
 
   /// 检查用户是否已投票（优先使用后端返回的状态，其次使用会话状态）
   bool hasUserVoted(String id) {
@@ -72,6 +112,9 @@ class ProsConsStateController extends GetxController {
       log('⚠️ 用户未登录,跳过加载优缺点');
       return;
     }
+
+    // 记录当前城市ID
+    _currentCityId = cityId;
 
     await Future.wait([
       loadPros(cityId),
@@ -211,6 +254,16 @@ class ProsConsStateController extends GetxController {
             consList.insert(0, newItem);
           }
           log('✅ 添加成功');
+
+          // 发送数据变更事件通知其他组件
+          DataEventBus.instance.emit(DataChangedEvent(
+            entityType: 'city_pros_cons',
+            entityId: cityId,
+            version: DateTime.now().millisecondsSinceEpoch,
+            changeType: DataChangeType.created,
+          ));
+          log('✅ [ProsCons] 已发送数据变更事件');
+
           return true;
         },
         onFailure: (err) {
@@ -371,6 +424,16 @@ class ProsConsStateController extends GetxController {
             consList.removeWhere((item) => item.id == id);
           }
           log('✅ 删除成功');
+
+          // 发送数据变更事件通知其他组件
+          DataEventBus.instance.emit(DataChangedEvent(
+            entityType: 'city_pros_cons',
+            entityId: cityId,
+            version: DateTime.now().millisecondsSinceEpoch,
+            changeType: DataChangeType.deleted,
+          ));
+          log('✅ [ProsCons] 已发送删除数据变更事件');
+
           return true;
         },
         onFailure: (err) {
@@ -398,6 +461,9 @@ class ProsConsStateController extends GetxController {
 
   @override
   void onClose() {
+    // 取消数据变更订阅
+    _dataChangedSubscription?.cancel();
+
     // 清空所有响应式变量
     prosList.clear();
     consList.clear();

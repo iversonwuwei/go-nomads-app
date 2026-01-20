@@ -29,15 +29,13 @@ class HotelReviewRepository implements IHotelReviewRepository {
         'sortBy': sortBy,
       };
 
-      final queryString =
-          queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
+      final queryString = queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
       final url = '$_basePath/$hotelId/reviews?$queryString';
 
       log('📝 HotelReviewRepository.getHotelReviews: $url');
 
       final response = await _httpService.get(url);
-      final reviewListResponse =
-          HotelReviewListResponse.fromJson(response.data);
+      final reviewListResponse = HotelReviewListResponse.fromJson(response.data);
 
       log('📝 获取到 ${reviewListResponse.reviews.length} 条评论');
       return Success(reviewListResponse);
@@ -70,8 +68,7 @@ class HotelReviewRepository implements IHotelReviewRepository {
   Future<Result<HotelReview?>> getMyReview(String hotelId) async {
     try {
       log('📝 HotelReviewRepository.getMyReview: $hotelId');
-      final response =
-          await _httpService.get('$_basePath/$hotelId/reviews/mine');
+      final response = await _httpService.get('$_basePath/$hotelId/reviews/mine');
 
       // 如果没有评论，后端返回 null
       if (response.data == null) {
@@ -100,9 +97,11 @@ class HotelReviewRepository implements IHotelReviewRepository {
   }) async {
     try {
       log('📝 HotelReviewRepository.createReview: $hotelId');
+      final requestData = request.toJson();
+      log('📝 请求数据: $requestData');
       final response = await _httpService.post(
         '$_basePath/$hotelId/reviews',
-        data: request.toJson(),
+        data: requestData,
       );
       final review = HotelReview.fromJson(response.data);
       log('📝 评论创建成功: ${review.id}');
@@ -175,8 +174,7 @@ class HotelReviewRepository implements IHotelReviewRepository {
   Future<Result<Map<String, dynamic>>> getRatingStats(String hotelId) async {
     try {
       log('📝 HotelReviewRepository.getRatingStats: $hotelId');
-      final response =
-          await _httpService.get('$_basePath/$hotelId/reviews/stats');
+      final response = await _httpService.get('$_basePath/$hotelId/reviews/stats');
       return Success(response.data);
     } on HttpException catch (e) {
       log('❌ HotelReviewRepository.getRatingStats 失败: ${e.message}');

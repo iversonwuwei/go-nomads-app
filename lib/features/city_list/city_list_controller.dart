@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/core/core.dart';
 import 'package:go_nomads_app/core/sync/sync.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
@@ -12,8 +14,6 @@ import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/services/search_service.dart';
 import 'package:go_nomads_app/services/signalr_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 /// 城市列表控制器 - 符合 GetX 标准
 class CityListController extends GetxController {
@@ -51,6 +51,8 @@ class CityListController extends GetxController {
 
   // SignalR 订阅
   StreamSubscription<Map<String, dynamic>>? _cityImageUpdatedSubscription;
+  StreamSubscription<Map<String, dynamic>>? _cityRatingUpdatedSubscription;
+  StreamSubscription<Map<String, dynamic>>? _cityReviewUpdatedSubscription;
 
   // EventBus 订阅
   StreamSubscription<DataChangedEvent>? _favoriteChangedSubscription;
@@ -86,7 +88,7 @@ class CityListController extends GetxController {
       }
     });
 
-    // 设置 SignalR 监听器，直接处理图片更新事件
+    // 设置 SignalR 监听器，直接处理图片更新事件和评分更新事件
     _setupSignalRListeners();
 
     // 设置收藏状态变更监听器
@@ -150,7 +152,94 @@ class CityListController extends GetxController {
       _updateCityImageFromSignalR(cityId, data);
     });
 
-    log('✅ [CityListController] SignalR 城市图片更新监听已设置');
+    // 监听城市评分更新事件 (通过 SignalR 同步城市列表中的评分)
+    _cityRatingUpdatedSubscription = signalRService.cityRatingUpdatedStream.listen((data) {
+      _handleSignalRRatingUpdated(data);
+    });
+
+    // 监听城市评论更新事件 (通过 SignalR 同步城市列表中的评论数)
+    _cityReviewUpdatedSubscription = signalRService.cityReviewUpdatedStream.listen((data) {
+      _handleSignalRReviewUpdated(data);
+    });
+
+    log('✅ [CityListController] SignalR 监听已设置 (图片更新 + 评分更新 + 评论更新)');
+  }
+
+  /// 处理 SignalR 城市评论更新事件 (同步城市列表中的评论数)
+  void _handleSignalRReviewUpdated(Map<String, dynamic> data) {
+    final cityId = data['cityId'] as String?;
+
+    log('📡 [CityListController] 收到 SignalR 评论更新: cityId=$cityId');
+
+    if (cityId == null) return;
+
+    final index = cities.indexWhere((c) => c.id == cityId);
+    if (index == -1) {
+      log('⚠️ [CityListController] 城市不在列表中: $cityId');
+      return;
+    }
+
+    final rawScore = data['overallScore'];
+    final newScore = rawScore is num ? rawScore.toDouble() : null;
+    final reviewCount = data['reviewCount'] as int?;
+    final changeType = data['changeType'] as String?;
+
+    log('📝 [CityListController] SignalR 评论更新详情: changeType=$changeType, reviewCount=$reviewCount, overallScore=$newScore');
+
+    final oldCity = cities[index];
+    var updatedCity = oldCity;
+
+    if (newScore != null) {
+      final oldScore = oldCity.overallScore;
+      updatedCity = updatedCity.copyWith(overallScore: newScore);
+      log('📊 [CityListController] 评论 overallScore: $oldScore -> $newScore');
+    }
+
+    if (reviewCount != null) {
+      final oldCount = oldCity.reviewCount;
+      updatedCity = updatedCity.copyWith(reviewCount: reviewCount);
+      log('📊 [CityListController] 评论 reviewCount: $oldCount -> $reviewCount');
+    }
+
+    cities[index] = updatedCity;
+    cities.refresh(); // 强制触发 Obx 更新
+
+    log('✅ [CityListController] SignalR 更新列表评论数据: ${oldCity.name}');
+  }
+
+  /// 处理 SignalR 城市评分更新事件 (同步城市列表中的评分)
+  void _handleSignalRRatingUpdated(Map<String, dynamic> data) {
+    final cityId = data['cityId'] as String?;
+
+    log('📡 [CityListController] 收到 SignalR 评分更新: cityId=$cityId');
+
+    if (cityId == null) return;
+
+    final index = cities.indexWhere((c) => c.id == cityId);
+    if (index == -1) {
+      log('⚠️ [CityListController] 城市不在列表中: $cityId');
+      return;
+    }
+
+    final rawScore = data['overallScore'];
+    final newScore = rawScore is num ? rawScore.toDouble() : null;
+    final reviewCount = data['reviewCount'] as int?;
+
+    if (newScore != null) {
+      final oldCity = cities[index];
+      final oldScore = oldCity.overallScore;
+
+      // 使用 copyWith 更新城市数据
+      var updatedCity = oldCity.copyWith(overallScore: newScore);
+      if (reviewCount != null) {
+        updatedCity = updatedCity.copyWith(reviewCount: reviewCount);
+      }
+
+      cities[index] = updatedCity;
+      cities.refresh(); // 强制触发 Obx 更新
+
+      log('✅ [CityListController] SignalR 更新列表评分: ${oldCity.name} $oldScore -> $newScore');
+    }
   }
 
   /// 从 SignalR 数据更新城市图片
@@ -233,17 +322,6 @@ class CityListController extends GetxController {
     if (url.isEmpty) return url;
     final separator = url.contains('?') ? '&' : '?';
     return '$url${separator}v=$cacheBuster';
-  }
-
-  @override
-  void onClose() {
-    searchTextController.dispose();
-    scrollController.dispose();
-    _cityImageUpdatedSubscription?.cancel();
-    _cityImageUpdatedSubscription = null;
-    _favoriteChangedSubscription?.cancel();
-    _favoriteChangedSubscription = null;
-    super.onClose();
   }
 
   // ==================== 数据加载 ====================
@@ -642,5 +720,26 @@ class CityListController extends GetxController {
         AppToast.error(exception.message, title: 'Task Creation Failed');
       },
     );
+  }
+
+  @override
+  void onClose() {
+    // 取消 SignalR 订阅
+    _cityImageUpdatedSubscription?.cancel();
+    _cityImageUpdatedSubscription = null;
+    _cityRatingUpdatedSubscription?.cancel();
+    _cityRatingUpdatedSubscription = null;
+    _cityReviewUpdatedSubscription?.cancel();
+    _cityReviewUpdatedSubscription = null;
+
+    // 取消 EventBus 订阅
+    _favoriteChangedSubscription?.cancel();
+    _favoriteChangedSubscription = null;
+
+    // 清理 UI 控制器
+    searchTextController.dispose();
+    scrollController.dispose();
+
+    super.onClose();
   }
 }
