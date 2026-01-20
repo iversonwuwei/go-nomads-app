@@ -2,6 +2,8 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:add_2_calendar/add_2_calendar.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/supabase_config.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
 import 'package:go_nomads_app/features/chat/domain/repositories/i_chat_repository.dart';
@@ -13,8 +15,6 @@ import 'package:go_nomads_app/features/meetup/presentation/controllers/meetup_st
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/services/image_upload_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 class CreateMeetupPageController extends GetxController {
@@ -250,10 +250,13 @@ class CreateMeetupPageController extends GetxController {
     uploadProgress.value = 0.0;
 
     final imageFiles = selectedImages.map((image) => File(image.path)).toList();
-    final sanitizedFolderSegment = (selectedCityId.value?.isNotEmpty == true ? selectedCityId.value! : (selectedCity.value ?? 'general')).replaceAll(RegExp(r'[^a-zA-Z0-9-_]'), '_');
+    final sanitizedFolderSegment =
+        (selectedCityId.value?.isNotEmpty == true ? selectedCityId.value! : (selectedCity.value ?? 'general'))
+            .replaceAll(RegExp(r'[^a-zA-Z0-9-_]'), '_');
     final folderPath = 'meetups/$sanitizedFolderSegment/venues';
 
-    AppToast.info('Uploading ${imageFiles.length} venue photo${imageFiles.length > 1 ? 's' : ''}...', title: l10n.notice);
+    AppToast.info('Uploading ${imageFiles.length} venue photo${imageFiles.length > 1 ? 's' : ''}...',
+        title: l10n.notice);
 
     try {
       final uploadedUrls = await imageUploadService.uploadMultipleImages(
@@ -269,7 +272,8 @@ class CreateMeetupPageController extends GetxController {
         throw Exception('No venue photos were uploaded');
       }
 
-      AppToast.success('Uploaded ${uploadedUrls.length} venue photo${uploadedUrls.length > 1 ? 's' : ''}', title: l10n.success);
+      AppToast.success('Uploaded ${uploadedUrls.length} venue photo${uploadedUrls.length > 1 ? 's' : ''}',
+          title: l10n.success);
       return uploadedUrls;
     } catch (e) {
       AppToast.error('Failed to upload venue photos: $e', title: l10n.error);
@@ -306,19 +310,29 @@ class CreateMeetupPageController extends GetxController {
   }
 
   Future<bool> createMeetup(BuildContext context) async {
-    if (isUploadingImages.value || isSubmitting.value) return false;
-    if (!formKey.currentState!.validate()) return false;
+    // 立即检查并设置 isSubmitting，防止重复提交
+    if (isUploadingImages.value || isSubmitting.value) {
+      log('⚠️ [CreateMeetup] 已在提交中，忽略重复请求');
+      return false;
+    }
+
+    // 立即设置 isSubmitting 为 true，防止竞态条件
+    isSubmitting.value = true;
+
+    if (!formKey.currentState!.validate()) {
+      isSubmitting.value = false;
+      return false;
+    }
 
     final l10n = AppLocalizations.of(context)!;
 
     if (selectedCity.value == null || selectedDate.value == null || selectedTime.value == null) {
       AppToast.error(l10n.pleaseFillAllFields, title: l10n.error);
+      isSubmitting.value = false;
       return false;
     }
 
     try {
-      isSubmitting.value = true;
-
       final startDateTime = DateTime(
         selectedDate.value!.year,
         selectedDate.value!.month,
@@ -338,7 +352,8 @@ class CreateMeetupPageController extends GetxController {
           meetupType = MeetupType.fromString(selectedEventType.enName.toLowerCase());
           log('✅ 使用事件类型: ${selectedEventType.name} (ID: $eventTypeId)');
         } else {
-          meetupType = MeetupType.fromString(typeController.text.isEmpty ? 'social' : typeController.text.toLowerCase());
+          meetupType =
+              MeetupType.fromString(typeController.text.isEmpty ? 'social' : typeController.text.toLowerCase());
         }
       }
 
@@ -405,10 +420,12 @@ class CreateMeetupPageController extends GetxController {
     }
   }
 
-  Future<void> _createMeetupChatRoom({required String meetupId, required String meetupTitle, String? meetupType}) async {
+  Future<void> _createMeetupChatRoom(
+      {required String meetupId, required String meetupTitle, String? meetupType}) async {
     try {
       final chatRepository = Get.find<IChatRepository>();
-      final result = await chatRepository.getOrCreateMeetupChatRoom(meetupId: meetupId, meetupTitle: meetupTitle, meetupType: meetupType);
+      final result = await chatRepository.getOrCreateMeetupChatRoom(
+          meetupId: meetupId, meetupTitle: meetupTitle, meetupType: meetupType);
       switch (result) {
         case Success(:final data):
           log('✅ Meetup 聊天室创建成功: ${data.id}');
@@ -431,7 +448,8 @@ class CreateMeetupPageController extends GetxController {
 
     final Event event = Event(
       title: titleController.text,
-      description: descriptionController.text.isNotEmpty ? descriptionController.text : 'Meetup organized via Nomads.com',
+      description:
+          descriptionController.text.isNotEmpty ? descriptionController.text : 'Meetup organized via Nomads.com',
       location: venueController.text,
       startDate: eventDateTime,
       endDate: eventDateTime.add(const Duration(hours: 2)),

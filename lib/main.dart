@@ -14,6 +14,7 @@ import 'features/auth/presentation/controllers/auth_state_controller.dart';
 import 'generated/app_localizations.dart';
 import 'layouts/bottom_nav/bottom_nav.dart';
 import 'routes/app_routes.dart';
+import 'routes/keyboard_dismiss_observer.dart';
 import 'routes/route_refresh_observer.dart';
 import 'services/amap_native_location_service.dart';
 import 'services/app_init_service.dart';
@@ -193,7 +194,7 @@ class MyApp extends StatelessWidget {
               // 使用 AppWrapper 来控制启动页和主内容的切换
               home: const AppWrapper(),
               getPages: AppRoutes.getPages,
-              navigatorObservers: [appRouteObserver],
+              navigatorObservers: [appRouteObserver, keyboardDismissObserver],
             ));
       },
     );

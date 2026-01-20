@@ -79,6 +79,9 @@ class MeetupStateController extends PaginatedRefreshableController {
   /// 用户已 RSVP 的活动 ID 集合
   final RxList<String> rsvpedMeetupIds = <String>[].obs;
 
+  /// 本地正在创建的 meetup ID 集合（用于防止 SignalR 重复添加）
+  final Set<String> _pendingCreatedMeetupIds = {};
+
   /// 当前筛选的城市ID
   final RxString currentCityId = ''.obs;
 
@@ -87,19 +90,12 @@ class MeetupStateController extends PaginatedRefreshableController {
 
   // ==================== Getters ====================
 
-  /// 获取即将到来的活动 (未来30天内)
+  /// 获取即将到来的活动 - 直接返回服务端已过滤的数据，按开始时间排序
   List<Meetup> get upcomingMeetups {
-    final now = DateTime.now();
-    final thirtyDaysLater = now.add(const Duration(days: 30));
-
-    return meetups
-        .where((m) =>
-            m.status.value != 'cancelled' &&
-            m.status.value == 'upcoming' &&
-            m.schedule.startTime.isAfter(now) &&
-            m.schedule.startTime.isBefore(thirtyDaysLater))
-        .toList()
-      ..sort((a, b) => a.schedule.startTime.compareTo(b.schedule.startTime));
+    // 服务端已完成过滤，这里只做排序以确保显示顺序一致
+    final list = meetups.toList();
+    list.sort((a, b) => a.schedule.startTime.compareTo(b.schedule.startTime));
+    return list;
   }
 
   /// 检查是否已 RSVP
@@ -193,27 +189,29 @@ class MeetupStateController extends PaginatedRefreshableController {
     }
   }
 
-  /// 处理 SignalR Meetup 创建事件 - 单点添加到列表
+  /// 处理 SignalR Meetup 创建事件 - 触发刷新从服务端获取最新数据
   void _handleSignalRMeetupCreated(Map<String, dynamic> meetupJson) {
     try {
-      final meetup = MeetupDto.fromJson(meetupJson).toDomain();
-      // 检查是否已存在
-      if (meetups.any((m) => m.id == meetup.id)) {
-        log('📨 [SignalR] Meetup ${meetup.id} already exists, updating instead');
-        _updateMeetupInList(meetup);
-      } else {
-        // 根据当前筛选条件决定是否添加
-        if (_shouldShowMeetup(meetup)) {
-          meetups.insert(0, meetup); // 新活动插入到列表头部
-          meetups.refresh();
-          log('✅ [SignalR] Meetup ${meetup.id} added to list');
-        } else {
-          log('📨 [SignalR] Meetup ${meetup.id} does not match current filter, skipped');
-        }
+      final meetupId = meetupJson['id'] as String?;
+
+      // 检查是否是本地刚创建的 meetup（由本地创建触发的 SignalR 推送）
+      if (meetupId != null && _pendingCreatedMeetupIds.contains(meetupId)) {
+        log('📨 [SignalR] Meetup $meetupId is pending local creation, skipping');
+        _pendingCreatedMeetupIds.remove(meetupId);
+        return;
       }
+
+      // 检查是否已存在（其他用户创建的 meetup）
+      if (meetupId != null && meetups.any((m) => m.id == meetupId)) {
+        log('📨 [SignalR] Meetup $meetupId already exists, skipping');
+        return;
+      }
+
+      // 不在本地添加，触发刷新从服务端获取最新数据
+      log('📨 [SignalR] New meetup created by another user, refreshing list');
+      refresh();
     } catch (e) {
       log('⚠️ [SignalR] Failed to handle MeetupCreated: $e');
-      // 失败时回退到刷新整个列表
       refresh();
     }
   }
@@ -300,19 +298,6 @@ class MeetupStateController extends PaginatedRefreshableController {
     }
   }
 
-  /// 检查 Meetup 是否应该显示在当前筛选条件下
-  bool _shouldShowMeetup(Meetup meetup) {
-    // 如果有城市筛选，检查城市是否匹配
-    if (currentCityId.value.isNotEmpty && meetup.location.cityId != currentCityId.value) {
-      return false;
-    }
-    // 如果有状态筛选，检查状态是否匹配
-    if (currentStatus.value.isNotEmpty && meetup.status.value != currentStatus.value) {
-      return false;
-    }
-    return true;
-  }
-
   /// 取消 SignalR 订阅
   void _cancelSignalRSubscriptions() {
     for (final subscription in _signalRSubscriptions) {
@@ -370,9 +355,15 @@ class MeetupStateController extends PaginatedRefreshableController {
 
     if (isRefresh) {
       meetups.clear();
+      meetups.addAll(loadedMeetups);
+    } else {
+      // 加载更多时，去重添加
+      for (final meetup in loadedMeetups) {
+        if (!meetups.any((m) => m.id == meetup.id)) {
+          meetups.add(meetup);
+        }
+      }
     }
-
-    meetups.addAll(loadedMeetups);
 
     // 同步 RSVP 状态
     _syncRsvpStatus(loadedMeetups);
@@ -603,9 +594,19 @@ class MeetupStateController extends PaginatedRefreshableController {
         tags: tags,
       );
 
-      meetups.insert(0, newMeetup);
+      // 标记此 meetup ID，防止 SignalR 重复处理
+      _pendingCreatedMeetupIds.add(newMeetup.id);
 
-      // 通知其他组件
+      // 延迟清理标记
+      Future.delayed(const Duration(seconds: 5), () {
+        _pendingCreatedMeetupIds.remove(newMeetup.id);
+      });
+
+      // 不在本地添加到列表，让页面返回时通过 refresh 从服务端获取最新数据
+      // 这样可以确保数据一致性，避免本地和服务端数据不同步
+      log('✅ 活动创建成功: ${newMeetup.id}，等待页面返回时刷新列表');
+
+      // 通知其他组件（用于触发相关页面刷新）
       DataEventBus.instance.emit(DataChangedEvent(
         entityType: 'meetup',
         entityId: newMeetup.id,
@@ -613,7 +614,6 @@ class MeetupStateController extends PaginatedRefreshableController {
         changeType: DataChangeType.created,
       ));
 
-      log('✅ 活动创建成功: ${newMeetup.id}');
       AppToast.success('活动创建成功!');
       return newMeetup;
     } catch (e) {
