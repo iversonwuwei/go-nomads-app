@@ -1,10 +1,13 @@
+import 'dart:developer';
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:go_nomads_app/core/sync/data_sync_service.dart';
 import 'package:go_nomads_app/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
 import 'package:go_nomads_app/pages/flutter_map_picker_page.dart';
 import 'package:go_nomads_app/utils/image_upload_helper.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:get/get.dart';
 
 /// 城市照片提交页面控制器
 class CityPhotoSubmissionPageController extends GetxController {
@@ -182,6 +185,15 @@ class CityPhotoSubmissionPageController extends GetxController {
     isSubmitting.value = false;
 
     if (success) {
+      // 发送数据变更事件通知其他组件
+      DataEventBus.instance.emit(DataChangedEvent(
+        entityType: 'city_photo',
+        entityId: cityId,
+        version: DateTime.now().millisecondsSinceEpoch,
+        changeType: DataChangeType.created,
+      ));
+      log('✅ [城市照片] 已发送数据变更事件');
+
       AppToast.success('照片已提交');
       return true;
     } else {

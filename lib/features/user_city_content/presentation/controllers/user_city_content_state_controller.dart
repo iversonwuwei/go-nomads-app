@@ -1,13 +1,15 @@
+import 'dart:async';
 import 'dart:developer';
 
+import 'package:get/get.dart';
 import 'package:go_nomads_app/core/application/use_case.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/core/sync/data_sync_service.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/user/application/use_cases/user_use_cases.dart' as user_use_cases;
 import 'package:go_nomads_app/features/user/domain/entities/user.dart';
 import 'package:go_nomads_app/features/user_city_content/application/use_cases/user_city_content_use_cases.dart';
 import 'package:go_nomads_app/features/user_city_content/domain/entities/user_city_content.dart';
-import 'package:get/get.dart';
 
 /// User City Content State Controller - DDD Presentation Layer
 class UserCityContentStateController extends GetxController {
@@ -73,6 +75,11 @@ class UserCityContentStateController extends GetxController {
   final isLoadingStats = false.obs;
   final isLoadingCostSummary = false.obs;
 
+  // 数据变更订阅
+  StreamSubscription<DataChangedEvent>? _photoChangedSubscription;
+  StreamSubscription<DataChangedEvent>? _expenseChangedSubscription;
+  StreamSubscription<DataChangedEvent>? _reviewChangedSubscription;
+
   UserCityContentStateController({
     required AddCityPhotoUseCase addCityPhotoUseCase,
     required SubmitCityPhotosUseCase submitCityPhotosUseCase,
@@ -108,6 +115,107 @@ class UserCityContentStateController extends GetxController {
         _deleteCityReviewUseCase = deleteCityReviewUseCase,
         _getCityStatsUseCase = getCityStatsUseCase,
         _getCityCostSummaryUseCase = getCityCostSummaryUseCase;
+
+  // ==================== Lifecycle ====================
+
+  @override
+  void onInit() {
+    super.onInit();
+    _setupDataChangeListeners();
+  }
+
+  /// 设置数据变更监听器
+  void _setupDataChangeListeners() {
+    // 监听照片变更
+    _photoChangedSubscription = DataEventBus.instance.on('city_photo', _handlePhotoChanged);
+    // 监听费用变更
+    _expenseChangedSubscription = DataEventBus.instance.on('city_expense', _handleExpenseChanged);
+    // 监听评论变更
+    _reviewChangedSubscription = DataEventBus.instance.on('city_review', _handleReviewChanged);
+    log('✅ [UserCityContentStateController] 数据变更监听器已设置');
+  }
+
+  /// 处理照片变更事件
+  void _handlePhotoChanged(DataChangedEvent event) {
+    log('🔔 [UserCityContent] 收到照片变更通知: ${event.changeType}, cityId: ${event.entityId}');
+
+    if (event.entityId == null) return;
+
+    // 处理当前城市的变更，或者如果尚未加载任何城市则设置并加载
+    if (event.entityId == _photosCityId) {
+      switch (event.changeType) {
+        case DataChangeType.created:
+        case DataChangeType.updated:
+        case DataChangeType.invalidated:
+          // 重新加载照片列表
+          loadCityPhotos(event.entityId!, forceRefresh: true);
+          break;
+        case DataChangeType.deleted:
+          // 删除操作已在本地处理，通常无需额外操作
+          break;
+      }
+    } else if (_photosCityId == null) {
+      // 如果当前没有加载任何城市的照片，设置城市ID以便后续切换到tab时加载
+      _photosCityId = event.entityId;
+      // 直接加载，确保用户返回时能看到新数据
+      loadCityPhotos(event.entityId!, forceRefresh: true);
+    }
+  }
+
+  /// 处理费用变更事件
+  void _handleExpenseChanged(DataChangedEvent event) {
+    log('🔔 [UserCityContent] 收到费用变更通知: ${event.changeType}, cityId: ${event.entityId}');
+
+    if (event.entityId == null) return;
+
+    // 处理当前城市的变更
+    if (event.entityId == _expensesCityId) {
+      switch (event.changeType) {
+        case DataChangeType.created:
+        case DataChangeType.updated:
+        case DataChangeType.invalidated:
+          // 重新加载费用列表和费用汇总
+          loadCityExpenses(event.entityId!, forceRefresh: true);
+          loadCityCostSummary(event.entityId!, forceRefresh: true);
+          break;
+        case DataChangeType.deleted:
+          // 删除操作已在本地处理，但需要更新汇总
+          loadCityCostSummary(event.entityId!, forceRefresh: true);
+          break;
+      }
+    } else if (_expensesCityId == null) {
+      // 如果当前没有加载任何城市的费用，设置城市ID并加载
+      _expensesCityId = event.entityId;
+      loadCityExpenses(event.entityId!, forceRefresh: true);
+      loadCityCostSummary(event.entityId!, forceRefresh: true);
+    }
+  }
+
+  /// 处理评论变更事件
+  void _handleReviewChanged(DataChangedEvent event) {
+    log('🔔 [UserCityContent] 收到评论变更通知: ${event.changeType}, cityId: ${event.entityId}');
+
+    if (event.entityId == null) return;
+
+    // 处理当前城市的变更
+    if (event.entityId == _currentReviewsCityId) {
+      switch (event.changeType) {
+        case DataChangeType.created:
+        case DataChangeType.updated:
+        case DataChangeType.invalidated:
+          // 重新加载评论列表
+          loadCityReviews(event.entityId!, forceRefresh: true);
+          break;
+        case DataChangeType.deleted:
+          // 删除操作已在本地处理
+          break;
+      }
+    } else if (_currentReviewsCityId == null) {
+      // 如果当前没有加载任何城市的评论，设置城市ID并加载
+      _currentReviewsCityId = event.entityId;
+      loadCityReviews(event.entityId!, forceRefresh: true);
+    }
+  }
 
   // ==================== Photo Methods ====================
 
@@ -663,6 +771,11 @@ class UserCityContentStateController extends GetxController {
 
   @override
   void onClose() {
+    // 取消数据变更订阅
+    _photoChangedSubscription?.cancel();
+    _expenseChangedSubscription?.cancel();
+    _reviewChangedSubscription?.cancel();
+
     // 清空所有响应式变量
     photos.clear();
     expenses.clear();

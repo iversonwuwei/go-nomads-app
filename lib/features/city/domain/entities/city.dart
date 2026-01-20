@@ -277,8 +277,8 @@ class City {
   /// 显示用空气质量指数（默认: 50 - Good）
   int get displayAirQualityIndex => airQualityIndex ?? 50;
 
-  /// 显示用综合评分（默认: 3.0）
-  double get displayOverallScore => overallScore ?? 3.0;
+  /// 显示用综合评分（默认: 0.0 - 暂无评分）
+  double get displayOverallScore => overallScore ?? 0.0;
 
   /// 显示用成本评分（默认: 3.0）
   double get displayCostScore => costScore ?? 3.0;

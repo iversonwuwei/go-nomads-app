@@ -1,14 +1,15 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:get/get.dart';
 import 'package:go_nomads_app/core/core.dart';
 import 'package:go_nomads_app/core/sync/sync.dart';
 import 'package:go_nomads_app/features/city/application/use_cases/city_use_cases.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
 import 'package:go_nomads_app/features/city/domain/repositories/i_city_repository.dart';
 import 'package:go_nomads_app/features/city/presentation/controllers/city_state_controller.dart';
+import 'package:go_nomads_app/services/signalr_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:get/get.dart';
 
 /// 城市详情状态控制器 (Presentation Layer)
 ///
@@ -25,6 +26,10 @@ class CityDetailStateController extends GetxController {
   // ==================== Subscriptions ====================
   StreamSubscription<DataChangedEvent>? _dataChangedSubscription;
   StreamSubscription<DataChangedEvent>? _favoriteChangedSubscription;
+  StreamSubscription<DataChangedEvent>? _reviewChangedSubscription;
+  StreamSubscription<DataChangedEvent>? _ratingChangedSubscription;
+  StreamSubscription<Map<String, dynamic>>? _signalRRatingSubscription;
+  StreamSubscription<Map<String, dynamic>>? _signalRReviewSubscription;
 
   CityDetailStateController({
     required GetCityByIdUseCase getCityByIdUseCase,
@@ -60,6 +65,94 @@ class CityDetailStateController extends GetxController {
   void onInit() {
     super.onInit();
     _setupDataChangeListeners();
+    _setupSignalRListeners();
+  }
+
+  /// 设置 SignalR 监听器 (用于 Header 数据更新)
+  void _setupSignalRListeners() {
+    final signalRService = SignalRService();
+
+    // 监听城市评分更新事件 (来自 SignalR)
+    _signalRRatingSubscription = signalRService.cityRatingUpdatedStream.listen((data) {
+      _handleSignalRRatingUpdated(data);
+    });
+
+    // 监听城市评论更新事件 (来自 SignalR)
+    _signalRReviewSubscription = signalRService.cityReviewUpdatedStream.listen((data) {
+      _handleSignalRReviewUpdated(data);
+    });
+
+    log('✅ [CityDetailStateController] SignalR 监听器已设置');
+  }
+
+  /// 处理 SignalR 城市评论更新事件 (用于 Header 数据同步)
+  void _handleSignalRReviewUpdated(Map<String, dynamic> data) {
+    final cityId = data['cityId'] as String?;
+
+    log('📡 [城市详情] 收到 SignalR 评论更新: cityId=$cityId, currentCityId=${currentCity.value?.id}');
+
+    if (currentCity.value == null || cityId != currentCity.value!.id) {
+      return;
+    }
+
+    final rawScore = data['overallScore'];
+    final newScore = rawScore is num ? rawScore.toDouble() : null;
+    final reviewCount = data['reviewCount'] as int?;
+    final changeType = data['changeType'] as String?;
+
+    log('📝 [城市详情] SignalR 评论更新: changeType=$changeType, reviewCount=$reviewCount, overallScore=$newScore');
+
+    // 更新城市数据
+    var updatedCity = currentCity.value!;
+
+    if (newScore != null) {
+      final oldScore = updatedCity.overallScore;
+      updatedCity = updatedCity.copyWith(overallScore: newScore);
+      log('📊 [城市详情] 评论 overallScore: $oldScore -> $newScore');
+    }
+
+    if (reviewCount != null) {
+      final oldCount = updatedCity.reviewCount;
+      updatedCity = updatedCity.copyWith(reviewCount: reviewCount);
+      log('📊 [城市详情] 评论 reviewCount: $oldCount -> $reviewCount');
+    }
+
+    // 强制触发 GetX 更新 (City 的 == 只比较 id)
+    currentCity.value = null;
+    currentCity.value = updatedCity;
+
+    log('✅ [城市详情] SignalR 静默更新 Header 评论数据完成');
+  }
+
+  /// 处理 SignalR 城市评分更新事件 (用于 Header 数据同步)
+  void _handleSignalRRatingUpdated(Map<String, dynamic> data) {
+    final cityId = data['cityId'] as String?;
+
+    log('📡 [城市详情] 收到 SignalR 评分更新: cityId=$cityId, currentCityId=${currentCity.value?.id}');
+
+    if (currentCity.value == null || cityId != currentCity.value!.id) {
+      return;
+    }
+
+    final rawScore = data['overallScore'];
+    final newScore = rawScore is num ? rawScore.toDouble() : null;
+    final reviewCount = data['reviewCount'] as int?;
+
+    if (newScore != null) {
+      final oldScore = currentCity.value!.overallScore;
+
+      // 使用 copyWith 更新城市数据
+      var updatedCity = currentCity.value!.copyWith(overallScore: newScore);
+      if (reviewCount != null) {
+        updatedCity = updatedCity.copyWith(reviewCount: reviewCount);
+      }
+
+      // 强制触发 GetX 更新 (City 的 == 只比较 id)
+      currentCity.value = null;
+      currentCity.value = updatedCity;
+
+      log('✅ [城市详情] SignalR 静默更新 Header: overallScore $oldScore -> $newScore, reviewCount: $reviewCount');
+    }
   }
 
   /// 设置数据变更监听器
@@ -70,7 +163,77 @@ class CityDetailStateController extends GetxController {
     // 监听收藏状态变更（来自列表页面的变更）
     _favoriteChangedSubscription = DataEventBus.instance.on('city_favorite', _handleFavoriteChanged);
 
+    // 监听评论变更（评论添加/删除会影响城市的评分和评论数）
+    _reviewChangedSubscription = DataEventBus.instance.on('city_review', _handleReviewChanged);
+
+    // 监听评分变更 (Tab 更新仍使用 DataEventBus)
+    _ratingChangedSubscription = DataEventBus.instance.on('city_rating', _handleRatingChanged);
+
     log('✅ [CityDetailStateController] 数据变更监听器已设置');
+  }
+
+  /// 处理评论变更事件
+  void _handleReviewChanged(DataChangedEvent event) {
+    log('🔔 [城市详情] 收到 city_review 事件: entityId=${event.entityId}, currentCityId=${currentCity.value?.id}');
+
+    // 只处理当前城市的评论变更
+    if (currentCity.value == null) {
+      log('⚠️ [城市详情] currentCity 为空，跳过处理');
+      return;
+    }
+
+    if (event.entityId != currentCity.value!.id) {
+      log('⚠️ [城市详情] entityId 不匹配，跳过处理: ${event.entityId} != ${currentCity.value!.id}');
+      return;
+    }
+
+    log('🔔 [城市详情] 收到评论变更通知: ${event.entityId} (${event.changeType})');
+
+    // 评论变更会影响城市的评分和评论数，需要刷新城市详情
+    switch (event.changeType) {
+      case DataChangeType.created:
+      case DataChangeType.updated:
+      case DataChangeType.deleted:
+        // 重新加载城市详情以获取最新的评分和评论数
+        loadCityDetail(event.entityId!, forceRefresh: true);
+        break;
+      case DataChangeType.invalidated:
+        loadCityDetail(event.entityId!, forceRefresh: true);
+        break;
+    }
+  }
+
+  /// 处理评分变更事件（静默更新，不整页刷新）
+  void _handleRatingChanged(DataChangedEvent event) {
+    log('🔔 [城市详情] _handleRatingChanged 被调用: entityId=${event.entityId}, metadata=${event.metadata}');
+
+    // 只处理当前城市的评分变更
+    if (currentCity.value == null) {
+      log('⚠️ [城市详情] currentCity 为 null，跳过');
+      return;
+    }
+
+    if (event.entityId != currentCity.value!.id) {
+      log('⚠️ [城市详情] entityId 不匹配: ${event.entityId} != ${currentCity.value!.id}');
+      return;
+    }
+
+    // 从事件数据中获取新的 overallScore
+    final rawScore = event.metadata?['overallScore'];
+    log('🔍 [城市详情] rawScore=$rawScore, type=${rawScore.runtimeType}');
+
+    final newScore = rawScore is num ? rawScore.toDouble() : null;
+    if (newScore != null) {
+      final oldScore = currentCity.value!.overallScore;
+      // 静默更新 currentCity 的 overallScore
+      // 注意：City 的 == 只比较 id，所以需要先设置为 null 再赋值新对象，强制触发 Obx 更新
+      final updatedCity = currentCity.value!.copyWith(overallScore: newScore);
+      currentCity.value = null; // 先置空
+      currentCity.value = updatedCity; // 再赋值，强制触发更新
+      log('✅ [城市详情] 静默更新 overallScore: $oldScore -> $newScore (强制刷新)');
+    } else {
+      log('⚠️ [城市详情] newScore 为 null，无法更新');
+    }
   }
 
   /// 处理城市数据变更事件
@@ -166,10 +329,13 @@ class CityDetailStateController extends GetxController {
 
     result.fold(
       onSuccess: (city) {
+        log('📦 [城市详情] 准备更新 currentCity: overallScore=${city.overallScore}, reviewCount=${city.reviewCount}');
+        log('📦 [城市详情] 更新前 currentCity.value: overallScore=${currentCity.value?.overallScore}, reviewCount=${currentCity.value?.reviewCount}');
         currentCity.value = city;
+        log('📦 [城市详情] 更新后 currentCity.value: overallScore=${currentCity.value?.overallScore}, reviewCount=${currentCity.value?.reviewCount}');
         isFavorited.value = city.isFavorite;
         isLoading.value = false;
-        log('✅ [城市详情] 加载成功: ${city.name}, isFavorite: ${city.isFavorite}');
+        log('✅ [城市详情] 加载成功: ${city.name}, isFavorite: ${city.isFavorite}, overallScore: ${city.overallScore}, reviewCount: ${city.reviewCount}');
       },
       onFailure: (exception) {
         hasError.value = true;
@@ -338,6 +504,16 @@ class CityDetailStateController extends GetxController {
     _dataChangedSubscription = null;
     _favoriteChangedSubscription?.cancel();
     _favoriteChangedSubscription = null;
+    _reviewChangedSubscription?.cancel();
+    _reviewChangedSubscription = null;
+    _ratingChangedSubscription?.cancel();
+    _ratingChangedSubscription = null;
+
+    // 取消 SignalR 订阅
+    _signalRRatingSubscription?.cancel();
+    _signalRRatingSubscription = null;
+    _signalRReviewSubscription?.cancel();
+    _signalRReviewSubscription = null;
 
     // 清理所有状态
     currentCity.value = null;

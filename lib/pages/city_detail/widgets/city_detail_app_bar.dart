@@ -1,19 +1,19 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/city/presentation/controllers/city_detail_state_controller.dart';
 import 'package:go_nomads_app/pages/city_detail/city_detail_controller.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
 import 'package:go_nomads_app/widgets/share_button.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 /// 城市详情页 SliverAppBar，支持顶部图片左右滑动
 class CityDetailAppBar extends StatefulWidget {
   final CityDetailController controller;
   final String cityName;
   final List<String> cityImages;
-  final double overallScore;
-  final int reviewCount;
+  final double overallScore; // 初始值，后续从 CityDetailStateController 获取
+  final int reviewCount; // 初始值，后续从 CityDetailStateController 获取
   final VoidCallback onShare;
 
   const CityDetailAppBar({
@@ -48,8 +48,13 @@ class _CityDetailAppBarState extends State<CityDetailAppBar> {
 
   @override
   Widget build(BuildContext context) {
+    final cityController = Get.find<CityDetailStateController>();
+
     return Obx(() {
       final opacity = widget.controller.appBarOpacity.value;
+      // 显式访问 currentCity.value 以确保在城市数据变化时重建整个 AppBar
+      // 这是必要的，因为 FlexibleSpaceBar.background 可能会被 Flutter 缓存
+      final _ = cityController.currentCity.value;
 
       return SliverAppBar(
         expandedHeight: 350,
@@ -176,66 +181,78 @@ class _CityDetailAppBarState extends State<CityDetailAppBar> {
   Widget _buildHeroInfoPanel() {
     // 使用 Stack 分离背景和内容，让手势可以穿透到 PageView
     // 关注按钮单独处理，允许点击
-    return Stack(
-      children: [
-        // 背景装饰 - 忽略手势让滑动穿透
-        Positioned.fill(
-          child: IgnorePointer(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.35),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.18),
-                  width: 1,
+    final cityController = Get.find<CityDetailStateController>();
+
+    return Obx(() {
+      // 从 CityDetailStateController 获取响应式数据，如果没有则使用初始值
+      final city = cityController.currentCity.value;
+      final displayScore = city?.displayOverallScore ?? widget.overallScore;
+      final displayReviewCount = city?.displayReviewCount ?? widget.reviewCount;
+
+      debugPrint(
+          '🔄 [CityDetailAppBar] Obx 重建: score=$displayScore, reviewCount=$displayReviewCount, cityOverallScore=${city?.overallScore}, cityReviewCount=${city?.reviewCount}');
+
+      return Stack(
+        children: [
+          // 背景装饰 - 忽略手势让滑动穿透
+          Positioned.fill(
+            child: IgnorePointer(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.35),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.18),
+                    width: 1,
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-        // 内容区域
-        Padding(
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IgnorePointer(
-                child: Text(
-                  widget.cityName,
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
+          // 内容区域
+          Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IgnorePointer(
+                  child: Text(
+                    widget.cityName,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  IgnorePointer(
-                    child: _StatPill(
-                      label: '评分',
-                      value: widget.overallScore.toStringAsFixed(1),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    IgnorePointer(
+                      child: _StatPill(
+                        label: '评分',
+                        value: displayScore.toStringAsFixed(1),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  IgnorePointer(
-                    child: _StatPill(
-                      label: '评论',
-                      value: '${widget.reviewCount}',
+                    const SizedBox(width: 10),
+                    IgnorePointer(
+                      child: _StatPill(
+                        label: '评论',
+                        value: '$displayReviewCount',
+                      ),
                     ),
-                  ),
-                  const Spacer(),
-                  // 关注按钮不包裹 IgnorePointer，允许点击
-                  _FavoriteButton(cityId: widget.controller.cityId),
-                ],
-              ),
-            ],
+                    const Spacer(),
+                    // 关注按钮不包裹 IgnorePointer，允许点击
+                    _FavoriteButton(cityId: widget.controller.cityId),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
-    );
+        ],
+      );
+    });
   }
 }
 

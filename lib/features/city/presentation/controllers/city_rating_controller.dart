@@ -1,10 +1,11 @@
 import 'dart:developer';
 
+import 'package:get/get.dart';
+import 'package:go_nomads_app/core/sync/data_sync_service.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city_rating_category.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city_rating_statistics.dart';
 import 'package:go_nomads_app/features/city/domain/usecases/city_rating_usecases.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:get/get.dart';
 
 /// 城市评分控制器
 class CityRatingController extends GetxController {
@@ -165,6 +166,9 @@ class CityRatingController extends GetxController {
         submittingCategoryId.value = null;
         completedCategoryId.value = categoryId;
 
+        // 计算本地新的 overallScore 并通过事件通知其他控制器
+        _notifyRatingChanged();
+
         // 500ms 后清除完成状态
         Future.delayed(const Duration(milliseconds: 500), () {
           if (completedCategoryId.value == categoryId) {
@@ -197,6 +201,29 @@ class CityRatingController extends GetxController {
       completedCategoryId.value = null;
       AppToast.error('提交评分失败');
     }
+  }
+
+  /// 通知评分变更，发送事件给其他控制器静默更新
+  void _notifyRatingChanged() {
+    if (_currentCityId == null || statistics.isEmpty) return;
+
+    // 计算新的 overallScore
+    final validStats = statistics.where((s) => s.ratingCount > 0).toList();
+    if (validStats.isEmpty) return;
+
+    final newOverallScore = validStats.map((s) => s.averageRating).reduce((a, b) => a + b) / validStats.length;
+    final roundedScore = double.parse(newOverallScore.toStringAsFixed(1));
+    overallScore.value = roundedScore;
+
+    // 发送 city_rating 事件，携带新的 overallScore
+    log('📢 [CityRating] 发送 city_rating 事件: cityId=$_currentCityId, newScore=$roundedScore');
+    DataEventBus.instance.emit(DataChangedEvent(
+      entityType: 'city_rating',
+      entityId: _currentCityId!,
+      version: DateTime.now().millisecondsSinceEpoch,
+      changeType: DataChangeType.updated,
+      metadata: {'overallScore': roundedScore},
+    ));
   }
 
   /// 创建自定义评分项

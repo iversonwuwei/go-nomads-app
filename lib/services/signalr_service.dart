@@ -31,6 +31,8 @@ class SignalRService {
   final _taskFailedController = StreamController<AsyncTask>.broadcast();
   final _cityImageUpdatedController = StreamController<Map<String, dynamic>>.broadcast();
   final _notificationReceivedController = StreamController<Map<String, dynamic>>.broadcast();
+  final _cityRatingUpdatedController = StreamController<Map<String, dynamic>>.broadcast();
+  final _cityReviewUpdatedController = StreamController<Map<String, dynamic>>.broadcast();
 
   // 事件流
   Stream<AsyncTask> get taskProgressStream => _taskProgressController.stream;
@@ -38,6 +40,8 @@ class SignalRService {
   Stream<AsyncTask> get taskFailedStream => _taskFailedController.stream;
   Stream<Map<String, dynamic>> get cityImageUpdatedStream => _cityImageUpdatedController.stream;
   Stream<Map<String, dynamic>> get notificationReceivedStream => _notificationReceivedController.stream;
+  Stream<Map<String, dynamic>> get cityRatingUpdatedStream => _cityRatingUpdatedController.stream;
+  Stream<Map<String, dynamic>> get cityReviewUpdatedStream => _cityReviewUpdatedController.stream;
 
   SignalRService._internal();
 
@@ -283,6 +287,69 @@ class SignalRService {
         _notificationReceivedController.add(normalizedData);
       } catch (e) {
         log('❌ 解析 ReceiveNotification 失败: $e');
+        log('   原始数据: ${arguments[0]}');
+      }
+    });
+
+    // CityRatingUpdated: 城市评分更新
+    _notificationHubConnection?.on('CityRatingUpdated', (arguments) {
+      log('⭐ 收到 CityRatingUpdated 事件！');
+      log('   参数数量: ${arguments?.length ?? 0}');
+
+      if (arguments == null || arguments.isEmpty) {
+        log('❌ CityRatingUpdated 参数为空');
+        return;
+      }
+
+      try {
+        final data = arguments[0] as Map<String, dynamic>;
+        log('📊 收到城市评分更新:');
+        log('   CityId: ${data['CityId'] ?? data['cityId']}');
+        log('   OverallScore: ${data['OverallScore'] ?? data['overallScore']}');
+        log('   ReviewCount: ${data['ReviewCount'] ?? data['reviewCount']}');
+
+        // 转换为小写 key 的 map
+        final normalizedData = <String, dynamic>{};
+        data.forEach((key, value) {
+          final normalizedKey = key[0].toLowerCase() + key.substring(1);
+          normalizedData[normalizedKey] = value;
+        });
+
+        _cityRatingUpdatedController.add(normalizedData);
+      } catch (e) {
+        log('❌ 解析 CityRatingUpdated 失败: $e');
+        log('   原始数据: ${arguments[0]}');
+      }
+    });
+
+    // CityReviewUpdated: 城市评论更新
+    _notificationHubConnection?.on('CityReviewUpdated', (arguments) {
+      log('💬 收到 CityReviewUpdated 事件！');
+      log('   参数数量: ${arguments?.length ?? 0}');
+
+      if (arguments == null || arguments.isEmpty) {
+        log('❌ CityReviewUpdated 参数为空');
+        return;
+      }
+
+      try {
+        final data = arguments[0] as Map<String, dynamic>;
+        log('📝 收到城市评论更新:');
+        log('   CityId: ${data['CityId'] ?? data['cityId']}');
+        log('   ChangeType: ${data['ChangeType'] ?? data['changeType']}');
+        log('   ReviewCount: ${data['ReviewCount'] ?? data['reviewCount']}');
+        log('   OverallScore: ${data['OverallScore'] ?? data['overallScore']}');
+
+        // 转换为小写 key 的 map
+        final normalizedData = <String, dynamic>{};
+        data.forEach((key, value) {
+          final normalizedKey = key[0].toLowerCase() + key.substring(1);
+          normalizedData[normalizedKey] = value;
+        });
+
+        _cityReviewUpdatedController.add(normalizedData);
+      } catch (e) {
+        log('❌ 解析 CityReviewUpdated 失败: $e');
         log('   原始数据: ${arguments[0]}');
       }
     });
@@ -557,6 +624,8 @@ class SignalRService {
     _taskFailedController.close();
     _cityImageUpdatedController.close();
     _notificationReceivedController.close();
+    _cityRatingUpdatedController.close();
+    _cityReviewUpdatedController.close();
     disconnect();
   }
 }
