@@ -1,12 +1,11 @@
 import 'dart:developer';
 
-import 'package:go_nomads_app/features/payment/application/services/alipay_service.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/features/payment/application/services/paypal_service.dart';
 import 'package:go_nomads_app/features/payment/application/services/wechat_pay_service.dart';
 import 'package:go_nomads_app/features/payment/domain/entities/payment_method.dart';
 import 'package:go_nomads_app/features/payment/presentation/controllers/payment_state_controller.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// 统一支付结果
@@ -29,13 +28,6 @@ class UnifiedPaymentService extends GetxService {
   WeChatPayService? get _wechatService {
     if (Get.isRegistered<WeChatPayService>()) {
       return Get.find<WeChatPayService>();
-    }
-    return null;
-  }
-
-  AlipayService? get _alipayService {
-    if (Get.isRegistered<AlipayService>()) {
-      return Get.find<AlipayService>();
     }
     return null;
   }
@@ -80,13 +72,6 @@ class UnifiedPaymentService extends GetxService {
         );
       case PaymentMethod.wechat:
         return await _payWithWeChat(
-          controller: controller,
-          membershipLevel: membershipLevel,
-          durationDays: durationDays,
-          isRenewal: isRenewal,
-        );
-      case PaymentMethod.alipay:
-        return await _payWithAlipay(
           controller: controller,
           membershipLevel: membershipLevel,
           durationDays: durationDays,
@@ -231,86 +216,6 @@ class UnifiedPaymentService extends GetxService {
     }
   }
 
-  /// 支付宝支付
-  Future<UnifiedPaymentResult> _payWithAlipay({
-    required PaymentStateController controller,
-    required int membershipLevel,
-    int durationDays = 365,
-    bool isRenewal = false,
-  }) async {
-    final alipayService = _alipayService;
-    if (alipayService == null) {
-      return UnifiedPaymentResult(
-        success: false,
-        method: PaymentMethod.alipay,
-        errorMessage: '支付宝服务未初始化',
-      );
-    }
-
-    // 检查支付宝是否已安装
-    if (!await alipayService.isAlipayInstalled) {
-      return UnifiedPaymentResult(
-        success: false,
-        method: PaymentMethod.alipay,
-        errorMessage: '请先安装支付宝 App',
-      );
-    }
-
-    try {
-      // 1. 创建支付宝订单（调用后端接口获取签名后的订单信息）
-      log('📤 正在创建支付宝订单...');
-      final orderInfo = await controller.createAlipayOrder(
-        membershipLevel: membershipLevel,
-        durationDays: durationDays,
-        isRenewal: isRenewal,
-      );
-
-      if (orderInfo == null) {
-        log('❌ 创建支付宝订单失败: orderInfo 为 null');
-        return UnifiedPaymentResult(
-          success: false,
-          method: PaymentMethod.alipay,
-          errorMessage: '创建支付宝订单失败',
-        );
-      }
-
-      // 检查 orderString 是否有效
-      final orderString = orderInfo['orderString'] as String?;
-      final orderId = orderInfo['orderId'] as String?;
-
-      log('📦 订单信息: orderId=$orderId, orderString长度=${orderString?.length ?? 0}');
-
-      if (orderString == null || orderString.isEmpty) {
-        log('❌ orderString 为空');
-        return UnifiedPaymentResult(
-          success: false,
-          method: PaymentMethod.alipay,
-          errorMessage: '订单签名信息无效',
-        );
-      }
-
-      // 2. 调用支付宝 SDK 发起支付
-      log('📱 正在调起支付宝...');
-      final result = await alipayService.pay(orderString);
-
-      log('💰 支付宝返回: success=${result.success}, status=${result.resultStatus}, memo=${result.memo}');
-
-      return UnifiedPaymentResult(
-        success: result.success,
-        method: PaymentMethod.alipay,
-        orderId: orderId,
-        errorMessage: result.success ? null : result.displayMessage,
-      );
-    } catch (e) {
-      log('❌ 支付宝支付失败: $e');
-      return UnifiedPaymentResult(
-        success: false,
-        method: PaymentMethod.alipay,
-        errorMessage: e.toString(),
-      );
-    }
-  }
-
   /// 检查支付方式是否可用
   Future<bool> isPaymentMethodAvailable(PaymentMethod method) async {
     switch (method) {
@@ -320,10 +225,6 @@ class UnifiedPaymentService extends GetxService {
         final wechatService = _wechatService;
         if (wechatService == null) return false;
         return await wechatService.isWeChatInstalled;
-      case PaymentMethod.alipay:
-        final alipayService = _alipayService;
-        if (alipayService == null) return false;
-        return await alipayService.isAlipayInstalled;
     }
   }
 

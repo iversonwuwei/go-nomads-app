@@ -33,12 +33,4 @@ abstract class IPaymentRepository {
     int? durationDays,
     double? depositAmount,
   });
-
-  /// 创建支付宝订单
-  Future<Map<String, dynamic>> createAlipayOrder({
-    required String orderType,
-    int? membershipLevel,
-    int? durationDays,
-    double? depositAmount,
-  });
 }

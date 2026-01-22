@@ -1,9 +1,11 @@
 import 'dart:developer';
 
-import 'package:go_nomads_app/features/payment/domain/entities/order.dart';
-import 'package:go_nomads_app/features/payment/presentation/controllers/payment_state_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/features/payment/application/services/paypal_service.dart';
+import 'package:go_nomads_app/features/payment/domain/entities/order.dart';
+import 'package:go_nomads_app/features/payment/presentation/controllers/payment_state_controller.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// 支付服务 - 处理支付流程
@@ -11,6 +13,13 @@ class PaymentService extends GetxService {
   PaymentStateController? get _paymentController {
     if (Get.isRegistered<PaymentStateController>()) {
       return Get.find<PaymentStateController>();
+    }
+    return null;
+  }
+
+  PayPalService? get _paypalService {
+    if (Get.isRegistered<PayPalService>()) {
+      return Get.find<PayPalService>();
     }
     return null;
   }
@@ -72,21 +81,52 @@ class PaymentService extends GetxService {
     }
 
     try {
-      final uri = Uri.parse(order.approvalUrl!);
+      final approvalUrl = order.approvalUrl!;
+      final paypalService = _paypalService;
 
-      log('🌐 打开支付页面: ${order.approvalUrl}');
+      // 优先尝试使用 PayPal App，如果未安装则提示并跳转网页支付
+      if (paypalService != null) {
+        final isInstalled = await paypalService.isPayPalInstalled;
 
-      // 尝试在外部浏览器中打开
+        if (isInstalled) {
+          final result = await paypalService.smartLaunchPayPal(approvalUrl);
+
+          if (result.success) {
+            return true;
+          }
+
+          log('⚠️ PayPal App 打开失败，尝试网页支付: ${result.message}');
+          AppToast.info('PayPal App 打开失败，已为你打开网页支付');
+
+          final webOpened = await paypalService.openPayPalWeb(approvalUrl);
+          if (webOpened) {
+            return true;
+          }
+        } else {
+          AppToast.info('未检测到 PayPal App，已为你打开网页支付');
+
+          final webOpened = await paypalService.openPayPalWeb(approvalUrl);
+          if (webOpened) {
+            return true;
+          }
+        }
+      }
+
+      // 回退：直接使用 url_launcher 打开网页
+      final uri = Uri.parse(approvalUrl);
+
+      log('🌐 使用浏览器打开支付页面: $approvalUrl');
+
       if (await canLaunchUrl(uri)) {
         await launchUrl(
           uri,
           mode: LaunchMode.externalApplication,
         );
         return true;
-      } else {
-        log('❌ 无法打开支付链接');
-        return false;
       }
+
+      log('❌ 无法打开支付链接');
+      return false;
     } catch (e) {
       log('❌ 打开支付页面失败: $e');
       return false;
