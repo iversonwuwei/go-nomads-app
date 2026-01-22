@@ -1,10 +1,10 @@
 import 'dart:developer';
 
+import 'package:dio/dio.dart';
 import 'package:go_nomads_app/config/api_config.dart';
 import 'package:go_nomads_app/features/payment/domain/entities/order.dart';
 import 'package:go_nomads_app/features/payment/domain/repositories/i_payment_repository.dart';
 import 'package:go_nomads_app/services/token_storage_service.dart';
-import 'package:dio/dio.dart';
 
 /// 支付仓储实现
 class PaymentRepository implements IPaymentRepository {
@@ -211,57 +211,6 @@ class PaymentRepository implements IPaymentRepository {
       throw Exception(response.data['message'] ?? '创建微信支付订单失败');
     } catch (e) {
       log('❌ 创建微信支付订单失败: $e');
-      rethrow;
-    }
-  }
-
-  @override
-  Future<Map<String, dynamic>> createAlipayOrder({
-    required String orderType,
-    int? membershipLevel,
-    int? durationDays,
-    double? depositAmount,
-  }) async {
-    log('📤 创建支付宝订单: orderType=$orderType, level=$membershipLevel');
-    log('🌐 API URL: ${ApiConfig.currentApiBaseUrl}/payments/orders/alipay');
-
-    try {
-      final token = await _tokenService.getAccessToken();
-      log('🔑 Token: ${token != null && token.isNotEmpty ? '已获取 (${token.length} chars)' : '无'}');
-
-      final requestData = {
-        'orderType': orderType,
-        if (membershipLevel != null) 'membershipLevel': membershipLevel,
-        if (durationDays != null) 'durationDays': durationDays,
-        if (depositAmount != null) 'depositAmount': depositAmount,
-      };
-      log('📦 请求数据: $requestData');
-
-      final response = await _dio.post(
-        '${ApiConfig.currentApiBaseUrl}/payments/orders/alipay',
-        data: requestData,
-        options: Options(
-          headers: {
-            if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
-          },
-          sendTimeout: const Duration(seconds: 30),
-          receiveTimeout: const Duration(seconds: 30),
-        ),
-      );
-
-      log('📥 响应状态: ${response.statusCode}');
-      log('📥 响应数据: ${response.data}');
-
-      if (response.data['success'] == true && response.data['data'] != null) {
-        final data = response.data['data'] as Map<String, dynamic>;
-        log('✅ 支付宝订单创建成功: $data');
-        log('📦 orderId: ${data['orderId']}, orderString长度: ${data['orderString']?.length ?? 0}');
-        return data;
-      }
-
-      throw Exception(response.data['message'] ?? '创建支付宝订单失败');
-    } catch (e) {
-      log('❌ 创建支付宝订单失败: $e');
       rethrow;
     }
   }

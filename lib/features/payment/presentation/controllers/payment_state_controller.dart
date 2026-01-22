@@ -1,6 +1,6 @@
+import 'package:get/get.dart';
 import 'package:go_nomads_app/features/payment/domain/entities/order.dart';
 import 'package:go_nomads_app/features/payment/domain/repositories/i_payment_repository.dart';
-import 'package:get/get.dart';
 
 /// 支付状态控制器
 class PaymentStateController extends GetxController {
@@ -181,30 +181,6 @@ class PaymentStateController extends GetxController {
       return result;
     } catch (e) {
       errorMessage.value = '创建微信支付订单失败: $e';
-      return null;
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  /// 创建支付宝订单
-  Future<Map<String, dynamic>?> createAlipayOrder({
-    required int membershipLevel,
-    int durationDays = 365,
-    bool isRenewal = false,
-  }) async {
-    isLoading.value = true;
-    errorMessage.value = '';
-
-    try {
-      final result = await _paymentRepository.createAlipayOrder(
-        orderType: isRenewal ? 'membership_renew' : 'membership_upgrade',
-        membershipLevel: membershipLevel,
-        durationDays: durationDays,
-      );
-      return result;
-    } catch (e) {
-      errorMessage.value = '创建支付宝订单失败: $e';
       return null;
     } finally {
       isLoading.value = false;

@@ -1,7 +1,9 @@
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/features/membership/domain/entities/membership_level.dart';
 import 'package:go_nomads_app/features/membership/domain/entities/membership_plan.dart';
 import 'package:go_nomads_app/features/membership/presentation/controllers/membership_state_controller.dart';
-import 'package:go_nomads_app/features/payment/application/services/alipay_service.dart';
 import 'package:go_nomads_app/features/payment/application/services/payment_service.dart';
 import 'package:go_nomads_app/features/payment/application/services/unified_payment_service.dart';
 import 'package:go_nomads_app/features/payment/application/services/wechat_pay_service.dart';
@@ -10,15 +12,11 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/skeletons/base_skeleton.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 /// 支付方式枚举
 enum PaymentMethod {
   paypal,
   wechat,
-  alipay,
 }
 
 /// 支付方式扩展
@@ -29,8 +27,6 @@ extension PaymentMethodExtension on PaymentMethod {
         return 'PayPal';
       case PaymentMethod.wechat:
         return 'WeChat Pay';
-      case PaymentMethod.alipay:
-        return 'Alipay';
     }
   }
 
@@ -40,8 +36,6 @@ extension PaymentMethodExtension on PaymentMethod {
         return 'paypal';
       case PaymentMethod.wechat:
         return 'wechat';
-      case PaymentMethod.alipay:
-        return 'alipay';
     }
   }
 
@@ -51,8 +45,6 @@ extension PaymentMethodExtension on PaymentMethod {
         return const Color(0xFF0070BA);
       case PaymentMethod.wechat:
         return const Color(0xFF07C160);
-      case PaymentMethod.alipay:
-        return const Color(0xFF1677FF);
     }
   }
 
@@ -62,8 +54,6 @@ extension PaymentMethodExtension on PaymentMethod {
         return FontAwesomeIcons.paypal;
       case PaymentMethod.wechat:
         return FontAwesomeIcons.weixin;
-      case PaymentMethod.alipay:
-        return FontAwesomeIcons.alipay;
     }
   }
 }
@@ -434,11 +424,6 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                 PaymentMethod.wechat,
                 l10n.wechatDescription,
               ),
-              _buildPaymentMethodTile(
-                context,
-                PaymentMethod.alipay,
-                l10n.alipayDescription,
-              ),
 
               const SizedBox(height: 8),
 
@@ -485,9 +470,6 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
         break;
       case PaymentMethod.wechat:
         title = l10n.wechatPayment;
-        break;
-      case PaymentMethod.alipay:
-        title = l10n.alipayPayment;
         break;
     }
     return ListTile(
@@ -541,9 +523,6 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
         break;
       case PaymentMethod.wechat:
         await _processWeChatPayment(context, plan, targetLevel);
-        break;
-      case PaymentMethod.alipay:
-        await _processAlipayPayment(context, plan, targetLevel);
         break;
     }
   }
@@ -723,103 +702,6 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
       await Future.delayed(const Duration(milliseconds: 500));
     } catch (e) {
       AppToast.error(l10n.wechatPayError(e.toString()));
-    } finally {
-      // 无论成功与否都关闭加载对话框
-      if (Get.isDialogOpen == true) {
-        Get.back();
-      }
-    }
-  }
-
-  /// 处理支付宝支付
-  Future<void> _processAlipayPayment(
-    BuildContext context,
-    MembershipPlan plan,
-    MembershipLevel targetLevel,
-  ) async {
-    final l10n = AppLocalizations.of(context)!;
-    // 检查支付宝服务
-    UnifiedPaymentService? unifiedPaymentService;
-    AlipayService? alipayService;
-    try {
-      unifiedPaymentService = Get.find<UnifiedPaymentService>();
-      alipayService = Get.find<AlipayService>();
-    } catch (e) {
-      AppToast.warning(l10n.paymentServiceNotAvailable);
-      // 重新显示支付方式选择
-      _retryPaymentMethodSelection(context, plan, targetLevel);
-      return;
-    }
-
-    // 检查支付宝是否已安装
-    if (!await alipayService.isAlipayInstalled) {
-      AppToast.error(l10n.alipayNotInstalled);
-      // 重新显示支付方式选择
-      _retryPaymentMethodSelection(context, plan, targetLevel);
-      return;
-    }
-
-    // 显示加载对话框
-    Get.dialog(
-      AlertDialog(
-        content: Row(
-          children: [
-            const CircularProgressIndicator(),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.creatingAlipayOrder,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    l10n.cnyPriceForPlan((plan.priceYearly * 7.2).toStringAsFixed(0), plan.name),
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-      barrierDismissible: false,
-    );
-
-    // 等待对话框完全显示
-    await Future.delayed(const Duration(milliseconds: 100));
-
-    try {
-      final isRenewal = controller.membership?.isActive == true && controller.level.levelValue == plan.level;
-
-      // 异步调用支付，不等待结果
-      unifiedPaymentService
-          .payForMembership(
-        method: payment_entities.PaymentMethod.alipay,
-        membershipLevel: plan.level,
-        durationDays: 365,
-        isRenewal: isRenewal,
-      )
-          .then((result) {
-        // 支付结果回调
-        if (result.success) {
-          AppToast.success(l10n.paymentSuccessful);
-          controller.loadMembership();
-        } else {
-          AppToast.error(result.errorMessage ?? l10n.alipayPayFailed);
-        }
-      }).catchError((e) {
-        AppToast.error(l10n.alipayError(e.toString()));
-      });
-
-      // 等待一下确保SDK已经开始调用
-      await Future.delayed(const Duration(milliseconds: 500));
-    } catch (e) {
-      AppToast.error(l10n.alipayError(e.toString()));
     } finally {
       // 无论成功与否都关闭加载对话框
       if (Get.isDialogOpen == true) {

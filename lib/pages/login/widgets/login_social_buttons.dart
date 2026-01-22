@@ -59,12 +59,6 @@ class _ChineseSocialButtons extends GetView<LoginController> {
               label: '微信',
             ),
             _SocialButton(
-              onPressed: () => controller.handleSocialLogin(SocialLoginType.alipay, '支付宝'),
-              icon: FontAwesomeIcons.alipay,
-              color: LoginConstants.alipayBlue,
-              label: '支付宝',
-            ),
-            _SocialButton(
               onPressed: () => controller.handleSocialLogin(SocialLoginType.qq, 'QQ'),
               icon: FontAwesomeIcons.qq,
               color: LoginConstants.qqBlue,

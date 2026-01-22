@@ -2,7 +2,6 @@
 enum PaymentMethod {
   paypal,
   wechat,
-  alipay,
 }
 
 /// PaymentMethod 扩展方法
@@ -14,8 +13,6 @@ extension PaymentMethodExtension on PaymentMethod {
         return 'PayPal';
       case PaymentMethod.wechat:
         return 'WeChat Pay';
-      case PaymentMethod.alipay:
-        return 'Alipay';
     }
   }
 
@@ -26,8 +23,6 @@ extension PaymentMethodExtension on PaymentMethod {
         return 'assets/icons/paypal.png';
       case PaymentMethod.wechat:
         return 'assets/icons/wechat_pay.png';
-      case PaymentMethod.alipay:
-        return 'assets/icons/alipay.png';
     }
   }
 
@@ -38,8 +33,6 @@ extension PaymentMethodExtension on PaymentMethod {
         return 'paypal';
       case PaymentMethod.wechat:
         return 'wechat';
-      case PaymentMethod.alipay:
-        return 'alipay';
     }
   }
 
@@ -50,8 +43,6 @@ extension PaymentMethodExtension on PaymentMethod {
       case PaymentMethod.paypal:
         return true;
       case PaymentMethod.wechat:
-        return true; // 需要配置后才可用
-      case PaymentMethod.alipay:
         return true; // 需要配置后才可用
     }
   }
