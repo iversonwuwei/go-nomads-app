@@ -163,12 +163,12 @@
                 <data android:scheme="gonomads" />
             </intent-filter>
             
-            <!-- Universal Link / App Link (https://gonomads.app) -->
+            <!-- Universal Link / App Link (https://go-nomads.com) -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="gonomads.app" />
+                <data android:scheme="https" android:host="go-nomads.com" />
             </intent-filter>
             
             <!-- Alipay URL Scheme for payment callback -->
@@ -177,6 +177,20 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="alipay2021006115624759" />
+            </intent-filter>
+        </activity>
+        
+        <!-- 微信登录/分享/支付回调 Activity -->
+        <activity
+            android:name=".wxapi.WXEntryActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:taskAffinity="com.gonomads.go_nomads_app"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="wx3b333eed7c75a444" />
             </intent-filter>
         </activity>
         

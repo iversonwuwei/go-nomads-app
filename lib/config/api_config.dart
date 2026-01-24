@@ -81,12 +81,12 @@ class ApiConfig {
   // ============================================================
 
   /// 生产环境主机
-  static const String productionHost = '39.96.201.126';
+  static const String productionHost = 'api.go-nomads.com';
 
-  /// 真机测试主机 - 使用电脑局域网 IP
+  /// 真机测试主机 - 使用电脑局域网 IP 39.96.201.126
   /// 通过 ipconfig (Windows) 或 ifconfig (Mac/Linux) 查看
   /// ⚠️ 雷电模拟器也需要使用这个地址(雷电使用 VirtualBox 网络,10.0.2.2 无效)
-  static const String physicalDeviceHost = '192.168.110.67';
+  static const String physicalDeviceHost = '192.168.2.95';
 
   /// 开发环境主机 - 根据平台自动选择
   static String get developmentHost {
@@ -110,7 +110,7 @@ class ApiConfig {
   /// 是否使用真机测试地址(手动切换)
   /// ⚠️ 雷电模拟器用户请设置为 true
   /// ⚠️ Android 官方模拟器用户请设置为 false
-  static const bool usePhysicalDevice = true;
+  static const bool usePhysicalDevice = false;
 
   /// 是否启用 HTTP 方法重写
   /// ⚠️ 当服务器/网络环境不支持 PUT/DELETE 方法时启用此选项

@@ -9,8 +9,9 @@ class SocialSdkService {
   // ========== 配置项（需替换为真实 AppId） ==========
 
   /// 微信 AppId（从微信开放平台获取）
-  static const String wechatAppId = 'wxb80dc89113bb023d';
-  static const String wechatUniversalLink = 'https://gonomads.app/wechat/';
+  static const String wechatAppId = 'wx3b333eed7c75a444';
+  static const String wechatAppSecret = 'f08880d46d4a045398f81cff206ef5b6'; // 仅用于后端，客户端不要直接使用
+  static const String wechatUniversalLink = 'https://go-nomads.com/app/';
 
   /// QQ AppId（从腾讯开放平台获取）
   static const String qqAppId = '102822014';
