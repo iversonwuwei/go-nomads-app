@@ -28,10 +28,17 @@ import 'services/social_sdk_service.dart';
 /// 全局初始化完成状态
 final _initCompleter = ValueNotifier<bool>(false);
 
+/// 全局变量：标记是否已从 AppWrapper 导航到目标页面
+var _hasNavigatedFromAppWrapper = false;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   log('✅ 应用初始化');
+  
+  // 重置导航状态（热重启时需要）
+  _hasNavigatedFromAppWrapper = false;
+  _initCompleter.value = false;
 
   // 立即启动 UI（显示启动页）
   runApp(const MyApp());
@@ -210,11 +217,16 @@ class AppWrapper extends StatefulWidget {
 }
 
 class _AppWrapperState extends State<AppWrapper> {
-  bool _hasNavigated = false;
-
   @override
   void initState() {
     super.initState();
+    
+    // 如果已经导航过，不再重复导航
+    if (_hasNavigatedFromAppWrapper) {
+      log('📱 AppWrapper initState - 已经导航过，跳过');
+      return;
+    }
+    
     log('📱 AppWrapper initState - _initCompleter.value = ${_initCompleter.value}');
 
     // 监听初始化完成
@@ -228,7 +240,7 @@ class _AppWrapperState extends State<AppWrapper> {
 
     // 添加超时保护：5秒后如果还没导航，强制导航
     Future.delayed(const Duration(seconds: 5), () {
-      if (!_hasNavigated && mounted) {
+      if (!_hasNavigatedFromAppWrapper && mounted) {
         log('⏰ 超时保护触发，强制导航');
         _navigateToTargetPage();
       }
@@ -242,18 +254,18 @@ class _AppWrapperState extends State<AppWrapper> {
   }
 
   void _onInitComplete() {
-    log('📱 _onInitComplete 被调用 - value=${_initCompleter.value}, hasNavigated=$_hasNavigated');
-    if (_initCompleter.value && !_hasNavigated && mounted) {
+    log('📱 _onInitComplete 被调用 - value=${_initCompleter.value}, hasNavigated=$_hasNavigatedFromAppWrapper');
+    if (_initCompleter.value && !_hasNavigatedFromAppWrapper && mounted) {
       _navigateToTargetPage();
     }
   }
 
   void _navigateToTargetPage() {
-    if (_hasNavigated || !mounted) {
-      log('📱 _navigateToTargetPage 跳过: hasNavigated=$_hasNavigated, mounted=$mounted');
+    if (_hasNavigatedFromAppWrapper || !mounted) {
+      log('📱 _navigateToTargetPage 跳过: hasNavigated=$_hasNavigatedFromAppWrapper, mounted=$mounted');
       return;
     }
-    _hasNavigated = true;
+    _hasNavigatedFromAppWrapper = true;
     log('📱 _navigateToTargetPage 执行导航...');
 
     // 延迟一帧后导航，确保 UI 已完全构建

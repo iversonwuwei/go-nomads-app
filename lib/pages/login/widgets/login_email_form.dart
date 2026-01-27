@@ -31,44 +31,34 @@ class LoginEmailForm extends GetView<LoginController> {
     return Column(
       children: [
         // 邮箱输入
-        Obx(() {
-          // 访问响应式变量以确保 Obx 能正确追踪，同时检查控制器状态
-          final disposed = controller.isDisposedRx.value;
-          if (disposed) return const SizedBox.shrink();
-          return LoginFormField(
-            controller: controller.emailController,
-            labelText: l10n.email,
-            hintText: l10n.email,
-            prefixIcon: FontAwesomeIcons.envelope,
-            keyboardType: TextInputType.emailAddress,
-            errorText:
-                controller.showValidationErrors.value ? _getErrorText(controller.emailError.value, l10n) : null,
-          );
-        }),
+        Obx(() => LoginFormField(
+              controller: controller.emailController,
+              labelText: l10n.email,
+              hintText: l10n.email,
+              prefixIcon: FontAwesomeIcons.envelope,
+              keyboardType: TextInputType.emailAddress,
+              errorText:
+                  controller.showValidationErrors.value ? _getErrorText(controller.emailError.value, l10n) : null,
+            )),
 
         const SizedBox(height: 20),
 
         // 密码输入
-        Obx(() {
-          // 访问响应式变量以确保 Obx 能正确追踪，同时检查控制器状态
-          final disposed = controller.isDisposedRx.value;
-          if (disposed) return const SizedBox.shrink();
-          return LoginFormField(
-            controller: controller.passwordController,
-            labelText: l10n.password,
-            hintText: l10n.password,
-            prefixIcon: FontAwesomeIcons.lock,
-            obscureText: controller.obscurePassword.value,
-            suffixIcon: IconButton(
-              icon: Icon(
-                controller.obscurePassword.value ? FontAwesomeIcons.eye : FontAwesomeIcons.eyeSlash,
+        Obx(() => LoginFormField(
+              controller: controller.passwordController,
+              labelText: l10n.password,
+              hintText: l10n.password,
+              prefixIcon: FontAwesomeIcons.lock,
+              obscureText: controller.obscurePassword.value,
+              suffixIcon: IconButton(
+                icon: Icon(
+                  controller.obscurePassword.value ? FontAwesomeIcons.eye : FontAwesomeIcons.eyeSlash,
+                ),
+                onPressed: controller.togglePasswordVisibility,
               ),
-              onPressed: controller.togglePasswordVisibility,
-            ),
-            errorText:
-                controller.showValidationErrors.value ? _getErrorText(controller.passwordError.value, l10n) : null,
-          );
-        }),
+              errorText:
+                  controller.showValidationErrors.value ? _getErrorText(controller.passwordError.value, l10n) : null,
+            )),
 
         const SizedBox(height: 16),
 

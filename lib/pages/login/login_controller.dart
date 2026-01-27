@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/locale_controller.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/pages/login/login_constants.dart';
+import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/services/http_service.dart';
 import 'package:go_nomads_app/services/social_login_service.dart';
 import 'package:go_nomads_app/services/token_storage_service.dart';
@@ -17,15 +18,11 @@ enum LoginMode { email, phone }
 
 /// 登录页面控制器 - 使用响应式验证，无需 GlobalKey
 class LoginController extends GetxController {
-  // Controllers - 使用 late 以便在 dispose 后可以安全检查
+  // Controllers
   late final TextEditingController emailController;
   late final TextEditingController passwordController;
   late final TextEditingController phoneController;
   late final TextEditingController smsCodeController;
-
-  // 标记控制器是否已被销毁 - 使用响应式变量以便 Obx 能正确追踪
-  final RxBool isDisposedRx = false.obs;
-  bool get isDisposed => isDisposedRx.value;
 
   final _tokenStorageService = TokenStorageService();
 
@@ -90,7 +87,6 @@ class LoginController extends GetxController {
 
   @override
   void onClose() {
-    isDisposedRx.value = true;
     emailController.removeListener(_validateEmail);
     passwordController.removeListener(_validatePassword);
     phoneController.removeListener(_validatePhone);
@@ -264,7 +260,7 @@ class LoginController extends GetxController {
         );
 
         AppToast.success('Welcome back!', title: 'Login Successful');
-        Get.offAllNamed('/');
+        Get.offAllNamed(AppRoutes.home);
       } else {
         AppToast.error('Invalid email or password', title: 'Login Failed');
       }
@@ -302,7 +298,7 @@ class LoginController extends GetxController {
       if (success) {
         log('✅ 手机号登录成功');
         AppToast.success('欢迎回来！', title: '登录成功');
-        Get.offAllNamed('/');
+        Get.offAllNamed(AppRoutes.home);
       } else {
         AppToast.error('登录失败，请重试', title: '错误');
       }
@@ -332,7 +328,7 @@ class LoginController extends GetxController {
       if (success) {
         log('✅ $platformName 登录成功');
         AppToast.success('欢迎回来！', title: '登录成功');
-        Get.offAllNamed('/');
+        Get.offAllNamed(AppRoutes.home);
       }
     } catch (e) {
       log('❌ $platformName 登录异常: $e');

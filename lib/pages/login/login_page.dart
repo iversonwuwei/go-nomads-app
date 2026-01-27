@@ -9,6 +9,7 @@ import 'package:go_nomads_app/pages/login/widgets/login_header.dart';
 import 'package:go_nomads_app/pages/login/widgets/login_phone_form.dart';
 import 'package:go_nomads_app/pages/login/widgets/login_register_link.dart';
 import 'package:go_nomads_app/pages/login/widgets/login_social_buttons.dart';
+import 'package:go_nomads_app/widgets/copyright_widget.dart';
 
 /// 登录页面 - 使用响应式验证，无需 GlobalKey
 class LoginPage extends GetView<LoginController> {
@@ -51,7 +52,12 @@ class LoginPage extends GetView<LoginController> {
                 // 社区亮点
                 const LoginCommunityHighlight(),
 
-                SizedBox(height: MediaQuery.of(context).padding.bottom + 32),
+                const SizedBox(height: 24),
+
+                // ICP 备案信息
+                const CopyrightWidget(),
+
+                SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
               ],
             ),
           ),

@@ -5,6 +5,7 @@ import 'package:go_nomads_app/pages/login/login_controller.dart';
 class LoginBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<LoginController>(() => LoginController());
+    // 使用 fenix: true 确保控制器被删除后能重新创建
+    Get.lazyPut<LoginController>(() => LoginController(), fenix: true);
   }
 }
