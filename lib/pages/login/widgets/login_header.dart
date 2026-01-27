@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/login/login_constants.dart';
 
@@ -14,19 +13,6 @@ class LoginHeader extends StatelessWidget {
 
     return Column(
       children: [
-        // 返回按钮
-        Align(
-          alignment: Alignment.centerLeft,
-          child: IconButton(
-            icon: const Icon(
-              FontAwesomeIcons.arrowLeft,
-              color: LoginConstants.primaryColor,
-            ),
-            onPressed: () => Get.offAllNamed('/'),
-          ),
-        ),
-        const SizedBox(height: 20),
-
         // Logo 图标
         Container(
           width: LoginConstants.logoSize,
