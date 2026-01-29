@@ -34,6 +34,8 @@ import 'package:go_nomads_app/pages/hotel_list/hotel_list_page.dart';
 import 'package:go_nomads_app/pages/innovation_detail/innovation_detail_page.dart';
 import 'package:go_nomads_app/pages/innovation_list/innovation_list_page.dart';
 import 'package:go_nomads_app/pages/invite_to_meetup_page.dart';
+import 'package:go_nomads_app/pages/legal/community_guidelines_page.dart';
+import 'package:go_nomads_app/pages/legal/terms_of_service_page.dart';
 import 'package:go_nomads_app/pages/login/login.dart';
 import 'package:go_nomads_app/pages/meetup_list/meetup_list.dart';
 import 'package:go_nomads_app/pages/member_detail_page.dart';
@@ -59,6 +61,8 @@ class AppRoutes {
   static const String home = '/home';
   static const String login = '/login';
   static const String register = '/register';
+  static const String termsOfService = '/terms-of-service';
+  static const String communityGuidelinesPage = '/community-guidelines';
 
   // ============================================================================
   // 城市相关路由
@@ -169,6 +173,16 @@ class AppRoutes {
       page: () => const RegisterPage(),
       binding: RegisterBinding(),
       // 🚫 无 middleware - 注册页
+    ),
+    GetPage(
+      name: termsOfService,
+      page: () => const TermsOfServicePage(),
+      // 🚫 无 middleware - 服务条款
+    ),
+    GetPage(
+      name: communityGuidelinesPage,
+      page: () => const CommunityGuidelinesPage(),
+      // 🚫 无 middleware - 社区准则
     ),
 
     // ============================================================================

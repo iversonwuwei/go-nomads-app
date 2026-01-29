@@ -2321,7 +2321,7 @@ abstract class AppLocalizations {
   /// No description provided for @termsAndConditions.
   ///
   /// In zh, this message translates to:
-  /// **'条款和条件'**
+  /// **'服务条款'**
   String get termsAndConditions;
 
   /// No description provided for @privacyPolicy.

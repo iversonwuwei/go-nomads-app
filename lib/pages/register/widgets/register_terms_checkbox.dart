@@ -1,8 +1,10 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/register/register_constants.dart';
 import 'package:go_nomads_app/pages/register/register_controller.dart';
+import 'package:go_nomads_app/routes/app_routes.dart';
 
 /// 服务条款复选框
 class RegisterTermsCheckbox extends GetView<RegisterController> {
@@ -23,30 +25,32 @@ class RegisterTermsCheckbox extends GetView<RegisterController> {
         Expanded(
           child: Padding(
             padding: const EdgeInsets.only(top: 12),
-            child: GestureDetector(
-              onTap: () => controller.toggleAgreeToTerms(),
-              child: RichText(
-                text: TextSpan(
-                  style: const TextStyle(fontSize: 14, color: Colors.black87),
-                  children: [
-                    TextSpan(text: '${l10n.agreeToTerms} '),
-                    TextSpan(
-                      text: l10n.termsOfService,
-                      style: const TextStyle(
-                        color: RegisterConstants.primaryColor,
-                        decoration: TextDecoration.underline,
-                      ),
+            child: RichText(
+              text: TextSpan(
+                style: const TextStyle(fontSize: 14, color: Colors.black87),
+                children: [
+                  TextSpan(
+                    text: '${l10n.agreeToTerms} ',
+                    recognizer: TapGestureRecognizer()..onTap = () => controller.toggleAgreeToTerms(),
+                  ),
+                  TextSpan(
+                    text: l10n.termsAndConditions,
+                    style: const TextStyle(
+                      color: RegisterConstants.primaryColor,
+                      decoration: TextDecoration.underline,
                     ),
-                    TextSpan(text: ' ${l10n.and} '),
-                    TextSpan(
-                      text: l10n.communityGuidelines,
-                      style: const TextStyle(
-                        color: RegisterConstants.primaryColor,
-                        decoration: TextDecoration.underline,
-                      ),
+                    recognizer: TapGestureRecognizer()..onTap = () => Get.toNamed(AppRoutes.termsOfService),
+                  ),
+                  TextSpan(text: ' ${l10n.and} '),
+                  TextSpan(
+                    text: l10n.communityGuidelines,
+                    style: const TextStyle(
+                      color: RegisterConstants.primaryColor,
+                      decoration: TextDecoration.underline,
                     ),
-                  ],
-                ),
+                    recognizer: TapGestureRecognizer()..onTap = () => Get.toNamed(AppRoutes.communityGuidelinesPage),
+                  ),
+                ],
               ),
             ),
           ),

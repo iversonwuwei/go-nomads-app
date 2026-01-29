@@ -1129,7 +1129,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get orContinueWith => '或继续使用';
 
   @override
-  String get termsAndConditions => '条款和条件';
+  String get termsAndConditions => '服务条款';
 
   @override
   String get privacyPolicy => '隐私政策';

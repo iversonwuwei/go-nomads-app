@@ -689,6 +689,7 @@
   "reenterPassword": "重新输入密码",
   "confirmPasswordRequired": "请确认您的密码",
   "passwordsNotMatch": "密码不匹配",
+  "termsAndConditions": "服务条款",
   "agreeToTerms": "我同意",
   "and": "和",
   "communityGuidelines": "社区准则",
