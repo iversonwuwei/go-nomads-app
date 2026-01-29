@@ -1,5 +1,7 @@
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
 import 'package:go_nomads_app/features/hotel/domain/entities/hotel.dart';
 import 'package:go_nomads_app/features/hotel/infrastructure/repositories/hotel_repository.dart';
@@ -7,8 +9,6 @@ import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/services/http_service.dart';
 import 'package:go_nomads_app/services/token_storage_service.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 /// HotelListPage 控制器
 class HotelListPageController extends GetxController {
@@ -50,6 +50,7 @@ class HotelListPageController extends GetxController {
   }
 
   /// 公开的刷新方法，供外部调用
+  @override
   void refresh() {
     loadHotels();
   }

@@ -1,6 +1,9 @@
 import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/coworking/domain/entities/coworking_space.dart';
 import 'package:go_nomads_app/features/coworking/presentation/controllers/coworking_state_controller.dart';
@@ -13,9 +16,6 @@ import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/coworking_verification_badge.dart';
 import 'package:go_nomads_app/widgets/edit_button.dart';
 import 'package:go_nomads_app/widgets/skeletons/base_skeleton.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 /// Coworking List Page
 /// 共享办公空间列表页面

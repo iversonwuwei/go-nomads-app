@@ -1,11 +1,11 @@
-import 'package:go_nomads_app/features/hotel/domain/entities/hotel.dart';
-import 'package:go_nomads_app/features/hotel/presentation/hotel_detail_page.dart' as hotel_detail;
-import 'package:go_nomads_app/controllers/hotel_list_page_controller.dart';
-import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/controllers/hotel_list_page_controller.dart';
+import 'package:go_nomads_app/features/hotel/domain/entities/hotel.dart';
+import 'package:go_nomads_app/features/hotel/presentation/hotel_detail_page.dart' as hotel_detail;
+import 'package:go_nomads_app/utils/navigation_util.dart';
 
 /// 酒店卡片组件
 class HotelCard extends StatelessWidget {

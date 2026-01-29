@@ -83,20 +83,20 @@ class CoworkingDetailImageSection extends StatelessWidget {
               left: 0,
               right: 0,
               child: Obx(() => Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  allImages.length,
-                  (index) => Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: _c.currentImageIndex.value == index ? Colors.white : Colors.white.withAlpha(128),
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      allImages.length,
+                      (index) => Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _c.currentImageIndex.value == index ? Colors.white : Colors.white.withAlpha(128),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              )),
+                  )),
             ),
         ],
       );
@@ -398,13 +398,13 @@ class CoworkingDetailImageCounterBadge extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
         ),
         child: Obx(() => Text(
-          '${_c.currentImageIndex.value + 1}/${allImages.length}',
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-            fontSize: 12,
-          ),
-        )),
+              '${_c.currentImageIndex.value + 1}/${allImages.length}',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+              ),
+            )),
       );
     });
   }

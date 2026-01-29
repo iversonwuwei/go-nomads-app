@@ -74,13 +74,13 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
     final currentUser = authController.currentUser.value;
     final currentUserId = currentUser?.id;
     final isAdmin = currentUser?.role == 'admin';
-    
+
     // 管理员可以编辑任何酒店
     if (isAdmin) return true;
-    
+
     // 创建者可以编辑自己的酒店
     if (currentUserId != null && _hotel.createdBy == currentUserId) return true;
-    
+
     return false;
   }
 
@@ -1698,14 +1698,10 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
               CircleAvatar(
                 radius: 18,
                 backgroundColor: Colors.grey[300],
-                backgroundImage: review.userAvatar != null
-                    ? CachedNetworkImageProvider(review.userAvatar!)
-                    : null,
+                backgroundImage: review.userAvatar != null ? CachedNetworkImageProvider(review.userAvatar!) : null,
                 child: review.userAvatar == null
                     ? Text(
-                        review.userName.isNotEmpty
-                            ? review.userName[0].toUpperCase()
-                            : '?',
+                        review.userName.isNotEmpty ? review.userName[0].toUpperCase() : '?',
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,

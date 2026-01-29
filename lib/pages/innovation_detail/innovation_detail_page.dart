@@ -147,10 +147,7 @@ class InnovationDetailPage extends StatelessWidget {
       InnovationDetailListSection(
         icon: FontAwesomeIcons.star,
         title: l10n.keyFeatures,
-        items: controller.project.keyFeatures
-            .split('\n')
-            .where((s) => s.isNotEmpty)
-            .toList(),
+        items: controller.project.keyFeatures.split('\n').where((s) => s.isNotEmpty).toList(),
         color: const Color(0xFF8B5CF6),
       ),
 
