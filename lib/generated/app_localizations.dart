@@ -6860,6 +6860,18 @@ abstract class AppLocalizations {
   /// **'添加事件到日历失败：{error}'**
   String failedToAddEvent(String error);
 
+  /// No description provided for @calendarPermissionDenied.
+  ///
+  /// In zh, this message translates to:
+  /// **'日历权限被拒绝，请在设置中开启。'**
+  String get calendarPermissionDenied;
+
+  /// No description provided for @noCalendarAvailable.
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到可写入的日历。'**
+  String get noCalendarAvailable;
+
   /// No description provided for @cityChats.
   ///
   /// In zh, this message translates to:

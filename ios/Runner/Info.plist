@@ -80,6 +80,12 @@
 		<!-- 日历权限描述 -->
 		<key>NSCalendarsUsageDescription</key>
 		<string>We need access to your calendar to add meetup events</string>
+		<!-- iOS 17+ 日历完整访问权限 -->
+		<key>NSCalendarsFullAccessUsageDescription</key>
+		<string>We need full access to your calendar to add and manage meetup events</string>
+		<!-- 联系人权限 (日历位置自动完成需要) -->
+		<key>NSContactsUsageDescription</key>
+		<string>We need access to contacts for calendar event location autocomplete</string>
 		<!-- 通知权限描述 -->
 		<key>NSUserNotificationsUsageDescription</key>
 		<string>我们需要发送通知以告知您旅游指南生成完成</string>

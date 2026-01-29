@@ -1698,6 +1698,8 @@
       }
     }
   },
+  "calendarPermissionDenied": "日历权限被拒绝，请在设置中开启。",
+  "noCalendarAvailable": "未找到可写入的日历。",
   "cityChats": "城市聊天",
   "onlineMembers": "在线成员",
   "online": "在线",

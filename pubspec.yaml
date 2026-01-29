@@ -45,7 +45,7 @@ dependencies:
   flutter_screenutil: ^5.9.0
   geolocator: ^14.0.2
   geolocator_android: ^5.0.2  # Android 原生定位，不依赖 Google Play Services
-  add_2_calendar: ^3.0.1
+  device_calendar: ^4.3.3  # 添加事件到系统日历
   image_picker: ^1.0.7
   file_picker: ^8.1.2
   http: ^1.5.0
@@ -103,7 +103,6 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   generate: true
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

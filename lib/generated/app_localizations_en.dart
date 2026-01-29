@@ -3500,6 +3500,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get calendarPermissionDenied =>
+      'Calendar permission denied. Please enable it in Settings.';
+
+  @override
+  String get noCalendarAvailable =>
+      'No writable calendar found on your device.';
+
+  @override
   String get cityChats => 'City Chats';
 
   @override

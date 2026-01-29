@@ -1,7 +1,6 @@
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:add_2_calendar/add_2_calendar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/supabase_config.dart';
@@ -13,6 +12,7 @@ import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
 import 'package:go_nomads_app/features/meetup/presentation/controllers/event_type_controller.dart';
 import 'package:go_nomads_app/features/meetup/presentation/controllers/meetup_state_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/services/calendar_service.dart';
 import 'package:go_nomads_app/services/image_upload_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:image_picker/image_picker.dart';
@@ -408,6 +408,20 @@ class CreateMeetupPageController extends GetxController {
         );
 
         AppToast.success(l10n.meetupCreatedSuccess, title: l10n.success);
+
+        // 提示用户添加到日历
+        // 使用 Future.microtask 确保在 UI 空闲时执行
+        Future.microtask(() async {
+          if (context.mounted) {
+            await CalendarService().showAddToCalendarDialog(
+              context: context,
+              title: titleController.text,
+              description: descriptionController.text.isNotEmpty ? descriptionController.text : null,
+              location: venueController.text,
+              startTime: startDateTime,
+            );
+          }
+        });
       }
 
       selectedImages.clear();
@@ -434,33 +448,6 @@ class CreateMeetupPageController extends GetxController {
       }
     } catch (e) {
       log('⚠️ 创建 Meetup 聊天室异常: $e');
-    }
-  }
-
-  void addToCalendar() async {
-    final DateTime eventDateTime = DateTime(
-      selectedDate.value!.year,
-      selectedDate.value!.month,
-      selectedDate.value!.day,
-      selectedTime.value!.hour,
-      selectedTime.value!.minute,
-    );
-
-    final Event event = Event(
-      title: titleController.text,
-      description:
-          descriptionController.text.isNotEmpty ? descriptionController.text : 'Meetup organized via Nomads.com',
-      location: venueController.text,
-      startDate: eventDateTime,
-      endDate: eventDateTime.add(const Duration(hours: 2)),
-      iosParams: const IOSParams(reminder: Duration(minutes: 30)),
-      androidParams: const AndroidParams(emailInvites: []),
-    );
-
-    try {
-      await Add2Calendar.addEvent2Cal(event);
-    } catch (e) {
-      log('Calendar error: $e');
     }
   }
 }

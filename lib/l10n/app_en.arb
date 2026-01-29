@@ -1714,6 +1714,8 @@
       }
     }
   },
+  "calendarPermissionDenied": "Calendar permission denied. Please enable it in Settings.",
+  "noCalendarAvailable": "No writable calendar found on your device.",
   "cityChats": "City Chats",
   "onlineMembers": "Online Members",
   "online": "Online",

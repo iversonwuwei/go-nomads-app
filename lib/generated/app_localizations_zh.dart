@@ -3463,6 +3463,12 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get calendarPermissionDenied => '日历权限被拒绝，请在设置中开启。';
+
+  @override
+  String get noCalendarAvailable => '未找到可写入的日历。';
+
+  @override
   String get cityChats => '城市聊天';
 
   @override
