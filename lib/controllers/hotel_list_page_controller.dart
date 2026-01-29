@@ -6,6 +6,7 @@ import 'package:go_nomads_app/features/hotel/infrastructure/repositories/hotel_r
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/services/http_service.dart';
 import 'package:go_nomads_app/services/token_storage_service.dart';
+import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -139,15 +140,20 @@ class HotelListPageController extends GetxController {
   /// 导航到添加酒店页面
   Future<void> navigateToAddHotel() async {
     log('🏨 [HotelList] navigateToAddHotel - cityId: $cityId, cityName: $cityName, countryName: $countryName');
-    final result = await Get.toNamed(AppRoutes.addHotel, arguments: {
-      'cityId': cityId,
-      'cityName': cityName,
-      'countryName': countryName,
-    });
-    if (result == true) {
-      log('🏨 [HotelList] 酒店创建成功，刷新列表');
-      loadHotels();
-    }
+    await NavigationUtil.toNamedWithCallback<bool>(
+      route: AppRoutes.addHotel,
+      arguments: {
+        'cityId': cityId,
+        'cityName': cityName,
+        'countryName': countryName,
+      },
+      onResult: (result) {
+        if (result.needsRefresh) {
+          log('🏨 [HotelList] 酒店创建成功，刷新列表');
+          loadHotels();
+        }
+      },
+    );
   }
 
   /// 更新酒店列表中的酒店

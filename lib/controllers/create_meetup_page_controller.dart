@@ -409,19 +409,16 @@ class CreateMeetupPageController extends GetxController {
 
         AppToast.success(l10n.meetupCreatedSuccess, title: l10n.success);
 
-        // 提示用户添加到日历
-        // 使用 Future.microtask 确保在 UI 空闲时执行
-        Future.microtask(() async {
-          if (context.mounted) {
-            await CalendarService().showAddToCalendarDialog(
-              context: context,
-              title: titleController.text,
-              description: descriptionController.text.isNotEmpty ? descriptionController.text : null,
-              location: venueController.text,
-              startTime: startDateTime,
-            );
-          }
-        });
+        // 提示用户添加到日历（在返回之前等待用户操作完成）
+        if (context.mounted) {
+          await CalendarService().showAddToCalendarDialog(
+            context: context,
+            title: titleController.text,
+            description: descriptionController.text.isNotEmpty ? descriptionController.text : null,
+            location: venueController.text,
+            startTime: startDateTime,
+          );
+        }
       }
 
       selectedImages.clear();

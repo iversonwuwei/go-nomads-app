@@ -1,12 +1,13 @@
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/coworking_reviews_page_controller.dart';
 import 'package:go_nomads_app/features/coworking/domain/entities/coworking_review.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 import 'add_coworking_review/add_coworking_review_page.dart';
 
@@ -72,15 +73,17 @@ class CoworkingReviewsPage extends StatelessWidget {
           IconButton(
             icon: const Icon(FontAwesomeIcons.circlePlus, size: 24),
             onPressed: () async {
-              final result = await Get.to<bool>(
-                () => AddCoworkingReviewPage(
+              await NavigationUtil.toWithCallback<bool>(
+                page: () => AddCoworkingReviewPage(
                   coworkingId: coworkingId,
                   coworkingName: coworkingName,
                 ),
+                onResult: (result) {
+                  if (result.needsRefresh) {
+                    controller.refresh();
+                  }
+                },
               );
-              if (result == true) {
-                controller.refresh();
-              }
             },
             tooltip: '添加评论',
           ),
@@ -177,15 +180,17 @@ class CoworkingReviewsPage extends StatelessWidget {
           const SizedBox(height: 32),
           TextButton(
             onPressed: () async {
-              final result = await Get.to<bool>(
-                () => AddCoworkingReviewPage(
+              await NavigationUtil.toWithCallback<bool>(
+                page: () => AddCoworkingReviewPage(
                   coworkingId: coworkingId,
                   coworkingName: coworkingName,
                 ),
+                onResult: (result) {
+                  if (result.needsRefresh) {
+                    controller.refresh();
+                  }
+                },
               );
-              if (result == true) {
-                controller.refresh();
-              }
             },
             style: TextButton.styleFrom(
               backgroundColor: const Color(0xFF007AFF),

@@ -1,16 +1,17 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/create_meetup/create_meetup_page.dart';
 import 'package:go_nomads_app/pages/meetup_list/meetup_list_controller.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
+import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/edit_button.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 /// Meetup 列表卡片组件
@@ -433,10 +434,14 @@ class _MeetupCardFooter extends StatelessWidget {
           if (meetup.isOrganizer)
             AppEditButton(
               onPressed: () async {
-                final result = await Get.to(() => CreateMeetupPage(editingMeetup: meetup));
-                if (result == true) {
-                  controller.refreshCurrentTab();
-                }
+                await NavigationUtil.toWithCallback<bool>(
+                  page: () => CreateMeetupPage(editingMeetup: meetup),
+                  onResult: (result) {
+                    if (result.needsRefresh) {
+                      controller.refreshCurrentTab();
+                    }
+                  },
+                );
               },
               size: 14.r,
               mini: true,

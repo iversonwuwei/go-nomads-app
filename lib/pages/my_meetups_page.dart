@@ -1,15 +1,16 @@
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/my_meetups_page_controller.dart';
 import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
 import 'package:go_nomads_app/features/meetup/presentation/pages/meetup_detail/meetup_detail.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
+import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 /// 我的 Meetups 页面 - 显示用户创建的活动
@@ -63,10 +64,11 @@ class MyMeetupsPage extends StatelessWidget {
           IconButton(
             icon: const Icon(FontAwesomeIcons.plus, color: Colors.white, size: 20),
             onPressed: () async {
-              final result = await Get.toNamed(AppRoutes.createMeetup);
-              if (result == true) {
-                controller.refreshAll();
-              }
+              // 使用接口自动处理刷新
+              await NavigationUtil.toNamedAndRefresh<Meetup>(
+                route: AppRoutes.createMeetup,
+                refresher: controller,
+              );
             },
           ),
         ],
@@ -186,10 +188,11 @@ class MyMeetupsPage extends StatelessWidget {
             const SizedBox(height: 32),
             ElevatedButton.icon(
               onPressed: () async {
-                final result = await Get.toNamed(AppRoutes.createMeetup);
-                if (result == true) {
-                  controller.refreshAll();
-                }
+                // 使用接口自动处理刷新
+                await NavigationUtil.toNamedAndRefresh<Meetup>(
+                  route: AppRoutes.createMeetup,
+                  refresher: controller,
+                );
               },
               icon: const Icon(FontAwesomeIcons.plus, size: 16),
               label: Text(
@@ -232,10 +235,14 @@ class MyMeetupsPage extends StatelessWidget {
         ),
       ),
       child: InkWell(
-        onTap: () => Get.to(
-          () => MeetupDetailPage(meetup: meetup),
-          binding: MeetupDetailBinding(),
-        ),
+        onTap: () async {
+          // 使用接口自动处理刷新
+          await NavigationUtil.toAndRefresh<Meetup>(
+            page: () => MeetupDetailPage(meetup: meetup),
+            refresher: controller,
+            binding: MeetupDetailBinding(),
+          );
+        },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16),

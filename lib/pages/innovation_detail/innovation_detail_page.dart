@@ -8,6 +8,7 @@ import 'package:go_nomads_app/pages/innovation_detail/innovation_detail_bottom_b
 import 'package:go_nomads_app/pages/innovation_detail/innovation_detail_creator_section.dart';
 import 'package:go_nomads_app/pages/innovation_detail/innovation_detail_section.dart';
 import 'package:go_nomads_app/pages/innovation_detail/innovation_detail_team_section.dart';
+import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
@@ -235,15 +236,15 @@ class InnovationDetailPage extends StatelessWidget {
     BuildContext context,
     InnovationDetailPageController controller,
   ) async {
-    final result = await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => AddInnovationPage(project: controller.project),
-      ),
+    await NavigationUtil.toWithCallback<bool>(
+      page: () => AddInnovationPage(project: controller.project),
+      onResult: (result) {
+        // 如果返回需要刷新，说明编辑成功，刷新数据
+        if (result.needsRefresh) {
+          controller.loadFullProject();
+        }
+      },
     );
-    // 如果返回 true，说明编辑成功，刷新数据
-    if (result == true) {
-      controller.loadFullProject();
-    }
   }
 
   /// 联系创建者

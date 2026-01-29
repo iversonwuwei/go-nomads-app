@@ -1,3 +1,4 @@
+import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
@@ -191,10 +192,14 @@ class ModularUserProfilePage extends StatelessWidget {
                     ? '${controller.basicInfo.value!.name} · ${controller.basicInfo.value!.occupation ?? "未设置职业"}'
                     : '点击编辑基本信息',
                 onTap: () async {
-                  final result = await Get.to(() => EditBasicInfoPage(accountId: accountId));
-                  if (result == true) {
-                    controller.loadProfileData();
-                  }
+                  await NavigationUtil.toWithCallback<bool>(
+                    page: () => EditBasicInfoPage(accountId: accountId),
+                    onResult: (result) {
+                      if (result.needsRefresh) {
+                        controller.loadProfileData();
+                      }
+                    },
+                  );
                 },
                 color: Colors.blue,
               ),

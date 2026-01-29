@@ -1,9 +1,10 @@
 import 'dart:developer';
 
-import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/utils/navigation_util.dart';
 
 import '../../features/ai/presentation/controllers/ai_state_controller.dart';
 import '../../features/city/application/state_controllers/pros_cons_state_controller.dart';
@@ -296,15 +297,19 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
     final cityDetailController = Get.find<CityDetailStateController>();
     final city = cityDetailController.currentCity.value;
 
-    final result = await Get.toNamed(AppRoutes.addHotel, arguments: {
-      'cityId': controller.cityId,
-      'cityName': controller.cityName,
-      'countryName': city?.country,
-    });
-
-    if (result == true) {
-      AppToast.success('酒店将在审核后添加！');
-    }
+    await NavigationUtil.toNamedWithCallback<bool>(
+      route: AppRoutes.addHotel,
+      arguments: {
+        'cityId': controller.cityId,
+        'cityName': controller.cityName,
+        'countryName': city?.country,
+      },
+      onResult: (result) {
+        if (result.needsRefresh) {
+          AppToast.success('酒店将在审核后添加！');
+        }
+      },
+    );
   }
 
   /// 显示添加优缺点页面
@@ -372,18 +377,21 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
     final cityDetailController = Get.find<CityDetailStateController>();
     final city = cityDetailController.currentCity.value;
 
-    final result = await Get.to(() => AddCoworkingPage(
-          cityName: controller.cityName,
-          cityId: controller.cityId,
-          countryName: city?.country,
-        ));
-
-    if (result != null) {
-      AppToast.success(
-        'Your coworking space will be reviewed and added soon!',
-        title: 'Success',
-      );
-    }
+    await NavigationUtil.toWithCallback<dynamic>(
+      page: () => AddCoworkingPage(
+        cityName: controller.cityName,
+        cityId: controller.cityId,
+        countryName: city?.country,
+      ),
+      onResult: (result) {
+        if (result.needsRefresh) {
+          AppToast.success(
+            'Your coworking space will be reviewed and added soon!',
+            title: 'Success',
+          );
+        }
+      },
+    );
   }
 
   // ==================== AI 生成相关 ====================

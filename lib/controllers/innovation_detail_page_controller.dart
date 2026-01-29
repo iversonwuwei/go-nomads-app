@@ -7,6 +7,7 @@ import 'package:go_nomads_app/features/innovation_project/domain/repositories/i_
 import 'package:go_nomads_app/features/innovation_project/presentation/controllers/innovation_project_state_controller.dart';
 import 'package:go_nomads_app/features/user/domain/entities/user.dart';
 import 'package:go_nomads_app/services/token_storage_service.dart';
+import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -236,11 +237,16 @@ class InnovationDetailPageController extends GetxController {
 
   /// 跳转到编辑页面并处理返回
   Future<void> navigateToEdit(BuildContext context) async {
-    final result = await Get.toNamed('/add-innovation', arguments: project);
-    // 如果返回 true，说明编辑成功，刷新数据
-    if (result == true) {
-      loadFullProject();
-    }
+    await NavigationUtil.toNamedWithCallback<bool>(
+      route: '/add-innovation',
+      arguments: project,
+      onResult: (result) {
+        // 如果返回需要刷新，说明编辑成功，刷新数据
+        if (result.needsRefresh) {
+          loadFullProject();
+        }
+      },
+    );
   }
 
   /// 创建发布者的 User 对象用于聊天

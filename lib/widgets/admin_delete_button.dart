@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/utils/navigation_util.dart';
 
 import 'app_toast.dart';
 
@@ -103,7 +104,7 @@ class AdminDeleteButton extends StatelessWidget {
         if (onDeleteSuccess != null) {
           onDeleteSuccess!();
         } else {
-          Get.back(result: 'deleted');
+          NavigationUtil.backAfterDelete();
         }
       }
     } catch (e) {

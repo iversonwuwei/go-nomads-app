@@ -9,6 +9,7 @@ import 'package:go_nomads_app/features/meetup/presentation/pages/meetup_detail/w
 import 'package:go_nomads_app/features/meetup/presentation/pages/meetup_detail/widgets/meetup_organizer_section.dart';
 import 'package:go_nomads_app/features/meetup/presentation/pages/meetup_detail/widgets/meetup_time_location_section.dart';
 import 'package:go_nomads_app/pages/create_meetup/create_meetup_page.dart';
+import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/edit_button.dart';
 import 'package:go_nomads_app/widgets/share_bottom_sheet.dart';
@@ -76,13 +77,15 @@ class MeetupDetailPage extends GetView<MeetupDetailController> {
           if (controller.isOrganizer) {
             return SliverEditButton(
               onPressed: () async {
-                final result = await Get.to(
-                  () => CreateMeetupPage(editingMeetup: controller.meetup.value),
+                await NavigationUtil.toWithCallback<bool>(
+                  page: () => CreateMeetupPage(editingMeetup: controller.meetup.value),
+                  onResult: (result) async {
+                    if (result.needsRefresh) {
+                      await controller.loadEventDetails();
+                      controller.hasDataChanged.value = true;
+                    }
+                  },
                 );
-                if (result == true) {
-                  await controller.loadEventDetails();
-                  controller.hasDataChanged.value = true;
-                }
               },
               size: 18,
             );

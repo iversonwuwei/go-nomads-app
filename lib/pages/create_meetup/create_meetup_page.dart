@@ -272,9 +272,9 @@ class CreateMeetupPage extends StatelessWidget {
 
     // Create meetup
     final success = await controller.createMeetup(context);
-    if (success) {
-      // 使用 NavigationUtil 确保在 iOS 上也能正确返回并传递结果
-      await NavigationUtil.popAfterSuccess(result: true, context: context);
+    if (success && context.mounted) {
+      // 使用统一的返回方法，让列表页面刷新数据
+      await NavigationUtil.backWithRefresh<bool>(context: context);
     }
   }
 }

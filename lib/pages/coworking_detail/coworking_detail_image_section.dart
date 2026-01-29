@@ -1,6 +1,7 @@
 import 'package:go_nomads_app/controllers/coworking_detail_page_controller.dart';
 import 'package:go_nomads_app/pages/add_coworking/add_coworking_page.dart';
 import 'package:go_nomads_app/pages/coworking_reviews_page.dart';
+import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/widgets/coworking_verification_badge.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -251,16 +252,15 @@ class CoworkingDetailImageSection extends StatelessWidget {
   }
 
   Future<void> _navigateToEdit(BuildContext context) async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AddCoworkingPage(editingSpace: _c.space.value),
-      ),
+    await NavigationUtil.toWithCallback<bool>(
+      page: () => AddCoworkingPage(editingSpace: _c.space.value),
+      onResult: (result) async {
+        if (result.needsRefresh) {
+          _c.markDataChanged();
+          await _c.reloadCoworkingDetail();
+        }
+      },
     );
-    if (result == true) {
-      _c.markDataChanged();
-      await _c.reloadCoworkingDetail();
-    }
   }
 
   Future<void> _showDeleteConfirmation(BuildContext context) async {

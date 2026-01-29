@@ -1,5 +1,9 @@
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
@@ -11,16 +15,13 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/create_meetup/create_meetup_page.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/services/http_service.dart';
+import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/edit_button.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
 import 'package:go_nomads_app/widgets/share_bottom_sheet.dart';
 import 'package:go_nomads_app/widgets/share_button.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 import 'direct_chat_page.dart';
@@ -119,7 +120,11 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
 
   /// 统一处理返回逻辑
   void _handleBack() {
-    Get.back(result: _hasDataChanged ? _meetup.value : null);
+    NavigationUtil.backFromDetail<Meetup>(
+      entity: _meetup.value,
+      hasChanged: _hasDataChanged,
+      context: context,
+    );
   }
 
   @override
@@ -148,12 +153,16 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                 if (_isOrganizer)
                   SliverEditButton(
                     onPressed: () async {
-                      final result = await Get.to(() => CreateMeetupPage(editingMeetup: _meetup.value));
-                      if (result == true) {
-                        // 编辑成功，刷新数据并标记变更
-                        await _loadEventDetails();
-                        _hasDataChanged = true;
-                      }
+                      await NavigationUtil.toWithCallback<Meetup>(
+                        page: () => CreateMeetupPage(editingMeetup: _meetup.value),
+                        onResult: (result) async {
+                          if (result.needsRefresh) {
+                            // 编辑成功，刷新数据并标记变更
+                            await _loadEventDetails();
+                            _hasDataChanged = true;
+                          }
+                        },
+                      );
                     },
                     size: 18,
                   ),

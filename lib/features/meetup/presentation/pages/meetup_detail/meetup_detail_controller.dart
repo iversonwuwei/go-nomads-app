@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/core/sync/sync.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
@@ -11,9 +13,8 @@ import 'package:go_nomads_app/features/user/domain/entities/user.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/services/http_service.dart';
 import 'package:go_nomads_app/services/token_storage_service.dart';
+import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 /// Meetup 详情页面 Controller
@@ -22,6 +23,7 @@ import 'package:intl/intl.dart';
 /// - 使用 GetxController 管理状态
 /// - 通过 Binding 注入依赖
 /// - 提供响应式状态管理
+/// - 使用统一的 NavigationResult 处理返回和数据刷新
 class MeetupDetailController extends GetxController {
   // ==================== 依赖注入 ====================
   final IMeetupRepository _meetupRepository;
@@ -388,8 +390,33 @@ class MeetupDetailController extends GetxController {
     );
   }
 
+  // ==================== 统一的返回处理 ====================
+
   /// 处理返回
-  void handleBack() {
-    Get.back(result: hasDataChanged.value ? meetup.value : null);
+  ///
+  /// 使用统一的 NavigationResult 模式：
+  /// - 如果数据有变更，返回 NavigationResult.updated(meetup)
+  /// - 如果数据未变更，返回 NavigationResult.unchanged()
+  void handleBack({BuildContext? context}) {
+    NavigationUtil.backFromDetail<Meetup>(
+      entity: meetup.value,
+      hasChanged: hasDataChanged.value,
+      context: context,
+    );
+  }
+
+  /// 删除后返回
+  ///
+  /// 使用统一的 NavigationResult.deleted 模式
+  void handleBackAfterDelete({BuildContext? context}) {
+    NavigationUtil.backAfterDelete(
+      entityId: meetup.value?.id,
+      context: context,
+    );
+  }
+
+  /// 标记数据已变更
+  void markDataChanged() {
+    hasDataChanged.value = true;
   }
 }

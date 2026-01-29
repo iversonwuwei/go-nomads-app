@@ -8,6 +8,7 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/add_coworking/add_coworking_page.dart';
 import 'package:go_nomads_app/pages/coworking_list_page.dart';
 import 'package:go_nomads_app/routes/route_refresh_observer.dart';
+import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/skeletons/base_skeleton.dart';
@@ -270,16 +271,14 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> with RouteAwareRe
                             height: 56,
                             child: ElevatedButton.icon(
                               onPressed: () async {
-                                final result = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => AddCoworkingPage(),
-                                  ),
+                                await NavigationUtil.toWithCallback<bool>(
+                                  page: () => AddCoworkingPage(),
+                                  onResult: (result) async {
+                                    if (result.needsRefresh && mounted) {
+                                      await _refreshData();
+                                    }
+                                  },
                                 );
-
-                                if (result == true && mounted) {
-                                  await _refreshData();
-                                }
                               },
                               icon: const Icon(FontAwesomeIcons.circlePlus, size: 24),
                               label: Builder(
@@ -437,21 +436,19 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> with RouteAwareRe
             log('   Coworking数量: $spacesCount');
 
             // 等待列表页返回,如果返回 true 则刷新城市列表
-            final result = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => CoworkingListPage(
-                  cityId: city['id'],
-                  cityName: city['name'],
-                  countryName: city['country'] as String?,
-                ),
+            await NavigationUtil.toWithCallback<bool>(
+              page: () => CoworkingListPage(
+                cityId: city['id'],
+                cityName: city['name'],
+                countryName: city['country'] as String?,
               ),
+              onResult: (result) async {
+                // 如果在列表页添加了新的 Coworking,刷新城市列表
+                if (result.needsRefresh && mounted) {
+                  await _refreshData();
+                }
+              },
             );
-
-            // 如果在列表页添加了新的 Coworking,刷新城市列表
-            if (result == true && mounted) {
-              await _refreshData();
-            }
           },
           child: _buildCityCardContent(context, city, spacesCount, l10n),
         ),

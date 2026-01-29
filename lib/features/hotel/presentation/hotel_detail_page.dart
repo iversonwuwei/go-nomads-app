@@ -7,6 +7,7 @@ import 'package:go_nomads_app/features/hotel/domain/entities/hotel_review.dart';
 import 'package:go_nomads_app/features/hotel/domain/repositories/i_hotel_repository.dart';
 import 'package:go_nomads_app/features/hotel/domain/repositories/i_hotel_review_repository.dart';
 import 'package:go_nomads_app/pages/add_hotel_page.dart';
+import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/edit_button.dart';
@@ -160,23 +161,22 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
         if (_canEditHotel())
           SliverEditButton(
             onPressed: () async {
-              final result = await Navigator.push<bool>(
-                context,
-                CupertinoPageRoute(
-                  builder: (context) => AddHotelPage(
-                    editingHotel: _hotel,
-                    cityId: _hotel.cityId,
-                    cityName: _hotel.cityName,
-                    countryName: _hotel.country,
-                  ),
+              await NavigationUtil.toWithCallback<bool>(
+                page: () => AddHotelPage(
+                  editingHotel: _hotel,
+                  cityId: _hotel.cityId,
+                  cityName: _hotel.cityName,
+                  countryName: _hotel.country,
                 ),
+                onResult: (result) async {
+                  if (result.needsRefresh && mounted) {
+                    // 标记数据已变更，下次返回时通知列表页面
+                    _hasDataChanged = true;
+                    // 重新加载酒店详情
+                    await _reloadHotelDetail();
+                  }
+                },
               );
-              if (result == true && mounted) {
-                // 标记数据已变更，下次返回时通知列表页面
-                _hasDataChanged = true;
-                // 重新加载酒店详情
-                await _reloadHotelDetail();
-              }
             },
             size: 18,
           ),

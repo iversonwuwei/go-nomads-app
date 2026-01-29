@@ -1,11 +1,12 @@
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/manage_reviews_page_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/city_detail/widgets/tabs/reviews_tab.dart';
+import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 import 'add_review_page.dart';
 
@@ -84,13 +85,17 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
           IconButton(
             icon: const Icon(FontAwesomeIcons.plus),
             onPressed: () async {
-              final result = await Get.to(() => AddReviewPage(
-                    cityId: widget.cityId,
-                    cityName: widget.cityName,
-                  ));
-              if (result != null && result['success'] == true) {
-                await _controller.loadData();
-              }
+              await NavigationUtil.toWithCallback<Map<String, dynamic>>(
+                page: () => AddReviewPage(
+                  cityId: widget.cityId,
+                  cityName: widget.cityName,
+                ),
+                onResult: (result) async {
+                  if (result.needsRefresh) {
+                    await _controller.loadData();
+                  }
+                },
+              );
             },
             tooltip: '添加评论',
           ),
@@ -115,13 +120,17 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
                 const SizedBox(height: 24),
                 ElevatedButton.icon(
                   onPressed: () async {
-                    final result = await Get.to(() => AddReviewPage(
-                          cityId: widget.cityId,
-                          cityName: widget.cityName,
-                        ));
-                    if (result != null && result['success'] == true) {
-                      await _controller.loadData();
-                    }
+                    await NavigationUtil.toWithCallback<Map<String, dynamic>>(
+                      page: () => AddReviewPage(
+                        cityId: widget.cityId,
+                        cityName: widget.cityName,
+                      ),
+                      onResult: (result) async {
+                        if (result.needsRefresh) {
+                          await _controller.loadData();
+                        }
+                      },
+                    );
                   },
                   icon: const Icon(FontAwesomeIcons.plus),
                   label: const Text('添加第一条评论'),

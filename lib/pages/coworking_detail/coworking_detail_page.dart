@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/coworking_detail_page_controller.dart';
 import 'package:go_nomads_app/features/coworking/domain/entities/coworking_space.dart';
@@ -9,10 +12,8 @@ import 'package:go_nomads_app/pages/coworking_detail/coworking_detail_image_sect
 import 'package:go_nomads_app/pages/coworking_detail/coworking_detail_info_section.dart';
 import 'package:go_nomads_app/pages/coworking_detail/coworking_detail_pricing_specs_section.dart';
 import 'package:go_nomads_app/pages/osm_navigation_page.dart';
+import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 class CoworkingDetailPage extends StatelessWidget {
   final CoworkingSpace space;
@@ -145,9 +146,12 @@ class CoworkingDetailPage extends StatelessWidget {
   }
 
   void _handleBack(CoworkingDetailPageController controller) {
-    final result = controller.hasDataChanged.value ? controller.space.value : null;
+    NavigationUtil.backFromDetail<CoworkingSpace>(
+      entity: controller.space.value,
+      hasChanged: controller.hasDataChanged.value,
+      context: Get.context,
+    );
     _cleanupController();
-    Navigator.pop(Get.context!, result);
   }
 
   void _cleanupController() {

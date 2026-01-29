@@ -8,6 +8,7 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/add_coworking/add_coworking_page.dart';
 import 'package:go_nomads_app/pages/coworking_detail/coworking_detail_page.dart';
 import 'package:go_nomads_app/routes/route_refresh_observer.dart';
+import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/coworking_verification_badge.dart';
 import 'package:go_nomads_app/widgets/edit_button.dart';
@@ -178,27 +179,22 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
             icon: const Icon(FontAwesomeIcons.circlePlus, color: Colors.black54),
             onPressed: () async {
               // 跳转到添加页面,预填充当前城市信息
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AddCoworkingPage(
-                    cityId: widget.cityId,
-                    cityName: widget.cityName,
-                    countryName: widget.countryName,
-                  ),
+              await NavigationUtil.toWithCallback<bool>(
+                page: () => AddCoworkingPage(
+                  cityId: widget.cityId,
+                  cityName: widget.cityName,
+                  countryName: widget.countryName,
                 ),
+                onResult: (result) async {
+                  if (result.needsRefresh) {
+                    await _refreshData();
+                    // 通知 CoworkingHomePage 也需要刷新
+                    if (context.mounted) {
+                      Navigator.pop(context, true);
+                    }
+                  }
+                },
               );
-
-              if (!context.mounted) return;
-
-              // 如果成功添加,刷新列表并通知上级页面
-              if (result == true) {
-                await _refreshData();
-
-                if (!context.mounted) return;
-                // 通知 CoworkingHomePage 也需要刷新
-                Navigator.pop(context, true);
-              }
             },
           ),
         ],
@@ -284,19 +280,17 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: () async {
-            final result = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => CoworkingDetailPage(space: space),
-              ),
+            await NavigationUtil.toWithCallback<CoworkingSpace>(
+              page: () => CoworkingDetailPage(space: space),
+              onResult: (result) async {
+                if (result.hasData && mounted) {
+                  final controller = Get.find<CoworkingStateController>();
+                  controller.updateCoworkingInList(result.data!);
+                } else if (result.needsRefresh && mounted) {
+                  await _refreshData();
+                }
+              },
             );
-
-            if (result is CoworkingSpace && mounted) {
-              final controller = Get.find<CoworkingStateController>();
-              controller.updateCoworkingInList(result);
-            } else if (result == true && mounted) {
-              await _refreshData();
-            }
           },
           child: _buildCoworkingCardContent(context, space),
         ),
@@ -354,15 +348,14 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
             left: 12,
             child: AppEditButton(
               onPressed: () async {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => AddCoworkingPage(editingSpace: space),
-                  ),
+                await NavigationUtil.toWithCallback<bool>(
+                  page: () => AddCoworkingPage(editingSpace: space),
+                  onResult: (result) async {
+                    if (result.needsRefresh && mounted) {
+                      await _refreshData();
+                    }
+                  },
                 );
-                if (result == true && mounted) {
-                  await _refreshData();
-                }
               },
               size: 14,
               mini: true,

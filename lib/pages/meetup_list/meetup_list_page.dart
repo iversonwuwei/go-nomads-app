@@ -4,6 +4,7 @@ import 'package:go_nomads_app/pages/create_meetup/create_meetup_page.dart';
 import 'package:go_nomads_app/pages/meetup_list/meetup_list_controller.dart';
 import 'package:go_nomads_app/pages/meetup_list/widgets/meetup_filter_drawer.dart';
 import 'package:go_nomads_app/pages/meetup_list/widgets/meetup_list_view.dart';
+import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -154,15 +155,14 @@ class _CreateButton extends GetView<MeetupListController> {
         size: 24.sp,
       ),
       onPressed: () async {
-        final result = await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const CreateMeetupPage(),
-          ),
+        await NavigationUtil.toWithCallback<bool>(
+          page: () => const CreateMeetupPage(),
+          onResult: (result) {
+            if (result.needsRefresh) {
+              controller.refreshCurrentTab();
+            }
+          },
         );
-        if (result == true) {
-          controller.refreshCurrentTab();
-        }
       },
     );
   }

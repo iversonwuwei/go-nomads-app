@@ -1,5 +1,9 @@
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/location_controller.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
@@ -11,14 +15,11 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/create_meetup/create_meetup_page.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/routes/route_refresh_observer.dart';
+import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/edit_button.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 /// Meetups 列表页面
@@ -336,16 +337,15 @@ class _MeetupsListPageState extends State<MeetupsListPage>
             icon: Icon(FontAwesomeIcons.circlePlus, color: const Color(0xFFFF4458), size: 24.sp),
             onPressed: () async {
               // 跳转到创建页面，等待返回结果
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const CreateMeetupPage(),
-                ),
+              await NavigationUtil.toWithCallback<bool>(
+                page: () => const CreateMeetupPage(),
+                onResult: (result) {
+                  // 如果创建成功，刷新列表
+                  if (result.needsRefresh) {
+                    _refreshCurrentTab();
+                  }
+                },
               );
-              // 如果创建成功，刷新列表
-              if (result == true) {
-                _refreshCurrentTab();
-              }
             },
           ),
           SizedBox(width: 8.w),
@@ -838,22 +838,24 @@ class _MeetupListCardState extends State<_MeetupListCard> {
     return GestureDetector(
       onTap: () async {
         // 等待 detail 页面返回结果
-        final result = await Get.to(
-          () => MeetupDetailPage(meetup: widget.meetup),
+        await NavigationUtil.toWithCallback<Meetup>(
+          page: () => MeetupDetailPage(meetup: widget.meetup),
           binding: MeetupDetailBinding(),
+          onResult: (result) {
+            if (result.hasData) {
+              // 如果返回了更新后的 meetup，直接更新缓存
+              widget.onUpdated(result.data!);
+              // 同步更新本地状态
+              if (mounted) {
+                setState(() {
+                  _isJoined = result.data!.isJoined;
+                  _currentAttendees = result.data!.capacity.currentAttendees;
+                  _maxAttendees = result.data!.capacity.maxAttendees;
+                });
+              }
+            }
+          },
         );
-        if (result is Meetup) {
-          // 如果返回了更新后的 meetup，直接更新缓存
-          widget.onUpdated(result);
-          // 同步更新本地状态
-          if (mounted) {
-            setState(() {
-              _isJoined = result.isJoined;
-              _currentAttendees = result.capacity.currentAttendees;
-              _maxAttendees = result.capacity.maxAttendees;
-            });
-          }
-        }
       },
       child: Container(
         margin: EdgeInsets.only(bottom: 16.h),
@@ -1016,10 +1018,14 @@ class _MeetupListCardState extends State<_MeetupListCard> {
                         if (_isOrganizer)
                           AppEditButton(
                             onPressed: () async {
-                              final result = await Get.to(() => CreateMeetupPage(editingMeetup: widget.meetup));
-                              if (result == true) {
-                                widget.onRefresh?.call();
-                              }
+                              await NavigationUtil.toWithCallback<bool>(
+                                page: () => CreateMeetupPage(editingMeetup: widget.meetup),
+                                onResult: (result) {
+                                  if (result.needsRefresh) {
+                                    widget.onRefresh?.call();
+                                  }
+                                },
+                              );
                             },
                             size: 14.r,
                             mini: true,

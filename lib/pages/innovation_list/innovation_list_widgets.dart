@@ -1,5 +1,6 @@
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/add_innovation/add_innovation_page.dart';
+import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -40,19 +41,17 @@ class InnovationListHeader extends StatelessWidget {
       child: ElevatedButton.icon(
         onPressed: () async {
           debugPrint('🚀 [InnovationListHeader] 打开添加页面...');
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const AddInnovationPage(),
-            ),
+          await NavigationUtil.toWithCallback<bool>(
+            page: () => const AddInnovationPage(),
+            onResult: (result) {
+              debugPrint('🔙 [InnovationListHeader] 添加页面返回, needsRefresh: ${result.needsRefresh}');
+              // 如果添加成功,刷新数据
+              if (result.needsRefresh) {
+                debugPrint('🔄 [InnovationListHeader] 调用 onRefresh 刷新数据...');
+                onRefresh?.call();
+              }
+            },
           );
-
-          debugPrint('🔙 [InnovationListHeader] 添加页面返回, result: $result');
-          // 如果添加成功,刷新数据
-          if (result == true) {
-            debugPrint('🔄 [InnovationListHeader] 调用 onRefresh 刷新数据...');
-            onRefresh?.call();
-          }
         },
         icon: const Icon(FontAwesomeIcons.circlePlus, size: 24),
         label: Text(

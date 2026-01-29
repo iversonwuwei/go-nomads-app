@@ -3,6 +3,7 @@ import 'package:go_nomads_app/features/user_city_content/domain/entities/user_ci
 import 'package:go_nomads_app/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
 import 'package:go_nomads_app/pages/add_cost/add_cost_page.dart';
 import 'package:go_nomads_app/services/token_storage_service.dart';
+import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -80,13 +81,17 @@ class ManageCostPageController extends GetxController {
 
   /// 导航到添加费用页面
   Future<void> navigateToAddCost() async {
-    final result = await Get.to(() => AddCostPage(
-          cityId: cityId,
-          cityName: cityName,
-        ));
-    if (result != null && result['success'] == true) {
-      await loadData();
-    }
+    await NavigationUtil.toWithCallback<Map<String, dynamic>>(
+      page: () => AddCostPage(
+        cityId: cityId,
+        cityName: cityName,
+      ),
+      onResult: (result) async {
+        if (result.hasData && result.data?['success'] == true) {
+          await loadData();
+        }
+      },
+    );
   }
 
   /// 获取分类名称

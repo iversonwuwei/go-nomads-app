@@ -1,6 +1,7 @@
 import 'package:go_nomads_app/features/hotel/domain/entities/hotel.dart';
 import 'package:go_nomads_app/features/hotel/presentation/hotel_detail_page.dart' as hotel_detail;
 import 'package:go_nomads_app/controllers/hotel_list_page_controller.dart';
+import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -24,11 +25,15 @@ class HotelCard extends StatelessWidget {
     return GestureDetector(
       onTap: () async {
         // 跳转到酒店详情页面
-        final result = await Get.to<Hotel?>(() => hotel_detail.HotelDetailPage(hotel: hotel));
-        // 如果详情页返回了更新后的酒店数据，更新列表中的数据
-        if (result != null) {
-          controller.updateHotelInList(result);
-        }
+        await NavigationUtil.toWithCallback<Hotel>(
+          page: () => hotel_detail.HotelDetailPage(hotel: hotel),
+          onResult: (result) {
+            // 如果详情页返回了更新后的酒店数据，更新列表中的数据
+            if (result.hasData) {
+              controller.updateHotelInList(result.data!);
+            }
+          },
+        );
       },
       child: Card(
         margin: EdgeInsets.only(bottom: 16.h),

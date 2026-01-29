@@ -1,14 +1,15 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
 import 'package:go_nomads_app/features/meetup/presentation/pages/meetup_detail/meetup_detail.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/meetup_list/meetup_list_controller.dart';
 import 'package:go_nomads_app/pages/meetup_list/widgets/meetup_list_card.dart';
+import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 /// Meetup 列表视图组件
 class MeetupListView extends GetView<MeetupListController> {
@@ -215,13 +216,15 @@ class MeetupListView extends GetView<MeetupListController> {
 
   /// 点击 Meetup 卡片
   Future<void> _onMeetupTap(Meetup meetup) async {
-    final result = await Get.to(
-      () => MeetupDetailPage(meetup: meetup),
+    await NavigationUtil.toWithCallback<Meetup>(
+      page: () => MeetupDetailPage(meetup: meetup),
       binding: MeetupDetailBinding(),
+      onResult: (result) {
+        if (result.hasData) {
+          controller.updateMeetup(result.data!);
+        }
+      },
     );
-    if (result is Meetup) {
-      controller.updateMeetup(result);
-    }
   }
 
   /// 切换加入状态

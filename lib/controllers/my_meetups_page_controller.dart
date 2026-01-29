@@ -1,12 +1,15 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:go_nomads_app/core/navigation/navigation_result.dart';
 import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
 import 'package:go_nomads_app/features/meetup/domain/repositories/i_meetup_repository.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 /// MyMeetupsPage 控制器
-class MyMeetupsPageController extends GetxController {
+///
+/// 实现 [IRefreshableList] 接口，与 NavigationUtil 自动集成
+class MyMeetupsPageController extends GetxController implements IRefreshableList<Meetup> {
   final IMeetupRepository _meetupRepository = Get.find();
 
   final RxList<Meetup> meetups = <Meetup>[].obs;
@@ -21,6 +24,47 @@ class MyMeetupsPageController extends GetxController {
   int _joinedPage = 1;
   final int _pageSize = 20;
   bool _hasMoreJoined = true;
+
+  // ==================== IRefreshableList 实现 ====================
+
+  @override
+  String getItemId(Meetup item) => item.id;
+
+  @override
+  Future<void> refreshList() => refreshAll();
+
+  @override
+  void addItem(Meetup item) {
+    // 添加到头部并重新合并排序
+    _createdMeetups.insert(0, item);
+    _mergeMeetups();
+  }
+
+  @override
+  void updateItem(Meetup item) {
+    // 更新创建的活动列表
+    final createdIdx = _createdMeetups.indexWhere((m) => m.id == item.id);
+    if (createdIdx != -1) {
+      _createdMeetups[createdIdx] = item;
+    }
+    // 更新参与的活动列表
+    final joinedIdx = _joinedMeetups.indexWhere((m) => m.id == item.id);
+    if (joinedIdx != -1) {
+      _joinedMeetups[joinedIdx] = item;
+    }
+    _mergeMeetups();
+  }
+
+  @override
+  void removeItemById(String id) {
+    _createdMeetups.removeWhere((m) => m.id == id);
+    _joinedMeetups.removeWhere((m) => m.id == id);
+    meetups.removeWhere((m) => m.id == id);
+  }
+
+  // ==================== 生命周期 ====================
+
+  // ==================== 生命周期 ====================
 
   @override
   void onInit() {
