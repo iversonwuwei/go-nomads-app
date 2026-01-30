@@ -1323,14 +1323,6 @@ class _DirectChatViewState extends State<_DirectChatView> {
     return mimeTypes[ext] ?? 'application/octet-stream';
   }
 
-  /// 显示语音录制面板
-  void _showVoiceRecordPanel() {
-    ChatVoiceRecorderPanel.show(
-      onSendVoice: (path, duration) => _sendVoiceMessage(path, duration),
-      config: VoiceRecorderConfig.snapchat,
-    );
-  }
-
   /// 发送语音消息
   Future<void> _sendVoiceMessage(String localPath, int duration) async {
     try {

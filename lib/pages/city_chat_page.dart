@@ -2086,14 +2086,6 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
     }
   }
 
-  /// 显示语音录制面板（微信风格）
-  void _showVoiceRecordPanel() {
-    ChatVoiceRecorderPanel.show(
-      onSendVoice: (path, duration) => _sendVoiceMessage(path, duration),
-      config: VoiceRecorderConfig.wechat,
-    );
-  }
-
   /// 发送语音消息
   Future<void> _sendVoiceMessage(String localPath, int duration) async {
     try {
