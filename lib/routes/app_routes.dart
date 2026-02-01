@@ -11,6 +11,7 @@ import 'package:go_nomads_app/pages/add_coworking/add_coworking_page.dart';
 import 'package:go_nomads_app/pages/add_hotel_page.dart';
 import 'package:go_nomads_app/pages/add_innovation/add_innovation_page.dart';
 import 'package:go_nomads_app/pages/add_review_page.dart';
+import 'package:go_nomads_app/pages/ai_chat_binding.dart';
 import 'package:go_nomads_app/pages/ai_chat_page.dart';
 import 'package:go_nomads_app/pages/city_chat_page.dart';
 import 'package:go_nomads_app/pages/city_detail/city_detail.dart';
@@ -503,6 +504,7 @@ class AppRoutes {
     GetPage(
       name: aiChat,
       page: () => const AiChatPage(),
+      binding: AiChatBinding(),
       middlewares: [AuthMiddleware()],
     ),
     GetPage(

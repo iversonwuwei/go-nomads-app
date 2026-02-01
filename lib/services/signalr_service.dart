@@ -33,6 +33,7 @@ class SignalRService {
   final _notificationReceivedController = StreamController<Map<String, dynamic>>.broadcast();
   final _cityRatingUpdatedController = StreamController<Map<String, dynamic>>.broadcast();
   final _cityReviewUpdatedController = StreamController<Map<String, dynamic>>.broadcast();
+  final _aiChatChunkController = StreamController<AIChatChunk>.broadcast();
 
   // 事件流
   Stream<AsyncTask> get taskProgressStream => _taskProgressController.stream;
@@ -42,6 +43,7 @@ class SignalRService {
   Stream<Map<String, dynamic>> get notificationReceivedStream => _notificationReceivedController.stream;
   Stream<Map<String, dynamic>> get cityRatingUpdatedStream => _cityRatingUpdatedController.stream;
   Stream<Map<String, dynamic>> get cityReviewUpdatedStream => _cityReviewUpdatedController.stream;
+  Stream<AIChatChunk> get aiChatChunkStream => _aiChatChunkController.stream;
 
   SignalRService._internal();
 
@@ -545,6 +547,33 @@ class SignalRService {
       }
     });
 
+    // AIChatChunk: AI Chat 流式响应块
+    _hubConnection?.on('AIChatChunk', (arguments) {
+      if (arguments == null || arguments.isEmpty) {
+        return;
+      }
+
+      try {
+        final data = arguments[0] as Map<String, dynamic>;
+        final chunk = AIChatChunk.fromJson(data);
+
+        if (chunk.isComplete) {
+          if (chunk.hasError) {
+            log('⚠️ AI Chat 流式响应错误: ${chunk.error}');
+          } else {
+            log('✅ AI Chat 流式响应完成: requestId=${chunk.requestId}');
+          }
+        } else {
+          log('📤 AI Chat Chunk: seq=${chunk.sequenceNumber}, len=${chunk.delta.length}');
+        }
+
+        _aiChatChunkController.add(chunk);
+      } catch (e) {
+        log('❌ 解析 AIChatChunk 失败: $e');
+        log('   原始数据: ${arguments[0]}');
+      }
+    });
+
     log('✅ SignalR 事件处理器注册完成');
   }
 
@@ -626,6 +655,51 @@ class SignalRService {
     _notificationReceivedController.close();
     _cityRatingUpdatedController.close();
     _cityReviewUpdatedController.close();
+    _aiChatChunkController.close();
     disconnect();
   }
+}
+
+/// AI Chat 流式响应块
+class AIChatChunk {
+  final String? conversationId;
+  final String? messageId;
+  final String requestId;
+  final String delta;
+  final bool isComplete;
+  final String? finishReason;
+  final int? tokenCount;
+  final String? error;
+  final int sequenceNumber;
+  final DateTime? timestamp;
+
+  AIChatChunk({
+    this.conversationId,
+    this.messageId,
+    required this.requestId,
+    required this.delta,
+    required this.isComplete,
+    this.finishReason,
+    this.tokenCount,
+    this.error,
+    required this.sequenceNumber,
+    this.timestamp,
+  });
+
+  factory AIChatChunk.fromJson(Map<String, dynamic> json) {
+    return AIChatChunk(
+      conversationId: json['conversationId'] as String?,
+      messageId: json['messageId'] as String?,
+      requestId: json['requestId'] as String? ?? '',
+      delta: json['delta'] as String? ?? '',
+      isComplete: json['isComplete'] as bool? ?? false,
+      finishReason: json['finishReason'] as String?,
+      tokenCount: json['tokenCount'] as int?,
+      error: json['error'] as String?,
+      sequenceNumber: json['sequenceNumber'] as int? ?? 0,
+      timestamp: json['timestamp'] != null ? DateTime.tryParse(json['timestamp'] as String) : null,
+    );
+  }
+
+  bool get hasError => error != null && error!.isNotEmpty;
 }

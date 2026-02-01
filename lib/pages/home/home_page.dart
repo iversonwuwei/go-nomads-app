@@ -1,12 +1,13 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/pages/home/home_page_controller.dart';
+import 'package:go_nomads_app/pages/home/widgets/home_ai_entry_card.dart';
 import 'package:go_nomads_app/pages/home/widgets/home_city_grid.dart';
 import 'package:go_nomads_app/pages/home/widgets/home_hero_section.dart';
 import 'package:go_nomads_app/pages/home/widgets/home_meetups_section.dart';
 import 'package:go_nomads_app/pages/home/widgets/home_search_bar.dart';
 import 'package:go_nomads_app/widgets/copyright_widget.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 /// 首页 - 使用 GetView 实现
 /// 路由监听由 HomePageController 内部管理
@@ -57,6 +58,14 @@ class HomePage extends GetView<HomePageController> {
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 32),
                 child: const HomeToolbar(),
+              ),
+            ),
+
+            // AI Chat 入口
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.only(top: isMobile ? 12 : 16),
+                child: HomeAiEntryCard(isMobile: isMobile),
               ),
             ),
 

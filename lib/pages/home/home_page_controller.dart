@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
@@ -11,9 +13,8 @@ import 'package:go_nomads_app/features/user/presentation/controllers/user_state_
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/routes/route_refresh_observer.dart';
 import 'package:go_nomads_app/services/search_service.dart';
+import 'package:go_nomads_app/services/signalr_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 /// 首页控制器 - GetX 标准实现（支持 GetView）
 /// 管理首页的所有状态和业务逻辑
@@ -63,6 +64,9 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
   // ==================== 私有变量 ====================
   // 已移除 _cityListWorker，首页数据完全独立
 
+  // SignalR 订阅
+  StreamSubscription<Map<String, dynamic>>? _cityImageUpdatedSubscription;
+
   // ==================== 生命周期 ====================
   @override
   void onInit() {
@@ -71,6 +75,9 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
 
     // 添加生命周期监听
     WidgetsBinding.instance.addObserver(this);
+
+    // 设置 SignalR 监听器（城市图片更新）
+    _setupSignalRListeners();
 
     // ⭐ 首页使用独立的数据加载，不再监听全局 CityStateController
     // 这样首页和城市列表页面的数据完全独立，互不影响
@@ -91,6 +98,10 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
 
     // 取消路由订阅
     _unsubscribeFromRouteObserver();
+
+    // 取消 SignalR 订阅
+    _cityImageUpdatedSubscription?.cancel();
+    _cityImageUpdatedSubscription = null;
 
     // 清理资源
     scrollController.dispose();
@@ -119,6 +130,71 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
       _currentRoute = null;
       log('🏠 HomePageController: 已取消路由订阅');
     }
+  }
+
+  // ==================== SignalR 监听 ====================
+  /// 设置 SignalR 监听器
+  void _setupSignalRListeners() {
+    final signalRService = SignalRService();
+
+    // 监听城市图片更新事件
+    _cityImageUpdatedSubscription = signalRService.cityImageUpdatedStream.listen((data) {
+      log('🖼️ [HomePageController] 收到城市图片更新通知: $data');
+
+      final cityId = data['cityId'] as String?;
+      final success = data['success'] as bool? ?? false;
+
+      if (cityId == null || !success) {
+        return;
+      }
+
+      // 更新本地城市列表中的图片
+      _updateCityImageFromSignalR(cityId, data);
+    });
+
+    log('✅ [HomePageController] SignalR 监听已设置 (城市图片更新)');
+  }
+
+  /// 从 SignalR 数据更新城市图片
+  void _updateCityImageFromSignalR(String cityId, Map<String, dynamic> data) {
+    final index = localCities.indexWhere((c) => c.id == cityId);
+    if (index == -1) {
+      log('⚠️ [HomePageController] 未找到城市: $cityId');
+      return;
+    }
+
+    final oldCity = localCities[index];
+
+    // 提取图片 URL 并添加缓存破坏参数
+    final cacheBuster = DateTime.now().millisecondsSinceEpoch.toString();
+    String? portraitUrl = data['portraitImageUrl'] as String?;
+    if (portraitUrl != null && portraitUrl.isNotEmpty) {
+      portraitUrl = _appendCacheBuster(portraitUrl, cacheBuster);
+    }
+
+    List<String>? landscapeUrls;
+    final landscapeImages = data['landscapeImageUrls'];
+    if (landscapeImages is List && landscapeImages.isNotEmpty) {
+      landscapeUrls = landscapeImages.cast<String>().map((url) => _appendCacheBuster(url, cacheBuster)).toList();
+    }
+
+    // 使用 copyWith 更新图片字段
+    final updatedCity = oldCity.copyWith(
+      portraitImageUrl: portraitUrl ?? oldCity.portraitImageUrl,
+      landscapeImageUrls: landscapeUrls ?? oldCity.landscapeImageUrls,
+      imageUrl: portraitUrl ?? oldCity.imageUrl,
+    );
+
+    localCities[index] = updatedCity;
+    localCities.refresh(); // 强制触发 Obx 更新
+    log('✅ [HomePageController] 城市图片已更新: ${updatedCity.name}, imageUrl: ${updatedCity.imageUrl}');
+  }
+
+  /// 添加缓存破坏参数到 URL
+  String _appendCacheBuster(String url, String cacheBuster) {
+    if (url.isEmpty) return url;
+    final separator = url.contains('?') ? '&' : '?';
+    return '$url${separator}v=$cacheBuster';
   }
 
   // ==================== RouteAware 实现 ====================

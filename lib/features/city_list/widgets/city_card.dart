@@ -1,12 +1,12 @@
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
 import 'package:go_nomads_app/features/city_list/city_list_controller.dart';
 import 'package:go_nomads_app/pages/city_detail/city_detail.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 /// 城市卡片组件 - 使用 GetView 符合 GetX 标准
 ///
@@ -31,14 +31,15 @@ class CityCard extends GetView<CityListController> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      // 从控制器获取最新的城市数据，确保响应式更新
-      final city = controller.getCityById(cityId);
+      // 直接访问 controller.cities 列表，让 GetX 能追踪到列表变化
+      // 注意：必须在 Obx 内部直接访问 RxList，否则响应式更新不会触发
+      final city = controller.cities.firstWhereOrNull((c) => c.id == cityId);
 
       if (city == null) {
         return const SizedBox.shrink();
       }
 
-      log('🏙️ City: ${city.name}, ReviewCount: ${city.reviewCount}, AverageCost: ${city.averageCost}, OverallScore: ${city.overallScore}');
+      log('🏙️ City: ${city.name}, imageUrl: ${city.imageUrl?.substring(0, city.imageUrl!.length > 50 ? 50 : city.imageUrl!.length) ?? "null"}...');
 
       return Container(
         margin: const EdgeInsets.only(bottom: 16),
