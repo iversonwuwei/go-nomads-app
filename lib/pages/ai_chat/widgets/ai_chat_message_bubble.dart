@@ -323,41 +323,52 @@ class _MobileCodeBlockState extends State<_MobileCodeBlock> {
         children: [
           // 语言标签
           if (widget.language.isNotEmpty)
-            Text(
-              widget.language,
-              style: const TextStyle(
-                color: Color(0xFF94A3B8),
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
+            Flexible(
+              fit: FlexFit.loose,
+              child: Text(
+                widget.language,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Color(0xFF94A3B8),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           const Spacer(),
           // 复制按钮
-          GestureDetector(
-            onTap: _copyCode,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: _copied ? const Color(0xFF10B981) : Colors.transparent,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    _copied ? Icons.check_rounded : Icons.copy_rounded,
-                    size: 12,
-                    color: _copied ? Colors.white : const Color(0xFF94A3B8),
+          Flexible(
+            fit: FlexFit.loose,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: GestureDetector(
+                onTap: _copyCode,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: _copied ? const Color(0xFF10B981) : Colors.transparent,
+                    borderRadius: BorderRadius.circular(4),
                   ),
-                  const SizedBox(width: 4),
-                  Text(
-                    _copied ? '已复制' : '复制',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: _copied ? Colors.white : const Color(0xFF94A3B8),
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        _copied ? Icons.check_rounded : Icons.copy_rounded,
+                        size: 12,
+                        color: _copied ? Colors.white : const Color(0xFF94A3B8),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        _copied ? '已复制' : '复制',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: _copied ? Colors.white : const Color(0xFF94A3B8),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -434,8 +445,7 @@ class _TypingDots extends StatefulWidget {
   State<_TypingDots> createState() => _TypingDotsState();
 }
 
-class _TypingDotsState extends State<_TypingDots>
-    with SingleTickerProviderStateMixin {
+class _TypingDotsState extends State<_TypingDots> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
@@ -472,9 +482,7 @@ class _TypingDotsState extends State<_TypingDots>
                 height: 6,
                 margin: const EdgeInsets.symmetric(horizontal: 2),
                 decoration: BoxDecoration(
-                  color: active
-                      ? AppColors.textSecondary
-                      : AppColors.textSecondary.withValues(alpha: 0.3),
+                  color: active ? AppColors.textSecondary : AppColors.textSecondary.withValues(alpha: 0.3),
                   shape: BoxShape.circle,
                 ),
               );
