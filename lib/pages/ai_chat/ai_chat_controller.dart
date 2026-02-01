@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:characters/characters.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/api_config.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
@@ -23,6 +24,9 @@ class AiChatController extends GetxController {
 
   final Rxn<AiConversation> conversation = Rxn<AiConversation>();
   final RxList<AiMessage> messages = <AiMessage>[].obs;
+  final RxList<AiConversation> historyConversations = <AiConversation>[].obs;
+  final RxBool isHistoryLoading = false.obs;
+  final RxMap<String, String> historyTitleOverrides = <String, String>{}.obs;
   final RxBool isInitializing = true.obs;
   final RxBool isStreaming = false.obs;
   final RxString streamingStatus = ''.obs;
@@ -36,6 +40,7 @@ class AiChatController extends GetxController {
   StreamSubscription? _aiChatChunkSub;
   int? _streamingIndex;
   String? _currentRequestId;
+  String? _pendingEmptyConversationId;
 
   @override
   void onInit() {
@@ -58,7 +63,13 @@ class AiChatController extends GetxController {
       isInitializing.value = true;
       hasInitError.value = false;
       initErrorMessage.value = '';
-      await _ensureConversation();
+      await loadConversationList();
+      if (historyConversations.isEmpty) {
+        conversation.value = null;
+        messages.clear();
+        return;
+      }
+      await _startNewConversation();
       await loadHistory();
     } catch (e, stack) {
       log('❌ 初始化 AI Chat 失败: $e\n$stack');
@@ -149,24 +160,13 @@ class AiChatController extends GetxController {
     }
   }
 
-  Future<void> _ensureConversation() async {
-    AiConversation? conv;
-
-    // 先尝试复用最近的对话，容错后回落到新建
-    try {
-      final existing = await _aiChatService.getConversations(pageSize: 1);
-      if (existing.isNotEmpty) {
-        conv = existing.first;
-      }
-    } catch (e, stack) {
-      log('⚠️ 获取 AI 对话列表失败，尝试创建新对话: $e\n$stack');
-    }
-
-    conv ??= await _createNewConversation();
+  Future<void> _startNewConversation() async {
+    final conv = await _createNewConversation();
     if (conv == null) {
       throw Exception('无法初始化 AI 对话');
     }
     conversation.value = conv;
+    messages.clear();
   }
 
   Future<AiConversation?> _createNewConversation() async {
@@ -182,6 +182,28 @@ class AiChatController extends GetxController {
     }
   }
 
+  Future<void> loadConversationList() async {
+    try {
+      isHistoryLoading.value = true;
+      final list = await _aiChatService.getConversations(pageSize: 50);
+      final current = conversation.value;
+      if (current != null && list.every((item) => item.id != current.id)) {
+        list.insert(0, current);
+      }
+      list.sort((a, b) {
+        final aTime = a.updatedAt ?? a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final bTime = b.updatedAt ?? b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        return bTime.compareTo(aTime);
+      });
+      final filtered = await _filterConversationsWithMessages(list);
+      historyConversations.assignAll(filtered);
+    } catch (e, stack) {
+      log('⚠️ 加载对话列表失败: $e\n$stack');
+    } finally {
+      isHistoryLoading.value = false;
+    }
+  }
+
   Future<void> loadHistory() async {
     final id = conversation.value?.id;
     if (id == null) return;
@@ -194,6 +216,7 @@ class AiChatController extends GetxController {
         return aTime.compareTo(bTime);
       });
       messages.assignAll(history);
+      _tryUpdateHistoryTitleFromMessages(id, history);
       // 加载完成后立即跳转到底部（不带动画），确保页面打开时显示最新消息
       _scrollToBottom(delay: const Duration(milliseconds: 100), animate: false);
     } catch (e, stack) {
@@ -202,18 +225,35 @@ class AiChatController extends GetxController {
     }
   }
 
+  Future<void> selectConversation(AiConversation target) async {
+    if (isStreaming.value) {
+      AppToast.warning('正在生成回复，请稍后再切换对话');
+      return;
+    }
+    if (conversation.value?.id == target.id) return;
+
+    try {
+      isInitializing.value = true;
+      hasInitError.value = false;
+      initErrorMessage.value = '';
+      conversation.value = target;
+      messages.clear();
+      await loadHistory();
+    } catch (e, stack) {
+      log('⚠️ 切换对话失败: $e\n$stack');
+      AppToast.error('切换对话失败，请稍后重试');
+    } finally {
+      isInitializing.value = false;
+    }
+  }
+
   Future<void> sendMessage() async {
     final text = inputController.text.trim();
     if (text.isEmpty || isStreaming.value) return;
+    final convId = await _ensureConversationForSend();
+    if (convId == null) return;
 
-    if (conversation.value == null) {
-      await _ensureConversation();
-    }
-    final convId = conversation.value?.id;
-    if (convId == null) {
-      AppToast.error('暂时无法创建 AI 对话');
-      return;
-    }
+    _trySetHistoryTitleFromFirstQuestion(convId, text);
 
     // 生成请求 ID 用于关联 SignalR 响应
     _currentRequestId = const Uuid().v4();
@@ -251,6 +291,8 @@ class AiChatController extends GetxController {
         requestId: _currentRequestId,
       );
 
+      _pendingEmptyConversationId = null;
+
       // 响应将通过 SignalR 的 _handleAIChatChunk 处理
       log('✅ 消息已发送，等待 SignalR 响应...');
 
@@ -271,6 +313,7 @@ class AiChatController extends GetxController {
       });
     } catch (e, stack) {
       log('❌ AI Chat 发送失败: $e\n$stack');
+      await _cleanupPendingConversation();
       _replaceStreamingMessage(
         AiMessage(
           role: 'assistant',
@@ -327,5 +370,96 @@ class AiChatController extends GetxController {
         }
       });
     });
+  }
+
+  String getHistoryTitle(AiConversation item) {
+    final override = historyTitleOverrides[item.id];
+    if (override != null && override.isNotEmpty) {
+      return override;
+    }
+    return item.title.isNotEmpty ? item.title : '未命名对话';
+  }
+
+  void _trySetHistoryTitleFromFirstQuestion(String convId, String question) {
+    if (historyTitleOverrides.containsKey(convId)) return;
+    final formatted = _truncateQuestionTitle(question);
+    if (formatted.isEmpty) return;
+    historyTitleOverrides[convId] = formatted;
+    historyTitleOverrides.refresh();
+  }
+
+  void _tryUpdateHistoryTitleFromMessages(String convId, List<AiMessage> list) {
+    if (historyTitleOverrides.containsKey(convId)) return;
+    final firstUser = list.firstWhereOrNull((item) => item.isUser && item.content.trim().isNotEmpty);
+    if (firstUser == null) return;
+    final formatted = _truncateQuestionTitle(firstUser.content);
+    if (formatted.isEmpty) return;
+    historyTitleOverrides[convId] = formatted;
+    historyTitleOverrides.refresh();
+  }
+
+  Future<List<AiConversation>> _filterConversationsWithMessages(
+    List<AiConversation> list,
+  ) async {
+    if (list.isEmpty) return list;
+
+    final results = await Future.wait(
+      list.map((item) async {
+        try {
+          final messages = await _aiChatService.getMessages(
+            conversationId: item.id,
+            pageSize: 1,
+          );
+          return messages.isNotEmpty ? item : null;
+        } catch (_) {
+          return null;
+        }
+      }),
+    );
+
+    return results.whereType<AiConversation>().toList();
+  }
+
+  Future<String?> _ensureConversationForSend() async {
+    final existingId = conversation.value?.id;
+    if (existingId != null) return existingId;
+
+    final conv = await _createNewConversation();
+    if (conv == null) {
+      AppToast.error('暂时无法创建 AI 对话');
+      return null;
+    }
+
+    conversation.value = conv;
+    messages.clear();
+    historyConversations.insert(0, conv);
+    _pendingEmptyConversationId = conv.id;
+    return conv.id;
+  }
+
+  Future<void> _cleanupPendingConversation() async {
+    final pendingId = _pendingEmptyConversationId;
+    if (pendingId == null) return;
+
+    try {
+      await _aiChatService.deleteConversation(conversationId: pendingId);
+    } catch (e, stack) {
+      log('⚠️ 清理空对话失败: $e\n$stack');
+    } finally {
+      historyConversations.removeWhere((item) => item.id == pendingId);
+      historyTitleOverrides.remove(pendingId);
+      if (conversation.value?.id == pendingId) {
+        conversation.value = null;
+      }
+      _pendingEmptyConversationId = null;
+    }
+  }
+
+  String _truncateQuestionTitle(String value) {
+    final normalized = value.trim().replaceAll(RegExp(r'\s+'), ' ');
+    if (normalized.isEmpty) return '';
+    final chars = normalized.characters;
+    if (chars.length <= 10) return normalized;
+    return chars.take(10).toString();
   }
 }

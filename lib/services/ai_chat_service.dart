@@ -138,6 +138,14 @@ class AiChatService {
     return AiConversation.fromJson(data);
   }
 
+  /// 删除对话
+  Future<void> deleteConversation({required String conversationId}) async {
+    final url = ApiConfig.buildUrl(
+      '${ApiConfig.aiConversationsEndpoint}/$conversationId',
+    );
+    await _http.delete(url);
+  }
+
   /// 获取消息历史
   Future<List<AiMessage>> getMessages({
     required String conversationId,
