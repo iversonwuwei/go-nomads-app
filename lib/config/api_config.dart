@@ -43,7 +43,7 @@ class ApiConfig {
   // ============================================================
   // 环境配置
   // ============================================================
-  static const bool kIsProduction = false;
+  static const bool kIsProduction = true;
 
   // ============================================================
   // 部署环境配置
@@ -110,7 +110,7 @@ class ApiConfig {
   /// 是否使用真机测试地址(手动切换)
   /// ⚠️ 雷电模拟器用户请设置为 true
   /// ⚠️ Android 官方模拟器用户请设置为 false
-  static const bool usePhysicalDevice = true;
+  static const bool usePhysicalDevice = false;
 
   /// 是否启用 HTTP 方法重写
   /// ⚠️ 当服务器/网络环境不支持 PUT/DELETE 方法时启用此选项

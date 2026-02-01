@@ -13,12 +13,55 @@ class CityListSkeleton extends BaseSkeleton {
 class _CityListSkeletonState extends BaseSkeletonState<CityListSkeleton> {
   @override
   Widget buildSkeleton(BuildContext context) {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: 8,
-      itemBuilder: (context, index) {
-        return _buildCityCard();
-      },
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 768;
+
+    return Column(
+      children: [
+        _buildFilterBarPlaceholder(isMobile),
+        Expanded(
+          child: ListView.builder(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.fromLTRB(
+              isMobile ? 16 : 20,
+              isMobile ? 16 : 20,
+              isMobile ? 16 : 20,
+              100,
+            ),
+            itemCount: 8,
+            itemBuilder: (context, index) {
+              return _buildCityCard();
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFilterBarPlaceholder(bool isMobile) {
+    return Container(
+      width: double.infinity,
+      color: Colors.white,
+      padding: EdgeInsets.all(isMobile ? 16 : 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SkeletonBox(
+            width: double.infinity,
+            height: 52,
+            borderRadius: 12,
+          ),
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerRight,
+            child: SkeletonBox(
+              width: isMobile ? 60 : 72,
+              height: 16,
+              borderRadius: 12,
+            ),
+          ),
+        ],
+      ),
     );
   }
 

@@ -31,7 +31,7 @@ class _SafeShimmerState extends State<SafeShimmer> {
   @override
   Widget build(BuildContext context) {
     if (!_mounted) return const SizedBox.shrink();
-    
+
     return RepaintBoundary(
       child: Shimmer.fromColors(
         baseColor: widget.baseColor ?? Colors.grey[300]!,
@@ -60,10 +60,25 @@ abstract class BaseSkeletonState<T extends BaseSkeleton> extends State<T> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeShimmer(
-      baseColor: shimmerBaseColor,
-      highlightColor: shimmerHighlightColor,
-      child: buildSkeleton(context),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final mediaQuery = MediaQuery.of(context);
+        final availableHeight = constraints.hasBoundedHeight && constraints.maxHeight.isFinite
+            ? constraints.maxHeight
+            : mediaQuery.size.height - mediaQuery.padding.vertical;
+        final viewportHeight = availableHeight > 0 ? availableHeight : mediaQuery.size.height;
+
+        // Keep skeletons as tall as the current viewport so the shimmer always covers the full page.
+        return SizedBox(
+          height: viewportHeight,
+          width: double.infinity,
+          child: SafeShimmer(
+            baseColor: shimmerBaseColor,
+            highlightColor: shimmerHighlightColor,
+            child: buildSkeleton(context),
+          ),
+        );
+      },
     );
   }
 

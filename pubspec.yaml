@@ -84,6 +84,8 @@ dependencies:
   
   # UI 增强
   shimmer: ^3.0.0  # 骨架屏加载效果
+  flutter_markdown: ^0.7.4+3  # Markdown 渲染
+  flutter_highlighter: ^0.1.1  # 代码语法高亮
 
 dev_dependencies:
   flutter_test:
