@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/travel_plan/domain/entities/travel_plan.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
@@ -7,13 +10,9 @@ import 'package:go_nomads_app/pages/travel_plan/widgets/travel_plan_budget_card.
 import 'package:go_nomads_app/pages/travel_plan/widgets/travel_plan_day_card.dart';
 import 'package:go_nomads_app/pages/travel_plan/widgets/travel_plan_overview_card.dart';
 import 'package:go_nomads_app/pages/travel_plan/widgets/travel_plan_recommendation_cards.dart';
-import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/share_bottom_sheet.dart';
 import 'package:go_nomads_app/widgets/share_button.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 /// 旅行计划详情页 - 使用 GetView 模式重构
 ///
@@ -474,24 +473,6 @@ class _TravelPlanContentView extends StatelessWidget {
         ),
       ),
       actions: [
-        IconButton(
-          icon: Icon(FontAwesomeIcons.map, color: AppColors.textPrimary),
-          onPressed: () {
-            AppToast.info(
-              l10n.asyncWithMap,
-              title: l10n.info,
-            );
-          },
-        ),
-        IconButton(
-          icon: Icon(FontAwesomeIcons.download, color: AppColors.textPrimary),
-          onPressed: () {
-            AppToast.success(
-              l10n.planSaved,
-              title: l10n.download,
-            );
-          },
-        ),
         AppShareButton(
           onPressed: () => _shareTravelPlan(context, plan),
           color: AppColors.textPrimary,
