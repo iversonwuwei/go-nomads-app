@@ -192,6 +192,9 @@ class InnovationProjectCard extends StatelessWidget {
   }
 
   Widget _buildActionButtons(BuildContext context, AppLocalizations l10n) {
+    // 如果当前用户是创建者，不显示联系作者按钮
+    final isCreator = project.canEdit;
+
     return Row(
       children: [
         // 查看详情按钮
@@ -216,23 +219,25 @@ class InnovationProjectCard extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(width: 12),
-        // 一对一聊天按钮
-        Expanded(
-          child: ElevatedButton.icon(
-            onPressed: () => _navigateToChat(context),
-            icon: const Icon(FontAwesomeIcons.comments, size: 18),
-            label: Text(l10n.contactCreator),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF8B5CF6),
-              foregroundColor: Colors.white,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+        // 一对一聊天按钮（仅非创建者显示）
+        if (!isCreator) ...[
+          const SizedBox(width: 12),
+          Expanded(
+            child: ElevatedButton.icon(
+              onPressed: () => _navigateToChat(context),
+              icon: const Icon(FontAwesomeIcons.comments, size: 18),
+              label: Text(l10n.contactCreator),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF8B5CF6),
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             ),
           ),
-        ),
+        ],
       ],
     );
   }
