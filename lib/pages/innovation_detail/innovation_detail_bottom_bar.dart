@@ -1,8 +1,8 @@
-import 'package:go_nomads_app/controllers/innovation_detail_page_controller.dart';
-import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/controllers/innovation_detail_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 
 /// Innovation Detail Bottom Bar
 /// 创意项目详情页 - 底部操作栏
@@ -36,21 +36,26 @@ class InnovationDetailBottomBar extends StatelessWidget {
         ],
       ),
       child: SafeArea(
-        child: Row(
-          children: [
-            // 关注按钮
-            Expanded(
-              flex: 1,
-              child: _buildFollowButton(context),
-            ),
-            const SizedBox(width: 12),
-            // 联系按钮
-            Expanded(
-              flex: 2,
-              child: _buildContactButton(l10n),
-            ),
-          ],
-        ),
+        child: Obx(() {
+          final isCreator = _c.project.canEdit;
+
+          return Row(
+            children: [
+              // 关注按钮
+              Expanded(
+                flex: 1,
+                child: _buildFollowButton(context),
+              ),
+              if (!isCreator) const SizedBox(width: 12),
+              // 联系按钮（非创建者才显示）
+              if (!isCreator)
+                Expanded(
+                  flex: 2,
+                  child: _buildContactButton(l10n),
+                ),
+            ],
+          );
+        }),
       ),
     );
   }
