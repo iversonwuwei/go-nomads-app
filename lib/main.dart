@@ -11,6 +11,7 @@ import 'controllers/locale_controller.dart';
 import 'core/di/dependency_injection.dart';
 import 'core/utils/deep_link_handler.dart';
 import 'features/auth/presentation/controllers/auth_state_controller.dart';
+import 'features/chat/infrastructure/services/tencent_im/tencent_im.dart';
 import 'generated/app_localizations.dart';
 import 'layouts/bottom_nav/bottom_nav.dart';
 import 'routes/app_routes.dart';
@@ -24,7 +25,6 @@ import 'services/location_service.dart';
 import 'services/notification_service.dart';
 import 'services/signalr_service.dart';
 import 'services/social_sdk_service.dart';
-import 'features/chat/infrastructure/services/tencent_im/tencent_im.dart';
 
 /// 全局初始化完成状态
 final _initCompleter = ValueNotifier<bool>(false);
@@ -64,6 +64,12 @@ Future<void> _performInitialization() async {
     Get.put(BottomNavController(), permanent: true);
     Get.put(BackgroundTaskService(), permanent: true);
     log('✅ 全局控制器初始化完成');
+
+    // 🔥 提前注册腾讯云IM服务（在登录状态恢复之前）
+    log('💬 提前注册腾讯云IM服务...');
+    final imService = Get.put(TencentIMService(), permanent: true);
+    await imService.initSDK();
+    log('✅ 腾讯云IM服务已注册');
 
     // 恢复登录状态 (必须在 UI 前完成)
     log('🔑 开始恢复登录状态...');
@@ -166,17 +172,8 @@ Future<void> _initializeBackgroundServices() async {
     }
   });
 
-  // 💬 腾讯云IM - 后台初始化
-  Future.microtask(() async {
-    log('💬 初始化腾讯云IM...');
-    try {
-      final imService = Get.put(TencentIMService(), permanent: true);
-      await imService.initSDK();
-      log('✅ 腾讯云IM SDK初始化成功');
-    } catch (e) {
-      log('❌ 腾讯云IM初始化失败: $e');
-    }
-  });
+  // 注意：TencentIMService 已在第一阶段初始化
+  // IM 登录会在 UserStateController 监听到认证状态变化时自动执行
 
   log('🔄 后台初始化任务已派发');
 }

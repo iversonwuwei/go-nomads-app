@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
 import 'package:go_nomads_app/core/sync/sync.dart';
 import 'package:go_nomads_app/features/innovation_project/domain/entities/innovation_project.dart';
@@ -9,8 +11,6 @@ import 'package:go_nomads_app/features/user/domain/entities/user.dart';
 import 'package:go_nomads_app/services/token_storage_service.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 /// Innovation Detail Page Controller
 class InnovationDetailPageController extends GetxController {
@@ -251,7 +251,8 @@ class InnovationDetailPageController extends GetxController {
 
   /// 创建发布者的 User 对象用于聊天
   User get creatorUser => User(
-        id: project.userId.toString(),
+        // 使用 creatorUuid（创建者的真实 UUID）而不是 userId（hashCode）
+        id: project.creatorUuid ?? project.userId.toString(),
         name: project.userName ?? 'Unknown',
         username: (project.userName ?? 'unknown').toLowerCase().replaceAll(' ', '_'),
         avatarUrl: project.userAvatar,

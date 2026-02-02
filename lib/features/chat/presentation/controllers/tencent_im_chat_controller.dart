@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:developer';
+
 import 'package:get/get.dart';
-import 'package:tencent_cloud_chat_sdk/models/v2_tim_message.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/chat/infrastructure/services/tencent_im/tencent_im.dart';
-import 'package:go_nomads_app/features/chat/infrastructure/services/tencent_im/tencent_im_api_service.dart';
+import 'package:tencent_cloud_chat_sdk/models/v2_tim_message.dart';
 
 /// 腾讯云IM私聊控制器
 /// 用于DirectChatPage的消息管理
@@ -48,16 +48,39 @@ class TencentIMChatController extends GetxController {
 
   /// 监听新消息
   void _listenMessages() {
+    log('🎧 [ChatController] 开始监听新消息...');
     _msgSubscription = _imService.onNewMessage.listen((message) {
-      log('📩 收到消息 sender=${message.sender}, target=$_targetUserId, isSelf=${message.isSelf}');
+      log('📩 [ChatController] ========== 收到新消息 ==========');
+      log('   - msgID: ${message.msgID}');
+      log('   - sender: ${message.sender}');
+      log('   - userID: ${message.userID}');
+      log('   - groupID: ${message.groupID}');
+      log('   - isSelf: ${message.isSelf}');
+      log('   - 当前聊天对象 _targetUserId: $_targetUserId');
+
+      // 如果还没有设置聊天对象，先缓存消息或忽略
+      if (_targetUserId == null) {
+        log('⚠️ [ChatController] 还未设置聊天对象，忽略消息');
+        return;
+      }
+
+      final formattedTargetId = TencentIMService.formatUserId(_targetUserId!);
+      log('   - formattedTargetId: $formattedTargetId');
+      log('   - 匹配结果: ${message.sender == formattedTargetId}');
+
       // 处理来自对方的消息（需要比较格式化后的ID）
-      final formattedTargetId = TencentIMService.formatUserId(_targetUserId ?? '');
       if (message.sender == formattedTargetId) {
         _messages.insert(0, message);
         _messages.refresh();
-        log('✅ 消息已添加到列表');
+        log('✅ [ChatController] 消息已添加到列表，当前消息数: ${_messages.length}');
+      } else {
+        log('⚠️ [ChatController] 消息sender不匹配，未添加');
+        log('   期望: $formattedTargetId');
+        log('   实际: ${message.sender}');
       }
+      log('📩 [ChatController] ==============================');
     });
+    log('✅ [ChatController] 消息监听已设置');
   }
 
   /// 检查接收方用户是否存在于IM系统

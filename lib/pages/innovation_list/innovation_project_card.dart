@@ -1,12 +1,12 @@
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/innovation_list_page_controller.dart';
 import 'package:go_nomads_app/features/innovation_project/domain/entities/innovation_project.dart';
 import 'package:go_nomads_app/features/user/domain/entities/user.dart' as models;
 import 'package:go_nomads_app/generated/app_localizations.dart';
-import 'package:go_nomads_app/pages/tencent_im_direct_chat_page.dart';
 import 'package:go_nomads_app/pages/innovation_detail/innovation_detail_page.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
+import 'package:go_nomads_app/pages/tencent_im_direct_chat_page.dart';
 
 /// Innovation Project Card Widget
 /// 创意项目卡片组件
@@ -238,8 +238,10 @@ class InnovationProjectCard extends StatelessWidget {
   }
 
   void _navigateToChat(BuildContext context) {
+    // 使用 creatorUuid（创建者的真实 UUID）而不是 userId（hashCode）
+    final creatorId = project.creatorUuid ?? project.userId.toString();
     final chatUser = models.User(
-      id: project.userId.toString(),
+      id: creatorId,
       name: project.userName ?? 'Unknown',
       username: project.userName ?? 'unknown',
       avatarUrl: project.userAvatar,

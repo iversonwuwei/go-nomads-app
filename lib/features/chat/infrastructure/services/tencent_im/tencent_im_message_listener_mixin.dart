@@ -24,7 +24,13 @@ mixin TencentIMMessageListenerMixin {
   void addMessageListener() {
     _msgListener = V2TimAdvancedMsgListener(
       onRecvNewMessage: (V2TimMessage message) {
-        log('📩 收到新消息: ${_getMessagePreview(message)}');
+        log('📩 [MessageListener] 收到新消息:');
+        log('   - msgID: ${message.msgID}');
+        log('   - sender: ${message.sender}');
+        log('   - userID: ${message.userID}');
+        log('   - isSelf: ${message.isSelf}');
+        log('   - elemType: ${message.elemType}');
+        log('   - 内容: ${_getMessagePreview(message)}');
         _onNewMessageController.add(message);
       },
       onRecvMessageRevoked: (String msgId) {

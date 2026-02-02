@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:go_nomads_app/core/core.dart';
 import 'package:go_nomads_app/core/sync/sync.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:go_nomads_app/features/chat/infrastructure/services/tencent_im/tencent_im.dart';
 import 'package:go_nomads_app/features/interest/presentation/controllers/interest_state_controller.dart';
 import 'package:go_nomads_app/features/skill/presentation/controllers/skill_state_controller.dart';
 import 'package:go_nomads_app/features/travel_history/presentation/controllers/travel_history_controller.dart';
@@ -104,7 +105,7 @@ class UserStateController extends GetxController {
   void _setupAuthStateListener() {
     try {
       final authController = Get.find<AuthStateController>();
-      ever(authController.isAuthenticated, (isAuthenticated) {
+      ever(authController.isAuthenticated, (isAuthenticated) async {
         log('🔔 UserStateController: 认证状态变化 -> $isAuthenticated');
         if (isAuthenticated) {
           log('✅ 用户已登录，加载用户数据...');
@@ -112,13 +113,72 @@ class UserStateController extends GetxController {
           loadFavoriteCityIds();
           loadNomadStats();
           _syncTravelHistory();
+
+          // 自动登录腾讯云IM
+          _loginTencentIM();
         } else {
           log('⚠️ 用户已退出，清除用户数据');
           _clearAllData();
+
+          // 退出腾讯云IM
+          _logoutTencentIM();
         }
       });
     } catch (e) {
       log('⚠️ AuthStateController 未就绪，无法设置监听器');
+    }
+  }
+
+  /// 登录腾讯云IM
+  Future<void> _loginTencentIM() async {
+    try {
+      if (!Get.isRegistered<TencentIMService>()) {
+        log('⚠️ TencentIMService 未注册，跳过IM登录');
+        return;
+      }
+
+      final imService = Get.find<TencentIMService>();
+      if (imService.isLoggedIn) {
+        log('ℹ️ 腾讯云IM已登录，跳过');
+        return;
+      }
+
+      final authController = Get.find<AuthStateController>();
+      final user = authController.currentUser.value;
+      if (user == null) {
+        log('⚠️ 当前用户为空，跳过IM登录');
+        return;
+      }
+
+      log('🔐 认证状态变化后自动登录腾讯云IM...');
+
+      // 先通过后端API确保当前用户存在于IM系统
+      final imApiService = TencentIMApiService();
+      await imApiService.ensureUserExists(
+        nickname: user.name,
+        avatarUrl: user.avatar,
+      );
+
+      // 然后登录IM
+      await imService.login(user.id);
+      log('✅ 腾讯云IM登录成功');
+    } catch (e) {
+      log('❌ 腾讯云IM登录失败: $e');
+    }
+  }
+
+  /// 退出腾讯云IM
+  Future<void> _logoutTencentIM() async {
+    try {
+      if (!Get.isRegistered<TencentIMService>()) return;
+
+      final imService = Get.find<TencentIMService>();
+      if (imService.isLoggedIn) {
+        await imService.logout();
+        log('✅ 腾讯云IM已退出');
+      }
+    } catch (e) {
+      log('❌ 腾讯云IM退出失败: $e');
     }
   }
 

@@ -18,6 +18,7 @@ class InnovationProject {
   final DateTime createdAt;
   final DateTime? updatedAt;
   final int userId;
+  final String? creatorUuid; // 创建者的 UUID（用于 IM 聊天）
   final String? userName;
   final String? userAvatar;
   final String? imageUrl; // 项目封面图
@@ -46,6 +47,7 @@ class InnovationProject {
     required this.createdAt,
     this.updatedAt,
     required this.userId,
+    this.creatorUuid,
     this.userName,
     this.userAvatar,
     this.imageUrl,
@@ -77,6 +79,7 @@ class InnovationProject {
       createdAt: createdAt,
       updatedAt: updatedAt,
       userId: userId,
+      creatorUuid: creatorUuid,
       userName: userName,
       userAvatar: userAvatar,
       imageUrl: imageUrl,
