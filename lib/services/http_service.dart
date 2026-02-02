@@ -2,14 +2,14 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+import 'package:get/get.dart' as getx;
 import 'package:go_nomads_app/config/api_config.dart';
 import 'package:go_nomads_app/core/auth/token_manager.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
-import 'package:get/get.dart' as getx;
 
 import 'token_storage_service.dart';
 
@@ -131,9 +131,10 @@ class HttpService {
           // 记录请求开始时间用于耗时统计
           options.extra['__startTime'] = DateTime.now().millisecondsSinceEpoch;
 
-          // 从 SQLite/SharedPreferences 动态获取 token
+          // 从 SQLite/SharedPreferences 动态获取 token 与用户 ID，确保请求可按用户隔离
           final tokenService = TokenStorageService();
           final token = await tokenService.getAccessToken();
+          final userId = await tokenService.getUserId();
 
           // 添加认证 token
           if (token != null && token.isNotEmpty) {
@@ -142,9 +143,10 @@ class HttpService {
             _authToken = token;
           }
 
-          // 添加用户ID header
-          if (_userId != null && _userId!.isNotEmpty) {
-            options.headers['X-User-Id'] = _userId;
+          // 添加用户ID header（AI Chat 依赖此头区分不同登录用户的对话）
+          if (userId != null && userId.isNotEmpty) {
+            options.headers['X-User-Id'] = userId;
+            _userId = userId;
           }
 
           // HTTP 方法重写：将 PUT/DELETE/PATCH 转换为 POST + X-HTTP-Method-Override 头

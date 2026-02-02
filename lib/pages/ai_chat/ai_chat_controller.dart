@@ -185,17 +185,18 @@ class AiChatController extends GetxController {
     try {
       isHistoryLoading.value = true;
       final list = await _aiChatService.getConversations(pageSize: 50);
-      final current = conversation.value;
-      if (current != null && list.every((item) => item.id != current.id)) {
-        list.insert(0, current);
-      }
       list.sort((a, b) {
         final aTime = a.updatedAt ?? a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
         final bTime = b.updatedAt ?? b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
         return bTime.compareTo(aTime);
       });
       final filtered = await _filterConversationsWithMessages(list);
-      historyConversations.assignAll(filtered);
+
+      // 不显示当前正在进行的对话（未退出的会话不出现在历史列表）
+      final currentId = conversation.value?.id;
+      final withoutCurrent = currentId == null ? filtered : filtered.where((item) => item.id != currentId).toList();
+
+      historyConversations.assignAll(withoutCurrent);
     } catch (e, stack) {
       log('⚠️ 加载对话列表失败: $e\n$stack');
     } finally {
@@ -409,7 +410,20 @@ class AiChatController extends GetxController {
             conversationId: item.id,
             pageSize: 1,
           );
-          return messages.isNotEmpty ? item : null;
+
+          if (messages.isEmpty) return null;
+
+          // 提前用首条用户消息为历史列表生成标题，避免默认标题展示错误
+          if (!historyTitleOverrides.containsKey(item.id)) {
+            final firstUser =
+                messages.firstWhereOrNull((m) => m.isUser && m.content.trim().isNotEmpty) ?? messages.first;
+            final formatted = _truncateQuestionTitle(firstUser.content);
+            if (formatted.isNotEmpty) {
+              historyTitleOverrides[item.id] = formatted;
+            }
+          }
+
+          return item;
         } catch (_) {
           return null;
         }
@@ -431,7 +445,6 @@ class AiChatController extends GetxController {
 
     conversation.value = conv;
     messages.clear();
-    historyConversations.insert(0, conv);
     _pendingEmptyConversationId = conv.id;
     return conv.id;
   }
