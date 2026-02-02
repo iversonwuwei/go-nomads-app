@@ -2,7 +2,7 @@ import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/meetup/presentation/pages/meetup_detail/meetup_detail_controller.dart';
 import 'package:go_nomads_app/features/user/domain/entities/user.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
-import 'package:go_nomads_app/pages/direct_chat_page.dart';
+import 'package:go_nomads_app/pages/tencent_im_direct_chat_page.dart';
 import 'package:go_nomads_app/pages/member_detail_page.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
 import 'package:flutter/material.dart';
@@ -124,6 +124,6 @@ class MeetupOrganizerSection extends GetView<MeetupDetailController> {
       joinedDate: DateTime.now(),
     );
 
-    Get.to(() => DirectChatPage(user: organizerUser));
+    Get.to(() => TencentIMDirectChatPage(user: organizerUser));
   }
 }

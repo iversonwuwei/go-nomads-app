@@ -2,7 +2,7 @@ import 'package:go_nomads_app/controllers/innovation_list_page_controller.dart';
 import 'package:go_nomads_app/features/innovation_project/domain/entities/innovation_project.dart';
 import 'package:go_nomads_app/features/user/domain/entities/user.dart' as models;
 import 'package:go_nomads_app/generated/app_localizations.dart';
-import 'package:go_nomads_app/pages/direct_chat_page.dart';
+import 'package:go_nomads_app/pages/tencent_im_direct_chat_page.dart';
 import 'package:go_nomads_app/pages/innovation_detail/innovation_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -20,8 +20,7 @@ class InnovationProjectCard extends StatelessWidget {
     required this.controllerTag,
   });
 
-  InnovationListPageController get _c =>
-      Get.find<InnovationListPageController>(tag: controllerTag);
+  InnovationListPageController get _c => Get.find<InnovationListPageController>(tag: controllerTag);
 
   @override
   Widget build(BuildContext context) {
@@ -129,10 +128,7 @@ class InnovationProjectCard extends StatelessWidget {
       runSpacing: 8,
       children: [
         _buildTag(project.productType, const Color(0xFF8B5CF6)),
-        ...project.keyFeatures
-            .split("\n")
-            .take(2)
-            .map((feature) => _buildTag(feature, const Color(0xFF6366F1))),
+        ...project.keyFeatures.split("\n").take(2).map((feature) => _buildTag(feature, const Color(0xFF6366F1))),
       ],
     );
   }
@@ -161,14 +157,11 @@ class InnovationProjectCard extends StatelessWidget {
         CircleAvatar(
           radius: 12,
           backgroundColor: const Color(0xFF8B5CF6),
-          backgroundImage: project.userAvatar != null && project.userAvatar!.isNotEmpty
-              ? NetworkImage(project.userAvatar!)
-              : null,
+          backgroundImage:
+              project.userAvatar != null && project.userAvatar!.isNotEmpty ? NetworkImage(project.userAvatar!) : null,
           child: project.userAvatar == null || project.userAvatar!.isEmpty
               ? Text(
-                  (project.userName ?? '?').isNotEmpty
-                      ? (project.userName ?? '?').substring(0, 1).toUpperCase()
-                      : '?',
+                  (project.userName ?? '?').isNotEmpty ? (project.userName ?? '?').substring(0, 1).toUpperCase() : '?',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 12,
@@ -262,7 +255,7 @@ class InnovationProjectCard extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => DirectChatPage(user: chatUser),
+        builder: (context) => TencentIMDirectChatPage(user: chatUser),
       ),
     );
   }
@@ -305,8 +298,7 @@ class InnovationFollowButton extends StatelessWidget {
     required this.controllerTag,
   });
 
-  InnovationListPageController get _c =>
-      Get.find<InnovationListPageController>(tag: controllerTag);
+  InnovationListPageController get _c => Get.find<InnovationListPageController>(tag: controllerTag);
 
   @override
   Widget build(BuildContext context) {
@@ -321,9 +313,7 @@ class InnovationFollowButton extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: isFollowed
-                  ? const Color(0xFF8B5CF6)
-                  : Colors.white.withAlpha(230),
+              color: isFollowed ? const Color(0xFF8B5CF6) : Colors.white.withAlpha(230),
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
@@ -337,9 +327,7 @@ class InnovationFollowButton extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  isFollowed
-                      ? FontAwesomeIcons.solidHeart
-                      : FontAwesomeIcons.heart,
+                  isFollowed ? FontAwesomeIcons.solidHeart : FontAwesomeIcons.heart,
                   size: 16,
                   color: isFollowed ? Colors.white : const Color(0xFF8B5CF6),
                 ),

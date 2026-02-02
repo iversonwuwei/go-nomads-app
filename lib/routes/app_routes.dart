@@ -22,7 +22,7 @@ import 'package:go_nomads_app/pages/coworking_home_page.dart';
 import 'package:go_nomads_app/pages/coworking_list_page.dart';
 import 'package:go_nomads_app/pages/create_meetup/create_meetup_page.dart';
 import 'package:go_nomads_app/pages/create_travel_plan/create_travel_plan_page.dart';
-import 'package:go_nomads_app/pages/direct_chat_page.dart';
+import 'package:go_nomads_app/pages/tencent_im_direct_chat_page.dart';
 import 'package:go_nomads_app/pages/edit_basic_info_page.dart';
 import 'package:go_nomads_app/pages/edit_interests_page.dart';
 import 'package:go_nomads_app/pages/edit_skills_page.dart';
@@ -509,7 +509,7 @@ class AppRoutes {
     ),
     GetPage(
       name: directChat,
-      page: () => DirectChatPage(user: Get.arguments),
+      page: () => TencentIMDirectChatPage(user: Get.arguments),
       middlewares: [AuthMiddleware()],
     ),
     GetPage(

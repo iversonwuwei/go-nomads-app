@@ -24,6 +24,7 @@ import 'services/location_service.dart';
 import 'services/notification_service.dart';
 import 'services/signalr_service.dart';
 import 'services/social_sdk_service.dart';
+import 'features/chat/infrastructure/services/tencent_im/tencent_im.dart';
 
 /// 全局初始化完成状态
 final _initCompleter = ValueNotifier<bool>(false);
@@ -35,7 +36,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   log('✅ 应用初始化');
-  
+
   // 重置导航状态（热重启时需要）
   _hasNavigatedFromAppWrapper = false;
   _initCompleter.value = false;
@@ -165,6 +166,18 @@ Future<void> _initializeBackgroundServices() async {
     }
   });
 
+  // 💬 腾讯云IM - 后台初始化
+  Future.microtask(() async {
+    log('💬 初始化腾讯云IM...');
+    try {
+      final imService = Get.put(TencentIMService(), permanent: true);
+      await imService.initSDK();
+      log('✅ 腾讯云IM SDK初始化成功');
+    } catch (e) {
+      log('❌ 腾讯云IM初始化失败: $e');
+    }
+  });
+
   log('🔄 后台初始化任务已派发');
 }
 
@@ -220,13 +233,13 @@ class _AppWrapperState extends State<AppWrapper> {
   @override
   void initState() {
     super.initState();
-    
+
     // 如果已经导航过，不再重复导航
     if (_hasNavigatedFromAppWrapper) {
       log('📱 AppWrapper initState - 已经导航过，跳过');
       return;
     }
-    
+
     log('📱 AppWrapper initState - _initCompleter.value = ${_initCompleter.value}');
 
     // 监听初始化完成

@@ -24,7 +24,7 @@ import 'package:go_nomads_app/widgets/share_bottom_sheet.dart';
 import 'package:go_nomads_app/widgets/share_button.dart';
 import 'package:intl/intl.dart';
 
-import 'direct_chat_page.dart';
+import 'tencent_im_direct_chat_page.dart';
 import 'member_detail_page.dart';
 
 /// Meetup 详情页面
@@ -1114,7 +1114,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     );
 
     // 跳转到一对一聊天页面
-    Get.to(() => DirectChatPage(user: organizerUser));
+    Get.to(() => TencentIMDirectChatPage(user: organizerUser));
   }
 
   void _showAllAttendees() {

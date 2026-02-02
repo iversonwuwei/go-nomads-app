@@ -2,7 +2,7 @@ import 'package:go_nomads_app/controllers/innovation_detail_page_controller.dart
 import 'package:go_nomads_app/features/innovation_project/domain/entities/innovation_project.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/add_innovation/add_innovation_page.dart';
-import 'package:go_nomads_app/pages/direct_chat_page.dart';
+import 'package:go_nomads_app/pages/tencent_im_direct_chat_page.dart';
 import 'package:go_nomads_app/pages/innovation_detail/innovation_detail_app_bar.dart';
 import 'package:go_nomads_app/pages/innovation_detail/innovation_detail_bottom_bar.dart';
 import 'package:go_nomads_app/pages/innovation_detail/innovation_detail_creator_section.dart';
@@ -246,7 +246,7 @@ class InnovationDetailPage extends StatelessWidget {
 
   /// 联系创建者
   void _contactCreator(InnovationDetailPageController controller) {
-    Get.to(() => DirectChatPage(user: controller.creatorUser));
+    Get.to(() => TencentIMDirectChatPage(user: controller.creatorUser));
   }
 
   void _cleanupController() {

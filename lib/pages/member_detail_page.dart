@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import 'direct_chat_page.dart';
+import 'tencent_im_direct_chat_page.dart';
 import 'invite_to_meetup_page.dart';
 
 class MemberDetailPage extends StatelessWidget {
@@ -340,7 +340,7 @@ class MemberDetailPage extends StatelessWidget {
                             Expanded(
                               child: ElevatedButton.icon(
                                 onPressed: () {
-                                  Get.to(() => DirectChatPage(user: user));
+                                  Get.to(() => TencentIMDirectChatPage(user: user));
                                 },
                                 icon: const Icon(FontAwesomeIcons.message),
                                 label: Text(l10n.sendMessage),

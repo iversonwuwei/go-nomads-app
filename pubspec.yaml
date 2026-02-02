@@ -82,6 +82,10 @@ dependencies:
   record: ^6.0.0  # 语音录制
   audioplayers: ^6.1.0  # 语音播放
   
+  # 腾讯云IM SDK
+  tencent_cloud_chat_sdk: ^8.5.6864  # 腾讯云即时通信IM
+  crypto: ^3.0.3  # UserSig生成所需加密库
+  
   # UI 增强
   shimmer: ^3.0.0  # 骨架屏加载效果
   flutter_markdown: ^0.7.4+3  # Markdown 渲染
